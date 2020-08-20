@@ -143,15 +143,18 @@ class LockType:
 class CompactionType:
   MINOR = 1
   MAJOR = 2
+  CLEAN_ABORTED = 3
 
   _VALUES_TO_NAMES = {
     1: "MINOR",
     2: "MAJOR",
+    3: "CLEAN_ABORTED",
   }
 
   _NAMES_TO_VALUES = {
     "MINOR": 1,
     "MAJOR": 2,
+    "CLEAN_ABORTED": 3,
   }
 
 class GrantRevokeType:

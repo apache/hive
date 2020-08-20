@@ -176,6 +176,7 @@ enum LockType {
 enum CompactionType {
     MINOR = 1,
     MAJOR = 2,
+    CLEAN_ABORTED = 3,
 }
 
 enum GrantRevokeType {

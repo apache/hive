@@ -152,12 +152,15 @@ public class Cleaner extends CompactorThread {
           try {
             for (Map.Entry<Long, Set<Long>> queueEntry : compactId2LockMap.entrySet()) {
               boolean sawLock = false;
-              for (Long lockId : queueEntry.getValue()) {
-                if (currentLocks.contains(lockId)) {
-                  sawLock = true;
-                  break;
-                } else {
-                  expiredLocks.add(lockId);
+              CompactionInfo cis = compactId2CompactInfoMap.get(queueEntry.getKey());
+              if (!cis.isCleanAbortedCompaction()) {
+                for (Long lockId : queueEntry.getValue()) {
+                  if (currentLocks.contains(lockId)) {
+                    sawLock = true;
+                    break;
+                  } else {
+                    expiredLocks.add(lockId);
+                  }
                 }
               }
 
@@ -166,7 +169,12 @@ public class Cleaner extends CompactorThread {
                 // we can't do it in the loop or we'll get a concurrent modification exception.
                 compactionsCleaned.add(queueEntry.getKey());
                 //Future thought: this may be expensive so consider having a thread pool run in parallel
-                clean(compactId2CompactInfoMap.get(queueEntry.getKey()));
+                if (cis.isCleanAbortedCompaction()) {
+                  cleanAborted(cis);
+                } else {
+                  cleanRegular(cis);
+                }
+
               } else {
                 // Remove the locks we didn't see so we don't look for them again next time
                 for (Long lockId : expiredLocks) {
@@ -246,7 +254,7 @@ public class Cleaner extends CompactorThread {
     return currentLocks;
   }
 
-  private void clean(CompactionInfo ci) throws MetaException {
+  private void cleanRegular(CompactionInfo ci) throws MetaException {
     LOG.info("Starting cleaning for " + ci);
     try {
       Table t = resolveTable(ci);
@@ -322,6 +330,55 @@ public class Cleaner extends CompactorThread {
   private static String idWatermark(CompactionInfo ci) {
     return " id=" + ci.id;
   }
+
+  private void cleanAborted(CompactionInfo ci) throws MetaException {
+    if (ci.writeIds == null || ci.writeIds.size() == 0) {
+      LOG.warn("Attempted cleaning aborted transaction with empty writeId list");
+      return;
+    }
+    LOG.info("Starting abort cleaning for table " + ci.getFullTableName()
+        + ". This will scan all the partition directories.");
+    try {
+      Table t = resolveTable(ci);
+      if (t == null) {
+        // The table was dropped before we got around to cleaning it.
+        LOG.info("Unable to find table " + ci.getFullTableName() + ", assuming it was dropped." +
+            idWatermark(ci));
+        txnHandler.markCleaned(ci);
+        return;
+      }
+
+      StorageDescriptor sd = resolveStorageDescriptor(t, null);
+
+      if (runJobAsSelf(ci.runAs)) {
+        rmFilesClean(sd.getLocation(), ci);
+      } else {
+        LOG.info("Cleaning as user " + ci.runAs + " for " + ci.getFullPartitionName());
+        UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
+            UserGroupInformation.getLoginUser());
+        ugi.doAs(new PrivilegedExceptionAction<Object>() {
+          @Override
+          public Object run() throws Exception {
+            rmFilesClean(sd.getLocation(), ci);
+            return null;
+          }
+        });
+        try {
+          FileSystem.closeAllForUGI(ugi);
+        } catch (IOException exception) {
+          LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " +
+              ci.getFullPartitionName() + idWatermark(ci), exception);
+        }
+      }
+      txnHandler.markCleaned(ci);
+      LOG.info("Finished abort cleaning for table " + ci.getFullTableName());
+    } catch (Exception e) {
+      LOG.error("Caught exception when cleaning, unable to complete cleaning of " + ci + " " +
+          StringUtils.stringifyException(e));
+      txnHandler.markFailed(ci);
+    }
+  }
+
   private void removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
           throws IOException, HiveException {
     Path locPath = new Path(location);
@@ -359,6 +416,27 @@ public class Cleaner extends CompactorThread {
       fs.delete(dead, true);
     }
   }
+
+  private void rmFilesClean(String rootLocation, CompactionInfo ci) throws IOException, HiveException {
+    List<FileStatus> deleted = AcidUtils.deleteDeltaDirectories(new Path(rootLocation), conf, ci.writeIds);
+
+    if (deleted.size() == 0) {
+      LOG.info("No files were deleted in the clean abort compaction: " + idWatermark(ci));
+      return;
+    }
+
+    FileSystem fs = deleted.get(0).getPath().getFileSystem(conf);
+    Database db = Hive.get().getDatabase(ci.dbname);
+
+    for (FileStatus dead : deleted) {
+      Path deadPath = dead.getPath();
+      LOG.info("Deleted path " + deadPath.toString());
+      if (ReplChangeManager.isSourceOfReplication(db)) {
+        replChangeManager.recycle(deadPath, ReplChangeManager.RecycleType.MOVE, true);
+      }
+    }
+  }
+
   private static class LockComparator implements Comparator<ShowLocksResponseElement> {
     //sort ascending by resource, nulls first
     @Override

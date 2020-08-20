@@ -1747,7 +1747,7 @@ public class TestDbTxnManager2 {
     Assert.assertEquals(
       "TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnId1) + "): " +
         TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"),
-      0,
+      1,
       TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where tc_txnid=" + txnId1));
     //complete 1st txn
     long writeId = txnMgr.getTableWriteId("default", "target");
@@ -1813,7 +1813,7 @@ public class TestDbTxnManager2 {
     Assert.assertEquals(
       "TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnId2) + "): " +
         TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"),
-      0,
+      1,
       TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where tc_txnid=" + txnId2));
     //complete 2nd txn
     writeId = txnMgr2.getTableWriteId("default", "target");
@@ -2040,7 +2040,8 @@ public class TestDbTxnManager2 {
     Assert.assertEquals(
       "TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnid1) + "): " +
         TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"),
-      0,
+      // We have one before addDynamicPartitions in case the txn fails before.
+      1,
       TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where tc_txnid=" + txnid1));
     //now actually write to table to generate some partitions
     checkCmdOnDriver(driver.run("insert into target partition(p=1,q) values (1,2,2), (3,4,2), (5,6,3), (7,8,2)"));
@@ -2135,7 +2136,7 @@ public class TestDbTxnManager2 {
     Assert.assertEquals(
       "TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnId1) + "): " +
         TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"),
-      0,//because it's using a DP write
+      1,//because it's using a DP write
       TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where tc_txnid=" + txnId1));
     //complete T1 transaction (simulate writing to 2 partitions)
     long writeId = txnMgr.getTableWriteId("default", "target");
@@ -2171,7 +2172,7 @@ public class TestDbTxnManager2 {
     Assert.assertEquals(
       "TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnid2) + "): " +
         TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"),
-      0,//because it's using a DP write
+      1,//because it's using a DP write
       TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where tc_txnid=" + txnid2));
     //complete T2 txn
     //simulate Insert into 2 partitions

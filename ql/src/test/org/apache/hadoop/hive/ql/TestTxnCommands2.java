@@ -1194,6 +1194,15 @@ public class TestTxnCommands2 {
     }
     return compactionsByState;
   }
+  static void runInitiator(HiveConf hiveConf) throws MetaException {
+    AtomicBoolean stop = new AtomicBoolean(true);
+    Initiator t = new Initiator();
+    t.setThreadId((int) t.getId());
+    t.setConf(hiveConf);
+    AtomicBoolean looped = new AtomicBoolean();
+    t.init(stop, looped);
+    t.run();
+  }
   public static void runWorker(HiveConf hiveConf) throws MetaException {
     AtomicBoolean stop = new AtomicBoolean(true);
     Worker t = new Worker();
@@ -2149,6 +2158,395 @@ public class TestTxnCommands2 {
             0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from MIN_HISTORY_LEVEL"),
             0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from MIN_HISTORY_LEVEL"));
+  }
+
+  @Test
+    public void testMmTableAbortWithCompaction() throws Exception {
+    // 1. Insert some rows into MM table
+    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(1,2)");
+    // There should be 1 delta directory
+    int [][] resultData1 =  new int[][] {{1,2}};
+    verifyDeltaDirAndResult(1, Table.MMTBL.toString(), "", resultData1);
+    List<String> r1 = runStatementOnDriver("select count(*) from " + Table.MMTBL);
+    Assert.assertEquals("1", r1.get(0));
+
+    // 2. Let a transaction be aborted
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(3,4)");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    // There should be 1 delta and 1 base directory. The base one is the aborted one.
+    verifyDeltaDirAndResult(2, Table.MMTBL.toString(), "", resultData1);
+
+    r1 = runStatementOnDriver("select count(*) from " + Table.MMTBL);
+    Assert.assertEquals("1", r1.get(0));
+
+    // Verify query result
+    int [][] resultData2 = new int[][] {{1,2}, {5,6}};
+
+    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(5,6)");
+    verifyDeltaDirAndResult(3, Table.MMTBL.toString(), "", resultData2);
+    r1 = runStatementOnDriver("select count(*) from " + Table.MMTBL);
+    Assert.assertEquals("2", r1.get(0));
+
+    // 4. Perform a MINOR compaction, expectation is it should remove aborted base dir
+    runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MINOR'");
+    // The worker should remove the subdir for aborted transaction
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(2, Table.MMTBL.toString(), "", resultData2);
+    verifyBaseDirAndResult(0, Table.MMTBL.toString(), "", resultData2);
+    // 5. Run Cleaner. Shouldn't impact anything.
+    runCleaner(hiveConf);
+    // 6. Run initiator remove aborted entry from TXNS table
+    runInitiator(hiveConf);
+
+    // Verify query result
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.MMTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData2), rs);
+
+    int [][] resultData3 = new int[][] {{1,2}, {5,6}, {7,8}};
+    // 7. add few more rows
+    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(7,8)");
+    // 8. add one more aborted delta
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(9,10)");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+
+    // 9. Perform a MAJOR compaction, expectation is it should remove aborted base dir
+    runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MAJOR'");
+    verifyDeltaDirAndResult(4, Table.MMTBL.toString(), "", resultData3);
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(3, Table.MMTBL.toString(), "", resultData3);
+    verifyBaseDirAndResult(1, Table.MMTBL.toString(), "", resultData3);
+    runCleaner(hiveConf);
+    verifyDeltaDirAndResult(0, Table.MMTBL.toString(), "", resultData3);
+    verifyBaseDirAndResult(1, Table.MMTBL.toString(), "", resultData3);
+    runInitiator(hiveConf);
+    verifyDeltaDirAndResult(0, Table.MMTBL.toString(), "", resultData3);
+    verifyBaseDirAndResult(1, Table.MMTBL.toString(), "", resultData3);
+
+    // Verify query result
+    rs = runStatementOnDriver("select a,b from " + Table.MMTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData3), rs);
+  }
+  @Test
+  public void testMmTableAbortWithCompactionNoCleanup() throws Exception {
+    // 1. Insert some rows into MM table
+    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(5,6)");
+    // There should be 1 delta directory
+    int [][] resultData1 =  new int[][] {{1,2}, {5,6}};
+    verifyDeltaDirAndResult(2, Table.MMTBL.toString(), "", resultData1);
+    List<String> r1 = runStatementOnDriver("select count(*) from " + Table.MMTBL);
+    Assert.assertEquals("2", r1.get(0));
+
+    // 2. Let a transaction be aborted
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("insert into " + Table.MMTBL + " values(3,4)");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    // There should be 1 delta and 1 base directory. The base one is the aborted one.
+    verifyDeltaDirAndResult(3, Table.MMTBL.toString(), "", resultData1);
+    r1 = runStatementOnDriver("select count(*) from " + Table.MMTBL);
+    Assert.assertEquals("2", r1.get(0));
+
+    // 3. Perform a MINOR compaction, expectation is it should remove aborted base dir
+    runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MINOR'");
+    // The worker should remove the subdir for aborted transaction
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(2, Table.MMTBL.toString(), "", resultData1);
+    verifyBaseDirAndResult(0, Table.MMTBL.toString(), "", resultData1);
+    // Verify query result
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.MMTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData1), rs);
+
+    int [][] resultData3 = new int[][] {{1,2}, {5,6}, {7,8}};
+    // 4. add few more rows
+    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(7,8)");
+    // 5. add one more aborted delta
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(9,10)");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    verifyDeltaDirAndResult(4, Table.MMTBL.toString(), "", resultData3);
+
+    // 6. Perform a MAJOR compaction, expectation is it should remove aborted delta dir
+    runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(3, Table.MMTBL.toString(), "", resultData3);
+    verifyBaseDirAndResult(1, Table.MMTBL.toString(), "", resultData3);
+
+    // 7. Run one more Major compaction this should not have any affect
+    runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(3, Table.MMTBL.toString(), "", resultData3);
+    verifyBaseDirAndResult(1, Table.MMTBL.toString(), "", resultData3);
+
+    runCleaner(hiveConf);
+
+    // Verify query result
+    rs = runStatementOnDriver("select a,b from " + Table.MMTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData3), rs);
+  }
+
+  @Test
+  public void testFullACIDAbortWithMinorMajorCompaction() throws Exception {
+    // 1. Insert some rows into acid table
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(1,2)");
+    // There should be 1 delta directory
+    int [][] resultData1 =  new int[][] {{1,2}};
+    verifyDeltaDirAndResult(1, Table.ACIDTBL.toString(), "", resultData1);
+    List<String> r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBL);
+    Assert.assertEquals("1", r1.get(0));
+
+    // 2. Let a transaction be aborted
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    // There should be 2 delta directories.
+    verifyDeltaDirAndResult(2, Table.ACIDTBL.toString(), "", resultData1);
+
+    r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBL);
+    Assert.assertEquals("1", r1.get(0));
+
+    // Verify query result
+    int [][] resultData2 = new int[][] {{1,2}, {5,6}};
+    // 3. insert few more rows in acid table
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(5,6)");
+    verifyDeltaDirAndResult(3, Table.ACIDTBL.toString(), "", resultData2);
+    r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBL);
+    Assert.assertEquals("2", r1.get(0));
+
+    // 4. Perform a MINOR compaction, expectation is it should remove aborted base dir
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MINOR'");
+    // The worker should remove the subdir for aborted transaction
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(3, Table.ACIDTBL.toString(), "", resultData2);
+    verifyBaseDirAndResult(0, Table.ACIDTBL.toString(), "", resultData2);
+    // 5. Run Cleaner.should remove all deltas except compacted one.
+    runCleaner(hiveConf);
+    verifyDeltaDirAndResult(1, Table.ACIDTBL.toString(), "", resultData2);
+    // 6. Run initiator remove aborted entry from TXNS table
+    runInitiator(hiveConf);
+
+    // Verify query result
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData2), rs);
+
+    int [][] resultData3 = new int[][] {{1,2}, {5,6}, {7,8}, {9,10}};
+    // 7. add few more rows
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(7,8)");
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(9,10)");
+    // 8. add one more aborted delta
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(11,12)");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+
+    // 9. Perform a MAJOR compaction, expectation is it should remove aborted base dir
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    verifyDeltaDirAndResult(4, Table.ACIDTBL.toString(), "", resultData3);
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(3, Table.ACIDTBL.toString(), "", resultData3);
+    verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData3);
+    runCleaner(hiveConf);
+    verifyDeltaDirAndResult(0, Table.ACIDTBL.toString(), "", resultData3);
+    verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData3);
+    runInitiator(hiveConf);
+    verifyDeltaDirAndResult(0, Table.ACIDTBL.toString(), "", resultData3);
+    verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData3);
+
+    // Verify query result
+    rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData3), rs);
+  }
+  @Test
+  public void testFullACIDAbortWithMajorMajorCompaction() throws Exception {
+    // 1. Insert some rows into acid table
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
+    // There should be 2 delta directories
+    int [][] resultData1 =  new int[][] {{1,2}, {3,4}};
+    verifyDeltaDirAndResult(2, Table.ACIDTBL.toString(), "", resultData1);
+    List<String> r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBL);
+    Assert.assertEquals("2", r1.get(0));
+
+    // 2. Let a transaction be aborted
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(5,6)");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    // There should be 2 delta and 1 base directory. The base one is the aborted one.
+    verifyDeltaDirAndResult(3, Table.ACIDTBL.toString(), "", resultData1);
+    r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBL);
+    Assert.assertEquals("2", r1.get(0));
+
+    // 4.1 Perform a MAJOR compaction, expectation is it should remove aborted base dir
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    // The worker should remove the subdir for aborted transaction
+    runWorker(hiveConf);
+    // 4.2 Perform another MAJOR compaction, expectation is it should remove aborted base dir
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(2, Table.ACIDTBL.toString(), "", resultData1);
+    verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData1);
+    // 5. Run Cleaner. Should remove all the deltas.
+    runCleaner(hiveConf);
+    verifyDeltaDirAndResult(0, Table.ACIDTBL.toString(), "", resultData1);
+    verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData1);
+    // 6. Run initiator remove aborted entry from TXNS table
+    runInitiator(hiveConf);
+
+    // Verify query result
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData1), rs);
+  }
+  @Test
+  public void testFullACIDAbortWithCompactionNoCleanup() throws Exception {
+    // 1. Insert some rows into acid table
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
+    // There should be 2 delta directories
+    int [][] resultData1 =  new int[][] {{1,2}, {3,4}};
+    verifyDeltaDirAndResult(2, Table.ACIDTBL.toString(), "", resultData1);
+
+    // 2. abort one txns
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(5,6)");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    verifyDeltaDirAndResult(3, Table.ACIDTBL.toString(), "", resultData1);
+
+    // 3. Perform a MAJOR compaction. It should remove the subdir for aborted transaction.
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    // The worker should remove the subdir for aborted transaction
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(2, Table.ACIDTBL.toString(), "", resultData1);
+    verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData1);
+    // 4. Perform one more MAJOR compaction, this should not remove any dirs
+    runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(2, Table.ACIDTBL.toString(), "", resultData1);
+    verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData1);
+
+    // 5. run initiator, should not have any effect
+    runInitiator(hiveConf);
+    // Verify query result
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
+    Assert.assertEquals(stringifyValues(resultData1), rs);
+  }
+  @Test
+  public void testFullACIDAbortWithManyPartitions() throws Exception {
+    // 1. Insert some rows into acid table
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p1') (a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p2') (a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p3') (a,b) values(1,2)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p1') (a,b) values(3,4)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p2') (a,b) values(3,4)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p3') (a,b) values(3,4)");
+    // There should be 2 delta directories in each partition
+    int [][] resultData1 =  new int[][] {{1,2}, {3,4}};
+    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
+    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p2", resultData1);
+    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p3", resultData1);
+
+    // 2. abort two txns in each partition
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p1') (a,b) values(5,6)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p2') (a,b) values(5,6)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p3') (a,b) values(5,6)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p1') (a,b) values(5,6)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p2') (a,b) values(5,6)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='p3') (a,b) values(5,6)");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
+    verifyDeltaDirAndResult(4, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
+    verifyDeltaDirAndResult(4, Table.ACIDTBLPART.toString(), "p=p2", resultData1);
+    verifyDeltaDirAndResult(4, Table.ACIDTBLPART.toString(), "p=p3", resultData1);
+
+    // We should have total six rows corresponding to the above six aborted transactions
+    Assert.assertEquals(TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS"), 6);
+    runCleaner(hiveConf);
+    Assert.assertEquals(TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS"), 6);
+
+    // 3.1 Perform a MAJOR compaction again. This time it will remove the subdir for aborted transaction.
+    runStatementOnDriver("alter table "+ Table.ACIDTBLPART + " partition(p='p1') compact 'MAJOR'");
+    // The worker should remove the subdir for aborted transaction
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
+    verifyDeltaDirAndResult(4, Table.ACIDTBLPART.toString(), "p=p2", resultData1);
+    verifyDeltaDirAndResult(4, Table.ACIDTBLPART.toString(), "p=p3", resultData1);
+    verifyBaseDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
+    runCleaner(hiveConf);
+    runInitiator(hiveConf);
+    Assert.assertEquals(TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS"), 4);
+
+    // 3.2 Perform a MAJOR compaction again. This time it will remove the subdir for aborted transaction.
+    runStatementOnDriver("alter table "+ Table.ACIDTBLPART + " partition(p='p2') compact 'MAJOR'");
+    // The worker should remove the subdir for aborted transaction
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(0, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
+    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p2", resultData1);
+    verifyDeltaDirAndResult(4, Table.ACIDTBLPART.toString(), "p=p3", resultData1);
+    verifyBaseDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p2", resultData1);
+    runCleaner(hiveConf);
+    runInitiator(hiveConf);
+    Assert.assertEquals(TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS"), 2);
+
+    // 3.3 Perform a MAJOR compaction again. This time it will remove the subdir for aborted transaction.
+    runStatementOnDriver("alter table "+ Table.ACIDTBLPART + " partition(p='p3') compact 'MAJOR'");
+    // The worker should remove the subdir for aborted transaction
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(0, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
+    verifyDeltaDirAndResult(0, Table.ACIDTBLPART.toString(), "p=p2", resultData1);
+    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p3", resultData1);
+    verifyBaseDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p3", resultData1);
+    runCleaner(hiveConf);
+    runInitiator(hiveConf);
+    Assert.assertEquals(TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS"), 0);
+
+    // 4. Verify query result
+    int [][] resultData2 =  new int[][] {{1,2},{1,2},{1,2},{3,4},{3,4},{3,4}};
+    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBLPART + " order by a");
+    Assert.assertEquals(stringifyValues(resultData2), rs);
+  }
+  private void verifyDeltaDirAndResult(int expectedDeltas, String tblName, String partName, int [][] resultData) throws Exception {
+    Path warehouse = new Path(TEST_WAREHOUSE_DIR);
+    tblName = tblName.toLowerCase();
+    FileSystem fs = FileSystem.get(warehouse.toUri(), hiveConf);
+    FileStatus[] status = fs.listStatus(new Path(warehouse, tblName + "/" + partName));
+
+    int sawDeltaTimes = 0;
+    for (int i = 0; i < status.length; i++) {
+      if(status[i].getPath().getName().matches("delta_.*"))
+        sawDeltaTimes++;
+    }
+    Assert.assertEquals(expectedDeltas, sawDeltaTimes);
+    if (partName.equals("p=newpart"))
+      return;
+
+    List<String> rs;
+    if (partName.isEmpty()) {
+      rs = runStatementOnDriver("select a,b from " + tblName + " order by a");
+    } else {
+      rs = runStatementOnDriver("select a,b from " + tblName + " where p='" + partName.substring(2) + "' order by a");
+    }
+    Assert.assertEquals(stringifyValues(resultData), rs);
+  }
+
+  private void verifyBaseDirAndResult(int expectedBase, String tblName, String partName, int [][] resultData) throws Exception {
+    Path warehouse = new Path(TEST_WAREHOUSE_DIR);
+    tblName = tblName.toLowerCase();
+    FileSystem fs = FileSystem.get(warehouse.toUri(), hiveConf);
+    FileStatus[] status = fs.listStatus(new Path(warehouse, tblName + "/" + partName));
+
+    int sawBaseTimes = 0;
+    for (int i = 0; i < status.length; i++) {
+      if(status[i].getPath().getName().matches("base_.*"))
+        sawBaseTimes++;
+    }
+    Assert.assertEquals(expectedBase, sawBaseTimes);
+
+    List<String> rs;
+    if (partName == "") {
+      rs = runStatementOnDriver("select a,b from " + tblName + " order by a");
+    } else {
+      rs = runStatementOnDriver("select a,b from " + tblName + " where p='" + partName.substring(2) + "' order by a");
+    }
+    Assert.assertEquals(stringifyValues(resultData), rs);
   }
 
   private void verifyDirAndResult(int expectedDeltas) throws Exception {

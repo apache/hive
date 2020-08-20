@@ -13,7 +13,8 @@ import org.apache.thrift.TEnum;
 
 public enum CompactionType implements org.apache.thrift.TEnum {
   MINOR(1),
-  MAJOR(2);
+  MAJOR(2),
+  CLEAN_ABORTED(3);
 
   private final int value;
 
@@ -38,6 +39,8 @@ public enum CompactionType implements org.apache.thrift.TEnum {
         return MINOR;
       case 2:
         return MAJOR;
+      case 3:
+        return CLEAN_ABORTED;
       default:
         return null;
     }

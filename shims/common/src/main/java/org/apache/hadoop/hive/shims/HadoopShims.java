@@ -25,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.security.AccessControlException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
@@ -39,6 +40,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.io.LongWritable;
@@ -234,6 +236,18 @@ public interface HadoopShims {
   }
 
   List<HdfsFileStatusWithId> listLocatedHdfsStatus(
+      FileSystem fs, Path path, PathFilter filter) throws IOException;
+
+  /**
+   * Returns an interator of the list of files in a directory. Useful
+   * when a big number of files/directories are expected to be listed.
+   * @param fs filesystem
+   * @param path path to list
+   * @param filter filter to apply to the files and folders int the path
+   * @return iterator with the listed files
+   * @throws IOException
+   */
+  RemoteIterator<HdfsFileStatusWithId> listLocatedHdfsStatusIterator(
       FileSystem fs, Path path, PathFilter filter) throws IOException;
 
   /**

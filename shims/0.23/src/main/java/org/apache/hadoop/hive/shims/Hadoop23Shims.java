@@ -771,6 +771,95 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     return result;
   }
 
+  @Override
+  public RemoteIterator<HdfsFileStatusWithId> listLocatedHdfsStatusIterator(
+      FileSystem fs, Path path, PathFilter filter) throws IOException {
+    return new FileIterator(fs, path, filter);
+  }
+
+  class FileIterator implements RemoteIterator<HdfsFileStatusWithId> {
+    private final DFSClient dfsc;
+    private final URI fsUri;
+    private final Path p;
+    private final String src;
+
+    private DirectoryListing current;
+    private PathFilter filter;
+    private int i = 0;
+    private HdfsFileStatusWithId next = null;
+    private boolean nextUsed = true;
+
+    org.apache.hadoop.hdfs.protocol.HdfsFileStatus[] hfss = null;
+
+    FileIterator(FileSystem fs, Path p, PathFilter filter) throws IOException {
+      DistributedFileSystem dfs = ensureDfs(fs);
+      dfsc = dfs.getClient();
+      src = p.toUri().getPath();
+      current = dfsc.listPaths(src,
+          org.apache.hadoop.hdfs.protocol.HdfsFileStatus.EMPTY_NAME, true);
+      if (current == null) { // the directory does not exist
+        throw new FileNotFoundException("File " + p + " does not exist.");
+      }
+      fsUri = fs.getUri();
+      this.filter = filter;
+      this.p = p;
+    }
+
+    @Override
+    public boolean hasNext() throws IOException {
+      if (!nextUsed) {
+        return next != null;
+      }
+      next = getNext();
+      nextUsed = false;
+      return next != null;
+    }
+
+    @Override
+    public HdfsFileStatusWithId next() throws IOException {
+      if (!nextUsed) {
+        nextUsed = true;
+        return next;
+      }
+      return getNext();
+    }
+
+    private HdfsFileStatusWithId getNext() throws IOException {
+     if (!nextUsed) {
+       return next;
+     }
+      while (current != null) {
+        // First time we call getNext
+        if (hfss == null) {
+          hfss = current.getPartialListing();
+          i = 0;
+        } else if (hfss.length == i) {
+          current = current.hasMore() ? dfsc
+              .listPaths(src, current.getLastName(), true) : null;
+          if (current == null) {
+            return null;
+          }
+          hfss = current.getPartialListing();
+          i = 0;
+        }
+
+        while (i < hfss.length) {
+          HdfsLocatedFileStatus next = (HdfsLocatedFileStatus) (hfss[i]);
+          i++;
+          if (filter != null) {
+            Path filterPath = next.getFullPath(p).makeQualified(fsUri, null);
+            if (!filter.accept(filterPath))
+              continue;
+          }
+          LocatedFileStatus lfs = next.makeQualifiedLocated(fsUri, p);
+          return new HdfsFileStatusWithIdImpl(lfs, next.getFileId());
+        }
+      }
+      return null;
+
+    }
+  }
+
   private DistributedFileSystem ensureDfs(FileSystem fs) {
     if (!(fs instanceof DistributedFileSystem)) {
       throw new UnsupportedOperationException("Only supported for DFS; got " + fs.getClass());

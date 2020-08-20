@@ -94,6 +94,63 @@ public class HdfsUtils {
     return result;
   }
 
+  /**
+   * Lists files and folder in path and filters them according to the filter.
+   * Returns an interator.
+   * @param fs filesystem
+   * @param path path to ls
+   * @param filter filter to apply to the found paths when lsing.
+   * @return iterator with the files and paths.
+   * @throws IOException
+   */
+  public static RemoteIterator<FileStatus> listLocatedStatusIterator(final FileSystem fs,
+      final Path path,
+      final PathFilter filter
+  ) throws IOException {
+    return new FilterRemoteIterator(fs.listLocatedStatus(path), filter);
+  }
+
+  static class FilterRemoteIterator implements RemoteIterator<FileStatus> {
+    private final RemoteIterator<LocatedFileStatus> it;
+    private final PathFilter filter;
+    private boolean nextUsed = true;
+    private FileStatus next = null;
+
+    FilterRemoteIterator(RemoteIterator<LocatedFileStatus> it, PathFilter filter) {
+      this.it = it;
+      this.filter = filter;
+    }
+
+    @Override public boolean hasNext() throws IOException {
+      if (!nextUsed) {
+        return next != null;
+      }
+      next = getNext();
+      nextUsed = false;
+      return next != null;
+    }
+
+    @Override public FileStatus next() throws IOException {
+      if (!nextUsed) {
+        nextUsed = true;
+        return next;
+      }
+      return getNext();
+    }
+
+    private FileStatus getNext() throws IOException {
+      while (it.hasNext()) {
+        FileStatus fStatus = it.next();
+        if (filter == null) {
+          return fStatus;
+        } else if (filter.accept(fStatus.getPath())) {
+          return fStatus;
+        }
+      }
+      return null;
+    }
+  }
+
   // TODO: this relies on HDFS not changing the format; we assume if we could get inode ID, this
   //       is still going to work. Otherwise, file IDs can be turned off. Later, we should use
   //       as public utility method in HDFS to obtain the inode-based path.

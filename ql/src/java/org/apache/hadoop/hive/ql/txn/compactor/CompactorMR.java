@@ -251,7 +251,9 @@ public class CompactorMR {
     // and discovering that in getSplits is too late as we then have no way to pass it to our
     // mapper.
 
-    AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()), conf, writeIds, false, true);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(
+        new Path(sd.getLocation()), conf, writeIds, false, true, t.getParameters());
+    removeAbortedDirsForAcidTable(conf, dir);
     List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
     int maxDeltastoHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);
     if(parsedDeltas.size() > maxDeltastoHandle) {
@@ -328,7 +330,7 @@ public class CompactorMR {
         + t.getDbName() + "." + t.getTableName());
     AcidUtils.Directory dir = AcidUtils.getAcidState(new Path(sd.getLocation()),
         conf, writeIds, Ref.from(false), false, t.getParameters());
-    removeFilesForMmTable(conf, dir);
+    removeAbortedDirsForAcidTable(conf, dir);
 
     // Then, actually do the compaction.
     if (!ci.isMajorCompaction()) {
@@ -622,7 +624,7 @@ public class CompactorMR {
   }
 
   // Remove the directories for aborted transactions only
-  private void removeFilesForMmTable(HiveConf conf, Directory dir) throws IOException {
+  private void removeAbortedDirsForAcidTable(HiveConf conf, Directory dir) throws IOException {
     // For MM table, we only want to delete delta dirs for aborted txns.
     List<FileStatus> abortedDirs = dir.getAbortedDirectories();
     List<Path> filesToDelete = new ArrayList<>(abortedDirs.size());
