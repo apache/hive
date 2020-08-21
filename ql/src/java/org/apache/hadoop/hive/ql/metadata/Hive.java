@@ -2326,11 +2326,6 @@ public class Hive {
                 + "partition that does not exist yet. Skipping generating INSERT event.");
       }
 
-      // column stats will be inaccurate
-      if (resetStatistics) {
-        StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
-      }
-
       // recreate the partition if it existed before
       if (isSkewedStoreAsSubdir) {
         org.apache.hadoop.hive.metastore.api.Partition newCreatedTpart = newTPart.getTPartition();
@@ -2342,9 +2337,15 @@ public class Hive {
         skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
         newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
       }
-      if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+
+      // If there is no column stats gather stage present in the plan. So we don't know the accuracy of the stats or
+      // auto gather stats is turn off explicitly. We need to reset the stats in both cases.
+      if (resetStatistics || !this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        LOG.debug(
+            "Clear partition column statistics by setting basic stats to false for " + newTPart.getCompleteName());
         StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
       }
+
       if (oldPart == null) {
         newTPart.getTPartition().setParameters(new HashMap<String,String>());
         if (this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
@@ -3067,15 +3068,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       perfLogger.perfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
     }
-    if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-      LOG.debug("setting table statistics false for " + tbl.getDbName() + "." + tbl.getTableName());
-      StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
-    }
 
-    //column stats will be inaccurate
-    if (resetStatistics) {
-      LOG.debug("Clearing table statistics for " + tbl.getDbName() + "." + tbl.getTableName());
-      StatsSetupConst.clearColumnStatsState(tbl.getParameters());
+    // If there is no column stats gather stage present in the plan. So we don't know the accuracy of the stats or
+    // auto gather stats is turn off explicitly. We need to reset the stats in both cases.
+    if (resetStatistics || !this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      LOG.debug("Clear table column statistics and set basic statistics to false for " + tbl.getCompleteName());
+      StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
     }
 
     try {
