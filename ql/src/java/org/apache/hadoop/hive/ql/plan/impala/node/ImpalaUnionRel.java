@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMap
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.SlotDescriptor;
+import org.apache.impala.analysis.SlotRef;
 import org.apache.impala.analysis.TupleDescriptor;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
@@ -147,6 +148,20 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
       ImpalaPlanRel unionInputRel = getImpalaRelInput(i);
       PlanNode unionInputNode = unionInputRel.getPlanNode(ctx);
       planNodeAndExprsList.add(Pair.of(unionInputNode, unionInputRel.getOutputExprs()));
+    }
+
+    // register the value transfer from input of union to the output slots. This
+    // gets used later during runtime filter generation (without this change, the
+    // runtime filter would not get propagated past the union).
+    for (Pair<PlanNode, List<Expr>> pair : planNodeAndExprsList) {
+      List<Expr> exprs = pair.right;
+      for (int i = 0; i < exprs.size(); i++) {
+        Expr inputExpr = exprs.get(i);
+        SlotRef inputSlotRef = inputExpr.unwrapSlotRef(true);
+        SlotRef outputSlotRef = this.outputExprs.get(i).unwrapSlotRef(true);
+        if (inputSlotRef == null || outputSlotRef == null) continue;
+        ctx.getRootAnalyzer().registerValueTransfer(outputSlotRef.getSlotId(), inputSlotRef.getSlotId());
+      }
     }
 
     // The nonConstOutputExprs will contain the list of outputExprs except in the case

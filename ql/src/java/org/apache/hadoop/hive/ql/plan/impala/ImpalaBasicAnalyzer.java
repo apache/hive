@@ -66,16 +66,6 @@ public class ImpalaBasicAnalyzer extends Analyzer {
   }
 
   /**
-   * The createAuxEqPredicate is called internally by Impala to
-   * create new predicates based on transitive equality. At this point,
-   * we expect that such predicates should have already been created
-   * by Hive and hence we make this a no-op
-   */
-  @Override
-  public void createAuxEqPredicate(Expr lhs, Expr rhs) {
-  }
-
-  /**
    * Given an alias name, check if it is unique based on previously
    * cached names. If not, create a unique name by concatenating
    * it with an integer sequence counter.

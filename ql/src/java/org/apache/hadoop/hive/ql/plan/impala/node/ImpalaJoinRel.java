@@ -170,6 +170,12 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
       joinNode = new ImpalaHashJoinNode(leftInputNode, rightInputNode,
           false /* not a straight join */, distMode, joinOp, equiJoinConjuncts,
           nonEquiJoinConjuncts, nodeInfo);
+
+      // register the equi and non-equi join conjuncts with the analyzer such that
+      // value transfer graph creation can consume it
+      List<Expr> equiJoinExprs = new ArrayList<Expr>(equiJoinConjuncts);
+      ctx.getRootAnalyzer().registerConjuncts(equiJoinExprs);
+      ctx.getRootAnalyzer().registerConjuncts(nonEquiJoinConjuncts);
     }
 
     joinNode.setId(ctx.getNextNodeId());
