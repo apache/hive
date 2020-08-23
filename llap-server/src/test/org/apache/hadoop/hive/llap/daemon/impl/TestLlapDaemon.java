@@ -74,7 +74,7 @@ public class TestLlapDaemon {
     String[] localDirs = new String[1];
     LlapDaemonInfo.initialize("testDaemon", hiveConf);
     daemon = new LlapDaemon(hiveConf, 1, LlapDaemon.getTotalHeapSize(), false, false,
-            -1, localDirs, 0, 0, 0, -1, "TestLlapDaemon");
+            -1, localDirs, 0, 0,0, 0, -1, "TestLlapDaemon");
   }
 
   @After

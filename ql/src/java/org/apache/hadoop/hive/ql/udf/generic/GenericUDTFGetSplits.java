@@ -28,6 +28,7 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -35,6 +36,7 @@ import java.util.UUID;
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -46,6 +48,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.FieldDesc;
 import org.apache.hadoop.hive.llap.LlapInputSplit;
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.apache.hadoop.hive.llap.NotTezEventHelper;
 import org.apache.hadoop.hive.llap.Schema;
 import org.apache.hadoop.hive.llap.SubmitWorkInfo;
@@ -53,6 +56,10 @@ import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
+import org.apache.hadoop.hive.llap.ext.LlapDaemonInfo;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
+import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
+import org.apache.hadoop.hive.llap.security.JwtHelper;
 import org.apache.hadoop.hive.llap.security.LlapSigner;
 import org.apache.hadoop.hive.llap.security.LlapSigner.Signable;
 import org.apache.hadoop.hive.llap.security.LlapSigner.SignedMessage;
@@ -434,7 +441,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     SplitResult splitResult = new SplitResult();
     splitResult.schemaSplit = new LlapInputSplit(
         0, new byte[0], new byte[0], new byte[0],
-        new SplitLocationInfo[0], schema, "", new byte[0]);
+        new SplitLocationInfo[0], new LlapDaemonInfo[0], schema, "", new byte[0], "");
     if (schemaSplitOnly) {
       // schema only
       return splitResult;
@@ -549,7 +556,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
           if (generateLightWeightSplits) {
             splitResult.planSplit = new LlapInputSplit(
                 0, submitWorkBytes, new byte[0], new byte[0],
-                new SplitLocationInfo[0], new Schema(), "", new byte[0]);
+                new SplitLocationInfo[0], new LlapDaemonInfo[0], new Schema(), "", new byte[0], "");
           }
         }
 
@@ -559,12 +566,22 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         // 4. Make location hints.
         SplitLocationInfo[] locations = makeLocationHints(hints.get(i));
 
+        // 5. populate info about llap daemons(to help client submit request and read data)
+        LlapDaemonInfo[] llapDaemonInfos = populateLlapDaemonInfos(job, locations);
+
+        // 6. Generate JWT for external clients if it's a cloud deployment
+        String jwt = "";
+        if (LlapUtil.isCloudDeployment()) {
+          JwtHelper jwtHelper = new JwtHelper(SessionState.getSessionConf());
+          jwt = jwtHelper.buildJwtForLlap(applicationId);
+        }
+
         if (generateLightWeightSplits) {
           result[i] = new LlapInputSplit(i, emptySubmitWorkBytes, eventBytes.message,
-              eventBytes.signature, locations, emptySchema, llapUser, tokenBytes);
+              eventBytes.signature, locations, llapDaemonInfos, emptySchema, llapUser, tokenBytes, jwt);
         } else {
           result[i] = new LlapInputSplit(i, submitWorkBytes, eventBytes.message,
-              eventBytes.signature, locations, schema, llapUser, tokenBytes);
+              eventBytes.signature, locations, llapDaemonInfos, schema, llapUser, tokenBytes, jwt);
         }
       }
       splitResult.actualSplits = result;
@@ -638,6 +655,39 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       locations[j++] = new SplitLocationInfo(host, false);
     }
     return locations;
+  }
+
+  private LlapDaemonInfo[] populateLlapDaemonInfos(JobConf job, SplitLocationInfo[] locations) throws IOException {
+    LlapRegistryService registryService = LlapRegistryService.getClient(job);
+    LlapServiceInstanceSet instanceSet = registryService.getInstances();
+    Collection<LlapServiceInstance> llapServiceInstances = null;
+
+    //this means a valid location, see makeLocationHints()
+    if (locations.length == 1 && locations[0].getLocation() != null) {
+      llapServiceInstances = instanceSet.getByHost(locations[0].getLocation());
+    }
+
+    //okay, so we were unable to find any llap instance by hostname
+    //let's populate them all so that we can fetch data from any of them.
+    if (CollectionUtils.isEmpty(llapServiceInstances)) {
+      llapServiceInstances = instanceSet.getAll();
+    }
+
+    Preconditions.checkState(llapServiceInstances.size() > 0,
+        "Unable to find any of the llap instances in zk registry");
+
+    LlapDaemonInfo[] llapDaemonInfos = new LlapDaemonInfo[llapServiceInstances.size()];
+    int count = 0;
+    for (LlapServiceInstance inst : llapServiceInstances) {
+      LlapDaemonInfo info;
+      if (LlapUtil.isCloudDeployment()) {
+        info = new LlapDaemonInfo(inst.getExternalHost(), inst.getExternalClientsRpcPort(), inst.getOutputFormatPort());
+      } else {
+        info = new LlapDaemonInfo(inst.getHost(), inst.getRpcPort(), inst.getOutputFormatPort());
+      }
+      llapDaemonInfos[count++] = info;
+    }
+    return llapDaemonInfos;
   }
 
   private SignedMessage makeEventBytes(Vertex wx, String vertexName,

@@ -129,7 +129,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
 
   public LlapDaemon(Configuration daemonConf, int numExecutors, long executorMemoryBytes,
     boolean ioEnabled, boolean isDirectCache, long ioMemoryBytes, String[] localDirs, int srvPort,
-    int mngPort, int shufflePort, int webPort, String appName) {
+                    int externalClientsRpcPort, int mngPort, int shufflePort, int webPort, String appName) {
     super("LlapDaemon");
 
     printAsciiArt();
@@ -137,6 +137,9 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     Preconditions.checkArgument(numExecutors > 0);
     Preconditions.checkArgument(srvPort == 0 || (srvPort > 1024 && srvPort < 65536),
         "Server RPC Port must be between 1025 and 65535, or 0 automatic selection");
+    Preconditions.checkArgument(
+        externalClientsRpcPort == 0 || (externalClientsRpcPort > 1024 && externalClientsRpcPort < 65536),
+        "Server RPC port for external clients must be between 1025 and 65535, or 0 automatic selection");
     Preconditions.checkArgument(mngPort == 0 || (mngPort > 1024 && mngPort < 65536),
         "Management RPC Port must be between 1025 and 65535, or 0 automatic selection");
     Preconditions.checkArgument(localDirs != null && localDirs.length > 0,
@@ -215,6 +218,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       ", llapIoEnabled=" + ioEnabled +
       ", llapIoCacheIsDirect=" + isDirectCache +
       ", rpcListenerPort=" + srvPort +
+      ", rpcListenerPortForExternalClients=" + externalClientsRpcPort +
       ", mngListenerPort=" + mngPort +
       ", webPort=" + webPort +
       ", outputFormatSvcPort=" + outputFormatServicePort +
@@ -308,7 +312,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
     }
     this.secretManager = sm;
     this.server = new LlapProtocolServerImpl(secretManager,
-        numHandlers, this, srvAddress, mngAddress, srvPort, mngPort, daemonId, metrics);
+        numHandlers, this, srvAddress, mngAddress, srvPort, externalClientsRpcPort, mngPort, daemonId, metrics);
 
     UgiFactory fsUgiFactory = null;
     try {
@@ -474,6 +478,8 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       getConfig().setInt(ConfVars.LLAP_DAEMON_WEB_PORT.varname, webServices.getPort());
     }
     getConfig().setInt(ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT.varname, LlapOutputFormatService.get().getPort());
+    getConfig().setInt(ConfVars.LLAP_EXTERNAL_CLIENT_CLOUD_RPC_PORT.varname,
+        server.getExternalClientsRpcServerBindAddress().getPort());
 
     // Ensure this is set in the config so that the AM can read it.
     getConfig()
@@ -568,6 +574,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       String[] localDirs = (localDirList == null || localDirList.isEmpty()) ?
           new String[0] : StringUtils.getTrimmedStrings(localDirList);
       int rpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_RPC_PORT);
+      int externalClientCloudRpcPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_EXTERNAL_CLIENT_CLOUD_RPC_PORT);
       int mngPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_MANAGEMENT_RPC_PORT);
       int shufflePort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_YARN_SHUFFLE_PORT);
       int webPort = HiveConf.getIntVar(daemonConf, ConfVars.LLAP_DAEMON_WEB_PORT);
@@ -583,7 +590,7 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       LlapDaemon.initializeLogging(daemonConf);
       llapDaemon =
           new LlapDaemon(daemonConf, numExecutors, executorMemoryBytes, isLlapIo, isDirectCache,
-              ioMemoryBytes, localDirs, rpcPort, mngPort, shufflePort, webPort, appName);
+              ioMemoryBytes, localDirs, rpcPort, externalClientCloudRpcPort, mngPort, shufflePort, webPort, appName);
 
       LOG.info("Adding shutdown hook for LlapDaemon");
       ShutdownHookManager.addShutdownHook(new CompositeServiceShutdownHook(llapDaemon), 1);

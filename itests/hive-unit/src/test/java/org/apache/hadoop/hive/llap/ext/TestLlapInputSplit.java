@@ -52,7 +52,7 @@ public class TestLlapInputSplit {
 
     byte[] tokenBytes = new byte[] { 1 };
     LlapInputSplit split1 = new LlapInputSplit(splitNum, planBytes, fragmentBytes, null,
-        locations, schema, "hive", tokenBytes);
+        locations, null, schema, "hive", tokenBytes, "");
     ByteArrayOutputStream byteOutStream = new ByteArrayOutputStream();
     DataOutputStream dataOut = new DataOutputStream(byteOutStream);
     split1.write(dataOut);

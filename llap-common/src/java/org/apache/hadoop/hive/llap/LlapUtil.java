@@ -401,4 +401,24 @@ public class LlapUtil {
     credentials.readTokenStorageStream(dib);
     return credentials;
   }
+
+  /**
+   * @return returns the value of IS_CLOUD_DEPLOYMENT from either environment variable or system properties
+   */
+  public static boolean isCloudDeployment() {
+    return "true".equalsIgnoreCase(System.getenv("IS_CLOUD_DEPLOYMENT"))
+        || "true".equalsIgnoreCase(System.getProperty("IS_CLOUD_DEPLOYMENT"));
+  }
+
+  /**
+   * @return returns the value of PUBLIC_HOSTNAME from either environment variable or system properties
+   */
+  public static String getPublicHostname() {
+    String publicHostname = System.getenv("PUBLIC_HOSTNAME");
+    if (publicHostname == null) {
+      publicHostname = System.getProperty("PUBLIC_HOSTNAME");
+    }
+    return publicHostname;
+  }
+
 }

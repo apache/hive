@@ -35,6 +35,11 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
+import io.jsonwebtoken.JwtException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.UgiFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -74,6 +79,7 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapaci
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SetCapacityResponseProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonExecutorMetrics;
+import org.apache.hadoop.hive.llap.security.JwtHelper;
 import org.apache.hadoop.hive.llap.security.LlapSignerImpl;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
@@ -230,11 +236,15 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
         Converters.createTaskAttemptId(vertex.getQueryIdentifier(), vertex.getVertexIndex(),
             request.getFragmentNumber(), request.getAttemptNumber());
     String fragmentIdString = attemptId.toString();
+
+    QueryIdentifierProto qIdProto = vertex.getQueryIdentifier();
+
+    verifyJwtForExternalClient(request, qIdProto.getApplicationIdString(), fragmentIdString);
+
     if (LOG.isInfoEnabled()) {
       LOG.info("Queueing container for execution: fragemendId={}, {}",
           fragmentIdString, stringifySubmitRequest(request, vertex));
     }
-    QueryIdentifierProto qIdProto = vertex.getQueryIdentifier();
 
     HistoryLogger.logFragmentStart(qIdProto.getApplicationIdString(), request.getContainerIdString(),
         localAddress.get().getHostName(),
@@ -340,6 +350,33 @@ public class ContainerRunnerImpl extends CompositeService implements ContainerRu
     return responseBuilder.setUniqueNodeId(daemonId.getUniqueNodeIdInCluster())
         .setSubmissionState(SubmissionStateProto.valueOf(submissionState.name()))
         .build();
+  }
+
+  // if request is coming from llap external client, verify the JWT
+  // as of now, JWT contains applicationId
+  private void verifyJwtForExternalClient(SubmitWorkRequestProto request, String applicationIdString,
+      String fragmentIdString) {
+    LOG.info("Checking if request[{}] is from llap external client in a cloud based deployment", applicationIdString);
+    if (request.getIsExternalClientRequest() && LlapUtil.isCloudDeployment()) {
+      LOG.info("Llap external client request - {}, verifying JWT", applicationIdString);
+      Preconditions.checkState(request.hasJwt(), "JWT not found in request, fragmentId: " + fragmentIdString);
+
+      JwtHelper jwtHelper = new JwtHelper(getConfig());
+      Jws<Claims> claimsJws;
+      try {
+        claimsJws = jwtHelper.parseClaims(request.getJwt());
+      } catch (JwtException e) {
+        LOG.error("Cannot verify JWT provided with the request, fragmentId: {}, {}", fragmentIdString, e);
+        throw e;
+      }
+
+      String appIdInJwt = (String) claimsJws.getBody().get(JwtHelper.LLAP_EXT_CLIENT_APP_ID);
+      // this should never happen ideally.
+      Preconditions.checkState(appIdInJwt.equals(applicationIdString),
+          String.format("applicationId[%s] in request does not match to applicationId[%s] in JWT",
+              applicationIdString, appIdInJwt));
+      LOG.info("Llap external client request - {}, JWT verification successful", applicationIdString);
+    }
   }
 
   private SignableVertexSpec extractVertexSpec(SubmitWorkRequestProto request,
