@@ -77,7 +77,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
   protected String fullyQualifiedTableName;
   protected Map<String, List<RecordUpdater>> updaters = new HashMap<>();
   protected Map<String, Path> partitionPaths = new HashMap<>();
-  protected Set<String> addedPartitions = new HashSet<>();
+  protected Set<String> updatedPartitions = new HashSet<>();
   // input OI includes table columns + partition columns
   protected StructObjectInspector inputRowObjectInspector;
   // output OI strips off the partition columns and retains other columns
@@ -393,7 +393,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
       entry.getValue().clear();
     }
     updaters.clear();
-    addedPartitions.clear();
+    updatedPartitions.clear();
     if (LOG.isDebugEnabled()) {
       logStats("Stats after close:");
     }
@@ -494,9 +494,12 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
   }
 
+  /**
+   * @return the list of newly added or updated partitions.
+   */
   @Override
   public Set<String> getPartitions() {
-    return addedPartitions;
+    return updatedPartitions;
   }
 
   protected RecordUpdater createRecordUpdater(List<String> partitionValues, final Path partitionPath,
@@ -584,7 +587,7 @@ public abstract class AbstractRecordWriter implements RecordWriter {
           PartitionInfo partitionInfo = conn.createPartitionIfNotExists(partitionValues);
           // collect the newly added/updated partitions. connection.commitTransaction() will report the dynamically
           // added partitions to TxnHandler
-          addedPartitions.add(partitionInfo.getName());
+          updatedPartitions.add(partitionInfo.getName());
           destLocation = new Path(partitionInfo.getPartitionLocation());
         }
         partitionPaths.put(key, destLocation);
