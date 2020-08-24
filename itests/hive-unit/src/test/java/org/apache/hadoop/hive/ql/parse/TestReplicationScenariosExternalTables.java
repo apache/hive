@@ -81,7 +81,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     overrides.put(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname, "true");
     overrides.put(HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname,
         UserGroupInformation.getCurrentUser().getUserName());
-    overrides.put(HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname, "false");
+    overrides.put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
 
     internalBeforeClassSetup(overrides, TestReplicationScenarios.class);
   }
@@ -217,7 +217,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
   @Test
   public void externalTableReplicationWithDefaultPathsLazyCopy() throws Throwable {
-    List<String> lazyCopyClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'");
+    List<String> lazyCopyClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
     //creates external tables with partitions
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
@@ -284,7 +284,7 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
 
     List<String> withClause = Arrays.asList(
             "'distcp.options.update'=''",
-            "'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'"
+            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'"
     );
 
     primary.run("use " + primaryDbName)
