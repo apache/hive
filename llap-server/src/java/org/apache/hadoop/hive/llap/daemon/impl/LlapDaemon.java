@@ -478,8 +478,10 @@ public class LlapDaemon extends CompositeService implements ContainerRunner, Lla
       getConfig().setInt(ConfVars.LLAP_DAEMON_WEB_PORT.varname, webServices.getPort());
     }
     getConfig().setInt(ConfVars.LLAP_DAEMON_OUTPUT_SERVICE_PORT.varname, LlapOutputFormatService.get().getPort());
-    getConfig().setInt(ConfVars.LLAP_EXTERNAL_CLIENT_CLOUD_RPC_PORT.varname,
-        server.getExternalClientsRpcServerBindAddress().getPort());
+    if (LlapUtil.isCloudDeployment()) {
+      getConfig().setInt(ConfVars.LLAP_EXTERNAL_CLIENT_CLOUD_RPC_PORT.varname,
+          server.getExternalClientsRpcServerBindAddress().getPort());
+    }
 
     // Ensure this is set in the config so that the AM can read it.
     getConfig()
