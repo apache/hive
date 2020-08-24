@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
 
@@ -74,11 +75,15 @@ public class ASTNode extends CommonTree implements Node,Serializable {
    * @see org.apache.hadoop.hive.ql.lib.Node#getChildren()
    */
   @Override
-  public ArrayList<Node> getChildren() {
+  public List<Node> getChildren() {
     if (super.getChildCount() == 0) {
       return null;
     }
-    return new ArrayList<>((List<? extends Node>) super.getChildren());
+    // We know that children always contains Node instances so the cast is safe.
+    assert this.children.get(0) instanceof Node;
+    @SuppressWarnings("unchecked") // Cast safe by design of the class
+    List<Node> nodeList = (List<Node>) (List<?>) this.children;
+    return Collections.unmodifiableList(nodeList);
   }
 
   /*
