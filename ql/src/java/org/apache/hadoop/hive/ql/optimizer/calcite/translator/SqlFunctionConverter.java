@@ -155,14 +155,14 @@ public class SqlFunctionConverter {
     }
     FunctionInfo hFn;
     try {
-      hFn = name != null ? FunctionRegistry.getFunctionInfo(name) : null;
+      hFn = handleExplicitCast(op, dt);
     } catch (SemanticException e) {
       LOG.warn("Failed to load udf " + name, e);
       hFn = null;
     }
     if (hFn == null) {
       try {
-        hFn = handleExplicitCast(op, dt);
+        hFn = name != null ? FunctionRegistry.getFunctionInfo(name) : null;
       } catch (SemanticException e) {
         LOG.warn("Failed to load udf " + name, e);
         hFn = null;
