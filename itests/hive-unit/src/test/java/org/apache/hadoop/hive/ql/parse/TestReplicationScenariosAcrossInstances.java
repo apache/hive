@@ -162,7 +162,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     Path identityUdf2HdfsPath = new Path(primary.functionsRoot, "idFunc2" + File.separator + "identity_udf2.jar");
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf2HdfsPath);
-    List<String> withClasuse = Arrays.asList("'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'");
+    List<String> withClasuse = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
 
     primary.run("CREATE FUNCTION " + primaryDbName
             + ".idFunc1 as 'IdentityStringUDF' "
