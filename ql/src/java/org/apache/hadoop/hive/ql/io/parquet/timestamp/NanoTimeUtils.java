@@ -95,7 +95,7 @@ public class NanoTimeUtils {
   }
 
   public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion) {
-    return getTimestamp(nt, skipConversion, null, true);
+    return getTimestamp(nt, skipConversion, null, false);
   }
 
   /**
