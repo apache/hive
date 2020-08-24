@@ -85,10 +85,9 @@ public class HiveSemiJoinRule {
       super(
           operand(clazz,
               operand(Join.class,
-                  some(
-                      operand(RelNode.class, any()),
-                      operand(Aggregate.class,
-                          operand(RelNode.class, any()))))),
+                  operand(RelNode.class, any()),
+                  operand(Aggregate.class,
+                      operand(RelNode.class, any())))),
           relBuilder, null);
     }
 
@@ -100,6 +99,12 @@ public class HiveSemiJoinRule {
     public void onMatch(final RelOptRuleCall call) {
       final T topOperator = call.rel(0);
       final Join join = call.rel(1);
+
+      if (join.isSemiJoin()) {
+        // bail out, nothing to do
+        return;
+      }
+
       final RelNode left = call.rel(2);
       final Aggregate aggregate = call.rel(3);
       final RelNode aggregateInput = call.rel(4);
@@ -253,7 +258,7 @@ public class HiveSemiJoinRule {
     @Override
     protected Aggregate recreateTopOperator(RelBuilder builder, RexBuilder rexBuilder,
         int[] adjustments, Aggregate topAggregate, RelNode newInputOperator) {
-      return recreateAggregateOperator(builder, adjustments, topAggregate, newInputOperator);
+      return (Aggregate) recreateAggregateOperator(builder, adjustments, topAggregate, newInputOperator);
     }
 
     @Override
@@ -272,9 +277,8 @@ public class HiveSemiJoinRule {
       super(
           operand(clazz,
               operand(Join.class,
-                  some(
-                      operand(Aggregate.class, operand(RelNode.class, any())),
-                      operand(RelNode.class, any())))),
+                  operand(Aggregate.class, operand(RelNode.class, any())),
+                  operand(RelNode.class, any()))),
           relBuilder);
     }
 
@@ -282,6 +286,12 @@ public class HiveSemiJoinRule {
     public void onMatch(RelOptRuleCall call) {
       final T topOperator = call.rel(0);
       final Join join = call.rel(1);
+
+      if (join.isSemiJoin()) {
+        // bail out, nothing to do
+        return;
+      }
+
       final Aggregate aggregate = call.rel(2);
       final RelNode aggregateInput = call.rel(3);
       final RelNode right = call.rel(4);
@@ -349,7 +359,8 @@ public class HiveSemiJoinRule {
   }
 
   /**
-   *
+   * Rule that matches an Project on top of a Join and tries to transform it
+   * into a SemiJoin swapping its inputs.
    */
   protected static class HiveProjectJoinToSemiJoinRuleSwapInputs extends HiveToSemiJoinRuleSwapInputs<Project> {
 
@@ -378,7 +389,8 @@ public class HiveSemiJoinRule {
   }
 
   /**
-   *
+   * Rule that matches an Aggregate on top of a Join and tries to transform it
+   * into a SemiJoin swapping its inputs.
    */
   protected static class HiveAggregateJoinToSemiJoinRuleSwapInputs extends HiveToSemiJoinRuleSwapInputs<Aggregate> {
 
@@ -394,7 +406,7 @@ public class HiveSemiJoinRule {
     @Override
     protected Aggregate recreateTopOperator(RelBuilder builder, RexBuilder rexBuilder,
         int[] adjustments, Aggregate topAggregate, RelNode newInputOperator) {
-      return recreateAggregateOperator(builder, adjustments, topAggregate, newInputOperator);
+      return (Aggregate) recreateAggregateOperator(builder, adjustments, topAggregate, newInputOperator);
     }
 
     @Override
@@ -405,7 +417,7 @@ public class HiveSemiJoinRule {
   }
 
   protected static RelNode recreateProjectOperator(RelBuilder builder, RexBuilder rexBuilder,
-                                                   int[] adjustments, Project topProject, RelNode newInputOperator, boolean force) {
+      int[] adjustments, Project topProject, RelNode newInputOperator, boolean force) {
     List<RexNode> newProjects = new ArrayList<>();
 
     List<RelDataTypeField> swappedJoinFields = newInputOperator.getRowType().getFieldList();
@@ -420,8 +432,8 @@ public class HiveSemiJoinRule {
         .build();
   }
 
-  protected static Aggregate recreateAggregateOperator(RelBuilder builder,
-                                                       int[] adjustments, Aggregate topAggregate, RelNode newInputOperator) {
+  protected static RelNode recreateAggregateOperator(RelBuilder builder,
+      int[] adjustments, Aggregate topAggregate, RelNode newInputOperator) {
     builder.push(newInputOperator);
 
     ImmutableBitSet.Builder newGroupSet = ImmutableBitSet.builder();
@@ -462,7 +474,7 @@ public class HiveSemiJoinRule {
       newAggCallList.add(aggregateCall.copy(newArgList, newFilterArg, newCollation));
     }
 
-    return (Aggregate) builder
+    return builder
         .push(newInputOperator)
         .aggregate(groupKey, newAggCallList)
         .build();
