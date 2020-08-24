@@ -1038,10 +1038,10 @@ STAGE PLANS:
                   Filter Operator
                     predicate: (key is null and key is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
+                    Limit
+                      Number of rows: 0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 0
+                      Select Operator
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:

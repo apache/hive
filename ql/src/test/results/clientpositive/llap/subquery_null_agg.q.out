@@ -75,9 +75,11 @@ STAGE PLANS:
                       null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                    Limit
-                      Number of rows: 0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                  Limit
+                    Number of rows: 0
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
                       Group By Operator
                         aggregations: count()
                         minReductionHashAggr: 0.99
@@ -96,20 +98,18 @@ STAGE PLANS:
                 TableScan
                   alias: table_7
                   Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                    Limit
-                      Number of rows: 0
-                      Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
-                      Select Operator
-                        expressions: true (type: boolean)
-                        outputColumnNames: _col0
+                  Limit
+                    Number of rows: 0
+                    Statistics: Num rows: 0 Data size: 0 Basic stats: PARTIAL Column stats: COMPLETE
+                    Select Operator
+                      expressions: true (type: boolean)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
                         Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
-                        Reduce Output Operator
-                          null sort order: 
-                          sort order: 
-                          Statistics: Num rows: 0 Data size: 0 Basic stats: NONE Column stats: COMPLETE
-                          value expressions: _col0 (type: boolean)
+                        value expressions: _col0 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: no inputs
         Reducer 2 

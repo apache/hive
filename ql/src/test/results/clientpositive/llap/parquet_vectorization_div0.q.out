@@ -28,20 +28,20 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                  Select Operator
-                    expressions: (cdouble / 0.0D) (type: double)
-                    outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
+                  Limit
+                    Number of rows: 100
+                    Limit Vectorization:
+                        className: VectorLimitOperator
                         native: true
-                        projectedOutputColumnNums: [13]
-                        selectExpressions: DoubleColDivideDoubleScalar(col 5:double, val 0.0) -> 13:double
-                    Statistics: Num rows: 12288 Data size: 98304 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 100
-                      Limit Vectorization:
-                          className: VectorLimitOperator
+                    Statistics: Num rows: 100 Data size: 608 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: (cdouble / 0.0D) (type: double)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [13]
+                          selectExpressions: DoubleColDivideDoubleScalar(col 5:double, val 0.0) -> 13:double
                       Statistics: Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false

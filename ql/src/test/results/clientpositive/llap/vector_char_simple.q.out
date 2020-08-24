@@ -256,11 +256,11 @@ STAGE PLANS:
             Map Operator Tree:
                   TableScan Vectorization:
                       native: true
-                    Select Vectorization:
-                        className: VectorSelectOperator
+                    Limit Vectorization:
+                        className: VectorLimitOperator
                         native: true
-                      Limit Vectorization:
-                          className: VectorLimitOperator
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
                         Reduce Sink Vectorization:
                             className: VectorReduceSinkEmptyKeyOperator
@@ -286,19 +286,16 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
-                Select Vectorization:
-                    className: VectorSelectOperator
+                Limit Vectorization:
+                    className: VectorLimitOperator
                     native: true
-                  Limit Vectorization:
-                      className: VectorLimitOperator
+                  Select Vectorization:
+                      className: VectorSelectOperator
                       native: true
-                    Select Vectorization:
-                        className: VectorSelectOperator
-                        native: true
-                        selectExpressions: CastLongToChar(col 0:int, maxLength 12) -> 1:char(12)
-                      File Sink Vectorization:
-                          className: VectorFileSinkOperator
-                          native: false
+                      selectExpressions: CastLongToChar(col 0:int, maxLength 12) -> 1:char(12)
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
 
   Stage: Stage-2
 

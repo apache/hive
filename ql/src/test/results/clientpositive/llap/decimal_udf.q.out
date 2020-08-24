@@ -927,11 +927,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Select Operator
-            expressions: (key / 0) (type: decimal(22,12))
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 1
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: (key / 0) (type: decimal(22,12))
+              outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: SELECT key / 0 FROM DECIMAL_UDF limit 1
@@ -961,11 +961,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: decimal_udf
-          Select Operator
-            expressions: null (type: double)
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 1
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: null (type: double)
+              outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: SELECT key / NULL FROM DECIMAL_UDF limit 1

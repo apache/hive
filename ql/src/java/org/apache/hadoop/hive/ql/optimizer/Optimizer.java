@@ -214,6 +214,9 @@ public class Optimizer {
     if (HiveConf.getFloatVar(hiveConf, HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE) > 0) {
       transformations.add(new LimitPushdownOptimizer());
     }
+    if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_LIMIT)) {
+      transformations.add(new OrderlessLimitPushDownOptimizer());
+    }
     if(HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES)) {
       transformations.add(new StatsOptimizer());
     }

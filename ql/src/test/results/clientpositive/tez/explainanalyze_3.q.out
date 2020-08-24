@@ -353,10 +353,10 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:1
-    Limit [LIM_2]
-      Number of rows:1
-      Select Operator [SEL_1]
-        Output:["_col0"]
+    Select Operator [SEL_1]
+      Output:["_col0"]
+      Limit [LIM_2]
+        Number of rows:1
         TableScan [TS_0]
 
 PREHOOK: query: DROP TEMPORARY MACRO SIGMOID

@@ -546,12 +546,12 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col7 (type: string), _col1 (type: smallint), _col4 (type: float), (UDFToFloat(_col1) - lead_window_0) (type: float)
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                  Limit
+                    Number of rows: 100
                     Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
-                    Limit
-                      Number of rows: 100
+                    Select Operator
+                      expressions: _col7 (type: string), _col1 (type: smallint), _col4 (type: float), (UDFToFloat(_col1) - lead_window_0) (type: float)
+                      outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 200 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -773,12 +773,12 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col7 (type: string), _col2 (type: int), (_col2 - lead_window_0) (type: int)
-                    outputColumnNames: _col0, _col1, _col2
+                  Limit
+                    Number of rows: 100
                     Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
-                    Limit
-                      Number of rows: 100
+                    Select Operator
+                      expressions: _col7 (type: string), _col2 (type: int), (_col2 - lead_window_0) (type: int)
+                      outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -1000,12 +1000,12 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 1 Data size: 204 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col7 (type: string), _col1 (type: smallint), _col5 (type: double), (UDFToDouble(_col1) - lag_window_0) (type: double)
-                    outputColumnNames: _col0, _col1, _col2, _col3
+                  Limit
+                    Number of rows: 100
                     Statistics: Num rows: 1 Data size: 204 Basic stats: COMPLETE Column stats: NONE
-                    Limit
-                      Number of rows: 100
+                    Select Operator
+                      expressions: _col7 (type: string), _col1 (type: smallint), _col5 (type: double), (UDFToDouble(_col1) - lag_window_0) (type: double)
+                      outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 204 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -1229,12 +1229,12 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    expressions: _col7 (type: string), lag_window_0 (type: string)
-                    outputColumnNames: _col0, _col1
+                  Limit
+                    Number of rows: 100
                     Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
-                    Limit
-                      Number of rows: 100
+                    Select Operator
+                      expressions: _col7 (type: string), lag_window_0 (type: string)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                       File Output Operator
                         compressed: false
@@ -2105,12 +2105,12 @@ STAGE PLANS:
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   Lead/Lag information: lag(...) (type: double)
                   Statistics: Num rows: 26 Data size: 9828 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col2 (type: string), _col7 (type: double), _col5 (type: int), ((round(sum_window_0, 2) + 50.0D) = round((sum_window_1 + last_value_window_2), 2)) (type: boolean)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 26 Data size: 2964 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 11
+                  Limit
+                    Number of rows: 11
+                    Statistics: Num rows: 11 Data size: 4158 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col2 (type: string), _col7 (type: double), _col5 (type: int), ((round(sum_window_0, 2) + 50.0D) = round((sum_window_1 + last_value_window_2), 2)) (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 11 Data size: 1254 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
