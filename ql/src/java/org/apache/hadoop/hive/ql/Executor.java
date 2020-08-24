@@ -275,6 +275,10 @@ public class Executor {
     TaskResult result = taskRun.getTaskResult();
 
     int exitVal = result.getExitVal();
+    SessionState.get().getHiveHistory().setTaskProperty(driverContext.getQueryId(), task.getId(),
+        Keys.TASK_RET_CODE, String.valueOf(exitVal));
+    SessionState.get().getHiveHistory().endTask(driverContext.getQueryId(), task);
+
     DriverUtils.checkInterrupted(driverState, driverContext, "when checking the execution result.", hookContext,
         SessionState.getPerfLogger());
 
@@ -284,10 +288,6 @@ public class Executor {
     }
 
     taskQueue.finished(taskRun);
-
-    SessionState.get().getHiveHistory().setTaskProperty(driverContext.getQueryId(), task.getId(),
-        Keys.TASK_RET_CODE, String.valueOf(exitVal));
-    SessionState.get().getHiveHistory().endTask(driverContext.getQueryId(), task);
 
     if (task.getChildTasks() != null) {
       for (Task<?> child : task.getChildTasks()) {
