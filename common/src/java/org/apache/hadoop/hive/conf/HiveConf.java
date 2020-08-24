@@ -531,11 +531,12 @@ public class HiveConf extends Configuration {
             + "task increment that would cross the specified limit."),
     REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",100,
         "Number of threads that will be used to dump partition data information during repl dump."),
-    REPL_DATA_COPY_LAZY("hive.repl.data.copy.lazy", true,
+    REPL_RUN_DATA_COPY_TASKS_ON_TARGET("hive.repl.run.data.copy.tasks.on.target", true,
             "Indicates whether replication should run data copy tasks during repl load operation."),
     REPL_FILE_LIST_CACHE_SIZE("hive.repl.file.list.cache.size", 10000,
         "This config indicates threshold for the maximum number of data copy locations to be kept in memory. \n"
-                + "When the config 'hive.repl.data.copy.lazy' is set to true, this config is not considered."),
+                + "When the config 'hive.repl.run.data.copy.tasks.on.target' is set to true, this config " +
+          "is not considered."),
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata. \n"
           + "This config makes hive.repl.include.external.tables config ineffective."),

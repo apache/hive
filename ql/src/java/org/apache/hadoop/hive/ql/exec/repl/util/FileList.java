@@ -169,7 +169,7 @@ public class FileList implements AutoCloseable, Iterator<String> {
   }
 
   public int getThreshold(int cacheSize) {
-    boolean copyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+    boolean copyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     return copyAtLoad ? 0 : (int)(cacheSize * thresholdFactor);
   }
 }
