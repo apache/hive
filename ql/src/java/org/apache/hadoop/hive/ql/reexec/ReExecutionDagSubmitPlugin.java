@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.reexec;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -28,27 +29,26 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Re-Executes a query when DAG submission fails after get session returned successfully.
+ * Re-Executes a query when DAG submission fails after get session returned successfully. There could be race condition
+ * where getSession could return a healthy AM but by the time DAG is submitted the AM could become unhealthy/unreachable
+ * (possible DNS or network issues) which can fail tez DAG submission. Since the DAG hasn't started execution yet this
+ * failure can be safely restarted/retried.
  */
 public class ReExecutionDagSubmitPlugin implements IReExecutionPlugin {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReExecutionDagSubmitPlugin.class);
+  private int maxExecutions = 1;
   class LocalHook implements ExecuteWithHookContext {
 
     @Override
     public void run(HookContext hookContext) throws Exception {
       if (hookContext.getHookType() == HookType.ON_FAILURE_HOOK) {
         Throwable exception = hookContext.getException();
-        if (exception != null) {
-          if (exception.getMessage() != null) {
-            // there could be race condition where getSession could return a healthy AM but by the time DAG is submitted
-            // the AM could become unhealthy/unreachable (possible DNS or network issues) which can fail tez DAG
-            // submission. Since the DAG hasn't started execution yet this failure can be safely restarted.
-            if (exception.getMessage().contains("Dag submit failed")) {
-              retryPossible = true;
-            }
-            LOG.info("Got exception message: {} retryPossible: {}", exception.getMessage(), retryPossible);
+        if (exception != null && exception.getMessage() != null) {
+          if (exception.getMessage().contains("Dag submit failed")) {
+            retryPossible = true;
           }
+          LOG.info("Got exception message: {} retryPossible: {}", exception.getMessage(), retryPossible);
         }
       }
     }
@@ -57,6 +57,7 @@ public class ReExecutionDagSubmitPlugin implements IReExecutionPlugin {
   @Override
   public void initialize(Driver driver) {
     driver.getHookRunner().addOnFailureHook(new LocalHook());
+    maxExecutions = 1 + driver.getConf().getIntVar(HiveConf.ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
   }
 
   private boolean retryPossible;
@@ -67,7 +68,7 @@ public class ReExecutionDagSubmitPlugin implements IReExecutionPlugin {
 
   @Override
   public boolean shouldReExecute(int executionNum, PlanMapper pm1, PlanMapper pm2) {
-    return retryPossible;
+    return (executionNum < maxExecutions) && retryPossible;
   }
 
   @Override
@@ -76,7 +77,7 @@ public class ReExecutionDagSubmitPlugin implements IReExecutionPlugin {
 
   @Override
   public boolean shouldReExecute(int executionNum, CommandProcessorException ex) {
-    return retryPossible;
+    return (executionNum < maxExecutions) && retryPossible;
   }
 
   @Override
