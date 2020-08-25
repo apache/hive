@@ -1830,7 +1830,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         Iterator<TaskInfo> taskIter = taskListAtPriority.iterator();
         boolean scheduledAllAtPriority = true;
         while (taskIter.hasNext()) {
-          // Early exit where are no slots available
+          // Early exit where there are no slots available
           if (isCapacityFull.get()) {
             break;
           }
