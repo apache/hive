@@ -57,16 +57,16 @@ import java.util.List;
 public class HiveSemiJoinRule {
 
   public static final HiveProjectJoinToSemiJoinRule INSTANCE_PROJECT =
-      new HiveProjectJoinToSemiJoinRule(HiveRelFactories.HIVE_BUILDER);
+      new HiveProjectJoinToSemiJoinRule();
 
   public static final HiveAggregateJoinToSemiJoinRule INSTANCE_AGGREGATE =
-      new HiveAggregateJoinToSemiJoinRule(HiveRelFactories.HIVE_BUILDER);
+      new HiveAggregateJoinToSemiJoinRule();
 
   public static final HiveProjectJoinToSemiJoinRuleSwapInputs INSTANCE_PROJECT_SWAPPED =
-      new HiveProjectJoinToSemiJoinRuleSwapInputs(HiveRelFactories.HIVE_BUILDER);
+      new HiveProjectJoinToSemiJoinRuleSwapInputs();
 
   public static final HiveAggregateJoinToSemiJoinRuleSwapInputs INSTANCE_AGGREGATE_SWAPPED =
-      new HiveAggregateJoinToSemiJoinRuleSwapInputs(HiveRelFactories.HIVE_BUILDER);
+      new HiveAggregateJoinToSemiJoinRuleSwapInputs();
 
   private HiveSemiJoinRule() {
     // Exists only to defeat instantiation.
@@ -215,8 +215,8 @@ public class HiveSemiJoinRule {
    */
   protected static class HiveProjectJoinToSemiJoinRule extends HiveSemiJoinRuleBase<Project> {
 
-    protected HiveProjectJoinToSemiJoinRule(final RelBuilderFactory relBuilder) {
-      super(Project.class, relBuilder);
+    protected HiveProjectJoinToSemiJoinRule() {
+      super(Project.class, HiveRelFactories.HIVE_BUILDER);
     }
 
     @Override
@@ -246,8 +246,8 @@ public class HiveSemiJoinRule {
   protected static class HiveAggregateJoinToSemiJoinRule extends HiveSemiJoinRuleBase<Aggregate> {
 
     /** Creates a HiveAggregateJoinToSemiJoinRule. */
-    protected HiveAggregateJoinToSemiJoinRule(final RelBuilderFactory relBuilder) {
-      super(Aggregate.class, relBuilder);
+    protected HiveAggregateJoinToSemiJoinRule() {
+      super(Aggregate.class, HiveRelFactories.HIVE_BUILDER);
     }
 
     @Override
@@ -364,8 +364,8 @@ public class HiveSemiJoinRule {
    */
   protected static class HiveProjectJoinToSemiJoinRuleSwapInputs extends HiveToSemiJoinRuleSwapInputs<Project> {
 
-    protected HiveProjectJoinToSemiJoinRuleSwapInputs(final RelBuilderFactory relBuilder) {
-      super(Project.class, relBuilder);
+    protected HiveProjectJoinToSemiJoinRuleSwapInputs() {
+      super(Project.class, HiveRelFactories.HIVE_BUILDER);
     }
 
     @Override
@@ -394,8 +394,8 @@ public class HiveSemiJoinRule {
    */
   protected static class HiveAggregateJoinToSemiJoinRuleSwapInputs extends HiveToSemiJoinRuleSwapInputs<Aggregate> {
 
-    protected HiveAggregateJoinToSemiJoinRuleSwapInputs(final RelBuilderFactory relBuilder) {
-      super(Aggregate.class, relBuilder);
+    protected HiveAggregateJoinToSemiJoinRuleSwapInputs() {
+      super(Aggregate.class, HiveRelFactories.HIVE_BUILDER);
     }
 
     @Override
