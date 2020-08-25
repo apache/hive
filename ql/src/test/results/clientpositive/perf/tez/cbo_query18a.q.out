@@ -120,3 +120,21 @@ POSTHOOK: Input: tpch_0_001@lineitem
 POSTHOOK: Input: tpch_0_001@orders
 POSTHOOK: Input: tpch_0_001@q18_tmp_cached
 POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$4], sort1=[$3], dir0=[DESC], dir1=[ASC], fetch=[100])
+  HiveProject(c_name=[$4], c_custkey=[$3], o_orderkey=[$0], o_orderdate=[$2], o_totalprice=[$1], $f5=[$5])
+    HiveAggregate(group=[{2, 4, 5, 6, 7}], agg#0=[sum($1)])
+      HiveJoin(condition=[=($2, $0)], joinType=[inner], algorithm=[none], cost=[{6766.5 rows, 0.0 cpu, 0.0 io}])
+        HiveProject(l_orderkey=[$0], l_quantity=[$4])
+          HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[l])
+        HiveJoin(condition=[=($0, $6)], joinType=[inner], algorithm=[none], cost=[{1.0000000000009115E15 rows, 0.0 cpu, 0.0 io}])
+          HiveJoin(condition=[=($4, $1)], joinType=[inner], algorithm=[none], cost=[{1650.0 rows, 0.0 cpu, 0.0 io}])
+            HiveProject(o_orderkey=[$0], o_custkey=[$1], o_totalprice=[$3], o_orderdate=[$4])
+              HiveTableScan(table=[[tpch_0_001, orders]], table:alias=[orders])
+            HiveProject(c_custkey=[$0], c_name=[$1])
+              HiveTableScan(table=[[tpch_0_001, customer]], table:alias=[customer])
+          HiveProject($f0=[$0])
+            HiveFilter(condition=[>($1, 3E2)])
+              HiveAggregate(group=[{0}], agg#0=[sum($4)])
+                HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[lineitem])
+
