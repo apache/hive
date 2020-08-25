@@ -75,6 +75,9 @@ public class ParquetRecordReaderBase {
     final org.apache.hadoop.mapred.InputSplit oldSplit,
     final JobConf conf
   ) throws IOException {
+    if (oldSplit.getLength() == 0) {
+      return null;
+    }
     ParquetInputSplit split;
     if (oldSplit instanceof FileSplit) {
       final Path finalPath = ((FileSplit) oldSplit).getPath();
