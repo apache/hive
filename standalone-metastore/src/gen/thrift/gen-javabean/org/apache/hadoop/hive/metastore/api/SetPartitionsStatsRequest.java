@@ -675,14 +675,14 @@ import org.slf4j.LoggerFactory;
           case 1: // COL_STATS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list324 = iprot.readListBegin();
-                struct.colStats = new ArrayList<ColumnStatistics>(_list324.size);
-                ColumnStatistics _elem325;
-                for (int _i326 = 0; _i326 < _list324.size; ++_i326)
+                org.apache.thrift.protocol.TList _list342 = iprot.readListBegin();
+                struct.colStats = new ArrayList<ColumnStatistics>(_list342.size);
+                ColumnStatistics _elem343;
+                for (int _i344 = 0; _i344 < _list342.size; ++_i344)
                 {
-                  _elem325 = new ColumnStatistics();
-                  _elem325.read(iprot);
-                  struct.colStats.add(_elem325);
+                  _elem343 = new ColumnStatistics();
+                  _elem343.read(iprot);
+                  struct.colStats.add(_elem343);
                 }
                 iprot.readListEnd();
               }
@@ -740,9 +740,9 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(COL_STATS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.colStats.size()));
-          for (ColumnStatistics _iter327 : struct.colStats)
+          for (ColumnStatistics _iter345 : struct.colStats)
           {
-            _iter327.write(oprot);
+            _iter345.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -791,9 +791,9 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.colStats.size());
-        for (ColumnStatistics _iter328 : struct.colStats)
+        for (ColumnStatistics _iter346 : struct.colStats)
         {
-          _iter328.write(oprot);
+          _iter346.write(oprot);
         }
       }
       BitSet optionals = new BitSet();
@@ -828,14 +828,14 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, SetPartitionsStatsRequest struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list329 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.colStats = new ArrayList<ColumnStatistics>(_list329.size);
-        ColumnStatistics _elem330;
-        for (int _i331 = 0; _i331 < _list329.size; ++_i331)
+        org.apache.thrift.protocol.TList _list347 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.colStats = new ArrayList<ColumnStatistics>(_list347.size);
+        ColumnStatistics _elem348;
+        for (int _i349 = 0; _i349 < _list347.size; ++_i349)
         {
-          _elem330 = new ColumnStatistics();
-          _elem330.read(iprot);
-          struct.colStats.add(_elem330);
+          _elem348 = new ColumnStatistics();
+          _elem348.read(iprot);
+          struct.colStats.add(_elem348);
         }
       }
       struct.setColStatsIsSet(true);

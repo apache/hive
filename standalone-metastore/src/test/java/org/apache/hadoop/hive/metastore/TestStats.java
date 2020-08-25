@@ -225,14 +225,14 @@ public class TestStats {
     // Test the statistics obtained through getTable call.
     Table table = catName.equals(NO_CAT) ?
             client.getTable(dbName, tableName, true, ENGINE) :
-            client.getTable(catName, dbName, tableName, null, true, ENGINE);
+            client.getTable(catName, dbName, tableName, null, true, ENGINE, false);
     Assert.assertTrue(table.isSetColStats());
     compareStatsForOneTableOrPartition(table.getColStats().getStatsObj(), 0, colMap);
 
     // Test that getTable call doesn't get the statistics when not explicitly requested.
     table = catName.equals(NO_CAT) ?
             client.getTable(dbName, tableName, false, null) :
-            client.getTable(catName, dbName, tableName, null, false, null);
+            client.getTable(catName, dbName, tableName, null, false, null, false);
     Assert.assertFalse(table.isSetColStats());
   }
 

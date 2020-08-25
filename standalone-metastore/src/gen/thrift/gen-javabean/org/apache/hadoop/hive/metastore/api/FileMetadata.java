@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 @org.apache.hadoop.classification.InterfaceAudience.Public @org.apache.hadoop.classification.InterfaceStability.Stable public class FileMetadata implements org.apache.thrift.TBase<FileMetadata, FileMetadata._Fields>, java.io.Serializable, Cloneable, Comparable<FileMetadata> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("FileMetadata");
 
-  private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.I32, (short)1);
+  private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.BYTE, (short)1);
   private static final org.apache.thrift.protocol.TField VERSION_FIELD_DESC = new org.apache.thrift.protocol.TField("version", org.apache.thrift.protocol.TType.BYTE, (short)2);
   private static final org.apache.thrift.protocol.TField DATA_FIELD_DESC = new org.apache.thrift.protocol.TField("data", org.apache.thrift.protocol.TType.LIST, (short)3);
 
@@ -48,16 +48,12 @@ import org.slf4j.LoggerFactory;
     schemes.put(TupleScheme.class, new FileMetadataTupleSchemeFactory());
   }
 
-  private FileMetadataType type; // required
+  private byte type; // required
   private byte version; // required
   private List<ByteBuffer> data; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    /**
-     * 
-     * @see FileMetadataType
-     */
     TYPE((short)1, "type"),
     VERSION((short)2, "version"),
     DATA((short)3, "data");
@@ -121,13 +117,14 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
-  private static final int __VERSION_ISSET_ID = 0;
+  private static final int __TYPE_ISSET_ID = 0;
+  private static final int __VERSION_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, FileMetadataType.class)));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BYTE)));
     tmpMap.put(_Fields.VERSION, new org.apache.thrift.meta_data.FieldMetaData("version", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BYTE)));
     tmpMap.put(_Fields.DATA, new org.apache.thrift.meta_data.FieldMetaData("data", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -138,19 +135,20 @@ import org.slf4j.LoggerFactory;
   }
 
   public FileMetadata() {
-    this.type = org.apache.hadoop.hive.metastore.api.FileMetadataType.IMPALA;
+    this.type = (byte)1;
 
     this.version = (byte)1;
 
   }
 
   public FileMetadata(
-    FileMetadataType type,
+    byte type,
     byte version,
     List<ByteBuffer> data)
   {
     this();
     this.type = type;
+    setTypeIsSet(true);
     this.version = version;
     setVersionIsSet(true);
     this.data = data;
@@ -161,9 +159,7 @@ import org.slf4j.LoggerFactory;
    */
   public FileMetadata(FileMetadata other) {
     __isset_bitfield = other.__isset_bitfield;
-    if (other.isSetType()) {
-      this.type = other.type;
-    }
+    this.type = other.type;
     this.version = other.version;
     if (other.isSetData()) {
       List<ByteBuffer> __this__data = new ArrayList<ByteBuffer>(other.data);
@@ -177,42 +173,33 @@ import org.slf4j.LoggerFactory;
 
   @Override
   public void clear() {
-    this.type = org.apache.hadoop.hive.metastore.api.FileMetadataType.IMPALA;
+    this.type = (byte)1;
 
     this.version = (byte)1;
 
     this.data = null;
   }
 
-  /**
-   * 
-   * @see FileMetadataType
-   */
-  public FileMetadataType getType() {
+  public byte getType() {
     return this.type;
   }
 
-  /**
-   * 
-   * @see FileMetadataType
-   */
-  public void setType(FileMetadataType type) {
+  public void setType(byte type) {
     this.type = type;
+    setTypeIsSet(true);
   }
 
   public void unsetType() {
-    this.type = null;
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __TYPE_ISSET_ID);
   }
 
   /** Returns true if field type is set (has been assigned a value) and false otherwise */
   public boolean isSetType() {
-    return this.type != null;
+    return EncodingUtils.testBit(__isset_bitfield, __TYPE_ISSET_ID);
   }
 
   public void setTypeIsSet(boolean value) {
-    if (!value) {
-      this.type = null;
-    }
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __TYPE_ISSET_ID, value);
   }
 
   public byte getVersion() {
@@ -281,7 +268,7 @@ import org.slf4j.LoggerFactory;
       if (value == null) {
         unsetType();
       } else {
-        setType((FileMetadataType)value);
+        setType((Byte)value);
       }
       break;
 
@@ -349,12 +336,12 @@ import org.slf4j.LoggerFactory;
     if (that == null)
       return false;
 
-    boolean this_present_type = true && this.isSetType();
-    boolean that_present_type = true && that.isSetType();
+    boolean this_present_type = true;
+    boolean that_present_type = true;
     if (this_present_type || that_present_type) {
       if (!(this_present_type && that_present_type))
         return false;
-      if (!this.type.equals(that.type))
+      if (this.type != that.type)
         return false;
     }
 
@@ -383,10 +370,10 @@ import org.slf4j.LoggerFactory;
   public int hashCode() {
     List<Object> list = new ArrayList<Object>();
 
-    boolean present_type = true && (isSetType());
+    boolean present_type = true;
     list.add(present_type);
     if (present_type)
-      list.add(type.getValue());
+      list.add(type);
 
     boolean present_version = true;
     list.add(present_version);
@@ -460,11 +447,7 @@ import org.slf4j.LoggerFactory;
     boolean first = true;
 
     sb.append("type:");
-    if (this.type == null) {
-      sb.append("null");
-    } else {
-      sb.append(this.type);
-    }
+    sb.append(this.type);
     first = false;
     if (!first) sb.append(", ");
     sb.append("version:");
@@ -524,8 +507,8 @@ import org.slf4j.LoggerFactory;
         }
         switch (schemeField.id) {
           case 1: // TYPE
-            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
-              struct.type = org.apache.hadoop.hive.metastore.api.FileMetadataType.findByValue(iprot.readI32());
+            if (schemeField.type == org.apache.thrift.protocol.TType.BYTE) {
+              struct.type = iprot.readByte();
               struct.setTypeIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -570,11 +553,9 @@ import org.slf4j.LoggerFactory;
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.type != null) {
-        oprot.writeFieldBegin(TYPE_FIELD_DESC);
-        oprot.writeI32(struct.type.getValue());
-        oprot.writeFieldEnd();
-      }
+      oprot.writeFieldBegin(TYPE_FIELD_DESC);
+      oprot.writeByte(struct.type);
+      oprot.writeFieldEnd();
       oprot.writeFieldBegin(VERSION_FIELD_DESC);
       oprot.writeByte(struct.version);
       oprot.writeFieldEnd();
@@ -619,7 +600,7 @@ import org.slf4j.LoggerFactory;
       }
       oprot.writeBitSet(optionals, 3);
       if (struct.isSetType()) {
-        oprot.writeI32(struct.type.getValue());
+        oprot.writeByte(struct.type);
       }
       if (struct.isSetVersion()) {
         oprot.writeByte(struct.version);
@@ -640,7 +621,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
-        struct.type = org.apache.hadoop.hive.metastore.api.FileMetadataType.findByValue(iprot.readI32());
+        struct.type = iprot.readByte();
         struct.setTypeIsSet(true);
       }
       if (incoming.get(1)) {

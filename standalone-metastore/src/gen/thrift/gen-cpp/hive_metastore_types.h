@@ -186,14 +186,6 @@ struct SchemaVersionState {
 
 extern const std::map<int, const char*> _SchemaVersionState_VALUES_TO_NAMES;
 
-struct FileMetadataType {
-  enum type {
-    IMPALA = 0
-  };
-};
-
-extern const std::map<int, const char*> _FileMetadataType_VALUES_TO_NAMES;
-
 struct FunctionType {
   enum type {
     JAVA = 1
@@ -407,6 +399,8 @@ class ColumnStatisticsDesc;
 class ColumnStatistics;
 
 class FileMetadata;
+
+class ObjectDictionary;
 
 class Table;
 
@@ -4340,19 +4334,17 @@ class FileMetadata {
 
   FileMetadata(const FileMetadata&);
   FileMetadata& operator=(const FileMetadata&);
-  FileMetadata() : type((FileMetadataType::type)0), version(1) {
-    type = (FileMetadataType::type)0;
-
+  FileMetadata() : type(1), version(1) {
   }
 
   virtual ~FileMetadata() throw();
-  FileMetadataType::type type;
+  int8_t type;
   int8_t version;
   std::vector<std::string>  data;
 
   _FileMetadata__isset __isset;
 
-  void __set_type(const FileMetadataType::type val);
+  void __set_type(const int8_t val);
 
   void __set_version(const int8_t val);
 
@@ -4388,8 +4380,48 @@ inline std::ostream& operator<<(std::ostream& out, const FileMetadata& obj)
   return out;
 }
 
+
+class ObjectDictionary {
+ public:
+
+  ObjectDictionary(const ObjectDictionary&);
+  ObjectDictionary& operator=(const ObjectDictionary&);
+  ObjectDictionary() {
+  }
+
+  virtual ~ObjectDictionary() throw();
+  std::map<std::string, std::vector<std::string> >  values;
+
+  void __set_values(const std::map<std::string, std::vector<std::string> > & val);
+
+  bool operator == (const ObjectDictionary & rhs) const
+  {
+    if (!(values == rhs.values))
+      return false;
+    return true;
+  }
+  bool operator != (const ObjectDictionary &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ObjectDictionary & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ObjectDictionary &a, ObjectDictionary &b);
+
+inline std::ostream& operator<<(std::ostream& out, const ObjectDictionary& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
 typedef struct _Table__isset {
-  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false), accessType(false), requiredReadCapabilities(false), requiredWriteCapabilities(false), id(false), fileMetadata(false) {}
+  _Table__isset() : tableName(false), dbName(false), owner(false), createTime(false), lastAccessTime(false), retention(false), sd(false), partitionKeys(false), parameters(false), viewOriginalText(false), viewExpandedText(false), tableType(false), privileges(false), temporary(true), rewriteEnabled(false), creationMetadata(false), catName(false), ownerType(true), writeId(true), isStatsCompliant(false), colStats(false), accessType(false), requiredReadCapabilities(false), requiredWriteCapabilities(false), id(false), fileMetadata(false), dictionary(false) {}
   bool tableName :1;
   bool dbName :1;
   bool owner :1;
@@ -4416,6 +4448,7 @@ typedef struct _Table__isset {
   bool requiredWriteCapabilities :1;
   bool id :1;
   bool fileMetadata :1;
+  bool dictionary :1;
 } _Table__isset;
 
 class Table {
@@ -4455,6 +4488,7 @@ class Table {
   std::vector<std::string>  requiredWriteCapabilities;
   int64_t id;
   FileMetadata fileMetadata;
+  ObjectDictionary dictionary;
 
   _Table__isset __isset;
 
@@ -4509,6 +4543,8 @@ class Table {
   void __set_id(const int64_t val);
 
   void __set_fileMetadata(const FileMetadata& val);
+
+  void __set_dictionary(const ObjectDictionary& val);
 
   bool operator == (const Table & rhs) const
   {
@@ -4591,6 +4627,10 @@ class Table {
     if (__isset.fileMetadata != rhs.__isset.fileMetadata)
       return false;
     else if (__isset.fileMetadata && !(fileMetadata == rhs.fileMetadata))
+      return false;
+    if (__isset.dictionary != rhs.__isset.dictionary)
+      return false;
+    else if (__isset.dictionary && !(dictionary == rhs.dictionary))
       return false;
     return true;
   }
@@ -7282,6 +7322,10 @@ inline std::ostream& operator<<(std::ostream& out, const GetPartitionsByNamesReq
   return out;
 }
 
+typedef struct _GetPartitionsByNamesResult__isset {
+  _GetPartitionsByNamesResult__isset() : dictionary(false) {}
+  bool dictionary :1;
+} _GetPartitionsByNamesResult__isset;
 
 class GetPartitionsByNamesResult {
  public:
@@ -7293,12 +7337,21 @@ class GetPartitionsByNamesResult {
 
   virtual ~GetPartitionsByNamesResult() throw();
   std::vector<Partition>  partitions;
+  ObjectDictionary dictionary;
+
+  _GetPartitionsByNamesResult__isset __isset;
 
   void __set_partitions(const std::vector<Partition> & val);
+
+  void __set_dictionary(const ObjectDictionary& val);
 
   bool operator == (const GetPartitionsByNamesResult & rhs) const
   {
     if (!(partitions == rhs.partitions))
+      return false;
+    if (__isset.dictionary != rhs.__isset.dictionary)
+      return false;
+    else if (__isset.dictionary && !(dictionary == rhs.dictionary))
       return false;
     return true;
   }

@@ -2032,11 +2032,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       gpbnr.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
       gpbnr.setProcessorIdentifier(processorIdentifier);
-    return getPartitionsByNames(gpbnr);
+    return getPartitionsByNames(gpbnr).getPartitions();
   }
 
   @Override
-  public List<Partition> getPartitionsByNames(
+  public GetPartitionsByNamesResult getPartitionsByNames(
       GetPartitionsByNamesRequest request) throws TException {
     // make sure the cat name is set in the request
     Preconditions.checkArgument(MetaStoreUtils.hasCatalogName(request.getDb_name()));
@@ -2056,9 +2056,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       request.setProcessorIdentifier(processorIdentifier);
     }
 
-    List<Partition> parts = client.get_partitions_by_names_req(request).getPartitions();
-    return deepCopyPartitions(
-        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
+    GetPartitionsByNamesResult result = client.get_partitions_by_names_req(request);
+    List<Partition> parts = result.getPartitions();
+    result.setPartitions(deepCopyPartitions(
+        FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts)));
+    return result;
   }
 
   @Override
@@ -2110,33 +2112,20 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   public Table getTable(String catName, String dbName, String tableName,
       boolean getColumnStats, String engine) throws TException {
-    GetTableRequest req = new GetTableRequest(dbName, tableName);
-    req.setCatName(catName);
-    req.setCapabilities(version);
-    req.setGetColumnStats(getColumnStats);
-    req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
-
-    if (getColumnStats) {
-      req.setEngine(engine);
-    }
-    if (processorCapabilities != null)
-      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-    if (processorIdentifier != null)
-      req.setProcessorIdentifier(processorIdentifier);
-
-    Table t = client.get_table_req(req).getTable();
-    return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
+    return getTable(catName, dbName, tableName,
+        getValidWriteIdList(TableName.getDbTable(dbName, tableName)), getColumnStats,
+        engine, false);
   }
 
   @Override
   public Table getTable(String catName, String dbName, String tableName,
       String validWriteIdList) throws TException {
-    return getTable(catName, dbName, tableName, validWriteIdList, false, null);
+    return getTable(catName, dbName, tableName, validWriteIdList, false, null, false);
   }
 
   @Override
   public Table getTable(String catName, String dbName, String tableName, String validWriteIdList,
-      boolean getColumnStats, String engine) throws TException {
+      boolean getColumnStats, String engine, boolean getFileMetadata) throws TException {
     GetTableRequest req = new GetTableRequest(dbName, tableName);
     req.setCatName(catName);
     req.setCapabilities(version);
@@ -2149,11 +2138,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (getColumnStats) {
       req.setEngine(engine);
     }
+    req.setGetFileMetadata(getFileMetadata);
     if (processorCapabilities != null)
       req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
       req.setProcessorIdentifier(processorIdentifier);
-
     Table t = client.get_table_req(req).getTable();
     return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
   }

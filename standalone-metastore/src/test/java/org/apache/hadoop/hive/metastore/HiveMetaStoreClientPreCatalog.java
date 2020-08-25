@@ -3190,7 +3190,8 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   @Override
   public Table getTable(String catName, String dbName, String tableName,
-                        String validWriteIdList, boolean getColumnStats, String engine) throws TException {
+      String validWriteIdList, boolean getColumnStats, String engine,
+      boolean getFileMetadata) throws TException {
     throw new UnsupportedOperationException();
   }
 
@@ -3351,7 +3352,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public List<Partition> getPartitionsByNames(GetPartitionsByNamesRequest request)
+  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest request)
       throws TException {
     throw new UnsupportedOperationException();
   }

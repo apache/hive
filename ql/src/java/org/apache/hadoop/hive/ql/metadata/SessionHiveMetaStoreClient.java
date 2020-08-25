@@ -55,9 +55,11 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -1215,7 +1217,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   }
 
   @Override
-  public List<Partition> getPartitionsByNames(GetPartitionsByNamesRequest request)
+  public GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest request)
       throws TException {
     String[] catalogAndDb = MetaStoreUtils.parseDbName(request.getDb_name(), conf);
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(catalogAndDb[1],
@@ -1228,7 +1230,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     TempTable tt = getPartitionedTempTable(table);
     List<Partition> partitions = tt.getPartitionsByNames(request.getNames());
 
-    return deepCopyPartitions(partitions);
+    return new GetPartitionsByNamesResult(deepCopyPartitions(partitions));
   }
 
   @Override

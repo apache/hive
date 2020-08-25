@@ -708,12 +708,14 @@ public interface IMetaStoreClient {
    * @param validWriteIdList applicable snapshot
    * @param getColumnStats get the column stats, if available, when true
    * @param engine engine sending the request
+   * @param getFileMetadata true if file-metadata needs to be returned.
    * @return table object.
    * @throws MetaException Something went wrong, usually in the RDBMS.
    * @throws TException general thrift error.
    */
   Table getTable(String catName, String dbName, String tableName,
-         String validWriteIdList, boolean getColumnStats, String engine) throws TException;
+      String validWriteIdList, boolean getColumnStats, String engine,
+      boolean getFileMetadata) throws TException;
 
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
@@ -1531,7 +1533,7 @@ public interface IMetaStoreClient {
    * @param request
    * @return
    */
-  List<Partition> getPartitionsByNames(GetPartitionsByNamesRequest request)
+  GetPartitionsByNamesResult getPartitionsByNames(GetPartitionsByNamesRequest request)
       throws TException;
 
   /**

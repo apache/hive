@@ -142,12 +142,6 @@ module SchemaVersionState
   VALID_VALUES = Set.new([INITIATED, START_REVIEW, CHANGES_REQUIRED, REVIEWED, ENABLED, DISABLED, ARCHIVED, DELETED]).freeze
 end
 
-module FileMetadataType
-  IMPALA = 0
-  VALUE_MAP = {0 => "IMPALA"}
-  VALID_VALUES = Set.new([IMPALA]).freeze
-end
-
 module FunctionType
   JAVA = 1
   VALUE_MAP = {1 => "JAVA"}
@@ -1531,7 +1525,7 @@ class FileMetadata
   DATA = 3
 
   FIELDS = {
-    TYPE => {:type => ::Thrift::Types::I32, :name => 'type', :default =>     0, :enum_class => ::FileMetadataType},
+    TYPE => {:type => ::Thrift::Types::BYTE, :name => 'type', :default => 1},
     VERSION => {:type => ::Thrift::Types::BYTE, :name => 'version', :default => 1},
     DATA => {:type => ::Thrift::Types::LIST, :name => 'data', :element => {:type => ::Thrift::Types::STRING, :binary => true}}
   }
@@ -1539,9 +1533,23 @@ class FileMetadata
   def struct_fields; FIELDS; end
 
   def validate
-    unless @type.nil? || ::FileMetadataType::VALID_VALUES.include?(@type)
-      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field type!')
-    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ObjectDictionary
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  VALUES = 1
+
+  FIELDS = {
+    VALUES => {:type => ::Thrift::Types::MAP, :name => 'values', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING, :binary => true}}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field values is unset!') unless @values
   end
 
   ::Thrift::Struct.generate_accessors self
@@ -1575,6 +1583,7 @@ class Table
   REQUIREDWRITECAPABILITIES = 25
   ID = 26
   FILEMETADATA = 27
+  DICTIONARY = 28
 
   FIELDS = {
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tableName'},
@@ -1602,7 +1611,8 @@ class Table
     REQUIREDREADCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredReadCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     REQUIREDWRITECAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'requiredWriteCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     ID => {:type => ::Thrift::Types::I64, :name => 'id', :optional => true},
-    FILEMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'fileMetadata', :class => ::FileMetadata, :optional => true}
+    FILEMETADATA => {:type => ::Thrift::Types::STRUCT, :name => 'fileMetadata', :class => ::FileMetadata, :optional => true},
+    DICTIONARY => {:type => ::Thrift::Types::STRUCT, :name => 'dictionary', :class => ::ObjectDictionary, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2624,9 +2634,11 @@ end
 class GetPartitionsByNamesResult
   include ::Thrift::Struct, ::Thrift::Struct_Union
   PARTITIONS = 1
+  DICTIONARY = 2
 
   FIELDS = {
-    PARTITIONS => {:type => ::Thrift::Types::LIST, :name => 'partitions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}}
+    PARTITIONS => {:type => ::Thrift::Types::LIST, :name => 'partitions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
+    DICTIONARY => {:type => ::Thrift::Types::STRUCT, :name => 'dictionary', :class => ::ObjectDictionary, :optional => true}
   }
 
   def struct_fields; FIELDS; end

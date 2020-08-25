@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("GetPartitionsByNamesResult");
 
   private static final org.apache.thrift.protocol.TField PARTITIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("partitions", org.apache.thrift.protocol.TType.LIST, (short)1);
+  private static final org.apache.thrift.protocol.TField DICTIONARY_FIELD_DESC = new org.apache.thrift.protocol.TField("dictionary", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,10 +48,12 @@ import org.slf4j.LoggerFactory;
   }
 
   private List<Partition> partitions; // required
+  private ObjectDictionary dictionary; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    PARTITIONS((short)1, "partitions");
+    PARTITIONS((short)1, "partitions"),
+    DICTIONARY((short)2, "dictionary");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -67,6 +70,8 @@ import org.slf4j.LoggerFactory;
       switch(fieldId) {
         case 1: // PARTITIONS
           return PARTITIONS;
+        case 2: // DICTIONARY
+          return DICTIONARY;
         default:
           return null;
       }
@@ -107,12 +112,15 @@ import org.slf4j.LoggerFactory;
   }
 
   // isset id assignments
+  private static final _Fields optionals[] = {_Fields.DICTIONARY};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.PARTITIONS, new org.apache.thrift.meta_data.FieldMetaData("partitions", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, Partition.class))));
+    tmpMap.put(_Fields.DICTIONARY, new org.apache.thrift.meta_data.FieldMetaData("dictionary", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ObjectDictionary.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetPartitionsByNamesResult.class, metaDataMap);
   }
@@ -138,6 +146,9 @@ import org.slf4j.LoggerFactory;
       }
       this.partitions = __this__partitions;
     }
+    if (other.isSetDictionary()) {
+      this.dictionary = new ObjectDictionary(other.dictionary);
+    }
   }
 
   public GetPartitionsByNamesResult deepCopy() {
@@ -147,6 +158,7 @@ import org.slf4j.LoggerFactory;
   @Override
   public void clear() {
     this.partitions = null;
+    this.dictionary = null;
   }
 
   public int getPartitionsSize() {
@@ -187,6 +199,29 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public ObjectDictionary getDictionary() {
+    return this.dictionary;
+  }
+
+  public void setDictionary(ObjectDictionary dictionary) {
+    this.dictionary = dictionary;
+  }
+
+  public void unsetDictionary() {
+    this.dictionary = null;
+  }
+
+  /** Returns true if field dictionary is set (has been assigned a value) and false otherwise */
+  public boolean isSetDictionary() {
+    return this.dictionary != null;
+  }
+
+  public void setDictionaryIsSet(boolean value) {
+    if (!value) {
+      this.dictionary = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case PARTITIONS:
@@ -197,6 +232,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case DICTIONARY:
+      if (value == null) {
+        unsetDictionary();
+      } else {
+        setDictionary((ObjectDictionary)value);
+      }
+      break;
+
     }
   }
 
@@ -204,6 +247,9 @@ import org.slf4j.LoggerFactory;
     switch (field) {
     case PARTITIONS:
       return getPartitions();
+
+    case DICTIONARY:
+      return getDictionary();
 
     }
     throw new IllegalStateException();
@@ -218,6 +264,8 @@ import org.slf4j.LoggerFactory;
     switch (field) {
     case PARTITIONS:
       return isSetPartitions();
+    case DICTIONARY:
+      return isSetDictionary();
     }
     throw new IllegalStateException();
   }
@@ -244,6 +292,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_dictionary = true && this.isSetDictionary();
+    boolean that_present_dictionary = true && that.isSetDictionary();
+    if (this_present_dictionary || that_present_dictionary) {
+      if (!(this_present_dictionary && that_present_dictionary))
+        return false;
+      if (!this.dictionary.equals(that.dictionary))
+        return false;
+    }
+
     return true;
   }
 
@@ -255,6 +312,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_partitions);
     if (present_partitions)
       list.add(partitions);
+
+    boolean present_dictionary = true && (isSetDictionary());
+    list.add(present_dictionary);
+    if (present_dictionary)
+      list.add(dictionary);
 
     return list.hashCode();
   }
@@ -273,6 +335,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetPartitions()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.partitions, other.partitions);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetDictionary()).compareTo(other.isSetDictionary());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDictionary()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dictionary, other.dictionary);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -304,6 +376,16 @@ import org.slf4j.LoggerFactory;
       sb.append(this.partitions);
     }
     first = false;
+    if (isSetDictionary()) {
+      if (!first) sb.append(", ");
+      sb.append("dictionary:");
+      if (this.dictionary == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dictionary);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -315,6 +397,9 @@ import org.slf4j.LoggerFactory;
     }
 
     // check for sub-struct validity
+    if (dictionary != null) {
+      dictionary.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -354,18 +439,27 @@ import org.slf4j.LoggerFactory;
           case 1: // PARTITIONS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list602 = iprot.readListBegin();
-                struct.partitions = new ArrayList<Partition>(_list602.size);
-                Partition _elem603;
-                for (int _i604 = 0; _i604 < _list602.size; ++_i604)
+                org.apache.thrift.protocol.TList _list620 = iprot.readListBegin();
+                struct.partitions = new ArrayList<Partition>(_list620.size);
+                Partition _elem621;
+                for (int _i622 = 0; _i622 < _list620.size; ++_i622)
                 {
-                  _elem603 = new Partition();
-                  _elem603.read(iprot);
-                  struct.partitions.add(_elem603);
+                  _elem621 = new Partition();
+                  _elem621.read(iprot);
+                  struct.partitions.add(_elem621);
                 }
                 iprot.readListEnd();
               }
               struct.setPartitionsIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 2: // DICTIONARY
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.dictionary = new ObjectDictionary();
+              struct.dictionary.read(iprot);
+              struct.setDictionaryIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -387,13 +481,20 @@ import org.slf4j.LoggerFactory;
         oprot.writeFieldBegin(PARTITIONS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.partitions.size()));
-          for (Partition _iter605 : struct.partitions)
+          for (Partition _iter623 : struct.partitions)
           {
-            _iter605.write(oprot);
+            _iter623.write(oprot);
           }
           oprot.writeListEnd();
         }
         oprot.writeFieldEnd();
+      }
+      if (struct.dictionary != null) {
+        if (struct.isSetDictionary()) {
+          oprot.writeFieldBegin(DICTIONARY_FIELD_DESC);
+          struct.dictionary.write(oprot);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -414,10 +515,18 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.partitions.size());
-        for (Partition _iter606 : struct.partitions)
+        for (Partition _iter624 : struct.partitions)
         {
-          _iter606.write(oprot);
+          _iter624.write(oprot);
         }
+      }
+      BitSet optionals = new BitSet();
+      if (struct.isSetDictionary()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetDictionary()) {
+        struct.dictionary.write(oprot);
       }
     }
 
@@ -425,17 +534,23 @@ import org.slf4j.LoggerFactory;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetPartitionsByNamesResult struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list607 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.partitions = new ArrayList<Partition>(_list607.size);
-        Partition _elem608;
-        for (int _i609 = 0; _i609 < _list607.size; ++_i609)
+        org.apache.thrift.protocol.TList _list625 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.partitions = new ArrayList<Partition>(_list625.size);
+        Partition _elem626;
+        for (int _i627 = 0; _i627 < _list625.size; ++_i627)
         {
-          _elem608 = new Partition();
-          _elem608.read(iprot);
-          struct.partitions.add(_elem608);
+          _elem626 = new Partition();
+          _elem626.read(iprot);
+          struct.partitions.add(_elem626);
         }
       }
       struct.setPartitionsIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.dictionary = new ObjectDictionary();
+        struct.dictionary.read(iprot);
+        struct.setDictionaryIsSet(true);
+      }
     }
   }
 

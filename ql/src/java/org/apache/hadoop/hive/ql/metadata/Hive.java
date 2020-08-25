@@ -1443,7 +1443,8 @@ public class Hive {
               dbName, tableName);
         }
         tTable = getMSC().getTable(getDefaultCatalog(conf), dbName, tableName,
-            validWriteIdList != null ? validWriteIdList.toString() : null, getColumnStats, Constants.HIVE_ENGINE);
+            validWriteIdList != null ? validWriteIdList.toString() : null, getColumnStats,
+            Constants.HIVE_ENGINE, false);
       } else {
         tTable = getMSC().getTable(dbName, tableName, getColumnStats, Constants.HIVE_ENGINE);
       }
@@ -3335,7 +3336,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         partsRequest.setNames(part_names);
         partsRequest.setValidWriteIdList(validWriteIdList);
         List<org.apache.hadoop.hive.metastore.api.Partition> partitions = getMSC()
-            .getPartitionsByNames(partsRequest);
+            .getPartitionsByNames(partsRequest).getPartitions();
         for ( org.apache.hadoop.hive.metastore.api.Partition outPart : partitions){
           out.add(new Partition(tbl,outPart));
         }
@@ -3949,7 +3950,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         List<String> partNamesBatch = partNames.subList(i*batchSize, (i+1)*batchSize);
         request.setNames(partNamesBatch);
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
-          getMSC().getPartitionsByNames(request);
+          getMSC().getPartitionsByNames(request).getPartitions();
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));
@@ -3961,7 +3962,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         List<String> partNamesBatch = partNames.subList(nBatches*batchSize, nParts);
         request.setNames(partNamesBatch);
         List<org.apache.hadoop.hive.metastore.api.Partition> tParts =
-          getMSC().getPartitionsByNames(request);
+          getMSC().getPartitionsByNames(request).getPartitions();
         if (tParts != null) {
           for (org.apache.hadoop.hive.metastore.api.Partition tpart: tParts) {
             partitions.add(new Partition(tbl, tpart));
