@@ -251,7 +251,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   private final Lock scheduleLock = new ReentrantLock();
   private final Condition scheduleCondition = scheduleLock.newCondition();
-  private final AtomicBoolean isCapacityFull = new AtomicBoolean(false);
+  private final AtomicBoolean isClusterCapacityFull = new AtomicBoolean(false);
   private final AtomicBoolean pendingScheduleInvocations = new AtomicBoolean(false);
   private final ListeningExecutorService schedulerExecutor;
   private final SchedulerCallable schedulerCallable = new SchedulerCallable();
@@ -1395,7 +1395,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       boolean shouldDelayForLocality = request.shouldDelayForLocality(schedulerAttemptTime);
       LOG.debug("ShouldDelayForLocality={} for task={} on hosts={}", shouldDelayForLocality,
           request.task, requestedHostsDebugStr);
-      if (!isRequestedHostPresent(request)) {
+      if (isRequestedHostPresent(request)) {
         int prefHostCount = -1;
         boolean requestedHostsWillBecomeAvailable = false;
         for (String host : requestedHosts) {
@@ -1494,10 +1494,12 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
       // When all nodes are busy, reset locality delay
       if (activeNodesWithFreeSlots.isEmpty()) {
-        isCapacityFull.set(true);
+        isClusterCapacityFull.set(true);
         if (request.localityDelayTimeout > 0 && isRequestedHostPresent(request)) {
           request.resetLocalityDelayInfo();
         }
+      } else {
+        isClusterCapacityFull.set(false);
       }
 
       // no locality-requested, randomly pick a node containing free slots
@@ -1815,6 +1817,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   @VisibleForTesting
   protected void schedulePendingTasks() throws InterruptedException {
+    // Early exit where there are no slots available
+    if (isClusterCapacityFull.get()) {
+      return;
+    }
     Ref<TaskInfo> downgradedTask = new Ref<>(null);
     writeLock.lock();
     try {
@@ -1830,10 +1836,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         Iterator<TaskInfo> taskIter = taskListAtPriority.iterator();
         boolean scheduledAllAtPriority = true;
         while (taskIter.hasNext()) {
-          // Early exit where there are no slots available
-          if (isCapacityFull.get()) {
-            break;
-          }
           TaskInfo taskInfo = taskIter.next();
           if (taskInfo.getNumPreviousAssignAttempts() == 1) {
             dagStats.registerDelayedAllocation();
@@ -2414,7 +2416,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private void trySchedulingPendingTasks() {
     scheduleLock.lock();
     try {
-      isCapacityFull.set(false);
       pendingScheduleInvocations.set(true);
       scheduleCondition.signal();
     } finally {
