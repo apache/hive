@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.llap.ext;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Objects;
 
 import org.apache.hadoop.io.Writable;
 
@@ -64,6 +65,19 @@ public class LlapDaemonInfo implements Writable {
         ", rpcPort=" + rpcPort +
         ", outputFormatPort=" + outputFormatPort +
         '}';
+  }
+
+  @Override public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (o == null || getClass() != o.getClass())
+      return false;
+    LlapDaemonInfo that = (LlapDaemonInfo) o;
+    return rpcPort == that.rpcPort && outputFormatPort == that.outputFormatPort && Objects.equals(host, that.host);
+  }
+
+  @Override public int hashCode() {
+    return Objects.hash(host, rpcPort, outputFormatPort);
   }
 
   @Override
