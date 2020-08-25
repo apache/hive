@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.hadoop.fs.FileStatus;
@@ -486,10 +487,85 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     verifyDirAndResult(0, true);
   }
 
+  @Test
+  public void testImpalaTruncatedMmTableVectorized() throws Exception {
+    testImpalaTruncatedMmTable(true);
+  }
+
+  @Test
+  public void testImpalaTruncatedMmTableNonVectorized() throws Exception {
+    testImpalaTruncatedMmTable(false);
+  }
+
+  /**
+   * Impala truncates insert-only tables by writing a base directory (like insert overwrite) containing a completely
+   * empty file. Make sure that Hive reads these bases correctly.
+   *
+   * @throws Exception
+   */
+  private void testImpalaTruncatedMmTable(boolean vectorized) throws Exception {
+    if (!vectorized) {
+      d.getConf().setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    }
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] status;
+    Path tblLocation = new Path(TEST_WAREHOUSE_DIR + "/" +
+        (TableExtended.MMTBL).toString().toLowerCase());
+
+    // 1. Insert two rows to an MM table
+    runStatementOnDriver("drop table " + TableExtended.MMTBL);
+    runStatementOnDriver("create table " + TableExtended.MMTBL + "(a int,b int) stored as parquet "
+        + "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')");
+    runStatementOnDriver("insert into " + TableExtended.MMTBL + "(a,b) values(1,2)");
+    runStatementOnDriver("insert into " + TableExtended.MMTBL + "(a,b) values(3,4)");
+    status = fs.listStatus(tblLocation, FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs in the location
+    Assert.assertEquals(2, status.length);
+    for (int i = 0; i < status.length; i++) {
+      Assert.assertTrue(status[i].getPath().getName().matches("delta_.*"));
+    }
+
+    // 2. Simulate Impala truncating the table: write a base dir (base_0000003) containing a file with no data. We
+    // have to delete this file (it's not completely empty, it contains metadata) and create completely empty file
+    runStatementOnDriver("insert overwrite  table " + TableExtended.MMTBL + " select * from "
+        + TableExtended.MMTBL + " where 1=2");
+    status = fs.listStatus(tblLocation, FileUtils.STAGING_DIR_PATH_FILTER);
+    // There should be 2 delta dirs, plus 1 base dir in the location
+    Assert.assertEquals(3, status.length);
+    verifyDir(2, true);
+    Path basePath = new Path(tblLocation, "base_0000003");
+    Assert.assertTrue("Deleting file under base failed", fs.delete(new Path(basePath, "000000_0")));
+    fs.create(new Path(basePath, "empty"));
+
+    // 3. Verify query result. Selecting from a truncated table should return nothing.
+    List<String> rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
+    Assert.assertEquals(Collections.emptyList(), rs);
+
+    // 4. Perform a major compaction. Cleaner should remove the 2 delta dirs.
+    runStatementOnDriver("alter table "+ TableExtended.MMTBL + " compact 'MAJOR'");
+    runWorker(hiveConf);
+    runCleaner(hiveConf);
+    verifyDir(0, true);
+    rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
+    Assert.assertEquals(Collections.emptyList(), rs);
+    if (!vectorized) {
+      d.getConf().setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, true);
+    }
+  }
+
   private void verifyDirAndResult(int expectedDeltas) throws Exception {
     verifyDirAndResult(expectedDeltas, false);
   }
   private void verifyDirAndResult(int expectedDeltas, boolean expectBaseDir) throws Exception {
+    verifyDir(expectedDeltas, expectBaseDir);
+
+    // Verify query result
+    int [][] resultData = new int[][] {{1,2}, {3,4}};
+    List<String> rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
+    Assert.assertEquals(stringifyValues(resultData), rs);
+  }
+
+  private void verifyDir(int expectedDeltas, boolean expectBaseDir) throws Exception {
     FileSystem fs = FileSystem.get(hiveConf);
     // Verify the content of subdirs
     FileStatus[] status = fs.listStatus(new Path(TEST_WAREHOUSE_DIR + "/" +
@@ -513,10 +589,5 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     } else {
       Assert.assertEquals("0 base directories expected", 0, sawBaseTimes);
     }
-
-    // Verify query result
-    int [][] resultData = new int[][] {{1,2}, {3,4}};
-    List<String> rs = runStatementOnDriver("select a,b from " + TableExtended.MMTBL + " order by a,b");
-    Assert.assertEquals(stringifyValues(resultData), rs);
   }
 }
