@@ -187,7 +187,8 @@ jobWrappers {
             ":hive-common",
             ":hive-shims",
             ":hive-storage-api",
-            ":hive-standalone-metastore-common"
+            ":hive-standalone-metastore-common",
+            ":hive-service-rpc"
         ]
         buildHive("-Pspotbugs -pl " + spotbugsProjects.join(",") + " -am test-compile com.github.spotbugs:spotbugs-maven-plugin:4.0.0:check")
       }
