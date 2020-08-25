@@ -48,8 +48,8 @@ public class ReExecuteLostAMQueryPlugin implements IReExecutionPlugin {
         Throwable exception = hookContext.getException();
 
         if (exception != null && exception.getMessage() != null) {
-          // When HS2 does not manage the AMs, tez AMs are registered with zookeeper and HS2 discovery it, failure of unmanaged
-          // AMs will throw AM record not being found in zookeeper (or other discovery service where AM is registered)
+          // When HS2 does not manage the AMs, tez AMs are registered with zookeeper and HS2 discovers it,
+          // failure of unmanaged AMs will throw AM record not being found in zookeeper.
           String unmanagedAMFailure = "AM record not found (likely died)";
           if (lostAMContainerErrorPattern.matcher(exception.getMessage()).matches()
                   || exception.getMessage().contains(unmanagedAMFailure)) {
