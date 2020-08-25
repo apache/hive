@@ -7,7 +7,19 @@
 --! qt:dataset:tpch_0_001.region
 --! qt:dataset:tpch_0_001.supplier
 
+
+
+
 use tpch_0_001;
+
+-- alter table catalog_sales add constraint cs_w foreign key  (cs_warehouse_sk) references warehouse (w_warehouse_sk) disable novalidate rely;
+
+alter table orders add constraint pk_o primary key (o_orderkey) disable novalidate rely;
+alter table customer add constraint pk_c primary key (c_custkey) disable novalidate rely;
+
+alter table lineitem add constraint li_o foreign key  (l_orderkey) references orders (o_orderkey) disable novalidate rely;
+alter table orders   add constraint or_c foreign key  (o_custkey) references customer (c_custkey) disable novalidate rely;
+
 
 set hive.transpose.aggr.join=true;
 set hive.mapred.mode=nonstrict;
