@@ -130,7 +130,7 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
                   BloomKFilter bloomKFilter = BloomKFilter.deserialize(in);
                   return bloomKFilter;
                 } else {
-                  return null;
+                  return new BloomKFilter(1);
                 }
               } finally {
                 IOUtils.closeStream(in);
@@ -164,7 +164,7 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
     }
 
     // In case the dynamic value resolves to a null value
-    if (bloomFilter == null) {
+    if (bloomFilter == null || bloomFilter.getNumBits() == 0) {
       batch.size = 0;
     }
 
