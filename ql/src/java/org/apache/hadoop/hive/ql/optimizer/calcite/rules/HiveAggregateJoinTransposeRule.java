@@ -152,7 +152,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         final ImmutableBitSet fieldSet =
             ImmutableBitSet.range(offset, offset + fieldCount);
         final ImmutableBitSet belowAggregateKeyNotShifted = fieldSet;
-        //            belowAggregateColumns.intersect(fieldSet);
+//            belowAggregateColumns.intersect(fieldSet);
         for (Ord<Integer> c : Ord.zip(belowAggregateKeyNotShifted)) {
           map.put(c.e, belowOffset + c.i);
         }
