@@ -31,6 +31,10 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
+/**
+ * AddCheckConstraintHandler
+ * Target(Load) side handler for add check constraint event.
+ */
 public class AddCheckConstraintHandler extends AbstractMessageHandler {
   @Override
   public List<Task<?>> handle(Context context)

@@ -30,7 +30,10 @@ import org.apache.hadoop.hive.ql.ddl.table.constraint.add.AlterTableAddConstrain
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-
+/**
+ * AddDefaultConstraintHandler
+ * Target(Load) side handler for add default constraint event.
+ */
 public class AddDefaultConstraintHandler extends AbstractMessageHandler {
   @Override
   public List<Task<?>> handle(Context context)
