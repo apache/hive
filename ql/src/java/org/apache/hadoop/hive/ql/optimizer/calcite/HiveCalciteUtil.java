@@ -31,6 +31,7 @@ import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
@@ -1255,5 +1256,20 @@ public class HiveCalciteUtil {
       }
     }
     return false;
+  }
+
+  /**
+   *
+   */
+  public static ImmutableBitSet extractRefs(Aggregate aggregate) {
+    final ImmutableBitSet.Builder refs = ImmutableBitSet.builder();
+    refs.addAll(aggregate.getGroupSet());
+    for (AggregateCall aggCall : aggregate.getAggCallList()) {
+      refs.addAll(aggCall.getArgList());
+      if (aggCall.filterArg != -1) {
+        refs.set(aggCall.filterArg);
+      }
+    }
+    return refs.build();
   }
 }
