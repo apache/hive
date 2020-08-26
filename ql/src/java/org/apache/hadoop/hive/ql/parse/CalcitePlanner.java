@@ -2432,8 +2432,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             new HiveAggregateJoinTransposeRule(noColsMissingStats));
       }
 
-      generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN, HiveAggregatedPrimaryRule.INSTANCE);
-
       // 3. Convert Join + GBy to semijoin
       // Run this rule at later stages, since many calcite rules cant deal with semijoin
       if (conf.getBoolVar(ConfVars.SEMIJOIN_CONVERSION)) {
@@ -2533,6 +2531,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveInBetweenExpandRule.JOIN_INSTANCE,
             HiveInBetweenExpandRule.PROJECT_INSTANCE);
       }
+
+      generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN, HiveAggregatedPrimaryRule.INSTANCE);
 
       // Trigger program
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);

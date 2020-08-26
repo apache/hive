@@ -12,14 +12,6 @@ PREHOOK: query: alter table customer add constraint pk_c primary key (c_custkey)
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: alter table customer add constraint pk_c primary key (c_custkey) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: alter table orders add constraint u_o unique (o_orderkey) disable novalidate rely
-PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: alter table orders add constraint u_o unique (o_orderkey) disable novalidate rely
-POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
-PREHOOK: query: alter table customer add constraint u_c unique (c_custkey) disable novalidate rely
-PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
-POSTHOOK: query: alter table customer add constraint u_c unique (c_custkey) disable novalidate rely
-POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
 PREHOOK: query: alter table lineitem add constraint li_o foreign key  (l_orderkey) references orders (o_orderkey) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: alter table lineitem add constraint li_o foreign key  (l_orderkey) references orders (o_orderkey) disable novalidate rely
