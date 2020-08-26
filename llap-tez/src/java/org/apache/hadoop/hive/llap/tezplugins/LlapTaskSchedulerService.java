@@ -2416,6 +2416,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private void trySchedulingPendingTasks() {
     scheduleLock.lock();
     try {
+      isClusterCapacityFull.set(false);
       pendingScheduleInvocations.set(true);
       scheduleCondition.signal();
     } finally {
