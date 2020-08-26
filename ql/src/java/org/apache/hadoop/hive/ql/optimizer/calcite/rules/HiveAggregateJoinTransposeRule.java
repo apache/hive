@@ -296,7 +296,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
       RelNode r = relBuilder.build();
       RelOptCost afterCost = mq.getCumulativeCost(r);
       RelOptCost beforeCost = mq.getCumulativeCost(aggregate);
-      if (afterCost.isLe(beforeCost)) {
+      if (afterCost.isLt(beforeCost)) {
         call.transformTo(r);
       }
     } catch (Exception e) {
