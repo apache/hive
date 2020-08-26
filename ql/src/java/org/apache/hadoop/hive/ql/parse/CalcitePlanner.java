@@ -2434,9 +2434,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 3. Convert Join + GBy to semijoin
       // Run this rule at later stages, since many calcite rules cant deal with semijoin
       if (conf.getBoolVar(ConfVars.SEMIJOIN_CONVERSION)) {
-        generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+        generatePartialProgram(program, true, HepMatchOrder.DEPTH_FIRST,
             HiveSemiJoinRule.INSTANCE_PROJECT, HiveSemiJoinRule.INSTANCE_PROJECT_SWAPPED,
-            HiveSemiJoinRule.INSTANCE_AGGREGATE);
+            HiveSemiJoinRule.INSTANCE_AGGREGATE, HiveSemiJoinRule.INSTANCE_AGGREGATE_SWAPPED);
       }
 
       // 4. convert SemiJoin + GBy to SemiJoin
