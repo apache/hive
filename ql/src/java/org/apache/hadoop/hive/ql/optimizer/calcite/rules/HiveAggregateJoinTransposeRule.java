@@ -97,12 +97,6 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         }
       }
 
-      //      RewritablePKFKJoinInfo joinInfo = HiveRelOptUtil.isRewritablePKFKJoin(
-      //          joinRel, true, call.getMetadataQuery());
-      //      if (!joinInfo.rewritable) {
-      //        return false;
-      //      }
-
       // If it is not an inner join or a semi-join, we do not push the
       // aggregate operator
       if (join.getJoinType() != JoinRelType.INNER) {
@@ -152,7 +146,6 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         final ImmutableBitSet fieldSet =
             ImmutableBitSet.range(offset, offset + fieldCount);
         final ImmutableBitSet belowAggregateKeyNotShifted = fieldSet;
-        //            belowAggregateColumns.intersect(fieldSet);
         for (Ord<Integer> c : Ord.zip(belowAggregateKeyNotShifted)) {
           map.put(c.e, belowOffset + c.i);
         }
