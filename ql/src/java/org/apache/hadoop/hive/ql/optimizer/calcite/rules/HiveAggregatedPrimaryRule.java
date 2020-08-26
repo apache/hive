@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.core.Aggregate;
+import org.apache.calcite.rel.core.Aggregate.Group;
+import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.slf4j.Logger;
@@ -41,7 +43,17 @@ public class HiveAggregatedPrimaryRule extends RelOptRule {
   public void onMatch(RelOptRuleCall call) {
     final Aggregate agg = call.rel(0);
 
+    RelMetadataQuery mq = call.getMetadataQuery();
+    if (!(agg.getGroupType() == Group.SIMPLE)) {
+      return;
+    }
 
+
+    Boolean unique = mq.areColumnsUnique(agg.getInput(),agg.getGroupSet());
+    if(unique) {
+      int asfd=1;
+
+    }
   }
 
 }

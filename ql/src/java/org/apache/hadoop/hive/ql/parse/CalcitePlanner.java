@@ -204,6 +204,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpCons
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceFunctionsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSplitRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatedPrimaryRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveCardinalityPreservingJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveDruidRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExceptRewriteRule;
@@ -2431,7 +2432,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
             new HiveAggregateJoinTransposeRule(noColsMissingStats));
       }
 
-      //      generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN, new HiveFieldTrimmerRule(false));
+      generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN, HiveAggregatedPrimaryRule.INSTANCE);
 
       // 3. Convert Join + GBy to semijoin
       // Run this rule at later stages, since many calcite rules cant deal with semijoin
