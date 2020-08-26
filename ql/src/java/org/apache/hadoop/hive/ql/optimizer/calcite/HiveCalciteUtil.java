@@ -1259,7 +1259,7 @@ public class HiveCalciteUtil {
   }
 
   /**
-   *
+   * Extracts inputs referenced by aggregate operator.
    */
   public static ImmutableBitSet extractRefs(Aggregate aggregate) {
     final ImmutableBitSet.Builder refs = ImmutableBitSet.builder();
