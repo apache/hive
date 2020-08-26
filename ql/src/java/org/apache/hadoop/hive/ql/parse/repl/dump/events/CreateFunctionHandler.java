@@ -55,7 +55,7 @@ class CreateFunctionHandler extends AbstractEventHandler<CreateFunctionMessage> 
     Path metadataPath = new Path(withinContext.eventRoot, EximUtil.METADATA_NAME);
     Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
     FileSystem fileSystem = metadataPath.getFileSystem(withinContext.hiveConf);
-    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     List<DataCopyPath> functionBinaryCopyPaths = new ArrayList<>();
     try (JsonWriter jsonWriter = new JsonWriter(fileSystem, metadataPath)) {
       FunctionSerializer serializer = new FunctionSerializer(eventMessage.getFunctionObj(),

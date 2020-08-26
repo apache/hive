@@ -17,6 +17,9 @@
 
 <FindBugsFilter>
   <Match>
+    <Package name="~org.apache.hive.service.rpc.thrift.*" />
+  </Match>
+  <Match>
     <Class name="~org.apache.hadoop.hive.metastore.parser.*" />
   </Match>
   <Match>

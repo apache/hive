@@ -72,10 +72,10 @@ Stage-0
             PartitionCols:_col0
             Filter Operator [FIL_38] (rows=1 width=2)
               predicate:_col0 is not null
-              Limit [LIM_37] (rows=1 width=2)
-                Number of rows:1
-                Select Operator [SEL_36] (rows=1 width=2)
-                  Output:["_col0"]
+              Select Operator [SEL_37] (rows=1 width=2)
+                Output:["_col0"]
+                Limit [LIM_36] (rows=1 width=2)
+                  Number of rows:1
                 <-Union 4 [CUSTOM_SIMPLE_EDGE]
                   <-Map 3 [CONTAINS] vectorized, llap
                     Reduce Output Operator [RS_42]

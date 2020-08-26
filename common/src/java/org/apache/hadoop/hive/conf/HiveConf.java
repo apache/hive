@@ -531,11 +531,12 @@ public class HiveConf extends Configuration {
             + "task increment that would cross the specified limit."),
     REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",100,
         "Number of threads that will be used to dump partition data information during repl dump."),
-    REPL_DATA_COPY_LAZY("hive.repl.data.copy.lazy", true,
+    REPL_RUN_DATA_COPY_TASKS_ON_TARGET("hive.repl.run.data.copy.tasks.on.target", true,
             "Indicates whether replication should run data copy tasks during repl load operation."),
     REPL_FILE_LIST_CACHE_SIZE("hive.repl.file.list.cache.size", 10000,
         "This config indicates threshold for the maximum number of data copy locations to be kept in memory. \n"
-                + "When the config 'hive.repl.data.copy.lazy' is set to true, this config is not considered."),
+                + "When the config 'hive.repl.run.data.copy.tasks.on.target' is set to true, this config " +
+          "is not considered."),
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata. \n"
           + "This config makes hive.repl.include.external.tables config ineffective."),
@@ -2535,6 +2536,8 @@ public class HiveConf extends Configuration {
         "If the skew information is correctly stored in the metadata, hive.optimize.skewjoin.compiletime\n" +
         "would change the query plan to take care of it, and hive.optimize.skewjoin will be a no-op."),
 
+    HIVE_OPTIMIZE_LIMIT("hive.optimize.limit", true,
+            "Optimize limit by pushing through Left Outer Joins and Selects"),
     HIVE_OPTIMIZE_TOPNKEY("hive.optimize.topnkey", true, "Whether to enable top n key optimizer."),
     HIVE_MAX_TOPN_ALLOWED("hive.optimize.topnkey.max", 128, "Maximum topN value allowed by top n key optimizer.\n" +
       "If the LIMIT is greater than this value then top n key optimization won't be used."),
@@ -4328,6 +4331,12 @@ public class HiveConf extends Configuration {
             "Bloom filter should be of at max certain size to be effective"),
     TEZ_BLOOM_FILTER_FACTOR("hive.tez.bloom.filter.factor", (float) 1.0,
             "Bloom filter should be a multiple of this factor with nDV"),
+    TEZ_BLOOM_FILTER_MERGE_THREADS("hive.tez.bloom.filter.merge.threads", 1,
+        "How many threads are used for merging bloom filters in addition to task's main thread?\n"
+            + "-1: sanity check, it will fail if execution hits bloom filter merge codepath\n"
+            + " 0: feature is disabled, use only task's main thread for bloom filter merging\n"
+            + " 1: recommended value: there is only 1 merger thread (additionally to the task's main thread),"
+            + "according perf tests, this can lead to serious improvement \n"),
     TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION("hive.tez.bigtable.minsize.semijoin.reduction", 100000000L,
             "Big table for runtime filteting should be of atleast this size"),
     TEZ_DYNAMIC_SEMIJOIN_REDUCTION_THRESHOLD("hive.tez.dynamic.semijoin.reduction.threshold", (float) 0.50,

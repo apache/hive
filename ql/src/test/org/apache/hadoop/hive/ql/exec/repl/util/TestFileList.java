@@ -144,7 +144,7 @@ public class TestFileList {
 
   private Object[] setupAndGetTuple(int cacheSize, boolean lazyDataCopy) throws Exception {
     HiveConf hiveConf = Mockito.mock(HiveConf.class);
-    Mockito.when(hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY)).thenReturn(lazyDataCopy);
+    Mockito.when(hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET)).thenReturn(lazyDataCopy);
     Path backingFile = new Path("/tmp/backingFile");
     LinkedBlockingQueue<String> cache =  new LinkedBlockingQueue<>(cacheSize);
     FileListStreamer fileListStreamer = Mockito.spy(new FileListStreamer(cache, backingFile, hiveConf));

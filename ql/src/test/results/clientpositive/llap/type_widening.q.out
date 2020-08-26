@@ -16,11 +16,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Select Operator
-            expressions: 0L (type: bigint)
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 1
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: 0L (type: bigint)
+              outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: SELECT COALESCE(0, 9223372036854775807) FROM src LIMIT 1
