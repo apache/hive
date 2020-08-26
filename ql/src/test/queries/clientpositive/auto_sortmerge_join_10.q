@@ -48,6 +48,8 @@ select count(*) from
   (select a.key as key, a.value as value from tbl2_n4 a where key < 6) subq2
   on subq1.key = subq2.key;
 
+set hive.auto.convert.sortmerge.join=false;
+
 -- One of the subqueries contains a groupby, so it should not be converted to a sort-merge join.
 explain
 select count(*) from 
