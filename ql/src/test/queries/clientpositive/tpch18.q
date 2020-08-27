@@ -8,9 +8,6 @@
 --! qt:dataset:tpch_0_001.supplier
 
 
-set hive.cbo.costmodel.extended=true;
-
-
 use tpch_0_001;
 
 -- alter table catalog_sales add constraint cs_w foreign key  (cs_warehouse_sk) references warehouse (w_warehouse_sk) disable novalidate rely;
@@ -68,7 +65,10 @@ o_orderdate
 limit 100;
 
 
-explain select
+select 'with extended costmodel';
+set hive.cbo.costmodel.extended=true;
+
+explain cbo select
 c_name,
 c_custkey,
 o_orderkey,

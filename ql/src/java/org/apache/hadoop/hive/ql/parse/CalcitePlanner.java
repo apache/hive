@@ -204,7 +204,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatePullUpCons
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceFunctionsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateReduceRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregateSplitRule;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveAggregatedPrimaryRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveCardinalityPreservingJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveDruidRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveExceptRewriteRule;
@@ -2531,8 +2530,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveInBetweenExpandRule.JOIN_INSTANCE,
             HiveInBetweenExpandRule.PROJECT_INSTANCE);
       }
-
-      generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN, HiveAggregatedPrimaryRule.INSTANCE);
 
       // Trigger program
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
