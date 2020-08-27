@@ -134,3 +134,35 @@ EXPLAIN
 SELECT `lo_linenumber`, `c_custkey`
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`;
+
+-- FK-PK JOIN with FK side removal
+EXPLAIN
+SELECT customer_removal_n0.*
+FROM customer_removal_n0
+    JOIN
+    (SELECT lo_custkey
+    FROM lineorder_removal_n0
+    WHERE lo_custkey IS NOT NULL
+    GROUP BY lo_custkey) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey;
+
+
+
+-- FK-PK JOIN with FK side removal, BUT without explicit IS NOT NULL on join column
+EXPLAIN
+SELECT customer_removal_n0.*
+FROM customer_removal_n0
+    JOIN (SELECT lo_custkey
+            FROM lineorder_removal_n0
+            GROUP BY lo_custkey) fkSide on fkSide.lo_custkey = customer_removal_n0.c_custkey;
+
+-- NEGATIVE for FK-PK JOIN with FK side removal, FK JOIN COL might not be distinct
+EXPLAIN
+SELECT customer_removal_n0.*
+FROM customer_removal_n0
+         JOIN (SELECT lo_linenumber,lo_custkey
+               FROM lineorder_removal_n0
+               WHERE lo_custkey IS NOT NULL
+               GROUP BY lo_linenumber, lo_custkey,lo_custkey
+             ) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey;
+
+

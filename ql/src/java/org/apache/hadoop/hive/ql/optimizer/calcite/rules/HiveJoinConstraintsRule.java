@@ -16,9 +16,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
@@ -45,6 +42,10 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.RewritablePKFKJoinInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * The rule can perform two different optimizations.
@@ -95,6 +96,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
     // If it is a left outer, left will be the FK side.
     // If it is a right outer, right will be the FK side.
     final RelNode fkInput;
+    final RelNode nonFkInput;
     final ImmutableBitSet topRefs =
         RelOptUtil.InputFinder.bits(topProjExprs, null);
     final ImmutableBitSet leftBits =
@@ -106,7 +108,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
     boolean leftInputPotentialFK = topRefs.intersects(leftBits);
     boolean rightInputPotentialFK = topRefs.intersects(rightBits);
     if (leftInputPotentialFK && rightInputPotentialFK &&
-            (joinType == JoinRelType.INNER || joinType == JoinRelType.SEMI)) {
+        (joinType == JoinRelType.INNER || joinType == JoinRelType.SEMI)) {
       // Both inputs are referenced. Before making a decision, try to swap
       // references in join condition if it is an inner join, i.e. if a join
       // condition column is referenced above the join, then we can just
@@ -189,21 +191,24 @@ public class HiveJoinConstraintsRule extends RelOptRule {
     switch (joinType) {
     case SEMI:
     case INNER:
-    //case ANTI: //TODO:https://issues.apache.org/jira/browse/HIVE-23920
+      //case ANTI: //TODO:https://issues.apache.org/jira/browse/HIVE-23920
       if (leftInputPotentialFK && rightInputPotentialFK) {
         // Bails out as it references columns from both sides (or no columns)
         // and there is nothing to transform
         return;
       }
       fkInput = leftInputPotentialFK ? leftInput : rightInput;
+      nonFkInput = leftInputPotentialFK ? rightInput: leftInput;
       mode = Mode.REMOVE;
       break;
     case LEFT:
       fkInput = leftInput;
+      nonFkInput = rightInput;
       mode = leftInputPotentialFK && !rightInputPotentialFK ? Mode.REMOVE : Mode.TRANSFORM;
       break;
     case RIGHT:
       fkInput = rightInput;
+      nonFkInput = leftInput;
       mode = !leftInputPotentialFK && rightInputPotentialFK ? Mode.REMOVE : Mode.TRANSFORM;
       break;
     default:
@@ -213,60 +218,136 @@ public class HiveJoinConstraintsRule extends RelOptRule {
 
     // 2) Check whether this join can be rewritten or removed
     RewritablePKFKJoinInfo r = HiveRelOptUtil.isRewritablePKFKJoin(
-        join, leftInput == fkInput, call.getMetadataQuery());
+        join, fkInput,  nonFkInput, call.getMetadataQuery());
 
     // 3) If it is the only condition, we can trigger the rewriting
     if (r.rewritable) {
-      List<RexNode> nullableNodes = r.nullableNodes;
-      // If we reach here, we trigger the transform
-      if (mode == Mode.REMOVE) {
-        if (rightInputPotentialFK) {
-          // First, if FK is the right input, we need to shift
-          nullableNodes = nullableNodes.stream()
-              .map(node -> RexUtil.shift(node, 0, -leftInput.getRowType().getFieldCount()))
-              .collect(Collectors.toList());
-          topProjExprs = topProjExprs.stream()
-              .map(node -> RexUtil.shift(node, 0, -leftInput.getRowType().getFieldCount()))
-              .collect(Collectors.toList());
-        }
-        // Fix nullability in references to the input node
-        topProjExprs = HiveCalciteUtil.fixNullability(rexBuilder, topProjExprs, RelOptUtil.getFieldTypeList(fkInput.getRowType()));
-        // Trigger transformation
-        if (nullableNodes.isEmpty()) {
-          call.transformTo(call.builder()
-              .push(fkInput)
-              .project(topProjExprs)
-              .convert(project.getRowType(), false)
-              .build());
-        } else {
-          RexNode newFilterCond;
-          if (nullableNodes.size() == 1) {
-            newFilterCond = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, nullableNodes.get(0));
-          } else {
-            List<RexNode> isNotNullConds = new ArrayList<>();
-            for (RexNode nullableNode : nullableNodes) {
-              isNotNullConds.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, nullableNode));
-            }
-            newFilterCond = rexBuilder.makeCall(SqlStdOperatorTable.AND, isNotNullConds);
-          }
-          call.transformTo(call.builder()
-              .push(fkInput)
-              .filter(newFilterCond)
-              .project(topProjExprs)
-              .convert(project.getRowType(), false)
-              .build());
-        }
-      } else { // Mode.TRANSFORM
-        // Trigger transformation
-        call.transformTo(call.builder()
-            .push(leftInput).push(rightInput)
-            .join(JoinRelType.INNER, join.getCondition())
-            .convert(call.rel(1).getRowType(), false) // Preserve nullability
-            .project(project.getChildExps())
-            .build());
+      rewrite(mode, fkInput, nonFkInput, join, topProjExprs, call, project, r.nullableNodes);
+    } else {
+      // check if FK side could be removed instead
+
+      // Possibly this could be enhanced to take other join type into consideration.
+      if (joinType != JoinRelType.INNER) {
+        return;
       }
+
+      //first swap fk and non-fk input and see if we can rewrite them
+      RewritablePKFKJoinInfo fkRemoval = HiveRelOptUtil.isRewritablePKFKJoin(
+          join, nonFkInput, fkInput, call.getMetadataQuery());
+
+      if (fkRemoval.rewritable) {
+        // we have established that nonFkInput is FK, and fkInput is PK
+        // and there is no row filtering on FK side
+
+        // check that FK side join column is distinct (i.e. have a group by)
+        ImmutableBitSet fkSideBitSet;
+        if (nonFkInput == leftInput) {
+          fkSideBitSet = leftBits;
+        } else {
+          fkSideBitSet = rightBits;
+        }
+
+        ImmutableBitSet.Builder fkJoinColBuilder = ImmutableBitSet.builder();
+        for (RexNode conj : RelOptUtil.conjunctions(cond)) {
+          if (!conj.isA(SqlKind.EQUALS)) {
+            continue;
+          }
+          RexCall eq = (RexCall) conj;
+          RexNode op1 = eq.getOperands().get(0);
+          RexNode op2 = eq.getOperands().get(1);
+          if (op1 instanceof RexInputRef && op2 instanceof RexInputRef) {
+            // Check references
+            int ref1 = ((RexInputRef) op1).getIndex();
+            int ref2 = ((RexInputRef) op2).getIndex();
+            int leftRef = -1;
+            int rightRef = -1;
+            if (fkSideBitSet.get(ref1)) {
+              // check that join columns are not nullable
+              if (op1.getType().isNullable()) {
+                return;
+              }
+              fkJoinColBuilder.set(fkSideBitSet.indexOf(ref1));
+            } else {
+              if (op2.getType().isNullable()) {
+                return;
+              }
+              fkJoinColBuilder.set(fkSideBitSet.indexOf(ref2));
+            }
+          }
+        }
+
+
+        if (!call.getMetadataQuery().areColumnsUnique(nonFkInput, fkJoinColBuilder.build())) {
+          return;
+        }
+
+        // all conditions are met, therefore we can perform rewrite to remove fk side
+        rewrite(mode, fkInput, nonFkInput, join, topProjExprs, call, project, fkRemoval.nullableNodes);
+
+      }
+
     }
   }
+
+
+  private void rewrite(final Mode mode, final RelNode inputToKeep, final RelNode inputToRemove,
+      final Join join, List<RexNode> topProjExprs, RelOptRuleCall call, final RelNode project, List<RexNode> nullableNodes) {
+    RexBuilder rexBuilder = join.getCluster().getRexBuilder();
+
+    final RelNode leftInput = join.getLeft();
+    final RelNode rightInput = join.getRight();
+
+
+    // If we reach here, we trigger the transform
+    if (mode == Mode.REMOVE) {
+      if (inputToKeep == join.getRight()) {
+        // First, if FK is the right input, we need to shift
+        nullableNodes = nullableNodes.stream()
+            .map(node -> RexUtil.shift(node, 0, -leftInput.getRowType().getFieldCount()))
+            .collect(Collectors.toList());
+        topProjExprs = topProjExprs.stream()
+            .map(node -> RexUtil.shift(node, 0, -leftInput.getRowType().getFieldCount()))
+            .collect(Collectors.toList());
+      }
+      // Fix nullability in references to the input node
+      topProjExprs = HiveCalciteUtil.fixNullability(rexBuilder, topProjExprs, RelOptUtil.getFieldTypeList(inputToKeep.getRowType()));
+      // Trigger transformation
+      if (nullableNodes.isEmpty()) {
+        call.transformTo(call.builder()
+            .push(inputToKeep)
+            .project(topProjExprs)
+            .convert(project.getRowType(), false)
+            .build());
+      } else {
+        RexNode newFilterCond;
+        if (nullableNodes.size() == 1) {
+          newFilterCond = rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, nullableNodes.get(0));
+        } else {
+          List<RexNode> isNotNullConds = new ArrayList<>();
+          for (RexNode nullableNode : nullableNodes) {
+            isNotNullConds.add(rexBuilder.makeCall(SqlStdOperatorTable.IS_NOT_NULL, nullableNode));
+          }
+          newFilterCond = rexBuilder.makeCall(SqlStdOperatorTable.AND, isNotNullConds);
+        }
+        call.transformTo(call.builder()
+            .push(inputToKeep)
+            .filter(newFilterCond)
+            .project(topProjExprs)
+            .convert(project.getRowType(), false)
+            .build());
+      }
+    } else { // Mode.TRANSFORM
+      // Trigger transformation
+      call.transformTo(call.builder()
+          .push(leftInput).push(rightInput)
+          .join(JoinRelType.INNER, join.getCondition())
+          .convert(call.rel(1).getRowType(), false) // Preserve nullability
+          .project(project.getChildExps())
+          .build());
+    }
+  }
+
+
 
   private enum Mode {
     // Removes join operator from the plan

@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.parquet.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -740,11 +741,18 @@ public class HiveRelOptUtil extends RelOptUtil {
   }
 
   public static RewritablePKFKJoinInfo isRewritablePKFKJoin(Join join,
-        boolean leftInputPotentialFK, RelMetadataQuery mq) {
+        final RelNode fkInput, final RelNode nonFkInput,
+        RelMetadataQuery mq) {
     final JoinRelType joinType = join.getJoinType();
     final RexNode cond = join.getCondition();
-    final RelNode fkInput = leftInputPotentialFK ? join.getLeft() : join.getRight();
-    final RelNode nonFkInput = leftInputPotentialFK ? join.getRight() : join.getLeft();
+
+    Preconditions.checkArgument(fkInput == join.getLeft()
+        || fkInput == join.getRight(), "Invalid input: " + fkInput);
+    Preconditions.checkArgument(nonFkInput == join.getLeft()
+        || nonFkInput == join.getRight(), "Invalid input: " + nonFkInput);
+
+    //final RelNode fkInput = leftInputPotentialFK ? join.getLeft() : join.getRight();
+    //final RelNode nonFkInput = leftInputPotentialFK ? join.getRight() : join.getLeft();
     final RewritablePKFKJoinInfo nonRewritable = RewritablePKFKJoinInfo.of(false, null);
 
     // TODO : Need to handle Anti join.
