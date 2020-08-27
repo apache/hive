@@ -97,12 +97,6 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         }
       }
 
-      //      RewritablePKFKJoinInfo joinInfo = HiveRelOptUtil.isRewritablePKFKJoin(
-      //          joinRel, true, call.getMetadataQuery());
-      //      if (!joinInfo.rewritable) {
-      //        return false;
-      //      }
-
       // If it is not an inner join or a semi-join, we do not push the
       // aggregate operator
       if (join.getJoinType() != JoinRelType.INNER) {
