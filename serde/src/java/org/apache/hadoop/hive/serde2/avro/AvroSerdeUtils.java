@@ -70,7 +70,8 @@ public class AvroSerdeUtils {
     AVRO_SERDE_SCHEMA("avro.serde.schema"),
     AVRO_SERDE_TYPE("avro.serde.type"),
     AVRO_SERDE_SKIP_BYTES("avro.serde.skip.bytes"),
-    SCHEMA_RETRIEVER("avro.schema.retriever");
+    SCHEMA_RETRIEVER("avro.schema.retriever"),
+    AVRO_SERDE_ERROR_SKIP("avro.serde.error.skip");
 
     private final String propName;
 
@@ -97,7 +98,7 @@ public class AvroSerdeUtils {
       + AvroTableProperties.SCHEMA_LITERAL.getPropName() + " nor "
       + AvroTableProperties.SCHEMA_URL.getPropName() + " specified, can't determine table schema";
 
-
+  public static final boolean DEFAULT_AVRO_SERDE_ERROR_SKIP = false;
 
   /**
    * Determine the schema to that's been provided for Avro serde work.

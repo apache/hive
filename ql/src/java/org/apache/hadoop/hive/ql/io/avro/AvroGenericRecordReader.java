@@ -26,6 +26,7 @@ import java.time.ZoneId;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.avro.AvroRuntimeException;
 import org.apache.avro.Schema;
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.generic.GenericData;
@@ -206,8 +207,7 @@ public class AvroGenericRecordReader implements
   }
 
 
-  @Override
-  public boolean next(NullWritable nullWritable, AvroGenericRecordWritable record) throws IOException {
+  private boolean nextRecord(NullWritable nullWritable, AvroGenericRecordWritable record) throws IOException{
     if(isEmptyInput || !reader.hasNext() || reader.pastSync(stop)) {
       return false;
     }
@@ -218,6 +218,21 @@ public class AvroGenericRecordReader implements
     record.setFileSchema(reader.getSchema());
 
     return true;
+  }
+
+  @Override
+  public boolean next(NullWritable nullWritable, AvroGenericRecordWritable record) throws IOException {
+    boolean hasNext = false;
+    try{
+      hasNext = nextRecord(nullWritable,record);
+    }catch (AvroRuntimeException ex){
+      if(!jobConf.getBoolean(AvroTableProperties.AVRO_SERDE_ERROR_SKIP.name(),AvroSerdeUtils.DEFAULT_AVRO_SERDE_ERROR_SKIP)){
+        throw ex;
+      }else{
+        LOG.warn("Failed to read record: " + ex.getMessage() + ", ignore it");
+      }
+    }
+    return hasNext;
   }
 
   @Override
