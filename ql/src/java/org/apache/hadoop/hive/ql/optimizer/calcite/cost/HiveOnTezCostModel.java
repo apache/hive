@@ -104,7 +104,8 @@ public class HiveOnTezCostModel extends HiveCostModel {
       }
       final double ioCost = algoUtils.computeSortIOCost(new Pair<Double,Double>(rCount,rAverageSize));
       // 4. Result
-      return HiveCost.FACTORY.makeCost(rCount, cpuCost, ioCost);
+      Double rowCount = mq.getRowCount(aggregate);
+      return HiveCost.FACTORY.makeCost(rowCount, cpuCost, ioCost);
     }
   }
 

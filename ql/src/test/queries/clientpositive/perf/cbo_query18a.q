@@ -8,6 +8,7 @@
 --! qt:dataset:tpch_0_001.supplier
 
 
+-- set hive.cbo.costmodel.extended=true;
 
 
 use tpch_0_001;
