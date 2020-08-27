@@ -145,7 +145,8 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         int fieldCount = joinInput.getRowType().getFieldCount();
         final ImmutableBitSet fieldSet =
             ImmutableBitSet.range(offset, offset + fieldCount);
-        final ImmutableBitSet belowAggregateKeyNotShifted = fieldSet;
+        final ImmutableBitSet belowAggregateKeyNotShifted =
+            belowAggregateColumns.intersect(fieldSet);
         for (Ord<Integer> c : Ord.zip(belowAggregateKeyNotShifted)) {
           map.put(c.e, belowOffset + c.i);
         }
