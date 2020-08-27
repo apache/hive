@@ -8,6 +8,7 @@
 --! qt:dataset:tpch_0_001.supplier
 
 
+set hive.cbo.costmodel.extended=true;
 
 
 use tpch_0_001;
@@ -16,9 +17,6 @@ use tpch_0_001;
 
 alter table orders add constraint pk_o primary key (o_orderkey) disable novalidate rely;
 alter table customer add constraint pk_c primary key (c_custkey) disable novalidate rely;
-
--- alter table orders add constraint u_o unique (o_orderkey) disable novalidate rely;
--- alter table customer add constraint u_c unique (c_custkey) disable novalidate rely;
 
 alter table lineitem add constraint li_o foreign key  (l_orderkey) references orders (o_orderkey) disable novalidate rely;
 alter table orders   add constraint or_c foreign key  (o_custkey) references customer (c_custkey) disable novalidate rely;

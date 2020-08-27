@@ -8,7 +8,6 @@
 --! qt:dataset:tpch_0_001.supplier
 
 
--- set hive.cbo.costmodel.extended=true;
 
 
 use tpch_0_001;
@@ -67,8 +66,10 @@ o_totalprice desc,
 o_orderdate
 limit 100;
 
+select 'with extended costmodel';
+set hive.cbo.costmodel.extended=true;
 
-explain select
+explain cbo select
 c_name,
 c_custkey,
 o_orderkey,
