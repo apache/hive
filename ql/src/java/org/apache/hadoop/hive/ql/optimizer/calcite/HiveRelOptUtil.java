@@ -751,12 +751,7 @@ public class HiveRelOptUtil extends RelOptUtil {
   }
 
   public static RewritablePKFKJoinInfo isRewritablePKFKJoin(Join join,
-      boolean leftInputPotentialFK, RelMetadataQuery mq) {
-    return isRewritablePKFKJoin(join, leftInputPotentialFK, mq, true);
-  }
-
-  public static RewritablePKFKJoinInfo isRewritablePKFKJoin(Join join, boolean leftInputPotentialFK,
-      RelMetadataQuery mq, boolean checkFiltering) {
+        boolean leftInputPotentialFK, RelMetadataQuery mq) {
     final JoinRelType joinType = join.getJoinType();
     final RexNode cond = join.getCondition();
     final RelNode fkInput = leftInputPotentialFK ? join.getLeft() : join.getRight();
@@ -781,7 +776,7 @@ public class HiveRelOptUtil extends RelOptUtil {
     // 1) Check whether there is any filtering condition on the
     // non-FK side. Basically we check whether the operators
     // below altered the PK cardinality in any way
-    if (checkFiltering && HiveRelOptUtil.isRowFilteringPlan(mq, nonFkInput)) {
+    if (HiveRelOptUtil.isRowFilteringPlan(mq, nonFkInput)) {
       return nonRewritable;
     }
 
