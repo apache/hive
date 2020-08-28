@@ -51,8 +51,6 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.RewritablePKFKJoinInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 
@@ -389,15 +387,6 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         valid = false;
       }
     }
-
-
-  }
-
-  private boolean shouldForceTransform0(Join join, RelOptRuleCall call) {
-    RewritablePKFKJoinInfo info1 = HiveRelOptUtil.isRewritablePKFKJoin(join, true, call.getMetadataQuery(), true);
-    RewritablePKFKJoinInfo info2 = HiveRelOptUtil.isRewritablePKFKJoin(join, false, call.getMetadataQuery(), true);
-
-    return info1.rewritable || info2.rewritable;
   }
 
   /** Computes the closure of a set of columns according to a given list of
