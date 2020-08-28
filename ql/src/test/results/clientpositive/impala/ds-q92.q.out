@@ -235,7 +235,7 @@ Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservati
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_sales.ws_ext_discount_amt IS NOT NULL, default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -250,7 +250,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item.i_item_sk IS NOT NULL, default.impala_tpcds_item.i_manufact_id = CAST(356 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_item.i_manufact_id = CAST(356 AS INT)
@@ -266,7 +266,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, casttotimestamp(default.impala_tpcds_date_dim.d_date) >= _impala_builtins.casttotimestamp('2001-03-12 00:00:00') AND casttotimestamp(default.impala_tpcds_date_dim.d_date) <= MILLISECONDS_ADD(casttotimestamp(DATE '2001-03-12'), INTERVAL CAST(7776000000 AS BIGINT) MILLISECOND)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -317,7 +317,7 @@ Per-Host Resources: mem-estimate=129.96MB mem-reservation=35.94MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_sales_0.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales_0.ws_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -332,7 +332,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, casttotimestamp(default.impala_tpcds_date_dim_0.d_date) >= casttotimestamp('2001-03-12') AND casttotimestamp(default.impala_tpcds_date_dim_0.d_date) <= MILLISECONDS_ADD(casttotimestamp(casttodate('2001-03-12')), INTERVAL CAST(7776000000 AS BIGINT) MILLISECOND)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

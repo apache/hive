@@ -71,7 +71,7 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
     }
 
     if (desc.getLocation() == null && !tbl.isPartitioned() &&
-        context.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        context.getConf().isAutogatherStatsEnabled()) {
       StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
           MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
     }

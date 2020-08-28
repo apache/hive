@@ -326,7 +326,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Map<TableScanOperator, PrunedPartitionList> opToPartList;
   protected Map<String, TableScanOperator> topOps;
   protected Map<Operator<? extends OperatorDesc>, OpParseContext> opParseCtx;
-  protected List<LoadTableDesc> loadTableWork;
+  private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
   private final List<ColumnStatsAutoGatherContext> columnStatsAutoGatherContexts;
   private final Map<JoinOperator, QBJoinTree> joinContext;
@@ -2333,7 +2333,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // This is a partition
           qb.getMetaData().setDestForAlias(name, ts.partHandle);
         }
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        if (conf.isAutogatherStatsEnabled()) {
           // Add the table spec for the destination table.
           qb.getParseInfo().addTableSpec(ts.getTableName().getTable().toLowerCase(), ts);
         }
@@ -2396,7 +2396,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               throw new SemanticException(
                   generateErrorMessage(ast, "Error creating temporary folder on: " + location.toString()), e);
             }
-            if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+            if (conf.isAutogatherStatsEnabled()) {
               TableSpec ts = new TableSpec(db, conf, this.ast);
               // Add the table spec for the destination table.
               qb.getParseInfo().addTableSpec(ts.getTableName().getTable().toLowerCase(), ts);
@@ -7728,7 +7728,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // fall through
     case QBMetaData.DEST_DFS_FILE: {
       destinationPath = new Path(qbm.getDestFileForAlias(dest));
-
       // CTAS case: the file output format and serde are defined by the create
       // table command rather than taking the default value
       List<FieldSchema> fieldSchemas = null;
@@ -8074,8 +8073,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // the following code is used to collect column stats when
     // hive.stats.autogather=true
     // and it is an insert overwrite or insert into table
-    if (conf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
-        && conf.getBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER)
+    if (conf.isAutogatherStatsEnabled()
+        && conf.isAutogatherColumnStatsEnabled()
         && destinationTable != null && !destinationTable.isNonNative()
         && !destTableIsTemporary && !destTableIsMaterialization
         && ColumnStatsAutoGatherContext.canRunAutogatherStats(fso)) {
@@ -8300,7 +8299,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     default:
       throw new IllegalStateException("Unexpected dest_type=" + dest_tab);
     }
-    FileSinkDesc fileSinkDesc = new FileSinkDesc(queryTmpdir, table_desc,
+    FileSinkDesc fileSinkDesc = new FileSinkDesc(queryTmpdir, table_desc, dest_part,
         conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT), currentTableId, rsCtx.isMultiFileSpray(),
         canBeMerged, rsCtx.getNumFiles(), rsCtx.getTotalFiles(), rsCtx.getPartnCols(), dpCtx,
         dest_path, mmWriteId, isMmCtas, isInsertOverwrite, qb.getIsQuery(),

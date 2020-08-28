@@ -94,6 +94,10 @@ public class ImpalaResultLocation implements FeFsTable {
     this(outputExprs, baseDir, DEFAULT_FILE_FORMAT);
   }
 
+  public ImpalaResultLocation(List<Expr> outputExprs, String baseDir, String outputFormatClassName) {
+    this(outputExprs, baseDir, HdfsFileFormat.fromJavaClassName(outputFormatClassName));
+  }
+
   public ImpalaResultLocation(List<Expr> outputExprs, String baseDir,
       HdfsFileFormat fileFormat) {
     super();

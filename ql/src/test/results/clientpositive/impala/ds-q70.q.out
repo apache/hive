@@ -352,7 +352,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: d1.d_date_sk IS NOT NULL, d1.d_month_seq >= CAST(1218 AS INT) AND d1.d_month_seq <= add(CAST(1218 AS INT), CAST(11 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -367,7 +367,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_store.s_state IS NOT NULL, default.impala_tpcds_store.s_store_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -472,7 +472,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_month_seq >= CAST(1218 AS INT) AND default.impala_tpcds_date_dim.d_month_seq <= add(CAST(1218 AS INT), CAST(11 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -487,7 +487,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_store_0.s_state IS NOT NULL, default.impala_tpcds_store_0.s_store_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

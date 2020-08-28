@@ -797,7 +797,7 @@ Per-Host Resources: mem-estimate=11.95MB mem-reservation=1.94MB thread-reservati
   |     HDFS partitions=1/1 files=0 size=0B
   |     predicates: default.impala_tpcds_web_sales_0.ws_sold_date_sk IS NOT NULL
   |     stored statistics:
-  |       table: rows=0 size=0B
+  |       table: rows=unavailable size=unavailable
   |       columns: unavailable
   |     extrapolated-rows=disabled max-scan-range-rows=0
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -820,7 +820,7 @@ Per-Host Resources: mem-estimate=11.95MB mem-reservation=1.94MB thread-reservati
   |     HDFS partitions=1/1 files=0 size=0B
   |     predicates: default.impala_tpcds_catalog_sales_0.cs_sold_date_sk IS NOT NULL
   |     stored statistics:
-  |       table: rows=0 size=0B
+  |       table: rows=unavailable size=unavailable
   |       columns: unavailable
   |     extrapolated-rows=disabled max-scan-range-rows=0
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -859,7 +859,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_year >= CAST(2000 AS INT) AND default.impala_tpcds_date_dim_0.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -874,7 +874,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_1.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_1.d_year >= CAST(2000 AS INT) AND default.impala_tpcds_date_dim_1.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -889,7 +889,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_2.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_2.d_year >= CAST(2000 AS INT) AND default.impala_tpcds_date_dim_2.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -980,7 +980,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_moy = CAST(11 AS INT), default.impala_tpcds_date_dim.d_year = add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim.d_moy = CAST(11 AS INT), default.impala_tpcds_date_dim.d_year = add(CAST(2000 AS INT), CAST(2 AS INT))
@@ -996,7 +996,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1023,7 +1023,7 @@ Per-Host Resources: mem-estimate=1.96MB mem-reservation=1.94MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_0.i_brand_id IS NOT NULL, default.impala_tpcds_item_0.i_category_id IS NOT NULL, default.impala_tpcds_item_0.i_class_id IS NOT NULL, default.impala_tpcds_item_0.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1155,7 +1155,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: d1.d_date_sk IS NOT NULL, d1.d_year >= CAST(2000 AS INT) AND d1.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1170,7 +1170,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: iss.i_brand_id IS NOT NULL, iss.i_category_id IS NOT NULL, iss.i_class_id IS NOT NULL, iss.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1216,7 +1216,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_catalog_sales.cs_item_sk IS NOT NULL, default.impala_tpcds_catalog_sales.cs_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1231,7 +1231,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: d2.d_date_sk IS NOT NULL, d2.d_year >= CAST(2000 AS INT) AND d2.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1246,7 +1246,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: ics.i_brand_id IS NOT NULL, ics.i_category_id IS NOT NULL, ics.i_class_id IS NOT NULL, ics.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1292,7 +1292,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1307,7 +1307,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: d3.d_date_sk IS NOT NULL, d3.d_year >= CAST(2000 AS INT) AND d3.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1322,7 +1322,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: iws.i_brand_id IS NOT NULL, iws.i_category_id IS NOT NULL, iws.i_class_id IS NOT NULL, iws.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1360,7 +1360,7 @@ Per-Host Resources: mem-estimate=11.95MB mem-reservation=1.94MB thread-reservati
   |     HDFS partitions=1/1 files=0 size=0B
   |     predicates: default.impala_tpcds_web_sales_2.ws_sold_date_sk IS NOT NULL
   |     stored statistics:
-  |       table: rows=0 size=0B
+  |       table: rows=unavailable size=unavailable
   |       columns: unavailable
   |     extrapolated-rows=disabled max-scan-range-rows=0
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1383,7 +1383,7 @@ Per-Host Resources: mem-estimate=11.95MB mem-reservation=1.94MB thread-reservati
   |     HDFS partitions=1/1 files=0 size=0B
   |     predicates: default.impala_tpcds_catalog_sales_3.cs_sold_date_sk IS NOT NULL
   |     stored statistics:
-  |       table: rows=0 size=0B
+  |       table: rows=unavailable size=unavailable
   |       columns: unavailable
   |     extrapolated-rows=disabled max-scan-range-rows=0
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1422,7 +1422,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_4.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_4.d_year >= CAST(2000 AS INT) AND default.impala_tpcds_date_dim_4.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1437,7 +1437,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_5.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_5.d_year >= CAST(2000 AS INT) AND default.impala_tpcds_date_dim_5.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1452,7 +1452,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_6.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_6.d_year >= CAST(2000 AS INT) AND default.impala_tpcds_date_dim_6.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1526,7 +1526,7 @@ Per-Host Resources: mem-estimate=133.90MB mem-reservation=39.81MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_catalog_sales_1.cs_item_sk IS NOT NULL, default.impala_tpcds_catalog_sales_1.cs_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1541,7 +1541,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_3.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_3.d_moy = CAST(11 AS INT), default.impala_tpcds_date_dim_3.d_year = add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_3.d_moy = CAST(11 AS INT), default.impala_tpcds_date_dim_3.d_year = add(CAST(2000 AS INT), CAST(2 AS INT))
@@ -1557,7 +1557,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_1.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1584,7 +1584,7 @@ Per-Host Resources: mem-estimate=1.96MB mem-reservation=1.94MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_2.i_brand_id IS NOT NULL, default.impala_tpcds_item_2.i_category_id IS NOT NULL, default.impala_tpcds_item_2.i_class_id IS NOT NULL, default.impala_tpcds_item_2.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1716,7 +1716,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: d1_0.d_date_sk IS NOT NULL, d1_0.d_year >= CAST(2000 AS INT) AND d1_0.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1731,7 +1731,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: iss_0.i_brand_id IS NOT NULL, iss_0.i_category_id IS NOT NULL, iss_0.i_class_id IS NOT NULL, iss_0.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1777,7 +1777,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_catalog_sales_2.cs_item_sk IS NOT NULL, default.impala_tpcds_catalog_sales_2.cs_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1792,7 +1792,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: d2_0.d_date_sk IS NOT NULL, d2_0.d_year >= CAST(2000 AS INT) AND d2_0.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1807,7 +1807,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: ics_0.i_brand_id IS NOT NULL, ics_0.i_category_id IS NOT NULL, ics_0.i_class_id IS NOT NULL, ics_0.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1853,7 +1853,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_sales_1.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales_1.ws_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1868,7 +1868,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: d3_0.d_date_sk IS NOT NULL, d3_0.d_year >= CAST(2000 AS INT) AND d3_0.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1883,7 +1883,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: iws_0.i_brand_id IS NOT NULL, iws_0.i_category_id IS NOT NULL, iws_0.i_class_id IS NOT NULL, iws_0.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1921,7 +1921,7 @@ Per-Host Resources: mem-estimate=11.95MB mem-reservation=1.94MB thread-reservati
   |     HDFS partitions=1/1 files=0 size=0B
   |     predicates: default.impala_tpcds_web_sales_5.ws_sold_date_sk IS NOT NULL
   |     stored statistics:
-  |       table: rows=0 size=0B
+  |       table: rows=unavailable size=unavailable
   |       columns: unavailable
   |     extrapolated-rows=disabled max-scan-range-rows=0
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1944,7 +1944,7 @@ Per-Host Resources: mem-estimate=11.95MB mem-reservation=1.94MB thread-reservati
   |     HDFS partitions=1/1 files=0 size=0B
   |     predicates: default.impala_tpcds_catalog_sales_5.cs_sold_date_sk IS NOT NULL
   |     stored statistics:
-  |       table: rows=0 size=0B
+  |       table: rows=unavailable size=unavailable
   |       columns: unavailable
   |     extrapolated-rows=disabled max-scan-range-rows=0
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1983,7 +1983,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_8.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_8.d_year >= CAST(2000 AS INT) AND default.impala_tpcds_date_dim_8.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1998,7 +1998,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_9.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_9.d_year >= CAST(2000 AS INT) AND default.impala_tpcds_date_dim_9.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -2013,7 +2013,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_10.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_10.d_year >= CAST(2000 AS INT) AND default.impala_tpcds_date_dim_10.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -2087,7 +2087,7 @@ Per-Host Resources: mem-estimate=133.90MB mem-reservation=39.81MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_sales_3.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales_3.ws_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -2102,7 +2102,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_7.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_7.d_moy = CAST(11 AS INT), default.impala_tpcds_date_dim_7.d_year = add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_7.d_moy = CAST(11 AS INT), default.impala_tpcds_date_dim_7.d_year = add(CAST(2000 AS INT), CAST(2 AS INT))
@@ -2118,7 +2118,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_3.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -2145,7 +2145,7 @@ Per-Host Resources: mem-estimate=1.96MB mem-reservation=1.94MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_4.i_brand_id IS NOT NULL, default.impala_tpcds_item_4.i_category_id IS NOT NULL, default.impala_tpcds_item_4.i_class_id IS NOT NULL, default.impala_tpcds_item_4.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -2277,7 +2277,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: d1_1.d_date_sk IS NOT NULL, d1_1.d_year >= CAST(2000 AS INT) AND d1_1.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -2292,7 +2292,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: iss_1.i_brand_id IS NOT NULL, iss_1.i_category_id IS NOT NULL, iss_1.i_class_id IS NOT NULL, iss_1.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -2338,7 +2338,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_catalog_sales_4.cs_item_sk IS NOT NULL, default.impala_tpcds_catalog_sales_4.cs_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -2353,7 +2353,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: d2_1.d_date_sk IS NOT NULL, d2_1.d_year >= CAST(2000 AS INT) AND d2_1.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -2368,7 +2368,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: ics_1.i_brand_id IS NOT NULL, ics_1.i_category_id IS NOT NULL, ics_1.i_class_id IS NOT NULL, ics_1.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -2414,7 +2414,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_sales_4.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales_4.ws_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -2429,7 +2429,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: d3_1.d_date_sk IS NOT NULL, d3_1.d_year >= CAST(2000 AS INT) AND d3_1.d_year <= add(CAST(2000 AS INT), CAST(2 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -2444,7 +2444,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: iws_1.i_brand_id IS NOT NULL, iws_1.i_category_id IS NOT NULL, iws_1.i_class_id IS NOT NULL, iws_1.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

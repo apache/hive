@@ -532,7 +532,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_moy = CAST(5 AS INT), default.impala_tpcds_date_dim.d_year = CAST(1998 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim.d_moy = CAST(5 AS INT), default.impala_tpcds_date_dim.d_year = CAST(1998 AS INT)
@@ -548,7 +548,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_customer_address.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address.ca_gmt_offset = casttodecimal(negative(CAST(6 AS TINYINT)))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_customer_address.ca_gmt_offset = casttodecimal(negative(CAST(6 AS TINYINT)))
@@ -576,7 +576,7 @@ Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item.i_item_sk IS NOT NULL, default.impala_tpcds_item.i_manufact_id IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -612,7 +612,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_0.i_manufact_id IS NOT NULL, default.impala_tpcds_item_0.i_category IN ('Home')
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_item_0.i_category IN ('Home')
@@ -671,7 +671,7 @@ Per-Host Resources: mem-estimate=133.87MB mem-reservation=39.81MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_catalog_sales.cs_bill_addr_sk IS NOT NULL, default.impala_tpcds_catalog_sales.cs_item_sk IS NOT NULL, default.impala_tpcds_catalog_sales.cs_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -686,7 +686,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_moy = CAST(5 AS INT), default.impala_tpcds_date_dim_0.d_year = CAST(1998 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_0.d_moy = CAST(5 AS INT), default.impala_tpcds_date_dim_0.d_year = CAST(1998 AS INT)
@@ -702,7 +702,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_customer_address_0.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address_0.ca_gmt_offset = casttodecimal(negative(CAST(6 AS TINYINT)))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_customer_address_0.ca_gmt_offset = casttodecimal(negative(CAST(6 AS TINYINT)))
@@ -730,7 +730,7 @@ Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_1.i_item_sk IS NOT NULL, default.impala_tpcds_item_1.i_manufact_id IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -766,7 +766,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_2.i_manufact_id IS NOT NULL, default.impala_tpcds_item_2.i_category IN ('Home')
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_item_2.i_category IN ('Home')
@@ -825,7 +825,7 @@ Per-Host Resources: mem-estimate=133.87MB mem-reservation=39.81MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_sales.ws_bill_addr_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -840,7 +840,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_1.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_1.d_moy = CAST(5 AS INT), default.impala_tpcds_date_dim_1.d_year = CAST(1998 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_1.d_moy = CAST(5 AS INT), default.impala_tpcds_date_dim_1.d_year = CAST(1998 AS INT)
@@ -856,7 +856,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_customer_address_1.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address_1.ca_gmt_offset = casttodecimal(negative(CAST(6 AS TINYINT)))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_customer_address_1.ca_gmt_offset = casttodecimal(negative(CAST(6 AS TINYINT)))
@@ -884,7 +884,7 @@ Per-Host Resources: mem-estimate=1.95MB mem-reservation=1.94MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_3.i_item_sk IS NOT NULL, default.impala_tpcds_item_3.i_manufact_id IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -920,7 +920,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_4.i_manufact_id IS NOT NULL, default.impala_tpcds_item_4.i_category IN ('Home')
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_item_4.i_category IN ('Home')

@@ -805,7 +805,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: ws.ws_item_sk IS NOT NULL, ws.ws_order_number IS NOT NULL, ws.ws_sold_date_sk IS NOT NULL, ws.ws_net_paid > CAST(0 AS DECIMAL(7,2)), ws.ws_net_profit > CAST(1 AS DECIMAL(7,2)), ws.ws_quantity > CAST(0 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: ws.ws_net_paid > CAST(0 AS DECIMAL(7,2)), ws.ws_net_profit > CAST(1 AS DECIMAL(7,2)), ws.ws_quantity > CAST(0 AS INT)
@@ -821,7 +821,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim.d_year = CAST(2000 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim.d_year = CAST(2000 AS INT)
@@ -837,7 +837,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: wr.wr_item_sk IS NOT NULL, wr.wr_order_number IS NOT NULL, wr.wr_return_amt > CAST(10000 AS DECIMAL(7,2))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: wr.wr_return_amt > CAST(10000 AS DECIMAL(7,2))
@@ -911,7 +911,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: cs.cs_item_sk IS NOT NULL, cs.cs_order_number IS NOT NULL, cs.cs_sold_date_sk IS NOT NULL, cs.cs_net_paid > CAST(0 AS DECIMAL(7,2)), cs.cs_net_profit > CAST(1 AS DECIMAL(7,2)), cs.cs_quantity > CAST(0 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: cs.cs_net_paid > CAST(0 AS DECIMAL(7,2)), cs.cs_net_profit > CAST(1 AS DECIMAL(7,2)), cs.cs_quantity > CAST(0 AS INT)
@@ -927,7 +927,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim_0.d_year = CAST(2000 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_0.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim_0.d_year = CAST(2000 AS INT)
@@ -943,7 +943,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: cr.cr_item_sk IS NOT NULL, cr.cr_order_number IS NOT NULL, cr.cr_return_amount > CAST(10000 AS DECIMAL(7,2))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: cr.cr_return_amount > CAST(10000 AS DECIMAL(7,2))
@@ -1034,7 +1034,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_1.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_1.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim_1.d_year = CAST(2000 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_1.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim_1.d_year = CAST(2000 AS INT)
@@ -1050,7 +1050,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: sr.sr_item_sk IS NOT NULL, sr.sr_ticket_number IS NOT NULL, sr.sr_return_amt > CAST(10000 AS DECIMAL(7,2))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: sr.sr_return_amt > CAST(10000 AS DECIMAL(7,2))

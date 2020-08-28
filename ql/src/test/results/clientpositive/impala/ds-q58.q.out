@@ -467,7 +467,7 @@ Per-Host Resources: mem-estimate=133.91MB mem-reservation=39.81MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_catalog_sales.cs_item_sk IS NOT NULL, default.impala_tpcds_catalog_sales.cs_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -482,7 +482,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item.i_item_id IS NOT NULL, default.impala_tpcds_item.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -497,7 +497,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim.d_date IS NOT NULL, default.impala_tpcds_date_dim.d_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -544,7 +544,7 @@ Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_2.d_date = '1998-02-21'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_2.d_date = '1998-02-21'
@@ -572,7 +572,7 @@ Per-Host Resources: mem-estimate=1.96MB mem-reservation=1.94MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_0.d_date IS NOT NULL, default.impala_tpcds_date_dim_0.d_week_seq IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -587,7 +587,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_1.d_week_seq IS NOT NULL, default.impala_tpcds_date_dim_1.d_date = '1998-02-21'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_1.d_date = '1998-02-21'
@@ -678,7 +678,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_0.i_item_id IS NOT NULL, default.impala_tpcds_item_0.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -693,7 +693,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_3.d_date IS NOT NULL, default.impala_tpcds_date_dim_3.d_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -740,7 +740,7 @@ Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_6.d_date = '1998-02-21'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_6.d_date = '1998-02-21'
@@ -768,7 +768,7 @@ Per-Host Resources: mem-estimate=1.96MB mem-reservation=1.94MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_4.d_date IS NOT NULL, default.impala_tpcds_date_dim_4.d_week_seq IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -783,7 +783,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_5.d_week_seq IS NOT NULL, default.impala_tpcds_date_dim_5.d_date = '1998-02-21'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_5.d_date = '1998-02-21'
@@ -857,7 +857,7 @@ Per-Host Resources: mem-estimate=133.91MB mem-reservation=39.81MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -872,7 +872,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_1.i_item_id IS NOT NULL, default.impala_tpcds_item_1.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -887,7 +887,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_7.d_date IS NOT NULL, default.impala_tpcds_date_dim_7.d_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -934,7 +934,7 @@ Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_10.d_date = '1998-02-21'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_10.d_date = '1998-02-21'
@@ -962,7 +962,7 @@ Per-Host Resources: mem-estimate=1.96MB mem-reservation=1.94MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_8.d_date IS NOT NULL, default.impala_tpcds_date_dim_8.d_week_seq IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -977,7 +977,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_9.d_week_seq IS NOT NULL, default.impala_tpcds_date_dim_9.d_date = '1998-02-21'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_9.d_date = '1998-02-21'

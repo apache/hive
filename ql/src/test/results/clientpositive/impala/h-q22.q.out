@@ -242,7 +242,7 @@ Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_customer_0.c_acctbal > CAST(0 AS DECIMAL(12,2)), substring(default.impala_tpch_customer_0.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) IN ('13', '31', '23', '29', '30', '18', '17')
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpch_customer_0.c_acctbal > CAST(0 AS DECIMAL(12,2))
@@ -258,7 +258,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_customer.c_acctbal IS NOT NULL, substring(default.impala_tpch_customer.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT)) IN ('13', '31', '23', '29', '30', '18', '17')
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -294,7 +294,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_orders.o_custkey IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

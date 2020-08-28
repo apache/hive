@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.impala;
 
+import java.io.Serializable;
+
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ImpalaExecutionMode;
@@ -37,7 +39,7 @@ import org.apache.hive.service.rpc.thrift.TOperationHandle;
  * Implementation of a Task for managing the execution of ImpalaWork. It starts execution of the desired Impala query
  * or plan and passes the context required for the ImpalaStreamingFetchOperator to retrieve the execution results.
  */
-public class ImpalaTask extends Task<ImpalaWork> {
+public class ImpalaTask extends Task<ImpalaWork> implements Serializable {
 
     private ImpalaSession session;
 

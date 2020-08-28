@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveImpalaRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveImpalaWindowingFixRule;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionHelper;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaPlanRel;
 import org.apache.hadoop.fs.Path;
@@ -132,23 +133,21 @@ public class ImpalaHelper {
     return programBuilder.build();
   }
 
-  public ImpalaCompiledPlan compilePlan(Hive db, RelNode rootRelNode, Path resultPath,
-      boolean isExplain, QB qb, CalcitePlanner.PreCboCtx.Type stmtType, long writeId,
+  public ImpalaCompiledPlan compilePlan(Hive db, RelNode rootRelNode,
+      FileSinkDesc fileSinkDesc, boolean isExplain, QB qb, CalcitePlanner.PreCboCtx.Type stmtType,
       ValidTxnWriteIdList txnWriteIdList) throws HiveException {
     try {
       Preconditions.checkState(rootRelNode instanceof ImpalaPlanRel, "Plan contains operators not supported by Impala");
       ImpalaPlanRel impalaRelNode = (ImpalaPlanRel) rootRelNode;
-      ImpalaPlanner impalaPlanner = new ImpalaPlanner(queryContext, resultPath, db, qb,
-          getImpalaStmtType(stmtType), getImpalaResultStmtType(stmtType), timeline, writeId);
+      ImpalaPlanner impalaPlanner = new ImpalaPlanner(queryContext, fileSinkDesc, db, qb,
+          getImpalaStmtType(stmtType), getImpalaResultStmtType(stmtType), timeline);
       ImpalaPlannerContext planCtx = impalaPlanner.getPlannerContext();
       impalaPlanner.initTargetTable();
       planCtx.getTableLoader().loadTablesAndPartitions(db, txnWriteIdList);
 
       PlanNode rootImpalaNode = impalaRelNode.getRootPlanNode(planCtx);
       timeline.markEvent("Single node plan created");
-      TExecRequest execRequest = impalaPlanner.createExecRequest(rootImpalaNode, isExplain);
-      LOG.debug("Impala request is {}", execRequest);
-      return new ImpalaCompiledPlan(execRequest, timeline);
+      return new ImpalaCompiledPlan(impalaPlanner, rootImpalaNode, timeline, isExplain);
     } catch (ImpalaException | MetaException e) {
       throw new HiveException(e);
     }

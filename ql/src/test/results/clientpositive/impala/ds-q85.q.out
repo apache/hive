@@ -511,7 +511,7 @@ Per-Host Resources: mem-estimate=137.86MB mem-reservation=43.69MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_returns.wr_item_sk IS NOT NULL, default.impala_tpcds_web_returns.wr_order_number IS NOT NULL, default.impala_tpcds_web_returns.wr_refunded_addr_sk IS NOT NULL, default.impala_tpcds_web_returns.wr_refunded_cdemo_sk IS NOT NULL, default.impala_tpcds_web_returns.wr_returning_cdemo_sk IS NOT NULL, casttobigint(default.impala_tpcds_web_returns.wr_reason_sk) IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -526,7 +526,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_reason.r_reason_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -541,7 +541,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_customer_address.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address.ca_state IN ('TX', 'VA', 'CA', 'AR', 'NE', 'MO', 'IA', 'MS', 'WA'), default.impala_tpcds_customer_address.ca_country = 'United States'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_customer_address.ca_state IN ('TX', 'VA', 'CA', 'AR', 'NE', 'MO', 'IA', 'MS', 'WA'), default.impala_tpcds_customer_address.ca_country = 'United States'
@@ -557,7 +557,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: cd1.cd_demo_sk IS NOT NULL, cd1.cd_education_status IN ('4 yr Degree', 'College', 'Secondary'), cd1.cd_marital_status IN ('M', 'S', 'D')
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: cd1.cd_education_status IN ('4 yr Degree', 'College', 'Secondary'), cd1.cd_marital_status IN ('M', 'S', 'D')
@@ -573,7 +573,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: cd2.cd_demo_sk IS NOT NULL, cd2.cd_education_status IN ('4 yr Degree', 'College', 'Secondary'), cd2.cd_marital_status IN ('M', 'S', 'D')
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: cd2.cd_education_status IN ('4 yr Degree', 'College', 'Secondary'), cd2.cd_marital_status IN ('M', 'S', 'D')
@@ -613,7 +613,7 @@ Per-Host Resources: mem-estimate=3.91MB mem-reservation=3.88MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_order_number IS NOT NULL, default.impala_tpcds_web_sales.ws_sold_date_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_web_page_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_net_profit >= CAST(100 AS DECIMAL(3,0)) AND default.impala_tpcds_web_sales.ws_net_profit <= CAST(200 AS DECIMAL(5,0)) OR default.impala_tpcds_web_sales.ws_net_profit >= CAST(150 AS DECIMAL(5,0)) AND default.impala_tpcds_web_sales.ws_net_profit <= CAST(300 AS DECIMAL(5,0)) OR default.impala_tpcds_web_sales.ws_net_profit >= CAST(50 AS DECIMAL(3,0)) AND default.impala_tpcds_web_sales.ws_net_profit <= CAST(250 AS DECIMAL(5,0)), default.impala_tpcds_web_sales.ws_sales_price >= CAST(100 AS DECIMAL(3,0)) AND default.impala_tpcds_web_sales.ws_sales_price <= CAST(150 AS DECIMAL(3,0)) OR default.impala_tpcds_web_sales.ws_sales_price >= CAST(50 AS DECIMAL(2,0)) AND default.impala_tpcds_web_sales.ws_sales_price <= CAST(100 AS DECIMAL(3,0)) OR default.impala_tpcds_web_sales.ws_sales_price >= CAST(150 AS DECIMAL(3,0)) AND default.impala_tpcds_web_sales.ws_sales_price <= CAST(200 AS DECIMAL(3,0))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -628,7 +628,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_page.wp_web_page_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -643,7 +643,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_year = CAST(2001 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim.d_year = CAST(2001 AS INT)

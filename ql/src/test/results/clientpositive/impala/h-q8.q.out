@@ -309,7 +309,7 @@ Per-Host Resources: mem-estimate=133.94MB mem-reservation=39.81MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_lineitem.l_orderkey IS NOT NULL, default.impala_tpch_lineitem.l_partkey IS NOT NULL, default.impala_tpch_lineitem.l_suppkey IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -324,7 +324,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_part.p_partkey IS NOT NULL, default.impala_tpch_part.p_type = 'ECONOMY ANODIZED STEEL'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpch_part.p_type = 'ECONOMY ANODIZED STEEL'
@@ -352,7 +352,7 @@ Per-Host Resources: mem-estimate=1.96MB mem-reservation=1.94MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_supplier.s_nationkey IS NOT NULL, default.impala_tpch_supplier.s_suppkey IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -367,7 +367,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: n2.n_nationkey IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -406,7 +406,7 @@ Per-Host Resources: mem-estimate=3.92MB mem-reservation=3.88MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_orders.o_custkey IS NOT NULL, default.impala_tpch_orders.o_orderkey IS NOT NULL, default.impala_tpch_orders.o_orderdate >= '1995-01-01' AND default.impala_tpch_orders.o_orderdate <= '1996-12-31'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -421,7 +421,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_customer.c_custkey IS NOT NULL, default.impala_tpch_customer.c_nationkey IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -448,7 +448,7 @@ Per-Host Resources: mem-estimate=1.96MB mem-reservation=1.94MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: n1.n_nationkey IS NOT NULL, n1.n_regionkey IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -463,7 +463,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_region.r_regionkey IS NOT NULL, default.impala_tpch_region.r_name = 'AMERICA'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpch_region.r_name = 'AMERICA'

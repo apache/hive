@@ -533,7 +533,7 @@ Per-Host Resources: mem-estimate=256.03MB mem-reservation=68.00MB thread-reserva
   |     HDFS partitions=1/1 files=0 size=0B
   |     predicates: default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_sold_date_sk IS NOT NULL
   |     stored statistics:
-  |       table: rows=0 size=0B
+  |       table: rows=unavailable size=unavailable
   |       columns: unavailable
   |     extrapolated-rows=disabled max-scan-range-rows=0
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -655,7 +655,7 @@ Per-Host Resources: mem-estimate=133.89MB mem-reservation=39.81MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_catalog_sales.cs_item_sk IS NOT NULL, default.impala_tpcds_catalog_sales.cs_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -670,7 +670,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_year = subtract(CAST(2001 AS INT), CAST(1 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim.d_year = subtract(CAST(2001 AS INT), CAST(1 AS INT))
@@ -686,7 +686,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_catalog_returns.cr_item_sk IS NOT NULL, default.impala_tpcds_catalog_returns.cr_order_number IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -701,7 +701,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item.i_brand_id IS NOT NULL, default.impala_tpcds_item.i_category_id IS NOT NULL, default.impala_tpcds_item.i_class_id IS NOT NULL, default.impala_tpcds_item.i_item_sk IS NOT NULL, default.impala_tpcds_item.i_manufact_id IS NOT NULL, default.impala_tpcds_item.i_category = 'Sports'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_item.i_category = 'Sports'
@@ -717,7 +717,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_year = subtract(CAST(2001 AS INT), CAST(1 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_0.d_year = subtract(CAST(2001 AS INT), CAST(1 AS INT))
@@ -733,7 +733,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_store_returns.sr_item_sk IS NOT NULL, default.impala_tpcds_store_returns.sr_ticket_number IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -748,7 +748,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_0.i_brand_id IS NOT NULL, default.impala_tpcds_item_0.i_category_id IS NOT NULL, default.impala_tpcds_item_0.i_class_id IS NOT NULL, default.impala_tpcds_item_0.i_item_sk IS NOT NULL, default.impala_tpcds_item_0.i_manufact_id IS NOT NULL, default.impala_tpcds_item_0.i_category = 'Sports'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_item_0.i_category = 'Sports'
@@ -764,7 +764,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_1.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_1.d_year = subtract(CAST(2001 AS INT), CAST(1 AS INT))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_1.d_year = subtract(CAST(2001 AS INT), CAST(1 AS INT))
@@ -780,7 +780,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_returns.wr_item_sk IS NOT NULL, default.impala_tpcds_web_returns.wr_order_number IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -795,7 +795,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_1.i_brand_id IS NOT NULL, default.impala_tpcds_item_1.i_category_id IS NOT NULL, default.impala_tpcds_item_1.i_class_id IS NOT NULL, default.impala_tpcds_item_1.i_item_sk IS NOT NULL, default.impala_tpcds_item_1.i_manufact_id IS NOT NULL, default.impala_tpcds_item_1.i_category = 'Sports'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_item_1.i_category = 'Sports'
@@ -897,7 +897,7 @@ Per-Host Resources: mem-estimate=256.03MB mem-reservation=68.00MB thread-reserva
   |     HDFS partitions=1/1 files=0 size=0B
   |     predicates: default.impala_tpcds_web_sales_0.ws_item_sk IS NOT NULL, default.impala_tpcds_web_sales_0.ws_sold_date_sk IS NOT NULL
   |     stored statistics:
-  |       table: rows=0 size=0B
+  |       table: rows=unavailable size=unavailable
   |       columns: unavailable
   |     extrapolated-rows=disabled max-scan-range-rows=0
   |     mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1019,7 +1019,7 @@ Per-Host Resources: mem-estimate=133.89MB mem-reservation=39.81MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_catalog_sales_0.cs_item_sk IS NOT NULL, default.impala_tpcds_catalog_sales_0.cs_sold_date_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1034,7 +1034,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_2.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_2.d_year = CAST(2001 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_2.d_year = CAST(2001 AS INT)
@@ -1050,7 +1050,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_catalog_returns_0.cr_item_sk IS NOT NULL, default.impala_tpcds_catalog_returns_0.cr_order_number IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1065,7 +1065,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_2.i_brand_id IS NOT NULL, default.impala_tpcds_item_2.i_category_id IS NOT NULL, default.impala_tpcds_item_2.i_class_id IS NOT NULL, default.impala_tpcds_item_2.i_item_sk IS NOT NULL, default.impala_tpcds_item_2.i_manufact_id IS NOT NULL, default.impala_tpcds_item_2.i_category = 'Sports'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_item_2.i_category = 'Sports'
@@ -1081,7 +1081,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_3.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_3.d_year = CAST(2001 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_3.d_year = CAST(2001 AS INT)
@@ -1097,7 +1097,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_store_returns_0.sr_item_sk IS NOT NULL, default.impala_tpcds_store_returns_0.sr_ticket_number IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1112,7 +1112,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_3.i_brand_id IS NOT NULL, default.impala_tpcds_item_3.i_category_id IS NOT NULL, default.impala_tpcds_item_3.i_class_id IS NOT NULL, default.impala_tpcds_item_3.i_item_sk IS NOT NULL, default.impala_tpcds_item_3.i_manufact_id IS NOT NULL, default.impala_tpcds_item_3.i_category = 'Sports'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_item_3.i_category = 'Sports'
@@ -1128,7 +1128,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_4.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_4.d_year = CAST(2001 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim_4.d_year = CAST(2001 AS INT)
@@ -1144,7 +1144,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_returns_0.wr_item_sk IS NOT NULL, default.impala_tpcds_web_returns_0.wr_order_number IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1159,7 +1159,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_4.i_brand_id IS NOT NULL, default.impala_tpcds_item_4.i_category_id IS NOT NULL, default.impala_tpcds_item_4.i_class_id IS NOT NULL, default.impala_tpcds_item_4.i_item_sk IS NOT NULL, default.impala_tpcds_item_4.i_manufact_id IS NOT NULL, default.impala_tpcds_item_4.i_category = 'Sports'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_item_4.i_category = 'Sports'

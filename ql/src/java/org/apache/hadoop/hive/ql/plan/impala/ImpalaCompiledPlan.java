@@ -18,17 +18,27 @@
 
 package org.apache.hadoop.hive.ql.plan.impala;
 
+import com.google.common.base.Preconditions;
+
 import org.apache.impala.thrift.TExecRequest;
 import org.apache.impala.util.EventSequence;
+import org.apache.impala.planner.PlanNode;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.fs.Path;
 
 public class ImpalaCompiledPlan {
 
-  private final TExecRequest execRequest;
+  private TExecRequest execRequest;
   private final EventSequence timeline;
+  private ImpalaPlanner planner;
+  private PlanNode planNode;
+  private boolean isExplain;
 
-  public ImpalaCompiledPlan(TExecRequest execRequest, EventSequence timeline) {
-    this.execRequest = execRequest;
+  public ImpalaCompiledPlan(ImpalaPlanner planner, PlanNode planNode, EventSequence timeline, boolean isExplain) {
     this.timeline = timeline;
+    this.planner = planner;
+    this.planNode = planNode;
+    this.isExplain = isExplain;
   }
 
   public EventSequence getTimeline() {
@@ -37,6 +47,12 @@ public class ImpalaCompiledPlan {
 
   public String getExplain() {
     return execRequest.getQuery_exec_request().getQuery_plan();
+  }
+
+  public void createExecRequest(Path location, boolean isOverwrite, long writeTxn)
+       throws HiveException {
+    Preconditions.checkState(execRequest == null, "Impala execution request should only be created once");
+    this.execRequest = planner.createExecRequest(planNode, isExplain, location, isOverwrite, writeTxn);
   }
 
   public TExecRequest getExecRequest() {

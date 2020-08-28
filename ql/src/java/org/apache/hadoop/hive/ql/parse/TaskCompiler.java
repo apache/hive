@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.Engine;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.Context;
@@ -451,25 +452,23 @@ public abstract class TaskCompiler {
   private void setLoadFileLocation(
       final ParseContext pCtx, LoadFileDesc lfd) throws SemanticException {
     // CTAS; make the movetask's destination directory the table's destination.
-    Long txnId = null;
     int stmtId = 0; // CTAS or CMV cannot be part of multi-txn stmt
     FileSinkDesc dataSink = null;
     String loc = null;
     if (pCtx.getQueryProperties().isCTAS()) {
       CreateTableDesc ctd = pCtx.getCreateTable();
       dataSink = ctd.getAndUnsetWriter();
-      txnId = ctd.getInitialMmWriteId();
       loc = ctd.getLocation();
     } else {
       CreateViewDesc cmv = pCtx.getCreateViewDesc();
       dataSink = cmv.getAndUnsetWriter();
-      txnId = cmv.getInitialMmWriteId();
       loc = cmv.getLocation();
     }
+    long writeId = lfd.getWriteId();
     Path location = (loc == null) ? getDefaultCtasLocation(pCtx) : new Path(loc);
-    if (txnId != null) {
+    if (writeId >= 0) {
       dataSink.setDirName(location);
-      location = new Path(location, AcidUtils.deltaSubdir(txnId, txnId, stmtId));
+      location = new Path(location, AcidUtils.deltaSubdir(writeId, writeId, stmtId));
       lfd.setSourcePath(location);
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("Setting MM CTAS to " + location);
@@ -489,6 +488,14 @@ public abstract class TaskCompiler {
       if (pCtx.getQueryProperties().isCTAS()) {
         protoName = pCtx.getCreateTable().getDbTableName();
         isExternal = pCtx.getCreateTable().isExternal();
+        // Temporary until HIVE-23968 or HIVE-24086 are resolved (CTAS with external table
+        // translation ends up writing to the untranslated path).
+        if (conf.getEngine() == Engine.IMPALA) {
+          Map<String, String> tableProps = pCtx.getCreateTable().getTblProps();
+          boolean isTransactional = "true".equalsIgnoreCase(tableProps.get("transactional"));
+          boolean isInsertOnly = "insert_only".equalsIgnoreCase(tableProps.get("transactional_properties"));
+          isExternal = isExternal | (!isTransactional && !isInsertOnly);
+        }
       } else if (pCtx.getQueryProperties().isMaterializedView()) {
         protoName = pCtx.getCreateViewDesc().getViewName();
       }

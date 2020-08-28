@@ -461,7 +461,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item.i_brand IS NOT NULL, default.impala_tpcds_item.i_category IS NOT NULL, default.impala_tpcds_item.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -476,7 +476,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_year IN (CAST(1999 AS INT), subtract(CAST(1999 AS INT), CAST(1 AS INT)), add(CAST(1999 AS INT), CAST(1 AS INT))), default.impala_tpcds_date_dim.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim.d_year = subtract(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim.d_moy = CAST(12 AS INT) OR default.impala_tpcds_date_dim.d_year = add(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim.d_moy = CAST(1 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -491,7 +491,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_store.s_company_name IS NOT NULL, default.impala_tpcds_store.s_store_name IS NOT NULL, default.impala_tpcds_store.s_store_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -617,7 +617,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_0.i_brand IS NOT NULL, default.impala_tpcds_item_0.i_category IS NOT NULL, default.impala_tpcds_item_0.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -632,7 +632,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_year IN (CAST(1999 AS INT), subtract(CAST(1999 AS INT), CAST(1 AS INT)), add(CAST(1999 AS INT), CAST(1 AS INT))), default.impala_tpcds_date_dim_0.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim_0.d_year = subtract(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_0.d_moy = CAST(12 AS INT) OR default.impala_tpcds_date_dim_0.d_year = add(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_0.d_moy = CAST(1 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -647,7 +647,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_store_0.s_company_name IS NOT NULL, default.impala_tpcds_store_0.s_store_name IS NOT NULL, default.impala_tpcds_store_0.s_store_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -773,7 +773,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item_1.i_brand IS NOT NULL, default.impala_tpcds_item_1.i_category IS NOT NULL, default.impala_tpcds_item_1.i_item_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -788,7 +788,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim_1.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_1.d_year IN (CAST(1999 AS INT), subtract(CAST(1999 AS INT), CAST(1 AS INT)), add(CAST(1999 AS INT), CAST(1 AS INT))), default.impala_tpcds_date_dim_1.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim_1.d_year = subtract(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_1.d_moy = CAST(12 AS INT) OR default.impala_tpcds_date_dim_1.d_year = add(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_1.d_moy = CAST(1 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -803,7 +803,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_store_1.s_company_name IS NOT NULL, default.impala_tpcds_store_1.s_store_name IS NOT NULL, default.impala_tpcds_store_1.s_store_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

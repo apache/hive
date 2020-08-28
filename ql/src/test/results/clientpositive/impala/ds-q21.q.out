@@ -240,7 +240,7 @@ Per-Host Resources: mem-estimate=133.88MB mem-reservation=39.81MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_inventory.inv_date_sk IS NOT NULL, default.impala_tpcds_inventory.inv_item_sk IS NOT NULL, default.impala_tpcds_inventory.inv_warehouse_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -255,7 +255,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_warehouse.w_warehouse_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -270,7 +270,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_item.i_item_sk IS NOT NULL, default.impala_tpcds_item.i_current_price >= CAST(0.99 AS DECIMAL(2,2)) AND default.impala_tpcds_item.i_current_price <= CAST(1.49 AS DECIMAL(3,2))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -285,7 +285,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, casttotimestamp(default.impala_tpcds_date_dim.d_date) >= MILLISECONDS_SUB(casttotimestamp(casttodate('1999-03-20')), INTERVAL CAST(2592000000 AS BIGINT) MILLISECOND) AND casttotimestamp(default.impala_tpcds_date_dim.d_date) <= MILLISECONDS_ADD(casttotimestamp(casttodate('1999-03-20')), INTERVAL CAST(2592000000 AS BIGINT) MILLISECOND)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

@@ -256,7 +256,7 @@ Per-Host Resources: mem-estimate=13.88MB mem-reservation=3.88MB thread-reservati
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_supplier_0.s_nationkey IS NOT NULL, default.impala_tpch_supplier_0.s_suppkey IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -271,7 +271,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_nation_0.n_nationkey IS NOT NULL, default.impala_tpch_nation_0.n_name = 'GERMANY'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpch_nation_0.n_name = 'GERMANY'
@@ -287,7 +287,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_partsupp_0.ps_suppkey IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -350,7 +350,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_supplier.s_nationkey IS NOT NULL, default.impala_tpch_supplier.s_suppkey IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -365,7 +365,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_nation.n_nationkey IS NOT NULL, default.impala_tpch_nation.n_name = 'GERMANY'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpch_nation.n_name = 'GERMANY'
@@ -381,7 +381,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_partsupp.ps_suppkey IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

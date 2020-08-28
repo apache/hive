@@ -444,7 +444,7 @@ Per-Host Resources: mem-estimate=240.27KB mem-reservation=0B thread-reservation=
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_reason.r_reason_sk = CAST(1 AS BIGINT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_reason.r_reason_sk = CAST(1 AS BIGINT)

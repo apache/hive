@@ -19,12 +19,21 @@ package org.apache.hadoop.hive.ql.parse;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
+
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.ImpalaQueryOperator;
+import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -34,17 +43,18 @@ import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
+import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
+import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
 import org.apache.hadoop.hive.ql.plan.impala.work.ImpalaWork;
 import org.apache.impala.thrift.TExecRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 
 import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
 
@@ -66,9 +76,11 @@ public class ImpalaCompiler extends TaskCompiler {
 
     @Override
     protected void generateTaskTree(List<Task<?>> rootTasks, ParseContext pCtx,
-            List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
+            List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs) throws SemanticException {
         // CDPD-6976: Add Perf logging for Impala Execution
         ImpalaWork work;
+        Preconditions.checkArgument(mvTask.size() <= 1, "ImpalaCompiler expects at most 1 MoveTask");
+        MoveTask moveTask = mvTask.size() == 0 ? null : (MoveTask) mvTask.get(0);
         if (isPlanned) {
             boolean computeStats = pCtx.getQueryProperties().isAnalyzeCommand() ||
                 pCtx.getQueryProperties().isAnalyzeRewrite();
@@ -81,15 +93,21 @@ public class ImpalaCompiler extends TaskCompiler {
                 work = ImpalaWork.createPlannedWork(generateComputeStatsStatement(pCtx, inputs),
                     pCtx.getFetchTask(), requestedFetchSize);
             } else {
+                MoveWork moveWork = moveTask == null ? null : (MoveWork) moveTask.getWork();
                 // This is the common path for a planned query
-                work = ImpalaWork.createPlannedWork(getCompiledPlan(pCtx), pCtx.getQueryState().getQueryString(),
+                work = ImpalaWork.createPlannedWork(getFinalizedCompiledPlan(pCtx, moveWork), pCtx.getQueryState().getQueryString(),
                     pCtx.getFetchTask(), requestedFetchSize);
             }
         } else {
             // CDPD-7172: Investigate security implications of Impala query execution mode
             work = ImpalaWork.createQuery(pCtx.getQueryState().getQueryString(), pCtx.getFetchTask(), requestedFetchSize);
         }
-        rootTasks.add(TaskFactory.get(work));
+
+        Task task = TaskFactory.get(work);
+        if (isPlanned && moveTask != null) {
+          task.addDependentTask(moveTask);
+        }
+        rootTasks.add(task);
     }
 
     /**
@@ -165,7 +183,7 @@ public class ImpalaCompiler extends TaskCompiler {
     protected void setInputFormat(Task<?> rootTask) {
     }
 
-    private ImpalaCompiledPlan getCompiledPlan(ParseContext pCtx) {
+    private ImpalaQueryOperator getImpalaQueryOp(ParseContext pCtx) {
         Collection<Operator<?>> tableScanOps = Lists.newArrayList(pCtx.getTopOps().values());
         Set<ImpalaQueryOperator> fsOps = OperatorUtils.findOperators(tableScanOps, ImpalaQueryOperator.class);
         if (pCtx.getLoadTableWork().size() > 1) {
@@ -174,7 +192,50 @@ public class ImpalaCompiler extends TaskCompiler {
         if (fsOps.isEmpty()) {
             throw new RuntimeException("No ImpalaQueryOperator found in the ImpalaCompiler");
         }
-        return fsOps.iterator().next().getCompiledPlan();
+        // We expect only a single ImpalaQueryOperator
+        Preconditions.checkState(fsOps.size() == 1);
+        return fsOps.iterator().next();
+    }
+
+    private ImpalaCompiledPlan getFinalizedCompiledPlan(ParseContext pCtx, MoveWork moveWork) throws SemanticException {
+      // The primary intent of this method is to examine the MoveWork generated by the TaskCompiler and use the
+      // information to deduce where the MoveTask expects the output of the Impala sink. We also propagate the
+      // desired writeId. Deferring this work until now allows up to pick up any modifications the compiler
+      // does to sinks and sources (such as for CTAS statements).
+      // Normal query result location is determined by the sink location in FinkSinkDesc.
+      ImpalaCompiledPlan plan = getImpalaQueryOp(pCtx).getCompiledPlan();
+      Path destination = null;
+      long writeId = -1;
+      boolean isOverwrite = false;
+      if (moveWork != null) {
+        LoadFileDesc lfd = moveWork.getLoadFileWork();
+        LoadTableDesc ltd = moveWork.getLoadTableWork();
+        LoadMultiFilesDesc lmfd = moveWork.getLoadMultiFilesWork();
+        Preconditions.checkState(lmfd == null, "ImpalaCompiler does not support LoadMultiFiles work");
+        Preconditions.checkState((lfd != null) ^ (ltd != null), "ImpalaCompiler expects one of LoadFileDesc or LoadTableDesc work");
+
+        if (lfd != null) {
+          destination = lfd.getSourcePath();
+          writeId = lfd.getWriteId();
+          LOG.debug("Using LoadFileDesc to finalize Impala compiled plan: destination: {} writeId: {}",
+              destination, writeId);
+        }
+
+        if (ltd != null) {
+          writeId = ltd.getWriteId();
+          destination = ltd.getSourcePath();
+          isOverwrite = ltd.isInsertOverwrite();
+          LOG.debug("Using LoadTableDesc to finalize Impala compiled plan: destination: {} isOverwrite: {}, writeId: {}",
+              destination, isOverwrite, writeId);
+        }
+      }
+
+      try {
+        plan.createExecRequest(destination, isOverwrite, writeId);
+      } catch (Exception e) {
+        throw new SemanticException(e);
+      }
+      return plan;
     }
 
     @Override

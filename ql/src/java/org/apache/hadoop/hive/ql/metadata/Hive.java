@@ -2361,12 +2361,12 @@ public class Hive {
         skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
         newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
       }
-      if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      if (!this.getConf().isAutogatherStatsEnabled()) {
         StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
       }
       if (oldPart == null) {
         newTPart.getTPartition().setParameters(new HashMap<String,String>());
-        if (this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        if (this.getConf().isAutogatherStatsEnabled()) {
           StatsSetupConst.setStatsStateForCreateTable(newTPart.getParameters(),
               MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
         }
@@ -3065,7 +3065,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       perfLogger.PerfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
     }
-    if (!this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+
+    if (!this.getConf().isAutogatherStatsEnabled()) {
       LOG.debug("setting table statistics false for " + tbl.getDbName() + "." + tbl.getTableName());
       StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
     }

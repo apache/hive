@@ -905,7 +905,7 @@ public class CreateTableDesc implements DDLDesc, Serializable {
     // reset it on replica.
     if (replicationSpec == null || !replicationSpec.isInReplicationScope()) {
       if (!this.isCTAS && (tbl.getPath() == null || (tbl.isEmpty() && !isExternal()))) {
-        if (!tbl.isPartitioned() && conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+        if (!tbl.isPartitioned() && conf.isAutogatherStatsEnabled()) {
           StatsSetupConst.setStatsStateForCreateTable(tbl.getTTable().getParameters(),
                   MetaStoreUtils.getColumnNames(tbl.getCols()), StatsSetupConst.TRUE);
         }

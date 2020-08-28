@@ -318,7 +318,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.ImpalaQueryDesc;
-import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaHelper;
@@ -1716,35 +1715,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       String dest = getQB().getParseInfo().getClauseNames().iterator().next();
       FileSinkOperator fso = (FileSinkOperator) genFileSinkPlan(dest, getQB(), tableScanOp);
-      Path resultDir = null;
-      if (getQB().isCTAS() || getQB().isMaterializedView()) {
-        String destinationPath = getQB().getMetaData().getDestFileForAlias(dest);
-        Preconditions.checkState(destinationPath != null, "CTAS/MV path");
-        resultDir = FileUtils.makeQualified(new Path(destinationPath), conf);
-      } else if (conf.getImpalaResultMethod() == ImpalaResultMethod.FILE) {
-        resultDir = fso.getConf().getDirName();
-      }
-      long writeId = -1;
-      if (!loadTableWork.isEmpty()) {
-        if (loadTableWork.size() > 1) {
-          throw new RuntimeException("Multi-table inserts not supported for Impala");
-        }
-        LoadTableDesc loadTableDesc = loadTableWork.get(0);
-        if (loadTableDesc.isWriteIdSet()) {
-          writeId = loadTableDesc.getWriteId();
-        }
-      }
       // We plumb through the QueryValidTxnWriteIdList() due to the fact that when we load
       // ImpalaHdfsTable we make HMS calls that require a ValidWriteIdList (for transactional
       // tables). This is typically done for most HMS calls automatically once compilation and
       // lock acquistion is done, but since we are in the middle of compilation we can not
       // rely on that behavior)
       ImpalaCompiledPlan compiledPlan = this.impalaHelper.compilePlan(
-          getDb(), impalaRel, resultDir, ctx.isExplainPlan(), getQB(), cboCtx.type, writeId,
+          getDb(), impalaRel, fso.getConf(), ctx.isExplainPlan(), getQB(), cboCtx.type,
           getQueryValidTxnWriteIdList());
       markEvent("Impala plan generated");
       return OperatorFactory.getAndMakeChild(new ImpalaQueryDesc(compiledPlan), fso);
-    } catch (HiveException | java.io.IOException e) {
+    } catch (HiveException e) {
       throw new RuntimeException(e);
     }
   }

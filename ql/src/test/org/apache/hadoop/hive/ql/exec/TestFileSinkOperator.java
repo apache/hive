@@ -285,7 +285,7 @@ public class TestFileSinkOperator {
       partColMap.put(PARTCOL_NAME, null);
       DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(partColMap, "Sunday", 100);
       //todo: does this need the finalDestination?
-      desc = new FileSinkDesc(basePath, tableDesc, false, 1, false,
+      desc = new FileSinkDesc(basePath, tableDesc, null, false, 1, false,
           false, 1, 1, partCols, dpCtx, null, null, false, false, false, false, false);
     } else {
       desc = new FileSinkDesc(basePath, tableDesc, false);

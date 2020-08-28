@@ -143,4 +143,15 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   public boolean isMmCtas() {
     return isMmCtas;
   }
+
+  public long getWriteId() {
+    Long writeId = null;
+    if (ctasCreateTableDesc != null) {
+      writeId = ctasCreateTableDesc.getInitialMmWriteId();
+    }
+    if (createViewDesc != null) {
+      writeId = createViewDesc.getInitialMmWriteId();
+    }
+    return (writeId == null) ? -1 : writeId;
+  }
 }

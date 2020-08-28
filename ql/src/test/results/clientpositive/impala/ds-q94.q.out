@@ -288,7 +288,7 @@ Per-Host Resources: mem-estimate=137.78MB mem-reservation=43.69MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: ws1.ws_order_number IS NOT NULL, ws1.ws_ship_addr_sk IS NOT NULL, ws1.ws_ship_date_sk IS NOT NULL, ws1.ws_web_site_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -303,7 +303,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, casttotimestamp(default.impala_tpcds_date_dim.d_date) >= _impala_builtins.casttotimestamp('1999-04-01 00:00:00') AND casttotimestamp(default.impala_tpcds_date_dim.d_date) <= MILLISECONDS_ADD(_impala_builtins.casttotimestamp('1999-04-01 00:00:00'), INTERVAL CAST(5184000000 AS BIGINT) MILLISECOND)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -318,7 +318,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_customer_address.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address.ca_state = 'NE'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_customer_address.ca_state = 'NE'
@@ -334,7 +334,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_site.web_site_sk IS NOT NULL, default.impala_tpcds_web_site.web_company_name = 'pri'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_web_site.web_company_name = 'pri'
@@ -350,7 +350,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: ws2.ws_order_number IS NOT NULL, ws2.ws_warehouse_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -386,7 +386,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: wr1.wr_order_number IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

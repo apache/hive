@@ -223,7 +223,7 @@ Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservati
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_sales.ws_ship_hdemo_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_sold_time_sk IS NOT NULL, default.impala_tpcds_web_sales.ws_web_page_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -238,7 +238,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_household_demographics.hd_demo_sk IS NOT NULL, default.impala_tpcds_household_demographics.hd_dep_count = CAST(3 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_household_demographics.hd_dep_count = CAST(3 AS INT)
@@ -254,7 +254,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_time_dim.t_time_sk IS NOT NULL, default.impala_tpcds_time_dim.t_hour >= CAST(9 AS INT) AND default.impala_tpcds_time_dim.t_hour <= casttoint(add(CAST(9 AS SMALLINT), CAST(1 AS SMALLINT)))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -269,7 +269,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_page.wp_web_page_sk IS NOT NULL, default.impala_tpcds_web_page.wp_char_count >= CAST(5000 AS INT) AND default.impala_tpcds_web_page.wp_char_count <= CAST(5200 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -341,7 +341,7 @@ Per-Host Resources: mem-estimate=15.81MB mem-reservation=5.81MB thread-reservati
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_sales_0.ws_ship_hdemo_sk IS NOT NULL, default.impala_tpcds_web_sales_0.ws_sold_time_sk IS NOT NULL, default.impala_tpcds_web_sales_0.ws_web_page_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -356,7 +356,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_household_demographics_0.hd_demo_sk IS NOT NULL, default.impala_tpcds_household_demographics_0.hd_dep_count = CAST(3 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_household_demographics_0.hd_dep_count = CAST(3 AS INT)
@@ -372,7 +372,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_time_dim_0.t_time_sk IS NOT NULL, default.impala_tpcds_time_dim_0.t_hour >= CAST(16 AS INT) AND default.impala_tpcds_time_dim_0.t_hour <= casttoint(add(CAST(16 AS SMALLINT), CAST(1 AS SMALLINT)))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -387,7 +387,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_web_page_0.wp_web_page_sk IS NOT NULL, default.impala_tpcds_web_page_0.wp_char_count >= CAST(5000 AS INT) AND default.impala_tpcds_web_page_0.wp_char_count <= CAST(5200 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

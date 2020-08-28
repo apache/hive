@@ -82,7 +82,7 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
   00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -193,7 +193,7 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
   00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -304,7 +304,7 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
   00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -415,7 +415,7 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
   00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -513,7 +513,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
   00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -624,7 +624,7 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
   00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -735,7 +735,7 @@ Per-Host Resources: mem-estimate=266.00MB mem-reservation=68.00MB thread-reserva
   00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -854,7 +854,7 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=102.00MB thread-reserv
   00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -954,7 +954,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
   00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1085,7 +1085,7 @@ Per-Host Resources: mem-estimate=384.00MB mem-reservation=102.00MB thread-reserv
   00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1204,7 +1204,7 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=102.00MB thread-reserv
   00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -1335,7 +1335,7 @@ Per-Host Resources: mem-estimate=384.00MB mem-reservation=102.00MB thread-reserv
   00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0

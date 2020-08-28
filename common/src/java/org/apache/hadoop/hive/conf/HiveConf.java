@@ -2644,8 +2644,12 @@ public class HiveConf extends Configuration {
         "This many percentage of rows will be estimated as count distinct in absence of statistics."),
     HIVE_STATS_NUM_NULLS_ESTIMATE_PERC("hive.stats.num.nulls.estimate.percent", (float)5,
         "This many percentage of rows will be estimated as number of nulls in absence of statistics."),
+    // Rather than directly checking within the configuration map, it is recommended to use conf.isAutogatherStatsEnabled()
+    // to determine the value since it takes into account if the underlying engine supports autogather stats.
     HIVESTATSAUTOGATHER("hive.stats.autogather", true,
         "A flag to gather statistics (only basic) automatically during the INSERT OVERWRITE command."),
+    // Rather than directly checking within the configuration map, it is recommended to use conf.isAutogatherColumnStatsEnabled()
+    // to determine the value since it takes into account if the underlying engine supports autogathering column stats.
     HIVESTATSCOLAUTOGATHER("hive.stats.column.autogather", true,
         "A flag to gather column statistics automatically."),
     HIVESTATSDBCLASS("hive.stats.dbclass", "fs", new PatternSet("custom", "fs"),
@@ -6303,6 +6307,22 @@ public class HiveConf extends Configuration {
     } catch (Exception e) {
       return ImpalaExecutionMode.INVALID_MODE;
     }
+  }
+
+  public boolean isAutogatherStatsEnabled() {
+    if (getEngine() == Engine.IMPALA) {
+      // Impala currently doesn't support StatsTasks
+      return false;
+    }
+    return getBoolVar(ConfVars.HIVESTATSAUTOGATHER);
+  }
+
+  public boolean isAutogatherColumnStatsEnabled() {
+    if (getEngine() == Engine.IMPALA) {
+      // Impala currently doesn't support StatsTasks
+      return false;
+    }
+    return getBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER);
   }
 
   /**

@@ -201,7 +201,7 @@ public class AlterTableConcatenateAnalyzer extends AbstractAlterTableAnalyzer {
 
   private void addStatTask(TableName tableName, Table table, Map<String, String> partitionSpec, Path oldLocation,
       Path newLocation, LoadTableDesc loadTableDesc, Task<MoveWork> moveTask) throws SemanticException {
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+    if (conf.isAutogatherStatsEnabled()) {
       BasicStatsWork basicStatsWork;
       if (oldLocation.equals(newLocation)) {
         // If we're merging to the same location, we can avoid some metastore calls

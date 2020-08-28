@@ -311,7 +311,7 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
   private void addStatTask(ASTNode root, Table table, Path oldPartitionLocation, Path newPartitionLocation,
       LoadTableDesc loadTableDesc, Task<MoveWork> moveTask) throws SemanticException {
     // Recalculate the HDFS stats if auto gather stats is set
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+    if (conf.isAutogatherStatsEnabled()) {
       BasicStatsWork basicStatsWork;
       if (oldPartitionLocation.equals(newPartitionLocation)) {
         // If we're merging to the same location, we can avoid some metastore calls

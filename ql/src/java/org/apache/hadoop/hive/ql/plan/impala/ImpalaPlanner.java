@@ -19,12 +19,25 @@ package org.apache.hadoop.hive.ql.plan.impala;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf.ImpalaResultMethod;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.parse.QBMetaData;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.LiteralExpr;
 import org.apache.impala.catalog.Column;
@@ -33,16 +46,18 @@ import org.apache.impala.catalog.HdfsTable;
 import org.apache.impala.common.AnalysisException;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.common.Pair;
+import org.apache.impala.compat.MetastoreShim;
 import org.apache.impala.planner.DataPartition;
 import org.apache.impala.planner.DistributedPlanner;
+import org.apache.impala.planner.HdfsTableSink;
 import org.apache.impala.planner.ParallelPlanner;
 import org.apache.impala.planner.PlanFragment;
 import org.apache.impala.planner.PlanNode;
 import org.apache.impala.planner.PlanRootSink;
-import org.apache.impala.planner.TableSink;
 import org.apache.impala.planner.Planner;
 import org.apache.impala.planner.RuntimeFilterGenerator;
 import org.apache.impala.planner.SingleNodePlanner;
+import org.apache.impala.planner.TableSink;
 import org.apache.impala.service.Frontend;
 import org.apache.impala.thrift.TColumn;
 import org.apache.impala.thrift.TExecRequest;
@@ -56,12 +71,8 @@ import org.apache.impala.thrift.TRuntimeFilterMode;
 import org.apache.impala.thrift.TSortingOrder;
 import org.apache.impala.thrift.TStmtType;
 import org.apache.impala.util.EventSequence;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The ImpalaPlanner encapsulates selected functionality from Impala's Frontend and
@@ -77,22 +88,16 @@ public class ImpalaPlanner {
   private TStmtType stmtType_;
   private TStmtType resultStmtType_;
   private ImpalaPlannerContext ctx_;
-  boolean isOverwrite_ = false;
-  private final long writeId_;
+  private FileSinkDesc fileSinkDesc_;
+  private static final Logger LOG = LoggerFactory.getLogger(ImpalaPlanner.class);
 
-  // Path where result files are written when hive.impala.execution.mode is file.
-  private final Path resultPath;
-
-  public ImpalaPlanner(ImpalaQueryContext queryContext, Path resultPath, Hive db, QB qb,
-      TStmtType stmtType, TStmtType resultStmtType, EventSequence timeline, long writeId) throws HiveException {
-
+  public ImpalaPlanner(ImpalaQueryContext queryContext, FileSinkDesc fileSinkDesc, Hive db, QB qb,
+      TStmtType stmtType, TStmtType resultStmtType, EventSequence timeline) throws HiveException {
     db_ = db;
     qb_ = qb;
     stmtType_ = stmtType;
     resultStmtType_ = resultStmtType;
-    writeId_ = writeId;
-
-    this.resultPath = resultPath;
+    fileSinkDesc_ = fileSinkDesc;
     ctx_ = new ImpalaPlannerContext(queryContext, timeline);
   }
 
@@ -105,7 +110,8 @@ public class ImpalaPlanner {
   }
 
 
-  List<PlanFragment> createPlans(PlanNode planNodeRoot) throws HiveException {
+  List<PlanFragment> createPlans(PlanNode planNodeRoot, Path destination, boolean isOverwrite,
+      long writeId) throws HiveException {
     try {
       // Create the values transfer graph in the Analyzer. Note that FENG plans
       // don't register equijoin predicates in the Analyzer's GlobalState since
@@ -126,7 +132,8 @@ public class ImpalaPlanner {
       Planner.checkParallelPlanEligibility(ctx_);
       SingleNodePlanner.validatePlan(ctx_, planNodeRoot);
 
-      List<PlanFragment> fragments = createPlanFragments(planNodeRoot);
+      List<PlanFragment> fragments = createPlanFragments(planNodeRoot, destination,
+          isOverwrite, writeId);
       PlanFragment planFragmentRoot = fragments.get(0);
       List<PlanFragment> rootFragments;
       if (Planner.useParallelPlan(ctx_)) {
@@ -146,28 +153,19 @@ public class ImpalaPlanner {
   }
 
   /**
-   * Create an exec request for Impala to execute based on the supplied plan
-   * @param planNodeRoot root node of the Impala physical plan
-   * @return TExecRequest thrift structure for backend to execute
-   * @throws ImpalaException
+   * Create an exec request for Impala to execute based on the supplied plan.
    */
-  public TExecRequest createExecRequest(PlanNode planNodeRoot, boolean isExplain) throws HiveException {
-    List<PlanFragment> fragments = createPlans(planNodeRoot);
+  public TExecRequest createExecRequest(PlanNode planNodeRoot, boolean isExplain, Path destination,
+      boolean isOverwrite, long writeId) throws HiveException {
+    LOG.info("Creating Impala execution request: isExplain: {} destination: {} isOverwrite: {} writeId: {}",
+        isExplain, destination, isOverwrite, writeId);
+    List<PlanFragment> fragments = createPlans(planNodeRoot, destination, isOverwrite, writeId);
     PlanFragment planFragmentRoot = fragments.get(0);
 
     TQueryExecRequest queryExecRequest = new TQueryExecRequest();
     TExecRequest result = createExecRequest(ctx_.getQueryCtx(), planFragmentRoot,
         queryExecRequest);
     queryExecRequest.setHost_list(ctx_.getHostLocations());
-
-    if (getResultStmtType() == TStmtType.DML) {
-      boolean isOverwrite_ = ctx_.getTargetTable() != null &&
-          !getQB().getParseInfo().isInsertIntoTable(
-              String.format("%s.%s", ctx_.getTargetTable().getTableName().getDb(),
-              ctx_.getTargetTable().getTableName().getTbl()));
-      Frontend.addFinalizationParamsForInsert(ctx_.getQueryCtx(),
-          queryExecRequest, ctx_.getTargetTable(), writeId_, isOverwrite_);
-    }
 
     // compute resource requirements of the final plan
     boolean isQuery = getResultStmtType() == TStmtType.QUERY;
@@ -224,27 +222,41 @@ public class ImpalaPlanner {
     return sb.toString();
   }
 
-  void initTargetTable() throws HiveException, AnalysisException {
+  void initTargetTable() throws HiveException {
     if (resultStmtType_ == TStmtType.DML) {
       ctx_.initTxnId();
-      String dest = getQB().getParseInfo().getClauseNames().iterator().next();
-      Integer dest_type = getQB().getMetaData().getDestTypeForAlias(dest);
-      if (dest_type == QBMetaData.DEST_TABLE) {
-        org.apache.hadoop.hive.ql.metadata.Table tab = getQB().getMetaData().getDestTableForAlias(dest);
-        HdfsTable hdfsTable = ctx_.getTableLoader().loadHdfsTable(db_, ctx_.getQueryContext().getConf(), tab.getTTable());
-        ctx_.setTargetTable(hdfsTable);
-      } else if (dest_type == QBMetaData.DEST_PARTITION) {
-        Partition part = getQB().getMetaData().getDestPartitionForAlias(dest);
-        org.apache.hadoop.hive.ql.metadata.Table tab = part.getTable();
-        ctx_.setTargetPartition(part);
-        HdfsTable hdfsTable = ctx_.getTableLoader().loadHdfsTable(db_, ctx_.getQueryContext().getConf(), tab.getTTable());
-        ctx_.setTargetTable(hdfsTable);
-      } else if (dest_type == QBMetaData.DEST_DFS_FILE) {
-        String destinationPath = getQB().getMetaData().getDestFileForAlias(dest);
-        Preconditions.checkState(resultPath.toString().equals(destinationPath));
+      // Use FileSinkDesc to determine expected location of query results
+      org.apache.hadoop.hive.ql.metadata.Table tab = fileSinkDesc_.getTable();
+      org.apache.hadoop.hive.ql.metadata.Partition part =  fileSinkDesc_.getPartition();
+      if (tab == null && part != null) {
+        // static partition case
+        tab = part.getTable();
       }
-      else {
-        throw new HiveException("Invalid target type: " + dest);
+
+      HdfsTable hdfsTable = null;
+      org.apache.hadoop.hive.metastore.api.Table msTbl = tab.getTTable();
+
+      if (qb_.isCTAS()) {
+        // Create a dummy target for a CTAS table (the HMS object is created after execution)
+        try {
+          org.apache.hadoop.hive.metastore.api.Database msDb = db_.getDatabase(tab.getDbName());
+          if (msTbl.getSd().getLocation() == null || msTbl.getSd().getLocation().isEmpty()) {
+            msTbl.getSd().setLocation(MetastoreShim.getPathForNewTable(msDb, msTbl));
+          }
+          hdfsTable = HdfsTable.createCtasTarget(new org.apache.impala.catalog.Db(msTbl.getDbName(), msDb),  msTbl);
+        } catch (Exception e) {
+          throw new HiveException("Failed to create CTAS target", e);
+        }
+      } else {
+        // Load the target table
+        hdfsTable = ctx_.getTableLoader().loadHdfsTable(db_, ctx_.getQueryContext().getConf(), msTbl);
+      }
+
+      if (hdfsTable != null) {
+        ctx_.setTargetTable(hdfsTable);
+      }
+      if (part != null) {
+        ctx_.setTargetPartition(part);
       }
     }
   }
@@ -257,7 +269,10 @@ public class ImpalaPlanner {
    * @return list of plan fragments in the order [root fragment, child of root ... leaf fragment]
    * @throws ImpalaException
    */
-  private List<PlanFragment> createPlanFragments(PlanNode planNodeRoot) throws ImpalaException, HiveException {
+  private List<PlanFragment> createPlanFragments(PlanNode planNodeRoot, Path destination,
+      boolean isOverwrite, long writeId)
+    throws ImpalaException, HiveException {
+
     DistributedPlanner distributedPlanner = new DistributedPlanner(ctx_);
     List<PlanFragment> fragments;
 
@@ -284,6 +299,7 @@ public class ImpalaPlanner {
 
     rootFragment.verifyTree();
 
+    int numStaticColumns = 0;
     if (ctx_.getTargetTable() != null) {
       List<Expr> partitionKeyExprs = new ArrayList<>(); // List order must match table order
       List<Integer> referencedColumns = new ArrayList<>(); // Kudu only position mapping
@@ -291,40 +307,75 @@ public class ImpalaPlanner {
       boolean isUpsert = false; // Kudu only upsert
       List<Integer> sortColumns = new ArrayList<>(); // Sort column positions
       TSortingOrder sortingOrder = TSortingOrder.LEXICAL;
-
       Pair<List<Integer>, TSortingOrder> sortProperties = new Pair<>(sortColumns, sortingOrder);
-
       FeTable targetTable = ctx_.getTargetTable();
       if (targetTable instanceof HdfsTable && ((HdfsTable)targetTable).isPartitioned()) {
         Partition part = ctx_.getTargetPartition();
         if (part != null) { // Static partition case
-          for (int i = 0; i < part.getCols().size(); ++i) {
-            partitionKeyExprs.add(LiteralExpr.createFromUnescapedStr(
-                part.getValues().get(i), targetTable.getColumn(
-                    part.getCols().get(i).getName()).getType()));
+          // Iterate over the partition columns and values
+          List<FieldSchema> part_field_schema = part.getTable().getPartCols();
+          List<String> part_values = part.getValues();
+          numStaticColumns = part_field_schema.size();
+          for (int i = 0; i < numStaticColumns; i++) {
+            FieldSchema fs = part_field_schema.get(i);
+            String value = part_values.get(i);
+            partitionKeyExprs.add(LiteralExpr.createFromUnescapedStr(value, targetTable.getColumn(fs.getName()).getType()));
           }
         } else {
           String dest = getQB().getParseInfo().getClauseNames().iterator().next();
           Map<String, String> partSpec = getQB().getMetaData().getDPCtx(dest).getPartSpec();
-          int fieldNum = 0;
-          for (Column c: targetTable.getColumns()) {
-            if (partSpec.containsKey(c.getName())) {
-              partitionKeyExprs.add(ctx_.getResultExprs().get(fieldNum));
+          int numPartitionColumns = partSpec.size();
+          for (Map.Entry<String,String> partEntry : partSpec.entrySet()) {
+            String value = partEntry.getValue();
+            String columnName = partEntry.getKey();
+            if (value == null) {
+              // We've hit the first dynamic partition
+              break;
             }
-            fieldNum++;
+            partitionKeyExprs.add(LiteralExpr.createFromUnescapedStr(value, targetTable.getColumn(columnName).getType()));
+            numStaticColumns++;
           }
+          int numResultExprs = ctx_.getResultExprs().size();
+          int numDynamicColumns = numPartitionColumns - numStaticColumns;
+          // partition columns are at the end of resultExprs
+          partitionKeyExprs.addAll(ctx_.getResultExprs().subList(numResultExprs - numDynamicColumns, numResultExprs));
         }
       }
-      rootFragment.setSink(TableSink.create(ctx_.getTargetTable(),
+
+      // This is a safety mechanism, in that Hive treats invalid/no writeId as -1 and 0. Impala only considers -1 and
+      // will hit preconditions when writeId is set to 0.
+      if (writeId <= 0) {
+        writeId = -1;
+      }
+      TableSink sink = TableSink.create(ctx_.getTargetTable(),
             isUpsert ? TableSink.Op.UPSERT : TableSink.Op.INSERT,
             partitionKeyExprs, ctx_.getResultExprs(), referencedColumns,
-            isOverwrite_, inputIsClustered, sortProperties, writeId_));
+            isOverwrite, inputIsClustered, sortProperties, writeId);
+      Preconditions.checkState(sink instanceof HdfsTableSink, "Currently only HDFS table sinks are supported");
+      Preconditions.checkNotNull(destination, "Invalid destination for Impala sink");
+      HdfsTableSink s = (HdfsTableSink) sink;
+      s.setExternalStagingDir(destination.toUri().toString());
+      // This is how deep into a partition that FENG has precreated in destination.
+      // Table Partitioning - (year, month, day)
+      // I.E. hdfs://localhost/warehouse/test.db/test_table/year=2020/month=2
+      // The destinationPartitionDepth is 2 due to the fact the year and month partitions are precreated.
+      // (This ends up acting as a hint for Impala TableSink not to create the same partition directories in
+      // the staging directory we setup). HS2 seems to always create the static portion of partition specs for
+      // DML.
+      s.setExternalStagingPartitionDepth(numStaticColumns);
+      rootFragment.setSink(sink);
     } else {
       // create the data sink
-      if (resultPath != null) {
-        String resultSinkPath = resultPath.toUri().toString();
+      boolean isFileBased = SessionState.get().getConf().getImpalaResultMethod() == ImpalaResultMethod.FILE;
+      if (isFileBased) { // File based query results
+        // This is the location Hive expects to find QUERY results.
+        // This is typically a staging directory on a DFS, sometimes it is within a table directory.
+        // The location is determined based on various factors, such as if encryption zones are enabled.
+        Path resultPath = fileSinkDesc_.getDirName();
+        String fileFormatClass = fileSinkDesc_.getTableInfo().getInputFileFormatClassName();
         List<Expr> resultExprs = ctx_.getResultExprs();
-        ImpalaResultLocation resultLocation = new ImpalaResultLocation(resultExprs, resultSinkPath);
+        ImpalaResultLocation resultLocation = new ImpalaResultLocation(resultExprs,
+            resultPath.toUri().toString(), fileFormatClass);
         ctx_.getRootAnalyzer().getDescTbl().setTargetTable(resultLocation);
         List<Integer> referencedColumns =  new ArrayList<>();
         // Creates a table sink that uses ImpalaResultLocation that is used to specify the
@@ -333,7 +384,7 @@ public class ImpalaPlanner {
             ImmutableList.<Expr>of(), resultExprs, referencedColumns, false, false,
             new Pair<>(ImmutableList.<Integer> of(), TSortingOrder.LEXICAL), -1, true);
         rootFragment.setSink(sink);
-      } else {
+      } else { // Streaming query results
         rootFragment.setSink(new PlanRootSink(ctx_.getResultExprs()));
       }
     }
@@ -344,7 +395,6 @@ public class ImpalaPlanner {
     for (PlanFragment fragment: fragments) {
       fragment.finalizeExchanges(ctx_.getRootAnalyzer());
     }
-
 
     Collections.reverse(fragments);
     markEvent("Distributed plan created");

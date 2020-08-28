@@ -253,7 +253,7 @@ Per-Host Resources: mem-estimate=15.96MB mem-reservation=15.88MB thread-reservat
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_supplier.s_nationkey IS NOT NULL, default.impala_tpch_supplier.s_suppkey IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -268,7 +268,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_nation.n_nationkey IS NOT NULL, default.impala_tpch_nation.n_name = 'CANADA'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpch_nation.n_name = 'CANADA'
@@ -309,7 +309,7 @@ Per-Host Resources: mem-estimate=3.93MB mem-reservation=3.88MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_partsupp.ps_partkey IS NOT NULL, default.impala_tpch_partsupp.ps_suppkey IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -345,7 +345,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_part.p_partkey IS NOT NULL, like(default.impala_tpch_part.p_name, 'forest%')
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -384,7 +384,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpch_lineitem.l_partkey IS NOT NULL, default.impala_tpch_lineitem.l_suppkey IS NOT NULL, default.impala_tpch_lineitem.l_shipdate < '1995-01-01', default.impala_tpch_lineitem.l_shipdate >= '1994-01-01'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpch_lineitem.l_shipdate < '1995-01-01', default.impala_tpch_lineitem.l_shipdate >= '1994-01-01'

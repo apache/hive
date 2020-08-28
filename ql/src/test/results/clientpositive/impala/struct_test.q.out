@@ -51,32 +51,50 @@ STAGE PLANS:
   Stage: Stage-1
     Impala
       Impala Plan: 
-F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
   |  output exprs: _o__c0
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
+  04:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=12B cardinality=1
+     in pipelines: 01(GETNEXT)
+
+F02:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=04, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=0 row-size=12B cardinality=1
   |  in pipelines: 01(GETNEXT)
   |
-  |--02:UNION
-  |     constant-operands=1
-  |     mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |--03:EXCHANGE [RANDOM]
+  |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
   |     tuple-ids=3 row-size=0B cardinality=1
   |     in pipelines: <none>
   |
-  01:SCAN HDFS [default.simple_char_tbl]
+  01:SCAN HDFS [default.simple_char_tbl, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: all
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=1 row-size=0B cardinality=0
      in pipelines: 01(GETNEXT)
+
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=03, RANDOM]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:UNION
+     constant-operands=1
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=3 row-size=0B cardinality=1
+     in pipelines: <none>
 
 
   Stage: Stage-0

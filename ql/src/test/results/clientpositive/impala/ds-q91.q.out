@@ -282,7 +282,7 @@ Per-Host Resources: mem-estimate=135.89MB mem-reservation=41.75MB thread-reserva
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_customer.c_current_addr_sk IS NOT NULL, default.impala_tpcds_customer.c_current_cdemo_sk IS NOT NULL, default.impala_tpcds_customer.c_current_hdemo_sk IS NOT NULL, default.impala_tpcds_customer.c_customer_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -297,7 +297,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_customer_address.ca_address_sk IS NOT NULL, default.impala_tpcds_customer_address.ca_gmt_offset = casttodecimal(negative(CAST(7 AS TINYINT)))
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_customer_address.ca_gmt_offset = casttodecimal(negative(CAST(7 AS TINYINT)))
@@ -313,7 +313,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_household_demographics.hd_demo_sk IS NOT NULL, like(default.impala_tpcds_household_demographics.hd_buy_potential, 'Unknown%')
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -328,7 +328,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_customer_demographics.cd_demo_sk IS NOT NULL, default.impala_tpcds_customer_demographics.cd_education_status IN ('Unknown', 'Advanced Degree'), default.impala_tpcds_customer_demographics.cd_marital_status IN ('M', 'W'), default.impala_tpcds_customer_demographics.cd_marital_status = 'M' AND default.impala_tpcds_customer_demographics.cd_education_status = 'Unknown' OR default.impala_tpcds_customer_demographics.cd_marital_status = 'W' AND default.impala_tpcds_customer_demographics.cd_education_status = 'Advanced Degree'
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_customer_demographics.cd_education_status IN ('Unknown', 'Advanced Degree'), default.impala_tpcds_customer_demographics.cd_marital_status IN ('M', 'W')
@@ -368,7 +368,7 @@ Per-Host Resources: mem-estimate=3.93MB mem-reservation=3.88MB thread-reservatio
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_catalog_returns.cr_call_center_sk IS NOT NULL, default.impala_tpcds_catalog_returns.cr_returned_date_sk IS NOT NULL, default.impala_tpcds_catalog_returns.cr_returning_customer_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -383,7 +383,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim.d_year = CAST(2000 AS INT)
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      parquet statistics predicates: default.impala_tpcds_date_dim.d_moy = CAST(12 AS INT), default.impala_tpcds_date_dim.d_year = CAST(2000 AS INT)
@@ -399,7 +399,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
      HDFS partitions=1/1 files=0 size=0B
      predicates: default.impala_tpcds_call_center.cc_call_center_sk IS NOT NULL
      stored statistics:
-       table: rows=0 size=0B
+       table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
