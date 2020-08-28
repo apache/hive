@@ -289,18 +289,13 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
             newAggCalls);
       }
 
-      boolean forceTransform = false;
-
-      forceTransform = shouldForceTransform(aggregate, join, call);
-
       // Make a cost based decision to pick cheaper plan
       RelNode r = relBuilder.build();
       RelOptCost afterCost = mq.getCumulativeCost(r);
       RelOptCost beforeCost = mq.getCumulativeCost(aggregate);
-      if (forceTransform || afterCost.isLt(beforeCost)) {
+      boolean shouldForceTransform = isGroupingUnique(join, aggregate.getGroupSet());
+      if (shouldForceTransform || afterCost.isLt(beforeCost)) {
         call.transformTo(r);
-      } else {
-        int asd = 1;
       }
     } catch (Exception e) {
       if (noColsMissingStats.get() > 0) {
@@ -312,41 +307,17 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
     }
   }
 
-  private boolean shouldForceTransform(Aggregate aggregate, Join join, RelOptRuleCall call) {
-    RelMetadataQuery mq = call.getMetadataQuery();
-
-    RelNode left = join.getLeft();
-    RelNode right = join.getRight();
-
-    boolean ret = false;
-    ImmutableBitSet groups = aggregate.getGroupSet();
-
-    RelNode input = aggregate.getInput();
-
-    if (chk1(mq, join, groups, aggregate.getCluster().getRexBuilder())) {
-      return true;
-    }
-
-
-
-    RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
-    for (int i : groups.asList()) {
-      RexInputRef e = rexBuilder.makeInputRef(input, i);
-      Set<RexNode> lineage = mq.getExpressionLineage(input, e);
-      for (RexNode l : lineage) {
-
-        int asd1 = 2;
-        //        ((org.apache.calcite.rex.RexTableInputRef)l).getTableRef().getTable().getReferentialConstraints()
-      }
-
-    }
-    return ret;
-  }
-
-  private boolean chk1(RelMetadataQuery mq, RelNode input, ImmutableBitSet groups, RexBuilder rexBuilder) {
+  /**
+   * Determines weather the give grouping is unique.
+   *
+   * Consider a join which might produce non-unique rows; but later the results are aggregated again.
+   * This method determines if there are sufficient columns in the grouping which have been present previously as unique column(s).
+   */
+  private boolean isGroupingUnique(RelNode input, ImmutableBitSet groups) {
     if (groups.isEmpty()) {
       return false;
     }
+    RelMetadataQuery mq = input.getCluster().getMetadataQuery();
     Set<ImmutableBitSet> uKeys = mq.getUniqueKeys(input);
     for (ImmutableBitSet u : uKeys) {
       if (groups.contains(u)) {
@@ -355,6 +326,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
     }
     if (input instanceof Join) {
       Join join = (Join) input;
+      RexBuilder rexBuilder = input.getCluster().getRexBuilder();
       SimpleConditionInfo cond = new SimpleConditionInfo(join.getCondition(), rexBuilder);
 
       if (cond.valid) {
@@ -368,10 +340,10 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         ImmutableBitSet groupL = newGroup.get(0, lFieldCount);
         ImmutableBitSet groupR = newGroup.get(lFieldCount, joinFieldCount).shift(-lFieldCount);
 
-        if (chk1(mq, l, groupL, rexBuilder)) {
+        if (isGroupingUnique(l, groupL)) {
           return true;
         }
-        if (chk1(mq, r, groupR, rexBuilder)) {
+        if (isGroupingUnique(r, groupR)) {
           return true;
         }
       }
