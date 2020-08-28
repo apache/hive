@@ -523,6 +523,12 @@ public class DataWritableReadSupport extends ReadSupport<ArrayWritable> {
           configuration, HiveConf.ConfVars.HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT)));
     }
 
+    String legacyConversion = ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED.varname;
+    if (!metadata.containsKey(legacyConversion)) {
+      metadata.put(legacyConversion, String.valueOf(HiveConf.getBoolVar(
+          configuration, HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED)));
+    }
+
     return new DataWritableRecordConverter(readContext.getRequestedSchema(), metadata, hiveTypeInfo);
   }
 }

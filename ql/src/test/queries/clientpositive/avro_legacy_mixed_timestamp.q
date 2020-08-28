@@ -7,7 +7,16 @@ load data local inpath '../../data/files/avro_legacy_mixed_timestamps.avro' into
 
 select * from legacy_table;
 
+set hive.avro.timestamp.legacy.conversion.enabled=false;
+
+select * from legacy_table;
+
 set hive.avro.proleptic.gregorian.default=true;
+set hive.avro.timestamp.legacy.conversion.enabled=true;
+
+select * from legacy_table;
+
+set hive.avro.timestamp.legacy.conversion.enabled=false;
 
 select * from legacy_table;
 
