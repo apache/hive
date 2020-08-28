@@ -529,17 +529,6 @@ public class HiveRelOptUtil extends RelOptUtil {
             return true;
           }
         }
-      } else if (e.getKey() == Filter.class) {
-        for (RelNode node : e.getValue()) {
-          Filter f = (Filter) node;
-          for (RexNode expr : f.getChildExps()) {
-            if (expr.getKind() == SqlKind.IS_NOT_NULL
-                && RexUtil.isReferenceOrAccess(((RexCall) expr).getOperands().get(0), false)) {
-              continue;
-            }
-            return true;
-          }
-        }
       } else {
         // Bail out, we cannot rewrite the expression if non-fk side cardinality
         // is being altered
