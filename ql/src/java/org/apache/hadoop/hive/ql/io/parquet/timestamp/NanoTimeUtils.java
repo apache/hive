@@ -95,7 +95,7 @@ public class NanoTimeUtils {
    }
 
   public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion) {
-    return getTimestamp(nt, skipConversion, null);
+    return getTimestamp(nt, skipConversion, null, false);
   }
 
   /**
@@ -110,43 +110,46 @@ public class NanoTimeUtils {
    * For skipConversion to be true it must be set in conf AND the parquet file must NOT be written
    * by parquet's java library (parquet-mr). This is enforced in ParquetRecordReaderBase#getSplit.
    */
-   public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion, ZoneId timeZoneId) {
-     if (skipConversion) {
-       timeZoneId = ZoneOffset.UTC;
-     } else if (timeZoneId == null) {
-       timeZoneId = TimeZone.getDefault().toZoneId();
-     }
+  public static Timestamp getTimestamp(NanoTime nt, boolean skipConversion, ZoneId timeZoneId,
+      boolean legacyConversionEnabled) {
+    boolean legacyConversion = false;
+    if (skipConversion) {
+      timeZoneId = ZoneOffset.UTC;
+    } else if (timeZoneId == null) {
+      legacyConversion = legacyConversionEnabled;
+      timeZoneId = TimeZone.getDefault().toZoneId();
+    }
 
-     int julianDay = nt.getJulianDay();
-     long nanosOfDay = nt.getTimeOfDayNanos();
+    int julianDay = nt.getJulianDay();
+    long nanosOfDay = nt.getTimeOfDayNanos();
 
-     long remainder = nanosOfDay;
-     julianDay += remainder / NANOS_PER_DAY;
-     remainder %= NANOS_PER_DAY;
-     if (remainder < 0) {
-       remainder += NANOS_PER_DAY;
-       julianDay--;
-     }
+    long remainder = nanosOfDay;
+    julianDay += remainder / NANOS_PER_DAY;
+    remainder %= NANOS_PER_DAY;
+    if (remainder < 0) {
+      remainder += NANOS_PER_DAY;
+      julianDay--;
+    }
 
-     JDateTime jDateTime = new JDateTime((double) julianDay);
-     Calendar calendar = getGMTCalendar();
-     calendar.set(Calendar.YEAR, jDateTime.getYear());
-     calendar.set(Calendar.MONTH, jDateTime.getMonth() - 1); //java calendar index starting at 1.
-     calendar.set(Calendar.DAY_OF_MONTH, jDateTime.getDay());
+    JDateTime jDateTime = new JDateTime((double) julianDay);
+    Calendar calendar = getGMTCalendar();
+    calendar.set(Calendar.YEAR, jDateTime.getYear());
+    calendar.set(Calendar.MONTH, jDateTime.getMonth() - 1); //java calendar index starting at 1.
+    calendar.set(Calendar.DAY_OF_MONTH, jDateTime.getDay());
 
-     int hour = (int) (remainder / (NANOS_PER_HOUR));
-     remainder = remainder % (NANOS_PER_HOUR);
-     int minutes = (int) (remainder / (NANOS_PER_MINUTE));
-     remainder = remainder % (NANOS_PER_MINUTE);
-     int seconds = (int) (remainder / (NANOS_PER_SECOND));
-     long nanos = remainder % NANOS_PER_SECOND;
+    int hour = (int) (remainder / (NANOS_PER_HOUR));
+    remainder = remainder % (NANOS_PER_HOUR);
+    int minutes = (int) (remainder / (NANOS_PER_MINUTE));
+    remainder = remainder % (NANOS_PER_MINUTE);
+    int seconds = (int) (remainder / (NANOS_PER_SECOND));
+    long nanos = remainder % NANOS_PER_SECOND;
 
-     calendar.set(Calendar.HOUR_OF_DAY, hour);
-     calendar.set(Calendar.MINUTE, minutes);
-     calendar.set(Calendar.SECOND, seconds);
+    calendar.set(Calendar.HOUR_OF_DAY, hour);
+    calendar.set(Calendar.MINUTE, minutes);
+    calendar.set(Calendar.SECOND, seconds);
 
-     Timestamp ts = Timestamp.ofEpochMilli(calendar.getTimeInMillis(), (int) nanos);
-     ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, timeZoneId);
-     return ts;
-   }
+    Timestamp ts = Timestamp.ofEpochMilli(calendar.getTimeInMillis(), (int) nanos);
+    ts = TimestampTZUtil.convertTimestampToZone(ts, ZoneOffset.UTC, timeZoneId, legacyConversion);
+    return ts;
+  }
 }

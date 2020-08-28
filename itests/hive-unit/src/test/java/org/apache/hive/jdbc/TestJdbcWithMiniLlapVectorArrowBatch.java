@@ -113,10 +113,10 @@ public class TestJdbcWithMiniLlapVectorArrowBatch extends BaseJdbcWithMiniLlap {
     expected.add(Lists.newArrayList("2014-02-11 07:08:09.123"));
     expected.add(Lists.newArrayList("1947-02-11 07:08:09.123"));
     expected.add(Lists.newArrayList("8200-02-11 07:08:09.123"));
-    expected.add(Lists.newArrayList("1012-02-21 07:15:11.123"));
-    expected.add(Lists.newArrayList("1014-02-11 07:15:11.123"));
-    expected.add(Lists.newArrayList("0947-02-11 07:15:11.123"));
-    expected.add(Lists.newArrayList("0200-02-11 07:15:11.123"));
+    expected.add(Lists.newArrayList("1012-02-21 07:08:09.123"));
+    expected.add(Lists.newArrayList("1014-02-11 07:08:09.123"));
+    expected.add(Lists.newArrayList("0947-02-11 07:08:09.123"));
+    expected.add(Lists.newArrayList("0200-02-11 07:08:09.123"));
     return expected;
   }
 
@@ -139,10 +139,10 @@ public class TestJdbcWithMiniLlapVectorArrowBatch extends BaseJdbcWithMiniLlap {
     expected.add(Lists.newArrayList("2014-02-11 07:08:09.123"));
     expected.add(Lists.newArrayList("1947-02-11 07:08:09.123"));
     expected.add(Lists.newArrayList("8200-02-11 07:08:09.123"));
-    expected.add(Lists.newArrayList("1012-02-27 07:15:11.123"));
-    expected.add(Lists.newArrayList("1014-02-17 07:15:11.123"));
-    expected.add(Lists.newArrayList("0947-02-16 07:15:11.123"));
-    expected.add(Lists.newArrayList("0200-02-10 07:15:11.123"));
+    expected.add(Lists.newArrayList("1012-02-27 07:08:09.123"));
+    expected.add(Lists.newArrayList("1014-02-17 07:08:09.123"));
+    expected.add(Lists.newArrayList("0947-02-16 07:08:09.123"));
+    expected.add(Lists.newArrayList("0200-02-10 07:08:09.123"));
     return expected;
   }
 
@@ -184,8 +184,8 @@ public class TestJdbcWithMiniLlapVectorArrowBatch extends BaseJdbcWithMiniLlap {
     final String tableName = "testOrcHybridMixedTimestamps";
     executeSQL("create table " + tableName + " (d timestamp) stored as orc");
     executeSQL("INSERT INTO " + tableName + " VALUES ('2012-02-21 07:08:09.123')," + "('2014-02-11 07:08:09.123'),"
-        + "('1947-02-11 07:08:09.123')," + "('8200-02-11 07:08:09.123')," + "('1012-02-21 07:15:11.123'),"
-        + "('1014-02-11 07:15:11.123')," + "('0947-02-11 07:15:11.123')," + "('0200-02-11 07:15:11.123')");
+        + "('1947-02-11 07:08:09.123')," + "('8200-02-11 07:08:09.123')," + "('1012-02-21 07:08:09.123'),"
+        + "('1014-02-11 07:08:09.123')," + "('0947-02-11 07:08:09.123')," + "('0200-02-11 07:08:09.123')");
 
     final String query = "select * from " + tableName;
 
@@ -245,8 +245,8 @@ public class TestJdbcWithMiniLlapVectorArrowBatch extends BaseJdbcWithMiniLlap {
     final String tableName = "testParquetHybridMixedTimestamps";
     executeSQL("create table " + tableName + " (ts timestamp) stored as parquet");
     executeSQL("INSERT INTO " + tableName + " VALUES ('2012-02-21 07:08:09.123')," + "('2014-02-11 07:08:09.123'),"
-        + "('1947-02-11 07:08:09.123')," + "('8200-02-11 07:08:09.123')," + "('1012-02-21 07:15:11.123'),"
-        + "('1014-02-11 07:15:11.123')," + "('0947-02-11 07:15:11.123')," + "('0200-02-11 07:15:11.123')");
+        + "('1947-02-11 07:08:09.123')," + "('8200-02-11 07:08:09.123')," + "('1012-02-21 07:08:09.123'),"
+        + "('1014-02-11 07:08:09.123')," + "('0947-02-11 07:08:09.123')," + "('0200-02-11 07:08:09.123')");
 
     final String query = "select * from " + tableName;
 
@@ -308,8 +308,8 @@ public class TestJdbcWithMiniLlapVectorArrowBatch extends BaseJdbcWithMiniLlap {
     executeSQL("create table " + tableName + " (d timestamp) ROW FORMAT DELIMITED FIELDS TERMINATED BY '|' "
         + "COLLECTION ITEMS TERMINATED BY ',' MAP KEYS TERMINATED BY ':' stored as avro");
     executeSQL("INSERT INTO " + tableName + " VALUES ('2012-02-21 07:08:09.123')," + "('2014-02-11 07:08:09.123'),"
-        + "('1947-02-11 07:08:09.123')," + "('8200-02-11 07:08:09.123')," + "('1012-02-21 07:15:11.123'),"
-        + "('1014-02-11 07:15:11.123')," + "('0947-02-11 07:15:11.123')," + "('0200-02-11 07:15:11.123')");
+        + "('1947-02-11 07:08:09.123')," + "('8200-02-11 07:08:09.123')," + "('1012-02-21 07:08:09.123'),"
+        + "('1014-02-11 07:08:09.123')," + "('0947-02-11 07:08:09.123')," + "('0200-02-11 07:08:09.123')");
 
     final String query = "select * from " + tableName;
 

@@ -21,6 +21,7 @@ import java.util.Optional;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
@@ -679,8 +680,10 @@ public enum ETypeConverter {
           // time zone in order to emulate time zone agnostic behavior.
           boolean skipConversion = Boolean.parseBoolean(
               metadata.get(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname));
+          boolean legacyConversion = Boolean.parseBoolean(
+              metadata.get(ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED.varname));
           Timestamp ts = NanoTimeUtils.getTimestamp(nt, skipConversion,
-              DataWritableReadSupport.getWriterTimeZoneId(metadata));
+              DataWritableReadSupport.getWriterTimeZoneId(metadata), legacyConversion);
           return new TimestampWritableV2(ts);
         }
       };
