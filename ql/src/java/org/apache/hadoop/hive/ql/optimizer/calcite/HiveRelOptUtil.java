@@ -529,6 +529,17 @@ public class HiveRelOptUtil extends RelOptUtil {
             return true;
           }
         }
+      } else if (e.getKey() == Filter.class) {
+        for (RelNode node : e.getValue()) {
+          Filter f = (Filter) node;
+          for (RexNode expr : f.getChildExps()) {
+            if (expr.getKind() == SqlKind.IS_NOT_NULL
+                && RexUtil.isReferenceOrAccess(((RexCall) expr).getOperands().get(0), false)) {
+              continue;
+            }
+            return true;
+          }
+        }
       } else {
         // Bail out, we cannot rewrite the expression if non-fk side cardinality
         // is being altered
@@ -740,7 +751,12 @@ public class HiveRelOptUtil extends RelOptUtil {
   }
 
   public static RewritablePKFKJoinInfo isRewritablePKFKJoin(Join join,
-        boolean leftInputPotentialFK, RelMetadataQuery mq) {
+      boolean leftInputPotentialFK, RelMetadataQuery mq) {
+    return isRewritablePKFKJoin(join, leftInputPotentialFK, mq, true);
+  }
+
+  public static RewritablePKFKJoinInfo isRewritablePKFKJoin(Join join, boolean leftInputPotentialFK,
+      RelMetadataQuery mq, boolean checkFiltering) {
     final JoinRelType joinType = join.getJoinType();
     final RexNode cond = join.getCondition();
     final RelNode fkInput = leftInputPotentialFK ? join.getLeft() : join.getRight();
@@ -765,7 +781,7 @@ public class HiveRelOptUtil extends RelOptUtil {
     // 1) Check whether there is any filtering condition on the
     // non-FK side. Basically we check whether the operators
     // below altered the PK cardinality in any way
-    if (HiveRelOptUtil.isRowFilteringPlan(mq, nonFkInput)) {
+    if (checkFiltering && HiveRelOptUtil.isRowFilteringPlan(mq, nonFkInput)) {
       return nonRewritable;
     }
 

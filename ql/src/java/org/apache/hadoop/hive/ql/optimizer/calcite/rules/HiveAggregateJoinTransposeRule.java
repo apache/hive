@@ -21,6 +21,7 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -43,12 +44,15 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlSplittableAggFunction;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.Mappings;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.RewritablePKFKJoinInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 
@@ -285,12 +289,18 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
             newAggCalls);
       }
 
+      boolean forceTransform = false;
+
+      forceTransform = shouldForceTransform(aggregate, join, call);
+
       // Make a cost based decision to pick cheaper plan
       RelNode r = relBuilder.build();
       RelOptCost afterCost = mq.getCumulativeCost(r);
       RelOptCost beforeCost = mq.getCumulativeCost(aggregate);
-      if (afterCost.isLe(beforeCost)) {
+      if (forceTransform || afterCost.isLt(beforeCost)) {
         call.transformTo(r);
+      } else {
+        int asd = 1;
       }
     } catch (Exception e) {
       if (noColsMissingStats.get() > 0) {
@@ -300,6 +310,122 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         throw e;
       }
     }
+  }
+
+  private boolean shouldForceTransform(Aggregate aggregate, Join join, RelOptRuleCall call) {
+    RelMetadataQuery mq = call.getMetadataQuery();
+
+    RelNode left = join.getLeft();
+    RelNode right = join.getRight();
+
+    boolean ret = false;
+    ImmutableBitSet groups = aggregate.getGroupSet();
+
+    RelNode input = aggregate.getInput();
+
+    if (chk1(mq, join, groups, aggregate.getCluster().getRexBuilder())) {
+      return true;
+    }
+
+
+
+    RexBuilder rexBuilder = aggregate.getCluster().getRexBuilder();
+    for (int i : groups.asList()) {
+      RexInputRef e = rexBuilder.makeInputRef(input, i);
+      Set<RexNode> lineage = mq.getExpressionLineage(input, e);
+      for (RexNode l : lineage) {
+
+        int asd1 = 2;
+        //        ((org.apache.calcite.rex.RexTableInputRef)l).getTableRef().getTable().getReferentialConstraints()
+      }
+
+    }
+    return ret;
+  }
+
+  private boolean chk1(RelMetadataQuery mq, RelNode input, ImmutableBitSet groups, RexBuilder rexBuilder) {
+    if (groups.isEmpty()) {
+      return false;
+    }
+    Set<ImmutableBitSet> uKeys = mq.getUniqueKeys(input);
+    for (ImmutableBitSet u : uKeys) {
+      if (groups.contains(u)) {
+        return true;
+      }
+    }
+    if (input instanceof Join) {
+      Join join = (Join) input;
+      SimpleConditionInfo cond = new SimpleConditionInfo(join.getCondition(), rexBuilder);
+
+      if (cond.valid) {
+        ImmutableBitSet newGroup = groups.intersect(ImmutableBitSet.fromBitSet(cond.fields));
+        RelNode l = join.getLeft();
+        RelNode r = join.getRight();
+
+        int joinFieldCount = join.getRowType().getFieldCount();
+        int lFieldCount = l.getRowType().getFieldCount();
+
+        ImmutableBitSet groupL = newGroup.get(0, lFieldCount);
+        ImmutableBitSet groupR = newGroup.get(lFieldCount, joinFieldCount).shift(-lFieldCount);
+
+        if (chk1(mq, l, groupL, rexBuilder)) {
+          return true;
+        }
+        if (chk1(mq, r, groupR, rexBuilder)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  static class SimpleConditionInfo {
+
+    private boolean valid = true;
+
+    private BitSet fields = new BitSet();
+
+    public SimpleConditionInfo(RexNode condition, RexBuilder rexBuilder) {
+      RexNode cnf = RexUtil.toCnf(rexBuilder, condition);
+      if (cnf.getKind() == SqlKind.AND) {
+        RexCall andCall = (RexCall) cnf;
+        for (RexNode op : andCall.operands) {
+          process(op);
+        }
+      }
+      else {
+        process(cnf);
+      }
+    }
+
+    private void process(RexNode n) {
+      if (n.getKind() == SqlKind.EQUALS) {
+        RexCall c = (RexCall) n;
+        for (RexNode f : c.getOperands()) {
+          processField(f);
+        }
+      } else {
+        valid = false;
+      }
+    }
+
+    private void processField(RexNode f) {
+      if (f instanceof RexInputRef) {
+        RexInputRef rexInputRef = (RexInputRef) f;
+        fields.set(rexInputRef.getIndex());
+      } else {
+        valid = false;
+      }
+    }
+
+
+  }
+
+  private boolean shouldForceTransform0(Join join, RelOptRuleCall call) {
+    RewritablePKFKJoinInfo info1 = HiveRelOptUtil.isRewritablePKFKJoin(join, true, call.getMetadataQuery(), true);
+    RewritablePKFKJoinInfo info2 = HiveRelOptUtil.isRewritablePKFKJoin(join, false, call.getMetadataQuery(), true);
+
+    return info1.rewritable || info2.rewritable;
   }
 
   /** Computes the closure of a set of columns according to a given list of
