@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 public class QTestTimezoneHandler implements QTestOptionHandler {
 
   private static final Logger LOG = LoggerFactory.getLogger(QTestTimezoneHandler.class);
+  private boolean enabled = false;
   private TimeZone originalTimeZone;
   private TimeZone newTimeZone;
 
@@ -46,16 +47,22 @@ public class QTestTimezoneHandler implements QTestOptionHandler {
     originalTimeZone = TimeZone.getDefault();
     newTimeZone = TimeZone.getTimeZone(arguments);
     LOG.info("Enabling timezone change: {} => {}", originalTimeZone, newTimeZone);
+    enabled = true;
   }
 
   @Override
   public void beforeTest(QTestUtil qt) throws Exception {
-    TimeZone.setDefault(newTimeZone);
+    if (enabled) {
+      TimeZone.setDefault(newTimeZone);
+    }
   }
 
   @Override
   public void afterTest(QTestUtil qt) throws Exception {
-    TimeZone.setDefault(originalTimeZone);
+    if (enabled) {
+      TimeZone.setDefault(originalTimeZone);
+      enabled = false;
+    }
   }
 
 }
