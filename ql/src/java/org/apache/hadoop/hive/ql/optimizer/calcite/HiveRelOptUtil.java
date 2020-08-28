@@ -751,8 +751,6 @@ public class HiveRelOptUtil extends RelOptUtil {
     Preconditions.checkArgument(nonFkInput == join.getLeft()
         || nonFkInput == join.getRight(), "Invalid input: " + nonFkInput);
 
-    //final RelNode fkInput = leftInputPotentialFK ? join.getLeft() : join.getRight();
-    //final RelNode nonFkInput = leftInputPotentialFK ? join.getRight() : join.getLeft();
     final RewritablePKFKJoinInfo nonRewritable = RewritablePKFKJoinInfo.of(false, null);
 
     // TODO : Need to handle Anti join.

@@ -225,7 +225,6 @@ public class HiveJoinConstraintsRule extends RelOptRule {
       rewrite(mode, fkInput, nonFkInput, join, topProjExprs, call, project, r.nullableNodes);
     } else {
       // check if FK side could be removed instead
-
       // Possibly this could be enhanced to take other join type into consideration.
       if (joinType != JoinRelType.INNER) {
         return;
@@ -238,7 +237,6 @@ public class HiveJoinConstraintsRule extends RelOptRule {
       if (fkRemoval.rewritable) {
         // we have established that nonFkInput is FK, and fkInput is PK
         // and there is no row filtering on FK side
-
         // check that FK side join column is distinct (i.e. have a group by)
         ImmutableBitSet fkSideBitSet;
         if (nonFkInput == leftInput) {
@@ -250,7 +248,7 @@ public class HiveJoinConstraintsRule extends RelOptRule {
         ImmutableBitSet.Builder fkJoinColBuilder = ImmutableBitSet.builder();
         for (RexNode conj : RelOptUtil.conjunctions(cond)) {
           if (!conj.isA(SqlKind.EQUALS)) {
-            continue;
+            return;
           }
           RexCall eq = (RexCall) conj;
           RexNode op1 = eq.getOperands().get(0);
@@ -276,7 +274,6 @@ public class HiveJoinConstraintsRule extends RelOptRule {
           }
         }
 
-
         if (!call.getMetadataQuery().areColumnsUnique(nonFkInput, fkJoinColBuilder.build())) {
           return;
         }
@@ -296,7 +293,6 @@ public class HiveJoinConstraintsRule extends RelOptRule {
 
     final RelNode leftInput = join.getLeft();
     final RelNode rightInput = join.getRight();
-
 
     // If we reach here, we trigger the transform
     if (mode == Mode.REMOVE) {
