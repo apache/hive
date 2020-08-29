@@ -50,6 +50,8 @@ import org.apache.hadoop.hive.ql.exec.HiveFunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRuleHelper;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
@@ -111,11 +113,14 @@ public class HiveFunctionHelper implements FunctionHelper {
   private final RexBuilder rexBuilder;
   private final int maxNodesForInToOrTransformation;
   private final RexExecutor rexExecutor;
+  private final PartitionPruneRuleHelper partitionPruneRuleHelper;
 
   public HiveFunctionHelper(RexBuilder rexBuilder) {
     this.rexNodeExprFactory = new RexNodeExprFactory(rexBuilder, this);
     this.rexBuilder = rexBuilder;
     this.rexExecutor = new HiveRexExecutorImpl();
+    this.partitionPruneRuleHelper = new HivePartitionPruneRuleHelper();
+
     try {
       this.maxNodesForInToOrTransformation = HiveConf.getIntVar(
           Hive.get().getConf(), HiveConf.ConfVars.HIVEOPT_TRANSFORM_IN_MAXNODES);
@@ -146,6 +151,14 @@ public class HiveFunctionHelper implements FunctionHelper {
   @Override
   public RexExecutor getRexExecutor() {
     return rexExecutor;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public PartitionPruneRuleHelper getPartitionPruneRuleHelper() {
+    return partitionPruneRuleHelper;
   }
 
   /**

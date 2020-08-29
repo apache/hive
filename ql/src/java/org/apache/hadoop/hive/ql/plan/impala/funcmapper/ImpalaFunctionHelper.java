@@ -30,11 +30,14 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaQueryContext;
+//TODO: CDPD-16525: this is only temporary until the Impala code gets checked in.
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRuleHelper;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 import java.util.List;
@@ -54,10 +57,13 @@ public class ImpalaFunctionHelper implements FunctionHelper {
 
   private final RexNodeExprFactory factory;
   private final RexExecutor rexExecutor;
+  private final PartitionPruneRuleHelper partitionPruneRuleHelper;
 
   public ImpalaFunctionHelper(ImpalaQueryContext queryContext, RexBuilder builder) {
     this.factory = new RexNodeExprFactory(builder, this);
     this.rexExecutor = new ImpalaRexExecutorImpl(queryContext);
+    //TODO: CDPD-16525: this is only temoorary until the Impala code gets checked in.
+    this.partitionPruneRuleHelper = new HivePartitionPruneRuleHelper();
   }
 
   /**
@@ -82,6 +88,14 @@ public class ImpalaFunctionHelper implements FunctionHelper {
   @Override
   public RexExecutor getRexExecutor() {
     return rexExecutor;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public PartitionPruneRuleHelper getPartitionPruneRuleHelper() {
+    return partitionPruneRuleHelper;
   }
 
   /**
