@@ -21,7 +21,11 @@ package org.apache.hive.jdbc;
 import java.util.ArrayList;
 
 import java.util.List;
+
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.service.cli.TableSchema;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -31,6 +35,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.jar.Attributes;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hive.service.cli.GetInfoType;
@@ -855,19 +860,19 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public boolean nullsAreSortedAtEnd() throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return false;
   }
 
   public boolean nullsAreSortedAtStart() throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return false;
   }
 
   public boolean nullsAreSortedHigh() throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return !getHiveDefaultNullsLast();
   }
 
   public boolean nullsAreSortedLow() throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return getHiveDefaultNullsLast();
   }
 
   public boolean othersDeletesAreVisible(int type) throws SQLException {
@@ -895,27 +900,27 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public boolean storesLowerCaseIdentifiers() throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return true;
   }
 
   public boolean storesLowerCaseQuotedIdentifiers() throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return true;
   }
 
   public boolean storesMixedCaseIdentifiers() throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return false;
   }
 
   public boolean storesMixedCaseQuotedIdentifiers() throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return false;
   }
 
   public boolean storesUpperCaseIdentifiers() throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return false;
   }
 
   public boolean storesUpperCaseQuotedIdentifiers() throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return false;
   }
 
   public boolean supportsANSI92EntryLevelSQL() throws SQLException {
@@ -1040,11 +1045,11 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public boolean supportsMixedCaseIdentifiers() throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return false;
   }
 
   public boolean supportsMixedCaseQuotedIdentifiers() throws SQLException {
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    return false;
   }
 
   public boolean supportsMultipleOpenResults() throws SQLException {
@@ -1226,5 +1231,14 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     }
     Utils.verifySuccess(resp.getStatus());
     return resp;
+  }
+
+  private boolean getHiveDefaultNullsLast() {
+    boolean response = ConfVars.HIVE_DEFAULT_NULLS_LAST.defaultBoolVal;
+    Map<String, String> hiveConfs = connection.getConnParams().getHiveConfs();
+    if ((hiveConfs != null) && (hiveConfs.get(ConfVars.HIVE_DEFAULT_NULLS_LAST) != null)) {
+      response = Boolean.parseBoolean(hiveConfs.get(HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST));
+    }
+    return response;
   }
 }

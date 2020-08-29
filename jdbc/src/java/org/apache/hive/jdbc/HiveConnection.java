@@ -291,7 +291,7 @@ public class HiveConnection implements java.sql.Connection {
 
     if (isEmbeddedMode) {
       client = EmbeddedCLIServicePortal.get(connParams.getHiveConfs());
-      connParams.getHiveConfs().clear();
+        connParams.getHiveConfs().clear();
       // open client session
       openSession();
       executeInitSql();
@@ -1712,6 +1712,10 @@ public class HiveConnection implements java.sql.Connection {
 
   public TProtocolVersion getProtocol() {
     return protocol;
+  }
+
+  public JdbcConnectionParams getConnParams() {
+    return connParams;
   }
 
   public static TCLIService.Iface newSynchronizedClient(
