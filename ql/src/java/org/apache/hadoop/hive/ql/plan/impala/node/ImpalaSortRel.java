@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaConjuncts;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.ExprSubstitutionMap;
 import org.apache.impala.analysis.SortInfo;
@@ -115,8 +116,10 @@ public class ImpalaSortRel extends ImpalaPlanRel {
     retNode = sortNode;
 
     if (filter != null) {
-      List<Expr> conjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
-      ImpalaSelectNode selectNode = new ImpalaSelectNode(ctx.getNextNodeId(), sortNode, conjuncts);
+      ImpalaConjuncts conjuncts = ImpalaConjuncts.create(filter, ctx.getRootAnalyzer(), this);
+      List<Expr> assignedConjuncts = conjuncts.getImpalaNonPartitionConjuncts();
+      ImpalaSelectNode selectNode =
+          new ImpalaSelectNode(ctx.getNextNodeId(), sortNode, assignedConjuncts);
       selectNode.init(ctx.getRootAnalyzer());
       retNode = selectNode;
     }

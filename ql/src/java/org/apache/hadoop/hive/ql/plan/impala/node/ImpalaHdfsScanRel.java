@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsTable;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaConjuncts;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
 import org.apache.impala.analysis.AggregateInfo;
 import org.apache.impala.analysis.Analyzer;
@@ -82,20 +83,6 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     this.scan = scan;
     this.filter = filter;
     this.db = db;
-  }
-
-  private List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer) {
-    List<Expr> conjuncts = Lists.newArrayList();
-    if (filter == null) {
-      return conjuncts;
-    }
-    ImpalaInferMappingRexVisitor visitor = new ImpalaInferMappingRexVisitor(
-        analyzer, ImmutableList.of(this), getCluster().getRexBuilder());
-    List<RexNode> andOperands = getAndOperands(filter.getCondition());
-    for (RexNode andOperand : andOperands) {
-      conjuncts.add(andOperand.accept(visitor));
-    }
-    return conjuncts;
   }
 
   public Hive getDb() {
@@ -145,8 +132,6 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     // this could be done through a rule (not implemented yet), so for now
     // we will pass a null and re-visit this later.
     AggregateInfo aggInfo = null;
-    List<Expr> partitionConjuncts = new ArrayList<>();
-    List<Expr> nonPartitionConjuncts = new ArrayList<>();
 
     String tableName = scan.getTable().getQualifiedName().get(1);
     TableName impalaTblName = TableName.parse(tableName);
@@ -170,18 +155,12 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     TupleDescriptor tupleDesc = createTupleAndSlotDesc(baseTblRef, ctx);
 
     this.outputExprs = createScanOutputExprs(tupleDesc.getSlots());
-    List<Expr> assignedConjuncts;
 
-    if (hdfsTable.isPartitioned()) {
-      Set<Integer> partitionColsIndexes = ((RelOptHiveTable) scan.getTable()).getPartColInfoMap().keySet();
-      // get the list of partition and non-partition conjuncts from the filter
-      getConjuncts(filter, ctx.getRootAnalyzer(), this, partitionColsIndexes,
-          partitionConjuncts, nonPartitionConjuncts);
-      assignedConjuncts = nonPartitionConjuncts;
-    } else {
-      // get the list of conjuncts from the filter
-      assignedConjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
-    }
+    Set<Integer> partitionColsIndexes = ((RelOptHiveTable) scan.getTable()).getPartColInfoMap().keySet();
+    ImpalaConjuncts conjuncts = ImpalaConjuncts.create(filter, ctx.getRootAnalyzer(), this,
+        this.getCluster().getRexBuilder(), partitionColsIndexes);
+    List<Expr> partitionConjuncts = conjuncts.getImpalaPartitionConjuncts();
+    List<Expr> assignedConjuncts = conjuncts.getImpalaNonPartitionConjuncts();
     this.nodeInfo = new ImpalaNodeInfo(assignedConjuncts, tupleDesc);
     PlanNodeId nodeId = ctx.getNextNodeId();
 

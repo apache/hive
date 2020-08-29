@@ -31,33 +31,26 @@ import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.RelWriter;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
-import org.apache.calcite.rex.RexCall;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
-import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ReferrableNode;
-import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.SlotDescriptor;
 import org.apache.impala.analysis.SlotRef;
-import org.apache.impala.analysis.TupleId;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Abstract base class for Impala relational expressions with a variable number
  * of inputs (0 or more)
  */
 public abstract class ImpalaPlanRel extends AbstractRelNode implements ReferrableNode {
+
   protected ImmutableList<RelNode> inputs;
   protected ImpalaNodeInfo nodeInfo; // initialized in concrete derived classes
   protected ImmutableMap<Integer, Expr> outputExprs;
@@ -182,63 +175,6 @@ public abstract class ImpalaPlanRel extends AbstractRelNode implements Referrabl
       exprs.put(index++, new SlotRef(slotDesc));
     }
     return ImmutableMap.copyOf(exprs);
-  }
-
-  protected List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer, ReferrableNode relNode) {
-    return getConjuncts(filter, analyzer, relNode,
-        null /* no partition cols indexes */, null, null);
-  }
-
-  /**
-   * Convert the filter's conjuncts into Impala exprs and return the list of all such
-   * exprs. If the partitionColsIndexes is supplied, this method checks which of
-   * the conjuncts references a partition column and populates the two lists: partitionConjuncts
-   * and nonPartitionConjuncts.
-   */
-  protected List<Expr> getConjuncts(HiveFilter filter, Analyzer analyzer, ReferrableNode relNode,
-      Set<Integer> partitionColsIndexes, List<Expr> partitionConjuncts, List<Expr> nonPartitionConjuncts) {
-    List<Expr> conjuncts = Lists.newArrayList();
-    if (filter == null) {
-      return conjuncts;
-    }
-    ImpalaInferMappingRexVisitor visitor = new ImpalaInferMappingRexVisitor(
-        analyzer, ImmutableList.of(relNode), partitionColsIndexes, getCluster().getRexBuilder());
-    List<RexNode> andOperands = getAndOperands(filter.getCondition());
-    for (RexNode andOperand : andOperands) {
-      // reset the visitor's partition state because we want each conjunct's
-      // eligibility as a partitioning expr to be evaluated independently
-      visitor.resetPartitionState();
-      Expr impalaConjunct = andOperand.accept(visitor);
-      conjuncts.add(impalaConjunct);
-      if (partitionColsIndexes != null) {
-        Preconditions.checkNotNull(partitionConjuncts);
-        Preconditions.checkNotNull(nonPartitionConjuncts);
-        // check if this conjunct only has partition column references.
-        // e.g  'part_col = 5 OR non_part_col = 10' will return false, so don't add
-        // it to the list of partition conjuncts
-        if (visitor.hasPartitionColsOnly()) {
-          partitionConjuncts.add(impalaConjunct);
-        } else {
-          nonPartitionConjuncts.add(impalaConjunct);
-        }
-      }
-    }
-    return conjuncts;
-  }
-
-  protected List<RexNode> getAndOperands(RexNode conjuncts) {
-    if (conjuncts == null) {
-      return ImmutableList.of();
-    }
-
-    if (!(conjuncts instanceof RexCall)) {
-      return ImmutableList.of(conjuncts);
-    }
-    RexCall rexCallConjuncts = (RexCall) conjuncts;
-    if (rexCallConjuncts.getKind() != SqlKind.AND) {
-      return ImmutableList.of(conjuncts);
-    }
-    return rexCallConjuncts.getOperands();
   }
 
   @Override

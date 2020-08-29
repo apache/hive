@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaNullLiteral;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaTupleIsNullExpr;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaConjuncts;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionUtil;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
@@ -180,7 +181,8 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
 
     joinNode.setId(ctx.getNextNodeId());
 
-    List<Expr> assignedConjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
+    ImpalaConjuncts conjuncts = ImpalaConjuncts.create(filter, ctx.getRootAnalyzer(), this);
+    List<Expr> assignedConjuncts = conjuncts.getImpalaNonPartitionConjuncts();
     nodeInfo.setAssignedConjuncts(assignedConjuncts);
     joinNode.init(ctx.getRootAnalyzer());
 

@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaNullLiteral;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaConjuncts;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.impala.analysis.AggregateInfo;
 import org.apache.impala.analysis.Analyzer;
@@ -146,7 +147,8 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     // This is the only way to shove in the "having" filter into the aggregate node.
     // In the init clause, the aggregate node calls into the analyzer to get all remaining
     // unassigned conjuncts.
-    analyzer.setUnassignedConjuncts(getConjuncts(filter, analyzer, this));
+    ImpalaConjuncts conjuncts = ImpalaConjuncts.create(filter, analyzer, this);
+    analyzer.setUnassignedConjuncts(conjuncts.getImpalaNonPartitionConjuncts());
     aggNode.init(analyzer);
     analyzer.clearUnassignedConjuncts();
 

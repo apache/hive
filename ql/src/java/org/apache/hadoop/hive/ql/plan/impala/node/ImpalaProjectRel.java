@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaConjuncts;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 
 import org.apache.impala.analysis.Analyzer;
@@ -87,8 +88,9 @@ public class ImpalaProjectRel extends ImpalaProjectRelBase {
     planNode.init(ctx.getRootAnalyzer());
 
     if (filter != null) {
-      List<Expr> conjuncts = getConjuncts(filter, ctx.getRootAnalyzer(), this);
-      planNode = new ImpalaSelectNode(ctx.getNextNodeId(), planNode, conjuncts);
+      ImpalaConjuncts conjuncts = ImpalaConjuncts.create(filter, ctx.getRootAnalyzer(), this);
+      List<Expr> assignedConjuncts = conjuncts.getImpalaNonPartitionConjuncts();
+      planNode = new ImpalaSelectNode(ctx.getNextNodeId(), planNode, assignedConjuncts);
       planNode.init(ctx.getRootAnalyzer());
     }
 
