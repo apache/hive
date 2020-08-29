@@ -58,7 +58,6 @@ import org.apache.impala.util.EventSequence;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +70,7 @@ import java.util.Map;
  * that can be sent to backend for execution.
  */
 public class ImpalaPlanner {
+
   public final Hive db_;
   private final QB qb_;
   private TStmtType stmtType_;
@@ -234,7 +234,8 @@ public class ImpalaPlanner {
         tab = part.getTable();
       }
 
-      HdfsTable hdfsTable = ctx_.getTableLoader().loadHdfsTable(db_, tab.getTTable());
+      HdfsTable hdfsTable = ctx_.getTableLoader().loadHdfsTable(db_,
+          ctx_.getQueryContext().getConf(), tab.getTTable());
       ctx_.setTargetTable(hdfsTable);
     }
   }

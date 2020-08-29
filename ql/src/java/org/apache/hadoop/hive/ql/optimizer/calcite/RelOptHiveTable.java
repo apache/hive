@@ -48,7 +48,10 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.mapping.IntPair;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -751,5 +754,13 @@ public class RelOptHiveTable implements RelOptTable {
 
   public PrunedPartitionList getPrunedPartitionList() {
     return partitionList;
+  }
+
+  public IMetaStoreClient getMSC() throws MetaException {
+    return db.getMSC();
+  }
+
+  public Database getDatabase() throws HiveException {
+    return db.getDatabase(getHiveTableMD().getDbName());
   }
 }

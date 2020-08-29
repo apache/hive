@@ -18,27 +18,14 @@
 package org.apache.hadoop.hive.ql.plan.impala;
 
 import com.google.common.base.Preconditions;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsTable;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
-import org.apache.impala.catalog.DataSourceTable;
-import org.apache.impala.catalog.Db;
 import org.apache.impala.catalog.FeTable;
-import org.apache.impala.catalog.HdfsFileFormat;
-import org.apache.impala.catalog.TableLoadingException;
 import org.apache.impala.planner.PlannerContext;
-import org.apache.impala.thrift.TExecRequest;
 import org.apache.impala.thrift.TNetworkAddress;
-import org.apache.impala.thrift.TQueryCtx;
 import org.apache.impala.util.EventSequence;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class ImpalaPlannerContext extends PlannerContext {
@@ -51,7 +38,7 @@ public class ImpalaPlannerContext extends PlannerContext {
   public ImpalaPlannerContext(ImpalaQueryContext queryContext, EventSequence timeline) {
     super(queryContext.getTQueryCtx(), timeline);
     this.queryContext = queryContext;
-    this.tableLoader = new ImpalaTableLoader(timeline);
+    this.tableLoader = new ImpalaTableLoader(timeline, queryContext);
   }
 
   public void setTargetTable(FeTable targetTable) {
@@ -102,5 +89,10 @@ public class ImpalaPlannerContext extends PlannerContext {
   public ImpalaTableLoader getTableLoader() {
     return tableLoader;
   }
+
+  public ImpalaQueryContext getQueryContext() {
+    return queryContext;
+  }
+
 
 }

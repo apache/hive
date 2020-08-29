@@ -78,7 +78,8 @@ public class ImpalaHelper {
     BuiltinsDb.getInstance(true);
   }
 
-  public ImpalaHelper(HiveConf conf, String dbname, String username) throws SemanticException {
+  public ImpalaHelper(HiveConf conf, String dbname, String username)
+      throws SemanticException {
     try {
       queryContext = new ImpalaQueryContext(conf, dbname, username, createQueryOptions(conf));
     } catch (HiveException e) {
@@ -139,7 +140,7 @@ public class ImpalaHelper {
           getImpalaStmtType(stmtType), getImpalaResultStmtType(stmtType), timeline, writeId);
       ImpalaPlannerContext planCtx = impalaPlanner.getPlannerContext();
       impalaPlanner.initTargetTable();
-      planCtx.getTableLoader().loadTablesAndPartitions(db, impalaRelNode);
+      planCtx.getTableLoader().loadTablesAndPartitions(db);
 
       PlanNode rootImpalaNode = impalaRelNode.getRootPlanNode(planCtx);
       timeline.markEvent("Single node plan created");

@@ -655,6 +655,9 @@ public interface IMetaStoreClient {
   Table getTable(String dbName, String tableName) throws MetaException,
       TException, NoSuchObjectException;
 
+  Table getTable(GetTableRequest req) throws MetaException,
+      TException, NoSuchObjectException;
+
   /**
    * Get a table object in the default catalog.
    *

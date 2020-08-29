@@ -19,8 +19,6 @@
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
 import com.google.common.collect.Sets;
-import java.math.BigDecimal;
-import java.util.Set;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexExecutor;
@@ -36,11 +34,12 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaQueryContext;
-//TODO: CDPD-16525: this is only temporary until the Impala code gets checked in.
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRuleHelper;
+import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaPartitionPruneRuleHelper;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Function helper for Impala.
@@ -62,8 +61,7 @@ public class ImpalaFunctionHelper implements FunctionHelper {
   public ImpalaFunctionHelper(ImpalaQueryContext queryContext, RexBuilder builder) {
     this.factory = new RexNodeExprFactory(builder, this);
     this.rexExecutor = new ImpalaRexExecutorImpl(queryContext);
-    //TODO: CDPD-16525: this is only temoorary until the Impala code gets checked in.
-    this.partitionPruneRuleHelper = new HivePartitionPruneRuleHelper();
+    this.partitionPruneRuleHelper = new ImpalaPartitionPruneRuleHelper(queryContext, builder);
   }
 
   /**

@@ -18,28 +18,21 @@
 package org.apache.hadoop.hive.ql.plan.impala;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import org.apache.calcite.rel.RelNode;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
-import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaHdfsScanRel;
-import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaPlanRel;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsTable;
-import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaRelUtil;
-import org.apache.impala.catalog.CatalogException;
+import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable;
 import org.apache.impala.catalog.Db;
 import org.apache.impala.catalog.HdfsTable;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.util.EventSequence;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,101 +46,58 @@ import java.util.Set;
  * is loaded.
  */
 public class ImpalaTableLoader {
-  private Map<HdfsTable, Set<String>> tablePartitionMap;
-  private Map<org.apache.hadoop.hive.metastore.api.Table, HdfsTable> tableMap;
-  private Map<String, org.apache.hadoop.hive.metastore.api.Database> dbMap;
-  private boolean loaded = false;
-  private EventSequence timeline;
+  private static final Logger LOG = LoggerFactory.getLogger(ImpalaTableLoader.class);
 
-  public ImpalaTableLoader(EventSequence timeline) {
+  private final Map<HdfsTable, Set<String>> tablePartitionMap;
+  private final Map<org.apache.hadoop.hive.metastore.api.Table, ImpalaHdfsTable> tableMap;
+  private final Map<String, org.apache.hadoop.hive.metastore.api.Database> dbMap;
+  private final EventSequence timeline;
+  private final ImpalaQueryContext queryContext;
+
+  public ImpalaTableLoader(EventSequence timeline, ImpalaQueryContext queryContext) {
     this.tablePartitionMap = new HashMap<>();
     this.tableMap = new HashMap<>();
     this.dbMap = new HashMap<>();
     this.timeline = timeline;
+    this.queryContext = queryContext;
   }
 
-  /**
-   * Collect the list of table scans and for each scan the unique list of partitions.
-   * Then load the table and partition metadata
-   */
-  public void loadTablesAndPartitions(Hive db, ImpalaPlanRel rootRelNode)
-      throws ImpalaException, HiveException, MetaException {
-    timeline.markEvent("Metadata load started");
-    List<ImpalaHdfsScanRel> tableScans = Lists.newArrayList();
-    ImpalaRelUtil.gatherTableScans(rootRelNode, tableScans);
-
-    for (ImpalaHdfsScanRel hdfsScanRel : tableScans) {
-      addTableAndPartitions(hdfsScanRel.getDb(), hdfsScanRel.getScan());
-    }
-
-    for (Map.Entry e : tableMap.entrySet()) {
-      org.apache.hadoop.hive.metastore.api.Table msTbl =
-          (org.apache.hadoop.hive.metastore.api.Table) e.getKey();
-      HdfsTable hdfsTable = (HdfsTable) e.getValue();
-      Set<String> partitionNames = tablePartitionMap.get(hdfsTable);
-      if (msTbl.getPartitionKeysSize() > 0) {
-        hdfsTable.loadSchema(msTbl);
-        hdfsTable.initializePartitionMetadata(msTbl);
-        String reason = "";
-        // load the table and its selected partitions
-        hdfsTable.load(true /* reuseMetadata */, db.getMSC(), msTbl,
-            true /* loadPartitionFileMetadata */, true /* loadTableSchema */,
-            partitionNames, reason);
-      } else {
-        // for un-partitioned tables, load metadata of the entire table
-        // (note: reuseMetadata is false for such tables)
-        hdfsTable.load(false /* reuseMetadata */, db.getMSC(), msTbl, "");
-      }
-    }
-    loaded = true;
-    timeline.markEvent("Metadata load finished. loaded-tables=" + tableMap.entrySet().size());
-  }
-
-  public HdfsTable loadHdfsTable(Hive db, org.apache.hadoop.hive.metastore.api.Table msTbl) throws HiveException {
+  public HdfsTable loadHdfsTable(Hive db, HiveConf conf,
+      org.apache.hadoop.hive.metastore.api.Table msTbl) throws HiveException {
     org.apache.hadoop.hive.metastore.api.Database msDb = dbMap.get(msTbl.getDbName());
     if (msDb == null) {
       // cache the Database object to avoid rpc to the metastore for future requests
       msDb = db.getDatabase(msTbl.getDbName());
       dbMap.put(msTbl.getDbName(), msDb);
     }
-    HdfsTable hdfsTable = tableMap.get(msTbl);
+    ImpalaHdfsTable hdfsTable = tableMap.get(msTbl);
     if (hdfsTable == null) {
       org.apache.impala.catalog.Db impalaDb = new Db(msTbl.getDbName(), msDb);
-      hdfsTable = new ImpalaHdfsTable(msTbl, impalaDb, msTbl.getTableName(), msTbl.getOwner());
+      hdfsTable = new ImpalaHdfsTable(conf, msTbl, impalaDb, msTbl.getTableName(), msTbl.getOwner());
       tableMap.put(msTbl, hdfsTable);
       tablePartitionMap.put(hdfsTable, new HashSet<>());
     }
     return hdfsTable;
   }
 
-  /**
-   * Add the database and table to internal structures if not previously populated
-   */
-  public void addTableAndPartitions(Hive db, HiveTableScan scan) throws HiveException, CatalogException, MetaException {
-    Table table = ((RelOptHiveTable) scan.getTable()).getHiveTableMD();
-
-    // get the corresponding metastore Table object
-    org.apache.hadoop.hive.metastore.api.Table msTbl = table.getTTable();
-
-    HdfsTable hdfsTable = loadHdfsTable(db, msTbl);
-
-    if (msTbl.getPartitionKeysSize() > 0) {
-      // propagate Hive's statically pruned partition list to Impala
-      PrunedPartitionList prunedPartList = ((RelOptHiveTable) scan.getTable()).getPrunedPartitionList();
-      Set<String> partitionNames = tablePartitionMap.get(hdfsTable);
-      for (org.apache.hadoop.hive.ql.metadata.Partition p : prunedPartList.getPartitions()) {
-        // create the partition names in the format that Impala expects (with a trailing "/")
-        String partName = p.getName() + "/";
-        if (!partitionNames.contains(partName)) {
-          partitionNames.add(partName);
-        }
-      }
-    }
+  public ImpalaHdfsTable getHdfsTable(org.apache.hadoop.hive.metastore.api.Table table) {
+    return tableMap.get(table);
   }
 
-  public HdfsTable getHdfsTable(org.apache.hadoop.hive.metastore.api.Table table) {
-    Preconditions.checkState(loaded);
-    return tableMap.get(table);
+  public void loadTablesAndPartitions(Hive db) throws HiveException {
+    timeline.markEvent("Metadata load started, loading " + queryContext.getBasicTables().size() +
+        " tables.");
+    for (ImpalaBasicHdfsTable basicTable : queryContext.getBasicTables()) {
+      LOG.info("Loading metadata for table " + basicTable.getName());
+      try {
+        tableMap.put(basicTable.getMetaStoreTable(), new ImpalaHdfsTable(basicTable, db.getMSC()));
+      } catch (ImpalaException|MetaException e) {
+        timeline.markEvent("Metadata load failed or table " + basicTable.getName() + ". Completed" +
+            " for " + tableMap.entrySet().size() + " tables.");
+        throw new HiveException(e);
+      }
+    }
+    timeline.markEvent("Metadata load finished. loaded-tables=" + tableMap.entrySet().size());
   }
 
 }

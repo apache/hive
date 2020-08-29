@@ -17,60 +17,90 @@
  */
 package org.apache.hadoop.hive.ql.plan.impala;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
-import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsTable;
+import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.impala.analysis.Analyzer;
-import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.StmtMetadataLoader;
+import org.apache.impala.analysis.TableName;
 import org.apache.impala.authorization.AuthorizationFactory;
 import org.apache.impala.authorization.NoopAuthorizationFactory;
-import org.apache.impala.catalog.HdfsTable;
-import org.apache.impala.planner.PlannerContext;
+import org.apache.impala.common.ImpalaException;
 import org.apache.impala.thrift.TClientRequest;
-import org.apache.impala.thrift.TExecRequest;
 import org.apache.impala.thrift.TNetworkAddress;
 import org.apache.impala.thrift.TQueryCtx;
 import org.apache.impala.thrift.TQueryOptions;
 import org.apache.impala.thrift.TSessionState;
 import org.apache.impala.thrift.TSessionType;
 import org.apache.impala.thrift.TUniqueId;
-import org.apache.impala.util.EventSequence;
+import org.apache.thrift.TException;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
 public class ImpalaQueryContext {
 
+  private final HiveConf conf;
   private final ImpalaBasicAnalyzer analyzer;
+  private final ImpalaBasicAnalyzer pruneAnalyzer;
   private final List<TNetworkAddress> hostLocations = Lists.newArrayList();
   private final TQueryCtx queryCtx;
+  private final Map<String, ImpalaBasicHdfsTable> cachedTables = Maps.newHashMap();
+  private final AuthorizationFactory authFactory;
 
-  public ImpalaQueryContext(HiveConf conf, String dbname, String username, TQueryOptions options) {
+  public ImpalaQueryContext(HiveConf conf, String dbname, String username,
+      TQueryOptions options) {
+    this.conf = conf;
     // TODO: replace hostname and port with configured parameter settings
     hostLocations.add(new TNetworkAddress("127.0.0.1", 22000));
 
     queryCtx = createQueryContext(conf, dbname, username, options, hostLocations.get(0));
 
-    AuthorizationFactory authFactory = new NoopAuthorizationFactory();
+    authFactory = new NoopAuthorizationFactory();
     StmtMetadataLoader.StmtTableCache stmtTableCache =
-        new StmtMetadataLoader.StmtTableCache(new DummyCatalog(), Sets.newHashSet(), Maps.newHashMap());
+        new StmtMetadataLoader.StmtTableCache(new DummyCatalog(), Sets.newHashSet(),
+            Maps.newHashMap());
     analyzer = new ImpalaBasicAnalyzer(stmtTableCache, queryCtx, authFactory, hostLocations);
+    // Extra analyzer and cache needed for "basic" tables.  This will hold additional metadata
+    // such as the partition names. As an enhancement, we should try to limit the lifetime
+    // of this object.
+    StmtMetadataLoader.StmtTableCache pruneStmtTableCache =
+        new StmtMetadataLoader.StmtTableCache(new DummyCatalog(), Sets.newHashSet(),
+            Maps.newHashMap());
+    pruneAnalyzer =
+        new ImpalaBasicAnalyzer(pruneStmtTableCache, queryCtx, authFactory, hostLocations);
   }
 
   public Analyzer getAnalyzer() {
     return analyzer;
+  }
+
+  public HiveConf getConf() {
+    return conf;
+  }
+
+  /**
+   * Creates a temporary analyzer. To be used if an analyzer is needed but it is not desired
+   * to pollute the main query analyzer state.
+   */
+  public ImpalaBasicAnalyzer getPruneAnalyzer() {
+    return pruneAnalyzer;
   }
 
   public TQueryCtx getTQueryCtx() {
@@ -108,6 +138,43 @@ public class ImpalaQueryContext {
     queryCtx.setCoord_krpc_address(krpcCordAddr);
 
     return queryCtx;
+  }
+
+  /**
+   * Get the HdfsTable. This HdfsTable differs slightly from the main HdfsTable class
+   * as existing in Impala, see ImpalaBasicHdfsTable class for details.
+   */
+  public ImpalaBasicHdfsTable getBasicTableInstance(IMetaStoreClient client, RelOptHiveTable table)
+      throws HiveException {
+    Table msTbl = table.getHiveTableMD().getTTable();
+    Database msDb = table.getDatabase();
+    String tableName = msTbl.getDbName() + "." + msTbl.getTableName();
+    // Only store one copy for the query, so check the cache if it exists.
+    ImpalaBasicHdfsTable cachedTable = cachedTables.get(tableName);
+    if (cachedTable == null) {
+      cachedTable = createBasicHdfsTable(client, msTbl, msDb);
+      cachedTables.put(tableName, cachedTable);
+    }
+    return cachedTable;
+  }
+
+  private ImpalaBasicHdfsTable createBasicHdfsTable(IMetaStoreClient client, Table msTbl,
+      Database msDb) throws HiveException {
+    String tableName = msTbl.getDbName() + "." + msTbl.getTableName();
+
+    ImpalaBasicHdfsTable cachedTable =
+        new ImpalaBasicHdfsTable(conf, client, msTbl, msDb);
+
+    cachedTables.put(tableName, cachedTable);
+    // The :Prune" HdfsTable holds an HdfsTable that contains all the metadata information
+    // needed for the query. This is the table that needs to be set in the analyzer.
+    TableName impalaTableName = TableName.parse(tableName);
+
+    return cachedTable;
+  }
+
+  public List<ImpalaBasicHdfsTable> getBasicTables() {
+    return ImmutableList.copyOf(cachedTables.values());
   }
 
   public void initTxnId() {

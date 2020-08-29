@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.plan.impala.node;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -32,17 +31,14 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
-import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsTable;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaConjuncts;
-import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
+import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaPrunedPartitionList;
 import org.apache.impala.analysis.AggregateInfo;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.BaseTableRef;
@@ -54,19 +50,15 @@ import org.apache.impala.analysis.TableName;
 import org.apache.impala.analysis.TableRef;
 import org.apache.impala.analysis.TupleDescriptor;
 import org.apache.impala.catalog.FeFsPartition;
-import org.apache.impala.catalog.HdfsPartition;
-import org.apache.impala.catalog.HdfsTable;
-import org.apache.impala.catalog.PrunablePartition;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.PlanNode;
 import org.apache.impala.planner.PlanNodeId;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class ImpalaHdfsScanRel extends ImpalaPlanRel {
+
 
   private ImpalaHdfsScanNode hdfsScanNode = null;
   private final HiveTableScan scan;
@@ -100,30 +92,11 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
       return hdfsScanNode;
     }
 
-    Table table = ((RelOptHiveTable) scan.getTable()).getHiveTableMD();
-    org.apache.hadoop.hive.metastore.api.Table msTbl = table.getTTable();
-    HdfsTable hdfsTable = ctx.getTableLoader().getHdfsTable(msTbl);
-
     List<FeFsPartition> feFsPartitions = Lists.newArrayList();
-    // propagate Hive's statically pruned partition list to Impala
-    PrunedPartitionList prunedPartList = ((RelOptHiveTable) scan.getTable()).getPrunedPartitionList();
-    // This can be null if the table is not partitioned OR there is no filter on the partition column(s)
-    if (hdfsTable.isPartitioned() && prunedPartList != null) {
-      List<String> partitionNames = new ArrayList<>();
-      for (Partition p : prunedPartList.getPartitions()) {
-        // Impala's getPartitionsForNames() expects a terminating '/' in the partition name
-        // which it strips out. Example Impala partition name: "n_regionkey=3/"
-        partitionNames.add(p.getName() + "/");
-      }
-      if (partitionNames.size() > 0) {
-        List<HdfsPartition> hdfsPartitions = hdfsTable.getPartitionsForNames(partitionNames);
-        feFsPartitions.addAll(hdfsPartitions);
-      }
-    } else {
-      for (PrunablePartition p : hdfsTable.getPartitions()) {
-        feFsPartitions.add((FeFsPartition) p);
-      }
-    }
+
+    ImpalaPrunedPartitionList prunedPartList =
+        (ImpalaPrunedPartitionList) ((RelOptHiveTable) scan.getTable()).getPrunedPartitionList();
+    Preconditions.checkNotNull(prunedPartList);
 
     // TODO: CDPD-8315
     // Impala passes an AggregateInfo to HdfsScanNode when there is a
@@ -147,42 +120,58 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
     TableRef tblRef = new TableRef(impalaTblName.toPath(), alias);
     ImpalaBasicAnalyzer basicAnalyzer = (ImpalaBasicAnalyzer) ctx.getRootAnalyzer();
     // save the mapping from table name to impala Table
-    basicAnalyzer.setTable(impalaTblName, hdfsTable);
+    ImpalaHdfsTable impalaHdfsTable =
+        ctx.getTableLoader().getHdfsTable(prunedPartList.getTable().getMetaStoreTable());
+    basicAnalyzer.setTable(impalaTblName, impalaHdfsTable);
     Path resolvedPath = ctx.getRootAnalyzer().resolvePath(tblRef.getPath(), Path.PathType.TABLE_REF);
 
     ImpalaBaseTableRef baseTblRef = new ImpalaBaseTableRef(tblRef, resolvedPath, basicAnalyzer);
 
-    TupleDescriptor tupleDesc = createTupleAndSlotDesc(baseTblRef, ctx);
+    List<FeFsPartition> impalaPartitions =
+        impalaHdfsTable.getPartitions(prunedPartList.getBasicPartitions());
 
-    this.outputExprs = createScanOutputExprs(tupleDesc.getSlots());
+    TupleDescriptor tupleDesc =
+        createTupleAndSlotDesc(baseTblRef, scan.getPrunedRowType(), basicAnalyzer);
 
-    Set<Integer> partitionColsIndexes = ((RelOptHiveTable) scan.getTable()).getPartColInfoMap().keySet();
-    ImpalaConjuncts conjuncts = ImpalaConjuncts.create(filter, ctx.getRootAnalyzer(), this,
-        this.getCluster().getRexBuilder(), partitionColsIndexes);
-    List<Expr> partitionConjuncts = conjuncts.getImpalaPartitionConjuncts();
-    List<Expr> assignedConjuncts = conjuncts.getImpalaNonPartitionConjuncts();
-    this.nodeInfo = new ImpalaNodeInfo(assignedConjuncts, tupleDesc);
+    this.outputExprs =
+        createScanOutputExprs(tupleDesc.getSlots(), (RelOptHiveTable) scan.getTable());
+
+    List<RexNode> partitionConjuncts = prunedPartList.getPartitionConjuncts();
+    // get the conjuncts from the filter. It is possible that new conditions were added
+    // after partition pruning.  We pass in partition conjuncts because we don't want
+    // the partition conjuncts to be used in the filter condition. This will also validate
+    // that the existing partition conjuncts found at pruning time are still present in the 
+    // filter as a check to make sure that the partiton conjunct wasn't stripped out of
+    // the filter. Since partition pruning has already been done, we do not add any new
+    // partition conjuncts, even if it is on a partitioned column.  It will be added to
+    // the nonpartitioned conjuncts.
+    ImpalaConjuncts assignedConjuncts = ImpalaConjuncts.create(filter,
+        partitionConjuncts, basicAnalyzer, this, getCluster().getRexBuilder());
+    List<Expr> impalaAssignedConjuncts = assignedConjuncts.getImpalaNonPartitionConjuncts();
+    List<Expr> impalaPartitionConjuncts = assignedConjuncts.getImpalaPartitionConjuncts();
+
+    this.nodeInfo = new ImpalaNodeInfo(impalaAssignedConjuncts, tupleDesc);
     PlanNodeId nodeId = ctx.getNextNodeId();
 
-    hdfsScanNode = new ImpalaHdfsScanNode(nodeId, feFsPartitions, baseTblRef, aggInfo, partitionConjuncts, nodeInfo);
+    hdfsScanNode = new ImpalaHdfsScanNode(nodeId, impalaPartitions, baseTblRef, aggInfo,
+        impalaPartitionConjuncts, nodeInfo);
     hdfsScanNode.init(ctx.getRootAnalyzer());
 
     return hdfsScanNode;
   }
 
   // Create tuple and slot descriptors for this base table
-  private TupleDescriptor createTupleAndSlotDesc(BaseTableRef baseTblRef,
-      ImpalaPlannerContext ctx) throws ImpalaException {
+  public static TupleDescriptor createTupleAndSlotDesc(BaseTableRef baseTblRef,
+      RelDataType relDataType, Analyzer analyzer) throws ImpalaException {
     // create the tuple descriptor via the analyzer
-    baseTblRef.analyze(ctx.getRootAnalyzer());
+    baseTblRef.analyze(analyzer);
 
     // create the slot descriptors corresponding to this tuple descriptor
     // by supplying the field names from Calcite's output schema for this node
-    RelDataType relDataType = scan.getPrunedRowType();
     List<String> fieldNames = relDataType.getFieldNames();
     for (int i = 0; i < fieldNames.size(); i++) {
       SlotRef slotref = new SlotRef(Path.createRawPath(baseTblRef.getUniqueAlias(), fieldNames.get(i)));
-      slotref.analyze(ctx.getRootAnalyzer());
+      slotref.analyze(analyzer);
       SlotDescriptor slotDesc = slotref.getDesc();
       slotDesc.setIsMaterialized(true);
     }
@@ -195,9 +184,9 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
    * is the position in the Hdfs table, with partitioned columns coming after non-partitioned
    * columns.
    */
-  public ImmutableMap<Integer, Expr> createScanOutputExprs(List<SlotDescriptor> slotDescs) {
+  public static ImmutableMap<Integer, Expr> createScanOutputExprs(List<SlotDescriptor> slotDescs,
+      RelOptHiveTable scanTable) {
     Map<Integer, Expr> exprs = Maps.newLinkedHashMap();
-    RelOptHiveTable scanTable = (RelOptHiveTable) scan.getTable();
     int totalColumnsInTbl = scanTable.getNoOfNonVirtualCols();
     int nonPartitionedCols = scanTable.getNonPartColumns().size();
     for (SlotDescriptor slotDesc : slotDescs) {

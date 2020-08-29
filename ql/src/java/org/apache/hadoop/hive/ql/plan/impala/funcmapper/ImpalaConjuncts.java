@@ -156,6 +156,14 @@ public class ImpalaConjuncts {
     return rexCallConjuncts.getOperands();
   }
 
+  public static String toString(List<Expr> conjuncts) {
+    String exprString = "";
+    for (Expr e : conjuncts) {
+      exprString += e.toSql() + ";";
+    }
+    return exprString;
+  }
+
   public static ImpalaConjuncts create(HiveFilter filter, Analyzer analyzer,
       ReferrableNode relNode) throws HiveException {
     if (filter == null) {
@@ -165,14 +173,30 @@ public class ImpalaConjuncts {
         filter.getCluster().getRexBuilder(), null);
   }
 
-  public static ImpalaConjuncts create(HiveFilter filter, Analyzer analyzer,
+  public static ImpalaConjuncts create(RexNode filterCondition, Analyzer analyzer,
       ReferrableNode relNode, RexBuilder rexBuilder, Set<Integer> partitionColsIndexes)
       throws HiveException {
+    return create(filterCondition, Lists.newArrayList(), analyzer, relNode, rexBuilder,
+        partitionColsIndexes);
+  }
+
+  /**
+   * This flavor of create is called after partition pruning is done and we already have
+   * existing partition conjuncts. There will be validation done to make sure that all
+   * existing partition conjuncts exist within the filter condition. Also, because there
+   * is no partitionColsIndexes in this flavor, that will ensure no new partition conjuncts
+   * will be added.
+   */
+  public static ImpalaConjuncts create(HiveFilter filter,
+      List<RexNode> existingPartitionConjuncts, Analyzer analyzer, ReferrableNode relNode,
+      RexBuilder rexBuilder) throws HiveException {
     if (filter == null) {
+      Preconditions.checkNotNull(existingPartitionConjuncts);
+      Preconditions.checkState(existingPartitionConjuncts.isEmpty());
       return create();
     }
-    return create(filter.getCondition(), Lists.newArrayList(), analyzer, relNode, rexBuilder,
-        partitionColsIndexes);
+    return create(filter.getCondition(), existingPartitionConjuncts, analyzer, relNode, rexBuilder,
+        null);
   }
 
   public static ImpalaConjuncts create(RexNode filterCondition,
