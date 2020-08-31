@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.llap.registry.impl;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.curator.framework.recipes.atomic.AtomicValue;
 import org.apache.curator.framework.recipes.atomic.DistributedAtomicLong;
-import org.apache.hadoop.registry.client.binding.RegistryUtils;
 
 import com.google.common.collect.Sets;
 import java.io.IOException;
@@ -153,7 +152,7 @@ public class LlapZookeeperRegistryImpl
     daemonZkRecord.addExternalEndpoint(getServicesEndpoint());
     daemonZkRecord.addInternalEndpoint(getOutputFormatEndpoint());
     Endpoint externalRpcEndpoint = null;
-    if (LlapUtil.isCloudDeployment()) {
+    if (LlapUtil.isCloudDeployment(conf)) {
       externalRpcEndpoint = getExternalRpcEndpoint();
       daemonZkRecord.addExternalEndpoint(externalRpcEndpoint);
     }
@@ -186,7 +185,7 @@ public class LlapZookeeperRegistryImpl
     }
 
     registerServiceRecord(daemonZkRecord, uniqueId);
-    if (LlapUtil.isCloudDeployment()) {
+    if (LlapUtil.isCloudDeployment(conf)) {
       LOG.info("Registered node. Created a znode on ZooKeeper for LLAP instance: rpc: {}, external client rpc : {} "
               + "shuffle: {}, webui: {}, mgmt: {}, znodePath: {}", rpcEndpoint, externalRpcEndpoint,
           getShuffleEndpoint(), getServicesEndpoint(), getMngEndpoint(), getRegistrationZnodePath());
@@ -257,7 +256,7 @@ public class LlapZookeeperRegistryImpl
       this.serviceAddress =
           RegistryTypeUtils.getAddressField(services.addresses.get(0), AddressTypes.ADDRESS_URI);
 
-      if (LlapUtil.isCloudDeployment()) {
+      if (LlapUtil.isCloudDeployment(conf)) {
         final Endpoint externalRpc = srv.getExternalEndpoint(IPC_EXTERNAL_LLAP);
         this.externalHost = RegistryTypeUtils.getAddressField(externalRpc.addresses.get(0),
             AddressTypes.ADDRESS_HOSTNAME_FIELD);
@@ -287,14 +286,14 @@ public class LlapZookeeperRegistryImpl
     }
 
     @Override
-    public String getExternalHost() {
-      ensureCloudEnv();
+    public String getExternalHostname() {
+      ensureCloudEnv(LlapZookeeperRegistryImpl.this.conf);
       return externalHost;
     }
 
     @Override
     public int getExternalClientsRpcPort() {
-      ensureCloudEnv();
+      ensureCloudEnv(LlapZookeeperRegistryImpl.this.conf);
       return externalClientsRpcPort;
     }
 

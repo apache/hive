@@ -59,7 +59,7 @@ import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.ext.LlapDaemonInfo;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstanceSet;
-import org.apache.hadoop.hive.llap.security.JwtHelper;
+import org.apache.hadoop.hive.llap.security.LlapExtClientJwtHelper;
 import org.apache.hadoop.hive.llap.security.LlapSigner;
 import org.apache.hadoop.hive.llap.security.LlapSigner.Signable;
 import org.apache.hadoop.hive.llap.security.LlapSigner.SignedMessage;
@@ -233,29 +233,29 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   protected SplitResult getSplitResult(boolean generateLightWeightSplits)
       throws HiveException, IOException {
 
-    // Generate applicationId for the LLAP splits
+    // Generate extClientAppId for the LLAP splits
     LlapCoordinator coordinator = LlapCoordinator.getInstance();
     if (coordinator == null) {
       throw new HiveException("LLAP coordinator is not initialized; must be running in HS2 with "
           + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
     }
-    ApplicationId applicationId = coordinator.createExtClientAppId();
+    ApplicationId extClientAppId = coordinator.createExtClientAppId();
     String externalDagName = SessionState.get().getConf().getVar(ConfVars.HIVEQUERYNAME);
 
     StringBuilder sb = new StringBuilder();
-    sb.append("Generated appID ").append(applicationId.toString()).append(" for LLAP splits");
+    sb.append("Generated appID ").append(extClientAppId.toString()).append(" for LLAP splits");
     if (externalDagName != null) {
       sb.append(", with externalID ").append(externalDagName);
     }
     LOG.info(sb.toString());
 
-    PlanFragment fragment = createPlanFragment(inputArgQuery, applicationId);
+    PlanFragment fragment = createPlanFragment(inputArgQuery, extClientAppId);
     TezWork tezWork = fragment.work;
     Schema schema = fragment.schema;
 
     boolean generateSingleSplit = forceSingleSplit && orderByQuery;
 
-    SplitResult splitResult = getSplits(jc, tezWork, schema, applicationId, generateSingleSplit,
+    SplitResult splitResult = getSplits(jc, tezWork, schema, extClientAppId, generateSingleSplit,
         generateLightWeightSplits);
     validateSplitResult(splitResult, generateLightWeightSplits, generateSingleSplit);
     return splitResult;
@@ -434,7 +434,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   // generateLightWeightSplits - if true then
   // 1) schema and planBytes[] in each LlapInputSplit are not populated
   // 2) schemaSplit(contains only schema) and planSplit(contains only planBytes[]) are populated in SplitResult
-  private SplitResult getSplits(JobConf job, TezWork work, Schema schema, ApplicationId applicationId,
+  private SplitResult getSplits(JobConf job, TezWork work, Schema schema, ApplicationId extClientAppId,
                                final boolean generateSingleSplit, boolean generateLightWeightSplits)
       throws IOException {
 
@@ -467,9 +467,9 @@ public class GenericUDTFGetSplits extends GenericUDTF {
             + ConfVars.LLAP_HS2_ENABLE_COORDINATOR.varname + " enabled");
       }
 
-      // Update the queryId to use the generated applicationId. See comment below about
+      // Update the queryId to use the generated extClientAppId. See comment below about
       // why this is done.
-      HiveConf.setVar(wxConf, HiveConf.ConfVars.HIVEQUERYID, applicationId.toString());
+      HiveConf.setVar(wxConf, HiveConf.ConfVars.HIVEQUERYID, extClientAppId.toString());
       Vertex wx = utils.createVertex(wxConf, mapWork, scratchDir, work,
           DagUtils.createTezLrMap(appJarLr, null));
       String vertexName = wx.getName();
@@ -518,7 +518,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         LlapTokenLocalClient tokenClient = coordinator.getLocalTokenClient(job, llapUser);
         // We put the query user, not LLAP user, into the message and token.
         Token<LlapTokenIdentifier> token = tokenClient.createToken(
-            applicationId.toString(), queryUser, true);
+            extClientAppId.toString(), queryUser, true);
         LOG.info("Created the token for remote user: {}", token);
         bos.reset();
         token.write(dos);
@@ -528,7 +528,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       }
 
       // Generate umbilical token (applies to all splits)
-      Token<JobTokenIdentifier> umbilicalToken = JobTokenCreator.createJobToken(applicationId);
+      Token<JobTokenIdentifier> umbilicalToken = JobTokenCreator.createJobToken(extClientAppId);
 
       LOG.info("Number of splits: " + numGroupedSplitsGenerated);
       SignedMessage signedSvs = null;
@@ -537,7 +537,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       final Schema emptySchema = new Schema();
       for (int i = 0; i < numGroupedSplitsGenerated; i++) {
         TaskSpec taskSpec = new TaskSpecBuilder().constructTaskSpec(dag, vertexName,
-            numGroupedSplitsGenerated, applicationId, i);
+            numGroupedSplitsGenerated, extClientAppId, i);
 
         // 2. Generate the vertex/submit information for all events.
         if (i == 0) {
@@ -547,9 +547,9 @@ public class GenericUDTFGetSplits extends GenericUDTF {
           // is moved out of a UDTF into a proper API.
           // Setting this to the generated AppId which is unique.
           // Despite the differences in TaskSpec, the vertex spec should be the same.
-          signedSvs = createSignedVertexSpec(signer, taskSpec, applicationId, queryUser,
-              applicationId.toString());
-          SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(applicationId,
+          signedSvs = createSignedVertexSpec(signer, taskSpec, extClientAppId, queryUser,
+              extClientAppId.toString());
+          SubmitWorkInfo submitWorkInfo = new SubmitWorkInfo(extClientAppId,
               System.currentTimeMillis(), numGroupedSplitsGenerated, signedSvs.message,
               signedSvs.signature, umbilicalToken);
           submitWorkBytes = SubmitWorkInfo.toBytes(submitWorkInfo);
@@ -570,10 +570,13 @@ public class GenericUDTFGetSplits extends GenericUDTF {
         LlapDaemonInfo[] llapDaemonInfos = populateLlapDaemonInfos(job, locations);
 
         // 6. Generate JWT for external clients if it's a cloud deployment
+        // we inject extClientAppId in JWT which is same as what fragment contains.
+        // extClientAppId in JWT and in fragment are compared on LLAP when a fragment is submitted.
+        // see method ContainerRunnerImpl#verifyJwtForExternalClient
         String jwt = "";
-        if (LlapUtil.isCloudDeployment()) {
-          JwtHelper jwtHelper = new JwtHelper(SessionState.getSessionConf());
-          jwt = jwtHelper.buildJwtForLlap(applicationId);
+        if (LlapUtil.isCloudDeployment(job)) {
+          LlapExtClientJwtHelper llapExtClientJwtHelper = new LlapExtClientJwtHelper(job);
+          jwt = llapExtClientJwtHelper.buildJwtForLlap(extClientAppId);
         }
 
         if (generateLightWeightSplits) {
@@ -680,8 +683,8 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     int count = 0;
     for (LlapServiceInstance inst : llapServiceInstances) {
       LlapDaemonInfo info;
-      if (LlapUtil.isCloudDeployment()) {
-        info = new LlapDaemonInfo(inst.getExternalHost(), inst.getExternalClientsRpcPort(), inst.getOutputFormatPort());
+      if (LlapUtil.isCloudDeployment(job)) {
+        info = new LlapDaemonInfo(inst.getExternalHostname(), inst.getExternalClientsRpcPort(), inst.getOutputFormatPort());
       } else {
         info = new LlapDaemonInfo(inst.getHost(), inst.getRpcPort(), inst.getOutputFormatPort());
       }

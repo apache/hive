@@ -52,7 +52,7 @@ public class InactiveServiceInstance implements LlapServiceInstance {
   }
 
   @Override
-  public String getExternalHost() {
+  public String getExternalHostname() {
     throw new UnsupportedOperationException();
   }
 

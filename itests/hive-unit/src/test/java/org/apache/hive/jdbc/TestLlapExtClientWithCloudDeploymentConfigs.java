@@ -43,11 +43,16 @@ public class TestLlapExtClientWithCloudDeploymentConfigs extends BaseJdbcWithMin
 
   @BeforeClass
   public static void beforeTest() throws Exception {
-    System.setProperty("IS_CLOUD_DEPLOYMENT", "true");
     System.setProperty("PUBLIC_HOSTNAME", InetAddress.getLocalHost().getHostAddress());
 
     HiveConf conf = defaultConf();
     conf.set("minillap.usePortsFromConf", "true");
+
+    // enable setup for cloud based deployment
+    conf.setBoolVar(HiveConf.ConfVars.LLAP_EXTERNAL_CLIENT_CLOUD_DEPLOYMENT_SETUP_ENABLED, true);
+    conf.setVar(HiveConf.ConfVars.LLAP_EXTERNAL_CLIENT_CLOUD_JWT_SHARED_SECRET,
+        "Three may keep a secret, if two of them are dead -- Benjamin Franklin");
+
     conf.setBoolVar(HiveConf.ConfVars.LLAP_OUTPUT_FORMAT_ARROW, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_FILESINK_ARROW_NATIVE_ENABLED, true);
     BaseJdbcWithMiniLlap.beforeTest(conf);

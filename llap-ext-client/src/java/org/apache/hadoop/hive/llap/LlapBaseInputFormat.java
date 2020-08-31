@@ -118,7 +118,6 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   public static final Pattern SET_QUERY_PATTERN = Pattern.compile("^\\s*set\\s+.*=.+$", Pattern.CASE_INSENSITIVE);
 
   public static final String SPLIT_QUERY = "select get_llap_splits(\"%s\",%d)";
-  public static final LlapServiceInstance[] serviceInstanceArray = new LlapServiceInstance[0];
 
   public LlapBaseInputFormat(String url, String user, String pwd, String query) {
     this.url = url;
@@ -153,6 +152,7 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     HiveConf.setVar(job, HiveConf.ConfVars.LLAP_ZK_REGISTRY_USER, llapSplit.getLlapUser());
     SubmitWorkInfo submitWorkInfo = SubmitWorkInfo.fromBytes(llapSplit.getPlanBytes());
 
+    // llapSplit.getLlapDaemonInfos() will never be empty as of now, also validated this in GenericUDTFGetSplits while populating.
     final LlapDaemonInfo llapDaemonInfo = llapSplit.getLlapDaemonInfos()[0];
     final String host = llapDaemonInfo.getHost();
     final int outputPort = llapDaemonInfo.getOutputFormatPort();
@@ -212,7 +212,8 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
       builder.setToken(ByteString.copyFrom(llapSplit.getTokenBytes()));
     }
 
-    LOG.info("Registering fragment:{} to llap [host = {}, output port = {}] ", fragmentId, host, outputPort);
+    LOG.info("Registering fragment:{} to llap [host = {}, output port = {}] to read output",
+        fragmentId, host, outputPort);
     builder.build().writeDelimitedTo(socketStream);
     socketStream.flush();
 

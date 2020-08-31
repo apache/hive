@@ -236,7 +236,7 @@ public class LlapProtocolServerImpl extends AbstractService
         ConfVars.LLAP_SECURITY_ACL_DENY);
     // for cloud deployments, start a separate RPC server on the port
     // which we can open to accept requests from external clients.
-    if (LlapUtil.isCloudDeployment()) {
+    if (LlapUtil.isCloudDeployment(conf)) {
       externalClientsRpcServer = LlapUtil.startProtocolServer(externalClientsRpcPort, numHandlers, null, conf, daemonImpl,
           LlapProtocolBlockingPB.class, secretManager, pp, ConfVars.LLAP_SECURITY_ACL,
           ConfVars.LLAP_SECURITY_ACL_DENY);

@@ -19,6 +19,7 @@ import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 
+import org.apache.hadoop.hive.llap.LlapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -167,11 +168,13 @@ public class MiniLlapCluster extends AbstractService {
     clusterSpecificConfiguration.set(ConfVars.LLAP_DAEMON_SERVICE_HOSTS.varname, "@" + clusterNameTrimmed);
     clusterSpecificConfiguration.set(ConfVars.HIVE_ZOOKEEPER_QUORUM.varname, "localhost");
     clusterSpecificConfiguration.setInt(ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT.varname, miniZooKeeperCluster.getClientPort());
-  
+
+    boolean externalClientCloudSetupEnabled = LlapUtil.isCloudDeployment(conf);
+
     LOG.info("Initializing {} llap instances for MiniLlapCluster with name={}", numInstances, clusterNameTrimmed);
     for (int i = 0 ;i < numInstances ; i++) {
       llapDaemons[i] = new LlapDaemon(conf, numExecutorsPerService, execBytesPerService, llapIoEnabled,
-          ioIsDirect, ioBytesPerService, localDirs, rpcPort, externalClientCloudRpcPort,
+          ioIsDirect, ioBytesPerService, localDirs, rpcPort, externalClientCloudSetupEnabled, externalClientCloudRpcPort,
           mngPort, shufflePort, webPort, clusterNameTrimmed);
       llapDaemons[i].init(new Configuration(conf));
     }

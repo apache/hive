@@ -30,7 +30,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.io.DataInputBuffer;
@@ -403,11 +402,11 @@ public class LlapUtil {
   }
 
   /**
-   * @return returns the value of IS_CLOUD_DEPLOYMENT from either environment variable or system properties
+   * @return returns the value of LLAP_EXTERNAL_CLIENT_CLOUD_DEPLOYMENT_SETUP_ENABLED
+   * @param conf
    */
-  public static boolean isCloudDeployment() {
-    return "true".equalsIgnoreCase(System.getenv("IS_CLOUD_DEPLOYMENT"))
-        || "true".equalsIgnoreCase(System.getProperty("IS_CLOUD_DEPLOYMENT"));
+  public static boolean isCloudDeployment(Configuration conf) {
+    return HiveConf.getBoolVar(conf, ConfVars.LLAP_EXTERNAL_CLIENT_CLOUD_DEPLOYMENT_SETUP_ENABLED, false);
   }
 
   /**

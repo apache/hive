@@ -46,6 +46,7 @@ public interface JwtSecretProvider {
 
   /**
    * Initializes the provider.
+   * Should also contain any validations that we want to put on secret, helps us to fail fast.
    * @param conf configuration
    */
   void init(Configuration conf);

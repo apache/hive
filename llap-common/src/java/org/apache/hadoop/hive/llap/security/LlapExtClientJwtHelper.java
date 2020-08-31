@@ -31,27 +31,27 @@ import java.util.UUID;
  * Contains helper methods for generating and verifying JWTs for external llap clients.
  * Initializes and uses {@link JwtSecretProvider} to obtain encryption and decryption secret.
  */
-public class JwtHelper {
+public class LlapExtClientJwtHelper {
 
   public static final String LLAP_JWT_SUBJECT = "llap";
   public static final String LLAP_EXT_CLIENT_APP_ID = "llap_ext_client_app_id";
   private final JwtSecretProvider jwtSecretProvider;
 
-  public JwtHelper(Configuration conf) {
+  public LlapExtClientJwtHelper(Configuration conf) {
     this.jwtSecretProvider = JwtSecretProvider.initAndGet(conf);
   }
 
   /**
-   * @param applicationId application Id
+   * @param extClientAppId application Id - application Id injected by get_splits
    * @return JWT signed with {@link JwtSecretProvider#getEncryptionSecret()}.
-   * As of now this JWT contains applicationId in claims.
+   * As of now this JWT contains extClientAppId in claims.
    */
-  public String buildJwtForLlap(ApplicationId applicationId) {
+  public String buildJwtForLlap(ApplicationId extClientAppId) {
     return Jwts.builder()
         .setSubject(LLAP_JWT_SUBJECT)
         .setIssuedAt(new Date())
         .setId(UUID.randomUUID().toString())
-        .claim(LLAP_EXT_CLIENT_APP_ID, applicationId.toString())
+        .claim(LLAP_EXT_CLIENT_APP_ID, extClientAppId.toString())
         .signWith(jwtSecretProvider.getEncryptionSecret())
         .compact();
   }

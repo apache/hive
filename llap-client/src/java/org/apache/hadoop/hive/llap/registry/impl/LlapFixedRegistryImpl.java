@@ -60,6 +60,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry<LlapServiceInstanc
   private final int shuffle;
   private final int mngPort;
   private final int webPort;
+  private Configuration conf;
   private final int outputFormatPort;
   private final int externalClientsRpcPort;
   private final String webScheme;
@@ -80,6 +81,7 @@ public class LlapFixedRegistryImpl implements ServiceRegistry<LlapServiceInstanc
     this.externalClientsRpcPort = HiveConf.getIntVar(conf, ConfVars.LLAP_EXTERNAL_CLIENT_CLOUD_RPC_PORT);
 
     this.webPort = HiveConf.getIntVar(conf, ConfVars.LLAP_DAEMON_WEB_PORT);
+    this.conf = conf;
     boolean isSsl = HiveConf.getBoolVar(conf, ConfVars.LLAP_DAEMON_WEB_SSL);
     this.webScheme = isSsl ? "https" : "http";
 
@@ -193,14 +195,14 @@ public class LlapFixedRegistryImpl implements ServiceRegistry<LlapServiceInstanc
     }
 
     @Override
-    public String getExternalHost() {
-      ensureCloudEnv();
+    public String getExternalHostname() {
+      ensureCloudEnv(LlapFixedRegistryImpl.this.conf);
       return LlapUtil.getPublicHostname();
     }
 
     @Override
     public int getExternalClientsRpcPort() {
-      ensureCloudEnv();
+      ensureCloudEnv(LlapFixedRegistryImpl.this.conf);
       return LlapFixedRegistryImpl.this.externalClientsRpcPort;
     }
 
