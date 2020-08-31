@@ -69,10 +69,10 @@ import java.util.List;
 public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implements MetaStoreFilterHook {
   private static final Log LOG = LogFactory.getLog(HiveMetaStoreAuthorizer.class);
 
-  private static final ThreadLocal<HiveConf> tConfig = new ThreadLocal<HiveConf>() {
+  private static final ThreadLocal<Configuration> tConfig = new ThreadLocal<Configuration>() {
 
     @Override
-    protected HiveConf initialValue() {
+    protected Configuration initialValue() {
       return null;
     }
   };
@@ -446,7 +446,7 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
 
   HiveAuthorizer createHiveMetaStoreAuthorizer() throws Exception {
     HiveAuthorizer ret = null;
-    HiveConf hiveConf = tConfig.get();
+    HiveConf hiveConf = (HiveConf)tConfig.get();
     if(hiveConf == null){
       HiveConf hiveConf1 = new HiveConf(super.getConf(), HiveConf.class);
       tConfig.set(hiveConf1);
