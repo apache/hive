@@ -20,14 +20,19 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
+import org.apache.hadoop.hive.ql.exec.SerializationUtilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.util.HashMap;
 
 /**
  * Analyzer for Prepare queries. This analyzer generates plan for the parameterized query
  * and save it in cache
  */
 @DDLType(types = HiveParser.TOK_PREPARE)
-public class PrepareStatementAnalyzer extends CalcitePlanner {
+public class PrepareStatementAnalyzer extends CalcitePlanner{
 
   public PrepareStatementAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -41,7 +46,6 @@ public class PrepareStatementAnalyzer extends CalcitePlanner {
   /**
    * This method saves the current {@link PrepareStatementAnalyzer} object as well as
    * the config used to compile the plan.
-   * @param root
    * @throws SemanticException
    */
   private void savePlan(String queryName) throws SemanticException{
@@ -52,6 +56,21 @@ public class PrepareStatementAnalyzer extends CalcitePlanner {
       throw new SemanticException("Prepare query: " + queryName + " already exists.");
     }
     ss.getPreparePlans().put(queryName, this);
+  }
+
+  private <T> T makeCopy(final Object task, Class<T> objClass) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    SerializationUtilities.serializePlan(task, baos);
+
+    return SerializationUtilities.deserializePlan(
+        new ByteArrayInputStream(baos.toByteArray()), objClass);
+  }
+
+  @Override
+  protected void compilePlan(ParseContext pCtx) throws SemanticException{
+    topOpsCopy = new HashMap<>();
+    topOpsCopy = makeCopy(this.getTopOps(), this.getTopOps().getClass());
+    super.compilePlan(pCtx);
   }
 
 

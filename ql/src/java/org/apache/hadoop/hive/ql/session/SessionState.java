@@ -95,6 +95,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.TempTable;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook;
@@ -143,7 +144,7 @@ public class SessionState implements ISessionAuthState{
       new ConcurrentHashMap<>();
 
   // Prepared statement plans
-  private final Map<String, BaseSemanticAnalyzer> preparePlanMap = new ConcurrentHashMap<>();
+  private final Map<String, SemanticAnalyzer> preparePlanMap = new ConcurrentHashMap<>();
 
   protected ClassLoader parentLoader;
 
@@ -1978,7 +1979,7 @@ public class SessionState implements ISessionAuthState{
     return tempTables;
   }
 
-  public Map<String, BaseSemanticAnalyzer> getPreparePlans() {
+  public Map<String, SemanticAnalyzer> getPreparePlans() {
     return preparePlanMap;
   }
 

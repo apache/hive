@@ -388,6 +388,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected final boolean defaultJoinMerge;
 
   /*
+   * This is used by prepare/execute statement
+   * Prepare/Execute requires operators to be copied and cached
+   */
+  protected Map<String, TableScanOperator> topOpsCopy = null;
+
+  /*
    * Capture the CTE definitions in a Query.
    */
   protected final Map<String, CTEClause> aliasToCTEs;
@@ -12462,6 +12468,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         });
   }
 
+  protected void compilePlan(ParseContext pCtx) throws SemanticException{
+    if (!ctx.getExplainLogical()) {
+      TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf, pCtx);
+      compiler.init(queryState, console, db);
+      compiler.compile(pCtx, rootTasks, inputs, outputs);
+      fetchTask = pCtx.getFetchTask();
+    }
+  }
+
   @SuppressWarnings("checkstyle:methodlength")
   void analyzeInternal(ASTNode ast, Supplier<PlannerContext> pcf) throws SemanticException {
     LOG.info("Starting Semantic Analysis");
@@ -12660,12 +12675,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 9. Optimize Physical op tree & Translate to target execution engine (MR,
     // TEZ..)
-    if (!ctx.getExplainLogical()) {
-      TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf, pCtx);
-      compiler.init(queryState, console, db);
-      compiler.compile(pCtx, rootTasks, inputs, outputs);
-      fetchTask = pCtx.getFetchTask();
-    }
+    compilePlan(pCtx);
+
     //find all Acid FileSinkOperatorS
     new QueryPlanPostProcessor(rootTasks, acidFileSinks, ctx.getExecutionId());
 
@@ -14852,6 +14863,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public List<LoadFileDesc> getLoadFileWork() {
     return loadFileWork;
+  }
+
+  public List<LoadTableDesc> getLoadTableWork() {
+    return loadTableWork;
+  }
+
+  public void setLoadFileWork(List<LoadFileDesc> loadFileWork) {
+    this.loadFileWork = loadFileWork;
+  }
+
+  public void setLoadTableWork(List<LoadTableDesc> tblWork) {
+    this.loadTableWork = tblWork;
   }
 
   private String getQueryStringFromAst(ASTNode ast) {
