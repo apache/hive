@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.cli.TableSchema;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -868,11 +869,11 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public boolean nullsAreSortedHigh() throws SQLException {
-    return !getHiveDefaultNullsLast();
+    return !getHiveDefaultNullsLast(connection.getConnParams().getHiveConfs());
   }
 
   public boolean nullsAreSortedLow() throws SQLException {
-    return getHiveDefaultNullsLast();
+    return getHiveDefaultNullsLast(connection.getConnParams().getHiveConfs());
   }
 
   public boolean othersDeletesAreVisible(int type) throws SQLException {
@@ -1233,10 +1234,15 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     return resp;
   }
 
-  private boolean getHiveDefaultNullsLast() {
+  /**
+   * This returns Hive configuration for HIVE_DEFAULT_NULLS_LAST.
+   *
+   * @param hiveConfs
+   * @return
+   */
+  public static boolean getHiveDefaultNullsLast(Map<String, String> hiveConfs) {
     boolean response = ConfVars.HIVE_DEFAULT_NULLS_LAST.defaultBoolVal;
-    Map<String, String> hiveConfs = connection.getConnParams().getHiveConfs();
-    if ((hiveConfs != null) && (hiveConfs.get(ConfVars.HIVE_DEFAULT_NULLS_LAST) != null)) {
+    if ((hiveConfs != null) && (hiveConfs.get(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST) != null)) {
       response = Boolean.parseBoolean(hiveConfs.get(HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST));
     }
     return response;

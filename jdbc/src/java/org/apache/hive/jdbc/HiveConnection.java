@@ -18,6 +18,7 @@
 
 package org.apache.hive.jdbc;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -240,6 +241,13 @@ public class HiveConnection implements java.sql.Connection {
       }
     }
     return url.toString();
+  }
+
+  @VisibleForTesting
+  public HiveConnection() {
+    sessConfMap = null;
+    isEmbeddedMode = true;
+    initFetchSize = 0;
   }
 
   public HiveConnection(String uri, Properties info) throws SQLException {
@@ -1712,6 +1720,14 @@ public class HiveConnection implements java.sql.Connection {
 
   public TProtocolVersion getProtocol() {
     return protocol;
+  }
+
+  public JdbcConnectionParams getConnParams() {
+    return connParams;
+  }
+
+  public JdbcConnectionParams setConnParams(JdbcConnectionParams jdbcConnectionParams) {
+    return connParams = jdbcConnectionParams;
   }
 
   public static TCLIService.Iface newSynchronizedClient(

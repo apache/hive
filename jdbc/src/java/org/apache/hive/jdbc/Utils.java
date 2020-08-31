@@ -46,6 +46,8 @@ public class Utils {
     */
   public static final String URL_PREFIX = "jdbc:hive2://";
 
+  public static final String HIVE_CONF_PREFIX = "hiveconf:";
+
   /**
     * If host is provided, without a port.
     */
