@@ -2054,6 +2054,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void getMaterializationMetadata(QB qb) throws SemanticException {
+    if (qb.isCTAS()) {
+      return;
+    }
     try {
       gatherCTEReferences(qb, rootClause);
       int threshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD);

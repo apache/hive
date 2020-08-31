@@ -686,6 +686,20 @@ public class QBParseInfo {
     return this.insertIntoTables.size() > 0 || this.insertOverwriteTables.size() > 0;
   }
 
+  /**
+   * Check whether all the expressions in the select clause are aggregate function calls.
+   * This method starts iterating through the AST nodes representing the expressions in the select clause stored in
+   * this object. An expression is considered to be an aggregate function call if:
+   * <ul>
+   *   <li>the AST node type is either TOK_FUNCTION, TOK_FUNCTIONDI or TOK_FUNCTIONSTAR</li>
+   *   <li>the first child of the node is the name of the function</li>
+   *   <li>function is registered in Hive</li>
+   *   <li>the registered function with the specified name is a Generic User Defined Aggregate</li>
+   * </ul>
+   * If any of the mentioned criteria fails to match to the current expression this function returns false.
+   * @return true if all the expressions in the select clause are aggregate function calls.
+   * @throws SemanticException - thrown when {@link FunctionRegistry#getFunctionInfo} fails.
+   */
   public boolean isFullyAggregate() throws SemanticException {
     for (ASTNode selectClause : destToSelExpr.values()) {
       for (Node node : selectClause.getChildren()) {
