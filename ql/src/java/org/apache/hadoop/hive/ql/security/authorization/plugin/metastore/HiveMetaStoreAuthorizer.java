@@ -534,8 +534,9 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   private boolean skipAuthorization(HiveMetaStoreAuthzInfo authzContext) {
     LOG.debug("==> HiveMetaStoreAuthorizer.skipAuthorization()");
 
+    //If HMS does not check the event type, it will leave it as null. We don't try to authorize null pointer. 
     if(authzContext == null){
-      return false;
+      return true;
     }
     boolean ret = false;
     UserGroupInformation ugi = null;
