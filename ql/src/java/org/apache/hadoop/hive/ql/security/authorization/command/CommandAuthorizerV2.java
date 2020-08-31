@@ -142,17 +142,25 @@ final class CommandAuthorizerV2 {
     return hivePrivobjs;
   }
 
+  /**
+   * A deferred authorization view is view created by non-super user like spark-user. This view contains a parameter "Authorized"
+   * set to false, so ranger will not authorize it during view creation. When a select statement is issued, then the ranger authorizes
+   * the under lying tables.
+   * @param Table t
+   * @return boolean value
+   */
   private static boolean isDeferredAuthView(Table t){
     String tableType = t.getTTable().getTableType();
+    String authorizedKeyword = "Authorized";
     boolean isView = false;
     if (TableType.MATERIALIZED_VIEW.name().equals(tableType) || TableType.VIRTUAL_VIEW.name().equals(tableType)) {
       isView = true;
     }
     if(isView){
       Map<String, String> params = t.getParameters();
-      if (params != null && params.containsKey("Authorized")) {
-        String authorized = params.get("Authorized");
-        if ("false".equalsIgnoreCase(authorized)) {
+      if (params != null && params.containsKey()) {
+        String authorizedValue = params.get(authorizedKeyword);
+        if ("false".equalsIgnoreCase(authorizedValue)) {
           return true;
         }
       }
