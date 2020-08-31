@@ -97,12 +97,11 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     }
 
     try {
-      HiveMetaStoreAuthzInfo authzContext = buildAuthzContext(preEventContext);
-
-      if (!skipAuthorization(authzContext)) {
         HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
-        checkPrivileges(authzContext, hiveAuthorizer);
-      }
+        if (!skipAuthorization()) {
+          HiveMetaStoreAuthzInfo authzContext = buildAuthzContext(preEventContext);
+          checkPrivileges(authzContext, hiveAuthorizer);
+        }
     } catch (Exception e) {
       LOG.error("HiveMetaStoreAuthorizer.onEvent(): failed", e);
       throw new MetaException(e.getMessage());
@@ -523,22 +522,24 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     }
   }
 
-  private boolean skipAuthorization(HiveMetaStoreAuthzInfo authzContext) {
-    LOG.debug("==> HiveMetaStoreAuthorizer.skipAuthorization()");
-
-    if(authzContext == null){
-      return false;
+  private boolean skipAuthorization() {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("==> HiveMetaStoreAuthorizer.skipAuthorization()");
     }
+
     boolean ret = false;
-    UserGroupInformation ugi = null;
-    try {
-      ugi = getUGI();
-      ret = isSuperUser(ugi.getShortUserName());
-    } catch (IOException e) {
-      LOG.warn("Not able to obtain UserGroupInformation", e);
+
+    UserGroupInformation ugi = getUGI();
+
+    if (ugi == null) {
+       ret = true;
+     } else {
+       ret = isSuperUser(ugi.getShortUserName());
     }
 
-    LOG.debug("<== HiveMetaStoreAuthorizer.skipAuthorization(): " + ret);
+    if (LOG.isDebugEnabled()) {
+     LOG.debug("<== HiveMetaStoreAuthorizer.skipAuthorization(): " + ret);
+    }
 
     return ret;
   }
@@ -577,8 +578,12 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     return authorizableEvent.getAuthzContext().getUGI().getShortUserName();
   }
 
-  private UserGroupInformation getUGI() throws IOException {
-    return UserGroupInformation.getCurrentUser();
+  private UserGroupInformation getUGI() {
+    try {
+      return UserGroupInformation.getCurrentUser();
+    } catch (IOException excp) {
+    }
+    return null;
   }
 }
 
