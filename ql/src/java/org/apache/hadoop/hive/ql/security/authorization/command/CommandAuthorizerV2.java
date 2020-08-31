@@ -158,7 +158,7 @@ final class CommandAuthorizerV2 {
     }
     if(isView){
       Map<String, String> params = t.getParameters();
-      if (params != null && params.containsKey()) {
+      if (params != null && params.containsKey(authorizedKeyword)) {
         String authorizedValue = params.get(authorizedKeyword);
         if ("false".equalsIgnoreCase(authorizedValue)) {
           return true;
