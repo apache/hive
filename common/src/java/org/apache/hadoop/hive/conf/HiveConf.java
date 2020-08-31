@@ -151,6 +151,16 @@ public class HiveConf extends Configuration {
       }
       throw new RuntimeException("Cannot store statistics for " + toString());
     }
+
+    public boolean ordinalNotationGroupBy() {
+      switch (this) {
+      case HIVE:
+        return false;
+      case IMPALA:
+        return true;
+      }
+      throw new RuntimeException("Cannot obtain dialect information for " + toString());
+    }
   }
 
   /**
@@ -1803,6 +1813,9 @@ public class HiveConf extends Configuration {
         "partition. Used if a query specifies a RANGE type window including an orderby clause." +
         "Set this to 0 to disable this cache."),
 
+    HIVE_USE_RUNTIME_DIALECT("hive.runtime.dialect.enable", true,
+        "Flag to use SQL dialect specific to the runtime that is currently being selected."),
+
     // CBO related
     HIVE_CBO_ENABLED("hive.cbo.enable", true, "Flag to control enabling Cost Based Optimizations using Calcite framework."),
     HIVE_CBO_CNF_NODES_LIMIT("hive.cbo.cnf.maxnodes", -1, "When converting to conjunctive normal form (CNF), fail if" +
@@ -1941,7 +1954,8 @@ public class HiveConf extends Configuration {
     HIVE_DEFAULT_NULLS_LAST("hive.default.nulls.last", true,
         "Whether to set NULLS LAST as the default null ordering"),
     HIVE_GROUPBY_POSITION_ALIAS("hive.groupby.position.alias", false,
-        "Whether to enable using Column Position Alias in Group By"),
+        "Whether to enable using Column Position Alias in Group By. This configuration parameter does not have \n" +
+        "any effect if " + HIVE_USE_RUNTIME_DIALECT.varname + " is true."),
     HIVE_ORDERBY_POSITION_ALIAS("hive.orderby.position.alias", true,
         "Whether to enable using Column Position Alias in Order By"),
     @Deprecated

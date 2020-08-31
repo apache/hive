@@ -14348,6 +14348,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         || HiveConf.getBoolVar(conf, ConfVars.HIVE_GROUPBY_POSITION_ALIAS);
     boolean isObyByPos = isBothByPos
         || HiveConf.getBoolVar(conf, ConfVars.HIVE_ORDERBY_POSITION_ALIAS);
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_USE_RUNTIME_DIALECT)) {
+      isGbyByPos = conf.getEngine().ordinalNotationGroupBy();
+    }
 
     Deque<ASTNode> stack = new ArrayDeque<ASTNode>();
     stack.push(ast);

@@ -6,6 +6,7 @@ drop table masking_test;
 
 create temporary table masking_test as select cast(key as int) as key, value from src;
 	
+set hive.runtime.dialect.enable=false;
 set hive.groupby.position.alias = true;
 set hive.cbo.enable=true;
 
