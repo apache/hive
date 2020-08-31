@@ -545,22 +545,17 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
-                      ".  Marking failed to avoid repeated failures", e);
-        ci.errorMessage = e.getMessage();
-        msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
-        msc.abortTxns(Collections.singletonList(compactorTxnId));
-        compactorTxnId = NOT_SET;
+            ".  Marking failed to avoid repeated failures", e);
+        compactorTxnId = abortCompactionAndMarkFailed(ci, compactorTxnId, e);
       }
     } catch (TException | IOException t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
       try {
-        if (msc != null && ci != null) {
-          ci.errorMessage = t.getMessage();
-          msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
-          compactorTxnId = NOT_SET;
-        }
+        compactorTxnId = abortCompactionAndMarkFailed(ci, compactorTxnId, t);
       } catch (TException e) {
-        LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, e);
+        LOG.error("Caught an exception while trying to mark compaction {} as failed: {}" +
+                (compactorTxnId != NOT_SET ? " or abort txnId " + compactorTxnId : "") ,
+            ci, e);
       } finally {
         if (msc != null) {
           msc.close();
@@ -577,6 +572,20 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     }
     return true;
+  }
+
+  private long abortCompactionAndMarkFailed(CompactionInfo ci, long compactorTxnId, Throwable e) throws TException {
+    if (ci != null) {
+      ci.errorMessage = e.getMessage();
+    }
+    if (msc != null) {
+      msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
+      if (compactorTxnId != NOT_SET) {
+        msc.abortTxns(Collections.singletonList(compactorTxnId));
+      }
+    }
+    compactorTxnId = NOT_SET;
+    return compactorTxnId;
   }
 
   private void checkInterrupt() throws InterruptedException {
