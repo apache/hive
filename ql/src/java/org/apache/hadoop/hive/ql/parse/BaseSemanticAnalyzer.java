@@ -955,9 +955,18 @@ public abstract class BaseSemanticAnalyzer {
       throw new SemanticException("empty struct not allowed.");
     }
     StringBuilder buffer = new StringBuilder(typeStr);
+    Set<String> fieldIdentifiers = new HashSet<>(children);
     for (int i = 0; i < children; i++) {
       ASTNode child = (ASTNode) typeNode.getChild(i);
-      buffer.append(unescapeIdentifier(child.getChild(0).getText())).append(":");
+
+      String fieldIdentifier = unescapeIdentifier(child.getChild(0).getText());
+      if (fieldIdentifiers.contains(fieldIdentifier)) {
+        throw new SemanticException(ErrorMsg.AMBIGUOUS_STRUCT_FIELD, fieldIdentifier);
+      } else {
+        fieldIdentifiers.add(fieldIdentifier);
+      }
+
+      buffer.append(fieldIdentifier).append(":");
       buffer.append(getTypeStringFromAST((ASTNode) child.getChild(1)));
       if (i < children - 1) {
         buffer.append(",");

@@ -471,6 +471,7 @@ public enum ErrorMsg {
           "Not an ordered-set aggregate function: {0}. WITHIN GROUP clause is not allowed.", true),
   WITHIN_GROUP_PARAMETER_MISMATCH(10422,
           "The number of hypothetical direct arguments ({0}) must match the number of ordering columns ({1})", true),
+  AMBIGUOUS_STRUCT_FIELD(10423, "Struct field is not unique: {0}", true),
 
   //========================== 20000 range starts here ========================//
 
