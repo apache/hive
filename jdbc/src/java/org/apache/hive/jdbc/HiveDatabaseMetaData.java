@@ -22,6 +22,7 @@ import java.util.ArrayList;
 
 import java.util.List;
 
+import jline.internal.Log;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -65,12 +66,16 @@ import org.apache.hive.service.rpc.thrift.TGetTypeInfoReq;
 import org.apache.hive.service.rpc.thrift.TGetTypeInfoResp;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HiveDatabaseMetaData.
  *
  */
 public class HiveDatabaseMetaData implements DatabaseMetaData {
+
+   public static final Logger LOG = LoggerFactory.getLogger(HiveDatabaseMetaData.class.getName());
 
   private final HiveConnection connection;
   private final TCLIService.Iface client;
@@ -1242,8 +1247,9 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
    */
   public static boolean getHiveDefaultNullsLast(Map<String, String> hiveConfs) {
     boolean response = ConfVars.HIVE_DEFAULT_NULLS_LAST.defaultBoolVal;
-    if ((hiveConfs != null) && (hiveConfs.get(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST) != null)) {
-      response = Boolean.parseBoolean(hiveConfs.get(HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST));
+    String key = Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST;
+    if ((hiveConfs != null) && (hiveConfs.get(key) != null)) {
+      response = Boolean.parseBoolean(hiveConfs.get(key));
     }
     return response;
   }

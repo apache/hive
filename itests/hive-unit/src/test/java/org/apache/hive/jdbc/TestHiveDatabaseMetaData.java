@@ -24,7 +24,7 @@ import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Properties;
 import java.util.Map;
 import java.sql.SQLException;
@@ -40,22 +40,26 @@ import static org.junit.Assert.*;
  */
 public class TestHiveDatabaseMetaData {
 
-  private static final Map<String, String> map = new HashMap<>();
+  private Map<String, String> map = new LinkedHashMap<String,String>();
   private HiveDatabaseMetaData hiveDatabaseMetaData;
 
   @Before
   public void setup() throws Exception {
-    map.put(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST, "false");
     JdbcConnectionParams jdbcConnectionParams = new JdbcConnectionParams();
     jdbcConnectionParams.setHiveConfs(map);
     HiveConnection connection = new HiveConnection();
     connection.setConnParams(jdbcConnectionParams);
     hiveDatabaseMetaData = new HiveDatabaseMetaData(connection, null, null);
+
   }
 
   @Test
   public void testGetHiveDefaultNullsLast() {
-    assertFalse(HiveDatabaseMetaData.getHiveDefaultNullsLast(map));
+    map.put(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST, "true");
+    assertTrue(hiveDatabaseMetaData.getHiveDefaultNullsLast(map));
+
+    map.put(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST, "false");
+    assertFalse(hiveDatabaseMetaData.getHiveDefaultNullsLast(map));
   }
 
   @Test
@@ -65,12 +69,18 @@ public class TestHiveDatabaseMetaData {
 
   @Test
   public void testNullsAreSortedHigh() throws SQLException {
+    map.put(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST, "false");
     assertTrue(hiveDatabaseMetaData.nullsAreSortedHigh());
+    map.put(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST, "true");
+    assertFalse(hiveDatabaseMetaData.nullsAreSortedHigh());
   }
 
   @Test
   public void testNullsAreSortedLow() throws SQLException {
+    map.put(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST, "false");
     assertFalse(hiveDatabaseMetaData.nullsAreSortedLow());
+    map.put(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST, "true");
+    assertTrue(hiveDatabaseMetaData.nullsAreSortedLow());
   }
 
 }
