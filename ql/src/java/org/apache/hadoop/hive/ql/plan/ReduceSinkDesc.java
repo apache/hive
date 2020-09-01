@@ -239,7 +239,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return keyCols;
   }
 
-  public void setKeyCols(final java.util.ArrayList<ExprNodeDesc> keyCols) {
+  public void setKeyCols(List<ExprNodeDesc> keyCols) {
     this.keyCols = keyCols;
   }
 
