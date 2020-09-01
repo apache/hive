@@ -42,11 +42,11 @@ public class TSetIpAddressProcessor<I extends Iface> extends ThriftHiveMetastore
   }
 
   @Override
-   public void process(final TProtocol in, final TProtocol out) throws TException {
-     setIpAddress(in);
+  public void process(final TProtocol in, final TProtocol out) throws TException {
+   setIpAddress(in);
 
-     super.process(in, out);
-   }
+   super.process(in, out);
+  }
 
   protected void setIpAddress(final TProtocol in) {
     TTransport transport = in.getTransport();
