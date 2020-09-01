@@ -161,7 +161,11 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       throw hiveException(ex);
     }
 
-    Path path = getDbLocation(db);
+    Path path;
+    path = wh.determineDatabaseExternalPath(db);
+    if (path == null) {
+      path = getDbLocation(db);
+    }
 
     // extract drop privileges
     DropPrivilegeExtractor privExtractor = new DropPrivilegeExtractor(readRequiredPriv,
