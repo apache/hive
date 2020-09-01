@@ -18,12 +18,15 @@
 package org.apache.hadoop.hive.ql.parse.type;
 
 import com.google.common.collect.ImmutableList;
-import java.util.List;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * Interface to handle function information while generating
@@ -74,6 +77,11 @@ public interface FunctionHelper {
   AggregateInfo getWindowAggregateFunctionInfo(boolean isDistinct, boolean isAllColumns,
       String aggregateName, List<RexNode> aggregateParameters)
       throws SemanticException;
+
+  /**
+   * Returns the helper needed to do partition pruning.
+   */
+  PartitionPruneRuleHelper getPartitionPruneRuleHelper();
 
   /**
    * Folds expression according to function semantics.

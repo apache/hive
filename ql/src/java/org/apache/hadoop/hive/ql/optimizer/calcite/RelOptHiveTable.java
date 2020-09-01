@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 import org.apache.calcite.linq4j.tree.Expression;
 import org.apache.calcite.plan.RelOptSchema;
 import org.apache.calcite.plan.RelOptTable;
-import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.prepare.RelOptTableImpl;
 import org.apache.calcite.rel.RelCollation;
 import org.apache.calcite.rel.RelCollationTraitDef;
@@ -44,7 +43,6 @@ import org.apache.calcite.rel.logical.LogicalTableScan;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeFactory;
 import org.apache.calcite.rel.type.RelDataTypeField;
-import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.schema.ColumnStrategy;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
@@ -64,12 +62,11 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.ExprNodeConverter;
-import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulePartitionPruner;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RulePartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -433,7 +430,12 @@ public class RelOptHiveTable implements RelOptTable {
       if (null == partitionList) {
         // we are here either unpartitioned table or partitioned table with no
         // predicates
-        computePartitionList(hiveConf, null, new HashSet<Integer>());
+        try {
+          HiveRulePartitionPruner pruner = new HiveRulePartitionPruner(this);
+          partitionList = pruner.getNonPruneList(hiveConf, partitionCache);
+        } catch (HiveException e) {
+          throw new RuntimeException(e);
+        }
       }
       rowCount = StatsUtils.getNumRows(hiveConf, getNonPartColumns(), hiveTblMetadata,
           partitionList, noColsMissingStats);
@@ -460,23 +462,11 @@ public class RelOptHiveTable implements RelOptTable {
     return sb.toString();
   }
 
-  public void computePartitionList(HiveConf conf, RexNode pruneNode, Set<Integer> partOrVirtualCols) {
+  public void computePartitionList(HiveConf conf, RulePartitionPruner pruner) {
     try {
-      if (!hiveTblMetadata.isPartitioned() || pruneNode == null
-          || InputFinder.bits(pruneNode).length() == 0) {
-        // there is no predicate on partitioning column, we need all partitions
-        // in this case.
-        partitionList = PartitionPruner.prune(hiveTblMetadata, null, conf, getName(),
-            partitionCache);
-        return;
-      }
-
-      // We have valid pruning expressions, only retrieve qualifying partitions
-      ExprNodeDesc pruneExpr = pruneNode.accept(new ExprNodeConverter(getName(), getRowType(),
-          partOrVirtualCols, getTypeFactory()));
-
-      partitionList = PartitionPruner.prune(hiveTblMetadata, pruneExpr, conf, getName(),
-          partitionCache);
+      partitionList = hiveTblMetadata.isPartitioned()
+          ? pruner.prune(conf, partitionCache)
+          : pruner.getNonPruneList(conf, partitionCache);
     } catch (HiveException he) {
       throw new RuntimeException(he);
     }
@@ -510,9 +500,14 @@ public class RelOptHiveTable implements RelOptTable {
     }
 
     if (null == partitionList) {
-      // We could be here either because its an unpartitioned table or because
-      // there are no pruning predicates on a partitioned table.
-      computePartitionList(hiveConf, null, new HashSet<Integer>());
+      try {
+        // We could be here either because its an unpartitioned table or because
+        // there are no pruning predicates on a partitioned table.
+        HiveRulePartitionPruner pruner = new HiveRulePartitionPruner(this);
+        partitionList = pruner.getNonPruneList(hiveConf, partitionCache);
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     String partitionListKey = partitionList.getKey().orElse(null);

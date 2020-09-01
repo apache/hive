@@ -19,14 +19,14 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
-import org.apache.calcite.rel.core.Filter;
-import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.util.Pair;
+import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 
 import java.util.Collections;
 
@@ -35,39 +35,50 @@ public class HivePartitionPruneRule extends RelOptRule {
   HiveConf conf;
 
   public HivePartitionPruneRule(HiveConf conf) {
-    super(operand(HiveFilter.class, operand(HiveTableScan.class, none())));
+    super(operand(RelNode.class, operand(HiveTableScan.class, none())));
     this.conf = conf;
   }
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    HiveFilter filter = call.rel(0);
+    RelNode relNode= call.rel(0);
     HiveTableScan tScan = call.rel(1);
-    perform(call, filter, tScan);
+    perform(call, relNode, tScan);
   }
 
-  protected void perform(RelOptRuleCall call, Filter filter,
+  protected void perform(RelOptRuleCall call, RelNode relNode,
       HiveTableScan tScan) {
-    // Original table
-    RelOptHiveTable hiveTable = (RelOptHiveTable) tScan.getTable();
+    try {
+      FunctionHelper functionHelper = call.getPlanner().getContext().unwrap(FunctionHelper.class);
+      PartitionPruneRuleHelper ruleHelper = functionHelper.getPartitionPruneRuleHelper();
 
-    // Copy original table scan and table
-    HiveTableScan tScanCopy = tScan.copyIncludingTable(tScan.getRowType());
-    RelOptHiveTable hiveTableCopy = (RelOptHiveTable) tScanCopy.getTable();
+      HiveFilter filter = (relNode instanceof HiveFilter) ? (HiveFilter) relNode : null;
+      // For Hive, there is no need to compute partition list if no filter is used.
+      if (filter == null && !ruleHelper.shouldComputeWithoutFilter()) {
+        return;
+      }
 
-    // Execute partition pruning
-    RexNode predicate = filter.getCondition();
-    Pair<RexNode, RexNode> predicates = PartitionPrune
-        .extractPartitionPredicates(filter.getCluster(), hiveTableCopy, predicate);
-    RexNode partColExpr = predicates.left;
-    hiveTableCopy.computePartitionList(conf, partColExpr, tScanCopy.getPartOrVirtualCols());
+      // Original table
+      RelOptHiveTable hiveTable = (RelOptHiveTable) tScan.getTable();
 
-    if (StringUtils.equals(hiveTableCopy.getPartitionListKey(), hiveTable.getPartitionListKey())) {
-      // Nothing changed, we do not need to produce a new expression
-      return;
+      // Copy original table scan and table
+      HiveTableScan tScanCopy = tScan.copyIncludingTable(tScan.getRowType());
+      RelOptHiveTable hiveTableCopy = (RelOptHiveTable) tScanCopy.getTable();
+
+      RulePartitionPruner pruner = ruleHelper.createRulePartitionPruner(tScanCopy, hiveTableCopy,
+          filter);
+
+      hiveTableCopy.computePartitionList(conf, pruner);
+
+      if (StringUtils.equals(hiveTableCopy.getPartitionListKey(), hiveTable.getPartitionListKey())) {
+        // Nothing changed, we do not need to produce a new expression
+        return;
+      }
+
+      call.transformTo(relNode.copy(
+          relNode.getTraitSet(), Collections.singletonList(tScanCopy)));
+    } catch (HiveException e) {
+      throw new RuntimeException(e);
     }
-
-    call.transformTo(filter.copy(
-        filter.getTraitSet(), Collections.singletonList(tScanCopy)));
   }
 }

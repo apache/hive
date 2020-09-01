@@ -43,6 +43,8 @@ import org.apache.hadoop.hive.ql.exec.HiveFunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRuleHelper;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFloorDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveToDateSqlOperator;
@@ -98,15 +100,25 @@ public class HiveFunctionHelper implements FunctionHelper {
 
   private final RexBuilder rexBuilder;
   private final int maxNodesForInToOrTransformation;
+  private final PartitionPruneRuleHelper partitionPruneRuleHelper;
 
   public HiveFunctionHelper(RexBuilder rexBuilder) {
     this.rexBuilder = rexBuilder;
+    this.partitionPruneRuleHelper = new HivePartitionPruneRuleHelper();
     try {
       this.maxNodesForInToOrTransformation = HiveConf.getIntVar(
           Hive.get().getConf(), HiveConf.ConfVars.HIVEOPT_TRANSFORM_IN_MAXNODES);
     } catch (HiveException e) {
       throw new IllegalStateException(e);
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public PartitionPruneRuleHelper getPartitionPruneRuleHelper() {
+    return partitionPruneRuleHelper;
   }
 
   /**
