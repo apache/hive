@@ -74,7 +74,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class HiveDatabaseMetaData implements DatabaseMetaData {
-  
+
   private final HiveConnection connection;
   private final TCLIService.Iface client;
   private final TSessionHandle sessHandle;
