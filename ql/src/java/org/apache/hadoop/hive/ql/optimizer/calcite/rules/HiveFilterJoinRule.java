@@ -66,7 +66,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
     public boolean matches(RelOptRuleCall call) {
       Join join = call.rel(1);
       RewritablePKFKJoinInfo joinInfo = HiveRelOptUtil.isRewritablePKFKJoin(
-          join, true, call.getMetadataQuery());
+          join, join.getLeft(), join.getRight(), call.getMetadataQuery());
       if (!joinInfo.rewritable) {
         return false;
       }
