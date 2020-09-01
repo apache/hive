@@ -360,6 +360,9 @@ public class HiveStatement implements java.sql.Statement {
     // Poll on the operation status, till the operation is complete
     do {
       try {
+        if (Thread.currentThread().isInterrupted()) {
+          throw new SQLException("Interrupted while polling on the operation status", "70100");
+        }
         /**
          * For an async SQLOperation, GetOperationStatus will use the long polling approach It will
          * essentially return after the HIVE_SERVER2_LONG_POLLING_TIMEOUT (a server config) expires
