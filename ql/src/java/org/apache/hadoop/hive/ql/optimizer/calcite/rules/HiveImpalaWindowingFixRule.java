@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -88,11 +89,14 @@ public class HiveImpalaWindowingFixRule extends RelOptRule {
     // 2. Add all refs and function refs to projections
     List<RexNode> bottomExprs = new ArrayList<>();
     List<String> bottomFieldNames = new ArrayList<>();
-    for (int i = 0; i < input.getRowType().getFieldCount(); i++) {
-      bottomExprs.add(rexBuilder.makeInputRef(input, i));
-      bottomFieldNames.add(input.getRowType().getFieldNames().get(i));
-    }
     Map<RexNode, RexNode> mapping = new HashMap<>();
+    for (RexInputRef r : collector.getInputRefExprs()) {
+      RexInputRef inputRef = rexBuilder.makeInputRef(
+          r.getType(), bottomExprs.size());
+      bottomExprs.add(r);
+      bottomFieldNames.add(input.getRowType().getFieldNames().get(r.getIndex()));
+      mapping.put(r, inputRef);
+    }
     int colIndex = 0;
     for (RexNode r : collector.getFunctionExprs()) {
       RexInputRef inputRef = rexBuilder.makeInputRef(
@@ -126,11 +130,19 @@ public class HiveImpalaWindowingFixRule extends RelOptRule {
    */
   private static class FunctionWithinRexOverCollector extends RexVisitorImpl<Void> {
 
+    private final Set<RexInputRef> inputRefExprs;
     private final Set<RexNode> functionExprs;
 
     private FunctionWithinRexOverCollector() {
       super(true);
+      inputRefExprs = new LinkedHashSet<>();
       functionExprs = new LinkedHashSet<>();
+    }
+
+    @Override
+    public Void visitInputRef(RexInputRef inputRef) {
+      inputRefExprs.add(inputRef);
+      return null;
     }
 
     @Override
@@ -153,7 +165,11 @@ public class HiveImpalaWindowingFixRule extends RelOptRule {
           functionExprs.add(orderKey.left);
         }
       }
-      return null;
+      return super.visitOver(over);
+    }
+
+    private Set<RexInputRef> getInputRefExprs() {
+      return inputRefExprs;
     }
 
     private Set<RexNode> getFunctionExprs() {
@@ -167,6 +183,12 @@ public class HiveImpalaWindowingFixRule extends RelOptRule {
 
     private FunctionWithinRexOverReplacer(Map<RexNode, RexNode> mapping) {
       this.mapping = mapping;
+    }
+
+    @Override
+    public RexNode visitInputRef(RexInputRef inputRef) {
+      RexNode mappedCall = mapping.get(inputRef);
+      return Objects.requireNonNull(mappedCall);
     }
 
     @Override

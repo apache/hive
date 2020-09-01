@@ -1,0 +1,101 @@
+PREHOOK: query: drop table if exists tab_sales_n1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists tab_sales_n1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table tab_sales_n1
+(
+    ss_sold_date_sk           int,
+    ss_sold_time_sk           int,
+    ss_item_sk                int,
+    ss_customer_sk            int,
+    ss_cdemo_sk               int,
+    ss_hdemo_sk               int,
+    ss_addr_sk                int,
+    ss_store_sk               int,
+    ss_promo_sk               int,
+    ss_ticket_number          int,
+    ss_quantity               int,
+    ss_wholesale_cost         decimal(7,2),
+    ss_list_price             decimal(7,2),
+    ss_sales_price            decimal(7,2),
+    ss_ext_discount_amt       decimal(7,2),
+    ss_ext_sales_price        decimal(7,2),
+    ss_ext_wholesale_cost     decimal(7,2),
+    ss_ext_list_price         decimal(7,2),
+    ss_ext_tax                decimal(7,2),
+    ss_coupon_amt             decimal(7,2),
+    ss_net_paid               decimal(7,2),
+    ss_net_paid_inc_tax       decimal(7,2),
+    ss_net_profit             decimal(7,2)
+)
+STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tab_sales_n1
+POSTHOOK: query: create table tab_sales_n1
+(
+    ss_sold_date_sk           int,
+    ss_sold_time_sk           int,
+    ss_item_sk                int,
+    ss_customer_sk            int,
+    ss_cdemo_sk               int,
+    ss_hdemo_sk               int,
+    ss_addr_sk                int,
+    ss_store_sk               int,
+    ss_promo_sk               int,
+    ss_ticket_number          int,
+    ss_quantity               int,
+    ss_wholesale_cost         decimal(7,2),
+    ss_list_price             decimal(7,2),
+    ss_sales_price            decimal(7,2),
+    ss_ext_discount_amt       decimal(7,2),
+    ss_ext_sales_price        decimal(7,2),
+    ss_ext_wholesale_cost     decimal(7,2),
+    ss_ext_list_price         decimal(7,2),
+    ss_ext_tax                decimal(7,2),
+    ss_coupon_amt             decimal(7,2),
+    ss_net_paid               decimal(7,2),
+    ss_net_paid_inc_tax       decimal(7,2),
+    ss_net_profit             decimal(7,2)
+)
+STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tab_sales_n1
+PREHOOK: query: explain cbo
+select sum(ss_quantity) over(order by ss_quantity) from tab_sales_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_sales_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select sum(ss_quantity) over(order by ss_quantity) from tab_sales_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_sales_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaProjectPassthroughRel(sum_window_0=[sum($1) OVER (PARTITION BY 0:TINYINT ORDER BY $0 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
+  ImpalaProjectRel(ss_quantity=[$10], $func_0=[CAST($10):BIGINT])
+    ImpalaHdfsScanRel(table=[[default, tab_sales_n1]])
+
+PREHOOK: query: explain cbo
+select sum(ss_net_profit) over(order by ss_net_profit) from tab_sales_n1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_sales_n1
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select sum(ss_net_profit) over(order by ss_net_profit) from tab_sales_n1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tab_sales_n1
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaProjectPassthroughRel(sum_window_0=[sum($22) OVER (PARTITION BY 0:TINYINT ORDER BY $22 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
+  ImpalaHdfsScanRel(table=[[default, tab_sales_n1]])
+
+PREHOOK: query: drop table if exists tab_sales_n1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@tab_sales_n1
+PREHOOK: Output: default@tab_sales_n1
+POSTHOOK: query: drop table if exists tab_sales_n1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@tab_sales_n1
+POSTHOOK: Output: default@tab_sales_n1
