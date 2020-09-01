@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.llap.security;
 
 import com.google.common.base.Preconditions;
 import io.jsonwebtoken.security.Keys;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 
@@ -40,7 +41,9 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.LLAP_EXTERNAL_CLIENT
  *
  * 2. If not found, it tries to read from env var {@link #LLAP_EXTERNAL_CLIENT_CLOUD_JWT_SHARED_SECRET_ENV_VAR}.
  *
- * If secret is not found even after 1) and 2), {@link #init(Configuration)} methods throws {@link NullPointerException}.
+ * If secret is not found even after 1) and 2), {@link #init(Configuration)} methods throws {@link IllegalStateException}.
+ *
+ * Length of shared secret provided in 1) or 2) should be > 32 bytes.
  *
  * It uses the same encryption and decryption secret which can be used to sign and verify JWT.
  */
@@ -77,12 +80,12 @@ public class DefaultJwtSharedSecretProvider implements JwtSecretProvider {
       bb.get(sharedSecretBytes);
     } else {
       String sharedSecredFromEnv = System.getenv(LLAP_EXTERNAL_CLIENT_CLOUD_JWT_SHARED_SECRET_ENV_VAR);
-      if (sharedSecredFromEnv != null) {
+      if (StringUtils.isNotBlank(sharedSecredFromEnv)) {
         sharedSecretBytes = sharedSecredFromEnv.getBytes();
       }
     }
 
-    Preconditions.checkNotNull(sharedSecretBytes,
+    Preconditions.checkState(sharedSecretBytes != null,
         "With: " + LLAP_EXTERNAL_CLIENT_CLOUD_DEPLOYMENT_SETUP_ENABLED.varname + " = true, \n"
             + "To use: org.apache.hadoop.hive.llap.security.DefaultJwtSharedSecretProvider, \n"
             + "a non-null value of 'hive.llap.external.client.cloud.jwt.shared.secret' must be provided OR \n"
