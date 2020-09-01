@@ -541,7 +541,7 @@ public class TestAddPartitions extends MetaStoreClientTest {
         client.getPartition(DB_NAME, tableName, Lists.newArrayList(DEFAULT_YEAR_VALUE));
     Assert.assertNotNull(resultPart);
     Assert.assertNotNull(resultPart.getSd());
-    String defaultTableLocation = table.getSd().getLocation();
+    String defaultTableLocation = metaStore.getExternalWarehouseRoot() + "/" + DB_NAME + ".db/" + tableName;
     String defaulPartitionLocation = defaultTableLocation + "/year=2017";
     Assert.assertEquals(defaulPartitionLocation, resultPart.getSd().getLocation());
   }
