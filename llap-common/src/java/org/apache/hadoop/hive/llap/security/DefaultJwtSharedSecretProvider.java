@@ -88,8 +88,10 @@ public class DefaultJwtSharedSecretProvider implements JwtSecretProvider {
     Preconditions.checkState(sharedSecretBytes != null,
         "With: " + LLAP_EXTERNAL_CLIENT_CLOUD_DEPLOYMENT_SETUP_ENABLED.varname + " = true, \n"
             + "To use: org.apache.hadoop.hive.llap.security.DefaultJwtSharedSecretProvider, \n"
-            + "a non-null value of 'hive.llap.external.client.cloud.jwt.shared.secret' must be provided OR \n"
-            + "alternatively environment variable LLAP_EXTERNAL_CLIENT_CLOUD_JWT_SHARED_SECRET_ENV_VAR can also be set");
+            + "1. a non-null value of 'hive.llap.external.client.cloud.jwt.shared.secret' must be provided OR \n"
+            + "2. alternatively environment variable "
+            + "LLAP_EXTERNAL_CLIENT_CLOUD_JWT_SHARED_SECRET_ENV_VAR can also be set. \n"
+            + "Length of the secret provided in 1) or 2) should be > 32 bytes.");
 
     this.jwtEncryptionKey = Keys.hmacShaKeyFor(sharedSecretBytes);
   }
