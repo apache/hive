@@ -23,11 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jline.internal.Log;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.cli.TableSchema;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -66,8 +63,6 @@ import org.apache.hive.service.rpc.thrift.TGetTypeInfoReq;
 import org.apache.hive.service.rpc.thrift.TGetTypeInfoResp;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.apache.thrift.TException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * HiveDatabaseMetaData.
