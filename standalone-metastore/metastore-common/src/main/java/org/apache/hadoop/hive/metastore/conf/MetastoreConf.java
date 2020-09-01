@@ -1337,6 +1337,13 @@ public class MetastoreConf {
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", "hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
 
+    // External RDBMS support
+    USE_CUSTOM_RDBMS("metastore.use.custom.database.product",
+            "hive.metastore.use.custom.database.product", false,
+            "Use an external RDBMS for the metastore"),
+    CUSTOM_RDBMS_CLASSNAME("metastore.custom.database.product.classname", "hive.metastore.custom.database.product.classname", "none",
+          "Hook for external RDBMS. This class will be instantiated only when metastore.use.custom.database.product is set to true."),
+        
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated
     HIVE_CODAHALE_METRICS_REPORTER_CLASSES("hive.service.metrics.codahale.reporter.classes",
