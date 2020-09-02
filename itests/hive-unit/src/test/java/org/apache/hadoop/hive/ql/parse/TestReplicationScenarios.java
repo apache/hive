@@ -130,14 +130,13 @@ public class TestReplicationScenarios {
   private static HiveConf hconfMirror;
   private static IDriver driverMirror;
   private static HiveMetaStoreClient metaStoreClientMirror;
-  private static boolean isMigrationTest;
 
   // Make sure we skip backward-compat checking for those tests that don't generate events
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   private ArrayList<String> lastResults;
 
-  private final boolean VERIFY_SETUP_STEPS = false;
+  private boolean verifySetupSteps = false;
   // if verifySetup is set to true, all the test setup we do will perform additional
   // verifications as well, which is useful to verify that our setup occurred
   // correctly when developing and debugging tests. These verifications, however
@@ -149,10 +148,10 @@ public class TestReplicationScenarios {
     HashMap<String, String> overrideProperties = new HashMap<>();
     overrideProperties.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
         GzipJSONMessageEncoder.class.getCanonicalName());
-    internalBeforeClassSetup(overrideProperties, false);
+    internalBeforeClassSetup(overrideProperties);
   }
 
-  static void internalBeforeClassSetup(Map<String, String> additionalProperties, boolean forMigration)
+  static void internalBeforeClassSetup(Map<String, String> additionalProperties)
       throws Exception {
     hconf = new HiveConf(TestReplicationScenarios.class);
     String metastoreUri = System.getProperty("test."+MetastoreConf.ConfVars.THRIFT_URIS.getHiveName());
@@ -160,7 +159,6 @@ public class TestReplicationScenarios {
       hconf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), metastoreUri);
       return;
     }
-    isMigrationTest = forMigration;
 
     hconf.set(MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS.getHiveName(),
         DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
@@ -183,6 +181,7 @@ public class TestReplicationScenarios {
     hconf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, true);
     hconf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, true);
     hconf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE, true);
+    hconf.setBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET, false);
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
@@ -209,12 +208,6 @@ public class TestReplicationScenarios {
     String thriftUri = MetastoreConf.getVar(hconfMirrorServer, MetastoreConf.ConfVars.THRIFT_URIS);
     MetastoreConf.setVar(hconfMirror, MetastoreConf.ConfVars.THRIFT_URIS, thriftUri);
 
-    if (forMigration) {
-      hconfMirror.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES, true);
-      hconfMirror.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
-      hconfMirror.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
-              "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-    }
     driverMirror = DriverFactory.newDriver(hconfMirror);
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 
@@ -609,7 +602,7 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + ".ptned_empty", empty, driver);
     verifySetup("SELECT * from " + dbName + ".unptned_empty", empty, driver);
 
-    String lazyCopyClause = " with ('" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname  + "'='true')";
+    String lazyCopyClause = " with ('" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname  + "'='true')";
 
     advanceDumpDir();
     run("REPL DUMP " + dbName + lazyCopyClause, driver);
@@ -1356,7 +1349,7 @@ public class TestReplicationScenarios {
     String testKey = "blah";
     String testVal = "foo";
     run("ALTER TABLE " + dbName + ".unptned2 SET TBLPROPERTIES ('" + testKey + "' = '" + testVal + "')", driver);
-    if (VERIFY_SETUP_STEPS){
+    if (verifySetupSteps){
       try {
         Table unptn2 = metaStoreClient.getTable(dbName,"unptned2");
         assertTrue(unptn2.getParameters().containsKey(testKey));
@@ -1373,7 +1366,7 @@ public class TestReplicationScenarios {
 
     // alter partitioned table set table property
     run("ALTER TABLE " + dbName + ".ptned SET TBLPROPERTIES ('" + testKey + "' = '" + testVal + "')", driver);
-    if (VERIFY_SETUP_STEPS){
+    if (verifySetupSteps){
       try {
         Table ptned = metaStoreClient.getTable(dbName,"ptned");
         assertTrue(ptned.getParameters().containsKey(testKey));
@@ -1657,7 +1650,7 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName
             + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
-    List<String> lazyCopyClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'");
+    List<String> lazyCopyClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName, lazyCopyClause);
 
     String[] unptnData = new String[] {"eleven", "twelve"};
@@ -1858,15 +1851,7 @@ public class TestReplicationScenarios {
       InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
     }
 
-    if (isMigrationTest) {
-      // as the move is done using a different event, load will be done within a different transaction and thus
-      // we will get two records.
-      verifyRun("SELECT a from " + replDbName + ".unptned",
-              new String[]{unptn_data[0], unptn_data[0]}, driverMirror);
-
-    } else {
-      verifyRun("SELECT a from " + replDbName + ".unptned", unptn_data[0], driverMirror);
-    }
+    verifyRun("SELECT a from " + replDbName + ".unptned", unptn_data[0], driverMirror);
   }
 
   @Test
@@ -2625,6 +2610,108 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testMaterializedViewsReplication() throws Exception {
+    boolean verifySetupOriginal = verifySetupSteps;
+    verifySetupSteps = true;
+    String testName = "materializedviewsreplication";
+    String testName2 = testName + "2";
+    String dbName = createDB(testName, driver);
+    String dbName2 = createDB(testName2, driver); //for creating multi-db materialized view
+    String replDbName = dbName + "_dupe";
+
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName2 + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    String[] unptn_data = new String[]{ "eleven", "twelve" };
+    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
+    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[]{};
+
+    String unptn_locn = new Path(TEST_PATH, testName + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH, testName + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH, testName + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptn_locn, unptn_data);
+    createTestDataFile(ptn_locn_1, ptn_data_1);
+    createTestDataFile(ptn_locn_2, ptn_data_2);
+
+    verifySetup("SELECT a from " + dbName + ".ptned", empty, driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", empty, driver);
+    verifySetup("SELECT * from " + dbName2 + ".unptned", empty, driver);
+
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName2 + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+    verifySetup("SELECT * from " + dbName2 + ".unptned", unptn_data, driver);
+
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
+
+
+    run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view_boot disable rewrite  stored as textfile AS SELECT a FROM " + dbName + ".ptned where b=1", driver);
+    verifySetup("SELECT a from " + dbName + ".mat_view_boot", ptn_data_1, driver);
+
+    run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view_boot2 disable rewrite  stored as textfile AS SELECT t1.a FROM " + dbName + ".unptned as t1 join " + dbName2 + ".unptned as t2 on t1.a = t2.a", driver);
+    verifySetup("SELECT a from " + dbName + ".mat_view_boot2", unptn_data, driver);
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    verifyRun("SELECT * from " + replDbName + ".unptned", unptn_data, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned where b=1", ptn_data_1, driverMirror);
+
+    //verify source MVs are not on replica
+    verifyIfTableNotExist(replDbName, "mat_view_boot", metaStoreClientMirror);
+    verifyIfTableNotExist(replDbName, "mat_view_boot2", metaStoreClientMirror);
+
+    //test alter materialized view with rename
+    run("ALTER TABLE " + dbName + ".mat_view_boot RENAME TO " + dbName + ".mat_view_rename", driver);
+
+    //verify rename, i.e. new MV exists and old MV does not exist
+    verifyIfTableNotExist(dbName, "mat_view_boot", metaStoreClient);
+    verifyIfTableExist(dbName, "mat_view_rename", metaStoreClient);
+
+    // Perform REPL-DUMP/LOAD
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+
+    //verify source MVs are not on replica
+    verifyIfTableNotExist(replDbName, "mat_view_rename", metaStoreClientMirror);
+    verifyIfTableNotExist(replDbName, "mat_view_boot2", metaStoreClientMirror);
+
+    //test alter materialized view rebuild
+    run("ALTER MATERIALIZED VIEW " + dbName + ".mat_view_boot2 REBUILD" , driver);
+    verifyRun("SELECT a from " + dbName + ".mat_view_boot2", unptn_data, driver);
+
+    // Perform REPL-DUMP/LOAD
+    incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+
+    //verify source MVs are not on replica
+    verifyIfTableNotExist(replDbName, "mat_view_rename", metaStoreClientMirror);
+    verifyIfTableNotExist(replDbName, "mat_view_boot2", metaStoreClientMirror);
+
+    run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view_inc disable rewrite  stored as textfile AS SELECT a FROM " + dbName + ".ptned where b=2", driver);
+    verifySetup("SELECT a from " + dbName + ".mat_view_inc", ptn_data_2, driver);
+
+    run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view_inc2 disable rewrite  stored as textfile AS SELECT t1.a FROM " + dbName + ".unptned as t1 join " + dbName2 + ".unptned as t2 on t1.a = t2.a", driver);
+    verifySetup("SELECT a from " + dbName + ".mat_view_inc2", unptn_data, driver);
+
+    // Perform REPL-DUMP/LOAD
+    incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+
+    //verify source MVs are not on replica
+    verifyIfTableNotExist(replDbName, "mat_view_rename", metaStoreClientMirror);
+    verifyIfTableNotExist(replDbName, "mat_view_boot2", metaStoreClientMirror);
+    verifyIfTableNotExist(replDbName, "mat_view_inc", metaStoreClientMirror);
+    verifyIfTableNotExist(replDbName, "mat_view_inc2", metaStoreClientMirror);
+
+    verifySetupSteps = verifySetupOriginal;
+  }
+
+
+
+  @Test
   public void testExchangePartition() throws IOException {
     String testName = "exchangePartition";
     String dbName = createDB(testName, driver);
@@ -3046,10 +3133,7 @@ public class TestReplicationScenarios {
     // Replicate all the events happened after bootstrap
     incrementalLoadAndVerify(dbName, replDbName);
 
-    // migration test is failing as CONCATENATE is not working. Its not creating the merged file.
-    if (!isMigrationTest) {
-      verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data, driverMirror);
-    }
+    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data, driverMirror);
   }
 
   @Test
@@ -3079,11 +3163,8 @@ public class TestReplicationScenarios {
     // Replicate all the events happened so far
     incrementalLoadAndVerify(dbName, replDbName);
 
-    // migration test is failing as CONCATENATE is not working. Its not creating the merged file.
-    if (!isMigrationTest) {
-      verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
-      verifyRun("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
-    }
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
   }
 
   @Test
@@ -3942,7 +4023,7 @@ public class TestReplicationScenarios {
   }
 
   private void verifySetup(String cmd, String[] data, IDriver myDriver) throws  IOException {
-    if (VERIFY_SETUP_STEPS){
+    if (verifySetupSteps){
       run(cmd, myDriver);
       verifyResults(data, myDriver);
     }

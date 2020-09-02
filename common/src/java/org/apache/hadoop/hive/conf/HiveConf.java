@@ -531,20 +531,17 @@ public class HiveConf extends Configuration {
             + "task increment that would cross the specified limit."),
     REPL_PARTITIONS_DUMP_PARALLELISM("hive.repl.partitions.dump.parallelism",100,
         "Number of threads that will be used to dump partition data information during repl dump."),
-    REPL_DATA_COPY_LAZY("hive.repl.data.copy.lazy", false,
+    REPL_RUN_DATA_COPY_TASKS_ON_TARGET("hive.repl.run.data.copy.tasks.on.target", true,
             "Indicates whether replication should run data copy tasks during repl load operation."),
     REPL_FILE_LIST_CACHE_SIZE("hive.repl.file.list.cache.size", 10000,
         "This config indicates threshold for the maximum number of data copy locations to be kept in memory. \n"
-                + "When the config 'hive.repl.data.copy.lazy' is set to true, this config is not considered."),
-    REPL_DUMPDIR_CLEAN_FREQ("hive.repl.dumpdir.clean.freq", "0s",
-        new TimeValidator(TimeUnit.SECONDS),
-        "Frequency at which timer task runs to purge expired dump dirs."),
-    REPL_DUMPDIR_TTL("hive.repl.dumpdir.ttl", "7d",
-        new TimeValidator(TimeUnit.DAYS),
-        "TTL of dump dirs before cleanup."),
+                + "When the config 'hive.repl.run.data.copy.tasks.on.target' is set to true, this config " +
+          "is not considered."),
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata. \n"
           + "This config makes hive.repl.include.external.tables config ineffective."),
+    REPL_INCLUDE_MATERIALIZED_VIEWS("hive.repl.include.materialized.views", false,
+            "Indicates whether replication of materialized views is enabled."),
     REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY("hive.repl.dump.skip.immutable.data.copy", false,
         "Indicates whether replication dump can skip copyTask and refer to  \n"
             + " original path instead. This would retain all table and partition meta"),
@@ -2136,6 +2133,9 @@ public class HiveConf extends Configuration {
     HIVE_PARQUET_DATE_PROLEPTIC_GREGORIAN_DEFAULT("hive.parquet.date.proleptic.gregorian.default", false,
       "This value controls whether date type in Parquet files was written using the hybrid or proleptic\n" +
       "calendar. Hybrid is the default."),
+    HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED("hive.parquet.timestamp.legacy.conversion.enabled", true,
+      "This value controls whether we use former Java time API to convert between timezones on files where timezone\n" +
+      "is not encoded in the metadata. This is for debugging."),
     HIVE_AVRO_TIMESTAMP_SKIP_CONVERSION("hive.avro.timestamp.skip.conversion", false,
         "Some older Hive implementations (pre-3.1) wrote Avro timestamps in a UTC-normalized" +
         "manner, while from version 3.1 until now Hive wrote time zone agnostic timestamps. " +
@@ -2148,6 +2148,9 @@ public class HiveConf extends Configuration {
     HIVE_AVRO_PROLEPTIC_GREGORIAN_DEFAULT("hive.avro.proleptic.gregorian.default", false,
         "This value controls whether date and timestamp type in Avro files was written using the hybrid or proleptic\n" +
         "calendar. Hybrid is the default."),
+    HIVE_AVRO_TIMESTAMP_LEGACY_CONVERSION_ENABLED("hive.avro.timestamp.legacy.conversion.enabled", true,
+        "This value controls whether we use former Java time API to convert between timezones on files where timezone\n" +
+        "is not encoded in the metadata. This is for debugging."),
     HIVE_INT_TIMESTAMP_CONVERSION_IN_SECONDS("hive.int.timestamp.conversion.in.seconds", false,
         "Boolean/tinyint/smallint/int/bigint value is interpreted as milliseconds during the timestamp conversion.\n" +
         "Set this flag to true to interpret the value as seconds to be consistent with float/double." ),
@@ -2321,8 +2324,6 @@ public class HiveConf extends Configuration {
         "0..1, of wallclock time) the JVM is allowed to spend in garbage collection when running " +
         "the local task. If GC time percentage exceeds this number, the local task will abort by " +
         "itself. Applies to Hive-on-Spark only"),
-
-    HIVEDEBUGLOCALTASK("hive.debug.localtask",false, ""),
 
     HIVEINPUTFORMAT("hive.input.format", "org.apache.hadoop.hive.ql.io.CombineHiveInputFormat",
         "The default input format. Set this to HiveInputFormat if you encounter problems with CombineHiveInputFormat."),
@@ -2541,6 +2542,8 @@ public class HiveConf extends Configuration {
         "If the skew information is correctly stored in the metadata, hive.optimize.skewjoin.compiletime\n" +
         "would change the query plan to take care of it, and hive.optimize.skewjoin will be a no-op."),
 
+    HIVE_OPTIMIZE_LIMIT("hive.optimize.limit", true,
+            "Optimize limit by pushing through Left Outer Joins and Selects"),
     HIVE_OPTIMIZE_TOPNKEY("hive.optimize.topnkey", true, "Whether to enable top n key optimizer."),
     HIVE_MAX_TOPN_ALLOWED("hive.optimize.topnkey.max", 128, "Maximum topN value allowed by top n key optimizer.\n" +
       "If the LIMIT is greater than this value then top n key optimization won't be used."),
@@ -4334,6 +4337,12 @@ public class HiveConf extends Configuration {
             "Bloom filter should be of at max certain size to be effective"),
     TEZ_BLOOM_FILTER_FACTOR("hive.tez.bloom.filter.factor", (float) 1.0,
             "Bloom filter should be a multiple of this factor with nDV"),
+    TEZ_BLOOM_FILTER_MERGE_THREADS("hive.tez.bloom.filter.merge.threads", 1,
+        "How many threads are used for merging bloom filters in addition to task's main thread?\n"
+            + "-1: sanity check, it will fail if execution hits bloom filter merge codepath\n"
+            + " 0: feature is disabled, use only task's main thread for bloom filter merging\n"
+            + " 1: recommended value: there is only 1 merger thread (additionally to the task's main thread),"
+            + "according perf tests, this can lead to serious improvement \n"),
     TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION("hive.tez.bigtable.minsize.semijoin.reduction", 100000000L,
             "Big table for runtime filteting should be of atleast this size"),
     TEZ_DYNAMIC_SEMIJOIN_REDUCTION_THRESHOLD("hive.tez.dynamic.semijoin.reduction.threshold", (float) 0.50,
@@ -5116,7 +5125,7 @@ public class HiveConf extends Configuration {
 
     HIVE_QUERY_REEXECUTION_ENABLED("hive.query.reexecution.enabled", true,
         "Enable query reexecutions"),
-    HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies", "overlay,reoptimize,reexecute_lost_am",
+    HIVE_QUERY_REEXECUTION_STRATEGIES("hive.query.reexecution.strategies", "overlay,reoptimize,reexecute_lost_am,dagsubmit",
         "comma separated list of plugin can be used:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
             + "  reoptimize: collects operator statistics during execution and recompile the query after a failure\n"
@@ -6246,6 +6255,7 @@ public class HiveConf extends Configuration {
     "hive\\.parquet\\..*",
     "hive\\.ppd\\..*",
     "hive\\.prewarm\\..*",
+    "hive\\.query\\.name",
     "hive\\.server2\\.thrift\\.resultset\\.default\\.fetch\\.size",
     "hive\\.server2\\.proxy\\.user",
     "hive\\.skewjoin\\..*",

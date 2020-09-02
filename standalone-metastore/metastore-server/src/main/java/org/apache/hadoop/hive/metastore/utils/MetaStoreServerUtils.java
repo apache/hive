@@ -1459,7 +1459,8 @@ public class MetaStoreServerUtils {
    *          Set of partition columns from table definition
    * @return Partition name, for example partitiondate=2008-01-01
    */
-  public static String getPartitionName(Path tablePath, Path partitionPath, Set<String> partCols) {
+  public static String getPartitionName(Path tablePath, Path partitionPath, Set<String> partCols,
+                                        Map<String, String> partitionColToTypeMap) {
     String result = null;
     Path currPath = partitionPath;
     LOG.debug("tablePath:" + tablePath + ", partCols: " + partCols);
@@ -1481,9 +1482,12 @@ public class MetaStoreServerUtils {
         String partitionValue = parts[1];
         if (partCols.contains(partitionName)) {
           if (result == null) {
-            result = partitionName + "=" + partitionValue;
+            result = partitionName + "="
+                    + getNormalisedPartitionValue(partitionValue, partitionColToTypeMap.get(partitionName));
           } else {
-            result = partitionName + "=" + partitionValue + Path.SEPARATOR + result;
+            result = partitionName + "="
+                    + getNormalisedPartitionValue(partitionValue, partitionColToTypeMap.get(partitionName))
+                    + Path.SEPARATOR + result;
           }
         }
       }
@@ -1491,6 +1495,39 @@ public class MetaStoreServerUtils {
       LOG.debug("currPath=" + currPath);
     }
     return result;
+  }
+
+  public static String getNormalisedPartitionValue(String partitionValue, String type) {
+
+    LOG.debug("Converting '" + partitionValue + "' to type: '" + type + "'.");
+
+    if (type.equalsIgnoreCase("tinyint")
+    || type.equalsIgnoreCase("smallint")
+    || type.equalsIgnoreCase("int")){
+      return Integer.toString(Integer.parseInt(partitionValue));
+    } else if (type.equalsIgnoreCase("bigint")){
+      return Long.toString(Long.parseLong(partitionValue));
+    } else if (type.equalsIgnoreCase("float")){
+      return Float.toString(Float.parseFloat(partitionValue));
+    } else if (type.equalsIgnoreCase("double")){
+      return Double.toString(Double.parseDouble(partitionValue));
+    } else if (type.startsWith("decimal")){
+      // Decimal datatypes are stored like decimal(10,10)
+      return new BigDecimal(partitionValue).stripTrailingZeros().toPlainString();
+    }
+    return partitionValue;
+  }
+
+  public static Map<String, String> getPartitionColtoTypeMap(List<FieldSchema> partitionCols) {
+    Map<String, String> typeMap = new HashMap<>();
+
+    if (partitionCols != null) {
+      for (FieldSchema fSchema : partitionCols) {
+        typeMap.put(fSchema.getName(), fSchema.getType());
+      }
+    }
+
+    return typeMap;
   }
 
   public static Partition createMetaPartitionObject(Table tbl, Map<String, String> partSpec, Path location)

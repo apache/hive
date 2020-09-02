@@ -723,11 +723,11 @@ STAGE PLANS:
         TableScan
           alias: src
           GatherStats: false
-          Select Operator
-            expressions: 1 (type: int)
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 1
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: 1 (type: int)
+              outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: select int(1.2) from src limit 1

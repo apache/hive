@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -119,7 +120,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (shouldLoadAuthorizationMetadata()) {
         initiateAuthorizationLoadTask();
       }
-      LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY));
+      LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET));
       if (work.isIncrementalLoad()) {
         return executeIncrementalLoad();
       } else {
@@ -136,12 +137,20 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     } catch (Exception e) {
       LOG.error("replication failed", e);
       setException(e);
+      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
       try {
-        work.getMetricCollector().reportEnd(Status.FAILED);
+        if (errorCode > 40000) {
+          Path nonRecoverableMarker = new Path(new Path(work.dumpDirectory).getParent(),
+            ReplAck.NON_RECOVERABLE_MARKER.toString());
+          Utils.writeStackTrace(e, nonRecoverableMarker, conf);
+          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED_ADMIN, nonRecoverableMarker.toString());
+        } else {
+          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+        }
       } catch (SemanticException ex) {
         LOG.error("Failed to collect Metrics ", ex);
       }
-      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      return errorCode;
     }
   }
 
@@ -338,7 +347,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   }
 
   private void addLazyDataCopyTask(TaskTracker loadTaskTracker) throws IOException {
-    boolean dataCopyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+    boolean dataCopyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     if (dataCopyAtLoad) {
       if (work.getExternalTableDataCopyItr() == null) {
         Path extTableBackingFile = new Path(work.dumpDirectory, EximUtil.FILE_LIST_EXTERNAL);

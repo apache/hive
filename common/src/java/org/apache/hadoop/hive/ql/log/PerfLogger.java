@@ -25,7 +25,6 @@ import org.apache.hadoop.hive.common.metrics.common.MetricsFactory;
 import org.apache.hadoop.hive.common.metrics.common.MetricsScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,8 +146,7 @@ public class PerfLogger {
    * @param callerName the logging object to be used.
    * @param method method or ID that identifies this perf log element.
    */
-  @SuppressFBWarnings(value = "NM_METHOD_NAMING_CONVENTION", justification = "Intended")
-  public void PerfLogBegin(String callerName, String method) {
+  public void perfLogBegin(String callerName, String method) {
     long startTime = System.currentTimeMillis();
     startTimes.put(method, Long.valueOf(startTime));
     if (LOG.isDebugEnabled()) {
@@ -162,9 +160,8 @@ public class PerfLogger {
    * @param method
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
-  @SuppressFBWarnings(value = "NM_METHOD_NAMING_CONVENTION", justification = "Intended")
-  public long PerfLogEnd(String callerName, String method) {
-    return PerfLogEnd(callerName, method, null);
+  public long perfLogEnd(String callerName, String method) {
+    return perfLogEnd(callerName, method, null);
   }
 
   /**
@@ -173,8 +170,7 @@ public class PerfLogger {
    * @param method
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
-  @SuppressFBWarnings(value = "NM_METHOD_NAMING_CONVENTION", justification = "Intended")
-  public long PerfLogEnd(String callerName, String method, String additionalInfo) {
+  public long perfLogEnd(String callerName, String method, String additionalInfo) {
     Long startTime = startTimes.get(method);
     long endTime = System.currentTimeMillis();
     endTimes.put(method, Long.valueOf(endTime));

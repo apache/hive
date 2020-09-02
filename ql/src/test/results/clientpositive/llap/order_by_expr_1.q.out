@@ -65,12 +65,12 @@ STAGE PLANS:
                 TableScan
                   alias: t_n5
                   Statistics: Num rows: 9 Data size: 37 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: INTERVAL'5-5' (type: interval_year_month), INTERVAL'-1-1' (type: interval_year_month)
-                    outputColumnNames: _col0, _col1
-                    Statistics: Num rows: 9 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 2
+                  Limit
+                    Number of rows: 2
+                    Statistics: Num rows: 2 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: INTERVAL'5-5' (type: interval_year_month), INTERVAL'-1-1' (type: interval_year_month)
+                      outputColumnNames: _col0, _col1
                       Statistics: Num rows: 2 Data size: 32 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false

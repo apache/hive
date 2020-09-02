@@ -129,6 +129,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           } catch (InterruptedException e) {
           }
         }
+        LOG.info("Worker thread finished one loop.");
       } while (!stop.get());
     } finally {
       if (executor != null) {
@@ -339,7 +340,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
 
     if (!isEnoughToCompact) {
-      LOG.debug("Not compacting {}; current base: {}, delta files: {}, originals: {}",
+      LOG.info("Not enough files in {} to compact; current base: {}, delta files: {}, originals: {}",
           sd.getLocation(), dir.getBaseDirectory(), deltaInfo, origCount);
     }
     return isEnoughToCompact;
@@ -357,7 +358,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     int numObsoleteDirs = dir.getObsolete().size();
     boolean needsJustCleaning = numObsoleteDirs > 0;
     if (needsJustCleaning) {
-      LOG.debug("{} obsolete directories in {} found; marked for cleaning.", numObsoleteDirs,
+      LOG.info("{} obsolete directories in {} found; marked for cleaning.", numObsoleteDirs,
           sd.getLocation());
     }
     return needsJustCleaning;
@@ -510,7 +511,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
       checkInterrupt();
 
-      LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in " +
+      LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in txnId " +
                    JavaUtils.txnIdToString(compactorTxnId) + " with compute stats set to " + computeStats);
       final StatsUpdater su = computeStats ? StatsUpdater.init(ci, msc.findColumnsWithStats(
           CompactionInfo.compactionInfoToStruct(ci)), conf,
@@ -539,6 +540,8 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           }
         }
         heartbeater.cancel();
+        LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in txn "
+            + JavaUtils.txnIdToString(compactorTxnId) + ", marking as compacted.");
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +

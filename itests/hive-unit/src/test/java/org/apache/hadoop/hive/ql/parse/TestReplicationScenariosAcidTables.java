@@ -25,7 +25,6 @@ import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
-import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -103,6 +102,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         put("hive.metastore.disallow.incompatible.col.type.changes", "false");
         put("metastore.warehouse.tenant.colocation", "true");
         put("hive.in.repl.test", "true");
+        put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
       }};
 
     acidEnableConf.putAll(overrides);
@@ -1807,7 +1807,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   @Test
   public void testManagedTableLazyCopy() throws Throwable {
     List<String> withClause = Arrays.asList(
-            "'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'");
+            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
 
     WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
             .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
@@ -1970,5 +1970,57 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
   private void verifyPathExist(FileSystem fs, Path filePath) throws IOException {
     assertTrue("Path not found:" + filePath, fs.exists(filePath));
+  }
+
+  @Test
+  public void testMaterializedViewOnAcidTableReplication() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string)" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (2)")
+            .run("create materialized view mat_view as select * from t1")
+            .run("show tables")
+            .verifyResults(new String[]{"t1", "mat_view"})
+            .run("select * from mat_view")
+            .verifyResults(new String[]{"1", "2"})
+            .dump(primaryDbName);
+
+    //confirm materialized-view not replicated
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1", "2"})
+            .run("show tables")
+            .verifyResults(new String[]{"t1"});
+
+    //test alter materialized-view rebuild
+    primary.run("use " + primaryDbName)
+            .run("insert into t1 values (3)")
+            .run("alter materialized view mat_view rebuild")
+            .run("select * from mat_view")
+            .verifyResults(new String[]{"1", "2", "3"})
+            .dump(primaryDbName);
+
+    //confirm materialized-view not replicated
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1", "2", "3"})
+            .run("show tables")
+            .verifyResults(new String[]{"t1"});
+
+    //test alter materialized-view disable rewrite
+    primary.run("use " + primaryDbName)
+            .run("alter materialized view mat_view disable rewrite")
+            .run("select * from mat_view")
+            .verifyResults(new String[]{"1", "2", "3"})
+            .dump(primaryDbName);
+
+    //confirm materialized-view not replicated
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t1"});
   }
 }

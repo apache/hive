@@ -24,26 +24,38 @@ import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.regex.Pattern;
 
+/**
+ * Re-Executes a query if tez AM failed because of node/container failure.
+ */
 public class ReExecuteLostAMQueryPlugin implements IReExecutionPlugin {
+  private static final Logger LOG = LoggerFactory.getLogger(ReExecuteLostAMQueryPlugin.class);
   private boolean retryPossible;
   private int maxExecutions = 1;
 
-  // Lost am container have exit code -100, due to node failures.
-  private Pattern lostAMContainerErrorPattern = Pattern.compile(".*AM Container for .* exited .* exitCode: -100.*");
+  // Lost am container have exit code -100, due to node failures. This pattern of exception is thrown when AM is managed
+  // by HS2.
+  private final Pattern lostAMContainerErrorPattern = Pattern.compile(".*AM Container for .* exited .* exitCode: -100.*");
 
   class LocalHook implements ExecuteWithHookContext {
-
     @Override
     public void run(HookContext hookContext) throws Exception {
       if (hookContext.getHookType() == HookContext.HookType.ON_FAILURE_HOOK) {
         Throwable exception = hookContext.getException();
 
-        if (exception != null && exception.getMessage() != null
-            && lostAMContainerErrorPattern.matcher(exception.getMessage()).matches()) {
-          retryPossible = true;
+        if (exception != null && exception.getMessage() != null) {
+          // When HS2 does not manage the AMs, tez AMs are registered with zookeeper and HS2 discovers it,
+          // failure of unmanaged AMs will throw AM record not being found in zookeeper.
+          String unmanagedAMFailure = "AM record not found (likely died)";
+          if (lostAMContainerErrorPattern.matcher(exception.getMessage()).matches()
+                  || exception.getMessage().contains(unmanagedAMFailure)) {
+            retryPossible = true;
+          }
+          LOG.info("Got exception message: {} retryPossible: {}", exception.getMessage(), retryPossible);
         }
       }
     }
