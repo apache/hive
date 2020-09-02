@@ -47,11 +47,11 @@ import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfoFactory;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.MYSQL;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.DERBY;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.POSTGRES;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.ORACLE;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.SQLSERVER;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.DbType.MYSQL;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.DbType.DERBY;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.DbType.POSTGRES;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.DbType.ORACLE;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.DbType.SQLSERVER;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,8 +68,8 @@ public final class TxnDbUtil {
   private static final Logger LOG = LoggerFactory.getLogger(TxnDbUtil.class.getName());
   private static final String TXN_MANAGER = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
 
-  private static final EnumMap<DatabaseProduct.ProductId, String> DB_EPOCH_FN =
-      new EnumMap<DatabaseProduct.ProductId, String>(DatabaseProduct.ProductId.class) {{
+  private static final EnumMap<DatabaseProduct.DbType, String> DB_EPOCH_FN =
+      new EnumMap<DatabaseProduct.DbType, String>(DatabaseProduct.DbType.class) {{
         put(DERBY, "{ fn timestampdiff(sql_tsi_frac_second, timestamp('" + new Timestamp(0) +
             "'), current_timestamp) } / 1000000");
         put(MYSQL, "round(unix_timestamp(now(3)) * 1000)");
@@ -79,8 +79,8 @@ public final class TxnDbUtil {
         put(SQLSERVER, "datediff_big(millisecond, '19700101', sysutcdatetime())");
       }};
 
-  private static final EnumMap<DatabaseProduct.ProductId, String> DB_SEED_FN =
-      new EnumMap<DatabaseProduct.ProductId, String>(DatabaseProduct.ProductId.class) {{
+  private static final EnumMap<DatabaseProduct.DbType, String> DB_SEED_FN =
+      new EnumMap<DatabaseProduct.DbType, String>(DatabaseProduct.DbType.class) {{
         put(DERBY, "ALTER TABLE \"TXNS\" ALTER \"TXN_ID\" RESTART WITH %s");
         put(MYSQL, "ALTER TABLE \"TXNS\" AUTO_INCREMENT = %s");
         put(POSTGRES, "ALTER SEQUENCE \"TXNS_TXN_ID_seq\" RESTART WITH %s");
@@ -287,7 +287,7 @@ public final class TxnDbUtil {
   private static void resetTxnSequence(Connection conn, Statement stmt) throws SQLException, MetaException{
     String dbProduct = conn.getMetaData().getDatabaseProductName();
     DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, null);
-    switch (databaseProduct.pid) {
+    switch (databaseProduct.dbType) {
 
     case DERBY:
       stmt.execute("ALTER TABLE \"TXNS\" ALTER \"TXN_ID\" RESTART WITH 1");
@@ -583,7 +583,7 @@ public final class TxnDbUtil {
    +   * @throws MetaException
    +   */
   public static boolean supportsGetGeneratedKeys(DatabaseProduct dbProduct) throws MetaException {
-    switch (dbProduct.pid) {
+    switch (dbProduct.dbType) {
     case DERBY:
     case SQLSERVER:
       // The getGeneratedKeys is not supported for multi line insert

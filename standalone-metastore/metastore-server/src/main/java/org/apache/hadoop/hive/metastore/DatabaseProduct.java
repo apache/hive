@@ -35,10 +35,10 @@ import org.slf4j.LoggerFactory;
 public class DatabaseProduct implements Configurable {
   static final private Logger LOG = LoggerFactory.getLogger(DatabaseProduct.class.getName());
 
-  public static enum ProductId {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, EXTERNAL, OTHER};
+  public static enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, EXTERNAL, OTHER};
 
   private Configuration conf;
-  public ProductId pid;
+  public DbType dbType;
   
   private static DatabaseProduct theDatabaseProduct;
   
@@ -46,8 +46,8 @@ public class DatabaseProduct implements Configurable {
    * Private constructor for singleton class
    * @param id
    */
-  private DatabaseProduct(ProductId id) {
-    pid = id;
+  private DatabaseProduct(DbType dbt) {
+    dbType = dbt;
   }
   
   public static final String DERBY_NAME = "derby";
@@ -64,7 +64,7 @@ public class DatabaseProduct implements Configurable {
    * @return database product type
    */
   public static DatabaseProduct determineDatabaseProduct(String productName, Configuration conf) {
-    ProductId id;
+    DbType id;
 
     if (productName == null) {
     	productName = OTHER_NAME;
@@ -73,24 +73,24 @@ public class DatabaseProduct implements Configurable {
     productName = productName.toLowerCase();
 
     if (productName.contains(DERBY_NAME)) {
-      id = ProductId.DERBY;
+      id = DbType.DERBY;
     } else if (productName.contains(SQL_SERVER_NAME)) {
-      id = ProductId.SQLSERVER;
+      id = DbType.SQLSERVER;
     } else if (productName.contains(MYSQL_NAME)) {
-      id = ProductId.MYSQL;
+      id = DbType.MYSQL;
     } else if (productName.contains(ORACLE_NAME)) {
-      id = ProductId.ORACLE;
+      id = DbType.ORACLE;
     } else if (productName.contains(POSTGRESQL_NAME)) {
-      id = ProductId.POSTGRES;
+      id = DbType.POSTGRES;
     } else {
-      id = ProductId.OTHER;
+      id = DbType.OTHER;
     }
 
     // If the singleton instance exists, ensure it is consistent  
     if (theDatabaseProduct != null) {
-        if (theDatabaseProduct.pid != id) {
+        if (theDatabaseProduct.dbType != id) {
             throw new RuntimeException(String.format("Unexpected mismatched database products. Expected=%s. Got=%s",
-                    theDatabaseProduct.pid.name(),id.name()));
+                    theDatabaseProduct.dbType.name(),id.name()));
         }
         return theDatabaseProduct;
     }
@@ -116,7 +116,7 @@ public class DatabaseProduct implements Configurable {
 	        LOG.warn("Unable to instantiate custom database product. Reverting to default", e);
 	      }
 	
-	      id = ProductId.EXTERNAL;
+	      id = DbType.EXTERNAL;
       }
       else {
       	LOG.warn("metastore.use.custom.database.product was set, " +
@@ -156,14 +156,14 @@ public class DatabaseProduct implements Configurable {
   }
 
   public String getHiveSchemaPostfix() {
-    switch (pid) {
+    switch (dbType) {
     case SQLSERVER:
       return "mssql";
     case DERBY:
     case MYSQL:
     case POSTGRES:
     case ORACLE:
-      return pid.name().toLowerCase();
+      return dbType.name().toLowerCase();
     case OTHER:
     default:
       return null;
@@ -171,31 +171,31 @@ public class DatabaseProduct implements Configurable {
   }
 
   public final boolean isDERBY() {
-  	return pid == ProductId.DERBY;
+  	return dbType == DbType.DERBY;
   }
 
   public final boolean isMYSQL() {
-  	return pid == ProductId.MYSQL;
+  	return dbType == DbType.MYSQL;
   }
 
   public final boolean isORACLE() {
-  	return pid == ProductId.ORACLE;
+  	return dbType == DbType.ORACLE;
   }
 
   public final boolean isSQLSERVER() {
-  	return pid == ProductId.SQLSERVER;
+  	return dbType == DbType.SQLSERVER;
   }
 
   public final boolean isPOSTGRES() {
-  	return pid == ProductId.POSTGRES;
+  	return dbType == DbType.POSTGRES;
   }
 
   public final boolean isEXTERNAL() {
-  	return pid == ProductId.EXTERNAL;
+  	return dbType == DbType.EXTERNAL;
   }
 
   public final boolean isOTHER() {
-  	return pid == ProductId.OTHER;
+  	return dbType == DbType.OTHER;
   }
 
   @Override

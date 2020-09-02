@@ -4125,7 +4125,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     try {
       stmt = conn.createStatement();
       String s;
-      switch (dbProduct.pid) {
+      switch (dbProduct.dbType) {
         case DERBY:
         case EXTERNAL: // ANSI SQL
           s = "values current_timestamp";
@@ -4161,7 +4161,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   protected String isWithinCheckInterval(String expr, long interval) throws MetaException {
     String condition;
-    switch (dbProduct.pid) {
+    switch (dbProduct.dbType) {
       case DERBY:
         condition = " {fn TIMESTAMPDIFF(sql_tsi_second, " + expr + ", current_timestamp)} <= " + interval;
         break;
@@ -5118,7 +5118,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return false;
   }
   private boolean isDuplicateKeyError(SQLException ex) {
-    switch (dbProduct.pid) {
+    switch (dbProduct.dbType) {
       case DERBY:
       case EXTERNAL: // ANSI SQL
         if("23505".equals(ex.getSQLState())) {

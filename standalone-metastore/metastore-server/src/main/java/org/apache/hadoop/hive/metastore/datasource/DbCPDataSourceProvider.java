@@ -73,7 +73,7 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     dbcpDs.setDefaultAutoCommit(true);
 
     DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl, null);
-    switch (dbProduct.pid){
+    switch (dbProduct.dbType){
       case MYSQL:
         dbcpDs.setConnectionProperties("allowMultiQueries=true");
         dbcpDs.setConnectionProperties("rewriteBatchedStatements=true");

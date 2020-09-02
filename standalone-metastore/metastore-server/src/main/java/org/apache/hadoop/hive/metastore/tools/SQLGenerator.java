@@ -124,7 +124,7 @@ public final class SQLGenerator {
     List<String> insertStmts = new ArrayList<>();
     StringBuilder sb = new StringBuilder();
     int numRowsInCurrentStmt = 0;
-    switch (dbProduct.pid) {
+    switch (dbProduct.dbType) {
     case ORACLE:
       if (rows.size() > 1) {
         //http://www.oratable.com/oracle-insert-all/
@@ -191,7 +191,7 @@ public final class SQLGenerator {
    * construct.  If the DB doesn't support, return original select.
    */
   public String addForUpdateClause(String selectStatement) throws MetaException {
-    switch (dbProduct.pid) {
+    switch (dbProduct.dbType) {
     case DERBY:
       //https://db.apache.org/derby/docs/10.1/ref/rrefsqlj31783.html
       //sadly in Derby, FOR UPDATE doesn't meant what it should
@@ -232,7 +232,7 @@ public final class SQLGenerator {
    * all columns are unique for Oracle.
    */
   public String addLimitClause(int numRows, String noSelectsqlQuery) throws MetaException {
-    switch (dbProduct.pid) {
+    switch (dbProduct.dbType) {
     case DERBY:
       //http://db.apache.org/derby/docs/10.7/ref/rrefsqljoffsetfetch.html
       return "select " + noSelectsqlQuery + " fetch first " + numRows + " rows only";
@@ -304,7 +304,7 @@ public final class SQLGenerator {
    */
   public String createTxnLockStatement(boolean shared) throws MetaException{
     String txnLockTable = "TXN_LOCK_TBL";
-    switch (dbProduct.pid) {
+    switch (dbProduct.dbType) {
     case MYSQL:
       // For Mysql we do not use lock table statement for two reasons
       // It is not released automatically on commit/rollback

@@ -73,7 +73,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     config.setConnectionTimeout(connectionTimeout);
 
     DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl, null);
-    switch (dbProduct.pid){
+    switch (dbProduct.dbType){
       case MYSQL:
         config.setConnectionInitSql("SET @@session.sql_mode=ANSI_QUOTES");
         config.addDataSourceProperty("allowMultiQueries", true);
