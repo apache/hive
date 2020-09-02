@@ -36,10 +36,12 @@ import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.junit.Before;
 import org.junit.Test;
+import java.util.Map;
 
 import java.io.File;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /*
 Test whether HiveAuthorizer for MetaStore operation is trigger and HiveMetaStoreAuthzInfo is created by HiveMetaStoreAuthorizer
@@ -138,10 +140,37 @@ public class TestHiveMetaStoreAuthorizer {
               .setOwner(authorizedUser)
               .build(conf);
       hmsHandler.create_table(viewObj);
+      Map<String, String> params = viewObj.getParameters();
+      assertTrue(params.containsKey("Authorized"));
+      assertTrue("false".equalsIgnoreCase(params.get("Authorized")));
     } catch (Exception e) {
-      String err = e.getMessage();
-      String expected = "Operation type CREATE_VIEW not allowed for user:" + authorizedUser;
-      assertEquals(expected, err);
+      // no Exceptions for user same as normal user is now allowed CREATE_VIEW operation
+    }
+  }
+
+  @Test
+  public void testC2_AlterView_anyUser() throws Exception{
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      Table viewObj = new TableBuilder()
+              .setTableName(viewName)
+              .setType(TableType.VIRTUAL_VIEW.name())
+              .addCol("name", ColumnType.STRING_TYPE_NAME)
+              .setOwner(authorizedUser)
+              .build(conf);
+      hmsHandler.create_table(viewObj);
+      viewObj = new TableBuilder()
+              .setTableName(viewName)
+              .setType(TableType.VIRTUAL_VIEW.name())
+              .addCol("dep", ColumnType.STRING_TYPE_NAME)
+              .setOwner(authorizedUser)
+              .build(conf);
+      hmsHandler.alter_table("default", viewName, viewObj);
+      Map<String, String> params = viewObj.getParameters();
+      assertTrue(params.containsKey("Authorized"));
+      assertTrue("false".equalsIgnoreCase(params.get("Authorized")));
+    } catch (Exception e) {
+      // no Exceptions for user same as normal user is now allowed Alter_VIEW operation
     }
   }
 
