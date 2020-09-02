@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.metadata.TableConstraintsInfo;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -258,12 +259,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
           }
           outStream.write(output.getBytes("UTF-8"));
 
-          if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(tbl.getPrimaryKeyInfo()) ||
-              ForeignKeyInfo.isForeignKeyInfoNotEmpty(tbl.getForeignKeyInfo()) ||
-              UniqueConstraint.isUniqueConstraintNotEmpty(tbl.getUniqueKeyInfo()) ||
-              NotNullConstraint.isNotNullConstraintNotEmpty(tbl.getNotNullConstraint()) ||
-              CheckConstraint.isCheckConstraintNotEmpty(tbl.getCheckConstraint()) ||
-              DefaultConstraint.isCheckConstraintNotEmpty(tbl.getDefaultConstraint())) {
+          if (TableConstraintsInfo.isTableConstraintsInfoNotEmpty(tbl.getTableConstraintsInfo())) {
             output = MetaDataFormatUtils.getConstraintsInformation(tbl);
             outStream.write(output.getBytes("UTF-8"));
           }
@@ -290,12 +286,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
             outStream.write(separator);
             outStream.write(terminator);
           }
-          if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(tbl.getPrimaryKeyInfo()) ||
-              ForeignKeyInfo.isForeignKeyInfoNotEmpty(tbl.getForeignKeyInfo()) ||
-              UniqueConstraint.isUniqueConstraintNotEmpty(tbl.getUniqueKeyInfo()) ||
-              NotNullConstraint.isNotNullConstraintNotEmpty(tbl.getNotNullConstraint()) ||
-              DefaultConstraint.isCheckConstraintNotEmpty(tbl.getDefaultConstraint()) ||
-              CheckConstraint.isCheckConstraintNotEmpty(tbl.getCheckConstraint())) {
+          if (TableConstraintsInfo.isTableConstraintsInfoNotEmpty(tbl.getTableConstraintsInfo())) {
             outStream.write(("Constraints").getBytes("UTF-8"));
             outStream.write(separator);
             if (PrimaryKeyInfo.isPrimaryKeyInfoNotEmpty(tbl.getPrimaryKeyInfo())) {

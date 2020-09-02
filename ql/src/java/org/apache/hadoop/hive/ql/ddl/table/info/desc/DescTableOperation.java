@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.TableConstraintsInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -284,12 +285,8 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   private void setConstraintsAndStorageHandlerInfo(Table table) throws HiveException {
     if (desc.isExtended() || desc.isFormatted()) {
-      table.setPrimaryKeyInfo(context.getDb().getPrimaryKeys(table.getDbName(), table.getTableName()));
-      table.setForeignKeyInfo(context.getDb().getForeignKeys(table.getDbName(), table.getTableName()));
-      table.setUniqueKeyInfo(context.getDb().getUniqueConstraints(table.getDbName(), table.getTableName()));
-      table.setNotNullConstraint(context.getDb().getNotNullConstraints(table.getDbName(), table.getTableName()));
-      table.setDefaultConstraint(context.getDb().getDefaultConstraints(table.getDbName(), table.getTableName()));
-      table.setCheckConstraint(context.getDb().getCheckConstraints(table.getDbName(), table.getTableName()));
+      TableConstraintsInfo tableConstraintsInfo = context.getDb().getAllTableConstraints(table.getDbName(), table.getTableName());
+      table.setTableConstraintsInfo(tableConstraintsInfo);
       table.setStorageHandlerInfo(context.getDb().getStorageHandlerInfo(table));
     }
   }
