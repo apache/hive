@@ -1215,6 +1215,11 @@ public abstract class TestHiveMetaStore {
   @Test
   public void testExternalDirectory() throws Exception{
     String externalDirString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL);
+
+    if (externalDirString == null) {
+      externalDirString = MetastoreConf.getVar(conf, ConfVars.WAREHOUSE);
+    }
+
     Path externalDir = new Path(externalDirString);
     silentDropDatabase(TEST_DB1_NAME);
 
