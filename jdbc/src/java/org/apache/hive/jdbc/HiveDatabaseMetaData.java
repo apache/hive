@@ -25,6 +25,7 @@ import java.util.List;
 import jline.internal.Log;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.cli.TableSchema;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -1240,9 +1241,8 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
    */
   public static boolean getHiveDefaultNullsLast(Map<String, String> hiveConfs) {
     boolean response = ConfVars.HIVE_DEFAULT_NULLS_LAST.defaultBoolVal;
-    String key = Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST;
-    if ((hiveConfs != null) && (hiveConfs.get(key) != null)) {
-      response = Boolean.parseBoolean(hiveConfs.get(key));
+    if ((hiveConfs != null) && (hiveConfs.get(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY) != null)) {
+      response = Boolean.parseBoolean(hiveConfs.get(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY));
     }
     return response;
   }

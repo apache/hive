@@ -31,6 +31,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
@@ -45,8 +47,6 @@ public class Utils {
     * The required prefix for the connection URL.
     */
   public static final String URL_PREFIX = "jdbc:hive2://";
-
-  public static final String HIVE_CONF_PREFIX = "hiveconf:";
 
   /**
     * If host is provided, without a port.
@@ -188,6 +188,10 @@ public class Utils {
     private String zookeeperTrustStorePassword = "";
     private String currentHostZnodePath;
     private final List<String> rejectedHostZnodePaths = new ArrayList<String>();
+
+    // HiveConf parameters
+    public static final String HIVE_DEFAULT_NULLS_LAST_KEY =
+        HIVE_CONF_PREFIX + HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.varname;
 
     public JdbcConnectionParams() {
     }

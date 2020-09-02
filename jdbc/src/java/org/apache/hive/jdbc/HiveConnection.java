@@ -874,6 +874,13 @@ public class HiveConnection implements java.sql.Connection {
     try {
       TOpenSessionResp openResp = client.OpenSession(openReq);
 
+      // Override HS2 server HiveConf in Connection parameter HiveConf
+      Map<String, String> serverHiveConf = openResp.getConfiguration();
+      if (serverHiveConf.containsKey(ConfVars.HIVE_DEFAULT_NULLS_LAST.varname)) {
+        connParams.getHiveConfs().put(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY,
+            serverHiveConf.get(ConfVars.HIVE_DEFAULT_NULLS_LAST.varname));
+      }
+
       // validate connection
       Utils.verifySuccess(openResp.getStatus());
       if (!supportedProtocols.contains(openResp.getServerProtocolVersion())) {
