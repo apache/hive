@@ -98,6 +98,7 @@ public class BaseReplicationScenariosAcidTables {
       put("hive.metastore.disallow.incompatible.col.type.changes", "false");
       put("hive.in.repl.test", "true");
       put("metastore.warehouse.tenant.colocation", "true");
+      put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
     }};
 
     acidEnableConf.putAll(overrides);

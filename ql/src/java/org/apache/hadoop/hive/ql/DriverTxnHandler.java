@@ -214,7 +214,7 @@ class DriverTxnHandler {
    */
   private void acquireLocks() throws CommandProcessorException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
     if (!driverContext.getTxnManager().isTxnOpen() && driverContext.getTxnManager().supportsAcid()) {
       /* non acid txn managers don't support txns but fwd lock requests to lock managers
@@ -245,7 +245,7 @@ class DriverTxnHandler {
       throw DriverUtils.createProcessorException(driverContext, 10, errorMessage, ErrorMsg.findSQLState(e.getMessage()),
           e);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
     }
   }
 
@@ -614,7 +614,7 @@ class DriverTxnHandler {
 
   void endTransactionAndCleanup(boolean commit, HiveTxnManager txnManager) throws LockException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
     
     // If we've opened a transaction we need to commit or rollback rather than explicitly releasing the locks.
     driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
@@ -633,7 +633,7 @@ class DriverTxnHandler {
       context.setHiveLocks(null);
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
   }
 
   private void commitOrRollback(boolean commit, HiveTxnManager txnManager) throws LockException {

@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
-import java.io.Serializable;
 import java.util.List;
 
 public class TruncateTableHandler extends AbstractMessageHandler {
@@ -46,8 +45,7 @@ public class TruncateTableHandler extends AbstractMessageHandler {
     updatedMetadata.set(context.dmd.getEventTo().toString(), tName.getDb(), tName.getTable(), null);
 
     try {
-      return ReplUtils.addOpenTxnTaskForMigration(tName.getDb(), tName.getTable(),
-              context.hiveConf, updatedMetadata, truncateTableTask, msg.getTableObjBefore());
+      return ReplUtils.addChildTask(truncateTableTask);
     } catch (Exception e) {
       throw new SemanticException(e.getMessage());
     }

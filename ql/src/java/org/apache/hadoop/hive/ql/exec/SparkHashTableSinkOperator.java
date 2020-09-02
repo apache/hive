@@ -100,11 +100,11 @@ public class SparkHashTableSinkOperator
         }
       } else {
         String method = PerfLogger.SPARK_FLUSH_HASHTABLE + getName();
-        perfLogger.PerfLogBegin(CLASS_NAME, method);
+        perfLogger.perfLogBegin(CLASS_NAME, method);
         try {
           flushToFile(mapJoinTables[tag], tag);
         } finally {
-          perfLogger.PerfLogEnd(CLASS_NAME, method);
+          perfLogger.perfLogEnd(CLASS_NAME, method);
         }
       }
       super.closeOp(abort);

@@ -54,7 +54,6 @@ public class CompactorOnTezTest {
   protected HiveConf conf;
   protected IMetaStoreClient msClient;
   protected IDriver driver;
-  protected boolean runsOnTez = true;
   protected boolean mmCompaction = false;
 
   @Before

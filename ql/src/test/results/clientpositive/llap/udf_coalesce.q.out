@@ -164,12 +164,12 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: COALESCE(key,'x') (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 1
+                  Limit
+                    Number of rows: 1
+                    Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: COALESCE(key,'x') (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false

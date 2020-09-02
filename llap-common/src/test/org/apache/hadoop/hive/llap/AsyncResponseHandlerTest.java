@@ -19,6 +19,7 @@ import org.apache.hadoop.hive.llap.AsyncPbRpcProxy.ExecuteRequestCallback;
 import org.apache.hadoop.util.concurrent.AsyncGet;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Random;

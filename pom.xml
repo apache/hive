@@ -173,11 +173,11 @@
     <kudu.version>1.12.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.9.3-1</libthrift.version>
+    <libthrift.version>0.13.0</libthrift.version>
     <log4j2.version>2.12.1</log4j2.version>
     <mariadb.version>2.5.0</mariadb.version>
     <opencsv.version>2.3</opencsv.version>
-    <orc.version>1.5.9</orc.version>
+    <orc.version>1.5.10</orc.version>
     <mockito-core.version>3.3.3</mockito-core.version>
     <powermock.version>2.0.2</powermock.version>
     <mina.version>2.0.0-M5</mina.version>
@@ -1440,10 +1440,11 @@
 	    <exclude>data/**</exclude>
 	    <exclude>conf/**</exclude>
 	    <exclude>checkstyle/**</exclude>
+            <exclude>docs/Gemfile</exclude>
 	    <exclude>bin/**</exclude>
 	    <exclude>itests/**</exclude>
-      <exclude>**/README.md</exclude>
-      <exclude>**/*.iml</exclude>
+            <exclude>**/README.md</exclude>
+            <exclude>**/*.iml</exclude>
 	    <exclude>**/*.txt</exclude>
 	    <exclude>**/*.log</exclude>
 	    <exclude>**/.factorypath</exclude>
@@ -1457,6 +1458,7 @@
 	    <exclude>**/*.q.out</exclude>
 	    <exclude>**/*.q.out_*</exclude>
 	    <exclude>**/*.xml</exclude>
+	    <exclude>**/*.yml</exclude>
 	    <exclude>**/gen/**</exclude>
 	    <exclude>**/target/**</exclude>
 	    <exclude>**/scripts/**</exclude>
@@ -1475,10 +1477,10 @@
 	    <exclude>**/xmlReport.pl</exclude>
 	    <exclude>**/*.html</exclude>
 	    <exclude>**/sit</exclude>
-      <exclude>**/test/queries/**/*.sql</exclude>
-      <exclude>**/patchprocess/**</exclude>
-      <exclude>**/metastore_db/**</exclude>
-      <exclude>**/test/resources/**/*.ldif</exclude>
+            <exclude>**/test/queries/**/*.sql</exclude>
+            <exclude>**/patchprocess/**</exclude>
+            <exclude>**/metastore_db/**</exclude>
+            <exclude>**/test/resources/**/*.ldif</exclude>
 	  </excludes>
 	</configuration>
       </plugin>
@@ -1506,7 +1508,7 @@
                   <target>
                     <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask"
                       classpathref="maven.plugin.classpath" />
-                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp --gen php --gen py --gen rb"/>
+                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb"/>
                     <property name="thrift.gen.dir" value="${basedir}/src/gen/thrift"/>
                     <delete dir="${thrift.gen.dir}"/>
                     <mkdir dir="${thrift.gen.dir}"/>

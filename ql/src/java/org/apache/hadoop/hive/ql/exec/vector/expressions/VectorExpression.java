@@ -30,6 +30,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
@@ -63,6 +65,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 public abstract class VectorExpression implements Serializable {
 
   private static final long serialVersionUID = 1L;
+  protected transient final Logger LOG = LoggerFactory.getLogger(getClass().getName());
 
   /**
    * Child expressions for parameters -- but only those that need to be computed.

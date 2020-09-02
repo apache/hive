@@ -75,7 +75,7 @@ class CreateTableHandler extends AbstractEventHandler<CreateTableMessage> {
         withinContext.replicationSpec,
         withinContext.hiveConf);
 
-    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     Iterable<String> files = eventMessage.getFiles();
     if (files != null) {
       if (copyAtLoad) {

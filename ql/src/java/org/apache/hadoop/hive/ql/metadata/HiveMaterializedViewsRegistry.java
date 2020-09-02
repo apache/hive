@@ -167,7 +167,7 @@ public final class HiveMaterializedViewsRegistry {
       ss.setIsHiveServerQuery(true); // All is served from HS2, we do not need e.g. Tez sessions
       SessionState.start(ss);
       PerfLogger perfLogger = SessionState.getPerfLogger();
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
+      perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
       try {
         if (initialized.get()) {
           for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
@@ -200,7 +200,7 @@ public final class HiveMaterializedViewsRegistry {
           LOG.error("Problem connecting to the metastore when initializing the view registry", e);
         }
       }
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.MATERIALIZED_VIEWS_REGISTRY_REFRESH);
     }
   }
 

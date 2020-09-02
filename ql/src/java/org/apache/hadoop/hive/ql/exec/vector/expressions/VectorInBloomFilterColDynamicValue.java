@@ -18,27 +18,29 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Callable;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.io.NonSyncByteArrayInputStream;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ObjectCache;
+import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DecimalColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DynamicValue;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.common.util.BloomKFilter;
 
@@ -52,6 +54,8 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
   protected transient BloomKFilter bloomFilter;
   protected transient BloomFilterCheck bfCheck;
   protected transient ColumnVector.Type colVectorType;
+
+  private ObjectCache runtimeCache;
 
   public VectorInBloomFilterColDynamicValue(int colNum, DynamicValue bloomFilterDynamicValue) {
     super();
@@ -100,26 +104,43 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
     default:
       throw new IllegalStateException("Unsupported type " + colVectorType);
     }
+
+    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+    runtimeCache = ObjectCacheFactory.getCache(conf, queryId, false, true);
   }
 
-  private void initValue()  {
-    InputStream in = null;
+  private void initValue() {
     try {
-      Object val = bloomFilterDynamicValue.getValue();
-      if (val != null) {
-        BinaryObjectInspector boi = (BinaryObjectInspector) bloomFilterDynamicValue.getObjectInspector();
-        byte[] bytes = boi.getPrimitiveJavaObject(val);
-        in = new NonSyncByteArrayInputStream(bytes);
-        bloomFilter = BloomKFilter.deserialize(in);
-      } else {
-        bloomFilter = null;
-      }
-      initialized = true;
-    } catch (Exception err) {
-      throw new RuntimeException(err);
-    } finally {
-      IOUtils.closeStream(in);
+      bloomFilter = (BloomKFilter) runtimeCache.retrieve(bloomFilterDynamicValue.getId(),
+          new Callable<Object>() {
+            @Override
+            public Object call() throws IOException {
+              InputStream in = null;
+              try {
+                Object val = bloomFilterDynamicValue.getValue();
+
+                LOG.info("Starting BloomKFilter deserialization for id: {}...",
+                    bloomFilterDynamicValue.getId());
+
+                if (val != null) {
+                  BinaryObjectInspector boi =
+                      (BinaryObjectInspector) bloomFilterDynamicValue.getObjectInspector();
+                  byte[] bytes = boi.getPrimitiveJavaObject(val);
+                  in = new NonSyncByteArrayInputStream(bytes);
+                  BloomKFilter bloomKFilter = BloomKFilter.deserialize(in);
+                  return bloomKFilter;
+                } else {
+                  return new BloomKFilter(1);
+                }
+              } finally {
+                IOUtils.closeStream(in);
+              }
+            }
+          });
+    } catch (HiveException e) {
+      throw new RuntimeException(e);
     }
+    initialized = true;
   }
 
   @Override
@@ -143,7 +164,7 @@ public class VectorInBloomFilterColDynamicValue extends VectorExpression {
     }
 
     // In case the dynamic value resolves to a null value
-    if (bloomFilter == null) {
+    if (bloomFilter == null || bloomFilter.getNumBits() == 0) {
       batch.size = 0;
     }
 
