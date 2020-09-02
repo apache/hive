@@ -77,7 +77,7 @@ public class TestCommands {
     TestHCatClient.startMetaStoreServer();
     hconf = TestHCatClient.getConf();
     hconf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,"");
-    hconf.set(HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname, "false");
+    hconf.set(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
     hconf
     .setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
         "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");

@@ -251,6 +251,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   private final Lock scheduleLock = new ReentrantLock();
   private final Condition scheduleCondition = scheduleLock.newCondition();
+  private final AtomicBoolean isClusterCapacityFull = new AtomicBoolean(false);
   private final AtomicBoolean pendingScheduleInvocations = new AtomicBoolean(false);
   private final ListeningExecutorService schedulerExecutor;
   private final SchedulerCallable schedulerCallable = new SchedulerCallable();
@@ -1373,6 +1374,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     return true;
   }
 
+  boolean isRequestedHostPresent(TaskInfo request) {
+    return (request.requestedHosts != null && request.requestedHosts.length > 0);
+  }
+
   /**
    * @param request the list of preferred hosts. null implies any host
    * @return
@@ -1390,7 +1395,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
       boolean shouldDelayForLocality = request.shouldDelayForLocality(schedulerAttemptTime);
       LOG.debug("ShouldDelayForLocality={} for task={} on hosts={}", shouldDelayForLocality,
           request.task, requestedHostsDebugStr);
-      if (requestedHosts != null && requestedHosts.length > 0) {
+      if (isRequestedHostPresent(request)) {
         int prefHostCount = -1;
         boolean requestedHostsWillBecomeAvailable = false;
         for (String host : requestedHosts) {
@@ -1485,6 +1490,16 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
       if (allNodes.isEmpty()) {
         return SELECT_HOST_RESULT_DELAYED_RESOURCES;
+      }
+
+      // When all nodes are busy, reset locality delay
+      if (activeNodesWithFreeSlots.isEmpty()) {
+        isClusterCapacityFull.set(true);
+        if (request.localityDelayTimeout > 0 && isRequestedHostPresent(request)) {
+          request.resetLocalityDelayInfo();
+        }
+      } else {
+        isClusterCapacityFull.set(false);
       }
 
       // no locality-requested, randomly pick a node containing free slots
@@ -1802,6 +1817,10 @@ public class LlapTaskSchedulerService extends TaskScheduler {
 
   @VisibleForTesting
   protected void schedulePendingTasks() throws InterruptedException {
+    // Early exit where there are no slots available
+    if (isClusterCapacityFull.get()) {
+      return;
+    }
     Ref<TaskInfo> downgradedTask = new Ref<>(null);
     writeLock.lock();
     try {
@@ -1817,8 +1836,6 @@ public class LlapTaskSchedulerService extends TaskScheduler {
         Iterator<TaskInfo> taskIter = taskListAtPriority.iterator();
         boolean scheduledAllAtPriority = true;
         while (taskIter.hasNext()) {
-          // TODO Optimization: Add a check to see if there's any capacity available. No point in
-          // walking through all active nodes, if they don't have potential capacity.
           TaskInfo taskInfo = taskIter.next();
           if (taskInfo.getNumPreviousAssignAttempts() == 1) {
             dagStats.registerDelayedAllocation();
@@ -2399,6 +2416,7 @@ public class LlapTaskSchedulerService extends TaskScheduler {
   private void trySchedulingPendingTasks() {
     scheduleLock.lock();
     try {
+      isClusterCapacityFull.set(false);
       pendingScheduleInvocations.set(true);
       scheduleCondition.signal();
     } finally {
@@ -2851,7 +2869,9 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     final String[] requestedHosts;
     final String[] requestedRacks;
     final long requestTime;
-    final long localityDelayTimeout;
+    long localityDelayTimeout;
+    // Adjust locality delay based on scheduling time instead of init time of task info.
+    boolean adjustedLocalityDelay;
     long startTime;
     long preemptTime;
     ContainerId containerId;
@@ -2931,8 +2951,20 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     }
 
     boolean shouldDelayForLocality(long schedulerAttemptTime) {
+      adjustLocalityDelayInfo();
       // getDelay <=0 means the task will be evicted from the queue.
       return localityDelayTimeout > schedulerAttemptTime;
+    }
+
+    void adjustLocalityDelayInfo() {
+      if (localityDelayTimeout > 0 && localityDelayTimeout != Long.MAX_VALUE && !adjustedLocalityDelay) {
+        adjustedLocalityDelay = true;
+        resetLocalityDelayInfo();
+      }
+    }
+
+    void resetLocalityDelayInfo() {
+      localityDelayTimeout = clock.getTime() + localityDelayConf.getNodeLocalityDelay();
     }
 
     boolean shouldForceLocality() {

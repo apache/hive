@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
@@ -47,6 +48,8 @@ import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFBloomFilterMerge;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCount;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountStar;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeCaptureVectorToRowOutputOperator;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromConcat;
@@ -65,6 +68,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc.ProcessingMode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
@@ -2325,6 +2329,25 @@ public class TestVectorGroupByOperator {
         3,
         1024,
         (double)0);
+  }
+
+  @Test
+  public void testInstantiateExpression() throws Exception {
+    VectorGroupByOperator op = new VectorGroupByOperator();
+
+    // VectorUDAFBloomFilterMerge with specific constructor
+    VectorAggregationDesc desc = Mockito.mock(VectorAggregationDesc.class);
+    Mockito.when(desc.getVecAggrClass()).thenReturn((Class) VectorUDAFBloomFilterMerge.class);
+    Mockito.when(desc.getEvaluator())
+        .thenReturn(new GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator());
+    VectorAggregateExpression expr = op.instantiateExpression(desc, new Configuration());
+    Assert.assertTrue(expr.getClass() == VectorUDAFBloomFilterMerge.class);
+
+    // regular constructor
+    desc = Mockito.mock(VectorAggregationDesc.class);
+    Mockito.when(desc.getVecAggrClass()).thenReturn((Class) VectorUDAFCount.class);
+    expr = op.instantiateExpression(desc, new Configuration());
+    Assert.assertTrue(expr.getClass() == VectorUDAFCount.class);
   }
 
   private void testMultiKey(
