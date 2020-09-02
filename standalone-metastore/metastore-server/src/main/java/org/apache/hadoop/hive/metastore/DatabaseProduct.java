@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public class DatabaseProduct implements Configurable {
   static final private Logger LOG = LoggerFactory.getLogger(DatabaseProduct.class.getName());
 
-  public static enum ProductId {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, OTHER};
+  public static enum ProductId {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, EXTERNAL, OTHER};
 
   private Configuration conf;
   public ProductId pid;
@@ -55,6 +55,7 @@ public class DatabaseProduct implements Configurable {
   public static final String MYSQL_NAME = "mysql";
   public static final String POSTGRESQL_NAME = "postgresql";
   public static final String ORACLE_NAME = "oracle";
+  public static final String OTHER_NAME = "other";
   
   /**
    * Determine the database product type
@@ -64,7 +65,11 @@ public class DatabaseProduct implements Configurable {
    */
   public static DatabaseProduct determineDatabaseProduct(String productName, Configuration conf) {
     ProductId id;
-    
+
+    if (productName == null) {
+    	productName = OTHER_NAME;
+    }
+
     productName = productName.toLowerCase();
 
     if (productName.contains(DERBY_NAME)) {
@@ -103,11 +108,19 @@ public class DatabaseProduct implements Configurable {
 
       String className = conf.get("metastore.custom.database.product.classname");
       
-      try {
-        databaseProduct = (DatabaseProduct)
-            ReflectionUtils.newInstance(Class.forName(className), conf);
-      }catch (Exception e) {
-        LOG.warn("Unable to instantiate custom database product. Reverting to default", e);
+      if (className != null) {
+	      try {
+	        databaseProduct = (DatabaseProduct)
+	            ReflectionUtils.newInstance(Class.forName(className), conf);
+	      }catch (Exception e) {
+	        LOG.warn("Unable to instantiate custom database product. Reverting to default", e);
+	      }
+	
+	      id = ProductId.EXTERNAL;
+      }
+      else {
+      	LOG.warn("metastore.use.custom.database.product was set, " +
+                 "but metastore.custom.database.product.classname was not. Reverting to default");
       }
     }
 
@@ -121,7 +134,7 @@ public class DatabaseProduct implements Configurable {
 
   public boolean isDeadlock(SQLException e) {
     return e instanceof SQLTransactionRollbackException
-        || ((isMYSQL() || isPOSTGRES() || isSQLSERVER())
+        || ((isMYSQL() || isPOSTGRES() || isSQLSERVER() || isEXTERNAL())
             && "40001".equals(e.getSQLState()))
         || (isPOSTGRES() && "40P01".equals(e.getSQLState()))
         || (isORACLE() && (e.getMessage() != null && (e.getMessage().contains("deadlock detected")
@@ -175,6 +188,10 @@ public class DatabaseProduct implements Configurable {
 
   public final boolean isPOSTGRES() {
   	return pid == ProductId.POSTGRES;
+  }
+
+  public final boolean isEXTERNAL() {
+  	return pid == ProductId.EXTERNAL;
   }
 
   public final boolean isOTHER() {

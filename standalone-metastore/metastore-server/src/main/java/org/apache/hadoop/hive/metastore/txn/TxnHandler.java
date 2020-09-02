@@ -4127,6 +4127,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       String s;
       switch (dbProduct.pid) {
         case DERBY:
+        case EXTERNAL: // ANSI SQL
           s = "values current_timestamp";
           break;
 
@@ -5119,6 +5120,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private boolean isDuplicateKeyError(SQLException ex) {
     switch (dbProduct.pid) {
       case DERBY:
+      case EXTERNAL: // ANSI SQL
         if("23505".equals(ex.getSQLState())) {
           return true;
         }

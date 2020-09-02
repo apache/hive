@@ -158,6 +158,7 @@ public final class SQLGenerator {
     case MYSQL:
     case POSTGRES:
     case SQLSERVER:
+    case EXTERNAL:
       for (int numRows = 0; numRows < rows.size(); numRows++) {
         if (numRows % MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE) == 0) {
           if (numRows > 0) {
@@ -200,6 +201,8 @@ public final class SQLGenerator {
     case ORACLE:
       //https://docs.oracle.com/cd/E17952_01/refman-5.6-en/select.html
     case POSTGRES:
+    	// Assume ANSI SQL for external product
+    case EXTERNAL:
       //http://www.postgresql.org/docs/9.0/static/sql-select.html
       return selectStatement + " for update";
     case SQLSERVER:
