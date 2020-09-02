@@ -20,71 +20,156 @@ package org.apache.hadoop.hive.metastore;
 
 import java.sql.SQLException;
 import java.sql.SQLTransactionRollbackException;
+import java.util.Map;
 
-/** Database product infered via JDBC. */
-public enum DatabaseProduct {
-  DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, OTHER;
+import org.apache.hadoop.conf.Configurable;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import org.apache.hadoop.util.ReflectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+/** Database product infered via JDBC.
+ * This class is a singleton, which is instantiated the first time
+ * method determineDatabaseProduct is invoked.
+ * Tests that need to create multiple instances can use the reset method
+ * */
+public class DatabaseProduct implements Configurable {
+  static final private Logger LOG = LoggerFactory.getLogger(DatabaseProduct.class.getName());
+
+	public static enum ProductId {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, OTHER};
+
+  private Configuration conf;
+  public ProductId pid;
+  
+  private static DatabaseProduct theDatabaseProduct;
+  
+  /**
+   * Private constructor for singleton class
+   * @param id
+   */
+  private DatabaseProduct(ProductId id) {
+    pid = id;
+  }
+  
+  public static final String DERBY_NAME = "derby";
+  public static final String SQL_SERVER_NAME = "microsoft sql server";
+  public static final String MYSQL_NAME = "mysql";
+  public static final String POSTGRESQL_NAME = "postgresql";
+  public static final String ORACLE_NAME = "oracle";
+  
   /**
    * Determine the database product type
    * @param productName string to defer database connection
+   * @param conf Configuration object for hive-site.xml or metastore-site.xml
    * @return database product type
    */
-  public static DatabaseProduct determineDatabaseProduct(String productName) throws SQLException {
-    if (productName == null) {
-      return OTHER;
-    }
+  public static DatabaseProduct determineDatabaseProduct(String productName, Configuration conf) {
+    ProductId id;
+    
     productName = productName.toLowerCase();
-    if (productName.contains("derby")) {
-      return DERBY;
-    } else if (productName.contains("microsoft sql server")) {
-      return SQLSERVER;
-    } else if (productName.contains("mysql")) {
-      return MYSQL;
-    } else if (productName.contains("oracle")) {
-      return ORACLE;
-    } else if (productName.contains("postgresql")) {
-      return POSTGRES;
+
+    if (productName.contains(DERBY_NAME)) {
+      id = ProductId.DERBY;
+    } else if (productName.contains(SQL_SERVER_NAME)) {
+      id = ProductId.SQLSERVER;
+    } else if (productName.contains(MYSQL_NAME)) {
+      id = ProductId.MYSQL;
+    } else if (productName.contains(ORACLE_NAME)) {
+      id = ProductId.ORACLE;
+    } else if (productName.contains(POSTGRESQL_NAME)) {
+      id = ProductId.POSTGRES;
     } else {
-      return OTHER;
+      id = ProductId.OTHER;
     }
+
+    // If the singleton instance exists, ensure it is consistent  
+    if (theDatabaseProduct != null) {
+        if (theDatabaseProduct.pid != id) {
+            throw new RuntimeException(String.format("Unexpected mismatched database products. Expected=%s. Got=%s",
+                    theDatabaseProduct.pid.name(),id.name()));
+        }
+        return theDatabaseProduct;
+    }
+
+    if (conf == null) {
+        // TODO: how to get the right conf object for hive-site.xml or metastore-site.xml?
+        conf = new Configuration();
+    }
+
+    boolean isExternal = conf.getBoolean("metastore.use.custom.database.product", false) ||
+            conf.getBoolean("hive.metastore.use.custom.database.product", false);
+
+    DatabaseProduct databaseProduct = null;
+    if (isExternal) {
+
+    	String className = conf.get("metastore.custom.database.product.classname");
+    	
+    	try {
+	    	databaseProduct = (DatabaseProduct)
+	          ReflectionUtils.newInstance(Class.forName(className), conf);
+    	}catch (Exception e) {
+    		LOG.warn("Unable to instantiate custom database product. Reverting to default", e);
+    	}
+    }
+
+    if (databaseProduct == null) {
+    	databaseProduct = new DatabaseProduct(id);
+    }
+	
+    databaseProduct.setConf(conf);
+    return databaseProduct;
   }
 
-  public static boolean isDeadlock(DatabaseProduct dbProduct, SQLException e) {
+  public boolean isDeadlock(SQLException e) {
     return e instanceof SQLTransactionRollbackException
-        || ((dbProduct == MYSQL || dbProduct == POSTGRES || dbProduct == SQLSERVER)
+        || ((pid == ProductId.MYSQL || pid == ProductId.POSTGRES || pid == ProductId.SQLSERVER)
             && "40001".equals(e.getSQLState()))
-        || (dbProduct == POSTGRES && "40P01".equals(e.getSQLState()))
-        || (dbProduct == ORACLE && (e.getMessage() != null && (e.getMessage().contains("deadlock detected")
+        || (pid == ProductId.POSTGRES && "40P01".equals(e.getSQLState()))
+        || (pid == ProductId.ORACLE && (e.getMessage() != null && (e.getMessage().contains("deadlock detected")
             || e.getMessage().contains("can't serialize access for this transaction"))));
   }
 
   /**
    * Whether the RDBMS has restrictions on IN list size (explicit, or poor perf-based).
    */
-  public static boolean needsInBatching(DatabaseProduct dbType) {
-    return dbType == ORACLE || dbType == SQLSERVER;
+  public boolean needsInBatching() {
+    return pid == ProductId.ORACLE || pid == ProductId.SQLSERVER;
   }
 
   /**
    * Whether the RDBMS has a bug in join and filter operation order described in DERBY-6358.
    */
-  public static boolean hasJoinOperationOrderBug(DatabaseProduct dbType) {
-    return dbType == DERBY || dbType == ORACLE || dbType == POSTGRES;
+  public boolean hasJoinOperationOrderBug() {
+    return pid == ProductId.DERBY || pid == ProductId.ORACLE || pid == ProductId.POSTGRES;
   }
 
-  public static String getHiveSchemaPostfix(DatabaseProduct dbType) {
-    switch (dbType) {
+  public String getHiveSchemaPostfix() {
+    switch (pid) {
     case SQLSERVER:
       return "mssql";
     case DERBY:
     case MYSQL:
     case POSTGRES:
     case ORACLE:
-      return dbType.name().toLowerCase();
+      return pid.name().toLowerCase();
     case OTHER:
     default:
       return null;
     }
+  }
+
+  @Override
+  public Configuration getConf() {
+    return conf;
+  }
+    
+  @Override
+  public void setConf(Configuration c) {
+    conf = c;
+  }
+
+  public static void reset() {
+    theDatabaseProduct = null;
   }
 }

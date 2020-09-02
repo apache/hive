@@ -17,7 +17,11 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.MYSQL;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.DERBY;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.ORACLE;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.POSTGRES;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.OTHER;
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
 
 import java.sql.SQLException;
@@ -73,8 +77,8 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     dbcpDs.setDefaultReadOnly(false);
     dbcpDs.setDefaultAutoCommit(true);
 
-    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
-    switch (dbProduct){
+    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl, null);
+    switch (dbProduct.pid){
       case MYSQL:
         dbcpDs.setConnectionProperties("allowMultiQueries=true");
         dbcpDs.setConnectionProperties("rewriteBatchedStatements=true");
@@ -123,7 +127,7 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     objectPool.setSoftMinEvictableIdleTimeMillis(softMinEvictableIdleTimeMillis);
     objectPool.setLifo(lifo);
 
-    if (dbProduct == MYSQL) {
+    if (dbProduct.pid == MYSQL) {
       poolableConnFactory.setValidationQuery("SET @@session.sql_mode=ANSI_QUOTES");
     }
     return new PoolingDataSource(objectPool);

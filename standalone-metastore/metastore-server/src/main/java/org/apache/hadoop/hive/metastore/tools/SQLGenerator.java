@@ -124,7 +124,7 @@ public final class SQLGenerator {
     List<String> insertStmts = new ArrayList<>();
     StringBuilder sb = new StringBuilder();
     int numRowsInCurrentStmt = 0;
-    switch (dbProduct) {
+    switch (dbProduct.pid) {
     case ORACLE:
       if (rows.size() > 1) {
         //http://www.oratable.com/oracle-insert-all/
@@ -190,7 +190,7 @@ public final class SQLGenerator {
    * construct.  If the DB doesn't support, return original select.
    */
   public String addForUpdateClause(String selectStatement) throws MetaException {
-    switch (dbProduct) {
+    switch (dbProduct.pid) {
     case DERBY:
       //https://db.apache.org/derby/docs/10.1/ref/rrefsqlj31783.html
       //sadly in Derby, FOR UPDATE doesn't meant what it should
@@ -229,7 +229,7 @@ public final class SQLGenerator {
    * all columns are unique for Oracle.
    */
   public String addLimitClause(int numRows, String noSelectsqlQuery) throws MetaException {
-    switch (dbProduct) {
+    switch (dbProduct.pid) {
     case DERBY:
       //http://db.apache.org/derby/docs/10.7/ref/rrefsqljoffsetfetch.html
       return "select " + noSelectsqlQuery + " fetch first " + numRows + " rows only";
@@ -286,7 +286,7 @@ public final class SQLGenerator {
   // This is required for SQL executed directly. If the SQL has double quotes then some dbs tend to
   // remove the escape characters and store the variable without double quote.
   public String addEscapeCharacters(String s) {
-    if (dbProduct ==  DatabaseProduct.MYSQL) {
+    if (dbProduct.pid ==  DatabaseProduct.ProductId.MYSQL) {
       return s.replaceAll("\\\\", "\\\\\\\\");
     }
     return s;
@@ -301,7 +301,7 @@ public final class SQLGenerator {
    */
   public String createTxnLockStatement(boolean shared) throws MetaException{
     String txnLockTable = "TXN_LOCK_TBL";
-    switch (dbProduct) {
+    switch (dbProduct.pid) {
     case MYSQL:
       // For Mysql we do not use lock table statement for two reasons
       // It is not released automatically on commit/rollback

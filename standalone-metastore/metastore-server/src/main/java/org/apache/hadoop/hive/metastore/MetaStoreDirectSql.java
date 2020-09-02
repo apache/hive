@@ -93,6 +93,9 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.OTHER;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.MYSQL;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.ORACLE;
 import org.apache.hive.common.util.BloomFilter;
 import org.datanucleus.store.rdbms.query.ForwardQueryResult;
 import org.slf4j.Logger;
@@ -170,16 +173,13 @@ class MetaStoreDirectSql {
     this.conf = conf;
     this.schema = schema;
     DatabaseProduct dbType = null;
-    try {
-      dbType = DatabaseProduct.determineDatabaseProduct(getProductName(pm));
-    } catch (SQLException e) {
-      LOG.warn("Cannot determine database product; assuming OTHER", e);
-      dbType = DatabaseProduct.OTHER;
-    }
+
+    dbType = DatabaseProduct.determineDatabaseProduct(getProductName(pm), conf);
+
     this.dbType = dbType;
     int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_PARTITION_BATCH_SIZE);
     if (batchSize == DETECT_BATCHING) {
-      batchSize = DatabaseProduct.needsInBatching(dbType) ? 1000 : NO_BATCHING;
+      batchSize = dbType.needsInBatching() ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
     ImmutableMap.Builder<String, String> fieldNameToTableNameBuilder =
@@ -528,7 +528,7 @@ class MetaStoreDirectSql {
     StringBuilder orderColumns = new StringBuilder(), orderClause = new StringBuilder();
     int i = 0;
     List<Object> paramsForOrder = new ArrayList<Object>();
-    boolean dbHasJoinCastBug = DatabaseProduct.hasJoinOperationOrderBug(dbType);
+    boolean dbHasJoinCastBug = dbType.hasJoinOperationOrderBug();
     for (Object[] orderSpec: orderSpecs) {
       int partColIndex = (int)orderSpec[0];
       String orderAlias = "ODR" + (i++);
@@ -549,7 +549,7 @@ class MetaStoreDirectSql {
       PartitionFilterGenerator.FilterType type =
           PartitionFilterGenerator.FilterType.fromType(colType);
       if (type == PartitionFilterGenerator.FilterType.Date) {
-        if (dbType == DatabaseProduct.ORACLE) {
+        if (dbType.pid == ORACLE) {
           tableValue = "TO_DATE(" + tableValue + ", 'YYYY-MM-DD')";
         } else {
           tableValue = "cast(" + tableValue + " as date)";
@@ -799,7 +799,7 @@ class MetaStoreDirectSql {
       SqlFilterForPushdown result) throws MetaException {
     // Derby and Oracle do not interpret filters ANSI-properly in some cases and need a workaround.
     assert partitionKeys != null;
-    boolean dbHasJoinCastBug = DatabaseProduct.hasJoinOperationOrderBug(dbType);
+    boolean dbHasJoinCastBug = dbType.hasJoinOperationOrderBug();
     result.tableName = tableName;
     result.dbName = dbName;
     result.catName = catName;
@@ -1358,7 +1358,7 @@ class MetaStoreDirectSql {
         if (colType == FilterType.Integral) {
           tableValue = "cast(" + tableValue + " as decimal(21,0))";
         } else if (colType == FilterType.Date) {
-          if (dbType == DatabaseProduct.ORACLE) {
+          if (dbType.pid == ORACLE) {
             // Oracle requires special treatment... as usual.
             tableValue = "TO_DATE(" + tableValue + ", 'YYYY-MM-DD')";
           } else {
@@ -1384,7 +1384,7 @@ class MetaStoreDirectSql {
         tableValue += " then " + tableValue0 + " else null end)";
 
         if (valType == FilterType.Date) {
-          if (dbType == DatabaseProduct.ORACLE) {
+          if (dbType.pid == ORACLE) {
             // Oracle requires special treatment... as usual.
             nodeValue0 = "TO_DATE(" + nodeValue0 + ", 'YYYY-MM-DD')";
           } else {
@@ -2179,7 +2179,7 @@ class MetaStoreDirectSql {
    * effect will apply to the connection that is executing the queries otherwise.
    */
   public void prepareTxn() throws MetaException {
-    if (dbType != DatabaseProduct.MYSQL) {
+    if (dbType.pid != MYSQL) {
       return;
     }
     try {

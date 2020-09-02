@@ -72,8 +72,8 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);
 
-    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
-    switch (dbProduct){
+    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl, null);
+    switch (dbProduct.pid){
       case MYSQL:
         config.setConnectionInitSql("SET @@session.sql_mode=ANSI_QUOTES");
         config.addDataSourceProperty("allowMultiQueries", true);

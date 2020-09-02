@@ -151,7 +151,9 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.MYSQL;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.DERBY;
+import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.OTHER;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatch;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatchNoCount;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.getEpochFn;
@@ -1034,7 +1036,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     try {
       stmt = dbConn.createStatement();
 
-      if (sqlGenerator.getDbProduct() == MYSQL) {
+      if (sqlGenerator.getDbProduct().pid == MYSQL) {
         stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
       }
 
@@ -4076,7 +4078,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if(dbProduct == null) {
         throw new IllegalStateException("DB Type not determined yet.");
       }
-      if (DatabaseProduct.isDeadlock(dbProduct, e)) {
+      if (dbProduct.isDeadlock(e)) {
         if (deadlockCnt++ < ALLOWED_REPEATED_DEADLOCKS) {
           long waitInterval = deadlockRetryInterval * deadlockCnt;
           LOG.warn("Deadlock detected in " + caller + ". Will wait " + waitInterval +
@@ -4126,7 +4128,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     try {
       stmt = conn.createStatement();
       String s;
-      switch (dbProduct) {
+      switch (dbProduct.pid) {
         case DERBY:
           s = "values current_timestamp";
           break;
@@ -4161,7 +4163,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   protected String isWithinCheckInterval(String expr, long interval) throws MetaException {
     String condition;
-    switch (dbProduct) {
+    switch (dbProduct.pid) {
       case DERBY:
         condition = " {fn TIMESTAMPDIFF(sql_tsi_second, " + expr + ", current_timestamp)} <= " + interval;
         break;
@@ -4201,8 +4203,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (dbProduct != null) return;
     try {
       String s = conn.getMetaData().getDatabaseProductName();
-      dbProduct = DatabaseProduct.determineDatabaseProduct(s);
-      if (dbProduct == DatabaseProduct.OTHER) {
+      dbProduct = DatabaseProduct.determineDatabaseProduct(s, getConf());
+      if (dbProduct.pid == OTHER) {
         String msg = "Unrecognized database product name <" + s + ">";
         LOG.error(msg);
         throw new IllegalStateException(msg);
@@ -5118,7 +5120,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return false;
   }
   private boolean isDuplicateKeyError(SQLException ex) {
-    switch (dbProduct) {
+    switch (dbProduct.pid) {
       case DERBY:
         if("23505".equals(ex.getSQLState())) {
           return true;
@@ -5191,12 +5193,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * with Derby database.  See more notes at class level.
    */
   private void lockInternal() {
-    if(dbProduct == DatabaseProduct.DERBY) {
+    if(dbProduct.pid == DERBY) {
       derbyLock.lock();
     }
   }
   private void unlockInternal() {
-    if(dbProduct == DatabaseProduct.DERBY) {
+    if(dbProduct.pid == DERBY) {
       derbyLock.unlock();
     }
   }
@@ -5250,7 +5252,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
         Semaphore derbySemaphore = null;
-        if(dbProduct == DatabaseProduct.DERBY) {
+        if(dbProduct.pid == DERBY) {
           derbyKey2Lock.putIfAbsent(key, new Semaphore(1));
           derbySemaphore =  derbyKey2Lock.get(key);
           derbySemaphore.acquire();
