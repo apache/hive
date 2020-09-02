@@ -2638,6 +2638,10 @@ public class HiveConf extends Configuration {
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", -1,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
         "before executing the main query block. -1 will disable this feature."),
+    HIVE_CTE_MATERIALIZE_FULL_AGGREGATE_ONLY("hive.optimize.cte.materialize.full.aggregate.only", false,
+        "If enabled only CTEs with aggregate output will be pre-materialized. All CTEs otherwise." +
+            "Also the number of references to a CTE clause must exceeds the value of " +
+            "hive.optimize.cte.materialize.threshold"),
 
     // Statistics
     HIVE_STATS_ESTIMATE_STATS("hive.stats.estimate", true,
