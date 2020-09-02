@@ -407,7 +407,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
         builder.push(e.rel);
       }
     }
-    boolean isCandidateForAntiJoin = false;
+
     // First, the cross join
     switch (logic) {
     case TRUE_FALSE_UNKNOWN:
@@ -415,13 +415,10 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       // Since EXISTS/NOT EXISTS are not affected by presence of
       // null keys we do not need to generate count(*), count(c)
       if (e.getKind() == SqlKind.EXISTS) {
-        logic = RelOptUtil.Logic.TRUE_FALSE;
         if (conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_ANTI_JOIN)) {
-          //TODO : As of now anti join is first converted to left outer join
-          // and then converted to anti join.
-          //logic = RelOptUtil.Logic.FALSE;
-
-          isCandidateForAntiJoin = true;
+          logic = RelOptUtil.Logic.FALSE;
+        } else {
+          logic = RelOptUtil.Logic.TRUE_FALSE;
         }
         break;
       }
@@ -473,12 +470,7 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
     default:
       fields.add(builder.alias(builder.literal(true), trueLiteral));
       builder.project(fields);
-      // If, not-exists is first converted to left outer join with null
-      // filter and then to anti join, then the distinct clause is added
-      // later during semi/anti join processing at genMapGroupByForSemijoin.
-      if (!isCandidateForAntiJoin || variablesSet.isEmpty()) {
-        builder.distinct();
-      }
+      builder.distinct();
     }
     builder.as("dt");
     final List<RexNode> conditions = new ArrayList<>();
