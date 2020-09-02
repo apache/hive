@@ -868,11 +868,11 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public boolean nullsAreSortedHigh() throws SQLException {
-    return !getHiveDefaultNullsLast(connection.getConnParams().getHiveConfs());
+    return getHiveDefaultNullsLast(connection.getConnParams().getHiveConfs());
   }
 
   public boolean nullsAreSortedLow() throws SQLException {
-    return getHiveDefaultNullsLast(connection.getConnParams().getHiveConfs());
+    return !getHiveDefaultNullsLast(connection.getConnParams().getHiveConfs());
   }
 
   public boolean othersDeletesAreVisible(int type) throws SQLException {

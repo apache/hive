@@ -70,17 +70,17 @@ public class TestHiveDatabaseMetaData {
   @Test
   public void testNullsAreSortedHigh() throws SQLException {
     map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
-    assertTrue(hiveDatabaseMetaData.nullsAreSortedHigh());
-    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
     assertFalse(hiveDatabaseMetaData.nullsAreSortedHigh());
+    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
+    assertTrue(hiveDatabaseMetaData.nullsAreSortedHigh());
   }
 
   @Test
   public void testNullsAreSortedLow() throws SQLException {
     map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
-    assertFalse(hiveDatabaseMetaData.nullsAreSortedLow());
-    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
     assertTrue(hiveDatabaseMetaData.nullsAreSortedLow());
+    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
+    assertFalse(hiveDatabaseMetaData.nullsAreSortedLow());
   }
 
 }
