@@ -55,10 +55,10 @@ public class TestHiveDatabaseMetaData {
 
   @Test
   public void testGetHiveDefaultNullsLast() {
-    map.put(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST, "true");
+    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
     assertTrue(hiveDatabaseMetaData.getHiveDefaultNullsLast(map));
 
-    map.put(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST, "false");
+    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
     assertFalse(hiveDatabaseMetaData.getHiveDefaultNullsLast(map));
   }
 
@@ -69,17 +69,17 @@ public class TestHiveDatabaseMetaData {
 
   @Test
   public void testNullsAreSortedHigh() throws SQLException {
-    map.put(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST, "false");
+    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
     assertTrue(hiveDatabaseMetaData.nullsAreSortedHigh());
-    map.put(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST, "true");
+    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
     assertFalse(hiveDatabaseMetaData.nullsAreSortedHigh());
   }
 
   @Test
   public void testNullsAreSortedLow() throws SQLException {
-    map.put(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST, "false");
+    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
     assertFalse(hiveDatabaseMetaData.nullsAreSortedLow());
-    map.put(Utils.HIVE_CONF_PREFIX + ConfVars.HIVE_DEFAULT_NULLS_LAST, "true");
+    map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
     assertTrue(hiveDatabaseMetaData.nullsAreSortedLow());
   }
 
