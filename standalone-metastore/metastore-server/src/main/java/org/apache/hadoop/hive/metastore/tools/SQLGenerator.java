@@ -234,6 +234,7 @@ public final class SQLGenerator {
   public String addLimitClause(int numRows, String noSelectsqlQuery) throws MetaException {
     switch (dbProduct.dbType) {
     case DERBY:
+    case EXTERNAL: // ANSI SQL
       //http://db.apache.org/derby/docs/10.7/ref/rrefsqljoffsetfetch.html
       return "select " + noSelectsqlQuery + " fetch first " + numRows + " rows only";
     case MYSQL:
@@ -317,6 +318,7 @@ public final class SQLGenerator {
       // https://db.apache.org/derby/docs/10.4/ref/rrefsqlj40506.html
     case ORACLE:
       // https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_9015.htm
+    case EXTERNAL: // ANSI SQL
       return "LOCK TABLE \"" + txnLockTable + "\" IN " + (shared ? "SHARE" : "EXCLUSIVE") + " MODE";
     case SQLSERVER:
       // https://docs.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-table?view=sql-server-ver15
