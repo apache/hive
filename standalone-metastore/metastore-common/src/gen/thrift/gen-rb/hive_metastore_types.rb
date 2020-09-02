@@ -244,6 +244,8 @@ class SQLDefaultConstraint; end
 
 class SQLCheckConstraint; end
 
+class SQLAllTableConstraints; end
+
 class Type; end
 
 class HiveObjectRef; end
@@ -381,6 +383,10 @@ class DefaultConstraintsResponse; end
 class CheckConstraintsRequest; end
 
 class CheckConstraintsResponse; end
+
+class AllTableConstraintsRequest; end
+
+class AllTableConstraintsResponse; end
 
 class DropConstraintRequest; end
 
@@ -1026,6 +1032,32 @@ class SQLCheckConstraint
     ENABLE_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'enable_cstr'},
     VALIDATE_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'validate_cstr'},
     RELY_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'rely_cstr'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class SQLAllTableConstraints
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PRIMARYKEYS = 1
+  FOREIGNKEYS = 2
+  UNIQUECONSTRAINTS = 3
+  NOTNULLCONSTRAINTS = 4
+  DEFAULTCONSTRAINTS = 5
+  CHECKCONSTRAINTS = 6
+
+  FIELDS = {
+    PRIMARYKEYS => {:type => ::Thrift::Types::LIST, :name => 'primaryKeys', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLPrimaryKey}, :optional => true},
+    FOREIGNKEYS => {:type => ::Thrift::Types::LIST, :name => 'foreignKeys', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLForeignKey}, :optional => true},
+    UNIQUECONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'uniqueConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLUniqueConstraint}, :optional => true},
+    NOTNULLCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'notNullConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLNotNullConstraint}, :optional => true},
+    DEFAULTCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'defaultConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLDefaultConstraint}, :optional => true},
+    CHECKCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'checkConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLCheckConstraint}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2664,6 +2696,45 @@ class CheckConstraintsResponse
 
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field checkConstraints is unset!') unless @checkConstraints
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AllTableConstraintsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TBLNAME = 2
+  CATNAME = 3
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AllTableConstraintsResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ALLTABLECONSTRAINTS = 1
+
+  FIELDS = {
+    ALLTABLECONSTRAINTS => {:type => ::Thrift::Types::STRUCT, :name => 'allTableConstraints', :class => ::SQLAllTableConstraints}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field allTableConstraints is unset!') unless @allTableConstraints
   end
 
   ::Thrift::Struct.generate_accessors self

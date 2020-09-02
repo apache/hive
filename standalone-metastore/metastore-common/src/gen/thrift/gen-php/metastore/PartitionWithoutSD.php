@@ -137,13 +137,13 @@ class PartitionWithoutSD
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->values = array();
-                        $_size243 = 0;
-                        $_etype246 = 0;
-                        $xfer += $input->readListBegin($_etype246, $_size243);
-                        for ($_i247 = 0; $_i247 < $_size243; ++$_i247) {
-                            $elem248 = null;
-                            $xfer += $input->readString($elem248);
-                            $this->values []= $elem248;
+                        $_size285 = 0;
+                        $_etype288 = 0;
+                        $xfer += $input->readListBegin($_etype288, $_size285);
+                        for ($_i289 = 0; $_i289 < $_size285; ++$_i289) {
+                            $elem290 = null;
+                            $xfer += $input->readString($elem290);
+                            $this->values []= $elem290;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -174,16 +174,16 @@ class PartitionWithoutSD
                 case 5:
                     if ($ftype == TType::MAP) {
                         $this->parameters = array();
-                        $_size249 = 0;
-                        $_ktype250 = 0;
-                        $_vtype251 = 0;
-                        $xfer += $input->readMapBegin($_ktype250, $_vtype251, $_size249);
-                        for ($_i253 = 0; $_i253 < $_size249; ++$_i253) {
-                            $key254 = '';
-                            $val255 = '';
-                            $xfer += $input->readString($key254);
-                            $xfer += $input->readString($val255);
-                            $this->parameters[$key254] = $val255;
+                        $_size291 = 0;
+                        $_ktype292 = 0;
+                        $_vtype293 = 0;
+                        $xfer += $input->readMapBegin($_ktype292, $_vtype293, $_size291);
+                        for ($_i295 = 0; $_i295 < $_size291; ++$_i295) {
+                            $key296 = '';
+                            $val297 = '';
+                            $xfer += $input->readString($key296);
+                            $xfer += $input->readString($val297);
+                            $this->parameters[$key296] = $val297;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -218,8 +218,8 @@ class PartitionWithoutSD
             }
             $xfer += $output->writeFieldBegin('values', TType::LST, 1);
             $output->writeListBegin(TType::STRING, count($this->values));
-            foreach ($this->values as $iter256) {
-                $xfer += $output->writeString($iter256);
+            foreach ($this->values as $iter298) {
+                $xfer += $output->writeString($iter298);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -245,9 +245,9 @@ class PartitionWithoutSD
             }
             $xfer += $output->writeFieldBegin('parameters', TType::MAP, 5);
             $output->writeMapBegin(TType::STRING, TType::STRING, count($this->parameters));
-            foreach ($this->parameters as $kiter257 => $viter258) {
-                $xfer += $output->writeString($kiter257);
-                $xfer += $output->writeString($viter258);
+            foreach ($this->parameters as $kiter299 => $viter300) {
+                $xfer += $output->writeString($kiter299);
+                $xfer += $output->writeString($viter300);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();

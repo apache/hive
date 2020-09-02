@@ -2720,6 +2720,27 @@ public class CachedStore implements RawStore, Configurable {
     return rawStore.getCheckConstraints(catName, dbName, tblName);
   }
 
+  /**
+   * Method to fetch all table constraints at once
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @return list of all table constraints
+   * @throws MetaException
+   */
+  @Override
+  public SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
+      throws MetaException {
+    SQLAllTableConstraints sqlAllTableConstraints = new SQLAllTableConstraints();
+    sqlAllTableConstraints.setPrimaryKeys(getPrimaryKeys(catName, dbName, tblName));
+    sqlAllTableConstraints.setForeignKeys(getForeignKeys(catName, null, null, dbName, tblName));
+    sqlAllTableConstraints.setUniqueConstraints(getUniqueConstraints(catName, dbName, tblName));
+    sqlAllTableConstraints.setDefaultConstraints(getDefaultConstraints(catName, dbName, tblName));
+    sqlAllTableConstraints.setCheckConstraints(getCheckConstraints(catName, dbName, tblName));
+    sqlAllTableConstraints.setNotNullConstraints(getNotNullConstraints(catName, dbName, tblName));
+    return sqlAllTableConstraints;
+  }
+
   @Override public List<String> createTableWithConstraints(Table tbl, List<SQLPrimaryKey> primaryKeys,
       List<SQLForeignKey> foreignKeys, List<SQLUniqueConstraint> uniqueConstraints,
       List<SQLNotNullConstraint> notNullConstraints, List<SQLDefaultConstraint> defaultConstraints,

@@ -1807,6 +1807,12 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     return client.get_check_constraints(request).getCheckConstraints();
   }
 
+  @Override
+  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request) throws
+      MetaException, NoSuchObjectException, TException {
+    return client.get_all_table_constraints(request).getAllTableConstraints();
+  }
+
   /** {@inheritDoc} */
   @Override
   @Deprecated

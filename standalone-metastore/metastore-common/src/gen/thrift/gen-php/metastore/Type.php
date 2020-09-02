@@ -126,14 +126,14 @@ class Type
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->fields = array();
-                        $_size0 = 0;
-                        $_etype3 = 0;
-                        $xfer += $input->readListBegin($_etype3, $_size0);
-                        for ($_i4 = 0; $_i4 < $_size0; ++$_i4) {
-                            $elem5 = null;
-                            $elem5 = new \metastore\FieldSchema();
-                            $xfer += $elem5->read($input);
-                            $this->fields []= $elem5;
+                        $_size42 = 0;
+                        $_etype45 = 0;
+                        $xfer += $input->readListBegin($_etype45, $_size42);
+                        for ($_i46 = 0; $_i46 < $_size42; ++$_i46) {
+                            $elem47 = null;
+                            $elem47 = new \metastore\FieldSchema();
+                            $xfer += $elem47->read($input);
+                            $this->fields []= $elem47;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -175,8 +175,8 @@ class Type
             }
             $xfer += $output->writeFieldBegin('fields', TType::LST, 4);
             $output->writeListBegin(TType::STRUCT, count($this->fields));
-            foreach ($this->fields as $iter6) {
-                $xfer += $iter6->write($output);
+            foreach ($this->fields as $iter48) {
+                $xfer += $iter48->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

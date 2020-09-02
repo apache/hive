@@ -9200,6 +9200,31 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return new CheckConstraintsResponse(ret);
     }
 
+    /**
+     * Api to fetch all table constraints at once
+     * @param request it consist of catalog name, database name and table name to identify the table in metastore
+     * @return all cnstraint attached to given table
+     * @throws TException
+     */
+    @Override
+    public AllTableConstraintsResponse get_all_table_constraints(AllTableConstraintsRequest request) throws TException {
+      String catName = request.isSetCatName() ? request.getCatName() : getDefaultCatalog(conf);
+      String dbName = request.getDbName();
+      String tblName = request.getTblName();
+      startTableFunction("get_all_table_constraints", catName, dbName, tblName);
+      SQLAllTableConstraints ret = null;
+      Exception ex = null;
+      try {
+        ret = getMS().getAllTableConstraints(catName,dbName,tblName);
+      } catch (Exception e) {
+        ex = e;
+        throwMetaException(e);
+      } finally {
+        endFunction("get_all_table_constraints", ret != null, ex, tblName);
+      }
+      return new AllTableConstraintsResponse(ret);
+    }
+
     @Override
     public String get_metastore_db_uuid() throws TException {
       try {

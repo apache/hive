@@ -331,14 +331,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // CHECK_CONSTRAINTS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list392 = iprot.readListBegin();
-                struct.checkConstraints = new java.util.ArrayList<SQLCheckConstraint>(_list392.size);
-                @org.apache.thrift.annotation.Nullable SQLCheckConstraint _elem393;
-                for (int _i394 = 0; _i394 < _list392.size; ++_i394)
+                org.apache.thrift.protocol.TList _list440 = iprot.readListBegin();
+                struct.checkConstraints = new java.util.ArrayList<SQLCheckConstraint>(_list440.size);
+                @org.apache.thrift.annotation.Nullable SQLCheckConstraint _elem441;
+                for (int _i442 = 0; _i442 < _list440.size; ++_i442)
                 {
-                  _elem393 = new SQLCheckConstraint();
-                  _elem393.read(iprot);
-                  struct.checkConstraints.add(_elem393);
+                  _elem441 = new SQLCheckConstraint();
+                  _elem441.read(iprot);
+                  struct.checkConstraints.add(_elem441);
                 }
                 iprot.readListEnd();
               }
@@ -364,9 +364,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(CHECK_CONSTRAINTS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.checkConstraints.size()));
-          for (SQLCheckConstraint _iter395 : struct.checkConstraints)
+          for (SQLCheckConstraint _iter443 : struct.checkConstraints)
           {
-            _iter395.write(oprot);
+            _iter443.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -391,9 +391,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.checkConstraints.size());
-        for (SQLCheckConstraint _iter396 : struct.checkConstraints)
+        for (SQLCheckConstraint _iter444 : struct.checkConstraints)
         {
-          _iter396.write(oprot);
+          _iter444.write(oprot);
         }
       }
     }
@@ -402,14 +402,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, CheckConstraintsResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list397 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.checkConstraints = new java.util.ArrayList<SQLCheckConstraint>(_list397.size);
-        @org.apache.thrift.annotation.Nullable SQLCheckConstraint _elem398;
-        for (int _i399 = 0; _i399 < _list397.size; ++_i399)
+        org.apache.thrift.protocol.TList _list445 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.checkConstraints = new java.util.ArrayList<SQLCheckConstraint>(_list445.size);
+        @org.apache.thrift.annotation.Nullable SQLCheckConstraint _elem446;
+        for (int _i447 = 0; _i447 < _list445.size; ++_i447)
         {
-          _elem398 = new SQLCheckConstraint();
-          _elem398.read(iprot);
-          struct.checkConstraints.add(_elem398);
+          _elem446 = new SQLCheckConstraint();
+          _elem446.read(iprot);
+          struct.checkConstraints.add(_elem446);
         }
       }
       struct.setCheckConstraintsIsSet(true);
