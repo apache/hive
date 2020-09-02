@@ -34,7 +34,7 @@ public class ReloadFunctionsOperation extends DDLOperation<ReloadFunctionsDesc> 
   @Override
   public int execute() throws HiveException {
     try {
-      Hive.get().reloadFunctions();
+      Hive.get(false).reloadFunctions();
       return 0;
     } catch (Exception e) {
       context.getTask().setException(e);
