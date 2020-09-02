@@ -56,7 +56,7 @@ public class HiveImpalaRules {
    */
   public static class ImpalaFilterScanRule extends RelOptRule {
 
-    private Hive db;
+    private final Hive db;
 
     public ImpalaFilterScanRule(RelBuilderFactory relBuilderFactory, Hive db) {
       super(operand(HiveFilter.class, operand(HiveTableScan.class, none())),
@@ -69,16 +69,23 @@ public class HiveImpalaRules {
       final HiveFilter filter = call.rel(0);
       final HiveTableScan scan = call.rel(1);
 
-      // Only support HDFS for now.
-      ImpalaHdfsScanRel newScan = new ImpalaHdfsScanRel(scan, filter, db);
+      String tableName = scan.getTable().getQualifiedName().get(1);
+      RelNode newRelNode = null;
+      // Impala uses the Union node for tables with no "from" clause.
+      if (SemanticAnalyzer.DUMMY_TABLE.equals(tableName)) {
+        newRelNode = new ImpalaUnionRel(scan, filter);
+      } else {
+        // Only support HDFS for now.
+        newRelNode = new ImpalaHdfsScanRel(scan, filter, db);
+      }
 
-      call.transformTo(newScan);
+      call.transformTo(newRelNode);
     }
   }
 
   public static class ImpalaScanRule extends RelOptRule {
 
-    private Hive db;
+    private final Hive db;
 
     public ImpalaScanRule(RelBuilderFactory relBuilderFactory, Hive db) {
       super(operand(HiveTableScan.class, none()),
@@ -106,12 +113,9 @@ public class HiveImpalaRules {
 
   public static class ImpalaTableFunctionRule extends RelOptRule {
 
-    private Hive db;
-
     public ImpalaTableFunctionRule(RelBuilderFactory relBuilderFactory, Hive db) {
       super(operand(HiveTableFunctionScan.class, operand(ImpalaUnionRel.class, none())),
           relBuilderFactory, null);
-      this.db = db;
     }
 
     @Override

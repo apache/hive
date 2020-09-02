@@ -54,7 +54,7 @@ public class ImpalaSortRel extends ImpalaPlanRel {
 
   private PlanNode retNode = null;
   private final HiveSortLimit sortLimit;
-  public final HiveFilter filter;
+  private final HiveFilter filter;
 
   public ImpalaSortRel(HiveSortLimit sortLimit, List<RelNode> inputs, HiveFilter filter) {
     super(sortLimit.getCluster(), sortLimit.getTraitSet(), inputs, sortLimit.getRowType());
@@ -151,6 +151,9 @@ public class ImpalaSortRel extends ImpalaPlanRel {
     }
     rw.itemIf("offset", sortLimit.getOffsetExpr(), sortLimit.getOffsetExpr() != null);
     rw.itemIf("fetch", sortLimit.getFetchExpr(), sortLimit.getFetchExpr() != null);
+    if (filter != null) {
+      rw = rw.item("condition", filter.getCondition());
+    }
     return rw;
   }
 

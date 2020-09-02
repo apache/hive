@@ -32,11 +32,13 @@ import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
 
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaPlannerContext;
+import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaConjuncts;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
@@ -81,11 +83,11 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
     }
   }
 
-  private UnionNode unionNode = null;
+  private PlanNode retNode = null;
 
   private final RelNode relNode;
-
   private final NodeType nodeType;
+  private final HiveFilter filter;
 
   protected List<List<RexNode>> constExprLists_ = new ArrayList<>();
 
@@ -95,18 +97,28 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
     super(scan.getCluster(), scan.getTraitSet(), scan.getInputs(), scan.getRowType());
     this.relNode = scan;
     this.nodeType = NodeType.SCAN;
+    this.filter = null;
+  }
+
+  public ImpalaUnionRel(HiveTableScan scan, HiveFilter filter) {
+    super(scan.getCluster(), scan.getTraitSet(), scan.getInputs(), scan.getRowType());
+    this.relNode = scan;
+    this.nodeType = NodeType.SCAN;
+    this.filter = filter;
   }
 
   public ImpalaUnionRel(HiveTableFunctionScan scan) {
     super(scan.getCluster(), scan.getTraitSet(), scan.getInputs(), scan.getRowType());
     this.relNode = scan;
     this.nodeType = NodeType.TABLEFUNCTION;
+    this.filter = null;
   }
 
   public ImpalaUnionRel(HiveUnion union) {
     super(union.getCluster(), union.getTraitSet(), union.getInputs(), union.getRowType());
     this.relNode = union;
     this.nodeType = NodeType.UNION;
+    this.filter = null;
   }
 
   public void addConstExprList(List<RexNode> exprs) {
@@ -120,8 +132,8 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
   @Override
   public PlanNode getPlanNode(ImpalaPlannerContext ctx)
       throws ImpalaException, HiveException, MetaException {
-    if (unionNode != null) {
-      return unionNode;
+    if (retNode != null) {
+      return retNode;
     }
     PlanNodeId nodeId = ctx.getNextNodeId();
 
@@ -172,7 +184,7 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
         ? Lists.newArrayList()
         : getOutputExprs();
 
-    unionNode =
+    UnionNode unionNode =
           new ImpalaUnionNode(nodeId, tupleDesc.getId(), nonConstOutputExprs, planNodeAndExprsList);
 
     // If this union has a list of literals, use that to init plan node
@@ -187,13 +199,24 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
         }
         unionNode.addConstExprList(impalaExprs);
       }
-    }
-    else if (nodeType == NodeType.SCAN) {
+    } else if (nodeType == NodeType.SCAN) {
       unionNode.addConstExprList(getOutputExprs());
     }
 
     unionNode.init(ctx.getRootAnalyzer());
-    return unionNode;
+
+    retNode = unionNode;
+
+    if (filter != null) {
+      ImpalaConjuncts conjuncts = ImpalaConjuncts.create(filter, ctx.getRootAnalyzer(), this);
+      List<Expr> assignedConjuncts = conjuncts.getImpalaNonPartitionConjuncts();
+      ImpalaSelectNode selectNode =
+          new ImpalaSelectNode(ctx.getNextNodeId(), unionNode, assignedConjuncts);
+      selectNode.init(ctx.getRootAnalyzer());
+      retNode = selectNode;
+    }
+
+    return retNode;
   }
 
   private TupleDescriptor createTupleDescriptor(Analyzer analyzer, RelDataType rowType) throws HiveException {
@@ -211,36 +234,38 @@ public class ImpalaUnionRel extends ImpalaPlanRel {
 
   @Override
   public RelWriter explainTerms(RelWriter pw) {
-    RelWriter retWriter = null;
+    RelWriter rw = null;
     switch(nodeType) {
-      case SCAN: {
-        retWriter = super.explainTerms(pw);
-      }
+    case SCAN:
+    case TABLEFUNCTION:
+      rw = super.explainTerms(pw);
       break;
-      case TABLEFUNCTION: {
-        retWriter = super.explainTerms(pw);
+    case UNION:
+      rw = super.explainTerms(pw);
+      for (int i = 0; i < getInputs().size(); i++) {
+        RelNode e = getInput(i);
+        rw.input("input#" + i, e);
       }
+      rw = rw.item("all", ((HiveUnion)relNode).all);
       break;
-      case UNION: {
-        RelWriter rw = super.explainTerms(pw);
-        for (int i = 0; i < getInputs().size(); i++) {
-          RelNode e = getInput(i);
-          rw.input("input#" + i, e);
-        }
-        retWriter = rw.item("all", ((HiveUnion)relNode).all);
-      }
-      break;
+    default:
+      throw new RuntimeException("Unsupported option: " + nodeType);
     }
-    return retWriter;
+    if (filter != null) {
+      rw = rw.item("condition", filter.getCondition());
+    }
+    return rw;
   }
 
   @Override
   public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
-    return mq.getNonCumulativeCost(relNode);
+    return filter != null ?
+        mq.getNonCumulativeCost(filter) : mq.getNonCumulativeCost(relNode);
   }
 
   @Override
   public double estimateRowCount(RelMetadataQuery mq) {
-    return mq.getRowCount(relNode);
+    return filter != null ?
+        mq.getRowCount(filter) : mq.getRowCount(relNode);
   }
 }
