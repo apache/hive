@@ -151,9 +151,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.MYSQL;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.DERBY;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.OTHER;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatch;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatchNoCount;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.getEpochFn;
@@ -1036,7 +1033,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     try {
       stmt = dbConn.createStatement();
 
-      if (sqlGenerator.getDbProduct().pid == MYSQL) {
+      if (sqlGenerator.getDbProduct().isMYSQL()) {
         stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
       }
 
@@ -4204,7 +4201,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     try {
       String s = conn.getMetaData().getDatabaseProductName();
       dbProduct = DatabaseProduct.determineDatabaseProduct(s, getConf());
-      if (dbProduct.pid == OTHER) {
+      if (dbProduct.isOTHER()) {
         String msg = "Unrecognized database product name <" + s + ">";
         LOG.error(msg);
         throw new IllegalStateException(msg);
@@ -5193,12 +5190,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * with Derby database.  See more notes at class level.
    */
   private void lockInternal() {
-    if(dbProduct.pid == DERBY) {
+    if(dbProduct.isDERBY()) {
       derbyLock.lock();
     }
   }
   private void unlockInternal() {
-    if(dbProduct.pid == DERBY) {
+    if(dbProduct.isDERBY()) {
       derbyLock.unlock();
     }
   }
@@ -5252,7 +5249,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
         Semaphore derbySemaphore = null;
-        if(dbProduct.pid == DERBY) {
+        if(dbProduct.isDERBY()) {
           derbyKey2Lock.putIfAbsent(key, new Semaphore(1));
           derbySemaphore =  derbyKey2Lock.get(key);
           derbySemaphore.acquire();

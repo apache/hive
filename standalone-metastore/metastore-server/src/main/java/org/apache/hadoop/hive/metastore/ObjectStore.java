@@ -226,9 +226,6 @@ import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.POSTGRES;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.MYSQL;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.DERBY;
 import org.apache.thrift.TException;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 import org.slf4j.Logger;
@@ -8772,7 +8769,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (oldStats != null) {
       StatObjectConverter.setFieldsIntoOldStats(mStatsObj, oldStats);
     } else {
-      if (sqlGenerator.getDbProduct().equals(POSTGRES) && mStatsObj.getBitVector() == null) {
+      if (sqlGenerator.getDbProduct().isPOSTGRES() && mStatsObj.getBitVector() == null) {
         // workaround for DN bug in persisting nulls in pg bytea column
         // instead set empty bit vector with header.
         mStatsObj.setBitVector(new byte[] { 'H', 'L' });
@@ -8811,7 +8808,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (oldStats != null) {
       StatObjectConverter.setFieldsIntoOldStats(mStatsObj, oldStats);
     } else {
-      if (sqlGenerator.getDbProduct().equals(POSTGRES) && mStatsObj.getBitVector() == null) {
+      if (sqlGenerator.getDbProduct().isPOSTGRES() && mStatsObj.getBitVector() == null) {
         // workaround for DN bug in persisting nulls in pg bytea column
         // instead set empty bit vector with header.
         mStatsObj.setBitVector(new byte[] { 'H', 'L' });
@@ -10470,7 +10467,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void prepareQuotes() throws SQLException {
-    if (dbType.pid == MYSQL) {
+    if (dbType.isMYSQL()) {
       assert pm.currentTransaction().isActive();
       JDOConnection jdoConn = pm.getDataStoreConnection();
       try (Statement statement = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
@@ -10482,7 +10479,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void lockNotificationSequenceForUpdate() throws MetaException {
-    if (sqlGenerator.getDbProduct().pid == DERBY && directSql != null) {
+    if (sqlGenerator.getDbProduct().isDERBY() && directSql != null) {
       // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
       // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
       // only one row in the table, this shouldn't cause any performance degradation.

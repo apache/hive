@@ -286,7 +286,7 @@ public final class SQLGenerator {
   // This is required for SQL executed directly. If the SQL has double quotes then some dbs tend to
   // remove the escape characters and store the variable without double quote.
   public String addEscapeCharacters(String s) {
-    if (dbProduct.pid ==  DatabaseProduct.ProductId.MYSQL) {
+    if (dbProduct.isMYSQL()) {
       return s.replaceAll("\\\\", "\\\\\\\\");
     }
     return s;

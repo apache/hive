@@ -17,11 +17,6 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.MYSQL;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.DERBY;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.ORACLE;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.POSTGRES;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.OTHER;
 import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
 
 import java.sql.SQLException;
@@ -127,7 +122,7 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     objectPool.setSoftMinEvictableIdleTimeMillis(softMinEvictableIdleTimeMillis);
     objectPool.setLifo(lifo);
 
-    if (dbProduct.pid == MYSQL) {
+    if (dbProduct.isMYSQL()) {
       poolableConnFactory.setValidationQuery("SET @@session.sql_mode=ANSI_QUOTES");
     }
     return new PoolingDataSource(objectPool);

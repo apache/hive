@@ -20,11 +20,9 @@ package org.apache.hadoop.hive.metastore;
 
 import java.sql.SQLException;
 import java.sql.SQLTransactionRollbackException;
-import java.util.Map;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public class DatabaseProduct implements Configurable {
   static final private Logger LOG = LoggerFactory.getLogger(DatabaseProduct.class.getName());
 
-	public static enum ProductId {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, OTHER};
+  public static enum ProductId {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, OTHER};
 
   private Configuration conf;
   public ProductId pid;
@@ -103,30 +101,30 @@ public class DatabaseProduct implements Configurable {
     DatabaseProduct databaseProduct = null;
     if (isExternal) {
 
-    	String className = conf.get("metastore.custom.database.product.classname");
-    	
-    	try {
-	    	databaseProduct = (DatabaseProduct)
-	          ReflectionUtils.newInstance(Class.forName(className), conf);
-    	}catch (Exception e) {
-    		LOG.warn("Unable to instantiate custom database product. Reverting to default", e);
-    	}
+      String className = conf.get("metastore.custom.database.product.classname");
+      
+      try {
+        databaseProduct = (DatabaseProduct)
+            ReflectionUtils.newInstance(Class.forName(className), conf);
+      }catch (Exception e) {
+        LOG.warn("Unable to instantiate custom database product. Reverting to default", e);
+      }
     }
 
     if (databaseProduct == null) {
-    	databaseProduct = new DatabaseProduct(id);
+      databaseProduct = new DatabaseProduct(id);
     }
-	
+
     databaseProduct.setConf(conf);
     return databaseProduct;
   }
 
   public boolean isDeadlock(SQLException e) {
     return e instanceof SQLTransactionRollbackException
-        || ((pid == ProductId.MYSQL || pid == ProductId.POSTGRES || pid == ProductId.SQLSERVER)
+        || ((isMYSQL() || isPOSTGRES() || isSQLSERVER())
             && "40001".equals(e.getSQLState()))
-        || (pid == ProductId.POSTGRES && "40P01".equals(e.getSQLState()))
-        || (pid == ProductId.ORACLE && (e.getMessage() != null && (e.getMessage().contains("deadlock detected")
+        || (isPOSTGRES() && "40P01".equals(e.getSQLState()))
+        || (isORACLE() && (e.getMessage() != null && (e.getMessage().contains("deadlock detected")
             || e.getMessage().contains("can't serialize access for this transaction"))));
   }
 
@@ -134,14 +132,14 @@ public class DatabaseProduct implements Configurable {
    * Whether the RDBMS has restrictions on IN list size (explicit, or poor perf-based).
    */
   public boolean needsInBatching() {
-    return pid == ProductId.ORACLE || pid == ProductId.SQLSERVER;
+    return isORACLE() || isSQLSERVER();
   }
 
   /**
    * Whether the RDBMS has a bug in join and filter operation order described in DERBY-6358.
    */
   public boolean hasJoinOperationOrderBug() {
-    return pid == ProductId.DERBY || pid == ProductId.ORACLE || pid == ProductId.POSTGRES;
+    return isDERBY() || isORACLE() || isPOSTGRES();
   }
 
   public String getHiveSchemaPostfix() {
@@ -157,6 +155,30 @@ public class DatabaseProduct implements Configurable {
     default:
       return null;
     }
+  }
+
+  public final boolean isDERBY() {
+  	return pid == ProductId.DERBY;
+  }
+
+  public final boolean isMYSQL() {
+  	return pid == ProductId.MYSQL;
+  }
+
+  public final boolean isORACLE() {
+  	return pid == ProductId.ORACLE;
+  }
+
+  public final boolean isSQLSERVER() {
+  	return pid == ProductId.SQLSERVER;
+  }
+
+  public final boolean isPOSTGRES() {
+  	return pid == ProductId.POSTGRES;
+  }
+
+  public final boolean isOTHER() {
+  	return pid == ProductId.OTHER;
   }
 
   @Override

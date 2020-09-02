@@ -93,9 +93,6 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.OTHER;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.MYSQL;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.ProductId.ORACLE;
 import org.apache.hive.common.util.BloomFilter;
 import org.datanucleus.store.rdbms.query.ForwardQueryResult;
 import org.slf4j.Logger;
@@ -549,7 +546,7 @@ class MetaStoreDirectSql {
       PartitionFilterGenerator.FilterType type =
           PartitionFilterGenerator.FilterType.fromType(colType);
       if (type == PartitionFilterGenerator.FilterType.Date) {
-        if (dbType.pid == ORACLE) {
+        if (dbType.isORACLE()) {
           tableValue = "TO_DATE(" + tableValue + ", 'YYYY-MM-DD')";
         } else {
           tableValue = "cast(" + tableValue + " as date)";
@@ -1358,7 +1355,7 @@ class MetaStoreDirectSql {
         if (colType == FilterType.Integral) {
           tableValue = "cast(" + tableValue + " as decimal(21,0))";
         } else if (colType == FilterType.Date) {
-          if (dbType.pid == ORACLE) {
+          if (dbType.isORACLE()) {
             // Oracle requires special treatment... as usual.
             tableValue = "TO_DATE(" + tableValue + ", 'YYYY-MM-DD')";
           } else {
@@ -1384,7 +1381,7 @@ class MetaStoreDirectSql {
         tableValue += " then " + tableValue0 + " else null end)";
 
         if (valType == FilterType.Date) {
-          if (dbType.pid == ORACLE) {
+          if (dbType.isORACLE()) {
             // Oracle requires special treatment... as usual.
             nodeValue0 = "TO_DATE(" + nodeValue0 + ", 'YYYY-MM-DD')";
           } else {
@@ -2179,7 +2176,7 @@ class MetaStoreDirectSql {
    * effect will apply to the connection that is executing the queries otherwise.
    */
   public void prepareTxn() throws MetaException {
-    if (dbType.pid != MYSQL) {
+    if (!dbType.isMYSQL()) {
       return;
     }
     try {
