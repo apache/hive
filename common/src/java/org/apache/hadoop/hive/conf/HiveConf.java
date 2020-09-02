@@ -2325,8 +2325,6 @@ public class HiveConf extends Configuration {
         "the local task. If GC time percentage exceeds this number, the local task will abort by " +
         "itself. Applies to Hive-on-Spark only"),
 
-    HIVEDEBUGLOCALTASK("hive.debug.localtask",false, ""),
-
     HIVEINPUTFORMAT("hive.input.format", "org.apache.hadoop.hive.ql.io.CombineHiveInputFormat",
         "The default input format. Set this to HiveInputFormat if you encounter problems with CombineHiveInputFormat."),
     HIVETEZINPUTFORMAT("hive.tez.input.format", "org.apache.hadoop.hive.ql.io.HiveInputFormat",
