@@ -66,6 +66,8 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
+import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -1327,6 +1329,21 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) {
+    objectStore.addReplicationMetrics(replicationMetricList);
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest) {
+    return objectStore.getReplicationMetrics(replicationMetricsRequest);
+  }
+
+  @Override
+  public int deleteReplicationMetrics(int maxRetainSecs) {
+    return objectStore.deleteReplicationMetrics(maxRetainSecs);
+  }
+
+  @Override
   public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws NoSuchObjectException {
     return objectStore.getScheduledQuery(scheduleKey);
   }
@@ -1340,4 +1357,10 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException {
     return objectStore.markScheduledExecutionsTimedOut(timeoutSecs);
   }
+
+  @Override
+  public void deleteAllPartitionColumnStatistics(TableName tn, String w) {
+    objectStore.deleteAllPartitionColumnStatistics(tn, w);
+  }
+
 }

@@ -37,6 +37,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.security.alias.CredentialProviderFactory;
+import org.apache.hive.common.util.SuppressFBWarnings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,13 +100,21 @@ public class MetastoreConf {
           "metastore.authentication.ldap.userMembershipKey";
 
   private static final Map<String, ConfVars> metaConfs = new HashMap<>();
+  private static volatile URL hiveSiteURL = null;
   private static URL hiveDefaultURL = null;
-  private static URL hiveSiteURL = null;
   private static URL hiveMetastoreSiteURL = null;
   private static URL metastoreSiteURL = null;
   private static AtomicBoolean beenDumped = new AtomicBoolean();
 
   private static Map<String, ConfVars> keyToVars;
+
+  static {
+    keyToVars = new HashMap<>(ConfVars.values().length * 2);
+    for (ConfVars var : ConfVars.values()) {
+      keyToVars.put(var.varname, var);
+      keyToVars.put(var.hiveName, var);
+    }
+  }
 
   @VisibleForTesting
   static final String TEST_ENV_WORKAROUND = "metastore.testing.env.workaround.dont.ever.set.this.";
@@ -145,6 +154,7 @@ public class MetastoreConf {
    * TODO - I suspect the vast majority of these don't need to be here.  But it requires testing
    * before just pulling them out.
    */
+  @SuppressFBWarnings(value = "MS_MUTABLE_ARRAY")
   public static final MetastoreConf.ConfVars[] metaVars = {
       ConfVars.WAREHOUSE,
       ConfVars.REPLDIR,
@@ -587,7 +597,7 @@ public class MetastoreConf {
             + "present in HMS Notification. Any key-value pair whose key is matched with any regex will"
             +" be removed from Parameters map during Serialization of Table/Partition object."),
     EVENT_DB_LISTENER_TTL("metastore.event.db.listener.timetolive",
-        "hive.metastore.event.db.listener.timetolive", 86400, TimeUnit.SECONDS,
+        "hive.metastore.event.db.listener.timetolive", 7, TimeUnit.DAYS,
         "time after which events will be removed from the database listener queue"),
     EVENT_CLEAN_MAX_EVENTS("metastore.event.db.clean.maxevents",
             "hive.metastore.event.db.clean.maxevents", 10000,
@@ -761,6 +771,16 @@ public class MetastoreConf {
                 "get_partitions_spec_by_filter, \n" +
                 "get_partitions_by_expr.\n" +
             "The default value \"-1\" means no limit."),
+    MSC_CACHE_ENABLED("metastore.client.cache.enabled",
+            "hive.metastore.client.cache.enabled", true,
+            "This property enables a Caffeiene Cache for Metastore client"),
+    MSC_CACHE_MAX_SIZE("metastore.client.cache.maxSize",
+            "hive.metastore.client.cache.maxSize", "1Gb", new SizeValidator(),
+            "Set the maximum size (number of bytes) of the metastore client cache (DEFAULT: 1GB). " +
+                    "Only in effect when the cache is enabled"),
+    MSC_CACHE_RECORD_STATS("metastore.client.cache.recordStats",
+            "hive.metastore.client.cache.recordStats", false,
+            "This property enables recording metastore client cache stats in DEBUG logs"),
     LOG4J_FILE("metastore.log4j.file", "hive.log4j.file", "",
         "Hive log4j configuration file.\n" +
             "If the property is not set, then logging will be initialized using metastore-log4j2.properties found on the classpath.\n" +
@@ -963,6 +983,24 @@ public class MetastoreConf {
         "hive.exec.copyfile.maxsize", 32L * 1024 * 1024 /*32M*/,
         "Maximum file size (in bytes) that Hive uses to do single HDFS copies between directories." +
             "Distributed copies (distcp) will be used instead for bigger files so that copies can be done faster."),
+    REPL_METRICS_CACHE_MAXSIZE("metastore.repl.metrics.cache.maxsize",
+      "hive.repl.metrics.cache.maxsize", 10000 /*10000 rows */,
+      "Maximum in memory cache size to collect replication metrics. The metrics will be pushed to persistent"
+        + " storage at a frequency defined by config hive.repl.metrics.update.frequency. Till metrics are persisted to"
+        + " db, it will be stored in this cache. So set this property based on number of concurrent policies running "
+        + " and the frequency of persisting the metrics to persistent storage. "
+      ),
+    REPL_METRICS_UPDATE_FREQUENCY("metastore.repl.metrics.update.frequency",
+      "hive.repl.metrics.update.frequency", 1L, TimeUnit.MINUTES /*1 minute */,
+      "Frequency at which replication Metrics will be stored in persistent storage. "
+    ),
+    REPL_METRICS_CLEANUP_FREQUENCY("metastore.repl.metrics.cleanup.frequency",
+      "hive.metastore.repl.metrics.cleanup.frequency", 1, TimeUnit.DAYS,
+      "Interval of scheduled metrics clean up task which removes metrics above max age; Max age is"
+        + " defined by the config metastore.repl.metrics.max.age. The max age should be greater than this frequency"),
+    REPL_METRICS_MAX_AGE("metastore.repl.metrics.max.age",
+      "hive.metastore.repl.metrics.max.age", 7, TimeUnit.DAYS,
+      "Maximal age of a replication metrics entry before it is removed."),
     SCHEMA_INFO_CLASS("metastore.schema.info.class", "hive.metastore.schema.info.class",
         "org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo",
         "Fully qualified class name for the metastore schema information class \n"
@@ -983,7 +1021,6 @@ public class MetastoreConf {
         "org.apache.hadoop.hive.ql.io.orc.OrcSerde," +
             "org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe," +
             "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe," +
-            "org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe," +
             "org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe," +
             "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe," +
             "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe," +
@@ -1054,9 +1091,9 @@ public class MetastoreConf {
             + " quoted table names.\nThe default value is true."),
     TASK_THREADS_ALWAYS("metastore.task.threads.always", "metastore.task.threads.always",
         EVENT_CLEANER_TASK_CLASS + "," + RUNTIME_STATS_CLEANER_TASK_CLASS + "," +
-        "org.apache.hadoop.hive.metastore.repl.DumpDirCleanerTask" + "," +
             "org.apache.hadoop.hive.metastore.HiveProtoEventsCleanerTask" + ","
-            + "org.apache.hadoop.hive.metastore.ScheduledQueryExecutionsMaintTask",
+            + "org.apache.hadoop.hive.metastore.ScheduledQueryExecutionsMaintTask" + ","
+            + "org.apache.hadoop.hive.metastore.ReplicationMetricsMaintTask",
         "Comma separated list of tasks that will be started in separate threads.  These will " +
             "always be started, regardless of whether the metastore is running in embedded mode " +
             "or in server mode.  They must implement " + METASTORE_TASK_THREAD_CLASS),
@@ -1324,13 +1361,19 @@ public class MetastoreConf {
             "If both this and the metastore.dbaccess.ssl.* properties are set, then the latter properties \n" +
             "will overwrite what was set in the deprecated property."),
 
+    COLSTATS_RETAIN_ON_COLUMN_REMOVAL("metastore.colstats.retain.on.column.removal",
+        "hive.metastore.colstats.retain.on.column.removal", true,
+        "Whether to retain column statistics during column removals in partitioned tables - disabling this "
+            + "purges all column statistics data "
+            + "for all partition to retain working consistency"),
+
     // These are all values that we put here just for testing
     STR_TEST_ENTRY("test.str", "hive.test.str", "defaultval", "comment"),
     STR_SET_ENTRY("test.str.set", "hive.test.str.set", "a", new StringSetValidator("a", "b", "c"), ""),
     STR_LIST_ENTRY("test.str.list", "hive.test.str.list", "a,b,c",
         "no comment"),
     LONG_TEST_ENTRY("test.long", "hive.test.long", 42, "comment"),
-    DOUBLE_TEST_ENTRY("test.double", "hive.test.double", 3.141592654, "comment"),
+    DOUBLE_TEST_ENTRY("test.double", "hive.test.double", Math.PI, "comment"),
     TIME_TEST_ENTRY("test.time", "hive.test.time", 1, TimeUnit.SECONDS, "comment"),
     TIME_VALIDATOR_ENTRY_INCLUSIVE("test.time.validator.inclusive", "hive.test.time.validator.inclusive", 1,
         TimeUnit.SECONDS,
@@ -1608,28 +1651,30 @@ public class MetastoreConf {
     if (result == null) {
       // Nope, so look to see if our conf dir has been explicitly set
       result = seeIfConfAtThisLocation("METASTORE_CONF_DIR", name, false);
-      if (result == null) {
-        // Nope, so look to see if our home dir has been explicitly set
-        result = seeIfConfAtThisLocation("METASTORE_HOME", name, true);
-        if (result == null) {
-          // Nope, so look to see if Hive's conf dir has been explicitly set
-          result = seeIfConfAtThisLocation("HIVE_CONF_DIR", name, false);
-          if (result == null) {
-            // Nope, so look to see if Hive's home dir has been explicitly set
-            result = seeIfConfAtThisLocation("HIVE_HOME", name, true);
-            if (result == null) {
-              // Nope, so look to see if we can find a conf file by finding our jar, going up one
-              // directory, and looking for a conf directory.
-              URI jarUri = null;
-              try {
-                jarUri = MetastoreConf.class.getProtectionDomain().getCodeSource().getLocation().toURI();
-              } catch (Throwable e) {
-                LOG.warn("Cannot get jar URI", e);
-              }
-              result = seeIfConfAtThisLocation(new File(jarUri).getParent(), name, true);
-            }
-          }
-        }
+    }
+    if (result == null) {
+      // Nope, so look to see if our home dir has been explicitly set
+      result = seeIfConfAtThisLocation("METASTORE_HOME", name, true);
+    }
+    if (result == null) {
+      // Nope, so look to see if Hive's conf dir has been explicitly set
+      result = seeIfConfAtThisLocation("HIVE_CONF_DIR", name, false);
+    }
+    if (result == null) {
+      // Nope, so look to see if Hive's home dir has been explicitly set
+      result = seeIfConfAtThisLocation("HIVE_HOME", name, true);
+    }
+    if (result == null) {
+      // Nope, so look to see if we can find a conf file by finding our jar, going up one
+      // directory, and looking for a conf directory.
+      URI jarUri = null;
+      try {
+        jarUri = MetastoreConf.class.getProtectionDomain().getCodeSource().getLocation().toURI();
+      } catch (Throwable e) {
+        LOG.warn("Cannot get jar URI", e);
+      }
+      if (jarUri != null) {
+        result = seeIfConfAtThisLocation(new File(jarUri).getParent(), name, true);
       }
     }
 
@@ -1743,7 +1788,7 @@ public class MetastoreConf {
   public static long getLongVar(Configuration conf, ConfVars var) {
     assert var.defaultVal.getClass() == Long.class;
     String val = conf.get(var.varname);
-    return val == null ? conf.getLong(var.hiveName, (Long)var.defaultVal) : Long.valueOf(val);
+    return val == null ? conf.getLong(var.hiveName, (Long)var.defaultVal) : Long.parseLong(val);
   }
 
   /**
@@ -1976,18 +2021,6 @@ public class MetastoreConf {
    * @return the value set
    */
   public static String get(Configuration conf, String key) {
-    // Map this key back to the ConfVars it is associated with.
-    if (keyToVars == null) {
-      synchronized (MetastoreConf.class) {
-        if (keyToVars == null) {
-          keyToVars = new HashMap<>(ConfVars.values().length * 2);
-          for (ConfVars var : ConfVars.values()) {
-            keyToVars.put(var.varname, var);
-            keyToVars.put(var.hiveName, var);
-          }
-        }
-      }
-    }
     ConfVars var = keyToVars.get(key);
     if (var == null) {
       // Ok, this isn't one we track.  Just return whatever matches the string
@@ -2019,9 +2052,8 @@ public class MetastoreConf {
     } else if (var.defaultVal.getClass() == Double.class) {
       return Double.toString(getDoubleVar(conf, var));
     } else if (var.defaultVal.getClass() == TimeValue.class) {
-      TimeUnit timeUnit = (var.defaultVal.getClass() == TimeValue.class) ?
-          ((TimeValue)var.defaultVal).unit : null;
-      return Long.toString(getTimeVar(conf, var, timeUnit)) + timeAbbreviationFor(timeUnit);
+      TimeUnit timeUnit = ((TimeValue)var.defaultVal).unit;
+      return getTimeVar(conf, var, timeUnit) + timeAbbreviationFor(timeUnit);
     } else {
       throw new RuntimeException("Unknown type for getObject " + var.defaultVal.getClass().getName());
     }
@@ -2059,6 +2091,16 @@ public class MetastoreConf {
   }
 
   public static ZooKeeperHiveHelper getZKConfig(Configuration conf) {
+    String keyStorePassword = "";
+    String trustStorePassword = "";
+    if (MetastoreConf.getBoolVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_ENABLE)) {
+      try {
+        keyStorePassword = MetastoreConf.getPassword(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD);
+        trustStorePassword = MetastoreConf.getPassword(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD);
+      } catch (IOException e) {
+        throw new RuntimeException("Failed to read zookeeper configuration passwords", e);
+      }
+    }
     return ZooKeeperHiveHelper.builder()
         .quorum(MetastoreConf.getVar(conf, ConfVars.THRIFT_URIS))
         .clientPort(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_CLIENT_PORT))
@@ -2072,9 +2114,9 @@ public class MetastoreConf {
         .maxRetries(MetastoreConf.getIntVar(conf, ConfVars.THRIFT_ZOOKEEPER_CONNECTION_MAX_RETRIES))
         .sslEnabled(MetastoreConf.getBoolVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_ENABLE))
         .keyStoreLocation(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_LOCATION))
-        .keyStorePassword(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_KEYSTORE_PASSWORD))
+        .keyStorePassword(keyStorePassword)
         .trustStoreLocation(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_LOCATION))
-        .trustStorePassword(MetastoreConf.getVar(conf, ConfVars.THRIFT_ZOOKEEPER_SSL_TRUSTSTORE_PASSWORD)).build();
+        .trustStorePassword(trustStorePassword).build();
   }
 
   /**

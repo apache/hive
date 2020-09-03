@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
@@ -36,13 +38,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.calcite.util.Pair;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFBloomFilterMerge;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCount;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorUDAFCountStar;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeCaptureVectorToRowOutputOperator;
 import org.apache.hadoop.hive.ql.exec.vector.util.FakeVectorRowBatchFromConcat;
@@ -61,6 +68,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc;
 import org.apache.hadoop.hive.ql.plan.VectorGroupByDesc.ProcessingMode;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFAverage;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBloomFilter;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFCount;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
@@ -75,8 +83,6 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BooleanWritable;
@@ -86,8 +92,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.sun.tools.javac.util.Pair;
+import org.mockito.Mockito;
 
 /**
  * Unit test for the vectorized GROUP BY operator.
@@ -241,8 +246,8 @@ public class TestVectorGroupByOperator {
 
     Pair<GroupByDesc,VectorGroupByDesc> pair =
         buildGroupByDescType(ctx, aggregate, GenericUDAFEvaluator.Mode.PARTIAL1, column, dataTypeInfo);
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
     vectorDesc.setProcessingMode(ProcessingMode.HASH);
 
     ArrayList<ExprNodeDesc> keyExprs = new ArrayList<ExprNodeDesc>(keys.length);
@@ -273,8 +278,8 @@ public class TestVectorGroupByOperator {
         "Value", TypeInfoFactory.longTypeInfo,
         new String[] {"Key"},
         new TypeInfo[] {TypeInfoFactory.longTypeInfo});
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     // Set the memory treshold so that we get 100Kb before we need to flush.
     MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -364,8 +369,8 @@ public class TestVectorGroupByOperator {
         "Value", TypeInfoFactory.longTypeInfo,
         new String[] {"Key"},
         new TypeInfo[] {TypeInfoFactory.longTypeInfo});
-      GroupByDesc desc = pair.fst;
-      VectorGroupByDesc vectorDesc = pair.snd;
+      GroupByDesc desc = pair.left;
+      VectorGroupByDesc vectorDesc = pair.right;
 
       LlapProxy.setDaemon(true);
 
@@ -459,8 +464,8 @@ public class TestVectorGroupByOperator {
         "v", TypeInfoFactory.longTypeInfo,
         new String[] { "k1", "k2" },
         new TypeInfo[] {TypeInfoFactory.longTypeInfo, TypeInfoFactory.longTypeInfo});
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     desc.setGroupingSetsPresent(true);
     ArrayList<Long> groupingSets = new ArrayList<>();
@@ -500,6 +505,31 @@ public class TestVectorGroupByOperator {
       }
     });
 
+    // vrb of 1 row each
+    FakeVectorRowBatchFromObjectIterables data = getDataForRollup();
+
+    long countRowsProduced = 0;
+    for (VectorizedRowBatch unit: data) {
+      // after 24 rows, we'd have seen all the keys
+      // find 14 keys in the hashmap
+      // but 24*0.5 = 12
+      // won't turn off hash mode because of the 3 grouping sets
+      // if it turns off the hash mode, we'd get 14 + 3*(100-24) rows
+      countRowsProduced += unit.size;
+      vgo.process(unit,  0);
+
+      if (countRowsProduced >= 100) {
+        break;
+      }
+
+    }
+    vgo.close(false);
+    // all groupings
+    // 10 keys generates 14 rows with the rollup
+    assertEquals(1+3+10, outputRowCount);
+  }
+
+  FakeVectorRowBatchFromObjectIterables getDataForRollup() throws HiveException {
     // k1 has nDV of 2
     Iterable<Object> k1 = new Iterable<Object>() {
       @Override
@@ -579,33 +609,191 @@ public class TestVectorGroupByOperator {
     };
 
     // vrb of 1 row each
-    FakeVectorRowBatchFromObjectIterables data = new FakeVectorRowBatchFromObjectIterables(
+    return new FakeVectorRowBatchFromObjectIterables(
         2,
         new String[] {"long", "long", "long", "long"},
         k1,
         k2,
         v,
         v); // output col
+  }
+
+  @Test
+  public void testRollupAggregationWithBufferReuse() throws HiveException {
+    List<String> mapColumnNames = new ArrayList<String>();
+    mapColumnNames.add("k1");
+    mapColumnNames.add("k2");
+    mapColumnNames.add("v");
+    VectorizationContext ctx = new VectorizationContext("name", mapColumnNames);
+
+    // select count(v) from name group by rollup (k1,k2);
+
+    Pair<GroupByDesc,VectorGroupByDesc> pair = buildKeyGroupByDesc (ctx, "count",
+        "v", TypeInfoFactory.longTypeInfo,
+        new String[] { "k1", "k2" },
+        new TypeInfo[] {TypeInfoFactory.longTypeInfo, TypeInfoFactory.longTypeInfo});
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
+
+    desc.setGroupingSetsPresent(true);
+    ArrayList<Long> groupingSets = new ArrayList<>();
+    // groupingSets
+    groupingSets.add(0L);
+    groupingSets.add(1L);
+    groupingSets.add(2L);
+    desc.setListGroupingSets(groupingSets);
+    // add grouping sets dummy key
+    ExprNodeDesc groupingSetDummyKey = new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, 0L);
+
+    desc.getKeys().add(groupingSetDummyKey);
+    // groupingSet Position
+    desc.setGroupingSetPosition(2);
+
+    CompilationOpContext cCtx = new CompilationOpContext();
+
+    desc.setMinReductionHashAggr(0.5f);
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx, vectorDesc);
+
+    FakeCaptureVectorToRowOutputOperator out = FakeCaptureVectorToRowOutputOperator.addCaptureOutputChild(cCtx, vgo);
+    vgo.initialize(hconf, null);
+
+    //Get the processing mode
+    VectorGroupByOperator.ProcessingModeHashAggregate processingMode =
+        (VectorGroupByOperator.ProcessingModeHashAggregate) vgo.processingMode;
+    VectorAggregateExpression spyAggregator = spy(vgo.aggregators[0]);
+    vgo.aggregators[0] = spyAggregator;
+
+    FakeVectorRowBatchFromObjectIterables data = getDataForRollup();
 
     long countRowsProduced = 0;
     for (VectorizedRowBatch unit: data) {
-      // after 24 rows, we'd have seen all the keys
-      // find 14 keys in the hashmap
-      // but 24*0.5 = 12
-      // won't turn off hash mode because of the 3 grouping sets
-      // if it turns off the hash mode, we'd get 14 + 3*(100-24) rows
+      countRowsProduced += unit.size;
+      vgo.process(unit,  0);
+
+      // trigger flush frequently to simulate operator working on many batches
+      processingMode.gcCanary.clear();
+
+      if (countRowsProduced >= 1000) {
+        break;
+      }
+    }
+
+    vgo.close(false);
+    // The exact number of allocations depend on input. In this case it is 13.
+    // Without buffer reuse, we allocate 512 buffers for the same input
+    verify(spyAggregator, times(13)).getNewAggregationBuffer();
+  }
+
+  @Test
+  public void testRollupAggregationWithFlush() throws HiveException {
+
+    List<String> mapColumnNames = new ArrayList<String>();
+    mapColumnNames.add("k1");
+    mapColumnNames.add("k2");
+    mapColumnNames.add("v");
+    VectorizationContext ctx = new VectorizationContext("name", mapColumnNames);
+
+    // select count(v) from name group by rollup (k1,k2);
+
+    Pair<GroupByDesc,VectorGroupByDesc> pair = buildKeyGroupByDesc (ctx, "count",
+        "v", TypeInfoFactory.longTypeInfo,
+        new String[] { "k1", "k2" },
+        new TypeInfo[] {TypeInfoFactory.longTypeInfo, TypeInfoFactory.longTypeInfo});
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
+
+    desc.setGroupingSetsPresent(true);
+    ArrayList<Long> groupingSets = new ArrayList<>();
+    // groupingSets
+    groupingSets.add(0L);
+    groupingSets.add(1L);
+    groupingSets.add(2L);
+    desc.setListGroupingSets(groupingSets);
+    // add grouping sets dummy key
+    ExprNodeDesc groupingSetDummyKey = new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, 0L);
+    // this only works because we used an arraylist in buildKeyGroupByDesc
+    // don't do this in actual compiler
+    desc.getKeys().add(groupingSetDummyKey);
+    // groupingSet Position
+    desc.setGroupingSetPosition(2);
+
+    CompilationOpContext cCtx = new CompilationOpContext();
+
+    desc.setMinReductionHashAggr(0.5f);
+    // Set really low check interval setting
+    hconf.set("hive.groupby.mapaggr.checkinterval", "10");
+    hconf.set("hive.vectorized.groupby.checkinterval", "10");
+
+    Operator<? extends OperatorDesc> groupByOp = OperatorFactory.get(cCtx, desc);
+
+    VectorGroupByOperator vgo =
+        (VectorGroupByOperator) Vectorizer.vectorizeGroupByOperator(groupByOp, ctx, vectorDesc);
+
+    FakeCaptureVectorToRowOutputOperator out = FakeCaptureVectorToRowOutputOperator.addCaptureOutputChild(cCtx, vgo);
+    vgo.initialize(hconf, null);
+
+    //Get the processing mode
+    VectorGroupByOperator.ProcessingModeHashAggregate processingMode =
+        (VectorGroupByOperator.ProcessingModeHashAggregate) vgo.processingMode;
+    assertEquals(333333,
+        ((VectorGroupByOperator.ProcessingModeHashAggregate)vgo.processingMode).getMaxHtEntries());
+
+    this.outputRowCount = 0;
+    out.setOutputInspector(new FakeCaptureVectorToRowOutputOperator.OutputInspector() {
+      @Override
+      public void inspectRow(Object row, int tag) throws HiveException {
+        ++outputRowCount;
+      }
+    });
+
+    FakeVectorRowBatchFromObjectIterables data = getDataForRollup();
+
+    long countRowsProduced = 0;
+    long numElementsToBeRetained = 0;
+    int avgAccess = 0;
+    for (VectorizedRowBatch unit: data) {
       countRowsProduced += unit.size;
       vgo.process(unit,  0);
 
       if (countRowsProduced >= 100) {
+        // note down avg access
+        avgAccess = processingMode.computeAvgAccess();
+        numElementsToBeRetained = getElementsHigherThan(processingMode.mapKeysAggregationBuffers, avgAccess);
+        // trigger flush explicitly on next iteration
+        processingMode.gcCanary.clear();
         break;
       }
+    }
 
+    // This processing would trigger flush
+    for (VectorizedRowBatch unit: data) {
+      long zeroAccessBeforeFlush = getElementsWithZeroAccess(processingMode.mapKeysAggregationBuffers);
+      vgo.process(unit,  0);
+      long freqElementsAfterFlush = getElementsHigherThan(processingMode.mapKeysAggregationBuffers, avgAccess);
+
+      assertTrue("After flush: " + freqElementsAfterFlush + ", before flush: " + numElementsToBeRetained,
+          (freqElementsAfterFlush >= numElementsToBeRetained));
+
+      // ensure that freq elements are reset for providing chance for others
+      long zeroAccessAfterFlush = getElementsWithZeroAccess(processingMode.mapKeysAggregationBuffers);
+      assertTrue("After flush: " + zeroAccessAfterFlush + ", before flush: " + zeroAccessBeforeFlush,
+          (zeroAccessAfterFlush > zeroAccessBeforeFlush));
+
+      break;
     }
     vgo.close(false);
-    // all groupings
-    // 10 keys generates 14 rows with the rollup
-    assertEquals(1+3+10, outputRowCount);
+  }
+
+  long getElementsHigherThan(Map<KeyWrapper, VectorAggregationBufferRow> aggMap, int avgAccess) {
+    return aggMap.values().stream().filter(v -> (v.getAccessCount() > avgAccess)).count();
+  }
+
+  long getElementsWithZeroAccess(Map<KeyWrapper, VectorAggregationBufferRow> aggMap) {
+    return aggMap.values().stream().filter(v -> (v.getAccessCount() == 0)).count();
   }
 
   @Test
@@ -620,8 +808,8 @@ public class TestVectorGroupByOperator {
         "Value", TypeInfoFactory.longTypeInfo,
         new String[] {"Key"},
         new TypeInfo[] {TypeInfoFactory.longTypeInfo});
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     // Set the memory treshold so that we get 100Kb before we need to flush.
     MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -2143,6 +2331,25 @@ public class TestVectorGroupByOperator {
         (double)0);
   }
 
+  @Test
+  public void testInstantiateExpression() throws Exception {
+    VectorGroupByOperator op = new VectorGroupByOperator();
+
+    // VectorUDAFBloomFilterMerge with specific constructor
+    VectorAggregationDesc desc = Mockito.mock(VectorAggregationDesc.class);
+    Mockito.when(desc.getVecAggrClass()).thenReturn((Class) VectorUDAFBloomFilterMerge.class);
+    Mockito.when(desc.getEvaluator())
+        .thenReturn(new GenericUDAFBloomFilter.GenericUDAFBloomFilterEvaluator());
+    VectorAggregateExpression expr = op.instantiateExpression(desc, new Configuration());
+    Assert.assertTrue(expr.getClass() == VectorUDAFBloomFilterMerge.class);
+
+    // regular constructor
+    desc = Mockito.mock(VectorAggregationDesc.class);
+    Mockito.when(desc.getVecAggrClass()).thenReturn((Class) VectorUDAFCount.class);
+    expr = op.instantiateExpression(desc, new Configuration());
+    Assert.assertTrue(expr.getClass() == VectorUDAFCount.class);
+  }
+
   private void testMultiKey(
       String aggregateName,
       FakeVectorRowBatchFromObjectIterables data,
@@ -2724,8 +2931,8 @@ public class TestVectorGroupByOperator {
     VectorizationContext ctx = new VectorizationContext("name", mapColumnNames);
 
     Pair<GroupByDesc,VectorGroupByDesc> pair = buildGroupByDescCountStar (ctx);
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
     vectorDesc.setProcessingMode(ProcessingMode.HASH);
 
     CompilationOpContext cCtx = new CompilationOpContext();
@@ -2761,8 +2968,8 @@ public class TestVectorGroupByOperator {
     VectorizationContext ctx = new VectorizationContext("name", mapColumnNames);
 
     Pair<GroupByDesc,VectorGroupByDesc> pair = buildGroupByDescType(ctx, "count", GenericUDAFEvaluator.Mode.FINAL, "A", TypeInfoFactory.longTypeInfo);
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
     vectorDesc.setProcessingMode(ProcessingMode.GLOBAL);  // Use GLOBAL when no key for Reduce.
     CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -2799,8 +3006,8 @@ public class TestVectorGroupByOperator {
 
     Pair<GroupByDesc,VectorGroupByDesc> pair = buildGroupByDescType(ctx, aggregateName, GenericUDAFEvaluator.Mode.PARTIAL1, "A",
         TypeInfoFactory.stringTypeInfo);
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -2837,8 +3044,8 @@ public class TestVectorGroupByOperator {
 
     Pair<GroupByDesc,VectorGroupByDesc> pair =
         buildGroupByDescType(ctx, aggregateName, GenericUDAFEvaluator.Mode.PARTIAL1, "A", TypeInfoFactory.getDecimalTypeInfo(30, 4));
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -2876,8 +3083,8 @@ public class TestVectorGroupByOperator {
 
     Pair<GroupByDesc,VectorGroupByDesc> pair = buildGroupByDescType (ctx, aggregateName, GenericUDAFEvaluator.Mode.PARTIAL1, "A",
         TypeInfoFactory.doubleTypeInfo);
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -2913,8 +3120,8 @@ public class TestVectorGroupByOperator {
     VectorizationContext ctx = new VectorizationContext("name", mapColumnNames);
 
     Pair<GroupByDesc,VectorGroupByDesc> pair = buildGroupByDescType(ctx, aggregateName, GenericUDAFEvaluator.Mode.PARTIAL1, "A", TypeInfoFactory.longTypeInfo);
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -2956,8 +3163,8 @@ public class TestVectorGroupByOperator {
         TypeInfoFactory.longTypeInfo,
         new String[] {"Key"},
         new TypeInfo[] {TypeInfoFactory.longTypeInfo});
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     CompilationOpContext cCtx = new CompilationOpContext();
 
@@ -3030,8 +3237,8 @@ public class TestVectorGroupByOperator {
        dataTypeInfo,
        new String[] {"Key"},
        new TypeInfo[] {TypeInfoFactory.stringTypeInfo});
-    GroupByDesc desc = pair.fst;
-    VectorGroupByDesc vectorDesc = pair.snd;
+    GroupByDesc desc = pair.left;
+    VectorGroupByDesc vectorDesc = pair.right;
 
     CompilationOpContext cCtx = new CompilationOpContext();
 

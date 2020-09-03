@@ -76,7 +76,7 @@ POSTHOOK: Input: default@household_demographics
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveProject(call_center=[$0], call_center_name=[$1], manager=[$2], returns_loss=[$3])
-  HiveSortLimit(sort0=[$4], dir0=[DESC-nulls-last])
+  HiveSortLimit(sort0=[$4], dir0=[DESC])
     HiveProject(call_center=[$2], call_center_name=[$3], manager=[$4], returns_loss=[$5], (tok_function sum (tok_table_or_col cr_net_loss))=[$5])
       HiveAggregate(group=[{6, 7, 15, 16, 17}], agg#0=[sum($11)])
         HiveJoin(condition=[=($10, $14)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -102,7 +102,7 @@ HiveProject(call_center=[$0], call_center_name=[$1], manager=[$2], returns_loss=
                     HiveFilter(condition=[AND(=($6, 1999), =($8, 11))])
                       HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
             HiveProject(hd_demo_sk=[$0])
-              HiveFilter(condition=[LIKE($2, _UTF-16LE'0-500%')])
+              HiveFilter(condition=[LIKE($2, _UTF-16LE'0-500%':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
                 HiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
           HiveProject(cc_call_center_sk=[$0], cc_call_center_id=[$1], cc_name=[$6], cc_manager=[$11])
             HiveTableScan(table=[[default, call_center]], table:alias=[call_center])

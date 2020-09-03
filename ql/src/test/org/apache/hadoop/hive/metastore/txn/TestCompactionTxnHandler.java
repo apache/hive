@@ -68,6 +68,7 @@ public class TestCompactionTxnHandler {
 
   public TestCompactionTxnHandler() throws Exception {
     TxnDbUtil.setConfValues(conf);
+    TxnDbUtil.prepDb(conf);
     // Set config so that TxnUtils.buildQueryWithINClauseStrings() will
     // produce multiple queries
     conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 1);
@@ -588,6 +589,65 @@ public class TestCompactionTxnHandler {
       default: throw new RuntimeException("What?");
       }
     }
+  }
+
+  @Test
+  public void testEnqueueTimeEvenAfterFailed() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setPartitionname(partitionName);
+    long before = System.currentTimeMillis();
+    txnHandler.compact(rqst);
+    long after = System.currentTimeMillis();
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
+    assertTrue(element.isSetEnqueueTime());
+    long enqueueTime = element.getEnqueueTime();
+    assertTrue(enqueueTime <= after);
+    assertTrue(enqueueTime >= before);
+
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    txnHandler.markFailed(ci);
+
+    checkEnqueueTime(enqueueTime);
+  }
+
+  @Test
+  public void testEnqueueTimeThroughLifeCycle() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setPartitionname(partitionName);
+    long before = System.currentTimeMillis();
+    txnHandler.compact(rqst);
+    long after = System.currentTimeMillis();
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
+    assertTrue(element.isSetEnqueueTime());
+    long enqueueTime = element.getEnqueueTime();
+    assertTrue(enqueueTime <= after);
+    assertTrue(enqueueTime >= before);
+
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = "bob";
+    txnHandler.updateCompactorState(ci, openTxn());
+    checkEnqueueTime(enqueueTime);
+
+    txnHandler.markCompacted(ci);
+    checkEnqueueTime(enqueueTime);
+
+    txnHandler.markCleaned(ci);
+    checkEnqueueTime(enqueueTime);
+  }
+
+  private void checkEnqueueTime(long enqueueTime) throws MetaException {
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
+    assertTrue(element.isSetEnqueueTime());
+    assertEquals(enqueueTime, element.getEnqueueTime());
   }
 
   @Before

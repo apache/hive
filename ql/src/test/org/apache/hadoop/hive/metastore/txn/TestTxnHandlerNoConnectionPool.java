@@ -47,6 +47,8 @@ public class TestTxnHandlerNoConnectionPool {
   @Before
   public void setUp() throws Exception {
     conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE, "None");
+    TxnDbUtil.setConfValues(conf);
+    TxnDbUtil.prepDb(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 

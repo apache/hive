@@ -126,11 +126,11 @@ STAGE PLANS:
             outputColumnNames: _col0
             Filter Operator
               predicate: ((_col0 <= 0.5D) and (_col0 > 0.25D)) (type: boolean)
-              Select Operator
-                expressions: 'CA' (type: string), _col0 (type: double)
-                outputColumnNames: _col0, _col1
-                Limit
-                  Number of rows: 20
+              Limit
+                Number of rows: 20
+                Select Operator
+                  expressions: 'CA' (type: string), _col0 (type: double)
+                  outputColumnNames: _col0, _col1
                   ListSink
 
 PREHOOK: query: explain select * from (
@@ -165,10 +165,10 @@ STAGE PLANS:
             outputColumnNames: _col0
             Filter Operator
               predicate: ((_col0 <= 0.5D) and (_col0 > 0.25D)) (type: boolean)
-              Select Operator
-                expressions: 'CA' (type: string), _col0 (type: double)
-                outputColumnNames: _col0, _col1
-                Limit
-                  Number of rows: 20
+              Limit
+                Number of rows: 20
+                Select Operator
+                  expressions: 'CA' (type: string), _col0 (type: double)
+                  outputColumnNames: _col0, _col1
                   ListSink
 

@@ -208,7 +208,7 @@ STAGE PLANS:
                           Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -246,7 +246,7 @@ STAGE PLANS:
                             Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 1
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -394,7 +394,7 @@ STAGE PLANS:
                           Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -416,7 +416,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -551,7 +551,7 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -573,7 +573,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col1 (type: string)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
 
   Stage: Stage-0
     Fetch Operator
@@ -661,7 +661,7 @@ STAGE PLANS:
                       Statistics: Num rows: 3 Data size: 336 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: decimal(10,0))
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -678,7 +678,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -807,7 +807,7 @@ STAGE PLANS:
                           Statistics: Num rows: 9 Data size: 1148 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col1 (type: bigint), _col2 (type: decimal(20,0))
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -845,7 +845,7 @@ STAGE PLANS:
                             Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 1
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -977,7 +977,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1014,7 +1014,7 @@ STAGE PLANS:
                             Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 1
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1043,7 +1043,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -1080,7 +1080,7 @@ STAGE PLANS:
                             Statistics: Num rows: 3 Data size: 564 Basic stats: COMPLETE Column stats: NONE
                             Target Vertex: Map 4
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Union 2 
             Vertex: Union 2
 
@@ -1184,7 +1184,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1202,7 +1202,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2000 Data size: 368000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

@@ -13,6 +13,7 @@ PREHOOK: Output: default@ptestfilter
 POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter PARTITION (c) select 'Col1', null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ptestfilter
 POSTHOOK: Output: default@ptestfilter@c=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: ptestfilter PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
 PREHOOK: query: INSERT OVERWRITE TABLE ptestfilter PARTITION (c) select 'Col2', 5
@@ -22,6 +23,7 @@ PREHOOK: Output: default@ptestfilter
 POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter PARTITION (c) select 'Col2', 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@ptestfilter
 POSTHOOK: Output: default@ptestfilter@c=5
 POSTHOOK: Lineage: ptestfilter PARTITION(c=5).a SIMPLE []
 PREHOOK: query: show partitions ptestfilter

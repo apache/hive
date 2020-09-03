@@ -159,8 +159,6 @@ STAGE PLANS:
                             sort order: +
                             Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                             tag: -1
-                            TopN: 10
-                            TopN Hash Memory Usage: 0.1
                             value expressions: _col1 (type: string), _col2 (type: int), _col3 (type: string)
                             auto parallelism: false
             Execution mode: llap
@@ -380,7 +378,7 @@ STAGE PLANS:
                         value expressions: _col2 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -450,7 +448,7 @@ STAGE PLANS:
                         value expressions: _col2 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -520,8 +518,6 @@ STAGE PLANS:
                     sort order: +
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     tag: -1
-                    TopN: 10
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
                     auto parallelism: false
         Reducer 3 
@@ -647,7 +643,7 @@ STAGE PLANS:
                         value expressions: _col2 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -717,7 +713,7 @@ STAGE PLANS:
                         value expressions: _col2 (type: string)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -787,8 +783,6 @@ STAGE PLANS:
                     sort order: +
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     tag: -1
-                    TopN: 10
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
                     auto parallelism: false
         Reducer 3 
@@ -914,7 +908,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: int)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -984,7 +978,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: int)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -1054,8 +1048,6 @@ STAGE PLANS:
                     sort order: +
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     tag: -1
-                    TopN: 10
-                    TopN Hash Memory Usage: 0.1
                     value expressions: _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
                     auto parallelism: false
         Reducer 3 

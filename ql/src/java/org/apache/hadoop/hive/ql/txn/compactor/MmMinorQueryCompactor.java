@@ -48,9 +48,9 @@ final class MmMinorQueryCompactor extends QueryCompactor {
         "Going to delete directories for aborted transactions for MM table " + table.getDbName()
             + "." + table.getTableName());
 
-    AcidUtils.Directory dir = AcidUtils.getAcidState(null,
-        new Path(storageDescriptor.getLocation()), hiveConf, writeIds,
-        Ref.from(false), false, table.getParameters(), false);
+    AcidUtils.Directory dir = AcidUtils
+        .getAcidState(null, new Path(storageDescriptor.getLocation()), hiveConf, writeIds,
+            Ref.from(false), false);
     QueryCompactor.Util.removeFilesForMmTable(hiveConf, dir);
 
     HiveConf driverConf = setUpDriverSession(hiveConf);
@@ -59,7 +59,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
     String tmpTableName = tmpPrefix + System.currentTimeMillis();
     String resultTmpTableName = tmpTableName + "_result";
     Path resultDeltaDir = QueryCompactor.Util.getCompactionResultDir(storageDescriptor, writeIds, driverConf,
-        false, false, false);
+        false, false, false, dir);
 
     List<String> createTableQueries = getCreateQueries(tmpTableName, table, storageDescriptor, dir,
         writeIds, resultDeltaDir);

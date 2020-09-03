@@ -46,6 +46,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   public char state;
   public CompactionType type;
   public String workerId;
+  public long enqueueTime;
   public long start;
   public String runAs;
   public String properties;
@@ -116,6 +117,8 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       "partName:" + partName + "," +
       "state:" + state + "," +
       "type:" + type + "," +
+      "enqueueTime:" + enqueueTime + "," +
+      "start:" + start + "," +
       "properties:" + properties + "," +
       "runAs:" + runAs + "," +
       "tooManyAborts:" + tooManyAborts + "," +
@@ -164,6 +167,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.metaInfo = rs.getBytes(12);
     fullCi.hadoopJobId = rs.getString(13);
     fullCi.errorMessage = rs.getString(14);
+    fullCi.enqueueTime = rs.getLong(15);
     return fullCi;
   }
   static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException {
@@ -182,6 +186,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     pStmt.setBytes(13, ci.metaInfo);
     pStmt.setString(14, ci.hadoopJobId);
     pStmt.setString(15, ci.errorMessage);
+    pStmt.setLong(16, ci.enqueueTime);
   }
 
   public static CompactionInfo compactionStructToInfo(CompactionInfoStruct cr) {
@@ -213,6 +218,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     if (cr.isSetErrorMessage()) {
       ci.errorMessage = cr.getErrorMessage();
     }
+    if (cr.isSetEnqueueTime()) {
+      ci.enqueueTime = cr.getEnqueueTime();
+    }
     return ci;
   }
 
@@ -231,6 +239,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     cr.setWorkerId(ci.workerId);
     cr.setHighestWriteId(ci.highestWriteId);
     cr.setErrorMessage(ci.errorMessage);
+    cr.setEnqueueTime(ci.enqueueTime);
 
     return cr;
   }

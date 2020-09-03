@@ -83,6 +83,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
       alias = (byte) tag;
 
       List<Object> nr = getFilteredValue(alias, row);
+      addToAliasFilterTags(alias, nr, false);
 
       if (handleSkewJoin) {
         skewJoinKeyContext.handleSkew(tag);
@@ -96,7 +97,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
       List keyObject = (List) soi.getStructFieldData(row, sf);
       // Are we consuming too much memory
       if (alias == numAliases - 1 && !(handleSkewJoin && skewJoinKeyContext.currBigKeyTag >= 0) &&
-          !hasLeftSemiJoin) {
+          !hasLeftSemiJoin && !hasLeftAntiSemiJoin) {
         if (sz == joinEmitInterval && !hasFilter(condn[alias-1].getLeft()) &&
                 !hasFilter(condn[alias-1].getRight())) {
           // The input is sorted by alias, so if we are already in the last join
@@ -231,7 +232,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements Serial
         Utilities.FILE_OP_LOGGER.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath + "(spec " + specPath + ")");
         Utilities.rename(fs, tmpPath, intermediatePath);
         // Step2: remove any tmp file or double-committed output files
-        Utilities.removeTempOrDuplicateFiles(fs, intermediatePath, false);
+        Utilities.removeTempOrDuplicateFiles(fs, intermediatePath, hconf, false);
         // Step3: move to the file destination
         Utilities.FILE_OP_LOGGER.info("Moving tmp dir: " + intermediatePath + " to: " + specPath);
         Utilities.renameOrMoveFiles(fs, intermediatePath, specPath);

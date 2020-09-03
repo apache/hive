@@ -75,7 +75,7 @@ STAGE PLANS:
                         Statistics: Num rows: 7 Data size: 651 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -323,7 +323,7 @@ STAGE PLANS:
                         Statistics: Num rows: 6 Data size: 1176 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string), _col2 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -566,7 +566,7 @@ STAGE PLANS:
                         Statistics: Num rows: 10 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col2 (type: double), _col3 (type: double), _col4 (type: int), _col5 (type: double)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -614,7 +614,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 1980 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   key expressions: _col0 (type: string), _col2 (type: double)
-                  null sort order: az
+                  null sort order: aa
                   sort order: +-
                   Map-reduce partition columns: _col0 (type: string)
                   Reduce Sink Vectorization:
@@ -631,7 +631,7 @@ STAGE PLANS:
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                reduceColumnNullOrder: az
+                reduceColumnNullOrder: aa
                 reduceColumnSortOrder: +-
                 allNative: true
                 usesVectorUDFAdaptor: false
@@ -659,7 +659,7 @@ STAGE PLANS:
                       Windowing table definition
                         input alias: ptf_1
                         name: windowingtablefunction
-                        order by: _col2 DESC NULLS LAST
+                        order by: _col2 DESC NULLS FIRST
                         partition by: _col0
                         raw input shape:
                         window functions:
@@ -935,7 +935,7 @@ STAGE PLANS:
                         Statistics: Num rows: 18 Data size: 1581 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int), _col2 (type: boolean)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true

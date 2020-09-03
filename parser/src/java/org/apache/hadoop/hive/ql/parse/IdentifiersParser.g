@@ -35,6 +35,9 @@ k=3;
       RecognitionException e) {
     gParent.errors.add(new ParseError(gParent, e, tokenNames));
   }
+
+  int parameterIdx = 0;
+  public int getParameterIdx() { return ++parameterIdx;}
 }
 
 @rulecatch {
@@ -345,7 +348,26 @@ constant
     | charSetStringLiteral
     | booleanValue
     | KW_NULL -> TOK_NULL
+    | prepareStmtParam
     ;
+
+prepareStmtParam
+  : p=parameterIdx
+  ->
+  {
+    adaptor.create(TOK_PARAMETER, Integer.toString($p.idx))
+  }
+  ;
+
+parameterIdx returns [int idx]
+  : QUESTION
+  { $idx = getParameterIdx(); }
+  ->
+  {
+  adaptor.create(TOK_PARAMETER_IDX, Integer.toString($idx) )
+  }
+  ;
+
 
 stringLiteralSequence
     :
@@ -606,8 +628,8 @@ precedenceSimilarExpressionAtom[CommonTree t]
 
 precedenceSimilarExpressionQuantifierPredicate[CommonTree t]
     :
-    dropPartitionOperator quantifierType subQueryExpression
-    -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP quantifierType dropPartitionOperator ) subQueryExpression {$t})
+    subQuerySelectorOperator quantifierType subQueryExpression
+    -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP quantifierType subQuerySelectorOperator ) subQueryExpression {$t})
     ;
 
 quantifierType
@@ -718,18 +740,22 @@ partitionVal
     identifier (EQUAL constant)? -> ^(TOK_PARTVAL identifier constant?)
     ;
 
-dropPartitionSpec
+partitionSelectorSpec
     :
-    KW_PARTITION
-     LPAREN dropPartitionVal (COMMA  dropPartitionVal )* RPAREN -> ^(TOK_PARTSPEC dropPartitionVal +)
+    LPAREN partitionSelectorVal (COMMA  partitionSelectorVal )* RPAREN -> ^(TOK_PARTSPEC partitionSelectorVal +)
     ;
 
-dropPartitionVal
+partitionSelectorVal
     :
-    identifier dropPartitionOperator constant -> ^(TOK_PARTVAL identifier dropPartitionOperator constant)
+    identifier partitionSelectorOperator constant -> ^(TOK_PARTVAL identifier partitionSelectorOperator constant)
     ;
 
-dropPartitionOperator
+partitionSelectorOperator
+    :
+    KW_LIKE | subQuerySelectorOperator
+    ;
+
+subQuerySelectorOperator
     :
     EQUAL | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
     ;
@@ -813,7 +839,7 @@ principalIdentifier
 // Here is what you have to do if you would like to add a new keyword.
 // Note that non reserved keywords are basically the keywords that can be used as identifiers.
 // (1) Add a new entry to HiveLexer, e.g., KW_TRUE : 'TRUE';
-// (2) If it is reserved, you do NOT need to change IdentifiersParser.g 
+// (2) If it is reserved, you do NOT need to change IdentifiersParser.g
 //                        because all the KW_* are automatically not only keywords, but also reserved keywords.
 //                        However, you need to add a test to TestSQL11ReservedKeyWordsNegative.java.
 //     Otherwise it is non-reserved, you need to put them in the nonReserved list below.
@@ -824,12 +850,12 @@ nonReserved
     KW_ABORT | KW_ADD | KW_ADMIN | KW_AFTER | KW_ANALYZE | KW_ARCHIVE | KW_ASC | KW_BEFORE | KW_BUCKET | KW_BUCKETS
     | KW_CASCADE | KW_CBO | KW_CHANGE | KW_CHECK | KW_CLUSTER | KW_CLUSTERED | KW_CLUSTERSTATUS | KW_COLLECTION | KW_COLUMNS
     | KW_COMMENT | KW_COMPACT | KW_COMPACTIONS | KW_COMPUTE | KW_CONCATENATE | KW_CONTINUE | KW_COST | KW_DATA | KW_DAY
-    | KW_DATABASES | KW_DATETIME | KW_DBPROPERTIES | KW_DEFERRED | KW_DEFINED | KW_DELIMITED | KW_DEPENDENCY 
+    | KW_DATABASES | KW_DATETIME | KW_DBPROPERTIES | KW_DEFERRED | KW_DEFINED | KW_DELIMITED | KW_DEPENDENCY
     | KW_DESC | KW_DIRECTORIES | KW_DIRECTORY | KW_DISABLE | KW_DISTRIBUTE | KW_DISTRIBUTED | KW_DOW | KW_ELEM_TYPE
     | KW_ENABLE | KW_ENFORCED | KW_ESCAPED | KW_EXCLUSIVE | KW_EXPLAIN | KW_EXPORT | KW_FIELDS | KW_FILE | KW_FILEFORMAT
     | KW_FIRST | KW_FORMAT | KW_FORMATTED | KW_FUNCTIONS | KW_HOLD_DDLTIME | KW_HOUR | KW_IDXPROPERTIES | KW_IGNORE
     | KW_INDEX | KW_INDEXES | KW_INPATH | KW_INPUTDRIVER | KW_INPUTFORMAT | KW_ITEMS | KW_JAR | KW_JOINCOST | KW_KILL
-    | KW_KEYS | KW_KEY_TYPE | KW_LAST | KW_LIMIT | KW_OFFSET | KW_LINES | KW_LOAD | KW_LOCATION | KW_LOCK | KW_LOCKS | KW_LOGICAL | KW_LONG
+    | KW_KEYS | KW_KEY_TYPE | KW_LAST | KW_LIMIT | KW_OFFSET | KW_LINES | KW_LOAD | KW_LOCATION | KW_LOCK | KW_LOCKS | KW_LOGICAL | KW_LONG | KW_MANAGED
     | KW_MANAGEDLOCATION | KW_MAPJOIN | KW_MATERIALIZED | KW_METADATA | KW_MINUTE | KW_MONTH | KW_MSCK | KW_NOSCAN | KW_NO_DROP | KW_NULLS | KW_OFFLINE
     | KW_OPTION | KW_OUTPUTDRIVER | KW_OUTPUTFORMAT | KW_OVERWRITE | KW_OWNER | KW_PARTITIONED | KW_PARTITIONS | KW_PLUS
     | KW_PRINCIPALS | KW_PROTECTION | KW_PURGE | KW_QUERY | KW_QUARTER | KW_READ | KW_READONLY | KW_REBUILD | KW_RECORDREADER | KW_RECORDWRITER

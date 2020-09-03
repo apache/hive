@@ -80,7 +80,8 @@ public class TestAcidTxnCleanerService {
 
     // always leaves the MAX(TXN_ID) in the TXNS table
     Assert.assertEquals(1, getTxnCount());
-    Assert.assertEquals(5, getMaxTxnId());
+    // The max TxnId might be greater id the openTxns failes with slow commit and retries
+    Assert.assertTrue("The max txnId should be at least 5", getMaxTxnId() >= 5);
   }
 
   @Test
@@ -95,7 +96,7 @@ public class TestAcidTxnCleanerService {
 
     // deletes only the initial (committed) TXNS record
     Assert.assertEquals(5, getTxnCount());
-    Assert.assertEquals(5, getMaxTxnId());
+    Assert.assertTrue("The max txnId should be at least 5", getMaxTxnId() >= 5);
   }
 
   @Test
@@ -111,7 +112,7 @@ public class TestAcidTxnCleanerService {
 
     // always leaves the MAX(TXN_ID) in the TXNS table
     Assert.assertEquals(1, getTxnCount());
-    Assert.assertEquals(5, getMaxTxnId());
+    Assert.assertTrue("The max txnId should be at least 5", getMaxTxnId() >= 5);
   }
 
   @Test
@@ -133,7 +134,7 @@ public class TestAcidTxnCleanerService {
 
     // kept only the 5 non-empty aborted ones
     Assert.assertEquals(5, getTxnCount());
-    Assert.assertEquals(15, getMaxTxnId());
+    Assert.assertTrue("The max txnId should be at least 15", getMaxTxnId() >= 15);
   }
 
   @Test
@@ -146,16 +147,16 @@ public class TestAcidTxnCleanerService {
         TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50);
     OpenTxnsResponse resp = txnHandler.openTxns(new OpenTxnRequest(
         TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50, "user", "hostname"));
+    txnHandler.setOpenTxnTimeOutMillis(1);
     txnHandler.abortTxns(new AbortTxnsRequest(resp.getTxn_ids()));
     GetOpenTxnsResponse openTxns = txnHandler.getOpenTxns();
     Assert.assertEquals(TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1, openTxns.getOpen_txnsSize());
-    txnHandler.setOpenTxnTimeOutMillis(1);
 
     underTest.run();
 
     openTxns = txnHandler.getOpenTxns();
     Assert.assertEquals(2, openTxns.getOpen_txnsSize());
-    Assert.assertEquals(TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1, getMaxTxnId());
+    Assert.assertTrue("The max txnId should be at least", getMaxTxnId() >= TxnStore.TIMED_OUT_TXN_ABORT_BATCH_SIZE + 50 + 1);
   }
 
   private void openNonEmptyThenAbort() throws MetaException, NoSuchTxnException, TxnAbortedException {

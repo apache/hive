@@ -21,8 +21,12 @@ package org.apache.hadoop.hive.metastore.tools;
 import com.google.common.base.Joiner;
 import com.google.common.net.HostAndPort;
 import org.apache.hadoop.hive.metastore.TableType;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.LockLevel;
+import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
@@ -232,6 +236,7 @@ public final class Util {
     private TableBuilder() {
       dbName = null;
       tableName = null;
+      parameters.putIfAbsent("transactional", "true");
     }
 
     TableBuilder(String dbName, String tableName) {
@@ -380,6 +385,99 @@ public final class Util {
         partition.getSd().setLocation(location);
       }
       return partition;
+    }
+  }
+
+  public static class LockComponentBuilder {
+    private LockComponent component;
+    private boolean tableNameSet;
+    private boolean partNameSet;
+
+    public LockComponentBuilder() {
+      component = new LockComponent();
+      tableNameSet = partNameSet = false;
+    }
+
+    /**
+     * Set the lock to be exclusive.
+     * @return reference to this builder
+     */
+    public LockComponentBuilder setExclusive() {
+      component.setType(LockType.EXCLUSIVE);
+      return this;
+    }
+
+    /**
+     * Set the lock to be semi-shared.
+     * @return reference to this builder
+     */
+    public LockComponentBuilder setSemiShared() {
+      component.setType(LockType.SHARED_WRITE);
+      return this;
+    }
+
+    /**
+     * Set the lock to be shared.
+     * @return reference to this builder
+     */
+    public LockComponentBuilder setShared() {
+      component.setType(LockType.SHARED_READ);
+      return this;
+    }
+
+    /**
+     * Set the database name.
+     * @param dbName database name
+     * @return reference to this builder
+     */
+    public LockComponentBuilder setDbName(String dbName) {
+      component.setDbname(dbName);
+      return this;
+    }
+
+    public LockComponentBuilder setIsTransactional(boolean t) {
+      component.setIsTransactional(t);
+      return this;
+    }
+
+    public LockComponentBuilder setOperationType(DataOperationType dop) {
+      component.setOperationType(dop);
+      return this;
+    }
+
+    /**
+     * Set the table name.
+     * @param tableName table name
+     * @return reference to this builder
+     */
+    public LockComponentBuilder setTableName(String tableName) {
+      component.setTablename(tableName);
+      tableNameSet = true;
+      return this;
+    }
+
+    /**
+     * Set the partition name.
+     * @param partitionName partition name
+     * @return reference to this builder
+     */
+    public LockComponentBuilder setPartitionName(String partitionName) {
+      component.setPartitionname(partitionName);
+      partNameSet = true;
+      return this;
+    }
+
+    public LockComponent build() {
+      LockLevel level = LockLevel.DB;
+      if (tableNameSet) level = LockLevel.TABLE;
+      if (partNameSet) level = LockLevel.PARTITION;
+      component.setLevel(level);
+      return component;
+    }
+
+    public LockComponent setLock(LockType type) {
+      component.setType(type);
+      return component;
     }
   }
 

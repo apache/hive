@@ -94,7 +94,7 @@ public class TestIncrementalRows {
 
     convertedIr.next();
     String row = convertedIr.next().toString();
-    Assert.assertEquals("[[77, 77, 77]]", row);
+    Assert.assertEquals("[TU1N]", row);
   }
 
   public void initNrOfResultSetCalls(final int iter) throws SQLException {

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.LockResponse;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
@@ -172,6 +173,8 @@ public interface HiveTxnManager {
    */
   void heartbeat() throws LockException;
 
+  GetOpenTxnsResponse getOpenTxns() throws LockException;
+
   /**
    * Get the transactions that are currently valid.  The resulting
    * {@link ValidTxnList} object can be passed as string to the processing
@@ -182,6 +185,18 @@ public interface HiveTxnManager {
    * @throws LockException
    */
   ValidTxnList getValidTxns() throws LockException;
+
+ /**
+  * Get the transactions that are currently valid.  The resulting
+  * {@link ValidTxnList} object can be passed as string to the processing
+  * tasks for use in the reading the data.  This call should be made once up
+  * front by the planner and should never be called on the backend,
+  * as this will violate the isolation level semantics.
+  * @return list of valid transactions.
+  * @param  excludeTxnTypes list of transaction types that should be excluded.
+  * @throws LockException
+  */
+  ValidTxnList getValidTxns(List<TxnType> excludeTxnTypes) throws LockException;
 
   /**
    * Get the table write Ids that are valid for the current transaction.  The resulting

@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.QTestMiniClusters.FsType;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
@@ -81,6 +82,7 @@ import org.apache.hadoop.hive.ql.qoption.QTestDisabledHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestOptionDispatcher;
 import org.apache.hadoop.hive.ql.qoption.QTestReplaceHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestSysDbHandler;
+import org.apache.hadoop.hive.ql.qoption.QTestTimezoneHandler;
 import org.apache.hadoop.hive.ql.qoption.QTestTransactional;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryCleaner;
 import org.apache.hadoop.hive.ql.scheduled.QTestScheduledQueryServiceProvider;
@@ -225,6 +227,7 @@ public class QTestUtil {
     dispatcher.register("transactional", new QTestTransactional());
     dispatcher.register("scheduledqueryservice", new QTestScheduledQueryServiceProvider(conf));
     dispatcher.register("scheduledquerycleaner", new QTestScheduledQueryCleaner());
+    dispatcher.register("timezone", new QTestTimezoneHandler());
     dispatcher.register("authorizer", new QTestAuthorizerHandler());
     dispatcher.register("disabled", new QTestDisabledHandler());
 
@@ -569,6 +572,11 @@ public class QTestUtil {
 
     initMaterializedViews(); // Create views registry
     firstStartSessionState();
+
+    // setup metastore client cache
+    if (conf.getBoolVar(ConfVars.MSC_CACHE_ENABLED)) {
+      HiveMetaStoreClientWithLocalCache.init();
+    }
   }
 
   private void initMaterializedViews() {
@@ -617,6 +625,7 @@ public class QTestUtil {
     }
     File outf = new File(logDir, stdoutName);
     setSessionOutputs(fileName, ss, outf);
+    ss.setIsQtestLogging(true);
 
     if (fileName.equals("init_file.q")) {
       ss.initFiles.add(AbstractCliConfig.HIVE_ROOT + "/data/scripts/test_init_file.sql");
@@ -632,13 +641,14 @@ public class QTestUtil {
       ss.out.flush();
     }
     if (ss.err != null) {
-      ss.out.flush();
+      ss.err.flush();
     }
 
     qTestResultProcessor.setOutputs(ss, fo, fileName);
 
     ss.err = new CachingPrintStream(fo, true, "UTF-8");
     ss.setIsSilent(true);
+    ss.setIsQtestLogging(true);
   }
 
   public CliSessionState startSessionState(boolean canReuseSession) throws IOException {
@@ -980,7 +990,7 @@ public class QTestUtil {
   }
 
   public ASTNode parseQuery(String tname) throws Exception {
-    return pd.parse(qMap.get(tname));
+    return pd.parse(qMap.get(tname)).getTree();
   }
 
   public List<Task<?>> analyzeAST(ASTNode ast) throws Exception {

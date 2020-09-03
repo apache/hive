@@ -21,6 +21,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@analyze_srcpart_n4
 POSTHOOK: Output: default@analyze_srcpart_n4@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@analyze_srcpart_n4@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@analyze_srcpart_n4@ds=2008-04-09/hr=11
@@ -63,7 +64,7 @@ STAGE PLANS:
                 TableScan
                   alias: analyze_srcpart_n4
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
 
   Stage: Stage-2
     Stats Work

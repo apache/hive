@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.VectorizerReason;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
+import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -299,8 +300,9 @@ public class MapWork extends BaseWork {
     boolean hasPathToPartInfo = (pathToPartitionInfo != null && !pathToPartitionInfo.isEmpty());
     if (hasPathToPartInfo) {
       for (PartitionDesc part : pathToPartitionInfo.values()) {
-        boolean isUsingLlapIo = canWrapAny && HiveInputFormat.canWrapForLlap(
-            part.getInputFileFormatClass(), doCheckIfs);
+        Class<? extends InputFormat> inputFormatClass = part.getInputFileFormatClass();
+        boolean isUsingLlapIo = canWrapAny && (HiveInputFormat.canWrapForLlap(inputFormatClass, doCheckIfs)
+                || HiveInputFormat.checkInputFormatForLlapEncode(conf, inputFormatClass.getCanonicalName()));
         if (isUsingLlapIo) {
           if (part.getTableDesc() != null &&
               AcidUtils.isTablePropertyTransactional(part.getTableDesc().getProperties())) {
@@ -308,7 +310,7 @@ public class MapWork extends BaseWork {
           } else {
             hasLlap = true;
           }
-        } else if (isLlapOn && HiveInputFormat.canInjectCaches(part.getInputFileFormatClass())) {
+        } else if (isLlapOn && HiveInputFormat.canInjectCaches(inputFormatClass)) {
           hasCacheOnly = true;
         } else {
           hasNonLlap = true;
@@ -657,13 +659,11 @@ public class MapWork extends BaseWork {
 
   @Override
   public void configureJobConf(JobConf job) {
+    super.configureJobConf(job);
     for (PartitionDesc partition : aliasToPartnInfo.values()) {
       PlanUtils.configureJobConf(partition.getTableDesc(), job);
     }
     Collection<Operator<?>> mappers = aliasToWork.values();
-    for (FileSinkOperator fs : OperatorUtils.findOperators(mappers, FileSinkOperator.class)) {
-      PlanUtils.configureJobConf(fs.getConf().getTableInfo(), job);
-    }
     for (IConfigureJobConf icjc : OperatorUtils.findOperators(mappers, IConfigureJobConf.class)) {
       icjc.configureJobConf(job);
     }

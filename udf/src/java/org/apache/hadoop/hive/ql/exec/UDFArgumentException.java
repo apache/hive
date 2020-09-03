@@ -81,7 +81,6 @@ public class UDFArgumentException extends SemanticException {
       for (Method m: methods) {
         Type[] types = m.getGenericParameterTypes();
         sb.append("_FUNC_(");
-        List<String> typeNames = new ArrayList<String>(types.length);
         for (int t = 0; t < types.length; t++) {
           if (t > 0) {
             sb.append(", ");

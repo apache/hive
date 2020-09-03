@@ -46,8 +46,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
     LOG.debug("Going to delete directories for aborted transactions for MM table " + table.getDbName() + "." + table
         .getTableName());
     AcidUtils.Directory dir = AcidUtils
-        .getAcidState(null, new Path(storageDescriptor.getLocation()), hiveConf, writeIds, Ref.from(false), false,
-            table.getParameters(), false);
+        .getAcidState(null, new Path(storageDescriptor.getLocation()), hiveConf, writeIds, Ref.from(false), false);
     QueryCompactor.Util.removeFilesForMmTable(hiveConf, dir);
 
     // Set up the session for driver.
@@ -59,7 +58,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
     String tmpPrefix = table.getDbName() + ".tmp_compactor_" + table.getTableName() + "_";
     String tmpTableName = tmpPrefix + System.currentTimeMillis();
     Path resultBaseDir = QueryCompactor.Util.getCompactionResultDir(
-        storageDescriptor, writeIds, driverConf, true, true, false);
+        storageDescriptor, writeIds, driverConf, true, true, false, null);
 
     List<String> createTableQueries = getCreateQueries(tmpTableName, table, storageDescriptor,
         resultBaseDir.toString());

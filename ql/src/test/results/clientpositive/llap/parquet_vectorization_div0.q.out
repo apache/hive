@@ -28,20 +28,20 @@ STAGE PLANS:
                   Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
-                  Select Operator
-                    expressions: (cdouble / 0.0D) (type: double)
-                    outputColumnNames: _col0
-                    Select Vectorization:
-                        className: VectorSelectOperator
+                  Limit
+                    Number of rows: 100
+                    Limit Vectorization:
+                        className: VectorLimitOperator
                         native: true
-                        projectedOutputColumnNums: [13]
-                        selectExpressions: DoubleColDivideDoubleScalar(col 5:double, val 0.0) -> 13:double
-                    Statistics: Num rows: 12288 Data size: 98304 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 100
-                      Limit Vectorization:
-                          className: VectorLimitOperator
+                    Statistics: Num rows: 100 Data size: 608 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: (cdouble / 0.0D) (type: double)
+                      outputColumnNames: _col0
+                      Select Vectorization:
+                          className: VectorSelectOperator
                           native: true
+                          projectedOutputColumnNums: [13]
+                          selectExpressions: DoubleColDivideDoubleScalar(col 5:double, val 0.0) -> 13:double
                       Statistics: Num rows: 100 Data size: 800 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -250,7 +250,6 @@ STAGE PLANS:
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           Statistics: Num rows: 3215 Data size: 411520 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col2 (type: decimal(22,21))
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)
@@ -484,7 +483,6 @@ STAGE PLANS:
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           Statistics: Num rows: 20 Data size: 960 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col2 (type: double), _col4 (type: double), _col5 (type: double)
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)

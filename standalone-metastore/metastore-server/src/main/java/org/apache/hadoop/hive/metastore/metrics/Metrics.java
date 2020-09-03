@@ -75,7 +75,7 @@ public class Metrics {
     return self.registry;
   }
 
-  public static void shutdown() {
+  public static synchronized void shutdown() {
     if (self != null) {
       for (ScheduledReporter reporter : self.scheduledReporters) {
         reporter.stop();

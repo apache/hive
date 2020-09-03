@@ -305,7 +305,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -327,30 +326,30 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey1 (type: date), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Select Vectorization:
-                    className: VectorSelectOperator
+              Limit
+                Number of rows: 25
+                Limit Vectorization:
+                    className: VectorLimitOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 1, 4, 5, 0]
-                Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 25
-                  Limit Vectorization:
-                      className: VectorLimitOperator
-                      native: true
+                Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: ++
+                  keys: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
+                  null sort order: zz
                   Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
-                  Top N Key Operator
-                    sort order: ++
-                    keys: _col5 (type: int), _col2 (type: date)
-                    null sort order: zz
-                    Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 25
-                    Top N Key Vectorization:
-                        className: VectorTopNKeyOperator
-                        keyExpressions: col 0:int, col 1:date
+                  top n: 25
+                  Top N Key Vectorization:
+                      className: VectorTopNKeyOperator
+                      keyExpressions: col 0:int, col 1:date
+                      native: true
+                  Select Operator
+                    expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey1 (type: date), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
                         native: true
+                        projectedOutputColumnNums: [2, 3, 1, 4, 5, 0]
+                    Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col5 (type: int), _col2 (type: date)
                       null sort order: zz
@@ -360,7 +359,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -371,19 +369,19 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey1 (type: date), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Select Vectorization:
-                    className: VectorSelectOperator
+              Limit
+                Number of rows: 25
+                Limit Vectorization:
+                    className: VectorLimitOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 1, 4, 5, 0]
                 Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 25
-                  Limit Vectorization:
-                      className: VectorLimitOperator
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey1 (type: date), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Select Vectorization:
+                      className: VectorSelectOperator
                       native: true
+                      projectedOutputColumnNums: [2, 3, 1, 4, 5, 0]
                   Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -610,6 +608,7 @@ SELECT  origin_city_name, dest_city_name, fl_time, arr_delay, fl_num, fl_date
 FROM flights_tiny_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_orc
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_date
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-20
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-21
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_date@fl_date=2010-10-22
@@ -1296,7 +1295,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -1318,30 +1316,30 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Select Vectorization:
-                    className: VectorSelectOperator
+              Limit
+                Number of rows: 25
+                Limit Vectorization:
+                    className: VectorLimitOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
-                Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 25
-                  Limit Vectorization:
-                      className: VectorLimitOperator
-                      native: true
+                Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: ++
+                  keys: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
+                  null sort order: zz
                   Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                  Top N Key Operator
-                    sort order: ++
-                    keys: _col4 (type: int), _col5 (type: date)
-                    null sort order: zz
-                    Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 25
-                    Top N Key Vectorization:
-                        className: VectorTopNKeyOperator
-                        keyExpressions: col 0:int, col 1:date
+                  top n: 25
+                  Top N Key Vectorization:
+                      className: VectorTopNKeyOperator
+                      keyExpressions: col 0:int, col 1:date
+                      native: true
+                  Select Operator
+                    expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
                         native: true
+                        projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
+                    Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col4 (type: int), _col5 (type: date)
                       null sort order: zz
@@ -1351,7 +1349,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -1362,19 +1359,19 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Select Vectorization:
-                    className: VectorSelectOperator
+              Limit
+                Number of rows: 25
+                Limit Vectorization:
+                    className: VectorLimitOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
                 Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 25
-                  Limit Vectorization:
-                      className: VectorLimitOperator
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Select Vectorization:
+                      className: VectorSelectOperator
                       native: true
+                      projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
                   Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -1673,6 +1670,7 @@ SELECT  origin_city_name, dest_city_name, fl_date, arr_delay, fl_num, fl_time
 FROM flights_tiny_orc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_orc
+POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
 POSTHOOK: Output: default@flights_tiny_orc_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
@@ -2359,7 +2357,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -2381,30 +2378,30 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: date), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: timestamp)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Select Vectorization:
-                    className: VectorSelectOperator
+              Limit
+                Number of rows: 25
+                Limit Vectorization:
+                    className: VectorLimitOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
-                Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 25
-                  Limit Vectorization:
-                      className: VectorLimitOperator
-                      native: true
+                Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: ++
+                  keys: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: timestamp)
+                  null sort order: zz
                   Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                  Top N Key Operator
-                    sort order: ++
-                    keys: _col4 (type: int), _col5 (type: timestamp)
-                    null sort order: zz
-                    Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 25
-                    Top N Key Vectorization:
-                        className: VectorTopNKeyOperator
-                        keyExpressions: col 0:int, col 1:timestamp
+                  top n: 25
+                  Top N Key Vectorization:
+                      className: VectorTopNKeyOperator
+                      keyExpressions: col 0:int, col 1:timestamp
+                      native: true
+                  Select Operator
+                    expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: date), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: timestamp)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
                         native: true
+                        projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
+                    Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col4 (type: int), _col5 (type: timestamp)
                       null sort order: zz
@@ -2414,7 +2411,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -2425,19 +2421,19 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: date), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: timestamp)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Select Vectorization:
-                    className: VectorSelectOperator
+              Limit
+                Number of rows: 25
+                Limit Vectorization:
+                    className: VectorLimitOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
                 Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 25
-                  Limit Vectorization:
-                      className: VectorLimitOperator
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: date), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: timestamp)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Select Vectorization:
+                      className: VectorSelectOperator
                       native: true
+                      projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
                   Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -2978,7 +2974,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)
@@ -3000,30 +2995,30 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey1 (type: date), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Select Vectorization:
-                    className: VectorSelectOperator
+              Limit
+                Number of rows: 25
+                Limit Vectorization:
+                    className: VectorLimitOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 1, 4, 5, 0]
-                Statistics: Num rows: 137 Data size: 39456 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 25
-                  Limit Vectorization:
-                      className: VectorLimitOperator
-                      native: true
+                Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: ++
+                  keys: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
+                  null sort order: zz
                   Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
-                  Top N Key Operator
-                    sort order: ++
-                    keys: _col5 (type: int), _col2 (type: date)
-                    null sort order: zz
-                    Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 25
-                    Top N Key Vectorization:
-                        className: VectorTopNKeyOperator
-                        keyExpressions: col 0:int, col 1:date
+                  top n: 25
+                  Top N Key Vectorization:
+                      className: VectorTopNKeyOperator
+                      keyExpressions: col 0:int, col 1:date
+                      native: true
+                  Select Operator
+                    expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey1 (type: date), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
                         native: true
+                        projectedOutputColumnNums: [2, 3, 1, 4, 5, 0]
+                    Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col5 (type: int), _col2 (type: date)
                       null sort order: zz
@@ -3033,7 +3028,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col3 (type: timestamp), _col4 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -3044,19 +3038,19 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey1 (type: date), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Select Vectorization:
-                    className: VectorSelectOperator
+              Limit
+                Number of rows: 25
+                Limit Vectorization:
+                    className: VectorLimitOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 1, 4, 5, 0]
                 Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 25
-                  Limit Vectorization:
-                      className: VectorLimitOperator
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), KEY.reducesinkkey1 (type: date), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Select Vectorization:
+                      className: VectorSelectOperator
                       native: true
+                      projectedOutputColumnNums: [2, 3, 1, 4, 5, 0]
                   Statistics: Num rows: 25 Data size: 7200 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -3283,6 +3277,7 @@ SELECT  origin_city_name, dest_city_name, fl_time, arr_delay, fl_num, fl_date
 FROM flights_tiny_parquet
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_parquet
+POSTHOOK: Output: default@flights_tiny_parquet_partitioned_date
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-20
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-21
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_date@fl_date=2010-10-22
@@ -3969,7 +3964,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)
@@ -3991,30 +3985,30 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Select Vectorization:
-                    className: VectorSelectOperator
+              Limit
+                Number of rows: 25
+                Limit Vectorization:
+                    className: VectorLimitOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
-                Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 25
-                  Limit Vectorization:
-                      className: VectorLimitOperator
-                      native: true
+                Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: ++
+                  keys: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
+                  null sort order: zz
                   Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                  Top N Key Operator
-                    sort order: ++
-                    keys: _col4 (type: int), _col5 (type: date)
-                    null sort order: zz
-                    Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 25
-                    Top N Key Vectorization:
-                        className: VectorTopNKeyOperator
-                        keyExpressions: col 0:int, col 1:date
+                  top n: 25
+                  Top N Key Vectorization:
+                      className: VectorTopNKeyOperator
+                      keyExpressions: col 0:int, col 1:date
+                      native: true
+                  Select Operator
+                    expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
                         native: true
+                        projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
+                    Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col4 (type: int), _col5 (type: date)
                       null sort order: zz
@@ -4024,7 +4018,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: timestamp), _col3 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -4035,19 +4028,19 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Select Vectorization:
-                    className: VectorSelectOperator
+              Limit
+                Number of rows: 25
+                Limit Vectorization:
+                    className: VectorLimitOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
                 Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 25
-                  Limit Vectorization:
-                      className: VectorLimitOperator
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: timestamp), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: date)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Select Vectorization:
+                      className: VectorSelectOperator
                       native: true
+                      projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
                   Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -4346,6 +4339,7 @@ SELECT  origin_city_name, dest_city_name, fl_date, arr_delay, fl_num, fl_time
 FROM flights_tiny_parquet
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny_parquet
+POSTHOOK: Output: default@flights_tiny_parquet_partitioned_timestamp
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-20 07%3A00%3A00
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-21 07%3A00%3A00
 POSTHOOK: Output: default@flights_tiny_parquet_partitioned_timestamp@fl_time=2010-10-22 07%3A00%3A00
@@ -5032,7 +5026,6 @@ STAGE PLANS:
                             native: true
                             nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                        TopN Hash Memory Usage: 0.1
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
             Execution mode: vectorized, llap
             LLAP IO: all inputs (cache only)
@@ -5054,30 +5047,30 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: date), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: timestamp)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Select Vectorization:
-                    className: VectorSelectOperator
+              Limit
+                Number of rows: 25
+                Limit Vectorization:
+                    className: VectorLimitOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
-                Statistics: Num rows: 137 Data size: 39593 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 25
-                  Limit Vectorization:
-                      className: VectorLimitOperator
-                      native: true
+                Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: ++
+                  keys: KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: timestamp)
+                  null sort order: zz
                   Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                  Top N Key Operator
-                    sort order: ++
-                    keys: _col4 (type: int), _col5 (type: timestamp)
-                    null sort order: zz
-                    Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 25
-                    Top N Key Vectorization:
-                        className: VectorTopNKeyOperator
-                        keyExpressions: col 0:int, col 1:timestamp
+                  top n: 25
+                  Top N Key Vectorization:
+                      className: VectorTopNKeyOperator
+                      keyExpressions: col 0:int, col 1:timestamp
+                      native: true
+                  Select Operator
+                    expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: date), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: timestamp)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
                         native: true
+                        projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
+                    Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col4 (type: int), _col5 (type: timestamp)
                       null sort order: zz
@@ -5087,7 +5080,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: date), _col3 (type: float)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -5098,19 +5090,19 @@ STAGE PLANS:
                 usesVectorUDFAdaptor: false
                 vectorized: true
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: date), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: timestamp)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                Select Vectorization:
-                    className: VectorSelectOperator
+              Limit
+                Number of rows: 25
+                Limit Vectorization:
+                    className: VectorLimitOperator
                     native: true
-                    projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
                 Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 25
-                  Limit Vectorization:
-                      className: VectorLimitOperator
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: date), VALUE._col3 (type: float), KEY.reducesinkkey0 (type: int), KEY.reducesinkkey1 (type: timestamp)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                  Select Vectorization:
+                      className: VectorSelectOperator
                       native: true
+                      projectedOutputColumnNums: [2, 3, 4, 5, 0, 1]
                   Statistics: Num rows: 25 Data size: 7225 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false

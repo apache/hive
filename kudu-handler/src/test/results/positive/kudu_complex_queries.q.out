@@ -145,7 +145,6 @@ STAGE PLANS:
                       null sort order: zz
                       sort order: ++
                       Statistics: Num rows: 488 Data size: 86864 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
         Reducer 3 
             Execution mode: vectorized
             Reduce Operator Tree:
@@ -327,7 +326,6 @@ STAGE PLANS:
                       null sort order: z
                       sort order: +
                       Statistics: Num rows: 121 Data size: 22748 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col0 (type: int)
         Reducer 4 
             Execution mode: vectorized

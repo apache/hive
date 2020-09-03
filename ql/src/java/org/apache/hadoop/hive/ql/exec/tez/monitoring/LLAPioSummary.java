@@ -58,8 +58,7 @@ public class LLAPioSummary implements PrintSummary {
     console.printInfo(LLAP_IO_SUMMARY_HEADER);
 
     SortedSet<String> keys = new TreeSet<>(progressMap.keySet());
-    Set<StatusGetOpts> statusOptions = new HashSet<>(1);
-    statusOptions.add(StatusGetOpts.GET_COUNTERS);
+    Set<StatusGetOpts> statusOptions = Collections.singleton(StatusGetOpts.GET_COUNTERS);
     String counterGroup = LlapIOCounters.class.getName();
     for (String vertexName : keys) {
       // Reducers do not benefit from LLAP IO so no point in printing

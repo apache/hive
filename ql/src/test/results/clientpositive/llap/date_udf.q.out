@@ -228,6 +228,51 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@date_udf_flight
 #### A masked pattern was here ####
 2010-10-31
+PREHOOK: query: create external table testdatediff(datetimecol string) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testdatediff
+POSTHOOK: query: create external table testdatediff(datetimecol string) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testdatediff
+PREHOOK: query: insert into testdatediff values ('2019-09-09T10:45:49+02:00'),('2019-07-24')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@testdatediff
+POSTHOOK: query: insert into testdatediff values ('2019-09-09T10:45:49+02:00'),('2019-07-24')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@testdatediff
+POSTHOOK: Lineage: testdatediff.datetimecol SCRIPT []
+PREHOOK: query: select datetimecol from testdatediff where datediff(cast(current_timestamp as string), datetimecol)>183
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdatediff
+#### A masked pattern was here ####
+POSTHOOK: query: select datetimecol from testdatediff where datediff(cast(current_timestamp as string), datetimecol)>183
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdatediff
+#### A masked pattern was here ####
+2019-09-09T10:45:49+02:00
+2019-07-24
+PREHOOK: query: select cast(datetimecol as date), datetimecol from testdatediff
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testdatediff
+#### A masked pattern was here ####
+POSTHOOK: query: select cast(datetimecol as date), datetimecol from testdatediff
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testdatediff
+#### A masked pattern was here ####
+2019-09-09	2019-09-09T10:45:49+02:00
+2019-07-24	2019-07-24
+PREHOOK: query: drop table testdatediff
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@testdatediff
+PREHOOK: Output: default@testdatediff
+POSTHOOK: query: drop table testdatediff
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@testdatediff
+POSTHOOK: Output: default@testdatediff
 PREHOOK: query: drop table date_udf
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@date_udf

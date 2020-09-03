@@ -203,7 +203,14 @@ public class TestArrowColumnarBatchSerDe {
   private void initAndSerializeAndDeserialize(String[][] schema, Object[][] rows) throws SerDeException {
     ArrowColumnarBatchSerDe serDe = new ArrowColumnarBatchSerDe();
     StructObjectInspector rowOI = initSerDe(serDe, schema);
-    serializeAndDeserialize(serDe, rows, rowOI);
+    serializeAndDeserialize(serDe, rows, rowOI, null);
+  }
+
+  private void initAndSerializeAndDeserializeSelected(String[][] schema, Object[][] rows, int[] selected)
+      throws SerDeException {
+    ArrowColumnarBatchSerDe serDe = new ArrowColumnarBatchSerDe();
+    StructObjectInspector rowOI = initSerDe(serDe, schema);
+    serializeAndDeserialize(serDe, rows, rowOI, selected);
   }
 
   private StructObjectInspector initSerDe(AbstractSerDe serDe, String[][] schema)
@@ -232,19 +239,34 @@ public class TestArrowColumnarBatchSerDe {
   }
 
   private void serializeAndDeserialize(ArrowColumnarBatchSerDe serDe, Object[][] rows,
-      StructObjectInspector rowOI) {
+      StructObjectInspector rowOI, int[] selectedRows) {
     ArrowWrapperWritable serialized = null;
     for (Object[] row : rows) {
       serialized = serDe.serialize(row, rowOI);
     }
+//    When obj is null serialized is not Null -- is this expected?
+//    assertTrue(serialized == null);
+    boolean useNativeSelected = selectedRows != null && selectedRows.length > 0;
+
     // Pass null to complete a batch
     if (serialized == null) {
-      serialized = serDe.serialize(null, rowOI);
+      // Native-selected mode (triggering Serializer.writePrimitive)
+      if (useNativeSelected) {
+        serDe.serializer.vectorizedRowBatch.selectedInUse = true;
+        serDe.serializer.vectorizedRowBatch.size = selectedRows.length;
+        serDe.serializer.vectorizedRowBatch.selected = selectedRows;
+        // Call Native serialization directly
+        serialized = serDe.serializer.serializeBatch(serDe.serializer.vectorizedRowBatch, true);
+      } else {
+        // Non-native mode
+        serialized = serDe.serialize(null, rowOI);
+      }
     }
     final Object[][] deserializedRows = (Object[][]) serDe.deserialize(serialized);
 
     for (int rowIndex = 0; rowIndex < Math.min(deserializedRows.length, rows.length); rowIndex++) {
-      final Object[] row = rows[rowIndex];
+      // expected row is either at rowIndex or selected[rowIndex]
+      final Object[] row = useNativeSelected ? rows[selectedRows[rowIndex]] : rows[rowIndex];
       final Object[] deserializedRow = deserializedRows[rowIndex];
       assertEquals(row.length, deserializedRow.length);
 
@@ -399,6 +421,18 @@ public class TestArrowColumnarBatchSerDe {
   }
 
   @Test
+  public void testPrimitiveIntegerSelected() throws SerDeException {
+    String[][] schema = {
+        {"tinyint1", "tinyint"},
+        {"smallint1", "smallint"},
+        {"int1", "int"},
+        {"bigint1", "bigint"}
+    };
+    int[] selectedRows = new int[] {0, 3, 5};
+    initAndSerializeAndDeserializeSelected(schema, INTEGER_ROWS, selectedRows);
+  }
+
+  @Test
   public void testPrimitiveBigInt10000() throws SerDeException {
     String[][] schema = {
         {"bigint1", "bigint"}
@@ -414,7 +448,7 @@ public class TestArrowColumnarBatchSerDe {
         integerRows[i] = new Object[] {longW(i + j * batchSize)};
       }
 
-      serializeAndDeserialize(serDe, integerRows, rowOI);
+      serializeAndDeserialize(serDe, integerRows, rowOI, null);
     }
   }
 
@@ -436,7 +470,7 @@ public class TestArrowColumnarBatchSerDe {
           integerRows[i] = new Object[] {longW(random.nextLong())};
         }
 
-        serializeAndDeserialize(serDe, integerRows, rowOI);
+        serializeAndDeserialize(serDe, integerRows, rowOI, null);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -451,6 +485,16 @@ public class TestArrowColumnarBatchSerDe {
     };
 
     initAndSerializeAndDeserialize(schema, FLOAT_ROWS);
+  }
+
+  @Test
+  public void testPrimitiveFloatSelected() throws SerDeException {
+    String[][] schema = {
+        {"float1", "float"},
+        {"double1", "double"},
+    };
+    int[] selectedRows = new int[] {0, 3, 5, 7, 9};
+    initAndSerializeAndDeserializeSelected(schema, FLOAT_ROWS, selectedRows);
   }
 
   @Test(expected = AssertionError.class)
@@ -487,6 +531,17 @@ public class TestArrowColumnarBatchSerDe {
   }
 
   @Test
+  public void testPrimitiveStringSelected() throws SerDeException {
+    String[][] schema = {
+        {"string1", "string"},
+        {"char1", "char(10)"},
+        {"varchar1", "varchar(10)"},
+    };
+    int[] selectedRows = new int[] {0, 2, 4};
+    initAndSerializeAndDeserializeSelected(schema, STRING_ROWS, selectedRows);
+  }
+
+  @Test
   public void testPrimitiveDTI() throws SerDeException {
     String[][] schema = {
         {"date1", "date"},
@@ -496,6 +551,18 @@ public class TestArrowColumnarBatchSerDe {
     };
 
     initAndSerializeAndDeserialize(schema, DTI_ROWS);
+  }
+
+  @Test
+  public void testPrimitiveDTISelected() throws SerDeException {
+    String[][] schema = {
+        {"date1", "date"},
+        {"timestamp1", "timestamp"},
+        {"interval_year_month1", "interval_year_month"},
+        {"interval_day_time1", "interval_day_time"},
+    };
+    int[] selectedRows = new int[] {0, 2};
+    initAndSerializeAndDeserializeSelected(schema, DTI_ROWS, selectedRows);
   }
 
   @Test
@@ -557,12 +624,42 @@ public class TestArrowColumnarBatchSerDe {
   }
 
   @Test
+  public void testPositiveNegativeTSWithNanosSelected() throws SerDeException {
+    String[][] schema = {
+        {"timestamp1", "timestamp"},
+    };
+
+    Object[][] tsRows = new Object[][]{
+        {new TimestampWritableV2(Timestamp.valueOf("1963-04-01 09:01:10.123"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1800-04-01 09:01:10.123999"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1750-04-01 09:01:10.123999"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1700-04-01 09:01:10.999999"))},
+        {new TimestampWritableV2(Timestamp.valueOf("2050-04-01 09:01:10.999999"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1991-06-05 09:01:10.999999"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1992-11-04 09:01:10.999999"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1970-01-01 00:00:00"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1964-01-01 00:00:04.78"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1950-01-01 09:23:03.21"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1956-01-01 10:09:03.00"))},
+        {new TimestampWritableV2(Timestamp.valueOf("1947-08-27 10:25:36.26"))},
+    };
+    int[] selectedRows = new int[] {0, 2, 5, 7, 9, 11};
+    initAndSerializeAndDeserializeSelected(schema, tsRows, selectedRows);
+  }
+
+  @Test
   public void testPrimitiveDecimal() throws SerDeException {
     String[][] schema = {
         {"decimal1", "decimal(38,10)"},
     };
 
     initAndSerializeAndDeserialize(schema, DECIMAL_ROWS);
+  }
+
+  @Test public void testNativeDecimalSelected() throws SerDeException {
+    String[][] schema = { { "decimal1", "decimal(38,10)" }, };
+    int[] selectedRows = new int[] { 0, 2, 4 };
+    initAndSerializeAndDeserializeSelected(schema, DECIMAL_ROWS, selectedRows);
   }
 
   @Test
@@ -600,12 +697,30 @@ public class TestArrowColumnarBatchSerDe {
   }
 
   @Test
+  public void testPrimitiveBooleanSelected() throws SerDeException {
+    String[][] schema = {
+        {"boolean1", "boolean"},
+    };
+    int[] selectedRows = new int[] {1, 2};
+    initAndSerializeAndDeserializeSelected(schema, BOOLEAN_ROWS, selectedRows);
+  }
+
+  @Test
   public void testPrimitiveBinary() throws SerDeException {
     String[][] schema = {
         {"binary1", "binary"},
     };
 
     initAndSerializeAndDeserialize(schema, BINARY_ROWS);
+  }
+
+  @Test
+  public void testPrimitiveBinarySelected() throws SerDeException {
+    String[][] schema = {
+        {"binary1", "binary"},
+    };
+    int[] selectedRows = new int[] {1, 3};
+    initAndSerializeAndDeserializeSelected(schema, BINARY_ROWS, selectedRows);
   }
 
   private List[][] toList(Object[][] rows) {
@@ -618,6 +733,18 @@ public class TestArrowColumnarBatchSerDe {
       }
     }
     return array;
+  }
+
+  @Test
+  public void testListSelected() throws SerDeException {
+    String[][] schema = {
+        {"tinyint_list", "array<tinyint>"},
+        {"smallint_list", "array<smallint>"},
+        {"int_list", "array<int>"},
+        {"bigint_list", "array<bigint>"},
+    };
+    int[] selectedRows = new int[] {1, 3, 5};
+    initAndSerializeAndDeserializeSelected(schema, toList(INTEGER_ROWS), selectedRows);
   }
 
   @Test
@@ -690,6 +817,15 @@ public class TestArrowColumnarBatchSerDe {
       struct[rowIndex] = new Object[][] {row};
     }
     return struct;
+  }
+
+  @Test
+  public void testStructSelected() throws SerDeException {
+    String[][] schema = {
+        {"int_struct", "struct<tinyint1:tinyint,smallint1:smallint,int1:int,bigint1:bigint>"},
+    };
+    int[] selectedRows = new int[] {1, 3, 5};
+    initAndSerializeAndDeserializeSelected(schema, toStruct(INTEGER_ROWS), selectedRows);
   }
 
   @Test
@@ -768,6 +904,18 @@ public class TestArrowColumnarBatchSerDe {
       }
     }
     return array;
+  }
+
+  @Test
+  public void testMapSelected() throws SerDeException {
+    String[][] schema = {
+        {"tinyint_map", "map<string,tinyint>"},
+        {"smallint_map", "map<string,smallint>"},
+        {"int_map", "map<string,int>"},
+        {"bigint_map", "map<string,bigint>"},
+    };
+    int[] selectedRows = new int[] {1, 3, 5};
+    initAndSerializeAndDeserializeSelected(schema, toMap(INTEGER_ROWS), selectedRows);
   }
 
   @Test

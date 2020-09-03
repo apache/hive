@@ -21,11 +21,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.repl.dump.HiveWrapper;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -65,6 +67,9 @@ public class TestReplDumpTask {
   @Mock
   private QueryState queryState;
 
+  @Mock
+  ReplicationMetricCollector metricCollector;
+
   class StubReplDumpTask extends ReplDumpTask {
 
     @Override
@@ -83,7 +88,9 @@ public class TestReplDumpTask {
     }
 
     @Override
-    void dumpFunctionMetadata(String dbName, Path dbMetadataRoot, Hive hiveDb) {
+    List<EximUtil.DataCopyPath> dumpFunctionMetadata(String dbName, Path dbMetadataRoot, Path dbDataRoot,
+                                                     Hive hiveDb, boolean copyAtLoad) {
+      return Collections.emptyList();
     }
 
     @Override
@@ -117,8 +124,8 @@ public class TestReplDumpTask {
     when(queryState.getConf()).thenReturn(conf);
     when(conf.getLong("hive.repl.last.repl.id", -1L)).thenReturn(1L);
     when(conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES)).thenReturn(false);
-    when(HiveConf.getVar(conf,
-            HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT)).thenReturn("1h");
+    when(HiveConf.getVar(conf, HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT)).thenReturn("1h");
+    when(conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE)).thenReturn(10000);
 
     whenNew(Writer.class).withAnyArguments().thenReturn(mock(Writer.class));
     whenNew(HiveWrapper.class).withAnyArguments().thenReturn(mock(HiveWrapper.class));
@@ -127,23 +134,23 @@ public class TestReplDumpTask {
       private int tableDumpCount = 0;
 
       @Override
-      List<EximUtil.ManagedTableCopyPath> dumpTable(String dbName, String tblName, String validTxnList,
-                                                    Path dbRootMetadata, Path dbRootData,
-                                               long lastReplId, Hive hiveDb,
-                                               HiveWrapper.Tuple<Table> tuple)
+      void dumpTable(String dbName, String tblName, String validTxnList,
+                     Path dbRootMetadata, Path dbRootData,
+                     long lastReplId, Hive hiveDb,
+                     HiveWrapper.Tuple<Table> tuple, FileList managedTableDirFileList, boolean dataCopyAtLoad)
           throws Exception {
         tableDumpCount++;
         if (tableDumpCount > 1) {
           throw new TestException();
         }
-        return Collections.emptyList();
       }
     };
 
     task.initialize(queryState, null, null, null);
-    task.setWork(
-        new ReplDumpWork(replScope, null, "", "")
-    );
+    ReplDumpWork replDumpWork = new ReplDumpWork(replScope,
+        null, "", "");
+    replDumpWork.setMetricCollector(metricCollector);
+    task.setWork(replDumpWork);
 
     try {
       task.bootStrapDump(new Path("mock"), null, mock(Path.class), hive);

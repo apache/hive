@@ -104,7 +104,7 @@ public class StorageFormat {
     }
   }
 
-  protected void fillDefaultStorageFormat(boolean isExternal, boolean isMaterializedView)
+  public void fillDefaultStorageFormat(boolean isExternal, boolean isMaterializedView)
       throws  SemanticException {
     if ((inputFormat == null) && (storageHandler == null)) {
       String defaultFormat;

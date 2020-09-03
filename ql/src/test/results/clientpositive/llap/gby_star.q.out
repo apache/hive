@@ -49,10 +49,9 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col2 (type: double)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -67,7 +66,6 @@ STAGE PLANS:
                   null sort order: zz
                   sort order: ++
                   Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
-                  TopN Hash Memory Usage: 0.1
                   value expressions: _col2 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -162,10 +160,9 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                           Statistics: Num rows: 83 Data size: 15438 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col2 (type: double)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -180,7 +177,6 @@ STAGE PLANS:
                   null sort order: zz
                   sort order: ++
                   Statistics: Num rows: 83 Data size: 15438 Basic stats: COMPLETE Column stats: COMPLETE
-                  TopN Hash Memory Usage: 0.1
                   value expressions: _col2 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -275,10 +271,9 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: string)
                           Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
                           value expressions: _col1 (type: double)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -293,7 +288,6 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
-                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -383,7 +377,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -404,7 +398,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -435,7 +429,6 @@ STAGE PLANS:
                       sort order: +
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.1
                       value expressions: _col1 (type: double)
         Reducer 3 
             Execution mode: vectorized, llap
@@ -451,7 +444,6 @@ STAGE PLANS:
                   null sort order: z
                   sort order: +
                   Statistics: Num rows: 83 Data size: 7885 Basic stats: COMPLETE Column stats: COMPLETE
-                  TopN Hash Memory Usage: 0.1
                   value expressions: _col1 (type: double)
         Reducer 4 
             Execution mode: vectorized, llap

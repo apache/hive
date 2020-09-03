@@ -27,7 +27,9 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -43,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 public class CopyUtils {
@@ -254,10 +257,13 @@ public class CopyUtils {
         // if the new file exist then delete it before renaming, to avoid rename failure. If the copy is done
         // directly to table path (bypassing staging directory) then there might be some stale files from previous
         // incomplete/failed load. No need of recycle as this is a case of stale file.
-        if (dstFs.exists(newDestFile)) {
-          LOG.debug(" file " + newDestFile + " is deleted before renaming");
+        try {
           dstFs.delete(newDestFile, true);
+          LOG.debug(" file " + newDestFile + " is deleted before renaming");
+        } catch (FileNotFoundException e) {
+          // no problem
         }
+
         boolean result = dstFs.rename(destFile, newDestFile);
         if (!result) {
           throw new IllegalStateException(
@@ -294,39 +300,27 @@ public class CopyUtils {
     return false;
   }
 
-  private UserGroupInformation getProxyUser() throws LoginException, IOException {
+  private UserGroupInformation getProxyUser() throws IOException {
     if (copyAsUser == null) {
       return null;
     }
-    UserGroupInformation proxyUser = null;
-    int currentRetry = 0;
-    while (currentRetry <= MAX_IO_RETRY) {
-      try {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(hiveConf)
+      .withRetryOnException(IOException.class).build();
+    try {
+      return retryable.executeCallable(() -> {
+        UserGroupInformation proxyUser = null;
         UserGroupInformation ugi = Utils.getUGI();
         String currentUser = ugi.getShortUserName();
         if (!currentUser.equals(copyAsUser)) {
           proxyUser = UserGroupInformation.createProxyUser(
-                  copyAsUser, UserGroupInformation.getLoginUser());
+            copyAsUser, UserGroupInformation.getLoginUser());
         }
         return proxyUser;
-      } catch (IOException e) {
-        currentRetry++;
-        if (currentRetry <= MAX_IO_RETRY) {
-          LOG.warn("Unable to get UGI info", e);
-        } else {
-          LOG.error("Unable to get UGI info", e);
-          throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg());
-        }
-        int sleepTime = FileUtils.getSleepTime(currentRetry);
-        LOG.info("Sleep for " + sleepTime + " milliseconds before retry " + (currentRetry));
-        try {
-          Thread.sleep(sleepTime);
-        } catch (InterruptedException timerEx) {
-          LOG.info("Sleep interrupted", timerEx.getMessage());
-        }
-      }
+      });
+    } catch (Exception e) {
+      throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
-    return null;
   }
 
   // Copy without retry

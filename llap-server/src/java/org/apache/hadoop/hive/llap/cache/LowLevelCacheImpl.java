@@ -293,7 +293,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
     long[] result = null;
     assert buffers.length == ranges.length;
     FileCache<ConcurrentSkipListMap<Long, LlapDataBuffer>> subCache =
-        FileCache.getOrAddFileSubCache(cache, fileKey, CACHE_CTOR);
+        FileCache.getOrAddFileSubCache(cache, fileKey, CACHE_CTOR, tag);
     try {
       for (int i = 0; i < ranges.length; ++i) {
         LlapDataBuffer buffer = (LlapDataBuffer)buffers[i];
@@ -305,10 +305,10 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
         long offset = ranges[i].getOffset() + baseOffset;
         assert buffer.declaredCachedLength == LlapDataBuffer.UNKNOWN_CACHED_LENGTH;
         buffer.declaredCachedLength = ranges[i].getLength();
-        buffer.setTag(tag);
         while (true) { // Overwhelmingly executes once, or maybe twice (replacing stale value).
           LlapDataBuffer oldVal = subCache.getCache().putIfAbsent(offset, buffer);
           if (oldVal == null) {
+            buffer.setFileCache(subCache);
             // Cached successfully, add to policy.
             cachePolicy.cache(buffer, priority);
             if (qfCounters != null) {

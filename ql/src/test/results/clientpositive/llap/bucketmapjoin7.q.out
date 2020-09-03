@@ -109,7 +109,7 @@ STAGE PLANS:
                       tag: 0
                       auto parallelism: true
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -179,7 +179,7 @@ STAGE PLANS:
                       value expressions: value (type: string)
                       auto parallelism: true
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -257,8 +257,6 @@ STAGE PLANS:
                       sort order: ++
                       Statistics: Num rows: 72 Data size: 29216 Basic stats: PARTIAL Column stats: NONE
                       tag: -1
-                      TopN: 1
-                      TopN Hash Memory Usage: 0.1
                       auto parallelism: false
         Reducer 3 
             Execution mode: llap

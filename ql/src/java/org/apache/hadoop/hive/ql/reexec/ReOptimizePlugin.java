@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSources;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.stats.OperatorStatsReaderHook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,8 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
   private OperatorStatsReaderHook statsReaderHook;
 
   private boolean alwaysCollectStats;
+
+  private int maxExecutions = 1;
 
   class LocalHook implements ExecuteWithHookContext {
 
@@ -80,14 +83,15 @@ public class ReOptimizePlugin implements IReExecutionPlugin {
     coreDriver.getHookRunner().addOnFailureHook(statsReaderHook);
     coreDriver.getHookRunner().addPostHook(statsReaderHook);
     alwaysCollectStats = driver.getConf().getBoolVar(ConfVars.HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS);
+    maxExecutions = 1 + coreDriver.getConf().getIntVar(ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
     statsReaderHook.setCollectOnSuccess(alwaysCollectStats);
 
     coreDriver.setStatsSource(StatsSources.getStatsSource(driver.getConf()));
   }
 
   @Override
-  public boolean shouldReExecute(int executionNum) {
-    return retryPossible;
+  public boolean shouldReExecute(int executionNum, CommandProcessorException ex) {
+    return (executionNum < maxExecutions) && retryPossible;
   }
 
   @Override

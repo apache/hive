@@ -62,9 +62,8 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

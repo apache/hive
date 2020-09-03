@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -39,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.io.SessionStream;
@@ -172,10 +172,10 @@ public class SQLOperation extends ExecuteStatementOperation {
         timeoutExecutor.schedule(() -> {
           try {
             final String queryId = queryState.getQueryId();
-            log.info("Query timed out after: " + queryTimeout + " seconds. Cancelling the execution now: " + queryId);
+            log.info("Query timed out after: {} seconds. Cancelling the execution now: {}", queryTimeout, queryId);
             SQLOperation.this.cancel(OperationState.TIMEDOUT);
           } catch (HiveSQLException e) {
-            log.error("Error cancelling the query after timeout: " + queryTimeout + " seconds", e);
+            log.error("Error cancelling the query after timeout: {} seconds", queryTimeout, e);
           }
           return null;
         }, queryTimeout, TimeUnit.SECONDS);
@@ -188,9 +188,9 @@ public class SQLOperation extends ExecuteStatementOperation {
 
       // set the operation handle information in Driver, so that thrift API users
       // can use the operation handle they receive, to lookup query information in
-      // Yarn ATS
-      String guid64 = Base64.encodeBase64URLSafeString(getHandle().getHandleIdentifier()
-          .toTHandleIdentifier().getGuid()).trim();
+      // Yarn ATS, also used in logging so remove padding for better display
+      String guid64 = Base64.getUrlEncoder().withoutPadding()
+          .encodeToString(getHandle().getHandleIdentifier().toTHandleIdentifier().getGuid());
       driver.setOperationId(guid64);
 
       // In Hive server mode, we are not able to retry in the FetchTask
@@ -206,6 +206,9 @@ public class SQLOperation extends ExecuteStatementOperation {
       throw toSQLException("Error while compiling statement", e);
     } catch (Throwable e) {
       setState(OperationState.ERROR);
+      if (e instanceof OutOfMemoryError) {
+        throw e;
+      }
       throw new HiveSQLException("Error running query", e);
     }
   }
@@ -229,11 +232,8 @@ public class SQLOperation extends ExecuteStatementOperation {
        * may return a non-zero response code. We will simply return if the operation state is
        * CANCELED, TIMEDOUT, CLOSED or FINISHED, otherwise throw an exception
        */
-      if ((getStatus().getState() == OperationState.CANCELED)
-          || (getStatus().getState() == OperationState.TIMEDOUT)
-          || (getStatus().getState() == OperationState.CLOSED)
-          || (getStatus().getState() == OperationState.FINISHED)) {
-        log.warn("Ignore exception in terminal state", e);
+      if (getStatus().getState().isTerminal()) {
+        log.warn("Ignore exception in terminal state: {}", getStatus().getState(), e);
         return;
       }
       setState(OperationState.ERROR);
@@ -241,6 +241,8 @@ public class SQLOperation extends ExecuteStatementOperation {
         throw toSQLException("Error while compiling statement", (CommandProcessorException)e);
       } else if (e instanceof HiveSQLException) {
         throw (HiveSQLException) e;
+      } else if (e instanceof OutOfMemoryError) {
+        throw (OutOfMemoryError) e;
       } else {
         throw new HiveSQLException("Error running query", e);
       }
@@ -341,7 +343,7 @@ public class SQLOperation extends ExecuteStatementOperation {
         currentUGI.doAs(doAsAction);
       } catch (Exception e) {
         setOperationException(new HiveSQLException(e));
-        log.error("Error running hive query as user : " + currentUGI.getShortUserName(), e);
+        log.error("Error running hive query as user : {}", currentUGI.getShortUserName(), e);
       } finally {
         /**
          * We'll cache the ThreadLocal RawStore object for this background thread for an orderly cleanup
@@ -383,9 +385,9 @@ public class SQLOperation extends ExecuteStatementOperation {
         boolean success = backgroundHandle.cancel(true);
         String queryId = queryState.getQueryId();
         if (success) {
-          log.info("The running operation has been successfully interrupted: " + queryId);
-        } else if (state == OperationState.CANCELED) {
-          log.info("The running operation could not be cancelled, typically because it has already completed normally: " + queryId);
+          log.info("The running operation has been successfully interrupted: {}", queryId);
+        } else {
+          log.info("The running operation could not be cancelled, typically because it has already completed normally: {}", queryId);
         }
       }
     }
@@ -415,12 +417,12 @@ public class SQLOperation extends ExecuteStatementOperation {
     String queryId = null;
     if (stateAfterCancel == OperationState.CANCELED) {
       queryId = queryState.getQueryId();
-      log.info("Cancelling the query execution: " + queryId);
+      log.info("Cancelling the query execution: {}", queryId);
     }
     cleanup(stateAfterCancel);
     cleanupOperationLog(operationLogCleanupDelayMs);
     if (stateAfterCancel == OperationState.CANCELED) {
-      log.info("Successfully cancelled the query: " + queryId);
+      log.info("Successfully cancelled the query: {}", queryId);
     }
   }
 

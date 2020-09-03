@@ -50,8 +50,8 @@ public abstract class LazyBinaryNonPrimitive<OI extends ObjectInspector>
     if (null == bytes) {
       throw new RuntimeException("bytes cannot be null!");
     }
-    if (length <= 0) {
-      throw new RuntimeException("length should be positive!");
+    if (length < 0) {
+      throw new RuntimeException("length should be non-negative!");
     }
     this.bytes = bytes;
     this.start = start;

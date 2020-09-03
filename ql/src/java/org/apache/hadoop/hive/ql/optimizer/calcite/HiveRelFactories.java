@@ -46,6 +46,7 @@ import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
@@ -169,6 +170,10 @@ public class HiveRelFactories {
       if (joinType == JoinRelType.SEMI) {
         final RelOptCluster cluster = left.getCluster();
         return HiveSemiJoin.getSemiJoin(cluster, left.getTraitSet(), left, right, condition);
+      }
+      if (joinType == JoinRelType.ANTI) {
+        final RelOptCluster cluster = left.getCluster();
+        return HiveAntiJoin.getAntiJoin(cluster, left.getTraitSet(), left, right, condition);
       }
       return HiveJoin.getJoin(left.getCluster(), left, right, condition, joinType);
     }

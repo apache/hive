@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.wrapper;
 
+import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hive.common.util.Murmur3;
 
@@ -27,15 +28,12 @@ import java.util.Arrays;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveIntervalDayTime;
-import org.apache.hadoop.hive.ql.exec.KeyWrapper;
 import org.apache.hadoop.hive.ql.exec.vector.IntervalDayTimeColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorColumnSetInfo;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 import com.google.common.base.Preconditions;
@@ -205,11 +203,6 @@ public class VectorHashKeyWrapperGeneral extends VectorHashKeyWrapperBase {
   @Override
   protected Object clone() {
     VectorHashKeyWrapperGeneral clone = new VectorHashKeyWrapperGeneral();
-    duplicateTo(clone);
-    return clone;
-  }
-
-  private void duplicateTo(VectorHashKeyWrapperGeneral clone) {
     clone.hashCtx = hashCtx;
     clone.keyCount = keyCount;
     clone.longValues = (longValues.length > 0) ? longValues.clone() : EMPTY_LONG_ARRAY;
@@ -262,6 +255,138 @@ public class VectorHashKeyWrapperGeneral extends VectorHashKeyWrapperBase {
 
     clone.hashcode = hashcode;
     assert clone.equals(this);
+
+    return clone;
+  }
+
+  private long[] copyInPlaceOrAllocate(long[] from, long[] to) {
+    if (from.length > 0) {
+      if (to != null && to.length == from.length) {
+        System.arraycopy(from, 0, to, 0, from.length);
+        return to;
+      } else {
+        return from.clone();
+      }
+    } else {
+      return EMPTY_LONG_ARRAY;
+    }
+  }
+
+  private double[] copyInPlaceOrAllocate(double[] from, double[] to) {
+    if (from.length > 0) {
+      if (to != null && to.length == from.length) {
+        System.arraycopy(from, 0, to, 0, from.length);
+        return to;
+      } else {
+        return from.clone();
+      }
+    } else {
+      return EMPTY_DOUBLE_ARRAY;
+    }
+  }
+
+  private boolean[] copyInPlaceOrAllocate(boolean[] from, boolean[] to) {
+    if (to != null && to.length == from.length) {
+      System.arraycopy(from, 0, to, 0, from.length);
+      return to;
+    } else {
+      return from.clone();
+    }
+  }
+
+  private HiveDecimalWritable[] copyInPlaceOrAllocate(HiveDecimalWritable[] from, HiveDecimalWritable[] to) {
+    if (from.length > 0) {
+      if (to == null || to.length != from.length) {
+        to = new HiveDecimalWritable[from.length];
+      }
+      for (int i = 0; i < from.length; i++) {
+        to[i] = new HiveDecimalWritable(from[i]);
+      }
+      return to;
+    } else {
+      return EMPTY_DECIMAL_ARRAY;
+    }
+  }
+
+  private Timestamp[] copyInPlaceOrAllocate(Timestamp[] from, Timestamp[] to) {
+    if (from.length > 0) {
+      if (to == null || to.length != from.length) {
+        to = new Timestamp[from.length];
+      }
+      for (int i = 0; i < from.length; i++) {
+        to[i] = (Timestamp) from[i].clone();
+      }
+      return to;
+    } else {
+      return EMPTY_TIMESTAMP_ARRAY;
+    }
+  }
+
+  @Override
+  public void copyKey(KeyWrapper oldWrapper) {
+    VectorHashKeyWrapperGeneral clone = (VectorHashKeyWrapperGeneral) oldWrapper;
+    clone.hashCtx = hashCtx;
+    clone.keyCount = keyCount;
+    clone.longValues = copyInPlaceOrAllocate(longValues, clone.longValues);
+    clone.doubleValues = copyInPlaceOrAllocate(doubleValues, clone.doubleValues);
+    clone.isNull = copyInPlaceOrAllocate(isNull, clone.isNull);
+    clone.decimalValues = copyInPlaceOrAllocate(decimalValues, clone.decimalValues);
+
+    if (byteLengths.length > 0) {
+      if (clone.byteLengths == null || clone.byteValues.length != byteValues.length) {
+        // byteValues and byteStarts are always the same length
+        clone.byteValues = new byte[byteValues.length][];
+        clone.byteStarts = new int[byteValues.length];
+        clone.byteLengths = byteLengths.clone();
+        for (int i = 0; i < byteValues.length; ++i) {
+          // avoid allocation/copy of nulls, because it potentially expensive.
+          // branch instead.
+          if (byteLengths[i] != -1) {
+            clone.byteValues[i] = Arrays.copyOfRange(byteValues[i],
+                byteStarts[i], byteStarts[i] + byteLengths[i]);
+          }
+        }
+      } else {
+        System.arraycopy(byteLengths, 0, clone.byteLengths, 0, byteValues.length);
+        Arrays.fill(byteStarts, 0);
+        System.arraycopy(byteStarts, 0, clone.byteStarts, 0, byteValues.length);
+        for (int i = 0; i < byteValues.length; ++i) {
+          // avoid allocation/copy of nulls, because it potentially expensive.
+          // branch instead.
+          if (byteLengths[i] != -1) {
+            if (clone.byteValues[i] != null && clone.byteValues[i].length >= byteValues[i].length) {
+              System.arraycopy(byteValues[i], byteStarts[i], clone.byteValues[i], 0, byteLengths[i]);
+            } else {
+              clone.byteValues[i] = Arrays.copyOfRange(byteValues[i],
+                  byteStarts[i], byteStarts[i] + byteLengths[i]);
+            }
+          }
+        }
+      }
+    } else {
+      clone.byteValues = EMPTY_BYTES_ARRAY;
+      clone.byteStarts = EMPTY_INT_ARRAY;
+      clone.byteLengths = EMPTY_INT_ARRAY;
+    }
+    clone.timestampValues = copyInPlaceOrAllocate(timestampValues, clone.timestampValues);
+    clone.intervalDayTimeValues = copyInPlaceOrAllocate(intervalDayTimeValues, clone.intervalDayTimeValues);
+
+    clone.hashcode = hashcode;
+    assert clone.equals(this);
+  }
+
+  private HiveIntervalDayTime[] copyInPlaceOrAllocate(HiveIntervalDayTime[] from, HiveIntervalDayTime[] to) {
+    if (from.length > 0) {
+      if (to == null || to.length != from.length) {
+        to = new HiveIntervalDayTime[from.length];
+      }
+      for (int i = 0; i < from.length; i++) {
+        to[i] = (HiveIntervalDayTime) from[i].clone();
+      }
+      return to;
+    } else {
+      return EMPTY_INTERVAL_DAY_TIME_ARRAY;
+    }
   }
 
   @Override

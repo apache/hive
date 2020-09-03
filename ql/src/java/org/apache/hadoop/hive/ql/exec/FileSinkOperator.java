@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -493,6 +494,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   String taskId, originalTaskId;
 
   protected boolean filesCreated = false;
+  protected BitSet filesCreatedPerBucket = new BitSet();
 
   private void initializeSpecPath() {
     // For a query of the type:
@@ -741,6 +743,31 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
   }
 
+  /**
+   * There was an issue with the query-based MINOR compaction (HIVE-23763), that the row distribution between the FileSinkOperators
+   * was not correlated correctly with the bucket numbers. So it could happen that rows from different buckets ended up in the same
+   * FileSinkOperator and got written out into one file. This is not correct, one bucket file must contain rows from the same bucket.
+   * Therefore the FileSinkOperator got extended with this method to be able to handle rows from different buckets.
+   * In this case it will create separate files from each bucket. This logic is similar to the one in the createDynamicBucket method.
+   * @param fsp
+   * @throws HiveException
+   */
+  protected void createBucketFilesForCompaction(FSPaths fsp) throws HiveException {
+    try {
+      if (fsp.outPaths.length < bucketId + 1) {
+        fsp.updaters = Arrays.copyOf(fsp.updaters, bucketId + 1);
+        fsp.outPaths = Arrays.copyOf(fsp.outPaths, bucketId + 1);
+        fsp.finalPaths = Arrays.copyOf(fsp.finalPaths, bucketId + 1);
+        fsp.outWriters = Arrays.copyOf(fsp.outWriters, bucketId + 1);
+        statsFromRecordWriter = Arrays.copyOf(statsFromRecordWriter, bucketId + 1);
+      }
+      createBucketForFileIdx(fsp, bucketId);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+    filesCreatedPerBucket.set(bucketId);
+  }
+
   protected void createBucketFiles(FSPaths fsp) throws HiveException {
     try {
       int filesIdx = 0;
@@ -955,16 +982,18 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     String lbDirName = null;
     lbDirName = (lbCtx == null) ? null : generateListBucketingDirName(row);
 
-    if (!bDynParts && !filesCreated) {
+    if (!bDynParts && (!filesCreated || conf.isCompactionTable())) {
       if (lbDirName != null) {
         if (valToPaths.get(lbDirName) == null) {
           createNewPaths(null, lbDirName);
         }
-      } else {
-        if (conf.isCompactionTable()) {
-          int bucketProperty = ((IntWritable)((Object[])row)[2]).get();
-          bucketId = BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
+      } else if (conf.isCompactionTable()) {
+        int bucketProperty = getBucketProperty(row);
+        bucketId = BucketCodec.determineVersion(bucketProperty).decodeWriterId(bucketProperty);
+        if (!filesCreatedPerBucket.get(bucketId)) {
+          createBucketFilesForCompaction(fsp);
         }
+      } else {
         createBucketFiles(fsp);
       }
     }
@@ -1056,7 +1085,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       // RecordUpdater expects to get the actual row, not a serialized version of it.  Thus we
       // pass the row rather than recordValue.
       if (conf.getWriteType() == AcidUtils.Operation.NOT_ACID || conf.isMmTable() || conf.isCompactionTable()) {
-        rowOutWriters[findWriterOffset(row)].write(recordValue);
+        writerOffset = bucketId;
+        if (!conf.isCompactionTable()) {
+          writerOffset = findWriterOffset(row);
+        }
+        rowOutWriters[writerOffset].write(recordValue);
       } else if (conf.getWriteType() == AcidUtils.Operation.INSERT) {
         fpaths.updaters[findWriterOffset(row)].insert(conf.getTableWriteId(), row);
       } else {
@@ -1405,8 +1438,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
       if (conf.isMmTable() || conf.isDirectInsert()) {
-        Utilities.writeCommitManifest(commitPaths, specPath, fs, originalTaskId, conf.getTableWriteId(), conf
-            .getStatementId(), unionPath, conf.getInsertOverwrite(), bDynParts, dynamicPartitionSpecs);
+        Utilities.writeCommitManifest(commitPaths, specPath, fs, originalTaskId, conf.getTableWriteId(),
+            conf.getStatementId(), unionPath, conf.getInsertOverwrite(), bDynParts, dynamicPartitionSpecs,
+            conf.getStaticSpec());
       }
       // Only publish stats if this operator's flag was set to gather stats
       if (conf.isGatherStats()) {
@@ -1470,7 +1504,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
               conf.getTableInfo(), numBuckets, conf.getCompressed());
           Utilities.handleDirectInsertTableFinalPath(specPath, unionSuffix, hconf, success, dpLevels, lbLevels, mbc,
               conf.getTableWriteId(), conf.getStatementId(), reporter, conf.isMmTable(), conf.isMmCtas(), conf
-                  .getInsertOverwrite(), conf.isDirectInsert());
+                  .getInsertOverwrite(), conf.isDirectInsert(), conf.getStaticSpec());
         }
       }
     } catch (IOException e) {
@@ -1682,6 +1716,21 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   public void configureJobConf(JobConf job) {
     if (conf.getInsertOverwrite()) {
       job.setBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, true);
+    }
+  }
+
+  /**
+   * Get the bucket property as an int from the row. This is necessary because
+   * VectorFileSinkOperator wraps row values in Writable objects.
+   * @param row as Object
+   * @return bucket property as int
+   */
+  private int getBucketProperty(Object row) {
+    Object bucketProperty = ((Object[]) row)[2];
+    if (bucketProperty instanceof Writable) {
+      return ((IntWritable) bucketProperty).get();
+    } else {
+      return (int) bucketProperty;
     }
   }
 }

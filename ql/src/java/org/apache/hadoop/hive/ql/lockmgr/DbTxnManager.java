@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.GetOpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.ql.Context;
@@ -610,9 +611,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     if(isTxnOpen()) {
       // Create one dummy lock so we can go through the loop below, though we only
       //really need txnId
-      DbLockManager.DbHiveLock dummyLock = new DbLockManager.DbHiveLock(0L);
-      locks = new ArrayList<>(1);
-      locks.add(dummyLock);
+      locks = Collections.singletonList(new DbLockManager.DbHiveLock(0L));
     }
     else {
       locks = lockMgr.getLocks(false, false);
@@ -752,11 +751,31 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public GetOpenTxnsResponse getOpenTxns() throws LockException {
+    try {
+      return getMS().getOpenTxns();
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    }
+  }
+
+  @Override
   public ValidTxnList getValidTxns() throws LockException {
     assert isTxnOpen();
     init();
     try {
       return getMS().getValidTxns(txnId);
+    } catch (TException e) {
+      throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
+    }
+  }
+
+  @Override
+  public ValidTxnList getValidTxns(List<TxnType> excludeTxnTypes) throws LockException {
+    assert isTxnOpen();
+    init();
+    try {
+      return getMS().getValidTxns(txnId, excludeTxnTypes);
     } catch (TException e) {
       throw new LockException(ErrorMsg.METASTORE_COMMUNICATION_FAILED.getMsg(), e);
     }

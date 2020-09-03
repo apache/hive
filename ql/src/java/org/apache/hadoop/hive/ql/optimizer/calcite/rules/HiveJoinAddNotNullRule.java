@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinLeafPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil.JoinPredicateInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 
@@ -55,6 +56,9 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
 
   public static final HiveJoinAddNotNullRule INSTANCE_SEMIJOIN =
       new HiveJoinAddNotNullRule(HiveSemiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
+
+  public static final HiveJoinAddNotNullRule INSTANCE_ANTIJOIN =
+      new HiveJoinAddNotNullRule(HiveAntiJoin.class, HiveRelFactories.HIVE_FILTER_FACTORY);
 
   private final FilterFactory filterFactory;
 
@@ -74,7 +78,15 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
   @Override
   public void onMatch(RelOptRuleCall call) {
     Join join = call.rel(0);
-    if (join.getJoinType() == JoinRelType.FULL || join.getCondition().isAlwaysTrue()) {
+
+    // For anti join case add the not null on right side even if the condition is always true.
+    // This is done because during execution, anti join expect the right side to be empty and
+    // if we dont put null check on right, for null only right side table and condition always
+    // true, execution will produce 0 records as the post processing to filter out null value
+    // is not done for always true conditions during execution.
+    // eg  select * from left_tbl where (select 1 from all_null_right limit 1) is null
+    if (join.getJoinType() == JoinRelType.FULL ||
+            (join.getJoinType() != JoinRelType.ANTI && join.getCondition().isAlwaysTrue())) {
       return;
     }
 
@@ -92,7 +104,7 @@ public final class HiveJoinAddNotNullRule extends RelOptRule {
     Set<String> rightPushedPredicates = Sets.newHashSet(registry.getPushedPredicates(join, 1));
 
     boolean genPredOnLeft = join.getJoinType() == JoinRelType.RIGHT || join.getJoinType() == JoinRelType.INNER || join.isSemiJoin();
-    boolean genPredOnRight = join.getJoinType() == JoinRelType.LEFT || join.getJoinType() == JoinRelType.INNER || join.isSemiJoin();
+    boolean genPredOnRight = join.getJoinType() == JoinRelType.LEFT || join.getJoinType() == JoinRelType.INNER || join.isSemiJoin()|| join.getJoinType() == JoinRelType.ANTI;
 
     RexNode newLeftPredicate = getNewPredicate(join, registry, joinPredInfo, leftPushedPredicates, genPredOnLeft, 0);
     RexNode newRightPredicate = getNewPredicate(join, registry, joinPredInfo, rightPushedPredicates, genPredOnRight, 1);

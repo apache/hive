@@ -195,6 +195,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -226,7 +227,7 @@ STAGE PLANS:
                       Statistics: Num rows: 68 Data size: 24552 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -269,6 +270,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08
 POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
@@ -423,6 +425,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -454,7 +457,7 @@ STAGE PLANS:
                       Statistics: Num rows: 73 Data size: 26696 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -498,6 +501,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
@@ -657,6 +661,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -688,7 +693,7 @@ STAGE PLANS:
                       Statistics: Num rows: 147 Data size: 53016 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -732,6 +737,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
@@ -1041,7 +1047,7 @@ STAGE PLANS:
                       Statistics: Num rows: 47 Data size: 8648 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1234,6 +1240,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1265,7 +1272,7 @@ STAGE PLANS:
                       Statistics: Num rows: 68 Data size: 24552 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1308,6 +1315,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/load_data_1_partition.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08
 POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
@@ -1462,6 +1470,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1493,7 +1502,7 @@ STAGE PLANS:
                       Statistics: Num rows: 73 Data size: 26696 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1537,6 +1546,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
@@ -1696,6 +1706,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1727,7 +1738,7 @@ STAGE PLANS:
                       Statistics: Num rows: 147 Data size: 53016 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1771,6 +1782,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/subdir' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
@@ -2048,6 +2060,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2079,7 +2092,7 @@ STAGE PLANS:
                       Statistics: Num rows: 295 Data size: 106032 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -2123,6 +2136,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=0
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08/hr=1
 POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08,hr=0).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
@@ -2636,6 +2650,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: explain load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2667,7 +2682,7 @@ STAGE PLANS:
                       Statistics: Num rows: 73 Data size: 26696 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col2 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -2710,6 +2725,7 @@ PREHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: query: load data local inpath '../../data/files/load_data_job/partitions/load_data_2_partitions.txt' INTO TABLE srcbucket_mapjoin_n8
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@hr=0
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@hr=1
 POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(hr=0).ds SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:ds, type:string, comment:null), ]
@@ -2875,6 +2891,7 @@ INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -2906,7 +2923,7 @@ STAGE PLANS:
                       Statistics: Num rows: 68 Data size: 24552 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col0 (type: int), _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -2953,6 +2970,7 @@ INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
 SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcbucket_mapjoin_n8__temp_table_for_load_data__
+POSTHOOK: Output: default@srcbucket_mapjoin_n8
 POSTHOOK: Output: default@srcbucket_mapjoin_n8@ds=2008-04-08
 POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).key SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: srcbucket_mapjoin_n8 PARTITION(ds=2008-04-08).value SIMPLE [(srcbucket_mapjoin_n8__temp_table_for_load_data__)srcbucket_mapjoin_n8__temp_table_for_load_data__.FieldSchema(name:value, type:string, comment:null), ]
@@ -3107,6 +3125,7 @@ PREHOOK: Output: default@orc_test_txn
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
+POSTHOOK: Output: default@orc_test_txn
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -3183,6 +3202,7 @@ PREHOOK: Output: default@orc_test_txn
 #### A masked pattern was here ####
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_test_txn__temp_table_for_load_data__
+POSTHOOK: Output: default@orc_test_txn
 POSTHOOK: Output: default@orc_test_txn@year=2016
 POSTHOOK: Output: default@orc_test_txn@year=2017
 POSTHOOK: Output: default@orc_test_txn@year=2018

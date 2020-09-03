@@ -41,6 +41,9 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.BootstrapLoadMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.load.metric.IncrementalLoadMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.IOException;
@@ -216,6 +219,10 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
                   " as it is not a source of replication (repl.source.for)");
           throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION.getMsg());
         }
+        if (ReplUtils.isTargetOfReplication(database)) {
+          LOG.error("Cannot dump database " + dbNameOrPattern + " as it is a target of replication (repl.target.for)");
+          throw new SemanticException(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getMsg());
+        }
       } else {
         throw new SemanticException("Cannot dump database " + dbNameOrPattern + " as it does not exist");
       }
@@ -384,6 +391,10 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // tells us what is inside that dumpdir.
 
       //If repl status of target is greater than dumps, don't do anything as the load for the latest dump is done
+      if (ReplUtils.failedWithNonRecoverableError(ReplUtils.getLatestDumpPath(ReplUtils
+        .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf), conf)) {
+        throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
+      }
       if (loadPath != null) {
         DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
@@ -398,7 +409,9 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
         ReplLoadWork replLoadWork = new ReplLoadWork(conf, loadPath.toString(), sourceDbNameOrPattern,
                 replScope.getDbName(),
                 dmd.getReplScope(),
-                queryState.getLineageState(), evDump, dmd.getEventTo());
+                queryState.getLineageState(), evDump, dmd.getEventTo(), dmd.getDumpExecutionId(),
+            initMetricCollection(!evDump, loadPath.toString(), replScope.getDbName(),
+              dmd.getDumpExecutionId()));
         rootTasks.add(TaskFactory.get(replLoadWork, conf));
       } else {
         LOG.warn("Previous Dump Already Loaded");
@@ -409,10 +422,19 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private ReplicationMetricCollector initMetricCollection(boolean isBootstrap, String dumpDirectory,
+                                                          String dbNameToLoadIn, long dumpExecutionId) {
+    ReplicationMetricCollector collector;
+    if (isBootstrap) {
+      collector = new BootstrapLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dumpExecutionId, conf);
+    } else {
+      collector = new IncrementalLoadMetricCollector(dbNameToLoadIn, dumpDirectory, dumpExecutionId, conf);
+    }
+    return collector;
+  }
+
   private Path getCurrentLoadPath() throws IOException, SemanticException {
-    Path loadPathBase = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
-            Base64.getEncoder().encodeToString(sourceDbNameOrPattern.toLowerCase()
-                    .getBytes(StandardCharsets.UTF_8.name())));
+    Path loadPathBase = ReplUtils.getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase());
     final FileSystem fs = loadPathBase.getFileSystem(conf);
     // Make fully qualified path for further use.
     loadPathBase = fs.makeQualified(loadPathBase);

@@ -237,6 +237,23 @@ public class Warehouse {
    * @throws MetaException when the file path cannot be properly determined from the configured
    * file system.
    */
+  public Path getDatabaseExternalPath(Database db) throws MetaException {
+      Path dbPath = new Path(db.getLocationUri());
+      if (FileUtils.isSubdirectory(getWhRoot().toString(), dbPath.toString() + Path.SEPARATOR)) {
+        // db metadata incorrect, find new location based on external warehouse root
+        dbPath = getDefaultExternalDatabasePath(db.getName());
+      }
+      return getDnsPath(dbPath);
+  }
+
+  /**
+   * Get the managed tables path specified by the database.  In the case of the default database the root of the
+   * warehouse is returned.
+   * @param db database to get the path of
+   * @return path to the database directory
+   * @throws MetaException when the file path cannot be properly determined from the configured
+   * file system.
+   */
   public Path getDatabaseManagedPath(Database db) throws MetaException {
     if (db.getManagedLocationUri() != null) {
       return getDnsPath(new Path(db.getManagedLocationUri()));
@@ -778,15 +795,15 @@ public class Warehouse {
   public static String makePartName(List<FieldSchema> partCols,
       List<String> vals, String defaultStr) throws MetaException {
     if ((partCols.size() != vals.size()) || (partCols.size() == 0)) {
-      String errorStr = "Invalid partition key & values; keys [";
+      StringBuilder errorStrBuilder = new StringBuilder("Invalid partition key & values; keys [");
       for (FieldSchema fs : partCols) {
-        errorStr += (fs.getName() + ", ");
+        errorStrBuilder.append(fs.getName()).append(", ");
       }
-      errorStr += "], values [";
+      errorStrBuilder.append("], values [");
       for (String val : vals) {
-        errorStr += (val + ", ");
+        errorStrBuilder.append(val).append(", ");
       }
-      throw new MetaException(errorStr + "]");
+      throw new MetaException(errorStrBuilder.append("]").toString());
     }
     List<String> colNames = new ArrayList<>();
     for (FieldSchema col: partCols) {

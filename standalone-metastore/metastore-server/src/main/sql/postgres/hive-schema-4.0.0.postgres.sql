@@ -81,7 +81,7 @@ CREATE TABLE "DBS" (
     "NAME" character varying(128) DEFAULT NULL::character varying,
     "OWNER_NAME" character varying(128) DEFAULT NULL::character varying,
     "OWNER_TYPE" character varying(10) DEFAULT NULL::character varying,
-    "CTLG_NAME" varchar(256) DEFAULT 'hive',
+    "CTLG_NAME" varchar(256) DEFAULT 'hive' NOT NULL,
     "CREATE_TIME" bigint,
     "DB_MANAGED_LOCATION_URI" character varying(4000)
 );
@@ -1736,6 +1736,7 @@ CREATE TABLE "COMPACTION_QUEUE" (
   "CQ_TYPE" char(1) NOT NULL,
   "CQ_TBLPROPERTIES" varchar(2048),
   "CQ_WORKER_ID" varchar(128),
+  "CQ_ENQUEUE_TIME" bigint,
   "CQ_START" bigint,
   "CQ_RUN_AS" varchar(128),
   "CQ_HIGHEST_WRITE_ID" bigint,
@@ -1759,6 +1760,7 @@ CREATE TABLE "COMPLETED_COMPACTIONS" (
   "CC_TYPE" char(1) NOT NULL,
   "CC_TBLPROPERTIES" varchar(2048),
   "CC_WORKER_ID" varchar(128),
+  "CC_ENQUEUE_TIME" bigint,
   "CC_START" bigint,
   "CC_END" bigint,
   "CC_RUN_AS" varchar(128),
@@ -1903,6 +1905,21 @@ CREATE TABLE "SCHEDULED_EXECUTIONS" (
 CREATE INDEX IDX_SCHEDULED_EXECUTIONS_LAST_UPDATE_TIME ON "SCHEDULED_EXECUTIONS" ("LAST_UPDATE_TIME");
 CREATE INDEX IDX_SCHEDULED_EXECUTIONS_SCHEDULED_QUERY_ID ON "SCHEDULED_EXECUTIONS" ("SCHEDULED_QUERY_ID");
 CREATE UNIQUE INDEX UNIQUE_SCHEDULED_EXECUTIONS_ID ON "SCHEDULED_EXECUTIONS" ("SCHEDULED_EXECUTION_ID");
+
+--Create table replication metrics
+CREATE TABLE "REPLICATION_METRICS" (
+  "RM_SCHEDULED_EXECUTION_ID" bigint NOT NULL,
+  "RM_POLICY" varchar(256) NOT NULL,
+  "RM_DUMP_EXECUTION_ID" bigint NOT NULL,
+  "RM_METADATA" varchar(4000),
+  "RM_PROGRESS" varchar(4000),
+  "RM_START_TIME" integer NOT NULL,
+  PRIMARY KEY("RM_SCHEDULED_EXECUTION_ID")
+);
+
+--Create indexes for the replication metrics table
+CREATE INDEX "POLICY_IDX" ON "REPLICATION_METRICS" ("RM_POLICY");
+CREATE INDEX "DUMP_IDX" ON "REPLICATION_METRICS" ("RM_DUMP_EXECUTION_ID");
 
 
 -- -----------------------------------------------------------------

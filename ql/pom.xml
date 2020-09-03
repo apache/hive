@@ -31,12 +31,63 @@
     <hive.path.to.root>..</hive.path.to.root>
     <powermock.version>2.0.2</powermock.version>
     <reflections.version>0.9.10</reflections.version>
+    <atlas.version>2.1.0</atlas.version>
   </properties>
 
   <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- intra-project -->
     <!-- used for vector code-gen -->
+    <dependency>
+      <groupId>org.apache.atlas</groupId>
+      <artifactId>atlas-client-v2</artifactId>
+      <version>${atlas.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>jul-to-slf4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.atlas</groupId>
+      <artifactId>atlas-client-common</artifactId>
+      <version>${atlas.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>jul-to-slf4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.atlas</groupId>
+      <artifactId>atlas-intg</artifactId>
+      <version>${atlas.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-log4j12</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>jul-to-slf4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>commons-configuration</groupId>
+      <artifactId>commons-configuration</artifactId>
+      <version>${commons-configuration.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-vector-code-gen</artifactId>
@@ -492,6 +543,16 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.tez</groupId>
       <artifactId>tez-api</artifactId>
       <optional>true</optional>
@@ -796,11 +857,6 @@
       <artifactId>jersey-multipart</artifactId>
       <version>${jersey.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.google.code.findbugs</groupId>
-      <artifactId>findbugs-annotations</artifactId>
-      <version>3.0.1</version>
-    </dependency>
   </dependencies>
   <profiles>
     <profile>
@@ -985,6 +1041,7 @@
                   <!-- order is meant to be the same as the ant build -->
                   <include>org.apache.hive:hive-common</include>
                   <include>org.apache.hive:hive-udf</include>
+                  <include>org.apache.hive:hive-parser</include>
                   <include>org.apache.hive:hive-exec</include>
                   <include>org.apache.hive:hive-serde</include>
                   <include>org.apache.hive:hive-llap-common</include>

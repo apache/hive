@@ -196,7 +196,7 @@ STAGE PLANS:
                       value expressions: _col1 (type: string)
                       auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -391,7 +391,7 @@ STAGE PLANS:
                       value expressions: _col1 (type: string)
                       auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -596,6 +596,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.62
                   Statistics: Num rows: 150 Data size: 14250 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -629,7 +630,7 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -702,7 +703,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -870,6 +871,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.62
                   Statistics: Num rows: 150 Data size: 14250 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
@@ -903,7 +905,7 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -976,7 +978,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

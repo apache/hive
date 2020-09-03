@@ -94,6 +94,19 @@ public class PerfLogger {
   public static final String LOAD_PARTITION = "LoadPartition";
   public static final String LOAD_DYNAMIC_PARTITIONS = "LoadDynamicPartitions";
 
+  public static final String HIVE_GET_TABLE = "getTablesByType";
+  public static final String HIVE_GET_DATABASE = "getDatabase";
+  public static final String HIVE_GET_DATABASE_2 = "getDatabase2";
+  public static final String HIVE_GET_PARTITIONS = "getPartitions";
+  public static final String HIVE_GET_PARTITIONS_2 = "getPartitions2";
+  public static final String HIVE_GET_PARTITIONS_BY_EXPR = "getPartitionsByExpr";
+  public static final String HIVE_GET_TABLE_COLUMN_STATS = "getTableColumnStatistics";
+  public static final String HIVE_GET_AGGR_COL_STATS = "getAggrColStatsFor";
+  public static final String HIVE_GET_PK = "getPrimaryKeys";
+  public static final String HIVE_GET_FK = "getForeignKeys";
+  public static final String HIVE_GET_UNIQ_CONSTRAINT = "getUniqueConstraints";
+  public static final String HIVE_GET_NOT_NULL_CONSTRAINT = "getNotNullConstraints";
+
   protected final Map<String, Long> startTimes = new HashMap<String, Long>();
   protected final Map<String, Long> endTimes = new HashMap<String, Long>();
 
@@ -133,7 +146,7 @@ public class PerfLogger {
    * @param callerName the logging object to be used.
    * @param method method or ID that identifies this perf log element.
    */
-  public void PerfLogBegin(String callerName, String method) {
+  public void perfLogBegin(String callerName, String method) {
     long startTime = System.currentTimeMillis();
     startTimes.put(method, Long.valueOf(startTime));
     if (LOG.isDebugEnabled()) {
@@ -147,8 +160,8 @@ public class PerfLogger {
    * @param method
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
-  public long PerfLogEnd(String callerName, String method) {
-    return PerfLogEnd(callerName, method, null);
+  public long perfLogEnd(String callerName, String method) {
+    return perfLogEnd(callerName, method, null);
   }
 
   /**
@@ -157,7 +170,7 @@ public class PerfLogger {
    * @param method
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
-  public long PerfLogEnd(String callerName, String method, String additionalInfo) {
+  public long perfLogEnd(String callerName, String method, String additionalInfo) {
     Long startTime = startTimes.get(method);
     long endTime = System.currentTimeMillis();
     endTimes.put(method, Long.valueOf(endTime));

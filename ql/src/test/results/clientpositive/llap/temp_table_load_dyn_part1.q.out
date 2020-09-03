@@ -63,6 +63,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@temp_part1_n0
 STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-3 depends on stages: Stage-2
@@ -112,7 +113,7 @@ STAGE PLANS:
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                             name: default.temp_part2_n0
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
 
   Stage: Stage-3
     Dependency Collection
@@ -171,6 +172,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+POSTHOOK: Output: default@temp_part1_n0
 POSTHOOK: Output: default@temp_part1_n0@ds=2008-04-08/hr=11
 POSTHOOK: Output: default@temp_part1_n0@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@temp_part2_n0@ds=2008-12-31/hr=11

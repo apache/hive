@@ -23,7 +23,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.RawStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -40,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -55,7 +55,6 @@ public abstract class CompactorThread extends Thread implements Configurable {
   protected HiveConf conf;
 
   protected AtomicBoolean stop;
-  protected AtomicBoolean looped;
 
   protected int threadId;
 
@@ -78,11 +77,10 @@ public abstract class CompactorThread extends Thread implements Configurable {
     return conf;
   }
 
-  public void init(AtomicBoolean stop, AtomicBoolean looped) throws Exception {
+  public void init(AtomicBoolean stop) throws Exception {
     setPriority(MIN_PRIORITY);
     setDaemon(true); // this means the process will exit without waiting for this thread
     this.stop = stop;
-    this.looped = looped;
   }
 
   /**
@@ -120,11 +118,12 @@ public abstract class CompactorThread extends Thread implements Configurable {
           return null;
         }
       } catch (Exception e) {
-        LOG.error("Unable to find partition " + ci.getFullPartitionName() + ", " + e.getMessage());
+        LOG.error("Unable to find partition " + ci.getFullPartitionName(), e);
         throw e;
       }
       if (parts.size() != 1) {
-        LOG.error(ci.getFullPartitionName() + " does not refer to a single partition. " + parts);
+        LOG.error(ci.getFullPartitionName() + " does not refer to a single partition. " +
+                      Arrays.toString(parts.toArray()));
         throw new MetaException("Too many partitions for : " + ci.getFullPartitionName());
       }
       return parts.get(0);
@@ -218,7 +217,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
     LOG.info("Starting compactor thread of type " + thread.getClass().getName());
     thread.setConf(conf);
     thread.setThreadId(nextThreadId.incrementAndGet());
-    thread.init(new AtomicBoolean(), new AtomicBoolean());
+    thread.init(new AtomicBoolean());
     thread.start();
   }
 
