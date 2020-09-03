@@ -4124,28 +4124,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Statement stmt = null;
     try {
       stmt = conn.createStatement();
-      String s;
-      switch (dbProduct.dbType) {
-        case DERBY:
-        case EXTERNAL: // ANSI SQL
-          s = "values current_timestamp";
-          break;
+      String s = dbProduct.getDBTime();
 
-        case MYSQL:
-        case POSTGRES:
-        case SQLSERVER:
-          s = "select current_timestamp";
-          break;
-
-        case ORACLE:
-          s = "select current_timestamp from dual";
-          break;
-
-        default:
-          String msg = "Unknown database product: " + dbProduct.toString();
-          LOG.error(msg);
-          throw new MetaException(msg);
-      }
       LOG.debug("Going to execute query <" + s + ">");
       ResultSet rs = stmt.executeQuery(s);
       if (!rs.next()) throw new MetaException("No results from date query");
@@ -4160,27 +4140,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   protected String isWithinCheckInterval(String expr, long interval) throws MetaException {
-    String condition;
-    switch (dbProduct.dbType) {
-      case DERBY:
-        condition = " {fn TIMESTAMPDIFF(sql_tsi_second, " + expr + ", current_timestamp)} <= " + interval;
-        break;
-      case MYSQL:
-      case POSTGRES:
-        condition = expr + " >= current_timestamp - interval '" + interval + "' second";
-        break;
-      case SQLSERVER:
-        condition = "DATEDIFF(second, " + expr + ", current_timestamp) <= " + interval;
-        break;
-      case ORACLE:
-        condition = expr + " >= current_timestamp - numtodsinterval(" + interval + " , 'second')";
-        break;
-      default:
-        String msg = "Unknown database product: " + dbProduct.toString();
-        LOG.error(msg);
-        throw new MetaException(msg);
-    }
-    return condition;
+    return dbProduct.isWithinCheckInterval(expr, interval);
   }
 
   /**
@@ -5117,43 +5077,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     return false;
   }
+
   private boolean isDuplicateKeyError(SQLException ex) {
-    switch (dbProduct.dbType) {
-      case DERBY:
-      case EXTERNAL: // ANSI SQL
-        if("23505".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      case MYSQL:
-        //https://dev.mysql.com/doc/refman/5.5/en/error-messages-server.html
-        if((ex.getErrorCode() == 1022 || ex.getErrorCode() == 1062 || ex.getErrorCode() == 1586)
-          && "23000".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      case SQLSERVER:
-        //2627 is unique constaint violation incl PK, 2601 - unique key
-        if ((ex.getErrorCode() == 2627 || ex.getErrorCode() == 2601) && "23000".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      case ORACLE:
-        if(ex.getErrorCode() == 1 && "23000".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      case POSTGRES:
-        //http://www.postgresql.org/docs/8.1/static/errcodes-appendix.html
-        if("23505".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      default:
-        throw new IllegalArgumentException("Unexpected DB type: " + dbProduct + "; " + getMessage(ex));
-    }
-    return false;
+    return dbProduct.isDuplicateKeyError(ex);
   }
+  
   private static String getMessage(SQLException ex) {
     return ex.getMessage() + " (SQLState=" + ex.getSQLState() + ", ErrorCode=" + ex.getErrorCode() + ")";
   }

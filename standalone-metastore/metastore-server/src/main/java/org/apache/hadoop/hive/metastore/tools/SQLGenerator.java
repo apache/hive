@@ -121,69 +121,7 @@ public final class SQLGenerator {
     if (rows == null || rows.size() == 0) {
       return Collections.emptyList();
     }
-    List<String> insertStmts = new ArrayList<>();
-    StringBuilder sb = new StringBuilder();
-    int numRowsInCurrentStmt = 0;
-    switch (dbProduct.dbType) {
-    case ORACLE:
-      if (rows.size() > 1) {
-        //http://www.oratable.com/oracle-insert-all/
-        //https://livesql.oracle.com/apex/livesql/file/content_BM1LJQ87M5CNIOKPOWPV6ZGR3.html
-        for (int numRows = 0; numRows < rows.size(); numRows++) {
-          if (numRows % MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE) == 0) {
-            if (numRows > 0) {
-              sb.append(" select * from dual");
-              insertStmts.add(sb.toString());
-              if (rowsCountInStmts != null) {
-                rowsCountInStmts.add(numRowsInCurrentStmt);
-              }
-              numRowsInCurrentStmt = 0;
-            }
-            sb.setLength(0);
-            sb.append("insert all ");
-          }
-          sb.append("into ").append(tblColumns).append(" values(").append(rows.get(numRows))
-              .append(") ");
-          numRowsInCurrentStmt++;
-        }
-        sb.append("select * from dual");
-        insertStmts.add(sb.toString());
-        if (rowsCountInStmts != null) {
-          rowsCountInStmts.add(numRowsInCurrentStmt);
-        }
-        return insertStmts;
-      }
-      //fall through
-    case DERBY:
-    case MYSQL:
-    case POSTGRES:
-    case SQLSERVER:
-    case EXTERNAL:
-      for (int numRows = 0; numRows < rows.size(); numRows++) {
-        if (numRows % MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE) == 0) {
-          if (numRows > 0) {
-            insertStmts.add(sb.substring(0, sb.length() - 1));//exclude trailing comma
-            if (rowsCountInStmts != null) {
-              rowsCountInStmts.add(numRowsInCurrentStmt);
-            }
-            numRowsInCurrentStmt = 0;
-          }
-          sb.setLength(0);
-          sb.append("insert into ").append(tblColumns).append(" values");
-        }
-        sb.append('(').append(rows.get(numRows)).append("),");
-        numRowsInCurrentStmt++;
-      }
-      insertStmts.add(sb.substring(0, sb.length() - 1));//exclude trailing comma
-      if (rowsCountInStmts != null) {
-        rowsCountInStmts.add(numRowsInCurrentStmt);
-      }
-      return insertStmts;
-    default:
-      String msg = "Unrecognized database product name <" + dbProduct + ">";
-      LOG.error(msg);
-      throw new IllegalStateException(msg);
-    }
+    return dbProduct.createInsertValuesStmt(tblColumns, rows, rowsCountInStmts);
   }
 
   /**
@@ -191,35 +129,7 @@ public final class SQLGenerator {
    * construct.  If the DB doesn't support, return original select.
    */
   public String addForUpdateClause(String selectStatement) throws MetaException {
-    switch (dbProduct.dbType) {
-    case DERBY:
-      //https://db.apache.org/derby/docs/10.1/ref/rrefsqlj31783.html
-      //sadly in Derby, FOR UPDATE doesn't meant what it should
-      return selectStatement;
-    case MYSQL:
-      //http://dev.mysql.com/doc/refman/5.7/en/select.html
-    case ORACLE:
-      //https://docs.oracle.com/cd/E17952_01/refman-5.6-en/select.html
-    case POSTGRES:
-    	// Assume ANSI SQL for external product
-    case EXTERNAL:
-      //http://www.postgresql.org/docs/9.0/static/sql-select.html
-      return selectStatement + " for update";
-    case SQLSERVER:
-      //https://msdn.microsoft.com/en-us/library/ms189499.aspx
-      //https://msdn.microsoft.com/en-us/library/ms187373.aspx
-      String modifier = " with (updlock)";
-      int wherePos = selectStatement.toUpperCase().indexOf(" WHERE ");
-      if (wherePos < 0) {
-        return selectStatement + modifier;
-      }
-      return selectStatement.substring(0, wherePos) + modifier +
-          selectStatement.substring(wherePos, selectStatement.length());
-    default:
-      String msg = "Unrecognized database product name <" + dbProduct + ">";
-      LOG.error(msg);
-      throw new MetaException(msg);
-    }
+    return dbProduct.addForUpdateClause(selectStatement);
   }
 
   /**
@@ -232,28 +142,7 @@ public final class SQLGenerator {
    * all columns are unique for Oracle.
    */
   public String addLimitClause(int numRows, String noSelectsqlQuery) throws MetaException {
-    switch (dbProduct.dbType) {
-    case DERBY:
-    case EXTERNAL: // ANSI SQL
-      //http://db.apache.org/derby/docs/10.7/ref/rrefsqljoffsetfetch.html
-      return "select " + noSelectsqlQuery + " fetch first " + numRows + " rows only";
-    case MYSQL:
-      //http://www.postgresql.org/docs/7.3/static/queries-limit.html
-    case POSTGRES:
-      //https://dev.mysql.com/doc/refman/5.0/en/select.html
-      return "select " + noSelectsqlQuery + " limit " + numRows;
-    case ORACLE:
-      //newer versions (12c and later) support OFFSET/FETCH
-      return "select * from (select " + noSelectsqlQuery + ") where rownum <= " + numRows;
-    case SQLSERVER:
-      //newer versions (2012 and later) support OFFSET/FETCH
-      //https://msdn.microsoft.com/en-us/library/ms189463.aspx
-      return "select TOP(" + numRows + ") " + noSelectsqlQuery;
-    default:
-      String msg = "Unrecognized database product name <" + dbProduct + ">";
-      LOG.error(msg);
-      throw new MetaException(msg);
-    }
+    return dbProduct.addLimitClause(numRows, noSelectsqlQuery);
   }
 
   /**
@@ -296,7 +185,6 @@ public final class SQLGenerator {
     return s;
   }
 
-
   /**
    * Creates a lock statement for open/commit transaction based on the dbProduct in shared read / exclusive mode.
    * @param shared shared or exclusive lock
@@ -305,28 +193,6 @@ public final class SQLGenerator {
    */
   public String createTxnLockStatement(boolean shared) throws MetaException{
     String txnLockTable = "TXN_LOCK_TBL";
-    switch (dbProduct.dbType) {
-    case MYSQL:
-      // For Mysql we do not use lock table statement for two reasons
-      // It is not released automatically on commit/rollback
-      // It requires to lock every table that will be used by the statement
-      // https://dev.mysql.com/doc/refman/8.0/en/lock-tables.html
-      return "SELECT  \"TXN_LOCK\" FROM \"" + txnLockTable + "\" " + (shared ? "LOCK IN SHARE MODE" : "FOR UPDATE");
-    case POSTGRES:
-      // https://www.postgresql.org/docs/9.4/sql-lock.html
-    case DERBY:
-      // https://db.apache.org/derby/docs/10.4/ref/rrefsqlj40506.html
-    case ORACLE:
-      // https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_9015.htm
-    case EXTERNAL: // ANSI SQL
-      return "LOCK TABLE \"" + txnLockTable + "\" IN " + (shared ? "SHARE" : "EXCLUSIVE") + " MODE";
-    case SQLSERVER:
-      // https://docs.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-table?view=sql-server-ver15
-      return "SELECT * FROM \"" + txnLockTable + "\" WITH (" + (shared ? "TABLOCK" : "TABLOCKX") + ", HOLDLOCK)";
-    default:
-      String msg = "Unrecognized database product name <" + dbProduct + ">";
-      LOG.error(msg);
-      throw new MetaException(msg);
-    }
+    return dbProduct.lockTable(txnLockTable, shared);
   }
 }

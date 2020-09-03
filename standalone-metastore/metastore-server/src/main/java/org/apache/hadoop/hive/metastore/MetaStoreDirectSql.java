@@ -546,11 +546,7 @@ class MetaStoreDirectSql {
       PartitionFilterGenerator.FilterType type =
           PartitionFilterGenerator.FilterType.fromType(colType);
       if (type == PartitionFilterGenerator.FilterType.Date) {
-        if (dbType.isORACLE()) {
-          tableValue = "TO_DATE(" + tableValue + ", 'YYYY-MM-DD')";
-        } else {
-          tableValue = "cast(" + tableValue + " as date)";
-        }
+      	tableValue = dbType.toDate(tableValue);
       } else if (type == PartitionFilterGenerator.FilterType.Integral) {
         tableValue = "CAST(" + tableColumn + " AS decimal(21,0))";
       }
@@ -1355,12 +1351,7 @@ class MetaStoreDirectSql {
         if (colType == FilterType.Integral) {
           tableValue = "cast(" + tableValue + " as decimal(21,0))";
         } else if (colType == FilterType.Date) {
-          if (dbType.isORACLE()) {
-            // Oracle requires special treatment... as usual.
-            tableValue = "TO_DATE(" + tableValue + ", 'YYYY-MM-DD')";
-          } else {
-            tableValue = "cast(" + tableValue + " as date)";
-          }
+        	tableValue = dbType.toDate(tableValue);
         }
 
         // Workaround for HIVE_DEFAULT_PARTITION - ignore it like JDO does, for now.
@@ -1381,12 +1372,7 @@ class MetaStoreDirectSql {
         tableValue += " then " + tableValue0 + " else null end)";
 
         if (valType == FilterType.Date) {
-          if (dbType.isORACLE()) {
-            // Oracle requires special treatment... as usual.
-            nodeValue0 = "TO_DATE(" + nodeValue0 + ", 'YYYY-MM-DD')";
-          } else {
-            nodeValue0 = "cast(" + nodeValue0 + " as date)";
-          }
+        	tableValue = dbType.toDate(tableValue);
         }
       }
       if (!node.isReverseOrder) {
@@ -2176,12 +2162,13 @@ class MetaStoreDirectSql {
    * effect will apply to the connection that is executing the queries otherwise.
    */
   public void prepareTxn() throws MetaException {
-    if (!dbType.isMYSQL()) {
+  	String stmt = dbType.getPrepareTxnStmt();
+    if (stmt == null) {
       return;
     }
     try {
       assert pm.currentTransaction().isActive(); // must be inside tx together with queries
-      executeNoResult("SET @@session.sql_mode=ANSI_QUOTES");
+      executeNoResult(stmt);
     } catch (SQLException sqlEx) {
       throw new MetaException("Error setting ansi quotes: " + sqlEx.getMessage());
     }
