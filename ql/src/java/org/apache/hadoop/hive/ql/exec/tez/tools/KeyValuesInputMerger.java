@@ -118,6 +118,9 @@ public class KeyValuesInputMerger extends KeyValuesReader {
   private final List<KeyValuesReader> nextKVReaders = new ArrayList<KeyValuesReader>();
   KeyValuesIterable kvsIterable = null;
 
+  private int nextKVReaderIndex = -1;
+  private boolean equalValueKVReaderPresent = false;
+
   public KeyValuesInputMerger(List<? extends Input> shuffleInputs) throws Exception {
     //get KeyValuesReaders from the LogicalInput and add them to priority queue
     int initialCapacity = shuffleInputs.size();
@@ -147,6 +150,12 @@ public class KeyValuesInputMerger extends KeyValuesReader {
   public boolean next() throws IOException {
     //add the previous nextKVReader back to queue
     if (!nextKVReaders.isEmpty()) {
+      nextKVReaderIndex++;
+      // use nextKVReaders first. Values are same, so check subsequent reader.
+      if (equalValueKVReaderPresent && nextKVReaderIndex < nextKVReaders.size()) {
+        return nextKVReaders.get(nextKVReaderIndex).next();
+      }
+
       for (KeyValuesReader kvReader : nextKVReaders) {
         addToQueue(kvReader);
       }
@@ -160,14 +169,19 @@ public class KeyValuesInputMerger extends KeyValuesReader {
       nextKVReaders.add(nextKVReader);
     }
 
+    equalValueKVReaderPresent = false;
     while (pQueue.peek() != null) {
       KeyValuesReader equalValueKVReader = pQueue.poll();
       if (pQueue.comparator().compare(nextKVReader, equalValueKVReader) == 0) {
         nextKVReaders.add(equalValueKVReader);
+        equalValueKVReaderPresent = true;
       } else {
         pQueue.add(equalValueKVReader);
         break;
       }
+    }
+    if (!nextKVReaders.isEmpty()) {
+      nextKVReaderIndex = 0;
     }
     return !(nextKVReaders.isEmpty());
   }
@@ -175,7 +189,7 @@ public class KeyValuesInputMerger extends KeyValuesReader {
   @Override
   public Object getCurrentKey() throws IOException {
     // return key from any of the readers
-    return nextKVReaders.get(0).getCurrentKey();
+    return nextKVReaders.get(nextKVReaderIndex).getCurrentKey();
   }
 
   @Override
