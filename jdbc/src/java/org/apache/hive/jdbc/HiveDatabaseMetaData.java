@@ -1239,11 +1239,13 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
    * @param hiveConfs
    * @return
    */
-  public static boolean getHiveDefaultNullsLast(Map<String, String> hiveConfs) {
-    boolean response = ConfVars.HIVE_DEFAULT_NULLS_LAST.defaultBoolVal;
-    if ((hiveConfs != null) && (hiveConfs.get(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY) != null)) {
-      response = Boolean.parseBoolean(hiveConfs.get(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY));
+  public static boolean getHiveDefaultNullsLast(Map<String, String> hiveConfs) throws SQLException {
+    if (hiveConfs == null) {
+      throw new SQLException("hiveConfs is not available");
     }
-    return response;
+    if (hiveConfs.get(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY) == null) {
+      throw new SQLException("HIVE_DEFAULT_NULLS_LAST is not available");
+    }
+    return Boolean.parseBoolean(hiveConfs.get(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY));
   }
 }

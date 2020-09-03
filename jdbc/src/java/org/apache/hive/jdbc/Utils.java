@@ -170,7 +170,7 @@ public class Utils {
     static final String SSL_TRUST_STORE_TYPE = "JKS";
 
     private static final String HIVE_VAR_PREFIX = "hivevar:";
-    private static final String HIVE_CONF_PREFIX = "hiveconf:";
+    public static final String HIVE_CONF_PREFIX = "hiveconf:";
     private String host = null;
     private int port = 0;
     private String jdbcUriString;

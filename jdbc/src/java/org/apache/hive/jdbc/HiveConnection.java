@@ -122,6 +122,7 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
 /**
  * HiveConnection.
@@ -874,12 +875,12 @@ public class HiveConnection implements java.sql.Connection {
     try {
       TOpenSessionResp openResp = client.OpenSession(openReq);
 
-      // Override HS2 server HiveConf in Connection parameter HiveConf
+      // Populate a given configuration from HS2 server HiveConf, only if that configuration
+      // is not already present in Connection parameter HiveConf i.e., client side configuration
+      // takes precedence over the server side configuration.
       Map<String, String> serverHiveConf = openResp.getConfiguration();
-      if (serverHiveConf.containsKey(ConfVars.HIVE_DEFAULT_NULLS_LAST.varname)) {
-        connParams.getHiveConfs().put(JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY,
-            serverHiveConf.get(ConfVars.HIVE_DEFAULT_NULLS_LAST.varname));
-      }
+
+      updateServerHiveConf(serverHiveConf);
 
       // validate connection
       Utils.verifySuccess(openResp.getStatus());
@@ -904,6 +905,23 @@ public class HiveConnection implements java.sql.Connection {
       throw new SQLException("Could not establish connection to " + jdbcUriString + ": " + e.getMessage(), " 08S01", e);
     }
     isClosed = false;
+  }
+
+  @VisibleForTesting
+  public void updateServerHiveConf(Map<String, String> serverHiveConf) {
+    if (serverHiveConf != null) {
+      if (connParams.getHiveConfs() == null) {
+        connParams.setHiveConfs(new HashMap<String, String>());
+      }
+      // Iterate over all Server configurations.
+      Stream.of(ConfVars.values()).forEach(conf -> {
+        String key = JdbcConnectionParams.HIVE_CONF_PREFIX + conf.varname;
+        // Update Server HiveConf, only if it's not already set from the client.
+        if (!connParams.getHiveConfs().containsKey(key)) {
+          connParams.getHiveConfs().put(key, serverHiveConf.get(conf.varname));
+        }
+      });
+    }
   }
 
   /**
