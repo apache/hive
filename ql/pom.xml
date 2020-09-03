@@ -850,8 +850,8 @@
                   <include>org.apache.hive:hive-metastore</include>
                   <include>org.apache.hive:hive-service-rpc</include>
                   <include>com.esotericsoftware:kryo-shaded</include>
-                  <include>com.esotericsoftware:minlog</include>
-                  <include>org.objenesis:objenesis</include>
+		  <include>com.esotericsoftware:minlog</include>
+		  <include>org.objenesis:objenesis</include>
                   <include>org.apache.parquet:parquet-hadoop-bundle</include>
                   <include>org.apache.thrift:libthrift</include>
                   <include>org.apache.thrift:libfb303</include>
@@ -888,14 +888,6 @@
                 <relocation>
                   <pattern>org.objenesis</pattern>
                   <shadedPattern>org.apache.hive.org.objenesis</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.google.common</pattern>
-                  <shadedPattern>org.apache.hive.com.google.common</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.google.thirdparty.publicsuffix</pattern>
-                  <shadedPattern>org.apache.hive.com.google.thirdparty.publicsuffix</shadedPattern>
                 </relocation>
               </relocations>
             </configuration>
