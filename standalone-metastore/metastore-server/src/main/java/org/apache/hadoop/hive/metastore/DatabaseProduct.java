@@ -609,4 +609,11 @@ public class DatabaseProduct implements Configurable {
       throw new IllegalStateException(msg);
     }
   }
+
+  public String addEscapeCharacters(String s) {
+    if (isMYSQL()) {
+      return s.replaceAll("\\\\", "\\\\\\\\");
+    }
+    return s;
+  }
 }

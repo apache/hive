@@ -10467,11 +10467,12 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void prepareQuotes() throws SQLException {
-    if (dbType.isMYSQL()) {
+    String s = dbType.getPrepareTxnStmt();
+    if (s != null) {
       assert pm.currentTransaction().isActive();
       JDOConnection jdoConn = pm.getDataStoreConnection();
       try (Statement statement = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
-        statement.execute("SET @@session.sql_mode=ANSI_QUOTES");
+        statement.execute(s);
       } finally {
         jdoConn.close();
       }

@@ -1033,8 +1033,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     try {
       stmt = dbConn.createStatement();
 
-      if (sqlGenerator.getDbProduct().isMYSQL()) {
-        stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+      String s = sqlGenerator.getDbProduct().getPrepareTxnStmt();
+      if (s != null) {
+        stmt.execute(s);
       }
 
       String query = "select \"DB_ID\" from \"DBS\" where \"NAME\" = ?  and \"CTLG_NAME\" = ?";
