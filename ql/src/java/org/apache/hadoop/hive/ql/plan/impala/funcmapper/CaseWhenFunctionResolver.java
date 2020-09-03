@@ -120,7 +120,7 @@ public class CaseWhenFunctionResolver extends ImpalaFunctionResolverImpl {
     // For loop constructs this signature's arguments in pairs.
     for (int i = 0; i < this.argTypes.size() / 2; ++i) {
       // first argument in pair is always a boolean
-      castArgTypes.add(ImpalaTypeConverter.getRelDataType(Type.BOOLEAN));
+      castArgTypes.add(ImpalaTypeConverter.getRelDataType(Type.BOOLEAN, false));
       // second argument is the candidate type.
       castArgTypes.add(candidate.getArgTypes().get(0));
     }

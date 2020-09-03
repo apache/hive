@@ -384,7 +384,12 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
           String adjustedFunc = func.toUpperCase().equals("INT") ? "INTEGER" : func.toUpperCase();
 	  // Use the Impala normalized type.
           Type impalaType = Type.parseColumnType(adjustedFunc);
-          retType = ImpalaTypeConverter.getRelDataType(impalaType);
+          Preconditions.checkState(inputs.size() == 1);
+          // When casting a timestamp, it is possible to get a null value
+          // (e.g cast('1' as timestamp)). There may be other examples as well
+          // so to be safe, isNullable is set to true always.
+          boolean isNullable = true;
+          retType = ImpalaTypeConverter.getRelDataType(impalaType, isNullable);
         }
         return new CastFunctionResolver(helper, op, inputs, retType);
       case CASE:

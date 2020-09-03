@@ -76,8 +76,8 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_warehouse]], condition=[IS NOT NULL($0)])
           ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(BETWEEN(false, $5, 0.99:DECIMAL(2, 2), 1.49:DECIMAL(3, 2)), IS NOT NULL($0))])
-        ImpalaProjectPassthroughRel(d_date_sk=[$0], <=[<(CAST($2):DATE NOT NULL, CAST(_UTF-16LE'1999-03-20':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE NOT NULL)], >==[>=(CAST($2):DATE NOT NULL, CAST(_UTF-16LE'1999-03-20':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE NOT NULL)])
-          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), -(CAST(CAST(_UTF-16LE'1999-03-20':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE NOT NULL):TIMESTAMP(9) NOT NULL, 2592000000.000000:INTERVAL MILLISECOND), +(CAST(CAST(_UTF-16LE'1999-03-20':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE NOT NULL):TIMESTAMP(9) NOT NULL, 2592000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
+        ImpalaProjectPassthroughRel(d_date_sk=[$0], <=[<(CAST($2):DATE, CAST(_UTF-16LE'1999-03-20':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE)], >==[>=(CAST($2):DATE, CAST(_UTF-16LE'1999-03-20':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE)])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), -(CAST(CAST(_UTF-16LE'1999-03-20':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE):TIMESTAMP(9), 2592000000.000000:INTERVAL MILLISECOND), +(CAST(CAST(_UTF-16LE'1999-03-20':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE):TIMESTAMP(9), 2592000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
 
 PREHOOK: query: explain select  *
  from(select w_warehouse_name

@@ -420,7 +420,7 @@ public class ImpalaRexCall {
       if (param.getType().matchesType(Type.VARCHAR) || param.getType().matchesType(Type.CHAR)) {
         try {
           Function castFn = getFunction("cast", operands.subList(i, i+1),
-	          ImpalaTypeConverter.getRelDataType(Type.STRING), analyzer);
+	      ImpalaTypeConverter.getRelDataType(Type.STRING, true), analyzer);
           ImpalaCastExpr castExpr = new ImpalaCastExpr(analyzer, castFn, Type.STRING, param);
           castParams.add(castExpr);
         } catch (Exception e) {
@@ -441,7 +441,7 @@ public class ImpalaRexCall {
       if ((sqlTypeName == SqlTypeName.CHAR) || ((sqlTypeName == SqlTypeName.VARCHAR) &&
         relDataType.getPrecision() != Integer.MAX_VALUE)) {
           castOperands.add(rexBuilder.makeCast(
-              ImpalaTypeConverter.getRelDataType(Type.STRING), operand, true));
+              ImpalaTypeConverter.getRelDataType(Type.STRING, true), operand, true));
       } else {
         castOperands.add(operand);
       }

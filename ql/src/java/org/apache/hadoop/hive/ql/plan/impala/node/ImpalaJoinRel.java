@@ -211,8 +211,8 @@ public class ImpalaJoinRel extends ImpalaPlanRel {
     tmpArgs.add(expr);
     List<Type> typeNames = ImmutableList.of(Type.BOOLEAN, expr.getType(), expr.getType());
     ScalarFunctionDetails conditionalFuncDetails =
-        ScalarFunctionDetails.get("if", ImpalaTypeConverter.getRelDataTypes(typeNames),
-            ImpalaTypeConverter.getRelDataType(expr.getType()));
+        ScalarFunctionDetails.get("if", ImpalaTypeConverter.getRelDataTypesForArgs(typeNames),
+            ImpalaTypeConverter.getRelDataType(expr.getType(), true));
     Preconditions.checkNotNull(conditionalFuncDetails,
         "Could not create IF function for arg types %s and return type %s",
         typeNames, expr.getType());

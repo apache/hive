@@ -60,6 +60,9 @@ public class ImpalaTypeConverter {
   // Maps Impala default types to Calcite default types.
   private static Map<Type, RelDataType> impalaToCalciteMap;
 
+  // Maps Impala default types to Calcite default types.
+  private static Map<Type, RelDataType> nullableImpalaToCalciteMap;
+
   static {
     RexBuilder rexBuilder = new RexBuilder(new JavaTypeFactoryImpl(new ImpalaTypeSystemImpl()));
     RelDataTypeFactory factory = rexBuilder.getTypeFactory();
@@ -78,6 +81,13 @@ public class ImpalaTypeConverter {
     map.put(Type.VARCHAR, factory.createSqlType(SqlTypeName.VARCHAR, 1));
     map.put(Type.STRING, factory.createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE));
     impalaToCalciteMap = map.build();
+
+    map = ImmutableMap.builder();
+    for (Type t : impalaToCalciteMap.keySet()) {
+      RelDataType r = impalaToCalciteMap.get(t);
+      map.put(t, factory.createTypeWithNullability(r, true));
+    }
+    nullableImpalaToCalciteMap = map.build();
   }
 
   // helper function to handle translation of lists.
@@ -144,25 +154,32 @@ public class ImpalaTypeConverter {
       return node.getType();
     } else {
       Type impalaType = getNormalizedImpalaType(node.getType());
-      return getRelDataType(impalaType);
+      return getRelDataType(impalaType, node.getType().isNullable());
     }
   }
 
   // helper function to handle translation of lists.
-  public static List<RelDataType> getRelDataTypes(List<Type> impalaTypes) {
-    return Lists.transform(impalaTypes, ImpalaTypeConverter::getRelDataType);
+  public static List<RelDataType> getRelDataTypesForArgs(List<Type> impalaTypes) {
+    List<RelDataType> result = Lists.newArrayList();
+    for (Type t : impalaTypes) {
+      // Since this is used for signature mapping, we need the "isNullable" argument
+      // to be consistent, so we always pick true
+      result.add(getRelDataType(t, true));
+    }
+    return result;
   }
 
   /**
    * Get the normalized RelDataType given an impala type.
    */
-  public static RelDataType getRelDataType(Type impalaType) {
+  public static RelDataType getRelDataType(Type impalaType, boolean nullable) {
     if (impalaType == null) {
       return null;
     }
     TPrimitiveType primitiveType = impalaType.getPrimitiveType().toThrift();
     Type normalizedImpalaType = getImpalaType(primitiveType);
-    return impalaToCalciteMap.get(normalizedImpalaType);
+    Map<Type, RelDataType> mapToUse = (nullable) ? nullableImpalaToCalciteMap : impalaToCalciteMap;
+    return mapToUse.get(normalizedImpalaType);
   }
 
   // helper function to handle translation of lists.
@@ -200,6 +217,15 @@ public class ImpalaTypeConverter {
       default:
         return impalaType;
     }
+  }
+
+  public static boolean areAnyTypesNullable(List<RelDataType> types) {
+    for (RelDataType type : types) {
+      if (type.isNullable()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

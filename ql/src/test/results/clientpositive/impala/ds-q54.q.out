@@ -128,7 +128,7 @@ CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   ImpalaProjectRel(segment=[$0], num_customers=[$1], segment_base=[*(CAST($0):BIGINT, 50)])
     ImpalaAggregateRel(group=[{0}], agg#0=[count()])
-      ImpalaProjectPassthroughRel(segment=[CAST(/($1, 50:DECIMAL(3, 0))):INTEGER NOT NULL])
+      ImpalaProjectPassthroughRel(segment=[CAST(/($1, 50:DECIMAL(3, 0))):INTEGER])
         ImpalaAggregateRel(group=[{0}], agg#0=[sum($3)])
           ImpalaJoinRel(condition=[true], joinType=[inner])
             ImpalaProjectPassthroughRel($f0=[$7], $f1=[$8], ss_customer_sk=[$0], ss_ext_sales_price=[$1], ss_sold_date_sk=[$2], ca_address_sk=[$9], ca_county=[$10], ca_state=[$11], s_county=[$12], s_state=[$13], d_date_sk=[$5], d_month_seq=[$6], cnt=[$4], $f00=[$3])

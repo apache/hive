@@ -51,7 +51,7 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
         ImpalaProjectPassthroughRel(inv_date_sk=[$0], inv_item_sk=[$1])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_inventory]], condition=[AND(BETWEEN(false, $3, 100, 500), IS NOT NULL($1), IS NOT NULL($0))])
         ImpalaProjectPassthroughRel(d_date_sk=[$0])
-          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), CAST(CAST(_UTF-16LE'2001-01-16':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE NOT NULL):TIMESTAMP(9) NOT NULL, +(CAST(CAST(_UTF-16LE'2001-01-16':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE NOT NULL):TIMESTAMP(9) NOT NULL, 5184000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), CAST(CAST(_UTF-16LE'2001-01-16':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE):TIMESTAMP(9), +(CAST(CAST(_UTF-16LE'2001-01-16':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE):TIMESTAMP(9), 5184000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
 
 PREHOOK: query: explain select  i_item_id
        ,i_item_desc

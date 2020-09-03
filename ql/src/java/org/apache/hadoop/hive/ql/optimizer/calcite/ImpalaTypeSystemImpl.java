@@ -193,15 +193,18 @@ public class ImpalaTypeSystemImpl extends RelDataTypeSystemImpl {
     try {
       Type t1 = ImpalaTypeConverter.createImpalaType(type1);
       Type t2 = ImpalaTypeConverter.createImpalaType(type2);
+      // For safety reasons, assuming isNullable to be true for all cases, we
+      // can potentially change this later.
+      boolean isNullable = true;
       // Call out to Impala code to get the correct derived precision on arithmetic operations.
       Type retType = TypesUtil.getArithmeticResultType(t1, t2, op, true);
-      SqlTypeName sqlTypeName = ImpalaTypeConverter.getRelDataType(retType).getSqlTypeName();
+      SqlTypeName sqlTypeName =
+          ImpalaTypeConverter.getRelDataType(retType, isNullable).getSqlTypeName();
       RelDataType preNullableType =
           (sqlTypeName == SqlTypeName.DECIMAL)
               ? typeFactory.createSqlType(sqlTypeName,
                   retType.getPrecision(), retType.getDecimalDigits())
               : typeFactory.createSqlType(sqlTypeName);
-      boolean isNullable = type1.isNullable() || type2.isNullable();
       return typeFactory.createTypeWithNullability(preNullableType, isNullable);
     } catch (Exception e) {
       throw new RuntimeException(e);

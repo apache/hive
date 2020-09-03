@@ -125,10 +125,10 @@ public class ImpalaFunctionSignature {
     Preconditions.checkNotNull(func);
     this.func = func;
     this.argTypes = ImmutableList.copyOf(argTypes);
-    this.argRelDataTypes = ImpalaTypeConverter.getRelDataTypes(this.argTypes);
+    this.argRelDataTypes = ImpalaTypeConverter.getRelDataTypesForArgs(this.argTypes);
     this.retType = retType;
     this.retRelDataType =
-        (this.retType == null) ? null : ImpalaTypeConverter.getRelDataType(this.retType);
+        (this.retType == null) ? null : ImpalaTypeConverter.getRelDataType(this.retType, true);
     this.hasVarArgs = hasVarArgs;
   }
 
@@ -136,10 +136,10 @@ public class ImpalaFunctionSignature {
     Preconditions.checkNotNull(func);
     this.func = func;
     this.argTypes = ImpalaTypeConverter.getNormalizedImpalaTypes(argTypes);
-    this.argRelDataTypes = ImpalaTypeConverter.getRelDataTypes(this.argTypes);
+    this.argRelDataTypes = ImpalaTypeConverter.getRelDataTypesForArgs(this.argTypes);
     this.retType = retType != null ? ImpalaTypeConverter.getNormalizedImpalaType(retType) : null;
     this.retRelDataType =
-        (this.retType == null) ? null : ImpalaTypeConverter.getRelDataType(this.retType);
+        (this.retType == null) ? null : ImpalaTypeConverter.getRelDataType(this.retType, true);
     this.hasVarArgs = false;
   }
 
@@ -148,11 +148,11 @@ public class ImpalaFunctionSignature {
   }
 
   public RelDataType getRetType() {
-    return ImpalaTypeConverter.getRelDataType(retType);
+    return ImpalaTypeConverter.getRelDataType(retType, true);
   }
 
   public List<RelDataType> getArgTypes() {
-    return ImpalaTypeConverter.getRelDataTypes(argTypes);
+    return ImpalaTypeConverter.getRelDataTypesForArgs(argTypes);
   }
 
   public boolean hasVarArgs() {
@@ -265,12 +265,14 @@ public class ImpalaFunctionSignature {
   private static ImpalaFunctionSignature createTimeIntervalOpSignature(
       SqlKind kind, List<RelDataType> argTypes) {
     String funcName = TimeIntervalOpFunctionResolver.getFunctionName(kind, argTypes);
+    boolean isNullable = ImpalaTypeConverter.areAnyTypesNullable(argTypes);
     // The time interval operations will always take timestamp and bigint as their two
     // arguments.  If the first operand is of type "date", it will be cast into a timestamp.
     List<Type> timeArgTypes = ImmutableList.of(Type.TIMESTAMP, Type.BIGINT);
-    List<RelDataType> timeArgRelDataTypes = ImpalaTypeConverter.getRelDataTypes(timeArgTypes);
+    List<RelDataType> timeArgRelDataTypes =
+        ImpalaTypeConverter.getRelDataTypesForArgs(timeArgTypes);
     Type timeRetType = Type.TIMESTAMP;
-    RelDataType timeRetRelDataType = ImpalaTypeConverter.getRelDataType(timeRetType);
+    RelDataType timeRetRelDataType = ImpalaTypeConverter.getRelDataType(timeRetType, isNullable);
     return new ImpalaFunctionSignature(funcName, timeArgRelDataTypes, timeRetRelDataType);
   }
 
@@ -281,14 +283,15 @@ public class ImpalaFunctionSignature {
     List<RelDataType> inArgTypes = Lists.newArrayList();
     for (RelDataType argType : argTypes) {
       if (SqlTypeName.CHAR_TYPES.contains(argType.getSqlTypeName())) {
-        inArgTypes.add(ImpalaTypeConverter.getRelDataType(Type.STRING));
+        inArgTypes.add(ImpalaTypeConverter.getRelDataType(Type.STRING, argType.isNullable()));
       } else {
         inArgTypes.add(argType);
       }
     }
+    boolean isNullable = ImpalaTypeConverter.areAnyTypesNullable(argTypes);
     RelDataType inRetType = retType;
     if (retType != null && SqlTypeName.CHAR_TYPES.contains(retType.getSqlTypeName())) {
-      retType = ImpalaTypeConverter.getRelDataType(Type.STRING);
+      retType = ImpalaTypeConverter.getRelDataType(Type.STRING, isNullable);
     }
     return new ImpalaFunctionSignature(funcName, inArgTypes, inRetType);
   }

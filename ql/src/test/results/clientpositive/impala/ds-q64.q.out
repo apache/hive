@@ -265,7 +265,7 @@ POSTHOOK: Input: default@impala_tpcds_store_returns
 POSTHOOK: Input: default@impala_tpcds_store_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-ImpalaProjectPassthroughRel(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=[$3], b_street_name=[$4], b_city=[$5], b_zip=[$6], c_street_number=[$7], c_street_name=[$8], c_city=[$9], c_zip=[$10], syear=[CAST(1999):INTEGER], cnt=[$11], s11=[$12], s21=[$13], s31=[$14], s12=[$15], s22=[$16], s32=[$17], syear1=[CAST(+(1999, 1)):INTEGER], cnt1=[$18])
+ImpalaProjectPassthroughRel(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=[$3], b_street_name=[$4], b_city=[$5], b_zip=[$6], c_street_number=[$7], c_street_name=[$8], c_city=[$9], c_zip=[$10], syear=[CAST(1999):INTEGER], cnt=[$11], s11=[$12], s21=[$13], s31=[$14], s12=[$15], s22=[$16], s32=[$17], syear1=[+(1999, 1)], cnt1=[$18])
   ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$18], sort3=[$19], sort4=[$20], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC])
     ImpalaProjectRel(product_name=[$0], store_name=[$2], store_zip=[$3], b_street_number=[$4], b_street_name=[$5], b_city=[$6], b_zip=[$7], c_street_number=[$8], c_street_name=[$9], c_city=[$10], c_zip=[$11], cnt=[$12], s11=[$13], s21=[$14], s31=[$15], s12=[$20], s22=[$21], s32=[$22], cnt1=[$19], s1=[$13], s13=[$20])
       ImpalaJoinRel(condition=[AND(=($1, $16), <=($19, $12), =($2, $17), =($3, $18))], joinType=[inner])

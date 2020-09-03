@@ -59,7 +59,7 @@ POSTHOOK: Input: default@impala_tpcds_item
 POSTHOOK: Input: default@impala_tpcds_warehouse
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
-ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], i_item_sk=[$1], d_moy=[CAST(2):INTEGER], mean=[$2], cov=[$3], w_warehouse_sk1=[$4], i_item_sk1=[$5], d_moy1=[CAST(CAST(+(2:SMALLINT, 1:SMALLINT)):INTEGER NOT NULL):INTEGER], mean1=[$6], cov1=[$7])
+ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], i_item_sk=[$1], d_moy=[CAST(2):INTEGER], mean=[$2], cov=[$3], w_warehouse_sk1=[$4], i_item_sk1=[$5], d_moy1=[CAST(+(2:SMALLINT, 1:SMALLINT)):INTEGER], mean1=[$6], cov1=[$7])
   ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$6], sort5=[$7], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC])
     ImpalaJoinRel(condition=[AND(=($1, $5), =($0, $4))], joinType=[inner])
       ImpalaProjectPassthroughRel(w_warehouse_sk=[$1], i_item_sk=[$2], mean=[/(CAST($4):DOUBLE, CAST($5):DOUBLE)], cov=[CASE(=(/(CAST($4):DOUBLE, CAST($5):DOUBLE), 0), null:DOUBLE, /($3, /(CAST($4):DOUBLE, CAST($5):DOUBLE)))])
@@ -87,7 +87,7 @@ ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], i_item_sk=[$1], d_moy=[CAST(2):
                   ImpalaProjectPassthroughRel(i_item_sk=[$0])
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[IS NOT NULL($0)])
                 ImpalaProjectPassthroughRel(d_date_sk=[$0])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2000), =($8, CAST(+(2:SMALLINT, 1:SMALLINT)):INTEGER NOT NULL), IS NOT NULL($0))])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2000), =($8, CAST(+(2:SMALLINT, 1:SMALLINT)):INTEGER), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], w_warehouse_name=[$2])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_warehouse]], condition=[IS NOT NULL($0)])
 
