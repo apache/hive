@@ -19,14 +19,13 @@
 package org.apache.hive.jdbc;
 
 import org.apache.hive.jdbc.HiveConnection;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.jdbc.Utils;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
-
 
 import java.util.LinkedHashMap;
 import java.util.Properties;
 import java.util.Map;
+import java.util.HashMap;
 import java.sql.SQLException;
 
 import org.junit.Before;
@@ -40,7 +39,7 @@ import static org.junit.Assert.*;
  */
 public class TestHiveDatabaseMetaData {
 
-  private Map<String, String> map = new LinkedHashMap<String,String>();
+  private Map<String, String> map = new LinkedHashMap<String, String>();
   private HiveDatabaseMetaData hiveDatabaseMetaData;
 
   @Before
@@ -50,11 +49,34 @@ public class TestHiveDatabaseMetaData {
     HiveConnection connection = new HiveConnection();
     connection.setConnParams(jdbcConnectionParams);
     hiveDatabaseMetaData = new HiveDatabaseMetaData(connection, null, null);
-
   }
 
   @Test
-  public void testGetHiveDefaultNullsLast() {
+  public void testGetHiveDefaultNullsLastNullConfig() {
+    map.remove(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY);
+    try {
+      hiveDatabaseMetaData.nullsAreSortedLow();
+      fail("SQLException is expected");
+    } catch (Exception e) {
+      assertTrue(e.getMessage().contains("HIVE_DEFAULT_NULLS_LAST is not available"));
+    }
+  }
+
+  @Test
+  public void testGetHiveDefaultNullsLastNullHiveConfs() throws SQLException {
+    JdbcConnectionParams jdbcConnectionParams = new JdbcConnectionParams();
+    HiveConnection connection = new HiveConnection();
+    connection.setConnParams(jdbcConnectionParams);
+    try {
+      (new HiveDatabaseMetaData(connection, null, null)).nullsAreSortedLow();
+      fail("SQLException is expected");
+    } catch (Exception e) {
+      assertTrue(e.getMessage().contains("hiveConfs is not available"));
+    }
+  }
+
+  @Test
+  public void testGetHiveDefaultNullsLast() throws SQLException {
     map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
     assertTrue(hiveDatabaseMetaData.getHiveDefaultNullsLast(map));
 
@@ -63,7 +85,7 @@ public class TestHiveDatabaseMetaData {
   }
 
   @Test
-  public void testGetHiveDefaultNullsLastDefaultValue() {
+  public void testGetHiveDefaultNullsLastDefaultValue() throws SQLException {
     assertTrue(HiveDatabaseMetaData.getHiveDefaultNullsLast(null));
   }
 
@@ -83,4 +105,26 @@ public class TestHiveDatabaseMetaData {
     assertFalse(hiveDatabaseMetaData.nullsAreSortedLow());
   }
 
+  @Test
+  public void testHiveConnectionUdateServerHiveConf() {
+    Map<String, String> serverHiveConf = new HashMap<>();
+    map.put("hive.server2.thrift.resultset.default.fetch.size", Integer.toString(87));
+    map.put("hive.default.nulls.last", "false");
+    Map<String, String> clientHiveConf = new LinkedHashMap<String, String>();
+    clientHiveConf.put(Utils.JdbcConnectionParams.HIVE_CONF_PREFIX
+        + "hive.server2.thrift.resultset.default.fetch.size", "1534");
+    JdbcConnectionParams connectionParams = new JdbcConnectionParams();
+    connectionParams.setHiveConfs(clientHiveConf);
+    HiveConnection conn = new HiveConnection();
+    conn.setConnParams(connectionParams);
+    conn.updateServerHiveConf(serverHiveConf);
+
+    // Server configuration should be updated, since its not provided by the client.
+    assertEquals("false", conn.getConnParams().getHiveConfs()
+        .get(Utils.JdbcConnectionParams.HIVE_CONF_PREFIX + "hive.default.nulls.last"));
+
+    // Client configuration should not be overridden by the server configuration.
+    assertEquals("1534", conn.getConnParams().getHiveConfs().get(Utils.JdbcConnectionParams.HIVE_CONF_PREFIX
+        + "hive.server2.thrift.resultset.default.fetch.size"));
+  }
 }
