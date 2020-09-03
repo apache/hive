@@ -23,7 +23,9 @@ import java.sql.SQLTransactionRollbackException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -615,5 +617,22 @@ public class DatabaseProduct implements Configurable {
       return s.replaceAll("\\\\", "\\\\\\\\");
     }
     return s;
+  }
+
+  public Map<String, String> getDataSourceProperties() {
+    Map<String, String> map = new HashMap<>();
+
+    switch (dbType){
+    case MYSQL:
+      map.put("allowMultiQueries", "true");
+      map.put("rewriteBatchedStatements", "true");
+      break;
+    case POSTGRES:
+      map.put("reWriteBatchedInserts", "true");
+      break;
+    default:
+      break;
+    }
+    return map;
   }
 }
