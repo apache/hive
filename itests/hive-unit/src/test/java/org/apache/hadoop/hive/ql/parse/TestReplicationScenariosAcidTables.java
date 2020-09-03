@@ -278,6 +278,58 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
+  public void testAcidTablesCreateTableIncremental() throws Throwable {
+    // Create 2 tables, one partitioned and other not.
+    primary.run("use " + primaryDbName)
+      .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+        "tblproperties (\"transactional\"=\"true\")")
+      .run("insert into t1 values(1)")
+      .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
+        "\"transactional_properties\"=\"insert_only\")")
+      .run("insert into t2 partition(name='Bob') values(11)")
+      .run("insert into t2 partition(name='Carl') values(10)");
+
+    WarehouseInstance.Tuple bootstrapDump = primary
+      .run("use " + primaryDbName)
+      .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName)
+      .run("use " + replicatedDbName)
+      .run("show tables")
+      .verifyResults(new String[] {"t1", "t2"})
+      .run("repl status " + replicatedDbName)
+      .verifyResult(bootstrapDump.lastReplicationId)
+      .run("select id from t1")
+      .verifyResults(new String[]{"1"})
+      .run("select rank from t2 order by rank")
+      .verifyResults(new String[] {"10", "11"});
+
+    WarehouseInstance.Tuple incrDump = primary.run("use "+ primaryDbName)
+      .run("create table t3 (id int)")
+      .run("insert into t3 values (99)")
+      .run("create table t4 (standard int) partitioned by (name string) stored as orc " +
+        "tblproperties (\"transactional\"=\"true\")")
+      .run("insert into t4 partition(name='Tom') values(11)")
+      .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName)
+      .run("use " + replicatedDbName)
+      .run("show tables")
+      .verifyResults(new String[] {"t1", "t2", "t3", "t4"})
+      .run("repl status " + replicatedDbName)
+      .verifyResult(incrDump.lastReplicationId)
+      .run("select id from t1")
+      .verifyResults(new String[]{"1"})
+      .run("select rank from t2 order by rank")
+      .verifyResults(new String[] {"10", "11"})
+      .run("select id from t3")
+      .verifyResults(new String[]{"99"})
+      .run("select standard from t4 order by standard")
+      .verifyResults(new String[] {"11"});
+  }
+
+
+  @Test
   public void testAcidTablesBootstrapWithOpenTxnsDiffDb() throws Throwable {
     int numTxns = 5;
     HiveConf primaryConf = primary.getConf();
