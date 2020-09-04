@@ -2928,6 +2928,8 @@ public class LlapTaskSchedulerService extends TaskScheduler {
     synchronized void setPreemptedInfo(long preemptTime) {
       this.state = State.PREEMPTED;
       this.preemptTime = preemptTime;
+      // Give an opportunity for preempted task to get better locality next time.
+      this.adjustedLocalityDelay = false;
     }
 
     synchronized void setInDelayedQueue(boolean val) {
