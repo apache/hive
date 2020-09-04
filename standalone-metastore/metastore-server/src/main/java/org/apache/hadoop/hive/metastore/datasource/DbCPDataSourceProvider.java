@@ -74,10 +74,10 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     dbcpDs.setDefaultReadOnly(false);
     dbcpDs.setDefaultAutoCommit(true);
 
-    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl, null);
-    List<String> props = dbProduct.getDataSourceProperties(hdpConfig);
-    for (String i : props) {
-      dbcpDs.setConnectionProperties(i);
+    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
+    Map<String, String> props = dbProduct.getDataSourceProperties();
+    for (Map.Entry<String, String> kv : props.entrySet()) {
+      dbcpDs.setConnectionProperties(kv.getKey() + "=" + kv.getValue());
     }
 
     int maxPoolSize = hdpConfig.getInt(

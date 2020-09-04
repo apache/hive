@@ -73,7 +73,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);
 
-    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl, null);
+    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
     
     String s = dbProduct.getPrepareTxnStmt();
     if (s!= null) {

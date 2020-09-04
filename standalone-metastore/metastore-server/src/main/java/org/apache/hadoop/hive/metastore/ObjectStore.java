@@ -375,7 +375,7 @@ public class ObjectStore implements RawStore, Configurable {
         " created in the thread with id: {}", this, pm, Thread.currentThread().getId());
 
     String productName = MetaStoreDirectSql.getProductName(pm);
-    sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(productName, conf), conf);
+    sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(productName), conf);
 
     isInitialized = pm != null;
     if (isInitialized) {
@@ -390,7 +390,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private DatabaseProduct determineDatabaseProduct() {
-      return DatabaseProduct.determineDatabaseProduct(getProductName(pm), getConf());
+      return DatabaseProduct.determineDatabaseProduct(getProductName(pm));
   }
 
   private static String getProductName(PersistenceManager pm) {

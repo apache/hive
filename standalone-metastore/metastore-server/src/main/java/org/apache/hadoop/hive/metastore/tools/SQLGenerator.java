@@ -21,8 +21,6 @@ import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,7 +119,7 @@ public final class SQLGenerator {
     if (rows == null || rows.size() == 0) {
       return Collections.emptyList();
     }
-    return dbProduct.createInsertValuesStmt(tblColumns, rows, rowsCountInStmts);
+    return dbProduct.createInsertValuesStmt(tblColumns, rows, rowsCountInStmts, conf);
   }
 
   /**

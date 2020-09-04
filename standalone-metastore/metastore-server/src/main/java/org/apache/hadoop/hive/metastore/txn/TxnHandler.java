@@ -631,7 +631,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
        * If the getGeneratedKeys are not supported first we insert a random batchId in the TXN_META_INFO field,
        * then the keys are selected beck with that batchid.
        */
-      boolean genKeySupport = TxnDbUtil.supportsGetGeneratedKeys(dbProduct);
+      boolean genKeySupport = dbProduct.supportsGetGeneratedKeys();
       genKeySupport = genKeySupport || (numTxns == 1);
 
       String insertQuery = String.format(TXNS_INSERT_QRY, TxnDbUtil.getEpochFn(dbProduct),
@@ -4162,7 +4162,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (dbProduct != null) return;
     try {
       String s = conn.getMetaData().getDatabaseProductName();
-      dbProduct = DatabaseProduct.determineDatabaseProduct(s, getConf());
+      dbProduct = DatabaseProduct.determineDatabaseProduct(s);
       if (dbProduct.isOTHER()) {
         String msg = "Unrecognized database product name <" + s + ">";
         LOG.error(msg);

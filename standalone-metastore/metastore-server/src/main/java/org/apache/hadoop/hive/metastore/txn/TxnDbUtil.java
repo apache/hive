@@ -93,7 +93,7 @@ public final class TxnDbUtil {
     try {
       conn = getConnection(conf);
       String s = conn.getMetaData().getDatabaseProductName();
-      DatabaseProduct dbProduct = DatabaseProduct.determineDatabaseProduct(s, conf);
+      DatabaseProduct dbProduct = DatabaseProduct.determineDatabaseProduct(s);
       stmt = conn.createStatement();
       if (checkDbPrepared(stmt)) {
         return;
@@ -259,7 +259,7 @@ public final class TxnDbUtil {
 
   private static void resetTxnSequence(Connection conn, Statement stmt) throws SQLException, MetaException{
     String dbProduct = conn.getMetaData().getDatabaseProductName();
-    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, null);
+    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct);
     List<String> stmts = databaseProduct.getResetTxnSequenceStmts();
     
     for (String s : stmts ) {
@@ -277,7 +277,7 @@ public final class TxnDbUtil {
    */
   public static void seedTxnSequence(Connection conn, Statement stmt, long seedTxnId) throws SQLException {
     String dbProduct = conn.getMetaData().getDatabaseProductName();
-    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, null);
+    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct);
     stmt.execute(databaseProduct.getTxnSeedFn(seedTxnId));
   }
 
@@ -285,7 +285,7 @@ public final class TxnDbUtil {
     try {
       // We can not use actual truncate due to some foreign keys, but we don't expect much data during tests
       String dbProduct = conn.getMetaData().getDatabaseProductName();
-      DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, null);
+      DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct);
       String s = databaseProduct.getTruncateStatement(name);
       stmt.execute(s);
 
@@ -504,15 +504,5 @@ public final class TxnDbUtil {
       Arrays.stream(affectedRecordsByQuery).forEach(affectedRowsByQuery::add);
     }
     return affectedRowsByQuery;
-  }
-
-  /**
-   +   * Checks if the dbms supports the getGeneratedKeys for multiline insert statements.
-   +   * @param dbProduct DBMS type
-   +   * @return true if supports
-   +   * @throws MetaException
-   +   */
-  public static boolean supportsGetGeneratedKeys(DatabaseProduct dbProduct) throws MetaException {
-    return dbProduct.supportsGetGeneratedKeys();
   }
 }

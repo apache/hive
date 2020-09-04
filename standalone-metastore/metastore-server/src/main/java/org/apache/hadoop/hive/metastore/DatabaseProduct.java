@@ -36,7 +36,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Database product infered via JDBC.
+/** Database product inferred via JDBC. Encapsulates all SQL logic associated with
+ * the database product.
  * This class is a singleton, which is instantiated the first time
  * method determineDatabaseProduct is invoked.
  * Tests that need to create multiple instances can use the reset method
@@ -45,19 +46,16 @@ public class DatabaseProduct implements Configurable {
   static final private Logger LOG = LoggerFactory.getLogger(DatabaseProduct.class.getName());
 
   private static enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, EXTERNAL, OTHER};
-
-  private Configuration conf;
   public DbType dbType;
   
   private static DatabaseProduct theDatabaseProduct;
   
+  private Configuration conf;
   /**
    * Private constructor for singleton class
    * @param id
    */
-  private DatabaseProduct(DbType dbt) {
-    dbType = dbt;
-  }
+  private DatabaseProduct() {}
   
   public static final String DERBY_NAME = "derby";
   public static final String SQL_SERVER_NAME = "microsoft sql server";
@@ -69,11 +67,10 @@ public class DatabaseProduct implements Configurable {
   /**
    * Determine the database product type
    * @param productName string to defer database connection
-   * @param conf Configuration object for hive-site.xml or metastore-site.xml
    * @return database product type
    */
-  public static DatabaseProduct determineDatabaseProduct(String productName, Configuration conf) {
-    DbType id;
+  public static DatabaseProduct determineDatabaseProduct(String productName) {
+    DbType dbt;
 
     if (productName == null) {
       productName = OTHER_NAME;
@@ -82,40 +79,36 @@ public class DatabaseProduct implements Configurable {
     productName = productName.toLowerCase();
 
     if (productName.contains(DERBY_NAME)) {
-      id = DbType.DERBY;
+      dbt = DbType.DERBY;
     } else if (productName.contains(SQL_SERVER_NAME)) {
-      id = DbType.SQLSERVER;
+      dbt = DbType.SQLSERVER;
     } else if (productName.contains(MYSQL_NAME)) {
-      id = DbType.MYSQL;
+      dbt = DbType.MYSQL;
     } else if (productName.contains(ORACLE_NAME)) {
-      id = DbType.ORACLE;
+      dbt = DbType.ORACLE;
     } else if (productName.contains(POSTGRESQL_NAME)) {
-      id = DbType.POSTGRES;
+      dbt = DbType.POSTGRES;
     } else {
-      id = DbType.OTHER;
+      dbt = DbType.OTHER;
     }
 
     // If the singleton instance exists, ensure it is consistent  
     if (theDatabaseProduct != null) {
-        if (theDatabaseProduct.dbType != id) {
+        if (theDatabaseProduct.dbType != dbt) {
             throw new RuntimeException(String.format("Unexpected mismatched database products. Expected=%s. Got=%s",
-                    theDatabaseProduct.dbType.name(),id.name()));
+                    theDatabaseProduct.dbType.name(),dbt.name()));
         }
         return theDatabaseProduct;
     }
 
-    if (conf == null) {
-        // TODO: how to get the right conf object for hive-site.xml or metastore-site.xml?
-        conf = new Configuration();
-    }
+    Configuration conf = MetastoreConf.newMetastoreConf();
 
-    boolean isExternal = conf.getBoolean("metastore.use.custom.database.product", false) ||
-            conf.getBoolean("hive.metastore.use.custom.database.product", false);
+    boolean isExternal = MetastoreConf.getBoolVar(conf, ConfVars.USE_CUSTOM_RDBMS);
 
     DatabaseProduct databaseProduct = null;
     if (isExternal) {
-
-      String className = conf.get("metastore.custom.database.product.classname");
+      dbt = DbType.EXTERNAL;
+      String className = MetastoreConf.getVar(conf, ConfVars.CUSTOM_RDBMS_CLASSNAME);
       
       if (className != null) {
         try {
@@ -124,8 +117,6 @@ public class DatabaseProduct implements Configurable {
         }catch (Exception e) {
           LOG.warn("Unable to instantiate custom database product. Reverting to default", e);
         }
-  
-        id = DbType.EXTERNAL;
       }
       else {
         LOG.warn("metastore.use.custom.database.product was set, " +
@@ -134,11 +125,40 @@ public class DatabaseProduct implements Configurable {
     }
 
     if (databaseProduct == null) {
-      databaseProduct = new DatabaseProduct(id);
+      databaseProduct = new DatabaseProduct();
     }
 
+    databaseProduct.dbType = dbt;
     databaseProduct.setConf(conf);
     return databaseProduct;
+  }
+
+  public final boolean isDERBY() {
+    return dbType == DbType.DERBY;
+  }
+
+  public final boolean isMYSQL() {
+    return dbType == DbType.MYSQL;
+  }
+
+  public final boolean isORACLE() {
+    return dbType == DbType.ORACLE;
+  }
+
+  public final boolean isSQLSERVER() {
+    return dbType == DbType.SQLSERVER;
+  }
+
+  public final boolean isPOSTGRES() {
+    return dbType == DbType.POSTGRES;
+  }
+
+  public final boolean isEXTERNAL() {
+    return dbType == DbType.EXTERNAL;
+  }
+
+  public final boolean isOTHER() {
+    return dbType == DbType.OTHER;
   }
 
   public boolean isDeadlock(SQLException e) {
@@ -180,44 +200,6 @@ public class DatabaseProduct implements Configurable {
     }
   }
 
-  public final boolean isDERBY() {
-    return dbType == DbType.DERBY;
-  }
-
-  public final boolean isMYSQL() {
-    return dbType == DbType.MYSQL;
-  }
-
-  public final boolean isORACLE() {
-    return dbType == DbType.ORACLE;
-  }
-
-  public final boolean isSQLSERVER() {
-    return dbType == DbType.SQLSERVER;
-  }
-
-  public final boolean isPOSTGRES() {
-    return dbType == DbType.POSTGRES;
-  }
-
-  public final boolean isEXTERNAL() {
-    return dbType == DbType.EXTERNAL;
-  }
-
-  public final boolean isOTHER() {
-    return dbType == DbType.OTHER;
-  }
-
-  @Override
-  public Configuration getConf() {
-    return conf;
-  }
-    
-  @Override
-  public void setConf(Configuration c) {
-    conf = c;
-  }
-
   public static void reset() {
     theDatabaseProduct = null;
   }
@@ -230,6 +212,11 @@ public class DatabaseProduct implements Configurable {
     }
   }
 
+  /**
+   * Returns db-specific logic to be executed at the beginning of a transaction.
+   * Used in pooled connections.
+   * @return
+   */
   public  String getPrepareTxnStmt() {
     if (isMYSQL()) {
       return "SET @@session.sql_mode=ANSI_QUOTES";
@@ -282,6 +269,11 @@ public class DatabaseProduct implements Configurable {
     }
   }
 
+  /**
+   * Returns the query to fetch the current timestamp in milliseconds in the database
+   * @return
+   * @throws MetaException
+   */
   public String getDBTime() throws MetaException {
     String s;
     switch (dbType) {
@@ -308,6 +300,15 @@ public class DatabaseProduct implements Configurable {
     return s;
   }
 
+  /**
+   * Given an expr (such as a column name) returns a database specific SQL function string
+   * which when executed returns if the value of the expr is within the given interval of
+   * the current timestamp in the database
+   * @param expr
+   * @param intervalInSeconds
+   * @return
+   * @throws MetaException
+   */
   public String isWithinCheckInterval(String expr, long intervalInSeconds) throws MetaException {
     String condition;
     switch (dbType) {
@@ -344,9 +345,8 @@ public class DatabaseProduct implements Configurable {
     case ORACLE:
       //https://docs.oracle.com/cd/E17952_01/refman-5.6-en/select.html
     case POSTGRES:
-        // Assume ANSI SQL for external product
-    case EXTERNAL:
       //http://www.postgresql.org/docs/9.0/static/sql-select.html
+    case EXTERNAL: // ANSI SQL
       return selectStatement + " for update";
     case SQLSERVER:
       //https://msdn.microsoft.com/en-us/library/ms189499.aspx
@@ -365,6 +365,13 @@ public class DatabaseProduct implements Configurable {
     }
   }
 
+  /**
+   * Add a limit clause to a given query
+   * @param numRows
+   * @param noSelectsqlQuery
+   * @return
+   * @throws MetaException
+   */
   public String addLimitClause(int numRows, String noSelectsqlQuery) throws MetaException {
     switch (dbType) {
     case DERBY:
@@ -390,6 +397,13 @@ public class DatabaseProduct implements Configurable {
     }
   }
 
+  /**
+   * Returns the SQL query to lock the given table name in either shared/exclusive mode
+   * @param txnLockTable
+   * @param shared
+   * @return
+   * @throws MetaException
+   */
   public String lockTable(String txnLockTable, boolean shared) throws MetaException {
     switch (dbType) {
     case MYSQL:
@@ -414,22 +428,6 @@ public class DatabaseProduct implements Configurable {
       LOG.error(msg);
       throw new MetaException(msg);
     }
-  }
-
-  public List<String> getDataSourceProperties(Configuration conf) {
-    List <String> list = new ArrayList<>();
-    switch (dbType){
-    case MYSQL:
-      list.add("allowMultiQueries=true");
-      list.add("rewriteBatchedStatements=true");
-      break;
-    case POSTGRES:
-      list.add("reWriteBatchedInserts=true");
-      break;
-    default:
-      break;
-    }
-    return list;
   }
 
   public List<String> getResetTxnSequenceStmts() {
@@ -484,6 +482,12 @@ public class DatabaseProduct implements Configurable {
     }
   }
 
+  /**
+   * Checks if the dbms supports the getGeneratedKeys for multiline insert statements.
+   * @param dbProduct DBMS type
+   * @return true if supports
+   * @throws MetaException
+   */
   public boolean supportsGetGeneratedKeys() throws MetaException {
     switch (dbType) {
     case DERBY:
@@ -501,10 +505,6 @@ public class DatabaseProduct implements Configurable {
       LOG.error(msg);
       throw new MetaException(msg);
     }
-  }
-
-  private static String getMessage(SQLException ex) {
-    return ex.getMessage() + " (SQLState=" + ex.getSQLState() + ", ErrorCode=" + ex.getErrorCode() + ")";
   }
 
   public boolean isDuplicateKeyError(SQLException ex) {
@@ -540,13 +540,25 @@ public class DatabaseProduct implements Configurable {
       }
       break;
     default:
-      throw new IllegalArgumentException("Unexpected DB type: " + dbType + "; " + getMessage(ex));
+      String msg = ex.getMessage() +
+                " (SQLState=" + ex.getSQLState() + ", ErrorCode=" + ex.getErrorCode() + ")";
+      throw new IllegalArgumentException("Unexpected DB type: " + dbType + "; " + msg);
   }
   return false;
 
   }
 
-  public List<String> createInsertValuesStmt(String tblColumns, List<String> rows, List<Integer> rowsCountInStmts) {
+  /**
+   * Generates "Insert into T(a,b,c) values(1,2,'f'),(3,4,'c')" for appropriate DB.
+   *
+   * @param tblColumns e.g. "T(a,b,c)"
+   * @param rows       e.g. list of Strings like 3,4,'d'
+   * @param rowsCountInStmts Output the number of rows in each insert statement returned.
+   * @param conf
+   * @return fully formed INSERT INTO ... statements
+   */
+  public List<String> createInsertValuesStmt(String tblColumns, List<String> rows,
+                                             List<Integer> rowsCountInStmts, Configuration conf) {
     List<String> insertStmts = new ArrayList<>();
     StringBuilder sb = new StringBuilder();
     int numRowsInCurrentStmt = 0;
@@ -619,6 +631,10 @@ public class DatabaseProduct implements Configurable {
     return s;
   }
 
+  /**
+   * Get datasource properties for connection pools
+   *
+   */
   public Map<String, String> getDataSourceProperties() {
     Map<String, String> map = new HashMap<>();
 
@@ -634,5 +650,15 @@ public class DatabaseProduct implements Configurable {
       break;
     }
     return map;
+  }
+
+  @Override
+  public Configuration getConf() {
+    return conf;
+  }
+
+  @Override
+  public void setConf(Configuration c) {
+    conf = c;
   }
 }
