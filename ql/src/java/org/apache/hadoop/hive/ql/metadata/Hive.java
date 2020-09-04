@@ -198,6 +198,10 @@ import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrun
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAccessControlException;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveOperationType;
+import org.apache.hadoop.hive.ql.security.authorization.plugin.HivePrivilegeObject;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -1719,6 +1723,34 @@ public class Hive {
   }
 
   /**
+   * Validate if given materialized view has SELECT privileges for current user
+   * @param cachedMVTable
+   * @return false if user does not have privilege otherwise true
+   * @throws HiveException
+   */
+  private boolean checkPrivillegeForMV(final Table cachedMVTable) throws HiveException{
+    List<String> colNames =
+        cachedMVTable.getAllCols().stream()
+            .map(FieldSchema::getName)
+            .collect(Collectors.toList());
+
+    HivePrivilegeObject privObject = new HivePrivilegeObject(cachedMVTable.getDbName(),
+        cachedMVTable.getTableName(), colNames);
+    List<HivePrivilegeObject> privObjects = new ArrayList<HivePrivilegeObject>();
+    privObjects.add(privObject);
+    try {
+      SessionState.get().getAuthorizerV2().
+          checkPrivileges(HiveOperationType.QUERY, privObjects, privObjects, new HiveAuthzContext.Builder().build());
+    } catch (HiveException e) {
+      if (e instanceof HiveAccessControlException) {
+        return false;
+      }
+      throw e;
+    }
+    return true;
+  }
+
+  /**
    * Validate that the materialized views retrieved from registry are still up-to-date.
    * For those that are not, the method loads them from the metastore into the registry.
    *
@@ -1736,6 +1768,10 @@ public class Hive {
       // Final result
       boolean result = true;
       for (Table cachedMaterializedViewTable : cachedMaterializedViewTables) {
+        if (!checkPrivillegeForMV(cachedMaterializedViewTable)) {
+          return false;
+        }
+
         // Retrieve the materialized view table from the metastore
         final Table materializedViewTable = getTable(
             cachedMaterializedViewTable.getDbName(), cachedMaterializedViewTable.getTableName());
