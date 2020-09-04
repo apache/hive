@@ -163,7 +163,7 @@ STAGE PLANS:
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _impala_builtins.casttobigint(default.type_test.tt_int)
+  |  output exprs: casttobigint(default.type_test.tt_int)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   01:EXCHANGE [UNPARTITIONED]
@@ -357,7 +357,7 @@ STAGE PLANS:
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _IMPALA_BUILTINS.MILLISECONDS_ADD(_impala_builtins.casttotimestamp(_impala_builtins.casttodate('01/01/1984')), INTERVAL CAST(86400000 AS BIGINT) MILLISECOND)
+  |  output exprs: MILLISECONDS_ADD(casttotimestamp(casttodate('01/01/1984')), INTERVAL CAST(86400000 AS BIGINT) MILLISECOND)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   00:UNION

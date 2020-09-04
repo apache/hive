@@ -247,24 +247,24 @@ Per-Host Resources: mem-estimate=134.04MB mem-reservation=40.00MB thread-reserva
   |  in pipelines: 26(GETNEXT)
   |
   26:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(CASE WHEN n2.n_name = 'BRAZIL' THEN _impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)) ELSE 0 END), _impala_builtins.sum:merge(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)))
-  |  group by: _impala_builtins.year(_impala_builtins.casttodate(default.impala_tpch_orders.o_orderdate))
+  |  output: _impala_builtins.sum:merge(CASE WHEN n2.n_name = 'BRAZIL' THEN multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)) ELSE 0 END), _impala_builtins.sum:merge(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
+  |  group by: year(casttodate(default.impala_tpch_orders.o_orderdate))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=16 row-size=36B cardinality=0
   |  in pipelines: 26(GETNEXT), 01(OPEN)
   |
-  25:EXCHANGE [HASH(_impala_builtins.year(_impala_builtins.casttodate(default.impala_tpch_orders.o_orderdate)))]
+  25:EXCHANGE [HASH(year(casttodate(default.impala_tpch_orders.o_orderdate)))]
      mem-estimate=40.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=16 row-size=36B cardinality=0
      in pipelines: 01(GETNEXT)
 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=133.94MB mem-reservation=39.81MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F09, EXCHANGE=25, HASH(_impala_builtins.year(_impala_builtins.casttodate(default.impala_tpch_orders.o_orderdate)))]
+  DATASTREAM SINK [FRAGMENT=F09, EXCHANGE=25, HASH(year(casttodate(default.impala_tpch_orders.o_orderdate)))]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   16:AGGREGATE [STREAMING]
-  |  output: sum(CASE WHEN n2.n_name = 'BRAZIL' THEN _impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)) ELSE CAST(0 AS DECIMAL(3,0)) END), sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
-  |  group by: _impala_builtins.year(_impala_builtins.casttodate(default.impala_tpch_orders.o_orderdate))
+  |  output: sum(CASE WHEN n2.n_name = 'BRAZIL' THEN multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)) ELSE CAST(0 AS DECIMAL(3,0)) END), sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
+  |  group by: year(casttodate(default.impala_tpch_orders.o_orderdate))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=16 row-size=36B cardinality=0
   |  in pipelines: 01(GETNEXT)

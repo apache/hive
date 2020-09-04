@@ -330,7 +330,7 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
   |
   34:AGGREGATE [FINALIZE]
   |  output: count()
-  |  group by: _impala_builtins.casttoint(_impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), CAST(50 AS DECIMAL(3,0))))
+  |  group by: casttoint(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), CAST(50 AS DECIMAL(3,0))))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=34 row-size=12B cardinality=1
   |  in pipelines: 34(GETNEXT), 33(OPEN)
@@ -343,7 +343,7 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
   |  in pipelines: 33(GETNEXT), 39(OPEN)
   |
   32:NESTED LOOP JOIN [INNER JOIN, BROADCAST]
-  |  predicates: _impala_builtins.casttobigint(default.impala_tpcds_date_dim_1.d_month_seq) >= _impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_month_seq), 1) AND _impala_builtins.casttobigint(default.impala_tpcds_date_dim_1.d_month_seq) <= _impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_4.d_month_seq), 3)
+  |  predicates: casttobigint(default.impala_tpcds_date_dim_1.d_month_seq) >= add(casttobigint(default.impala_tpcds_date_dim.d_month_seq), 1) AND casttobigint(default.impala_tpcds_date_dim_1.d_month_seq) <= add(casttobigint(default.impala_tpcds_date_dim_4.d_month_seq), 3)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=29,32N,7,0,3N,8,21,22,24 row-size=112B cardinality=1
   |  in pipelines: 39(GETNEXT), 46(OPEN)
@@ -365,7 +365,7 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
   |
   39:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.count:merge()
-  |  having: _impala_builtins.sq_count_check(_impala_builtins.count()) <= CAST(1 AS BIGINT)
+  |  having: sq_count_check(_impala_builtins.count()) <= CAST(1 AS BIGINT)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=29 row-size=8B cardinality=1
   |  in pipelines: 39(GETNEXT), 28(OPEN)
@@ -375,7 +375,7 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
      tuple-ids=29 row-size=8B cardinality=1
      in pipelines: 28(GETNEXT)
 
-F01:PLAN FRAGMENT [HASH(_impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_3.d_month_seq), 3))] hosts=1 instances=1
+F01:PLAN FRAGMENT [HASH(add(casttobigint(default.impala_tpcds_date_dim_3.d_month_seq), 3))] hosts=1 instances=1
 Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=38, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -386,22 +386,22 @@ Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 28(GETNEXT), 37(OPEN)
   |
   37:AGGREGATE [FINALIZE]
-  |  group by: _impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_3.d_month_seq), 3)
+  |  group by: add(casttobigint(default.impala_tpcds_date_dim_3.d_month_seq), 3)
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=28 row-size=8B cardinality=0
   |  in pipelines: 37(GETNEXT), 26(OPEN)
   |
-  36:EXCHANGE [HASH(_impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_3.d_month_seq), 3))]
+  36:EXCHANGE [HASH(add(casttobigint(default.impala_tpcds_date_dim_3.d_month_seq), 3))]
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=28 row-size=8B cardinality=0
      in pipelines: 26(GETNEXT)
 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=36, HASH(_impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_3.d_month_seq), 3))]
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=36, HASH(add(casttobigint(default.impala_tpcds_date_dim_3.d_month_seq), 3))]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   27:AGGREGATE [STREAMING]
-  |  group by: _impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_3.d_month_seq), CAST(3 AS BIGINT))
+  |  group by: add(casttobigint(default.impala_tpcds_date_dim_3.d_month_seq), CAST(3 AS BIGINT))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=28 row-size=8B cardinality=0
   |  in pipelines: 26(GETNEXT)
@@ -418,27 +418,27 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
      tuple-ids=26 row-size=12B cardinality=0
      in pipelines: 26(GETNEXT)
 
-F04:PLAN FRAGMENT [HASH(_impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_4.d_month_seq), 3))] hosts=1 instances=1
+F04:PLAN FRAGMENT [HASH(add(casttobigint(default.impala_tpcds_date_dim_4.d_month_seq), 3))] hosts=1 instances=1
 Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=42, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   41:AGGREGATE [FINALIZE]
-  |  group by: _impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_4.d_month_seq), 3)
+  |  group by: add(casttobigint(default.impala_tpcds_date_dim_4.d_month_seq), 3)
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=32 row-size=8B cardinality=0
   |  in pipelines: 41(GETNEXT), 29(OPEN)
   |
-  40:EXCHANGE [HASH(_impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_4.d_month_seq), 3))]
+  40:EXCHANGE [HASH(add(casttobigint(default.impala_tpcds_date_dim_4.d_month_seq), 3))]
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=32 row-size=8B cardinality=0
      in pipelines: 29(GETNEXT)
 
 F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=40, HASH(_impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_4.d_month_seq), 3))]
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=40, HASH(add(casttobigint(default.impala_tpcds_date_dim_4.d_month_seq), 3))]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   30:AGGREGATE [STREAMING]
-  |  group by: _impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_4.d_month_seq), CAST(3 AS BIGINT))
+  |  group by: add(casttobigint(default.impala_tpcds_date_dim_4.d_month_seq), CAST(3 AS BIGINT))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=32 row-size=8B cardinality=0
   |  in pipelines: 29(GETNEXT)
@@ -507,7 +507,7 @@ Per-Host Resources: mem-estimate=15.95MB mem-reservation=5.81MB thread-reservati
   |
   46:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.count:merge()
-  |  having: _impala_builtins.sq_count_check(_impala_builtins.count()) <= CAST(1 AS BIGINT)
+  |  having: sq_count_check(_impala_builtins.count()) <= CAST(1 AS BIGINT)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=7 row-size=8B cardinality=1
   |  in pipelines: 46(GETNEXT), 07(OPEN)
@@ -517,7 +517,7 @@ Per-Host Resources: mem-estimate=15.95MB mem-reservation=5.81MB thread-reservati
      tuple-ids=7 row-size=8B cardinality=1
      in pipelines: 07(GETNEXT)
 
-F06:PLAN FRAGMENT [HASH(_impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_month_seq), 1))] hosts=1 instances=1
+F06:PLAN FRAGMENT [HASH(add(casttobigint(default.impala_tpcds_date_dim_0.d_month_seq), 1))] hosts=1 instances=1
 Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=45, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -528,22 +528,22 @@ Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 07(GETNEXT), 44(OPEN)
   |
   44:AGGREGATE [FINALIZE]
-  |  group by: _impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_month_seq), 1)
+  |  group by: add(casttobigint(default.impala_tpcds_date_dim_0.d_month_seq), 1)
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=6 row-size=8B cardinality=0
   |  in pipelines: 44(GETNEXT), 05(OPEN)
   |
-  43:EXCHANGE [HASH(_impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_month_seq), 1))]
+  43:EXCHANGE [HASH(add(casttobigint(default.impala_tpcds_date_dim_0.d_month_seq), 1))]
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=6 row-size=8B cardinality=0
      in pipelines: 05(GETNEXT)
 
 F05:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=43, HASH(_impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_month_seq), 1))]
+  DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=43, HASH(add(casttobigint(default.impala_tpcds_date_dim_0.d_month_seq), 1))]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   06:AGGREGATE [STREAMING]
-  |  group by: _impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_month_seq), CAST(1 AS BIGINT))
+  |  group by: add(casttobigint(default.impala_tpcds_date_dim_0.d_month_seq), CAST(1 AS BIGINT))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=6 row-size=8B cardinality=0
   |  in pipelines: 05(GETNEXT)
@@ -587,27 +587,27 @@ Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
      tuple-ids=0 row-size=12B cardinality=0
      in pipelines: 01(GETNEXT)
 
-F10:PLAN FRAGMENT [HASH(_impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_month_seq), 1))] hosts=1 instances=1
+F10:PLAN FRAGMENT [HASH(add(casttobigint(default.impala_tpcds_date_dim.d_month_seq), 1))] hosts=1 instances=1
 Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=49, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   48:AGGREGATE [FINALIZE]
-  |  group by: _impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_month_seq), 1)
+  |  group by: add(casttobigint(default.impala_tpcds_date_dim.d_month_seq), 1)
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=3 row-size=8B cardinality=0
   |  in pipelines: 48(GETNEXT), 02(OPEN)
   |
-  47:EXCHANGE [HASH(_impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_month_seq), 1))]
+  47:EXCHANGE [HASH(add(casttobigint(default.impala_tpcds_date_dim.d_month_seq), 1))]
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=3 row-size=8B cardinality=0
      in pipelines: 02(GETNEXT)
 
 F09:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=47, HASH(_impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_month_seq), 1))]
+  DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=47, HASH(add(casttobigint(default.impala_tpcds_date_dim.d_month_seq), 1))]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   03:AGGREGATE [STREAMING]
-  |  group by: _impala_builtins.add(_impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_month_seq), CAST(1 AS BIGINT))
+  |  group by: add(casttobigint(default.impala_tpcds_date_dim.d_month_seq), CAST(1 AS BIGINT))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=3 row-size=8B cardinality=0
   |  in pipelines: 02(GETNEXT)

@@ -572,7 +572,7 @@ Per-Host Resources: mem-estimate=394.06MB mem-reservation=104.00MB thread-reserv
   |  in pipelines: 46(GETNEXT), 53(GETNEXT), 60(GETNEXT)
   |
   |--60:AGGREGATE [FINALIZE]
-  |  |  output: _impala_builtins.sum:merge(default.impala_hive_tpcds_web_sales.ws_ext_sales_price), _impala_builtins.sum:merge(_impala_builtins.coalesce(default.impala_hive_tpcds_web_returns.wr_return_amt, 0)), _impala_builtins.sum:merge(_impala_builtins.subtract(default.impala_hive_tpcds_web_sales.ws_net_profit, _impala_builtins.coalesce(default.impala_hive_tpcds_web_returns.wr_net_loss, 0)))
+  |  |  output: _impala_builtins.sum:merge(default.impala_hive_tpcds_web_sales.ws_ext_sales_price), _impala_builtins.sum:merge(coalesce(default.impala_hive_tpcds_web_returns.wr_return_amt, 0)), _impala_builtins.sum:merge(subtract(default.impala_hive_tpcds_web_sales.ws_net_profit, coalesce(default.impala_hive_tpcds_web_returns.wr_net_loss, 0)))
   |  |  group by: default.impala_hive_tpcds_web_site.web_site_id
   |  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=38 row-size=60B cardinality=0
@@ -584,7 +584,7 @@ Per-Host Resources: mem-estimate=394.06MB mem-reservation=104.00MB thread-reserv
   |     in pipelines: 25(GETNEXT)
   |
   |--53:AGGREGATE [FINALIZE]
-  |  |  output: _impala_builtins.sum:merge(default.impala_hive_tpcds_catalog_sales.cs_ext_sales_price), _impala_builtins.sum:merge(_impala_builtins.coalesce(default.impala_hive_tpcds_catalog_returns.cr_return_amount, 0)), _impala_builtins.sum:merge(_impala_builtins.subtract(default.impala_hive_tpcds_catalog_sales.cs_net_profit, _impala_builtins.coalesce(default.impala_hive_tpcds_catalog_returns.cr_net_loss, 0)))
+  |  |  output: _impala_builtins.sum:merge(default.impala_hive_tpcds_catalog_sales.cs_ext_sales_price), _impala_builtins.sum:merge(coalesce(default.impala_hive_tpcds_catalog_returns.cr_return_amount, 0)), _impala_builtins.sum:merge(subtract(default.impala_hive_tpcds_catalog_sales.cs_net_profit, coalesce(default.impala_hive_tpcds_catalog_returns.cr_net_loss, 0)))
   |  |  group by: default.impala_hive_tpcds_catalog_page.cp_catalog_page_id
   |  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=25 row-size=60B cardinality=0
@@ -596,7 +596,7 @@ Per-Host Resources: mem-estimate=394.06MB mem-reservation=104.00MB thread-reserv
   |     in pipelines: 13(GETNEXT)
   |
   46:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_hive_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum:merge(_impala_builtins.coalesce(default.impala_hive_tpcds_store_returns.sr_return_amt, 0)), _impala_builtins.sum:merge(_impala_builtins.subtract(default.impala_hive_tpcds_store_sales.ss_net_profit, _impala_builtins.coalesce(default.impala_hive_tpcds_store_returns.sr_net_loss, 0)))
+  |  output: _impala_builtins.sum:merge(default.impala_hive_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum:merge(coalesce(default.impala_hive_tpcds_store_returns.sr_return_amt, 0)), _impala_builtins.sum:merge(subtract(default.impala_hive_tpcds_store_sales.ss_net_profit, coalesce(default.impala_hive_tpcds_store_returns.sr_net_loss, 0)))
   |  group by: default.impala_hive_tpcds_store.s_store_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=12 row-size=60B cardinality=0
@@ -612,7 +612,7 @@ Per-Host Resources: mem-estimate=137.79MB mem-reservation=43.69MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=45, HASH(default.impala_hive_tpcds_store.s_store_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   12:AGGREGATE [STREAMING]
-  |  output: sum(default.impala_hive_tpcds_store_sales.ss_ext_sales_price), sum(_impala_builtins.coalesce(default.impala_hive_tpcds_store_returns.sr_return_amt, CAST(0 AS DECIMAL(3,0)))), sum(_impala_builtins.subtract(default.impala_hive_tpcds_store_sales.ss_net_profit, _impala_builtins.coalesce(default.impala_hive_tpcds_store_returns.sr_net_loss, CAST(0 AS DECIMAL(3,0)))))
+  |  output: sum(default.impala_hive_tpcds_store_sales.ss_ext_sales_price), sum(coalesce(default.impala_hive_tpcds_store_returns.sr_return_amt, CAST(0 AS DECIMAL(3,0)))), sum(subtract(default.impala_hive_tpcds_store_sales.ss_net_profit, coalesce(default.impala_hive_tpcds_store_returns.sr_net_loss, CAST(0 AS DECIMAL(3,0)))))
   |  group by: default.impala_hive_tpcds_store.s_store_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=12 row-size=60B cardinality=0
@@ -712,7 +712,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   04:SCAN HDFS [default.impala_hive_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_hive_tpcds_date_dim.d_date_sk IS NOT NULL, _impala_builtins.casttotimestamp(default.impala_hive_tpcds_date_dim.d_date) >= _impala_builtins.casttotimestamp(_impala_builtins.casttodate('2002-08-06')) AND _impala_builtins.casttotimestamp(default.impala_hive_tpcds_date_dim.d_date) <= _IMPALA_BUILTINS.MILLISECONDS_ADD(_impala_builtins.casttotimestamp(_impala_builtins.casttodate('2002-08-06')), INTERVAL CAST(2592000000 AS BIGINT) MILLISECOND)
+     predicates: default.impala_hive_tpcds_date_dim.d_date_sk IS NOT NULL, casttotimestamp(default.impala_hive_tpcds_date_dim.d_date) >= casttotimestamp(casttodate('2002-08-06')) AND casttotimestamp(default.impala_hive_tpcds_date_dim.d_date) <= MILLISECONDS_ADD(casttotimestamp(casttodate('2002-08-06')), INTERVAL CAST(2592000000 AS BIGINT) MILLISECOND)
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -773,7 +773,7 @@ Per-Host Resources: mem-estimate=137.79MB mem-reservation=43.69MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=52, HASH(default.impala_hive_tpcds_catalog_page.cp_catalog_page_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   24:AGGREGATE [STREAMING]
-  |  output: sum(default.impala_hive_tpcds_catalog_sales.cs_ext_sales_price), sum(_impala_builtins.coalesce(default.impala_hive_tpcds_catalog_returns.cr_return_amount, CAST(0 AS DECIMAL(3,0)))), sum(_impala_builtins.subtract(default.impala_hive_tpcds_catalog_sales.cs_net_profit, _impala_builtins.coalesce(default.impala_hive_tpcds_catalog_returns.cr_net_loss, CAST(0 AS DECIMAL(3,0)))))
+  |  output: sum(default.impala_hive_tpcds_catalog_sales.cs_ext_sales_price), sum(coalesce(default.impala_hive_tpcds_catalog_returns.cr_return_amount, CAST(0 AS DECIMAL(3,0)))), sum(subtract(default.impala_hive_tpcds_catalog_sales.cs_net_profit, coalesce(default.impala_hive_tpcds_catalog_returns.cr_net_loss, CAST(0 AS DECIMAL(3,0)))))
   |  group by: default.impala_hive_tpcds_catalog_page.cp_catalog_page_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=25 row-size=60B cardinality=0
@@ -871,7 +871,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   16:SCAN HDFS [default.impala_hive_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_hive_tpcds_date_dim_0.d_date_sk IS NOT NULL, _impala_builtins.casttotimestamp(default.impala_hive_tpcds_date_dim_0.d_date) >= _impala_builtins.casttotimestamp(_impala_builtins.casttodate('2002-08-06')) AND _impala_builtins.casttotimestamp(default.impala_hive_tpcds_date_dim_0.d_date) <= _IMPALA_BUILTINS.MILLISECONDS_ADD(_impala_builtins.casttotimestamp(_impala_builtins.casttodate('2002-08-06')), INTERVAL CAST(2592000000 AS BIGINT) MILLISECOND)
+     predicates: default.impala_hive_tpcds_date_dim_0.d_date_sk IS NOT NULL, casttotimestamp(default.impala_hive_tpcds_date_dim_0.d_date) >= casttotimestamp(casttodate('2002-08-06')) AND casttotimestamp(default.impala_hive_tpcds_date_dim_0.d_date) <= MILLISECONDS_ADD(casttotimestamp(casttodate('2002-08-06')), INTERVAL CAST(2592000000 AS BIGINT) MILLISECOND)
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -932,7 +932,7 @@ Per-Host Resources: mem-estimate=137.79MB mem-reservation=43.69MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=59, HASH(default.impala_hive_tpcds_web_site.web_site_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   36:AGGREGATE [STREAMING]
-  |  output: sum(default.impala_hive_tpcds_web_sales.ws_ext_sales_price), sum(_impala_builtins.coalesce(default.impala_hive_tpcds_web_returns.wr_return_amt, CAST(0 AS DECIMAL(3,0)))), sum(_impala_builtins.subtract(default.impala_hive_tpcds_web_sales.ws_net_profit, _impala_builtins.coalesce(default.impala_hive_tpcds_web_returns.wr_net_loss, CAST(0 AS DECIMAL(3,0)))))
+  |  output: sum(default.impala_hive_tpcds_web_sales.ws_ext_sales_price), sum(coalesce(default.impala_hive_tpcds_web_returns.wr_return_amt, CAST(0 AS DECIMAL(3,0)))), sum(subtract(default.impala_hive_tpcds_web_sales.ws_net_profit, coalesce(default.impala_hive_tpcds_web_returns.wr_net_loss, CAST(0 AS DECIMAL(3,0)))))
   |  group by: default.impala_hive_tpcds_web_site.web_site_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=38 row-size=60B cardinality=0
@@ -1030,7 +1030,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   28:SCAN HDFS [default.impala_hive_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_hive_tpcds_date_dim_1.d_date_sk IS NOT NULL, _impala_builtins.casttotimestamp(default.impala_hive_tpcds_date_dim_1.d_date) >= _impala_builtins.casttotimestamp(_impala_builtins.casttodate('2002-08-06')) AND _impala_builtins.casttotimestamp(default.impala_hive_tpcds_date_dim_1.d_date) <= _IMPALA_BUILTINS.MILLISECONDS_ADD(_impala_builtins.casttotimestamp(_impala_builtins.casttodate('2002-08-06')), INTERVAL CAST(2592000000 AS BIGINT) MILLISECOND)
+     predicates: default.impala_hive_tpcds_date_dim_1.d_date_sk IS NOT NULL, casttotimestamp(default.impala_hive_tpcds_date_dim_1.d_date) >= casttotimestamp(casttodate('2002-08-06')) AND casttotimestamp(default.impala_hive_tpcds_date_dim_1.d_date) <= MILLISECONDS_ADD(casttotimestamp(casttodate('2002-08-06')), INTERVAL CAST(2592000000 AS BIGINT) MILLISECOND)
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable

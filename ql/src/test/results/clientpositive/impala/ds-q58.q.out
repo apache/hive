@@ -142,16 +142,17 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
     ImpalaJoinRel(condition=[AND(=($0, $8), BETWEEN(false, $5, $10, $11), BETWEEN(false, $1, $10, $11), BETWEEN(false, $9, $6, $7), BETWEEN(false, $9, $2, $3))], joinType=[inner])
       ImpalaJoinRel(condition=[AND(=($4, $0), BETWEEN(false, $5, $2, $3), BETWEEN(false, $1, $6, $7))], joinType=[inner])
         ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], *=[*(0.9:DECIMAL(1, 1), $1)], *3=[*(1.1:DECIMAL(2, 1), $1)])
-          ImpalaAggregateRel(group=[{4}], agg#0=[sum($2)])
-            ImpalaJoinRel(condition=[=($6, $7)], joinType=[semi])
-              ImpalaJoinRel(condition=[=($0, $5)], joinType=[inner])
-                ImpalaJoinRel(condition=[=($1, $3)], joinType=[inner])
-                  ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_ext_sales_price=[$23])
-                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($0))])
-                  ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1])
-                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
-                ImpalaProjectPassthroughRel(d_date_sk=[$0], d_date=[$2])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IS NOT NULL($2), IS NOT NULL($0))])
+          ImpalaAggregateRel(group=[{1}], agg#0=[sum($0)])
+            ImpalaJoinRel(condition=[=($2, $3)], joinType=[semi])
+              ImpalaProjectPassthroughRel(cs_ext_sales_price=[$2], i_item_id=[$4], d_date=[$6])
+                ImpalaJoinRel(condition=[=($0, $5)], joinType=[inner])
+                  ImpalaJoinRel(condition=[=($1, $3)], joinType=[inner])
+                    ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_item_sk=[$15], cs_ext_sales_price=[$23])
+                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($0))])
+                    ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1])
+                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                  ImpalaProjectPassthroughRel(d_date_sk=[$0], d_date=[$2])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IS NOT NULL($2), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(d_date=[$0])
                 ImpalaJoinRel(condition=[true], joinType=[inner])
                   ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
@@ -162,16 +163,17 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
                   ImpalaAggregateRel(group=[{}], cnt=[COUNT()], condition=[<=(sq_count_check($0), 1)])
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[=($2, _UTF-16LE'1998-02-21')])
         ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], *=[*(0.9:DECIMAL(1, 1), $1)], *3=[*(1.1:DECIMAL(2, 1), $1)])
-          ImpalaAggregateRel(group=[{4}], agg#0=[sum($1)])
-            ImpalaJoinRel(condition=[=($6, $7)], joinType=[semi])
-              ImpalaJoinRel(condition=[=($2, $5)], joinType=[inner])
-                ImpalaJoinRel(condition=[=($0, $3)], joinType=[inner])
-                  ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_ext_sales_price=[$14], ss_sold_date_sk=[$22])
-                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($22))])
-                  ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1])
-                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
-                ImpalaProjectPassthroughRel(d_date_sk=[$0], d_date=[$2])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IS NOT NULL($2), IS NOT NULL($0))])
+          ImpalaAggregateRel(group=[{1}], agg#0=[sum($0)])
+            ImpalaJoinRel(condition=[=($2, $3)], joinType=[semi])
+              ImpalaProjectPassthroughRel(ss_ext_sales_price=[$1], i_item_id=[$4], d_date=[$6])
+                ImpalaJoinRel(condition=[=($2, $5)], joinType=[inner])
+                  ImpalaJoinRel(condition=[=($0, $3)], joinType=[inner])
+                    ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_ext_sales_price=[$14], ss_sold_date_sk=[$22])
+                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($22))])
+                    ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1])
+                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                  ImpalaProjectPassthroughRel(d_date_sk=[$0], d_date=[$2])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IS NOT NULL($2), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(d_date=[$0])
                 ImpalaJoinRel(condition=[true], joinType=[inner])
                   ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
@@ -182,16 +184,17 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
                   ImpalaAggregateRel(group=[{}], cnt=[COUNT()], condition=[<=(sq_count_check($0), 1)])
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[=($2, _UTF-16LE'1998-02-21')])
       ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], *=[*(0.9:DECIMAL(1, 1), $1)], *3=[*(1.1:DECIMAL(2, 1), $1)])
-        ImpalaAggregateRel(group=[{4}], agg#0=[sum($2)])
-          ImpalaJoinRel(condition=[=($6, $7)], joinType=[semi])
-            ImpalaJoinRel(condition=[=($0, $5)], joinType=[inner])
-              ImpalaJoinRel(condition=[=($1, $3)], joinType=[inner])
-                ImpalaProjectPassthroughRel(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_ext_sales_price=[$23])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_sales]], condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
-                ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
-              ImpalaProjectPassthroughRel(d_date_sk=[$0], d_date=[$2])
-                ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IS NOT NULL($2), IS NOT NULL($0))])
+        ImpalaAggregateRel(group=[{1}], agg#0=[sum($0)])
+          ImpalaJoinRel(condition=[=($2, $3)], joinType=[semi])
+            ImpalaProjectPassthroughRel(ws_ext_sales_price=[$2], i_item_id=[$4], d_date=[$6])
+              ImpalaJoinRel(condition=[=($0, $5)], joinType=[inner])
+                ImpalaJoinRel(condition=[=($1, $3)], joinType=[inner])
+                  ImpalaProjectPassthroughRel(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_ext_sales_price=[$23])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_sales]], condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
+                  ImpalaProjectPassthroughRel(i_item_sk=[$0], i_item_id=[$1])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                ImpalaProjectPassthroughRel(d_date_sk=[$0], d_date=[$2])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IS NOT NULL($2), IS NOT NULL($0))])
             ImpalaProjectPassthroughRel(d_date=[$0])
               ImpalaJoinRel(condition=[true], joinType=[inner])
                 ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
@@ -379,7 +382,7 @@ Per-Host Resources: mem-estimate=131.97MB mem-reservation=37.88MB thread-reserva
   41:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_item.i_item_id = default.impala_tpcds_item_1.i_item_id
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) >= _impala_builtins.multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) <= _impala_builtins.multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) >= _impala_builtins.multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) <= _impala_builtins.multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price) >= _impala_builtins.multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price) <= _impala_builtins.multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price) >= _impala_builtins.multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price) <= _impala_builtins.multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
+  |  other join predicates: _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=13,26,40 row-size=84B cardinality=0
   |  in pipelines: 51(GETNEXT), 70(OPEN)
@@ -392,7 +395,7 @@ Per-Host Resources: mem-estimate=131.97MB mem-reservation=37.88MB thread-reserva
   27:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_item.i_item_id = default.impala_tpcds_item_0.i_item_id
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) >= _impala_builtins.multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) <= _impala_builtins.multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) >= _impala_builtins.multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) <= _impala_builtins.multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price))
+  |  other join predicates: _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) >= multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price)) AND _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price) <= multiply(CAST(1.1 AS DECIMAL(2,1)), _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_sales_price))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=13,26 row-size=56B cardinality=0
   |  in pipelines: 51(GETNEXT), 60(OPEN)
@@ -517,7 +520,7 @@ Per-Host Resources: mem-estimate=10.05MB mem-reservation=0B thread-reservation=1
   |
   46:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.count:merge()
-  |  having: _impala_builtins.sq_count_check(_impala_builtins.count()) <= CAST(1 AS BIGINT)
+  |  having: sq_count_check(_impala_builtins.count()) <= CAST(1 AS BIGINT)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=12 row-size=8B cardinality=1
   |  in pipelines: 46(GETNEXT), 10(OPEN)
@@ -713,7 +716,7 @@ Per-Host Resources: mem-estimate=10.05MB mem-reservation=0B thread-reservation=1
   |
   55:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.count:merge()
-  |  having: _impala_builtins.sq_count_check(_impala_builtins.count()) <= CAST(1 AS BIGINT)
+  |  having: sq_count_check(_impala_builtins.count()) <= CAST(1 AS BIGINT)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=25 row-size=8B cardinality=1
   |  in pipelines: 55(GETNEXT), 23(OPEN)
@@ -907,7 +910,7 @@ Per-Host Resources: mem-estimate=10.05MB mem-reservation=0B thread-reservation=1
   |
   65:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.count:merge()
-  |  having: _impala_builtins.sq_count_check(_impala_builtins.count()) <= CAST(1 AS BIGINT)
+  |  having: sq_count_check(_impala_builtins.count()) <= CAST(1 AS BIGINT)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=39 row-size=8B cardinality=1
   |  in pipelines: 65(GETNEXT), 37(OPEN)

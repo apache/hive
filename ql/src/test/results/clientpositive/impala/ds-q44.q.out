@@ -270,14 +270,14 @@ Per-Host Resources: mem-estimate=4.07MB mem-reservation=4.00MB thread-reservatio
   09:ANALYTIC
   |  functions: _impala_builtins.rank()
   |  partition by: 0
-  |  order by: _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(ss1.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) ASC
+  |  order by: casttodecimal(divide(_impala_builtins.sum(ss1.ss_net_profit), casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11,10 row-size=73B cardinality=0
   |  in pipelines: 08(GETNEXT)
   |
   30:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: 0 ASC NULLS FIRST, _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(ss1.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) ASC NULLS LAST
+     order by: 0 ASC NULLS FIRST, casttodecimal(divide(_impala_builtins.sum(ss1.ss_net_profit), casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) ASC NULLS LAST
      mem-estimate=69.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=11 row-size=65B cardinality=0
      in pipelines: 08(GETNEXT)
@@ -287,14 +287,14 @@ Per-Host Resources: mem-estimate=134.03MB mem-reservation=40.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=30, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   08:SORT
-  |  order by: 0 ASC NULLS FIRST, _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(ss1.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) ASC NULLS LAST
-  |  materialized: _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(ss1.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(ss1.ss_net_profit))))
+  |  order by: 0 ASC NULLS FIRST, casttodecimal(divide(_impala_builtins.sum(ss1.ss_net_profit), casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) ASC NULLS LAST
+  |  materialized: casttodecimal(divide(_impala_builtins.sum(ss1.ss_net_profit), casttodecimal(_impala_builtins.count(ss1.ss_net_profit))))
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=65B cardinality=0
   |  in pipelines: 08(GETNEXT), 26(OPEN)
   |
   07:NESTED LOOP JOIN [INNER JOIN, BROADCAST]
-  |  join predicates: _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(ss1.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) > _impala_builtins.multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_net_profit)))))
+  |  join predicates: casttodecimal(divide(_impala_builtins.sum(ss1.ss_net_profit), casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) > multiply(CAST(0.9 AS DECIMAL(1,1)), casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_net_profit)))))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=3,5 row-size=57B cardinality=0
   |  in pipelines: 26(GETNEXT), 28(OPEN)
@@ -307,7 +307,7 @@ Per-Host Resources: mem-estimate=134.03MB mem-reservation=40.00MB thread-reserva
   26:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.sum:merge(ss1.ss_net_profit), _impala_builtins.count:merge(ss1.ss_net_profit)
   |  group by: ss1.ss_item_sk
-  |  having: _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(ss1.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) IS NOT NULL
+  |  having: casttodecimal(divide(_impala_builtins.sum(ss1.ss_net_profit), casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=3 row-size=32B cardinality=0
   |  in pipelines: 26(GETNEXT), 03(OPEN)
@@ -347,7 +347,7 @@ Per-Host Resources: mem-estimate=10.03MB mem-reservation=1.94MB thread-reservati
   28:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_net_profit), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_net_profit)
   |  group by: TRUE
-  |  having: _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_net_profit)))) IS NOT NULL
+  |  having: casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_net_profit)))) IS NOT NULL
   |  mem-estimate=10.00MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=5 row-size=25B cardinality=0
   |  in pipelines: 28(GETNEXT), 05(OPEN)
@@ -410,14 +410,14 @@ Per-Host Resources: mem-estimate=6.03MB mem-reservation=5.94MB thread-reservatio
   19:ANALYTIC
   |  functions: _impala_builtins.rank()
   |  partition by: 0
-  |  order by: _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(ss1_0.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) DESC
+  |  order by: casttodecimal(divide(_impala_builtins.sum(ss1_0.ss_net_profit), casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) DESC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=22,21 row-size=73B cardinality=0
   |  in pipelines: 18(GETNEXT)
   |
   37:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: 0 ASC NULLS FIRST, _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(ss1_0.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) DESC NULLS FIRST
+     order by: 0 ASC NULLS FIRST, casttodecimal(divide(_impala_builtins.sum(ss1_0.ss_net_profit), casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) DESC NULLS FIRST
      mem-estimate=69.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=22 row-size=65B cardinality=0
      in pipelines: 18(GETNEXT)
@@ -427,14 +427,14 @@ Per-Host Resources: mem-estimate=134.03MB mem-reservation=40.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=37, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   18:SORT
-  |  order by: 0 ASC NULLS FIRST, _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(ss1_0.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) DESC NULLS FIRST
-  |  materialized: _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(ss1_0.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit))))
+  |  order by: 0 ASC NULLS FIRST, casttodecimal(divide(_impala_builtins.sum(ss1_0.ss_net_profit), casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) DESC NULLS FIRST
+  |  materialized: casttodecimal(divide(_impala_builtins.sum(ss1_0.ss_net_profit), casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit))))
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=22 row-size=65B cardinality=0
   |  in pipelines: 18(GETNEXT), 33(OPEN)
   |
   17:NESTED LOOP JOIN [INNER JOIN, BROADCAST]
-  |  join predicates: _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(ss1_0.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) > _impala_builtins.multiply(CAST(0.9 AS DECIMAL(1,1)), _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_0.ss_net_profit)))))
+  |  join predicates: casttodecimal(divide(_impala_builtins.sum(ss1_0.ss_net_profit), casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) > multiply(CAST(0.9 AS DECIMAL(1,1)), casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_0.ss_net_profit)))))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=14,16 row-size=57B cardinality=0
   |  in pipelines: 33(GETNEXT), 35(OPEN)
@@ -447,7 +447,7 @@ Per-Host Resources: mem-estimate=134.03MB mem-reservation=40.00MB thread-reserva
   33:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.sum:merge(ss1_0.ss_net_profit), _impala_builtins.count:merge(ss1_0.ss_net_profit)
   |  group by: ss1_0.ss_item_sk
-  |  having: _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(ss1_0.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) IS NOT NULL
+  |  having: casttodecimal(divide(_impala_builtins.sum(ss1_0.ss_net_profit), casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=14 row-size=32B cardinality=0
   |  in pipelines: 33(GETNEXT), 13(OPEN)
@@ -487,7 +487,7 @@ Per-Host Resources: mem-estimate=10.03MB mem-reservation=1.94MB thread-reservati
   35:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_net_profit), _impala_builtins.count:merge(default.impala_tpcds_store_sales_0.ss_net_profit)
   |  group by: TRUE
-  |  having: _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_net_profit), _impala_builtins.casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_0.ss_net_profit)))) IS NOT NULL
+  |  having: casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_0.ss_net_profit)))) IS NOT NULL
   |  mem-estimate=10.00MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=16 row-size=25B cardinality=0
   |  in pipelines: 35(GETNEXT), 15(OPEN)

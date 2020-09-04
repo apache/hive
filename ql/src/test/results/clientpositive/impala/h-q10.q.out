@@ -207,7 +207,7 @@ Per-Host Resources: mem-estimate=128.09MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 14(GETNEXT)
   |
   14:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)))
+  |  output: _impala_builtins.sum:merge(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
   |  group by: default.impala_tpch_customer.c_custkey, default.impala_tpch_customer.c_name, default.impala_tpch_customer.c_address, default.impala_tpch_customer.c_phone, default.impala_tpch_customer.c_acctbal, default.impala_tpch_customer.c_comment, default.impala_tpch_nation.n_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=92B cardinality=0
@@ -223,7 +223,7 @@ Per-Host Resources: mem-estimate=131.96MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=13, HASH(default.impala_tpch_customer.c_custkey,default.impala_tpch_customer.c_name,default.impala_tpch_customer.c_address,default.impala_tpch_customer.c_phone,default.impala_tpch_customer.c_acctbal,default.impala_tpch_customer.c_comment,default.impala_tpch_nation.n_name)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   08:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
+  |  output: sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
   |  group by: default.impala_tpch_customer.c_custkey, default.impala_tpch_customer.c_name, default.impala_tpch_customer.c_address, default.impala_tpch_customer.c_phone, default.impala_tpch_customer.c_acctbal, default.impala_tpch_customer.c_comment, default.impala_tpch_nation.n_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=92B cardinality=0

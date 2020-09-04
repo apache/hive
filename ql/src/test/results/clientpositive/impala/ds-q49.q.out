@@ -755,7 +755,7 @@ Per-Host Resources: mem-estimate=134.06MB mem-reservation=40.00MB thread-reserva
   |  in pipelines: 47(GETNEXT)
   |
   47:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(_impala_builtins.coalesce(wr.wr_return_quantity, 0))), _impala_builtins.sum:merge(_impala_builtins.casttobigint(_impala_builtins.coalesce(ws.ws_quantity, 0))), _impala_builtins.sum:merge(_impala_builtins.coalesce(wr.wr_return_amt, 0)), _impala_builtins.sum:merge(_impala_builtins.coalesce(ws.ws_net_paid, 0))
+  |  output: _impala_builtins.sum:merge(casttobigint(coalesce(wr.wr_return_quantity, 0))), _impala_builtins.sum:merge(casttobigint(coalesce(ws.ws_quantity, 0))), _impala_builtins.sum:merge(coalesce(wr.wr_return_amt, 0)), _impala_builtins.sum:merge(coalesce(ws.ws_net_paid, 0))
   |  group by: ws.ws_item_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=56B cardinality=0
@@ -771,7 +771,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=46, HASH(ws.ws_item_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   09:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(wr.wr_return_quantity, CAST(0 AS INT)))), sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(ws.ws_quantity, CAST(0 AS INT)))), sum(_impala_builtins.coalesce(wr.wr_return_amt, CAST(0 AS DECIMAL(3,0)))), sum(_impala_builtins.coalesce(ws.ws_net_paid, CAST(0 AS DECIMAL(3,0))))
+  |  output: sum(casttobigint(coalesce(wr.wr_return_quantity, CAST(0 AS INT)))), sum(casttobigint(coalesce(ws.ws_quantity, CAST(0 AS INT)))), sum(coalesce(wr.wr_return_amt, CAST(0 AS DECIMAL(3,0)))), sum(coalesce(ws.ws_net_paid, CAST(0 AS DECIMAL(3,0))))
   |  group by: ws.ws_item_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=56B cardinality=0
@@ -861,7 +861,7 @@ Per-Host Resources: mem-estimate=134.06MB mem-reservation=40.00MB thread-reserva
   |  in pipelines: 52(GETNEXT)
   |
   52:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(_impala_builtins.coalesce(cr.cr_return_quantity, 0))), _impala_builtins.sum:merge(_impala_builtins.casttobigint(_impala_builtins.coalesce(cs.cs_quantity, 0))), _impala_builtins.sum:merge(_impala_builtins.coalesce(cr.cr_return_amount, 0)), _impala_builtins.sum:merge(_impala_builtins.coalesce(cs.cs_net_paid, 0))
+  |  output: _impala_builtins.sum:merge(casttobigint(coalesce(cr.cr_return_quantity, 0))), _impala_builtins.sum:merge(casttobigint(coalesce(cs.cs_quantity, 0))), _impala_builtins.sum:merge(coalesce(cr.cr_return_amount, 0)), _impala_builtins.sum:merge(coalesce(cs.cs_net_paid, 0))
   |  group by: cs.cs_item_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=27 row-size=56B cardinality=0
@@ -877,7 +877,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=51, HASH(cs.cs_item_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   22:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(cr.cr_return_quantity, CAST(0 AS INT)))), sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(cs.cs_quantity, CAST(0 AS INT)))), sum(_impala_builtins.coalesce(cr.cr_return_amount, CAST(0 AS DECIMAL(3,0)))), sum(_impala_builtins.coalesce(cs.cs_net_paid, CAST(0 AS DECIMAL(3,0))))
+  |  output: sum(casttobigint(coalesce(cr.cr_return_quantity, CAST(0 AS INT)))), sum(casttobigint(coalesce(cs.cs_quantity, CAST(0 AS INT)))), sum(coalesce(cr.cr_return_amount, CAST(0 AS DECIMAL(3,0)))), sum(coalesce(cs.cs_net_paid, CAST(0 AS DECIMAL(3,0))))
   |  group by: cs.cs_item_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=27 row-size=56B cardinality=0
@@ -967,7 +967,7 @@ Per-Host Resources: mem-estimate=134.06MB mem-reservation=40.00MB thread-reserva
   |  in pipelines: 57(GETNEXT)
   |
   57:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(_impala_builtins.coalesce(sr.sr_return_quantity, 0))), _impala_builtins.sum:merge(_impala_builtins.casttobigint(_impala_builtins.coalesce(sts.ss_quantity, 0))), _impala_builtins.sum:merge(_impala_builtins.coalesce(sr.sr_return_amt, 0)), _impala_builtins.sum:merge(_impala_builtins.coalesce(sts.ss_net_paid, 0))
+  |  output: _impala_builtins.sum:merge(casttobigint(coalesce(sr.sr_return_quantity, 0))), _impala_builtins.sum:merge(casttobigint(coalesce(sts.ss_quantity, 0))), _impala_builtins.sum:merge(coalesce(sr.sr_return_amt, 0)), _impala_builtins.sum:merge(coalesce(sts.ss_net_paid, 0))
   |  group by: sts.ss_item_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=46 row-size=56B cardinality=0
@@ -983,7 +983,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F19, EXCHANGE=56, HASH(sts.ss_item_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   36:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(sr.sr_return_quantity, CAST(0 AS INT)))), sum(_impala_builtins.casttobigint(_impala_builtins.coalesce(sts.ss_quantity, CAST(0 AS INT)))), sum(_impala_builtins.coalesce(sr.sr_return_amt, CAST(0 AS DECIMAL(3,0)))), sum(_impala_builtins.coalesce(sts.ss_net_paid, CAST(0 AS DECIMAL(3,0))))
+  |  output: sum(casttobigint(coalesce(sr.sr_return_quantity, CAST(0 AS INT)))), sum(casttobigint(coalesce(sts.ss_quantity, CAST(0 AS INT)))), sum(coalesce(sr.sr_return_amt, CAST(0 AS DECIMAL(3,0)))), sum(coalesce(sts.ss_net_paid, CAST(0 AS DECIMAL(3,0))))
   |  group by: sts.ss_item_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=46 row-size=56B cardinality=0

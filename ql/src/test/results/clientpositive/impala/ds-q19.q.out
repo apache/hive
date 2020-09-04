@@ -215,7 +215,7 @@ Per-Host Resources: mem-estimate=135.86MB mem-reservation=41.75MB thread-reserva
   09:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_store_sales.ss_store_sk = default.impala_tpcds_store.s_store_sk
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: _impala_builtins.substring(default.impala_tpcds_customer_address.ca_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT)) != _impala_builtins.substring(default.impala_tpcds_store.s_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT))
+  |  other join predicates: substring(default.impala_tpcds_customer_address.ca_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT)) != substring(default.impala_tpcds_store.s_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=0,1,3,5,7 row-size=76B cardinality=0
   |  in pipelines: 01(GETNEXT), 08(OPEN)

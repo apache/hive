@@ -403,7 +403,7 @@ Per-Host Resources: mem-estimate=131.95MB mem-reservation=37.88MB thread-reserva
   |     in pipelines: 52(GETNEXT)
   |
   44:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))
+  |  output: _impala_builtins.sum:merge(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))
   |  group by: default.impala_tpcds_item.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=20B cardinality=0
@@ -419,7 +419,7 @@ Per-Host Resources: mem-estimate=131.93MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=43, HASH(default.impala_tpcds_item.i_item_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   11:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))
+  |  output: sum(casttobigint(default.impala_tpcds_catalog_returns.cr_return_quantity))
   |  group by: default.impala_tpcds_item.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=20B cardinality=0
@@ -570,7 +570,7 @@ Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=53, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   52:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))
+  |  output: _impala_builtins.sum:merge(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))
   |  group by: default.impala_tpcds_item_0.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=23 row-size=20B cardinality=0
@@ -586,7 +586,7 @@ Per-Host Resources: mem-estimate=131.93MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F13, EXCHANGE=51, HASH(default.impala_tpcds_item_0.i_item_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   22:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))
+  |  output: sum(casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))
   |  group by: default.impala_tpcds_item_0.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=23 row-size=20B cardinality=0
@@ -737,7 +737,7 @@ Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F21, EXCHANGE=62, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   61:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(default.impala_tpcds_web_returns.wr_return_quantity))
+  |  output: _impala_builtins.sum:merge(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity))
   |  group by: default.impala_tpcds_item_1.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=35 row-size=20B cardinality=0
@@ -753,7 +753,7 @@ Per-Host Resources: mem-estimate=131.93MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F20, EXCHANGE=60, HASH(default.impala_tpcds_item_1.i_item_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   34:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.casttobigint(default.impala_tpcds_web_returns.wr_return_quantity))
+  |  output: sum(casttobigint(default.impala_tpcds_web_returns.wr_return_quantity))
   |  group by: default.impala_tpcds_item_1.i_item_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=35 row-size=20B cardinality=0

@@ -18,23 +18,30 @@
 
 package org.apache.hadoop.hive.ql.plan.impala.funcmapper;
 
-import com.google.common.base.Preconditions;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.FunctionName;
 import org.apache.impala.catalog.AggregateFunction;
 import org.apache.impala.catalog.BuiltinsDb;
 import org.apache.impala.catalog.ScalarFunction;
-import org.apache.impala.catalog.Type;
-import org.apache.impala.thrift.TPrimitiveType;
-
-import java.util.List;
+import org.apache.impala.common.AnalysisException;
 
 /**
  * Utility class to create an Impala ScalarFunction and AggregateFunction
  */
 public class ImpalaFunctionUtil {
-  public static ScalarFunction create(ScalarFunctionDetails sfd) {
+  public static ScalarFunction create(ScalarFunctionDetails sfd, Analyzer analyzer)
+      throws HiveException {
+    FunctionName funcName = new FunctionName(sfd.dbName, sfd.impalaFnName);
+    if (analyzer != null && !sfd.impalaFnName.equals("not implemented")) {
+      try {
+        funcName.analyze(analyzer);
+      } catch (AnalysisException e) {
+        throw new HiveException("Encountered Impala exception: ", e);
+      }
+    }
     ScalarFunction retVal =
-        new ScalarFunction(new FunctionName(sfd.dbName, sfd.impalaFnName),
+        new ScalarFunction(funcName,
             sfd.getArgTypes(),
             sfd.getRetType(),
             sfd.hdfsUri,
@@ -46,8 +53,20 @@ public class ImpalaFunctionUtil {
     return retVal;
   }
 
-  public static AggregateFunction create(AggFunctionDetails afd) {
+  public static ScalarFunction create(ScalarFunctionDetails sfd) throws HiveException {
+    return create(sfd, null);
+  }
+
+  public static AggregateFunction create(AggFunctionDetails afd, Analyzer analyzer)
+      throws HiveException {
     FunctionName impalaFuncName = new FunctionName(BuiltinsDb.NAME, afd.fnName);
+    if (analyzer != null && !afd.fnName.equals("not implemented")) {
+      try {
+        impalaFuncName.analyze(analyzer);
+      } catch (AnalysisException e) {
+        throw new HiveException("Encountered Impala exception: ", e);
+      }
+    }
     AggregateFunction retVal =
         new AggregateFunction(impalaFuncName, afd.getArgTypes(),
             afd.getRetType(), afd.getIntermediateType(), null,
@@ -56,5 +75,9 @@ public class ImpalaFunctionUtil {
             afd.finalizeFnSymbol);
     retVal.setBinaryType(afd.binaryType);
     return retVal;
+  }
+
+  public static AggregateFunction create(AggFunctionDetails afd) throws HiveException {
+    return create(afd, null);
   }
 }

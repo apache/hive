@@ -102,11 +102,11 @@ STAGE PLANS:
 F04:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=24.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_store_sales.ss_customer_sk, _impala_builtins.sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN _impala_builtins.multiply(_impala_builtins.casttodecimal(_impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity), _impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE _impala_builtins.multiply(_impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END)
+  |  output exprs: default.impala_tpcds_store_sales.ss_customer_sk, _impala_builtins.sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   11:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: _impala_builtins.sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN _impala_builtins.multiply(_impala_builtins.casttodecimal(_impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity), _impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE _impala_builtins.multiply(_impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END) ASC NULLS LAST, default.impala_tpcds_store_sales.ss_customer_sk ASC NULLS LAST
+     order by: _impala_builtins.sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END) ASC NULLS LAST, default.impala_tpcds_store_sales.ss_customer_sk ASC NULLS LAST
      limit: 100
      mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=6 row-size=20B cardinality=0
@@ -117,13 +117,13 @@ Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=11, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   06:TOP-N [LIMIT=100]
-  |  order by: _impala_builtins.sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN _impala_builtins.multiply(_impala_builtins.casttodecimal(_impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity), _impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE _impala_builtins.multiply(_impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END) ASC NULLS LAST, default.impala_tpcds_store_sales.ss_customer_sk ASC NULLS LAST
+  |  order by: _impala_builtins.sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END) ASC NULLS LAST, default.impala_tpcds_store_sales.ss_customer_sk ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=6 row-size=20B cardinality=0
   |  in pipelines: 06(GETNEXT), 10(OPEN)
   |
   10:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN _impala_builtins.multiply(_impala_builtins.casttodecimal(_impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity), _impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE _impala_builtins.multiply(_impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END)
+  |  output: _impala_builtins.sum:merge(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END)
   |  group by: default.impala_tpcds_store_sales.ss_customer_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=20B cardinality=0
@@ -139,7 +139,7 @@ Per-Host Resources: mem-estimate=131.93MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=09, HASH(default.impala_tpcds_store_sales.ss_customer_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   05:AGGREGATE [STREAMING]
-  |  output: sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN _impala_builtins.multiply(_impala_builtins.casttodecimal(_impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity), _impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE _impala_builtins.multiply(_impala_builtins.casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END)
+  |  output: sum(CASE WHEN default.impala_tpcds_store_returns.sr_return_quantity IS NOT NULL THEN multiply(casttodecimal(subtract(casttobigint(default.impala_tpcds_store_sales.ss_quantity), casttobigint(default.impala_tpcds_store_returns.sr_return_quantity))), default.impala_tpcds_store_sales.ss_sales_price) ELSE multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_sales_price) END)
   |  group by: default.impala_tpcds_store_sales.ss_customer_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=20B cardinality=0
@@ -158,7 +158,7 @@ Per-Host Resources: mem-estimate=131.93MB mem-reservation=37.88MB thread-reserva
   |     in pipelines: 03(GETNEXT)
   |
   02:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: _impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_reason_sk) = default.impala_tpcds_reason.r_reason_sk
+  |  hash predicates: casttobigint(default.impala_tpcds_store_returns.sr_reason_sk) = default.impala_tpcds_reason.r_reason_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=0,2 row-size=44B cardinality=0
@@ -171,7 +171,7 @@ Per-Host Resources: mem-estimate=131.93MB mem-reservation=37.88MB thread-reserva
   |
   00:SCAN HDFS [default.impala_tpcds_store_returns, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_store_returns.sr_item_sk IS NOT NULL, default.impala_tpcds_store_returns.sr_ticket_number IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_store_returns.sr_reason_sk) IS NOT NULL
+     predicates: default.impala_tpcds_store_returns.sr_item_sk IS NOT NULL, default.impala_tpcds_store_returns.sr_ticket_number IS NOT NULL, casttobigint(default.impala_tpcds_store_returns.sr_reason_sk) IS NOT NULL
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable

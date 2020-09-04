@@ -250,7 +250,7 @@ Per-Host Resources: mem-estimate=134.13MB mem-reservation=39.81MB thread-reserva
   |  in pipelines: 21(GETNEXT)
   |
   17:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: default.impala_tpcds_store_0.s_store_sk = default.impala_tpcds_store_sales_0.ss_store_sk, _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_week_seq) = _impala_builtins.subtract(_impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_week_seq), 52)
+  |  hash predicates: default.impala_tpcds_store_0.s_store_sk = default.impala_tpcds_store_sales_0.ss_store_sk, casttobigint(default.impala_tpcds_date_dim.d_week_seq) = subtract(casttobigint(default.impala_tpcds_date_dim_0.d_week_seq), 52)
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=3,4,6,8,13,14 row-size=300B cardinality=0
@@ -322,7 +322,7 @@ Per-Host Resources: mem-estimate=129.95MB mem-reservation=35.94MB thread-reserva
   |
   01:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_week_seq IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_date_dim.d_week_seq) IS NOT NULL
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_week_seq IS NOT NULL, casttobigint(default.impala_tpcds_date_dim.d_week_seq) IS NOT NULL
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -354,7 +354,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   05:SCAN HDFS [default.impala_tpcds_date_dim d, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: d.d_week_seq IS NOT NULL, d.d_month_seq >= CAST(1205 AS INT) AND d.d_month_seq <= _impala_builtins.add(CAST(1205 AS INT), CAST(11 AS INT)), _impala_builtins.casttobigint(d.d_week_seq) IS NOT NULL
+     predicates: d.d_week_seq IS NOT NULL, d.d_month_seq >= CAST(1205 AS INT) AND d.d_month_seq <= add(CAST(1205 AS INT), CAST(11 AS INT)), casttobigint(d.d_week_seq) IS NOT NULL
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -458,7 +458,7 @@ Per-Host Resources: mem-estimate=129.95MB mem-reservation=35.94MB thread-reserva
   |
   11:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_week_seq IS NOT NULL, _impala_builtins.casttobigint(default.impala_tpcds_date_dim_0.d_week_seq) IS NOT NULL
+     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_week_seq IS NOT NULL, casttobigint(default.impala_tpcds_date_dim_0.d_week_seq) IS NOT NULL
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -490,7 +490,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   15:SCAN HDFS [default.impala_tpcds_date_dim d_0, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: d_0.d_week_seq IS NOT NULL, d_0.d_month_seq >= _impala_builtins.add(CAST(1205 AS INT), CAST(12 AS INT)) AND d_0.d_month_seq <= _impala_builtins.add(CAST(1205 AS INT), CAST(23 AS INT)), _impala_builtins.casttobigint(d_0.d_week_seq) IS NOT NULL
+     predicates: d_0.d_week_seq IS NOT NULL, d_0.d_month_seq >= add(CAST(1205 AS INT), CAST(12 AS INT)) AND d_0.d_month_seq <= add(CAST(1205 AS INT), CAST(23 AS INT)), casttobigint(d_0.d_week_seq) IS NOT NULL
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable

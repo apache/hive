@@ -90,7 +90,11 @@ public class ScalarFunctionDetails implements FunctionDetails {
           ImpalaFunctionSignature.create(sfd.fnName, sfd.getArgTypes(), sfd.getRetType(), sfd.hasVarArgs);
       sfd.ifs = ifs;
       SCALAR_BUILTINS_MAP.put(ifs, sfd);
-      BuiltinsDb.getInstance(true).addFunction(ImpalaFunctionUtil.create(sfd));
+      try {
+        BuiltinsDb.getInstance(true).addFunction(ImpalaFunctionUtil.create(sfd));
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 

@@ -291,7 +291,7 @@ STAGE PLANS:
 F24:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=192.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_customer_address_1.ca_county, CAST(1999 AS INT), _impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales_0.ws_ext_sales_price)), _impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_ext_sales_price)), _impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_web_sales_1.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), _impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales_1.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
+  |  output exprs: default.impala_tpcds_customer_address_1.ca_county, CAST(1999 AS INT), divide(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales_0.ws_ext_sales_price)), divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_ext_sales_price)), divide(_impala_builtins.sum(default.impala_tpcds_web_sales_1.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)), divide(_impala_builtins.sum(default.impala_tpcds_store_sales_1.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   70:EXCHANGE [UNPARTITIONED]
@@ -306,7 +306,7 @@ Per-Host Resources: mem-estimate=135.94MB mem-reservation=41.75MB thread-reserva
   40:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_customer_address_0.ca_county = default.impala_tpcds_customer_address_4.ca_county
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: _impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_web_sales_1.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) > _impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales_1.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
+  |  other join predicates: divide(_impala_builtins.sum(default.impala_tpcds_web_sales_1.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price)) > divide(_impala_builtins.sum(default.impala_tpcds_store_sales_1.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=6,13,19,25,31,38 row-size=168B cardinality=0
   |  in pipelines: 44(GETNEXT), 68(OPEN)
@@ -331,7 +331,7 @@ Per-Host Resources: mem-estimate=135.94MB mem-reservation=41.75MB thread-reserva
   26:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_customer_address_0.ca_county = default.impala_tpcds_customer_address_1.ca_county
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: _impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales_0.ws_ext_sales_price)) > _impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_ext_sales_price))
+  |  other join predicates: divide(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_web_sales_0.ws_ext_sales_price)) > divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_ext_sales_price))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=6,13,19,25 row-size=112B cardinality=0
   |  in pipelines: 44(GETNEXT), 53(OPEN)

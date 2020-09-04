@@ -101,7 +101,11 @@ public class AggFunctionDetails implements FunctionDetails {
           ImpalaFunctionSignature.create(afd.fnName, afd.getArgTypes(), afd.getRetType(), false);
       afd.ifs = ifs;
       AGG_BUILTINS_MAP.put(ifs, afd);
-      BuiltinsDb.getInstance(true).addFunction(ImpalaFunctionUtil.create(afd));
+      try {
+        BuiltinsDb.getInstance(true).addFunction(ImpalaFunctionUtil.create(afd));
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 

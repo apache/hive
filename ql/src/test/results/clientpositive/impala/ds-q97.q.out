@@ -136,11 +136,11 @@ STAGE PLANS:
 F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END))
+  |  output exprs: _impala_builtins.sum(casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   18:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END))
+  |  output: _impala_builtins.sum:merge(casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END)), _impala_builtins.sum:merge(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN 1 ELSE 0 END))
   |  limit: 100
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=24B cardinality=1
@@ -156,7 +156,7 @@ Per-Host Resources: mem-estimate=139.94MB mem-reservation=35.94MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=17, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   09:AGGREGATE
-  |  output: sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END)), sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END)), sum(_impala_builtins.casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END))
+  |  output: sum(casttobigint(CASE WHEN default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NULL AND default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END)), sum(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END)), sum(casttobigint(CASE WHEN default.impala_tpcds_store_sales.ss_customer_sk IS NOT NULL AND default.impala_tpcds_catalog_sales.cs_bill_customer_sk IS NOT NULL THEN CAST(1 AS TINYINT) ELSE CAST(0 AS TINYINT) END))
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=24B cardinality=1
   |  in pipelines: 09(GETNEXT), 12(OPEN)
@@ -224,7 +224,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   01:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_month_seq >= CAST(1190 AS INT) AND default.impala_tpcds_date_dim.d_month_seq <= _impala_builtins.add(CAST(1190 AS INT), CAST(11 AS INT))
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_month_seq >= CAST(1190 AS INT) AND default.impala_tpcds_date_dim.d_month_seq <= add(CAST(1190 AS INT), CAST(11 AS INT))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -287,7 +287,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   05:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_month_seq >= CAST(1190 AS INT) AND default.impala_tpcds_date_dim_0.d_month_seq <= _impala_builtins.add(CAST(1190 AS INT), CAST(11 AS INT))
+     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_month_seq >= CAST(1190 AS INT) AND default.impala_tpcds_date_dim_0.d_month_seq <= add(CAST(1190 AS INT), CAST(11 AS INT))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable

@@ -15,7 +15,7 @@ STAGE PLANS:
 F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _impala_builtins.casttostring(CAST(3 AS TINYINT))
+  |  output exprs: casttostring(CAST(3 AS TINYINT))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   00:UNION

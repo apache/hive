@@ -181,7 +181,7 @@ Per-Host Resources: mem-estimate=133.92MB mem-reservation=39.81MB thread-reserva
   |  in pipelines: 02(GETNEXT)
   |
   17:SELECT
-  |  predicates: c != CAST(0 AS BIGINT) AND literalTrue IS NOT NULL OR _impala_builtins.substring(ca_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792')
+  |  predicates: c != CAST(0 AS BIGINT) AND literalTrue IS NOT NULL OR substring(ca_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792')
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=16 row-size=109B cardinality=0
   |  in pipelines: 02(GETNEXT)

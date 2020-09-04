@@ -187,7 +187,7 @@ Per-Host Resources: mem-estimate=25.96MB mem-reservation=15.88MB thread-reservat
   |     in pipelines: 07(GETNEXT)
   |
   06:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: _impala_builtins.max(_impala_builtins.sum(_impala_builtins.multiply(default.impala_tpch_lineitem_0.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem_0.l_discount)))) = _impala_builtins.sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)))
+  |  hash predicates: _impala_builtins.max(_impala_builtins.sum(multiply(default.impala_tpch_lineitem_0.l_extendedprice, subtract(1, default.impala_tpch_lineitem_0.l_discount)))) = _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=6,2 row-size=40B cardinality=1
@@ -199,8 +199,8 @@ Per-Host Resources: mem-estimate=25.96MB mem-reservation=15.88MB thread-reservat
   |     in pipelines: 15(GETNEXT)
   |
   13:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.max:merge(_impala_builtins.sum(_impala_builtins.multiply(default.impala_tpch_lineitem_0.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem_0.l_discount))))
-  |  having: _impala_builtins.max(_impala_builtins.sum(_impala_builtins.multiply(default.impala_tpch_lineitem_0.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem_0.l_discount)))) IS NOT NULL
+  |  output: _impala_builtins.max:merge(_impala_builtins.sum(multiply(default.impala_tpch_lineitem_0.l_extendedprice, subtract(1, default.impala_tpch_lineitem_0.l_discount))))
+  |  having: _impala_builtins.max(_impala_builtins.sum(multiply(default.impala_tpch_lineitem_0.l_extendedprice, subtract(1, default.impala_tpch_lineitem_0.l_discount)))) IS NOT NULL
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=6 row-size=16B cardinality=1
   |  in pipelines: 13(GETNEXT), 05(OPEN)
@@ -215,13 +215,13 @@ Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=12, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   05:AGGREGATE
-  |  output: max(_impala_builtins.sum(_impala_builtins.multiply(default.impala_tpch_lineitem_0.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem_0.l_discount))))
+  |  output: max(_impala_builtins.sum(multiply(default.impala_tpch_lineitem_0.l_extendedprice, subtract(1, default.impala_tpch_lineitem_0.l_discount))))
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=6 row-size=16B cardinality=1
   |  in pipelines: 05(GETNEXT), 11(OPEN)
   |
   11:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.multiply(default.impala_tpch_lineitem_0.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem_0.l_discount)))
+  |  output: _impala_builtins.sum:merge(multiply(default.impala_tpch_lineitem_0.l_extendedprice, subtract(1, default.impala_tpch_lineitem_0.l_discount)))
   |  group by: default.impala_tpch_lineitem_0.l_suppkey
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=24B cardinality=0
@@ -237,7 +237,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=10, HASH(default.impala_tpch_lineitem_0.l_suppkey)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   04:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.multiply(default.impala_tpch_lineitem_0.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem_0.l_discount)))
+  |  output: sum(multiply(default.impala_tpch_lineitem_0.l_extendedprice, subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem_0.l_discount)))
   |  group by: default.impala_tpch_lineitem_0.l_suppkey
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=5 row-size=24B cardinality=0
@@ -260,9 +260,9 @@ Per-Host Resources: mem-estimate=128.03MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=16, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   15:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)))
+  |  output: _impala_builtins.sum:merge(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
   |  group by: default.impala_tpch_lineitem.l_suppkey
-  |  having: _impala_builtins.sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount))) IS NOT NULL
+  |  having: _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=2 row-size=24B cardinality=0
   |  in pipelines: 15(GETNEXT), 01(OPEN)
@@ -277,7 +277,7 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=14, HASH(default.impala_tpch_lineitem.l_suppkey)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   02:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
+  |  output: sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
   |  group by: default.impala_tpch_lineitem.l_suppkey
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=2 row-size=24B cardinality=0

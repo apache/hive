@@ -1122,7 +1122,7 @@ STAGE PLANS:
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=50.00MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: aggif(valid_tid(3,5,7,8) = 8, _impala_builtins.count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = 3, sum(default.impala_tpch_lineitem.l_suppkey)), _impala_builtins.casttodecimal(_impala_builtins.divide(aggif(valid_tid(3,5,7,8) = 5, sum(default.impala_tpch_lineitem.l_quantity)), _impala_builtins.casttodecimal(aggif(valid_tid(3,5,7,8) = 5, count(default.impala_tpch_lineitem.l_quantity))))), aggif(valid_tid(3,5,7,8) = 7, count(default.impala_tpch_lineitem.l_orderkey))
+  |  output exprs: aggif(valid_tid(3,5,7,8) = 8, _impala_builtins.count(default.impala_tpch_lineitem.l_quantity)), aggif(valid_tid(3,5,7,8) = 3, sum(default.impala_tpch_lineitem.l_suppkey)), casttodecimal(divide(aggif(valid_tid(3,5,7,8) = 5, sum(default.impala_tpch_lineitem.l_quantity)), casttodecimal(aggif(valid_tid(3,5,7,8) = 5, count(default.impala_tpch_lineitem.l_quantity))))), aggif(valid_tid(3,5,7,8) = 7, count(default.impala_tpch_lineitem.l_orderkey))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   03:AGGREGATE [FINALIZE]
@@ -1243,7 +1243,7 @@ STAGE PLANS:
 F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=52.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: CASE valid_tid(3,5,6) WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey WHEN 5 THEN default.impala_tpch_lineitem.l_orderkey WHEN 6 THEN default.impala_tpch_lineitem.l_orderkey END, _impala_builtins.casttodecimal(_impala_builtins.divide(aggif(valid_tid(3,5,6) = 3, sum(default.impala_tpch_lineitem.l_quantity)), _impala_builtins.casttodecimal(aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_quantity))))), aggif(valid_tid(3,5,6) = 6, _impala_builtins.count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 5, sum(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_quantity))
+  |  output exprs: CASE valid_tid(3,5,6) WHEN 3 THEN default.impala_tpch_lineitem.l_orderkey WHEN 5 THEN default.impala_tpch_lineitem.l_orderkey WHEN 6 THEN default.impala_tpch_lineitem.l_orderkey END, casttodecimal(divide(aggif(valid_tid(3,5,6) = 3, sum(default.impala_tpch_lineitem.l_quantity)), casttodecimal(aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_quantity))))), aggif(valid_tid(3,5,6) = 6, _impala_builtins.count(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 5, sum(default.impala_tpch_lineitem.l_suppkey)), aggif(valid_tid(3,5,6) = 3, count(default.impala_tpch_lineitem.l_quantity))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   08:EXCHANGE [UNPARTITIONED]

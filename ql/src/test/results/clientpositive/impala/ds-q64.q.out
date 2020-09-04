@@ -669,7 +669,7 @@ STAGE PLANS:
 F45:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=280.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: product_name, store_name, store_zip, b_street_number, b_street_name, b_city, b_zip, c_street_number, c_street_name, c_city, c_zip, CAST(1999 AS INT), cnt, s11, s21, s31, s12, s22, s32, _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT)), cnt1
+  |  output exprs: product_name, store_name, store_zip, b_street_number, b_street_name, b_city, b_zip, c_street_number, c_street_name, c_city, c_zip, CAST(1999 AS INT), cnt, s11, s21, s31, s12, s22, s32, add(CAST(1999 AS INT), CAST(1 AS INT)), cnt1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   130:MERGING-EXCHANGE [UNPARTITIONED]
@@ -925,9 +925,9 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=91, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   90:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales.cs_ext_list_price), _impala_builtins.sum:merge(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns.cr_refunded_cash, default.impala_tpcds_catalog_returns.cr_reversed_charge), default.impala_tpcds_catalog_returns.cr_store_credit))
+  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales.cs_ext_list_price), _impala_builtins.sum:merge(add(add(default.impala_tpcds_catalog_returns.cr_refunded_cash, default.impala_tpcds_catalog_returns.cr_reversed_charge), default.impala_tpcds_catalog_returns.cr_store_credit))
   |  group by: default.impala_tpcds_catalog_sales.cs_item_sk
-  |  having: _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_list_price) > _impala_builtins.multiply(CAST(2 AS DECIMAL(3,0)), _impala_builtins.sum(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns.cr_refunded_cash, default.impala_tpcds_catalog_returns.cr_reversed_charge), default.impala_tpcds_catalog_returns.cr_store_credit)))
+  |  having: _impala_builtins.sum(default.impala_tpcds_catalog_sales.cs_ext_list_price) > multiply(CAST(2 AS DECIMAL(3,0)), _impala_builtins.sum(add(add(default.impala_tpcds_catalog_returns.cr_refunded_cash, default.impala_tpcds_catalog_returns.cr_reversed_charge), default.impala_tpcds_catalog_returns.cr_store_credit)))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=40B cardinality=0
   |  in pipelines: 90(GETNEXT), 09(OPEN)
@@ -942,7 +942,7 @@ Per-Host Resources: mem-estimate=129.97MB mem-reservation=35.94MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=89, HASH(default.impala_tpcds_catalog_sales.cs_item_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   12:AGGREGATE [STREAMING]
-  |  output: sum(default.impala_tpcds_catalog_sales.cs_ext_list_price), sum(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns.cr_refunded_cash, default.impala_tpcds_catalog_returns.cr_reversed_charge), default.impala_tpcds_catalog_returns.cr_store_credit))
+  |  output: sum(default.impala_tpcds_catalog_sales.cs_ext_list_price), sum(add(add(default.impala_tpcds_catalog_returns.cr_refunded_cash, default.impala_tpcds_catalog_returns.cr_reversed_charge), default.impala_tpcds_catalog_returns.cr_store_credit))
   |  group by: default.impala_tpcds_catalog_sales.cs_item_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=40B cardinality=0
@@ -992,7 +992,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   14:SCAN HDFS [default.impala_tpcds_item, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_item.i_item_sk IS NOT NULL, default.impala_tpcds_item.i_color IN ('azure', 'gainsboro', 'misty', 'blush', 'hot', 'lemon'), default.impala_tpcds_item.i_current_price >= CAST(80 AS DECIMAL(3,0)) AND default.impala_tpcds_item.i_current_price <= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS SMALLINT), CAST(10 AS SMALLINT))), default.impala_tpcds_item.i_current_price >= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS SMALLINT), CAST(1 AS SMALLINT))) AND default.impala_tpcds_item.i_current_price <= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS SMALLINT), CAST(15 AS SMALLINT)))
+     predicates: default.impala_tpcds_item.i_item_sk IS NOT NULL, default.impala_tpcds_item.i_color IN ('azure', 'gainsboro', 'misty', 'blush', 'hot', 'lemon'), default.impala_tpcds_item.i_current_price >= CAST(80 AS DECIMAL(3,0)) AND default.impala_tpcds_item.i_current_price <= casttodecimal(add(CAST(80 AS SMALLINT), CAST(10 AS SMALLINT))), default.impala_tpcds_item.i_current_price >= casttodecimal(add(CAST(80 AS SMALLINT), CAST(1 AS SMALLINT))) AND default.impala_tpcds_item.i_current_price <= casttodecimal(add(CAST(80 AS SMALLINT), CAST(15 AS SMALLINT)))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -1444,12 +1444,12 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   44:SCAN HDFS [default.impala_tpcds_date_dim d1_0, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: d1_0.d_date_sk IS NOT NULL, d1_0.d_year = _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT))
+     predicates: d1_0.d_date_sk IS NOT NULL, d1_0.d_year = add(CAST(1999 AS INT), CAST(1 AS INT))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
-     parquet statistics predicates: d1_0.d_year = _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT))
+     parquet statistics predicates: d1_0.d_year = add(CAST(1999 AS INT), CAST(1 AS INT))
      mem-estimate=0B mem-reservation=0B thread-reservation=0
      tuple-ids=41 row-size=8B cardinality=0
      in pipelines: 44(GETNEXT)
@@ -1489,9 +1489,9 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F22, EXCHANGE=113, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   112:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales_0.cs_ext_list_price), _impala_builtins.sum:merge(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns_0.cr_refunded_cash, default.impala_tpcds_catalog_returns_0.cr_reversed_charge), default.impala_tpcds_catalog_returns_0.cr_store_credit))
+  |  output: _impala_builtins.sum:merge(default.impala_tpcds_catalog_sales_0.cs_ext_list_price), _impala_builtins.sum:merge(add(add(default.impala_tpcds_catalog_returns_0.cr_refunded_cash, default.impala_tpcds_catalog_returns_0.cr_reversed_charge), default.impala_tpcds_catalog_returns_0.cr_store_credit))
   |  group by: default.impala_tpcds_catalog_sales_0.cs_item_sk
-  |  having: _impala_builtins.sum(default.impala_tpcds_catalog_sales_0.cs_ext_list_price) > _impala_builtins.multiply(CAST(2 AS DECIMAL(3,0)), _impala_builtins.sum(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns_0.cr_refunded_cash, default.impala_tpcds_catalog_returns_0.cr_reversed_charge), default.impala_tpcds_catalog_returns_0.cr_store_credit)))
+  |  having: _impala_builtins.sum(default.impala_tpcds_catalog_sales_0.cs_ext_list_price) > multiply(CAST(2 AS DECIMAL(3,0)), _impala_builtins.sum(add(add(default.impala_tpcds_catalog_returns_0.cr_refunded_cash, default.impala_tpcds_catalog_returns_0.cr_reversed_charge), default.impala_tpcds_catalog_returns_0.cr_store_credit)))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=51 row-size=40B cardinality=0
   |  in pipelines: 112(GETNEXT), 50(OPEN)
@@ -1506,7 +1506,7 @@ Per-Host Resources: mem-estimate=129.97MB mem-reservation=35.94MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F28, EXCHANGE=111, HASH(default.impala_tpcds_catalog_sales_0.cs_item_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   53:AGGREGATE [STREAMING]
-  |  output: sum(default.impala_tpcds_catalog_sales_0.cs_ext_list_price), sum(_impala_builtins.add(_impala_builtins.add(default.impala_tpcds_catalog_returns_0.cr_refunded_cash, default.impala_tpcds_catalog_returns_0.cr_reversed_charge), default.impala_tpcds_catalog_returns_0.cr_store_credit))
+  |  output: sum(default.impala_tpcds_catalog_sales_0.cs_ext_list_price), sum(add(add(default.impala_tpcds_catalog_returns_0.cr_refunded_cash, default.impala_tpcds_catalog_returns_0.cr_reversed_charge), default.impala_tpcds_catalog_returns_0.cr_store_credit))
   |  group by: default.impala_tpcds_catalog_sales_0.cs_item_sk
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=51 row-size=40B cardinality=0
@@ -1556,7 +1556,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   55:SCAN HDFS [default.impala_tpcds_item, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_item_0.i_item_sk IS NOT NULL, default.impala_tpcds_item_0.i_color IN ('azure', 'gainsboro', 'misty', 'blush', 'hot', 'lemon'), default.impala_tpcds_item_0.i_current_price >= CAST(80 AS DECIMAL(3,0)) AND default.impala_tpcds_item_0.i_current_price <= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS SMALLINT), CAST(10 AS SMALLINT))), default.impala_tpcds_item_0.i_current_price >= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS SMALLINT), CAST(1 AS SMALLINT))) AND default.impala_tpcds_item_0.i_current_price <= _impala_builtins.casttodecimal(_impala_builtins.add(CAST(80 AS SMALLINT), CAST(15 AS SMALLINT)))
+     predicates: default.impala_tpcds_item_0.i_item_sk IS NOT NULL, default.impala_tpcds_item_0.i_color IN ('azure', 'gainsboro', 'misty', 'blush', 'hot', 'lemon'), default.impala_tpcds_item_0.i_current_price >= CAST(80 AS DECIMAL(3,0)) AND default.impala_tpcds_item_0.i_current_price <= casttodecimal(add(CAST(80 AS SMALLINT), CAST(10 AS SMALLINT))), default.impala_tpcds_item_0.i_current_price >= casttodecimal(add(CAST(80 AS SMALLINT), CAST(1 AS SMALLINT))) AND default.impala_tpcds_item_0.i_current_price <= casttodecimal(add(CAST(80 AS SMALLINT), CAST(15 AS SMALLINT)))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable

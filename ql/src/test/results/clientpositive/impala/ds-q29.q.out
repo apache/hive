@@ -445,7 +445,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   09:SCAN HDFS [default.impala_tpcds_date_dim d2, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: d2.d_date_sk IS NOT NULL, d2.d_year = CAST(1998 AS INT), d2.d_moy >= CAST(4 AS INT) AND d2.d_moy <= _impala_builtins.casttoint(_impala_builtins.add(CAST(4 AS SMALLINT), CAST(3 AS SMALLINT)))
+     predicates: d2.d_date_sk IS NOT NULL, d2.d_year = CAST(1998 AS INT), d2.d_moy >= CAST(4 AS INT) AND d2.d_moy <= casttoint(add(CAST(4 AS SMALLINT), CAST(3 AS SMALLINT)))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -488,7 +488,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   12:SCAN HDFS [default.impala_tpcds_date_dim d3, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: d3.d_date_sk IS NOT NULL, d3.d_year IN (CAST(1998 AS INT), _impala_builtins.add(CAST(1998 AS INT), CAST(1 AS INT)), _impala_builtins.add(CAST(1998 AS INT), CAST(2 AS INT)))
+     predicates: d3.d_date_sk IS NOT NULL, d3.d_year IN (CAST(1998 AS INT), add(CAST(1998 AS INT), CAST(1 AS INT)), add(CAST(1998 AS INT), CAST(2 AS INT)))
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable

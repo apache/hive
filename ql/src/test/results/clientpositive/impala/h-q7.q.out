@@ -237,24 +237,24 @@ Per-Host Resources: mem-estimate=140.05MB mem-reservation=46.00MB thread-reserva
   |  in pipelines: 20(GETNEXT)
   |
   20:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(1, default.impala_tpch_lineitem.l_discount)))
-  |  group by: _impala_builtins.year(_impala_builtins.casttodate(default.impala_tpch_lineitem.l_shipdate)), n1.n_name, n2.n_name
+  |  output: _impala_builtins.sum:merge(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
+  |  group by: year(casttodate(default.impala_tpch_lineitem.l_shipdate)), n1.n_name, n2.n_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=12 row-size=44B cardinality=0
   |  in pipelines: 20(GETNEXT), 01(OPEN)
   |
-  19:EXCHANGE [HASH(_impala_builtins.year(_impala_builtins.casttodate(default.impala_tpch_lineitem.l_shipdate)),n1.n_name,n2.n_name)]
+  19:EXCHANGE [HASH(year(casttodate(default.impala_tpch_lineitem.l_shipdate)),n1.n_name,n2.n_name)]
      mem-estimate=48.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=12 row-size=44B cardinality=0
      in pipelines: 01(GETNEXT)
 
 F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=133.90MB mem-reservation=39.81MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=19, HASH(_impala_builtins.year(_impala_builtins.casttodate(default.impala_tpch_lineitem.l_shipdate)),n1.n_name,n2.n_name)]
+  DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=19, HASH(year(casttodate(default.impala_tpch_lineitem.l_shipdate)),n1.n_name,n2.n_name)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   12:AGGREGATE [STREAMING]
-  |  output: sum(_impala_builtins.multiply(default.impala_tpch_lineitem.l_extendedprice, _impala_builtins.subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
-  |  group by: _impala_builtins.year(_impala_builtins.casttodate(default.impala_tpch_lineitem.l_shipdate)), n1.n_name, n2.n_name
+  |  output: sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(CAST(1 AS DECIMAL(3,0)), default.impala_tpch_lineitem.l_discount)))
+  |  group by: year(casttodate(default.impala_tpch_lineitem.l_shipdate)), n1.n_name, n2.n_name
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=12 row-size=44B cardinality=0
   |  in pipelines: 01(GETNEXT)

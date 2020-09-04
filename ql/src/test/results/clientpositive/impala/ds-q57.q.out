@@ -287,7 +287,7 @@ Per-Host Resources: mem-estimate=20.07MB mem-reservation=19.88MB thread-reservat
   |  in pipelines: 12(GETNEXT)
   |
   40:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: rank_window_1 = _impala_builtins.subtract(rank_window_1, 1), (tok_table_or_col cc_name) = (tok_table_or_col cc_name), (tok_table_or_col i_brand) = (tok_table_or_col i_brand), (tok_table_or_col i_category) = (tok_table_or_col i_category)
+  |  hash predicates: rank_window_1 = subtract(rank_window_1, 1), (tok_table_or_col cc_name) = (tok_table_or_col cc_name), (tok_table_or_col i_brand) = (tok_table_or_col i_brand), (tok_table_or_col i_category) = (tok_table_or_col i_category)
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=9,29,45 row-size=204B cardinality=0
@@ -299,7 +299,7 @@ Per-Host Resources: mem-estimate=20.07MB mem-reservation=19.88MB thread-reservat
   |     in pipelines: 37(GETNEXT)
   |
   27:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: rank_window_1 = _impala_builtins.add(rank_window_1, 1), (tok_table_or_col cc_name) = (tok_table_or_col cc_name), (tok_table_or_col i_brand) = (tok_table_or_col i_brand), (tok_table_or_col i_category) = (tok_table_or_col i_category)
+  |  hash predicates: rank_window_1 = add(rank_window_1, 1), (tok_table_or_col cc_name) = (tok_table_or_col cc_name), (tok_table_or_col i_brand) = (tok_table_or_col i_brand), (tok_table_or_col i_category) = (tok_table_or_col i_category)
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=9,29 row-size=144B cardinality=0
@@ -311,7 +311,7 @@ Per-Host Resources: mem-estimate=20.07MB mem-reservation=19.88MB thread-reservat
   |     in pipelines: 24(GETNEXT)
   |
   14:SELECT
-  |  predicates: rank_window_1 IS NOT NULL, (tok_table_or_col d_year) = CAST(1999 AS INT), avg_window_0 > CAST(0 AS DECIMAL(38,6)), CASE WHEN avg_window_0 > CAST(0 AS DECIMAL(38,6)) THEN _impala_builtins.divide(_impala_builtins.abs(_impala_builtins.subtract((tok_function sum (tok_table_or_col cs_sales_price)), avg_window_0)), avg_window_0) > CAST(0.1 AS DECIMAL(1,1)) ELSE FALSE END
+  |  predicates: rank_window_1 IS NOT NULL, (tok_table_or_col d_year) = CAST(1999 AS INT), avg_window_0 > CAST(0 AS DECIMAL(38,6)), CASE WHEN avg_window_0 > CAST(0 AS DECIMAL(38,6)) THEN divide(abs(subtract((tok_function sum (tok_table_or_col cs_sales_price)), avg_window_0)), avg_window_0) > CAST(0.1 AS DECIMAL(1,1)) ELSE FALSE END
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=9 row-size=84B cardinality=0
   |  in pipelines: 12(GETNEXT)
@@ -475,7 +475,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   07:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_year IN (CAST(1999 AS INT), _impala_builtins.subtract(CAST(1999 AS INT), CAST(1 AS INT)), _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT))), default.impala_tpcds_date_dim.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim.d_year = _impala_builtins.subtract(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim.d_moy = CAST(12 AS INT) OR default.impala_tpcds_date_dim.d_year = _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim.d_moy = CAST(1 AS INT)
+     predicates: default.impala_tpcds_date_dim.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim.d_year IN (CAST(1999 AS INT), subtract(CAST(1999 AS INT), CAST(1 AS INT)), add(CAST(1999 AS INT), CAST(1 AS INT))), default.impala_tpcds_date_dim.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim.d_year = subtract(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim.d_moy = CAST(12 AS INT) OR default.impala_tpcds_date_dim.d_year = add(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim.d_moy = CAST(1 AS INT)
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -629,7 +629,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   21:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_year IN (CAST(1999 AS INT), _impala_builtins.subtract(CAST(1999 AS INT), CAST(1 AS INT)), _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT))), default.impala_tpcds_date_dim_0.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim_0.d_year = _impala_builtins.subtract(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_0.d_moy = CAST(12 AS INT) OR default.impala_tpcds_date_dim_0.d_year = _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_0.d_moy = CAST(1 AS INT)
+     predicates: default.impala_tpcds_date_dim_0.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_0.d_year IN (CAST(1999 AS INT), subtract(CAST(1999 AS INT), CAST(1 AS INT)), add(CAST(1999 AS INT), CAST(1 AS INT))), default.impala_tpcds_date_dim_0.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim_0.d_year = subtract(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_0.d_moy = CAST(12 AS INT) OR default.impala_tpcds_date_dim_0.d_year = add(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_0.d_moy = CAST(1 AS INT)
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable
@@ -783,7 +783,7 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   34:SCAN HDFS [default.impala_tpcds_date_dim, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
-     predicates: default.impala_tpcds_date_dim_1.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_1.d_year IN (CAST(1999 AS INT), _impala_builtins.subtract(CAST(1999 AS INT), CAST(1 AS INT)), _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT))), default.impala_tpcds_date_dim_1.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim_1.d_year = _impala_builtins.subtract(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_1.d_moy = CAST(12 AS INT) OR default.impala_tpcds_date_dim_1.d_year = _impala_builtins.add(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_1.d_moy = CAST(1 AS INT)
+     predicates: default.impala_tpcds_date_dim_1.d_date_sk IS NOT NULL, default.impala_tpcds_date_dim_1.d_year IN (CAST(1999 AS INT), subtract(CAST(1999 AS INT), CAST(1 AS INT)), add(CAST(1999 AS INT), CAST(1 AS INT))), default.impala_tpcds_date_dim_1.d_year = CAST(1999 AS INT) OR default.impala_tpcds_date_dim_1.d_year = subtract(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_1.d_moy = CAST(12 AS INT) OR default.impala_tpcds_date_dim_1.d_year = add(CAST(1999 AS INT), CAST(1 AS INT)) AND default.impala_tpcds_date_dim_1.d_moy = CAST(1 AS INT)
      stored statistics:
        table: rows=0 size=0B
        columns: unavailable

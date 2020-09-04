@@ -254,11 +254,11 @@ STAGE PLANS:
 F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _impala_builtins.divide(_impala_builtins.casttodouble(_impala_builtins.sum(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity))), _impala_builtins.casttodouble(_impala_builtins.count(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)))), _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_ext_sales_price)))), _impala_builtins.casttodecimal(_impala_builtins.divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), _impala_builtins.casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)))), _impala_builtins.casttodecimal(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost))
+  |  output exprs: divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_store_sales.ss_quantity)))), casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_ext_sales_price)))), casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)))), casttodecimal(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   18:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.count:merge(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)
+  |  output: _impala_builtins.sum:merge(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.count:merge(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_ext_sales_price), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), _impala_builtins.count:merge(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=64B cardinality=1
   |  in pipelines: 18(GETNEXT), 11(OPEN)
@@ -273,7 +273,7 @@ Per-Host Resources: mem-estimate=19.69MB mem-reservation=9.69MB thread-reservati
   DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=17, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   11:AGGREGATE
-  |  output: sum(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), count(_impala_builtins.casttobigint(default.impala_tpcds_store_sales.ss_quantity)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price), count(default.impala_tpcds_store_sales.ss_ext_sales_price), sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), count(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)
+  |  output: sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), count(casttobigint(default.impala_tpcds_store_sales.ss_quantity)), sum(default.impala_tpcds_store_sales.ss_ext_sales_price), count(default.impala_tpcds_store_sales.ss_ext_sales_price), sum(default.impala_tpcds_store_sales.ss_ext_wholesale_cost), count(default.impala_tpcds_store_sales.ss_ext_wholesale_cost)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=11 row-size=64B cardinality=1
   |  in pipelines: 11(GETNEXT), 00(OPEN)

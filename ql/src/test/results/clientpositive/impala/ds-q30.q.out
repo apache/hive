@@ -259,7 +259,7 @@ Per-Host Resources: mem-estimate=130.01MB mem-reservation=35.94MB thread-reserva
   17:HASH JOIN [INNER JOIN, BROADCAST]
   |  hash predicates: default.impala_tpcds_customer_address_0.ca_state = default.impala_tpcds_customer_address_1.ca_state
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: _impala_builtins.sum(default.impala_tpcds_web_returns.wr_return_amt) > _impala_builtins.multiply(_impala_builtins.divide(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_web_returns_0.wr_return_amt)), _impala_builtins.casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_web_returns_0.wr_return_amt)))), CAST(1.2 AS DECIMAL(2,1)))
+  |  other join predicates: _impala_builtins.sum(default.impala_tpcds_web_returns.wr_return_amt) > multiply(divide(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_web_returns_0.wr_return_amt)), casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_web_returns_0.wr_return_amt)))), CAST(1.2 AS DECIMAL(2,1)))
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=10,18 row-size=68B cardinality=0
   |  in pipelines: 24(GETNEXT), 30(OPEN)
@@ -366,7 +366,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   30:AGGREGATE [FINALIZE]
   |  output: _impala_builtins.sum:merge(_impala_builtins.sum(default.impala_tpcds_web_returns_0.wr_return_amt)), _impala_builtins.count:merge(_impala_builtins.sum(default.impala_tpcds_web_returns_0.wr_return_amt))
   |  group by: default.impala_tpcds_customer_address_1.ca_state
-  |  having: _impala_builtins.casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_web_returns_0.wr_return_amt))) IS NOT NULL
+  |  having: casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_web_returns_0.wr_return_amt))) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=18 row-size=36B cardinality=0
   |  in pipelines: 30(GETNEXT), 28(OPEN)

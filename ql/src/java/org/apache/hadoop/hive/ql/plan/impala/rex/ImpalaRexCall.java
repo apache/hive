@@ -95,7 +95,7 @@ public class ImpalaRexCall {
       operands = castRexNodesToString(rexCall.getOperands(), rexBuilder);
     }
 
-    Function fn = getFunction(funcName, operands, rexCall.getType());
+    Function fn = getFunction(funcName, operands, rexCall.getType(), analyzer);
     Type impalaRetType = ImpalaTypeConverter.createImpalaType(fn.getReturnType(),
         rexCall.getType().getPrecision(), rexCall.getType().getScale());
 
@@ -193,7 +193,7 @@ public class ImpalaRexCall {
       ScalarFunctionDetails shiftRightFuncDetails =
           ScalarFunctionDetails.get("shiftright", shiftRightArgs, impalaRefType);
       Preconditions.checkNotNull(shiftRightFuncDetails);
-      Function shiftRightFn = ImpalaFunctionUtil.create(shiftRightFuncDetails);
+      Function shiftRightFn = ImpalaFunctionUtil.create(shiftRightFuncDetails, analyzer);
       Expr shiftRightExpr = new ImpalaFunctionCallExpr(analyzer, shiftRightFn,
           ImmutableList.of(params.get(0), numPositions), rexCall, impalaRefType);
       // bitAnd expr
@@ -202,7 +202,7 @@ public class ImpalaRexCall {
       ScalarFunctionDetails bitAndFuncDetails =
           ScalarFunctionDetails.get("bitand", bitAndArgs, impalaRefType);
       Preconditions.checkNotNull(bitAndFuncDetails);
-      Function bitAndFn = ImpalaFunctionUtil.create(bitAndFuncDetails);
+      Function bitAndFn = ImpalaFunctionUtil.create(bitAndFuncDetails, analyzer);
       Expr bitAndExpr = new ImpalaFunctionCallExpr(analyzer, bitAndFn,
           ImmutableList.of(shiftRightExpr, mask), rexCall, impalaRefType);
       // cast expr
@@ -349,7 +349,7 @@ public class ImpalaRexCall {
     String lowerName = invert ? "<" : ">=";
     List<RexNode> lowerArgs = Lists.newArrayList(operands.get(1), operands.get(2));
     List<Expr> lowerParams = Lists.newArrayList(params.get(1), params.get(2));
-    Function lowerFn = getFunction(lowerName, lowerArgs, rexCall.getType());
+    Function lowerFn = getFunction(lowerName, lowerArgs, rexCall.getType(), analyzer);
     Preconditions.checkNotNull(lowerFn);
     Expr lowerExpr = createBinaryCompExpr(analyzer, lowerFn, lowerParams, lowerKind, retType);
 
@@ -358,7 +358,7 @@ public class ImpalaRexCall {
     String upperName = invert ? ">" : "<=";
     List<RexNode> upperArgs = Lists.newArrayList(operands.get(1), operands.get(3));
     List<Expr> upperParams = Lists.newArrayList(params.get(1), params.get(3));
-    Function upperFn = getFunction(upperName, upperArgs, rexCall.getType());
+    Function upperFn = getFunction(upperName, upperArgs, rexCall.getType(), analyzer);
     Preconditions.checkNotNull(upperFn);
     Expr upperExpr = createBinaryCompExpr(analyzer, upperFn, upperParams, upperKind, retType);
 
@@ -372,7 +372,7 @@ public class ImpalaRexCall {
     ScalarFunctionDetails compoundFuncDetails =
         ScalarFunctionDetails.get(fnKind.toString().toLowerCase(), fnArgs, Type.BOOLEAN);
     Preconditions.checkNotNull(compoundFuncDetails);
-    Function fnCompound = ImpalaFunctionUtil.create(compoundFuncDetails);
+    Function fnCompound = ImpalaFunctionUtil.create(compoundFuncDetails, analyzer);
     return createCompoundExpr(analyzer, op, fnCompound, impalaExprList, retType);
   }
 
@@ -420,7 +420,7 @@ public class ImpalaRexCall {
       if (param.getType().matchesType(Type.VARCHAR) || param.getType().matchesType(Type.CHAR)) {
         try {
           Function castFn = getFunction("cast", operands.subList(i, i+1),
-	      ImpalaTypeConverter.getRelDataType(Type.STRING));
+	          ImpalaTypeConverter.getRelDataType(Type.STRING), analyzer);
           ImpalaCastExpr castExpr = new ImpalaCastExpr(analyzer, castFn, Type.STRING, param);
           castParams.add(castExpr);
         } catch (Exception e) {
@@ -451,7 +451,7 @@ public class ImpalaRexCall {
 
 
   private static Function getFunction(String name, List<RexNode> args,
-      RelDataType retType) throws HiveException {
+      RelDataType retType, Analyzer analyzer) throws HiveException {
     List<RelDataType> argTypes = ImpalaTypeConverter.getNormalizedImpalaTypeList(args);
     ScalarFunctionDetails details = ScalarFunctionDetails.get(
         name, argTypes, retType);
@@ -459,6 +459,6 @@ public class ImpalaRexCall {
       throw new HiveException("Could not find function \"" + name + "\" in Impala "
           + "with args " + argTypes + " and return type " + retType);
     }
-    return ImpalaFunctionUtil.create(details);
+    return ImpalaFunctionUtil.create(details, analyzer);
   }
 }
