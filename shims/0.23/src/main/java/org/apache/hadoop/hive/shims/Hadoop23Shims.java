@@ -235,6 +235,16 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public String getJobLauncherRpcAddress(Configuration conf) {
+    if (conf.getBoolean("yarn.resourcemanager.ha.enabled", false)) {
+      String[] rmIds = conf.get("yarn.resourcemanager.ha.rm-ids", "").split(",");
+      if (rmIds.length > 0 && !rmIds[0].isEmpty()) {
+        String rmAdConf = "yarn.resourcemanager.address." + rmIds[0];
+        String address = conf.get(rmAdConf);
+        if (address != null && !address.isEmpty()) {
+          return address;
+        }
+      }
+    }
     return conf.get("yarn.resourcemanager.address");
   }
 
