@@ -85,11 +85,6 @@ public class TestHiveDatabaseMetaData {
   }
 
   @Test
-  public void testGetHiveDefaultNullsLastDefaultValue() throws SQLException {
-    assertTrue(HiveDatabaseMetaData.getHiveDefaultNullsLast(null));
-  }
-
-  @Test
   public void testNullsAreSortedHigh() throws SQLException {
     map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
     assertFalse(hiveDatabaseMetaData.nullsAreSortedHigh());
