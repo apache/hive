@@ -50,7 +50,7 @@ public class GenericUDFOctetLength extends GenericUDF {
 
     if (arguments[0].getCategory() != ObjectInspector.Category.PRIMITIVE) {
       throw new UDFArgumentException(
-          "OCTET_LENGTH only takes primitive types, got " + argumentOI.getTypeName());
+          "OCTET_LENGTH only takes primitive types, got " + arguments[0].getTypeName());
     }
     argumentOI = (PrimitiveObjectInspector) arguments[0];
 
