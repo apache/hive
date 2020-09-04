@@ -1,0 +1,27 @@
+PREHOOK: query: EXPLAIN CBO
+SELECT
+  ss_sold_time_sk
+FROM
+  impala_hive_tpcds_store_sales
+WHERE 
+  ss_cdemo_sk in (ss_hdemo_sk)
+LIMIT 50
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_hive_tpcds_store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: EXPLAIN CBO
+SELECT
+  ss_sold_time_sk
+FROM
+  impala_hive_tpcds_store_sales
+WHERE 
+  ss_cdemo_sk in (ss_hdemo_sk)
+LIMIT 50
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_hive_tpcds_store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+ImpalaSortRel(fetch=[50])
+  ImpalaProjectRel(ss_sold_time_sk=[$0])
+    ImpalaHdfsScanRel(table=[[default, impala_hive_tpcds_store_sales]], condition=[in_iterate($3, $4)])
+

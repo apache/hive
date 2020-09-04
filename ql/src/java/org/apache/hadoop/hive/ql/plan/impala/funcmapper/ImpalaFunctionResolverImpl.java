@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
+import org.apache.hadoop.hive.ql.plan.impala.operator.InIterateOperator;
 import org.apache.impala.catalog.Type;
 
 import java.nio.charset.Charset;
@@ -393,6 +394,16 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
           return new CaseWhenFunctionResolver(helper, op, inputs);
         }
         return new CaseFunctionResolver(helper, op, inputs);
+      case IN:
+        // if any param other than the first (which is outside of the 'in'), has an
+        // inputref, Impala needs the in_iterate algorithm.
+        for (int i = 1; i < inputs.size(); ++i) {
+          if (RexUtil.containsInputRef(inputs.get(i))) {
+            op = InIterateOperator.IN_ITERATE;
+            break;
+          }
+        }
+        return new ImpalaFunctionResolverImpl(helper, op, inputs);
       case EXTRACT:
         return new ExtractFunctionResolver(helper, op, inputs);
       case GROUPING:

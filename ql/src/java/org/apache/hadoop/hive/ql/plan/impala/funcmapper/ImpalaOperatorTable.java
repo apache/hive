@@ -24,6 +24,7 @@ import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExtractDate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnixTimestampSqlOperator;
+import org.apache.hadoop.hive.ql.plan.impala.operator.InIterateOperator;
 
 import java.util.Collections;
 import java.util.Map;
@@ -94,6 +95,8 @@ public class ImpalaOperatorTable {
     map.put("VARCHAR", SqlStdOperatorTable.CAST);
     map.put("TIMESTAMP", SqlStdOperatorTable.CAST);
     map.put("TINYINT", SqlStdOperatorTable.CAST);
+
+    map.put("IN_ITERATE", InIterateOperator.IN_ITERATE);
 
     IMPALA_OPERATOR_MAP = Collections.unmodifiableMap(map);
   }
