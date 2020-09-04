@@ -35,7 +35,6 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -126,7 +125,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
 
 /**
  * An implementation of {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener} that
@@ -910,8 +908,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
     try {
       stmt = dbConn.createStatement();
-      if (sqlGenerator.getDbProduct() == MYSQL) {
-        stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+      String st = sqlGenerator.getDbProduct().getPrepareTxnStmt();
+      if (st != null) {
+        stmt.execute(st);
       }
 
       String s = sqlGenerator.addForUpdateClause("select \"WNL_FILES\", \"WNL_ID\" from" +
@@ -1005,14 +1004,14 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       stmt = dbConn.createStatement();
       event.setMessageFormat(msgEncoder.getMessageFormat());
 
-      if (sqlGenerator.getDbProduct() == MYSQL) {
+      if (sqlGenerator.getDbProduct().isMYSQL()) {
         stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
       }
 
       // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
       // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
       // only one row in the table, this shouldn't cause any performance degradation.
-      if (sqlGenerator.getDbProduct() == DatabaseProduct.DERBY) {
+      if (sqlGenerator.getDbProduct().isDERBY()) {
         String lockingQuery = "lock table \"NOTIFICATION_SEQUENCE\" in exclusive mode";
         LOG.info("Going to execute query <" + lockingQuery + ">");
         stmt.executeUpdate(lockingQuery);

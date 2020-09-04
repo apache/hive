@@ -40,3 +40,4 @@ launch.json
 settings.json
 kafka-handler/src/test/gen
 **/.vscode/
+/.recommenders/
