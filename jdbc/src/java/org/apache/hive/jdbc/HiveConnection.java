@@ -880,7 +880,7 @@ public class HiveConnection implements java.sql.Connection {
       // takes precedence over the server side configuration.
       Map<String, String> serverHiveConf = openResp.getConfiguration();
 
-      updateServerHiveConf(serverHiveConf);
+      updateServerHiveConf(serverHiveConf, connParams);
 
       // validate connection
       Utils.verifySuccess(openResp.getStatus());
@@ -908,11 +908,8 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   @VisibleForTesting
-  public void updateServerHiveConf(Map<String, String> serverHiveConf) {
+  public void updateServerHiveConf(Map<String, String> serverHiveConf, JdbcConnectionParams connParams) {
     if (serverHiveConf != null) {
-      if (connParams.getHiveConfs() == null) {
-        connParams.setHiveConfs(new HashMap<String, String>());
-      }
       // Iterate over all Server configurations.
       Stream.of(ConfVars.values()).forEach(conf -> {
         String key = JdbcConnectionParams.HIVE_CONF_PREFIX + conf.varname;
