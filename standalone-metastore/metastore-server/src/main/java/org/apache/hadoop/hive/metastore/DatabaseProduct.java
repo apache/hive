@@ -48,7 +48,35 @@ public class DatabaseProduct implements Configurable {
   private static enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, EXTERNAL, OTHER};
   public DbType dbType;
   
+  // Singleton instance
   private static DatabaseProduct theDatabaseProduct;
+
+  static {
+    final Configuration conf = MetastoreConf.newMetastoreConf();
+    // Check if we are using an external database product
+    boolean isExternal = MetastoreConf.getBoolVar(conf, ConfVars.USE_CUSTOM_RDBMS);
+
+    if (isExternal) {
+      // The DatabaseProduct will be created by instantiating an external class via
+      // reflection. The external class can override any method in the current class
+      String className = MetastoreConf.getVar(conf, ConfVars.CUSTOM_RDBMS_CLASSNAME);
+      
+      if (className != null) {
+        try {
+          theDatabaseProduct = (DatabaseProduct)
+              ReflectionUtils.newInstance(Class.forName(className), conf);
+
+          theDatabaseProduct.dbType = DbType.EXTERNAL;
+        }catch (Exception e) {
+          LOG.warn("Unable to instantiate custom database product. Reverting to default", e);
+        }
+      }
+      else {
+        LOG.warn("metastore.use.custom.database.product was set, " +
+                 "but metastore.custom.database.product.classname was not. Reverting to default");
+      }
+    }
+  }
 
   /**
    * Private constructor for singleton class
@@ -91,48 +119,15 @@ public class DatabaseProduct implements Configurable {
       dbt = DbType.OTHER;
     }
 
-    // If the singleton instance exists, ensure it is consistent  
-    if (theDatabaseProduct != null) {
-        if (theDatabaseProduct.dbType != dbt) {
-            throw new RuntimeException(String.format("Unexpected mismatched database products. Expected=%s. Got=%s",
-                    theDatabaseProduct.dbType.name(),dbt.name()));
-        }
-        return theDatabaseProduct;
-    }
-
-    Configuration conf = MetastoreConf.newMetastoreConf();
-
-    boolean isExternal = MetastoreConf.getBoolVar(conf, ConfVars.USE_CUSTOM_RDBMS);
-
-    DatabaseProduct databaseProduct = null;
-    if (isExternal) {
-      // The DatabaseProduct will be created by instantiating an external class via
-      // reflection. The external class can override any method in the current class
-      dbt = DbType.EXTERNAL;
-      String className = MetastoreConf.getVar(conf, ConfVars.CUSTOM_RDBMS_CLASSNAME);
-      
-      if (className != null) {
-        try {
-          databaseProduct = (DatabaseProduct)
-              ReflectionUtils.newInstance(Class.forName(className), conf);
-        }catch (Exception e) {
-          LOG.warn("Unable to instantiate custom database product. Reverting to default", e);
-        }
+    // This method may be invoked by concurrent connections
+    synchronized (DatabaseProduct.class) {
+      if (theDatabaseProduct == null) {
+        theDatabaseProduct = new DatabaseProduct();
       }
-      else {
-        LOG.warn("metastore.use.custom.database.product was set, " +
-                 "but metastore.custom.database.product.classname was not. Reverting to default");
-      }
+  
+      theDatabaseProduct.dbType = dbt;
     }
-
-    if (databaseProduct == null) {
-      databaseProduct = new DatabaseProduct();
-    }
-
-    databaseProduct.dbType = dbt;
-    databaseProduct.setConf(conf);
-    theDatabaseProduct = databaseProduct;
-    return databaseProduct;
+    return theDatabaseProduct;
   }
 
   public final boolean isDERBY() {
