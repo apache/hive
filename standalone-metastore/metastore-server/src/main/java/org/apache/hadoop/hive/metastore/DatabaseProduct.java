@@ -49,8 +49,7 @@ public class DatabaseProduct implements Configurable {
   public DbType dbType;
   
   private static DatabaseProduct theDatabaseProduct;
-  
-  private Configuration conf;
+
   /**
    * Private constructor for singleton class
    * @param id
@@ -107,6 +106,8 @@ public class DatabaseProduct implements Configurable {
 
     DatabaseProduct databaseProduct = null;
     if (isExternal) {
+      // The DatabaseProduct will be created by instantiating an external class via
+      // reflection. The external class can override any method in the current class
       dbt = DbType.EXTERNAL;
       String className = MetastoreConf.getVar(conf, ConfVars.CUSTOM_RDBMS_CLASSNAME);
       
@@ -130,6 +131,7 @@ public class DatabaseProduct implements Configurable {
 
     databaseProduct.dbType = dbt;
     databaseProduct.setConf(conf);
+    theDatabaseProduct = databaseProduct;
     return databaseProduct;
   }
 
@@ -652,13 +654,17 @@ public class DatabaseProduct implements Configurable {
     return map;
   }
 
+  // This class implements the Configurable interface for the benefit
+  // of "plugin" instances created via reflection (see invocation of
+  // ReflectionUtils.newInstance in method determineDatabaseProduct)
   @Override
   public Configuration getConf() {
-    return conf;
+    // Nothing to do
+    return null;
   }
 
   @Override
   public void setConf(Configuration c) {
-    conf = c;
+    // Nothing to do
   }
 }
