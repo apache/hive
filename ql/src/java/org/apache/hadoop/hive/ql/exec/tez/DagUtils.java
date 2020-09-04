@@ -300,6 +300,10 @@ public class DagUtils {
       if (kafkaBrokers != null && !kafkaBrokers.isEmpty()) {
         getKafkaDelegationTokenForBrokers(dag, conf, kafkaBrokers);
         return;
+      } else {
+        // we don't need to iterate on all partitions, and checking the same TableDesc
+        // if partitions[0].getTableDesc() doesn't show kafka table, let's return quickly
+        break;
       }
     }
   }
