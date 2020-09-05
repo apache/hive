@@ -98,19 +98,20 @@ public class TestHiveDatabaseMetaData {
 
   public static void testHiveConnectionUdateServerHiveConf() {
     Map<String, String> serverHiveConf = new HashMap<>();
-    map.put("hive.server2.thrift.resultset.default.fetch.size", Integer.toString(87));
-    map.put("hive.default.nulls.last", "false");
+    serverHiveConf.put("hive.server2.thrift.resultset.default.fetch.size", Integer.toString(87));
+    serverHiveConf.put("hive.default.nulls.last", "false");
 
     jdbcConnectionParams.getHiveConfs().put(Utils.JdbcConnectionParams.HIVE_CONF_PREFIX
         + "hive.server2.thrift.resultset.default.fetch.size", "1534");
     connection.updateServerHiveConf(serverHiveConf, jdbcConnectionParams);
 
+    // Client configuration should not be overridden by the server configuration.
+    assertEquals("1534", jdbcConnectionParams.getHiveConfs().get(Utils.JdbcConnectionParams.HIVE_CONF_PREFIX
+        + "hive.server2.thrift.resultset.default.fetch.size"));
+
     // Server configuration should be updated, since its not provided by the client.
     assertEquals("false", jdbcConnectionParams.getHiveConfs()
         .get(Utils.JdbcConnectionParams.HIVE_CONF_PREFIX + "hive.default.nulls.last"));
 
-    // Client configuration should not be overridden by the server configuration.
-    assertEquals("1534", jdbcConnectionParams.getHiveConfs().get(Utils.JdbcConnectionParams.HIVE_CONF_PREFIX
-        + "hive.server2.thrift.resultset.default.fetch.size"));
   }
 }
