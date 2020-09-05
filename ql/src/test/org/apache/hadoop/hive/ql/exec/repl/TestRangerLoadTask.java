@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import com.google.gson.Gson;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
@@ -78,7 +79,7 @@ public class TestRangerLoadTask {
   @Test
   public void testFailureInvalidAuthProviderEndpoint() {
     int status = task.execute();
-    Assert.assertEquals(40000, status);
+    Assert.assertEquals(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.getErrorCode(), status);
   }
 
   @Test

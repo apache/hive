@@ -29,7 +29,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,7 +87,7 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
     }
   }
 
-  public InputStream exportData(AtlasExportRequest request) throws Exception {
+  public InputStream exportData(AtlasExportRequest request) throws SemanticException {
     LOG.debug("exportData: {}" + request);
     return invokeWithRetry(new Callable<InputStream>() {
       @Override
@@ -125,17 +127,15 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
     return new AtlasImportResult(request, "", "", "", 0L);
   }
 
-  public AtlasServer getServer(String endpoint) throws SemanticException {
+  public AtlasServer getServer(String endpoint, HiveConf conf) throws SemanticException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(AtlasServiceException.class).build();
     try {
-      return clientV2.getServer(endpoint);
-    } catch (AtlasServiceException e) {
-      int statusCode = e.getStatus() != null ? e.getStatus().getStatusCode() : -1;
-      if (statusCode != NOT_FOUND.getStatusCode()) {
-        throw new SemanticException("Exception while getServer ", e.getCause());
-      }
-      LOG.warn("getServer of: {} returned: {}", endpoint, e.getMessage());
+      return retryable.executeCallable(() -> clientV2.getServer(endpoint));
+    } catch (Exception e) {
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
-    return null;
   }
 
   public String getEntityGuid(final String entityType,
@@ -149,12 +149,7 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
 
     try {
       AtlasEntity.AtlasEntityWithExtInfo entityWithExtInfo = runWithTimeout(
-          new Callable<AtlasEntity.AtlasEntityWithExtInfo>() {
-            @Override
-            public AtlasEntity.AtlasEntityWithExtInfo call() throws Exception {
-              return clientV2.getEntityByAttribute(entityType, attributes);
-            }
-          }, entityApiTimeOut, TimeUnit.SECONDS);
+        () -> clientV2.getEntityByAttribute(entityType, attributes), entityApiTimeOut, TimeUnit.SECONDS);
 
       if (entityWithExtInfo == null || entityWithExtInfo.getEntity() == null) {
         LOG.warn("Atlas entity cannot be retrieved using: type: {} and {} - {}",
@@ -165,7 +160,8 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
     } catch (AtlasServiceException e) {
       int statusCode = e.getStatus() != null ? e.getStatus().getStatusCode() : -1;
       if (statusCode != NOT_FOUND.getStatusCode()) {
-        throw new SemanticException("Exception while getEntityGuid ", e.getCause());
+        throw new SemanticException(ErrorMsg.REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE.format("Exception " +
+          "while getEntityGuid ", ReplUtils.REPL_ATLAS_SERVICE), e.getCause());
       }
       LOG.warn("getEntityGuid: Could not retrieve entity guid for: {}-{}-{}",
               entityType, attributeName, qualifiedName, e.getMessage());
@@ -175,11 +171,14 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
     }
   }
 
-  public boolean getStatus() throws SemanticException {
+  public boolean getStatus(HiveConf conf) throws SemanticException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(Exception.class).build();
     try {
-      return clientV2.isServerReady();
-    } catch (AtlasServiceException e) {
-      throw new SemanticException(e.getCause());
+      return retryable.executeCallable(() -> clientV2.isServerReady());
+    } catch (Exception e) {
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
   }
 }

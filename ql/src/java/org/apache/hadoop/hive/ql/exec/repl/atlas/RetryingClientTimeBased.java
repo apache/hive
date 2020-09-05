@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.exec.repl.atlas;
 
 import com.sun.jersey.api.client.UniformInterfaceException;
 import org.apache.atlas.AtlasServiceException;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +43,7 @@ public class RetryingClientTimeBased {
   protected double backOff;
   protected int maxJitterInSeconds;
 
-  protected <T> T invokeWithRetry(Callable<T> func, T defaultReturnValue) throws Exception {
+  protected <T> T invokeWithRetry(Callable<T> func, T defaultReturnValue) throws SemanticException {
     long startTime = System.currentTimeMillis();
     long delay = this.initialDelayInSeconds;
     while (elapsedTimeInSeconds(startTime) + delay > this.totalDurationInSeconds) {
@@ -58,7 +60,7 @@ public class RetryingClientTimeBased {
           return null;
         }
         LOG.error(func.getClass().getName(), e);
-        throw new Exception(e);
+        throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(), e);
       }
     }
     return defaultReturnValue;
@@ -100,7 +102,7 @@ public class RetryingClientTimeBased {
             || e.getMessage().contains(ATLAS_ERROR_CODE_IMPORT_EMPTY_ZIP));
   }
 
-  private boolean processImportExportLockException(Exception e, long delay) throws Exception {
+  private boolean processImportExportLockException(Exception e, long delay) throws SemanticException {
     if (!(e instanceof AtlasServiceException)) {
       return false;
     }
@@ -111,7 +113,7 @@ public class RetryingClientTimeBased {
         Thread.sleep(delay);
       } catch (InterruptedException intEx) {
         LOG.error("Pause wait interrupted!", intEx);
-        throw new Exception(intEx);
+        throw new SemanticException(intEx);
       }
       return true;
     }

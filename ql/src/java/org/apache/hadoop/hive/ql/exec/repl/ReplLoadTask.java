@@ -160,8 +160,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
       childTasks.add(rangerLoadTask);
     } else {
-      throw new SemanticException("Authorizer " + conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE)
-              + " not supported for replication ");
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("Authorizer " +
+        conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE)
+              + " not supported for replication ", ReplUtils.REPL_RANGER_SERVICE));
     }
   }
 

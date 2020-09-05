@@ -133,6 +133,15 @@ public class ReplUtils {
 
   public static final String TARGET_OF_REPLICATION = "repl.target.for";
 
+  // Service name for hive.
+  public static final String REPL_HIVE_SERVICE = "hive";
+
+  // Service name for ranger.
+  public static final String REPL_RANGER_SERVICE = "ranger";
+
+  // Service name for atlas.
+  public static final String REPL_ATLAS_SERVICE = "atlas";
+
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */
@@ -226,7 +235,8 @@ public class ReplUtils {
           throws SemanticException {
     String val = hiveConf.get(configParam);
     if (StringUtils.isEmpty(val)) {
-      throw new SemanticException(String.format(errorMsgFormat, configParam));
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format(String.format(
+        errorMsgFormat, configParam), ReplUtils.REPL_ATLAS_SERVICE));
     }
     return val;
   }
