@@ -314,7 +314,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   private Path getDumpRoot(Path currentDumpPath) {
-    if (ReplDumpWork.testDeletePreviousDumpMetaPath && conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)) {
+    if (ReplDumpWork.testDeletePreviousDumpMetaPath
+            && (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)
+                || conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL))) {
       //testDeleteDumpMetaDumpPath to be used only for test.
       return null;
     } else {
