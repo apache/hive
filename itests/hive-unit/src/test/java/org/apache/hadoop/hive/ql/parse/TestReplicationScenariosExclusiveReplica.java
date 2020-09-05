@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -24,6 +25,7 @@ import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncod
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -173,6 +175,58 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
             .verifyResult("700")
             .run("select id from t4")
             .verifyResult("800");
+  }
+
+  @Test
+  public void externalTableReplicationDropDatabase() throws Throwable {
+    String primaryDb = "primarydb1";
+    String replicaDb = "repldb1";
+    String tableName = "t1";
+    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir);
+    WarehouseInstance.Tuple tuple = primary
+            .run("create database " + primaryDb)
+            .run("alter database "+ primaryDb + " set dbproperties('repl.source.for'='1,2,3')")
+            .run("use " + primaryDb)
+            .run("create external table " +  tableName + " (id int)")
+            .run("insert into table " + tableName + " values (500)")
+            .dump(primaryDb, withClauseOptions);
+
+    replica.load(replicaDb, primaryDb, withClauseOptions)
+            .run("use " + replicaDb)
+            .run("show tables like '" + tableName + "'")
+            .verifyResult(tableName)
+            .run("select id from " + tableName)
+            .verifyResult("500");
+
+    Path dbDataLocPrimary = new Path(primary.externalTableWarehouseRoot, primaryDb + ".db");
+    Path extTableBase = new Path(replica.getConf().get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname));
+    Path dbDataLocReplica = new Path(extTableBase + dbDataLocPrimary.toUri().getPath());
+    verifyTableDataExists(primary, dbDataLocPrimary, tableName, true);
+    verifyTableDataExists(replica, dbDataLocReplica, tableName, true);
+
+    primary.run("show databases like '" + primaryDb + "'")
+            .verifyResult(primaryDb);
+    replica.run("show databases like '" + replicaDb + "'")
+            .verifyResult(replicaDb);
+    primary.run("drop database " + primaryDb + " cascade");
+    replica.run("drop database " + replicaDb + " cascade");
+    primary.run("show databases like '" + primaryDb + "'")
+            .verifyResult(null);
+    replica.run("show databases like '" + replicaDb + "'")
+            .verifyResult(null);
+
+    verifyTableDataExists(primary, dbDataLocPrimary, tableName, false);
+    verifyTableDataExists(replica, dbDataLocReplica, tableName, true);
+  }
+
+  private void verifyTableDataExists(WarehouseInstance warehouse, Path dbDataPath, String tableName,
+                                     boolean shouldExists) throws IOException {
+    FileSystem fileSystem = FileSystem.get(warehouse.warehouseRoot.toUri(), warehouse.getConf());
+    Path tablePath = new Path(dbDataPath, tableName);
+    Path dataFilePath = new Path(tablePath, "000000_0");
+    Assert.assertEquals(shouldExists, fileSystem.exists(dbDataPath));
+    Assert.assertEquals(shouldExists, fileSystem.exists(tablePath));
+    Assert.assertEquals(shouldExists, fileSystem.exists(dataFilePath));
   }
 
   private List<String> getStagingLocationConfig(String stagingLoc) {
