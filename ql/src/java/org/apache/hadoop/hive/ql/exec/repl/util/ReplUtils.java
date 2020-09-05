@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -54,6 +55,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
 import org.apache.thrift.TException;
 
 import java.io.IOException;
+import java.net.URI;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;

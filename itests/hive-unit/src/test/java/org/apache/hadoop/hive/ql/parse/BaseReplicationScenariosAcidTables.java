@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -58,6 +60,8 @@ public class BaseReplicationScenariosAcidTables {
   public final TestName testName = new TestName();
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
+  private static final Path REPLICA_EXTERNAL_BASE = new Path("/replica_external_base");
+  protected static String fullyQualifiedReplicaExternalBase;
   static WarehouseInstance primary;
   static WarehouseInstance replica, replicaNonAcid;
   static HiveConf conf;
@@ -89,6 +93,7 @@ public class BaseReplicationScenariosAcidTables {
 
     acidEnableConf.putAll(overrides);
 
+    setReplicaExternalBase(miniDFSCluster.getFileSystem(), acidEnableConf);
     primary = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
     acidEnableConf.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
@@ -100,6 +105,12 @@ public class BaseReplicationScenariosAcidTables {
     }};
     overridesForHiveConf1.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
+  }
+
+  private static void setReplicaExternalBase(FileSystem fs, Map<String, String> confMap) throws IOException {
+    fs.mkdirs(REPLICA_EXTERNAL_BASE);
+    fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();
+    confMap.put(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
   }
 
   @AfterClass

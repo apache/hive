@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -46,6 +48,8 @@ public class BaseReplicationAcrossInstances {
   String primaryDbName, replicatedDbName;
   static HiveConf conf; // for primary
   static HiveConf replicaConf;
+  protected static final Path REPLICA_EXTERNAL_BASE = new Path("/replica_external_base");
+  protected static String fullyQualifiedReplicaExternalBase;
 
   static void internalBeforeClassSetup(Map<String, String> overrides, Class clazz)
       throws Exception {
@@ -60,6 +64,7 @@ public class BaseReplicationAcrossInstances {
       put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
     }};
     localOverrides.putAll(overrides);
+    setReplicaExternalBase(miniDFSCluster.getFileSystem(), localOverrides);
     primary = new WarehouseInstance(LOG, miniDFSCluster, localOverrides);
     localOverrides.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, localOverrides);
@@ -69,39 +74,51 @@ public class BaseReplicationAcrossInstances {
   static void internalBeforeClassSetupExclusiveReplica(Map<String, String> primaryOverrides,
                                                        Map<String, String> replicaOverrides, Class clazz)
           throws Exception {
-    conf = new HiveConf(clazz);
-    conf.set("dfs.client.use.datanode.hostname", "true");
-    conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
-    String primaryBaseDir = Files.createTempDirectory("base").toFile().getAbsolutePath();
-    conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, primaryBaseDir);
-    MiniDFSCluster miniPrimaryDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
-    Map<String, String> localOverrides = new HashMap<String, String>() {
-      {
-        put("fs.defaultFS", miniPrimaryDFSCluster.getFileSystem().getUri().toString());
-        put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
-      }
-    };
-    localOverrides.putAll(primaryOverrides);
-    primary = new WarehouseInstance(LOG, miniPrimaryDFSCluster, localOverrides);
+    /**
+     * Setup replica cluster.
+     */
     String replicaBaseDir = Files.createTempDirectory("replica").toFile().getAbsolutePath();
-    conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, replicaBaseDir);
     replicaConf = new HiveConf(clazz);
     replicaConf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, replicaBaseDir);
     replicaConf.set("dfs.client.use.datanode.hostname", "true");
     replicaConf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     MiniDFSCluster miniReplicaDFSCluster =
             new MiniDFSCluster.Builder(replicaConf).numDataNodes(1).format(true).build();
-    localOverrides.clear();
-    localOverrides.putAll(replicaOverrides);
+
+    Map<String, String> localOverrides = new HashMap<>();
     localOverrides.put("fs.defaultFS", miniReplicaDFSCluster.getFileSystem().getUri().toString());
     localOverrides.put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+    localOverrides.putAll(replicaOverrides);
+    setReplicaExternalBase(miniReplicaDFSCluster.getFileSystem(), localOverrides);
     replica = new WarehouseInstance(LOG, miniReplicaDFSCluster, localOverrides);
+
+    /**
+     * Setup primary cluster.
+     */
+    String primaryBaseDir = Files.createTempDirectory("base").toFile().getAbsolutePath();
+    conf = new HiveConf(clazz);
+    conf.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, primaryBaseDir);
+    conf.set("dfs.client.use.datanode.hostname", "true");
+    conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
+    MiniDFSCluster miniPrimaryDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
+    localOverrides.clear();
+    localOverrides.put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+    localOverrides.put(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
+    localOverrides.put("fs.defaultFS", miniPrimaryDFSCluster.getFileSystem().getUri().toString());
+    localOverrides.putAll(primaryOverrides);
+    primary = new WarehouseInstance(LOG, miniPrimaryDFSCluster, localOverrides);
   }
 
   @AfterClass
   public static void classLevelTearDown() throws IOException {
     primary.close();
     replica.close();
+  }
+
+  private static void setReplicaExternalBase(FileSystem fs, Map<String, String> confMap) throws IOException {
+    fs.mkdirs(REPLICA_EXTERNAL_BASE);
+    fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();
+    confMap.put(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
   }
 
   @Before
