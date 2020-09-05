@@ -17269,6 +17269,10 @@ inline std::ostream& operator<<(std::ostream& out, const GetReplicationMetricsRe
   return out;
 }
 
+typedef struct _GetOpenTxnsRequest__isset {
+  _GetOpenTxnsRequest__isset() : excludeTxnTypes(false) {}
+  bool excludeTxnTypes :1;
+} _GetOpenTxnsRequest__isset;
 
 class GetOpenTxnsRequest {
  public:
@@ -17281,11 +17285,15 @@ class GetOpenTxnsRequest {
   virtual ~GetOpenTxnsRequest() throw();
   std::vector<TxnType::type>  excludeTxnTypes;
 
+  _GetOpenTxnsRequest__isset __isset;
+
   void __set_excludeTxnTypes(const std::vector<TxnType::type> & val);
 
   bool operator == (const GetOpenTxnsRequest & rhs) const
   {
-    if (!(excludeTxnTypes == rhs.excludeTxnTypes))
+    if (__isset.excludeTxnTypes != rhs.__isset.excludeTxnTypes)
+      return false;
+    else if (__isset.excludeTxnTypes && !(excludeTxnTypes == rhs.excludeTxnTypes))
       return false;
     return true;
   }

@@ -2071,7 +2071,7 @@ struct GetReplicationMetricsRequest {
 }
 
 struct GetOpenTxnsRequest {
-  1: required list<TxnType> excludeTxnTypes;
+  1: optional list<TxnType> excludeTxnTypes;
 }
 
 // Exceptions.
@@ -2647,6 +2647,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
 
   // Transaction and lock management calls
   // Get just list of open transactions
+  // Deprecated use get_open_txns_req
   GetOpenTxnsResponse get_open_txns()
   // Get list of open transactions with state (open, aborted)
   GetOpenTxnsInfoResponse get_open_txns_info()

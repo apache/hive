@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 
@@ -45,9 +44,6 @@ public class OpenTxnList {
 
   public GetOpenTxnsInfoResponse toOpenTxnsInfoResponse() {
     return new GetOpenTxnsInfoResponse(getHwm(), openTxnList.stream().map(OpenTxn::toTxnInfo).collect(toList()));
-  }
-  public GetOpenTxnsResponse toOpenTxnsResponse() {
-    return toOpenTxnsResponse(Arrays.asList(TxnType.READ_ONLY));
   }
 
   public long getHwm() {
