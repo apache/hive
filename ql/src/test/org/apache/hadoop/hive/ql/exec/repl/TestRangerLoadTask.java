@@ -78,6 +78,7 @@ public class TestRangerLoadTask {
 
   @Test
   public void testFailureInvalidAuthProviderEndpoint() {
+    Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("dumppath"));
     int status = task.execute();
     Assert.assertEquals(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.getErrorCode(), status);
   }

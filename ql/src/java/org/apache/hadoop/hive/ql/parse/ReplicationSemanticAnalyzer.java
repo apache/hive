@@ -393,6 +393,10 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       // tells us what is inside that dumpdir.
 
       //If repl status of target is greater than dumps, don't do anything as the load for the latest dump is done
+      if (ReplUtils.failedWithNonRecoverableError(ReplUtils.getLatestDumpPath(ReplUtils
+        .getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase()), conf), conf)) {
+        throw new Exception(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getMsg());
+      }
       if (loadPath != null) {
         DumpMetaData dmd = new DumpMetaData(loadPath, conf);
 
@@ -432,9 +436,7 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Path getCurrentLoadPath() throws IOException, SemanticException {
-    Path loadPathBase = new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
-            Base64.getEncoder().encodeToString(sourceDbNameOrPattern.toLowerCase()
-                    .getBytes(StandardCharsets.UTF_8.name())));
+    Path loadPathBase = ReplUtils.getEncodedDumpRootPath(conf, sourceDbNameOrPattern.toLowerCase());
     final FileSystem fs = loadPathBase.getFileSystem(conf);
     // Make fully qualified path for further use.
     loadPathBase = fs.makeQualified(loadPathBase);

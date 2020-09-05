@@ -153,7 +153,12 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (work.dataCopyIteratorsInitialized()) {
         initiateDataCopyTasks();
       } else {
-        Path dumpRoot = getEncodedDumpRootPath();
+        Path dumpRoot = ReplUtils.getEncodedDumpRootPath(conf, work.dbNameOrPattern.toLowerCase());
+        if (ReplUtils.failedWithNonRecoverableError(ReplUtils.getLatestDumpPath(dumpRoot, conf), conf)) {
+          LOG.error("Previous dump failed with non recoverable error. Needs manual intervention. ");
+          setException(new SemanticException(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.format()));
+          return ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode();
+        }
         Path previousValidHiveDumpPath = getPreviousValidDumpMetadataPath(dumpRoot);
         boolean isBootstrap = (previousValidHiveDumpPath == null);
         //If no previous dump is present or previous dump is already loaded, proceed with the dump operation.
@@ -190,12 +195,20 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     } catch (Exception e) {
       LOG.error("failed", e);
       setException(e);
+      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
       try {
-        work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+        if (errorCode > 40000) {
+          Path nonRecoverableMarker = new Path(work.getCurrentDumpPath(),
+            ReplAck.NON_RECOVERABLE_MARKER.toString());
+          Utils.writeStackTrace(e, nonRecoverableMarker, conf);
+          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED_ADMIN, nonRecoverableMarker.toString());
+        } else {
+          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+        }
       } catch (SemanticException ex) {
         LOG.error("Failed to collect Metrics", ex);
       }
-      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      return errorCode;
     }
     return 0;
   }
@@ -226,14 +239,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA);
   }
 
-  private Path getEncodedDumpRootPath() throws UnsupportedEncodingException {
-    return new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
-            Base64.getEncoder().encodeToString(work.dbNameOrPattern.toLowerCase()
-                    .getBytes(StandardCharsets.UTF_8.name())));
-  }
-
   private Path getCurrentDumpPath(Path dumpRoot, boolean isBootstrap) throws IOException {
-    Path lastDumpPath = getLatestDumpPath(dumpRoot);
+    Path lastDumpPath = ReplUtils.getLatestDumpPath(dumpRoot, conf);
     if (lastDumpPath != null && shouldResumePreviousDump(lastDumpPath, isBootstrap)) {
       //Resume previous dump
       LOG.info("Resuming the dump with existing dump directory {}", lastDumpPath);
@@ -1081,24 +1088,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       // We may also work in something the equivalent of pid, thrid and move to nanos to ensure
       // uniqueness.
     }
-  }
-
-  private Path getLatestDumpPath(Path dumpRoot) throws IOException {
-    FileSystem fs = dumpRoot.getFileSystem(conf);
-    if (fs.exists(dumpRoot)) {
-      FileStatus[] statuses = fs.listStatus(dumpRoot);
-      if (statuses.length > 0) {
-        FileStatus latestValidStatus = statuses[0];
-        for (FileStatus status : statuses) {
-          LOG.info("Evaluating previous dump dir path:{}", status.getPath());
-          if (status.getModificationTime() > latestValidStatus.getModificationTime()) {
-            latestValidStatus = status;
-          }
-        }
-        return latestValidStatus.getPath();
-      }
-    }
-    return null;
   }
 
   List<EximUtil.DataCopyPath> dumpFunctionMetadata(String dbName, Path dbMetadataRoot, Path dbDataRoot,

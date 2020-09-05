@@ -38,6 +38,8 @@ public class StageMapper {
 
   private List<Metric> metrics = new ArrayList<>();
 
+  private String errorLogPath;
+
   public StageMapper() {
 
   }
@@ -61,4 +63,7 @@ public class StageMapper {
     return metrics;
   }
 
+  public String getErrorLogPath() {
+    return errorLogPath;
+  }
 }

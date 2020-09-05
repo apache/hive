@@ -17,7 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.util;
 
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -50,15 +53,21 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.ql.parse.repl.load.UpdatedMetaDataTracker;
 import org.apache.thrift.TException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Base64;
 
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
 
 public class ReplUtils {
 
@@ -90,9 +99,6 @@ public class ReplUtils {
 
   // Config for hadoop default file system.
   public static final String DEFAULT_FS_CONFIG = "fs.defaultFS";
-
-  // Cluster name separator, used when the cluster name contains data center name as well, e.g. dc$mycluster1.
-  public static final String CLUSTER_NAME_SEPARATOR = "$";
 
 
   // Name of the directory which stores the list of tables included in the policy in case of table level replication.
@@ -143,6 +149,8 @@ public class ReplUtils {
   public enum MetricName {
     TABLES, FUNCTIONS, EVENTS, POLICIES, ENTITIES
   }
+
+  private static transient Logger LOG = LoggerFactory.getLogger(ReplUtils.class);
 
   public static Map<Integer, List<ExprNodeGenericFuncDesc>> genPartSpecs(
           Table table, List<Map<String, String>> partitions) throws SemanticException {
@@ -303,5 +311,49 @@ public class ReplUtils {
 
   public static boolean tableIncludedInReplScope(ReplScope replScope, String tableName) {
     return ((replScope == null) || replScope.tableIncludedInReplScope(tableName));
+  }
+
+  public static boolean failedWithNonRecoverableError(Path dumpRoot, HiveConf conf) throws SemanticException {
+    if (dumpRoot == null) {
+      return false;
+    }
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(IOException.class).build();
+    try {
+      return retryable.executeCallable(() -> {
+        FileSystem fs = dumpRoot.getFileSystem(conf);
+        if (fs.exists(new Path(dumpRoot, NON_RECOVERABLE_MARKER.toString()))) {
+          return true;
+        }
+        return false;
+      });
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  public static Path getEncodedDumpRootPath(HiveConf conf, String dbname) throws UnsupportedEncodingException {
+    return new Path(conf.getVar(HiveConf.ConfVars.REPLDIR),
+      Base64.getEncoder().encodeToString(dbname
+        .getBytes(StandardCharsets.UTF_8.name())));
+  }
+
+  public static Path getLatestDumpPath(Path dumpRoot, HiveConf conf) throws IOException {
+    FileSystem fs = dumpRoot.getFileSystem(conf);
+    if (fs.exists(dumpRoot)) {
+      FileStatus[] statuses = fs.listStatus(dumpRoot);
+      if (statuses.length > 0) {
+        FileStatus latestValidStatus = statuses[0];
+        for (FileStatus status : statuses) {
+          LOG.info("Evaluating previous dump dir path:{}", status.getPath());
+          if (status.getModificationTime() > latestValidStatus.getModificationTime()) {
+            latestValidStatus = status;
+          }
+        }
+        return latestValidStatus.getPath();
+      }
+    }
+    return null;
   }
 }

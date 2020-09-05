@@ -48,6 +48,7 @@ import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,6 +56,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Base64;
+
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -1125,8 +1128,24 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     withClause = org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.includeExternalTableClause(true);
     withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname
             + "'='"+ fullyQualifiedReplicaExternalBase +"'");
+    try {
+      primary.run("use " + primaryDbName)
+        .dump(primaryDbName, withClause);
+    } catch (Exception e) {
+      Assert.assertEquals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
+    //delete non recoverable marker
+    Path dumpPath = new Path(primary.hiveConf.get(HiveConf.ConfVars.REPLDIR.varname),
+      Base64.getEncoder().encodeToString(primaryDbName.toLowerCase()
+        .getBytes(StandardCharsets.UTF_8.name())));
+    FileSystem fs = dumpPath.getFileSystem(conf);
+    Path nonRecoverableMarker = new Path(fs.listStatus(dumpPath)[0].getPath(), ReplAck.NON_RECOVERABLE_MARKER
+      .toString());
+    fs.delete(nonRecoverableMarker, true);
+
     tuple = primary.run("use " + primaryDbName)
-            .dump(primaryDbName, withClause);
+      .dump(primaryDbName, withClause);
 
     withClause = org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.includeExternalTableClause(true);
     withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'=''");
@@ -1140,6 +1159,18 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
     withClause = org.apache.hadoop.hive.ql.parse.ReplicationTestUtils.includeExternalTableClause(true);
     withClause.add("'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname
             + "'='"+ fullyQualifiedReplicaExternalBase +"'");
+
+    try {
+      replica.load(replicatedDbName, primaryDbName, withClause);
+    } catch (Exception e) {
+      Assert.assertEquals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
+
+    //delete non recoverable marker
+    nonRecoverableMarker = new Path(tuple.dumpLocation, ReplAck.NON_RECOVERABLE_MARKER
+      .toString());
+    fs.delete(nonRecoverableMarker, true);
 
     replica.load(replicatedDbName, primaryDbName, withClause);
 
