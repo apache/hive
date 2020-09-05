@@ -398,10 +398,10 @@ public class TestReplicationScenarios {
     String replicatedDbName = dbName + "_dupe";
 
 
-    EximUtil.ManagedTableCopyPath.setNullSrcPath(hconf, true);
+    EximUtil.DataCopyPath.setNullSrcPath(hconf, true);
     verifyFail("REPL DUMP " + dbName, driver);
     advanceDumpDir();
-    EximUtil.ManagedTableCopyPath.setNullSrcPath(hconf, false);
+    EximUtil.DataCopyPath.setNullSrcPath(hconf, false);
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replicatedDbName);
     advanceDumpDir();
     FileSystem fs = new Path(bootstrapDump.dumpLocation).getFileSystem(hconf);

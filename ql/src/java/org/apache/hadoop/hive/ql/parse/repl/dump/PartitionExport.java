@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
-import org.apache.hadoop.hive.ql.parse.EximUtil.ManagedTableCopyPath;
+import org.apache.hadoop.hive.ql.parse.EximUtil.DataCopyPath;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
@@ -75,11 +75,11 @@ class PartitionExport {
     this.callersSession = SessionState.get();
   }
 
-  List<ManagedTableCopyPath> write(final ReplicationSpec forReplicationSpec, boolean isExportTask,
+  List<DataCopyPath> write(final ReplicationSpec forReplicationSpec, boolean isExportTask,
                                    FileList fileList, boolean dataCopyAtLoad)
           throws InterruptedException, HiveException {
     List<Future<?>> futures = new LinkedList<>();
-    List<ManagedTableCopyPath> managedTableCopyPaths = new LinkedList<>();
+    List<DataCopyPath> managedTableCopyPaths = new LinkedList<>();
     ExecutorService producer = Executors.newFixedThreadPool(1,
         new ThreadFactoryBuilder().setNameFormat("partition-submitter-thread-%d").build());
     futures.add(producer.submit(() -> {
@@ -126,7 +126,7 @@ class PartitionExport {
           Path dataDumpDir = new Path(paths.dataExportRootDir(), partitionName);
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
           if (!(isExportTask || dataCopyAtLoad)) {
-            fileList.add(new ManagedTableCopyPath(forReplicationSpec, partition.getDataLocation(),
+            fileList.add(new DataCopyPath(forReplicationSpec, partition.getDataLocation(),
                     dataDumpDir).convertToString());
           }
         } catch (Exception e) {

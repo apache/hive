@@ -118,6 +118,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (shouldLoadAuthorizationMetadata()) {
         initiateAuthorizationLoadTask();
       }
+      LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY));
       if (work.isIncrementalLoad()) {
         return executeIncrementalLoad();
       } else {

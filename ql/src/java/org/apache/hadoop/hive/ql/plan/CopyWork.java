@@ -33,6 +33,7 @@ public class CopyWork implements Serializable {
   private Path[] fromPath;
   private Path[] toPath;
   private boolean errorOnSrcEmpty;
+  private boolean overwrite = true;
 
   public CopyWork() {
   }
@@ -40,6 +41,12 @@ public class CopyWork implements Serializable {
   public CopyWork(final Path fromPath, final Path toPath, boolean errorOnSrcEmpty) {
     this(new Path[] { fromPath }, new Path[] { toPath });
     this.setErrorOnSrcEmpty(errorOnSrcEmpty);
+  }
+
+  public CopyWork(final Path fromPath, final Path toPath, boolean errorOnSrcEmpty, boolean overwrite) {
+    this(new Path[] { fromPath }, new Path[] { toPath });
+    this.setErrorOnSrcEmpty(errorOnSrcEmpty);
+    this.setOverwrite(overwrite);
   }
 
   public CopyWork(final Path[] fromPath, final Path[] toPath) {
@@ -86,5 +93,13 @@ public class CopyWork implements Serializable {
 
   public boolean isErrorOnSrcEmpty() {
     return errorOnSrcEmpty;
+  }
+
+  public boolean isOverwrite() {
+    return overwrite;
+  }
+
+  public void setOverwrite(boolean overwrite) {
+    this.overwrite = overwrite;
   }
 }

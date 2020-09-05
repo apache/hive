@@ -163,20 +163,20 @@ public class EximUtil {
   }
 
   /**
-   * Wrapper class for mapping source and target path for copying managed table data.
+   * Wrapper class for mapping source and target path for copying managed table data and function's binary.
    */
-  public static class ManagedTableCopyPath implements StringConvertibleObject {
+  public static class DataCopyPath implements StringConvertibleObject {
     private static final String URI_SEPARATOR = "#";
     private ReplicationSpec replicationSpec;
     private static boolean nullSrcPathForTest = false;
     private Path srcPath;
     private Path tgtPath;
 
-    public ManagedTableCopyPath(ReplicationSpec replicationSpec) {
+    public DataCopyPath(ReplicationSpec replicationSpec) {
       this.replicationSpec = replicationSpec;
     }
 
-    public ManagedTableCopyPath(ReplicationSpec replicationSpec, Path srcPath, Path tgtPath) {
+    public DataCopyPath(ReplicationSpec replicationSpec, Path srcPath, Path tgtPath) {
       this.replicationSpec = replicationSpec;
       if (srcPath == null) {
         throw new IllegalArgumentException("Source path can not be null.");
@@ -201,7 +201,7 @@ public class EximUtil {
 
     @Override
     public String toString() {
-      return "ManagedTableCopyPath{"
+      return "DataCopyPath{"
               + "fullyQualifiedSourcePath=" + srcPath
               + ", fullyQualifiedTargetPath=" + tgtPath
               + '}';
