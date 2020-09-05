@@ -22,6 +22,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClient;
@@ -80,6 +81,7 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
       long exportCount = 0;
       Path filePath = null;
       LOG.info("Exporting Ranger Metadata");
+      SecurityUtils.reloginExpiringKeytabUser();
       Map<String, Long> metricMap = new HashMap<>();
       metricMap.put(ReplUtils.MetricName.POLICIES.name(), 0L);
       work.getMetricCollector().reportStageStart(getName(), metricMap);

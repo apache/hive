@@ -78,6 +78,9 @@ public abstract class ReplicationMetricCollector {
       Stage stage = progress.getStageByName(stageName);
       stage.setStatus(status);
       stage.setEndTime(System.currentTimeMillis());
+      if (Status.FAILED == status) {
+        progress.setStatus(Status.FAILED);
+      }
       replicationMetric.setProgress(progress);
       Metadata metadata = replicationMetric.getMetadata();
       metadata.setLastReplId(lastReplId);
@@ -93,6 +96,9 @@ public abstract class ReplicationMetricCollector {
       Stage stage = progress.getStageByName(stageName);
       stage.setStatus(status);
       stage.setEndTime(System.currentTimeMillis());
+      if (Status.FAILED == status) {
+        progress.setStatus(Status.FAILED);
+      }
       replicationMetric.setProgress(progress);
       metricCollector.addMetric(replicationMetric);
     }

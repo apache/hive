@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.database.alter.poperties.AlterDatabaseSetPropertiesDesc;
@@ -104,6 +105,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   @Override
   public int execute() {
     try {
+      SecurityUtils.reloginExpiringKeytabUser();
       Task<?> rootTask = work.getRootTask();
       if (rootTask != null) {
         rootTask.setChildTasks(null);

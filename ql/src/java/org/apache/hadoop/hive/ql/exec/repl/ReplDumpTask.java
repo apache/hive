@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
 import org.apache.hadoop.hive.metastore.utils.Retry;
+import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -150,6 +151,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   @Override
   public int execute() {
     try {
+      SecurityUtils.reloginExpiringKeytabUser();
       if (work.tableDataCopyIteratorsInitialized()) {
         initiateDataCopyTasks();
       } else {

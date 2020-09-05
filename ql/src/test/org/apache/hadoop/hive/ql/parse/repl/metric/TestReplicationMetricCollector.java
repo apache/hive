@@ -302,4 +302,18 @@ public class TestReplicationMetricCollector {
     }
   }
 
+  @Test
+  public void testSuccessStageFailure() throws Exception {
+    ReplicationMetricCollector bootstrapDumpMetricCollector = new BootstrapDumpMetricCollector("db",
+      "staging", conf);
+    Map<String, Long> metricMap = new HashMap<>();
+    metricMap.put(ReplUtils.MetricName.TABLES.name(), (long) 10);
+    metricMap.put(ReplUtils.MetricName.FUNCTIONS.name(), (long) 1);
+    bootstrapDumpMetricCollector.reportStageStart("dump", metricMap);
+    bootstrapDumpMetricCollector.reportStageEnd("dump", Status.FAILED);
+    List<ReplicationMetric> metricList = MetricCollector.getInstance().getMetrics();
+    Assert.assertEquals(1, metricList.size());
+    ReplicationMetric actualMetric = metricList.get(0);
+    Assert.assertEquals(Status.FAILED, actualMetric.getProgress().getStatus());
+  }
 }
