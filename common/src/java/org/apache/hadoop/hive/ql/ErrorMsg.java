@@ -616,7 +616,8 @@ public enum ErrorMsg {
   //========================== 40000 range starts here ========================//
 
   SPARK_JOB_RUNTIME_ERROR(40001,
-      "Spark job failed during runtime. Please check stacktrace for the root cause.")
+      "Spark job failed during runtime. Please check stacktrace for the root cause."),
+  REPL_DATABASE_IS_TARGET_OF_REPLICATION(40003, "Cannot dump database as it is a Target of replication.")
   ;
 
   private int errorCode;

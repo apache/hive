@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
@@ -132,6 +133,8 @@ public class ReplUtils {
   // Reserved number of items to accommodate operational files in the dump root dir.
   public static final int RESERVED_DIR_ITEMS_COUNT = 10;
 
+  public static final String TARGET_OF_REPLICATION = "repl.target.for";
+
   /**
    * Bootstrap REPL LOAD operation type on the examined object based on ckpt state.
    */
@@ -208,6 +211,15 @@ public class ReplUtils {
       }
       throw new InvalidOperationException(ErrorMsg.REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID.format(dumpRoot,
               props.get(REPL_CHECKPOINT_KEY)));
+    }
+    return false;
+  }
+
+  public static boolean isTargetOfReplication(Database db) {
+    assert (db != null);
+    Map<String, String> m = db.getParameters();
+    if ((m != null) && (m.containsKey(TARGET_OF_REPLICATION))) {
+      return !StringUtils.isEmpty(m.get(TARGET_OF_REPLICATION));
     }
     return false;
   }
