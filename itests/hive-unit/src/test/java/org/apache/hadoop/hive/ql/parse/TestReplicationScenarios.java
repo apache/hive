@@ -26,12 +26,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
+import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
-import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -103,6 +99,7 @@ import java.util.Map;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.Warehouse.getFs;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.junit.Assert.assertEquals;
@@ -191,7 +188,7 @@ public class TestReplicationScenarios {
       hconf.set(key, value);
     });
 
-    MetaStoreTestUtils.startMetaStoreWithRetry(hconf);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hconf, true);
     // re set the WAREHOUSE property to the test dir, as the previous command added a random port to it
     hconf.set(MetastoreConf.ConfVars.WAREHOUSE.getVarname(), System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed"));
     hconf.set(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname(), System.getProperty("test.warehouse.external.dir", "/tmp/warehouse/external"));
@@ -206,7 +203,7 @@ public class TestReplicationScenarios {
     FileUtils.deleteDirectory(new File("metastore_db2"));
     HiveConf hconfMirrorServer = new HiveConf();
     hconfMirrorServer.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
-    MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer, true);
     hconfMirror = new HiveConf(hconf);
     String thriftUri = MetastoreConf.getVar(hconfMirrorServer, MetastoreConf.ConfVars.THRIFT_URIS);
     MetastoreConf.setVar(hconfMirror, MetastoreConf.ConfVars.THRIFT_URIS, thriftUri);
@@ -220,6 +217,19 @@ public class TestReplicationScenarios {
   @AfterClass
   public static void tearDownAfterClass(){
     // FIXME : should clean up TEST_PATH, but not doing it now, for debugging's sake
+    //Clean up the warehouse after test run as we are restoring the warehouse path for other metastore creation
+    Path warehousePath = new Path(MetastoreConf.getVar(hconf, MetastoreConf.ConfVars.WAREHOUSE));
+    try {
+      warehousePath.getFileSystem(hconf).delete(warehousePath, true);
+    } catch (IOException e) {
+
+    }
+    Path warehousePathReplica = new Path(MetastoreConf.getVar(hconfMirror, MetastoreConf.ConfVars.WAREHOUSE));
+    try {
+      warehousePathReplica.getFileSystem(hconfMirror).delete(warehousePathReplica, true);
+    } catch (IOException e) {
+
+    }
   }
 
   @Before
