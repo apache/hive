@@ -1315,17 +1315,17 @@ public class TestMetaStoreMultipleEncryptionZones {
                 ReplChangeManager.getInstance(conf).getCmRoot(part32).toString())));
 
         fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part11.getName(), fileChksum11,
-                ReplChangeManager.getInstance(conf).getCmRoot(part11).toString()),
-                now - 86400*1000*2, now - 86400*1000*2);
+          ReplChangeManager.getInstance(conf).getCmRoot(part11).toString()),
+          now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
         fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part21.getName(), fileChksum21,
-                ReplChangeManager.getInstance(conf).getCmRoot(part21).toString()),
-                now - 86400*1000*2, now - 86400*1000*2);
+          ReplChangeManager.getInstance(conf).getCmRoot(part21).toString()),
+          now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
         fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part31.getName(), fileChksum31,
-                ReplChangeManager.getInstance(conf).getCmRoot(part31).toString()),
-                now - 86400*1000*2, now - 86400*1000*2);
+          ReplChangeManager.getInstance(conf).getCmRoot(part31).toString()),
+          now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
         fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfCmClearer, part32.getName(), fileChksum32,
-                ReplChangeManager.getInstance(conf).getCmRoot(part32).toString()),
-                now - 86400*1000*2, now - 86400*1000*2);
+          ReplChangeManager.getInstance(conf).getCmRoot(part32).toString()),
+          now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
 
         ReplChangeManager.scheduleCMClearer(hiveConfCmClearer);
 

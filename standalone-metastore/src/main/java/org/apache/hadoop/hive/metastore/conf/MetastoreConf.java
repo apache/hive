@@ -540,7 +540,7 @@ public class MetastoreConf {
         "org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder",
         "Factory class for making encoding and decoding messages in the events generated."),
     EVENT_DB_LISTENER_TTL("metastore.event.db.listener.timetolive",
-        "hive.metastore.event.db.listener.timetolive", 86400, TimeUnit.SECONDS,
+        "hive.metastore.event.db.listener.timetolive", 7, TimeUnit.DAYS,
         "time after which events will be removed from the database listener queue"),
     EVENT_CLEAN_MAX_EVENTS("metastore.event.db.clean.maxevents",
             "hive.metastore.event.db.clean.maxevents", 10000,

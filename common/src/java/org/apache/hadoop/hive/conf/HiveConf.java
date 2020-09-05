@@ -573,8 +573,8 @@ public class HiveConf extends Configuration {
     REPLCMFALLBACKNONENCRYPTEDDIR("hive.repl.cm.nonencryptionzone.rootdir",
             "",
             "Root dir for ChangeManager for non encrypted paths if hive.repl.cmrootdir is encrypted."),
-    REPLCMRETIAN("hive.repl.cm.retain","24h",
-        new TimeValidator(TimeUnit.HOURS),
+    REPLCMRETIAN("hive.repl.cm.retain","7d",
+        new TimeValidator(TimeUnit.DAYS),
         "Time to retain removed files in cmrootdir."),
     REPLCMINTERVAL("hive.repl.cm.interval","3600s",
         new TimeValidator(TimeUnit.SECONDS),
@@ -628,7 +628,7 @@ public class HiveConf extends Configuration {
     REPL_ADD_RAW_RESERVED_NAMESPACE("hive.repl.add.raw.reserved.namespace", false,
         "For TDE with same encryption keys on source and target, allow Distcp super user to access \n"
             + "the raw bytes from filesystem without decrypting on source and then encrypting on target."),
-    REPL_INCLUDE_EXTERNAL_TABLES("hive.repl.include.external.tables", false,
+    REPL_INCLUDE_EXTERNAL_TABLES("hive.repl.include.external.tables", true,
         "Indicates if repl dump should include information about external tables. It should be \n"
           + "used in conjunction with 'hive.repl.dump.metadata.only' set to false. if 'hive.repl.dump.metadata.only' \n"
           + " is set to true then this config parameter has no effect as external table meta data is flushed \n"
