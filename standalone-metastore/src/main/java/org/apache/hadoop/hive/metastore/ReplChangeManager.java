@@ -58,7 +58,7 @@ public class ReplChangeManager {
 
   private static boolean inited = false;
   private static boolean enabled = false;
-  private static Map<String, String> encryptionZones = new HashMap<>();
+  private static Map<String, String> encryptionZoneToCmrootMapping = new HashMap<>();
   private HadoopShims hadoopShims;
   private static Configuration conf;
   private String msUser;
@@ -162,23 +162,35 @@ public class ReplChangeManager {
           cmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMDIR);
           encryptedCmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMENCRYPTEDDIR);
           fallbackNonEncryptedCmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR);
+          //validate cmRootEncrypted is absolute
+          Path cmRootEncrypted = new Path(encryptedCmRootDir);
+          if (cmRootEncrypted.isAbsolute()) {
+            throw new MetaException(ConfVars.REPLCMENCRYPTEDDIR.getHiveName() + " should be a relative path");
+          }
           //Create default cm root
           Path cmroot = new Path(cmRootDir);
           createCmRoot(cmroot);
           FileSystem cmRootFs = cmroot.getFileSystem(conf);
           HdfsEncryptionShim pathEncryptionShim = hadoopShims
                   .createHdfsEncryptionShim(cmRootFs, conf);
-          Path cmRootEncrypted = new Path(encryptedCmRootDir);
-          if (cmRootEncrypted.isAbsolute()) {
-            throw new MetaException(ConfVars.REPLCMENCRYPTEDDIR.getHiveName() + " should be a relative path");
-          }
           if (pathEncryptionShim.isPathEncrypted(cmroot)) {
             //If cm root is encrypted we keep using it for the encryption zone
             String encryptionZonePath = cmRootFs.getUri()
                     + pathEncryptionShim.getEncryptionZoneForPath(cmroot).getPath();
-            encryptionZones.put(encryptionZonePath, cmRootDir);
+            encryptionZoneToCmrootMapping.put(encryptionZonePath, cmRootDir);
           } else {
-            encryptionZones.put(NO_ENCRYPTION, cmRootDir);
+            encryptionZoneToCmrootMapping.put(NO_ENCRYPTION, cmRootDir);
+          }
+          if (!StringUtils.isEmpty(fallbackNonEncryptedCmRootDir)) {
+            Path cmRootFallback = new Path(fallbackNonEncryptedCmRootDir);
+            if (!cmRootFallback.isAbsolute()) {
+              throw new MetaException(ConfVars.REPLCMENCRYPTEDDIR.getHiveName() + " should be absolute path");
+            }
+            createCmRoot(cmRootFallback);
+            if (pathEncryptionShim.isPathEncrypted(cmRootFallback)) {
+              throw new MetaException(ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.getHiveName()
+                      + " should not be encrypted");
+            }
           }
           UserGroupInformation usergroupInfo = UserGroupInformation.getCurrentUser();
           msUser = usergroupInfo.getShortUserName();
@@ -517,7 +529,7 @@ public class ReplChangeManager {
           .namingPattern(CM_THREAD_NAME_PREFIX + "%d")
           .daemon(true)
           .build());
-      executor.scheduleAtFixedRate(new CMClearer(encryptionZones,
+      executor.scheduleAtFixedRate(new CMClearer(encryptionZoneToCmrootMapping,
           MetastoreConf.getTimeVar(conf, ConfVars.REPLCMRETIAN, TimeUnit.SECONDS), conf),
           0, MetastoreConf.getTimeVar(conf, ConfVars.REPLCMINTERVAL, TimeUnit.SECONDS), TimeUnit.SECONDS);
     }
@@ -570,14 +582,14 @@ public class ReplChangeManager {
         //at the root of the encryption zone
         cmrootDir = encryptionZonePath + Path.SEPARATOR + encryptedCmRootDir;
       }
-      if (encryptionZones.containsKey(encryptionZonePath)) {
-        cmroot = new Path(encryptionZones.get(encryptionZonePath));
+      if (encryptionZoneToCmrootMapping.containsKey(encryptionZonePath)) {
+        cmroot = new Path(encryptionZoneToCmrootMapping.get(encryptionZonePath));
       } else {
         cmroot = new Path(cmrootDir);
         synchronized (instance) {
-          if (!encryptionZones.containsKey(encryptionZonePath)) {
+          if (!encryptionZoneToCmrootMapping.containsKey(encryptionZonePath)) {
             createCmRoot(cmroot);
-            encryptionZones.put(encryptionZonePath, cmrootDir);
+            encryptionZoneToCmrootMapping.put(encryptionZonePath, cmrootDir);
           }
         }
       }
@@ -586,11 +598,22 @@ public class ReplChangeManager {
   }
 
   private static void createCmRoot(Path cmroot) throws IOException {
-    FileSystem cmFs = cmroot.getFileSystem(conf);
-    // Create cmroot with permission 700 if not exist
-    if (!cmFs.exists(cmroot)) {
-      cmFs.mkdirs(cmroot);
-      cmFs.setPermission(cmroot, new FsPermission("700"));
+    Retry<Void> retriable = new Retry<Void>(IOException.class) {
+      @Override
+      public Void execute() throws IOException {
+        FileSystem cmFs = cmroot.getFileSystem(conf);
+        // Create cmroot with permission 700 if not exist
+        if (!cmFs.exists(cmroot)) {
+          cmFs.mkdirs(cmroot);
+          cmFs.setPermission(cmroot, new FsPermission("700"));
+        }
+        return null;
+      }
+    };
+    try {
+      retriable.run();
+    } catch (Exception e) {
+      throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
     }
   }
 
@@ -598,7 +621,7 @@ public class ReplChangeManager {
   static void resetReplChangeManagerInstance() {
     inited = false;
     enabled = false;
-    encryptionZones.clear();
+    encryptionZoneToCmrootMapping.clear();
     instance = null;
   }
 
@@ -607,8 +630,10 @@ public class ReplChangeManager {
     public boolean accept(Path p) {
       if (enabled) {
         String name = p.getName();
-        return !name.contains(cmRootDir) && !name.contains(encryptedCmRootDir)
-                && !name.contains(fallbackNonEncryptedCmRootDir);
+        return StringUtils.isEmpty(fallbackNonEncryptedCmRootDir)
+                ? (!name.contains(cmRootDir) && !name.contains(encryptedCmRootDir))
+                : (!name.contains(cmRootDir) && !name.contains(encryptedCmRootDir)
+                && !name.contains(fallbackNonEncryptedCmRootDir));
       }
       return true;
     }

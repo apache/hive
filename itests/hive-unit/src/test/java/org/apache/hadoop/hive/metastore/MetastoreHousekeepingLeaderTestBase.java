@@ -109,6 +109,7 @@ class MetastoreHousekeepingLeaderTestBase {
     MetastoreConf.setBoolVar(conf, ConfVars.REPLCMENABLED, true);
     String cmroot = "hdfs://" + miniDFS.getNameNode().getHostAndPort() + "/cmroot";
     MetastoreConf.setVar(conf, ConfVars.REPLCMDIR, cmroot);
+    MetastoreConf.setVar(conf, ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR, cmroot);
     threadNames.put(ReplChangeManager.CM_THREAD_NAME_PREFIX,  false);
   }
 
