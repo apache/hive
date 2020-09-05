@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.table;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -62,9 +63,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState.PartitionState;
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.isPartitioned;
@@ -160,7 +164,56 @@ public class LoadPartitions {
     );
   }
 
+  private boolean isMetaDataOp() {
+    return HiveConf.getBoolVar(context.hiveConf, REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY) ||
+            HiveConf.getBoolVar(context.hiveConf, REPL_DUMP_METADATA_ONLY);
+  }
+
+  private void copyFrom(AlterTableAddPartitionDesc.PartitionDesc src,
+                        AlterTableAddPartitionDesc.PartitionDesc dst) {
+    dst.setInputFormat(src.getInputFormat());
+    dst.setOutputFormat(src.getOutputFormat());
+    dst.setNumBuckets(src.getNumBuckets());
+    dst.setCols(src.getCols());
+    dst.setSerializationLib(src.getSerializationLib());
+    dst.setSerdeParams(src.getSerdeParams());
+    dst.setBucketCols(src.getBucketCols());
+    dst.setSortCols(src.getSortCols());
+    dst.setLocation(src.getLocation());
+    dst.setColStats(src.getColStats());
+    dst.setWriteId(src.getWriteId());
+  }
+
+  /**
+   * Get all partitions and consolidate them into single partition request.
+   * Also, copy relevant stats and other information from original request.
+   *
+   * @throws SemanticException
+   */
+  private void addConsolidatedPartitionDesc() throws Exception {
+    AlterTableAddPartitionDesc consolidatedPartitionDesc =
+            new AlterTableAddPartitionDesc(tableDesc.getDatabaseName(), tableDesc.getTableName(), true);
+    //TODO: Note: HIVE-22028, HIVE-21346 are needed for making this method exactly like HIVE-23520
+    // Until then we are relying on copyFrom() method.
+    int i = 0;
+    for (AlterTableAddPartitionDesc alterTableAddPartitionDesc : event.partitionDescriptions(tableDesc)) {
+      AlterTableAddPartitionDesc.PartitionDesc src = alterTableAddPartitionDesc.getPartition(0);
+      consolidatedPartitionDesc.addPartition(src.getPartSpec(), src.getLocation(), src.getPartParams());
+      //copy over stats and other info from src
+      copyFrom(src, consolidatedPartitionDesc.getPartition(i++));
+    }
+    addPartition(false, consolidatedPartitionDesc, null);
+    if (i > 0) {
+      LOG.info("Added {} partitions", i);
+    }
+  }
+
   private TaskTracker forNewTable() throws Exception {
+    if (isMetaDataOp()) {
+      // Place all partitions in single task to reduce load on HMS.
+      addConsolidatedPartitionDesc();
+      return tracker;
+    }
     Iterator<AlterTableAddPartitionDesc> iterator = event.partitionDescriptions(tableDesc).iterator();
     while (iterator.hasNext() && tracker.canAddMoreTasks()) {
       AlterTableAddPartitionDesc currentPartitionDesc = iterator.next();
