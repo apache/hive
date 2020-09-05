@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -259,15 +260,32 @@ public class TestReplicationScenarios {
     return incrementalLoadAndVerify(dbName, replDbName);
   }
 
+  private Tuple bootstrapLoadAndVerify(String dbName, String replDbName, List<String> withClauseOptions)
+          throws IOException {
+    return incrementalLoadAndVerify(dbName, replDbName, withClauseOptions);
+  }
+
   private Tuple incrementalLoadAndVerify(String dbName, String replDbName) throws IOException {
     Tuple dump = replDumpDb(dbName);
     loadAndVerify(replDbName, dbName, dump.lastReplId);
     return dump;
   }
 
+  private Tuple incrementalLoadAndVerify(String dbName, String replDbName, List<String> withClauseOptions)
+          throws IOException {
+    Tuple dump = replDumpDb(dbName, withClauseOptions);
+    loadAndVerify(replDbName, dbName, dump.lastReplId, withClauseOptions);
+    return dump;
+  }
+
   private Tuple replDumpDb(String dbName) throws IOException {
+    return replDumpDb(dbName, null);
+  }
+
+  private Tuple replDumpDb(String dbName, List<String> withClauseOptions) throws IOException {
+    String withClause = getWithClause(withClauseOptions);
     advanceDumpDir();
-    String dumpCmd = "REPL DUMP " + dbName;
+    String dumpCmd = "REPL DUMP " + dbName + withClause;
     run(dumpCmd, driver);
     String dumpLocation = getResult(0, 0, driver);
     String lastReplId = getResult(0, 1, true, driver);
@@ -275,8 +293,21 @@ public class TestReplicationScenarios {
     return new Tuple(dumpLocation, lastReplId);
   }
 
+  private String getWithClause(List<String> withClauseOptions) {
+    if (withClauseOptions != null && !withClauseOptions.isEmpty()) {
+      return  " with (" + StringUtils.join(withClauseOptions, ",") + ")";
+    }
+    return "";
+  }
+
   private void loadAndVerify(String replDbName, String sourceDbNameOrPattern, String lastReplId) throws IOException {
-    run("REPL LOAD " + sourceDbNameOrPattern + " INTO " + replDbName, driverMirror);
+    loadAndVerify(replDbName, sourceDbNameOrPattern, lastReplId, null);
+  }
+
+  private void loadAndVerify(String replDbName, String sourceDbNameOrPattern, String lastReplId,
+                             List<String> withClauseOptions) throws IOException {
+    String withClause = getWithClause(withClauseOptions);
+    run("REPL LOAD " + sourceDbNameOrPattern + " INTO " + replDbName + withClause, driverMirror);
     verifyRun("REPL STATUS " + replDbName, lastReplId, driverMirror);
     return;
   }
@@ -540,6 +571,61 @@ public class TestReplicationScenarios {
     run("ALTER TABLE " + dbName + ".ptned " + "DROP PARTITION(b=1)", driver);
 
     run("REPL LOAD " + dbName + " INTO " + replDbName, driverMirror);
+    verifyRun("REPL STATUS " + replDbName, new String[] {replDumpId}, driverMirror);
+
+    verifyRun("SELECT * from " + replDbName + ".unptned", unptn_data, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=2", ptn_data_2, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned_empty", empty, driverMirror);
+    verifyRun("SELECT * from " + replDbName + ".unptned_empty", empty, driverMirror);
+  }
+
+  @Test
+  public void testBasicWithCMLazyCopy() throws Exception {
+    String name = testName.getMethodName();
+    String dbName = createDB(name, driver);
+    String replDbName = dbName + "_dupe";
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    String[] unptn_data = new String[]{ "eleven" , "twelve" };
+    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
+    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[]{};
+
+    String unptn_locn = new Path(TEST_PATH, name + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH, name + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH, name + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptn_locn, unptn_data);
+    createTestDataFile(ptn_locn_1, ptn_data_1);
+    createTestDataFile(ptn_locn_2, ptn_data_2);
+
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty, driver);
+    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty, driver);
+
+    String lazyCopyClause = " with ('" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname  + "'='true')";
+
+    advanceDumpDir();
+    run("REPL DUMP " + dbName + lazyCopyClause, driver);
+    String replDumpLocn = getResult(0,0, driver);
+    String replDumpId = getResult(0,1,true, driver);
+
+    // Table dropped after "repl dump"
+    run("DROP TABLE " + dbName + ".unptned", driver);
+
+    // Partition droppped after "repl dump"
+    run("ALTER TABLE " + dbName + ".ptned " + "DROP PARTITION(b=1)", driver);
+
+    run("REPL LOAD " + dbName + " INTO " + replDbName + lazyCopyClause, driverMirror);
     verifyRun("REPL STATUS " + replDbName, new String[] {replDumpId}, driverMirror);
 
     verifyRun("SELECT * from " + replDbName + ".unptned", unptn_data, driverMirror);
@@ -1556,6 +1642,76 @@ public class TestReplicationScenarios {
     verifyDataFileExist(fs, hiveDumpDir, "b=2", new Path(ptnLocn2).getName());
     verifyDataListFileDoesNotExist(fs, hiveDumpDir, "b=1");
     verifyDataListFileDoesNotExist(fs, hiveDumpDir, "b=2");
+
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=1", ptnData1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=2", ptnData2, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", ptnData1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=2", ptnData2, driverMirror);
+  }
+
+  @Test
+  public void testIncrementalLoadLazyCopy() throws IOException {
+    String testName = "testIncrementalLoadLazyCopy";
+    String dbName = createDB(testName, driver);
+    String replDbName = dbName + "_dupe";
+
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".unptned_empty(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName
+            + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    List<String> lazyCopyClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'");
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName, lazyCopyClause);
+
+    String[] unptnData = new String[] {"eleven", "twelve"};
+    String[] ptnData1 = new String[] {"thirteen", "fourteen", "fifteen"};
+    String[] ptnData2 = new String[] {"fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[] {};
+
+    String unptnLocn = new Path(TEST_PATH, testName + "_unptn").toUri().getPath();
+    String ptnLocn1 = new Path(TEST_PATH, testName + "_ptn1").toUri().getPath();
+    String ptnLocn2 = new Path(TEST_PATH, testName + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptnLocn, unptnData);
+    createTestDataFile(ptnLocn1, ptnData1);
+    createTestDataFile(ptnLocn2, ptnData2);
+
+    verifySetup("SELECT a from " + dbName + ".ptned_empty", empty, driverMirror);
+    verifySetup("SELECT * from " + dbName + ".unptned_empty", empty, driverMirror);
+
+    run("LOAD DATA LOCAL INPATH '" + unptnLocn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptnData, driver);
+    run("CREATE TABLE " + dbName + ".unptned_late LIKE " + dbName + ".unptned", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned_late SELECT * FROM " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned_late", unptnData, driver);
+
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName, lazyCopyClause);
+
+    Path hiveDumpDir = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    FileSystem fs = FileSystem.get(hiveDumpDir.toUri(), hconf);
+    verifyRun("SELECT * from " + replDbName + ".unptned_late", unptnData, driverMirror);
+
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptnLocn1 + "' OVERWRITE INTO TABLE " + dbName
+            + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptnData1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptnLocn2 + "' OVERWRITE INTO TABLE " + dbName
+            + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptnData2, driver);
+
+    run("CREATE TABLE " + dbName
+            + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=1) SELECT a FROM " + dbName
+            + ".ptned WHERE b=1", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=1", ptnData1, driver);
+
+    run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=2) SELECT a FROM " + dbName
+            + ".ptned WHERE b=2", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptnData2, driver);
+
+    incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+    hiveDumpDir = new Path(incrementalDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
 
     verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=1", ptnData1, driverMirror);
     verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=2", ptnData2, driverMirror);

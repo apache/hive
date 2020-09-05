@@ -297,12 +297,12 @@ public class LoadPartitions {
               : LoadFileType.OVERWRITE_EXISTING);
       stagingDir = PathUtils.getExternalTmpPath(replicaWarehousePartitionLocation, context.pathInfo);
     }
-
+    boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
     Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
         event.replicationSpec(),
             new Path(event.dataPath() + Path.SEPARATOR + getPartitionName(sourceWarehousePartitionLocation)),
         stagingDir,
-        context.hiveConf, false, false
+        context.hiveConf, copyAtLoad, false
     );
 
     Task<?> movePartitionTask = null;

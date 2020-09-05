@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.StringConvertibleObject;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -74,6 +75,8 @@ public class EximUtil {
 
   public static final String METADATA_NAME = "_metadata";
   public static final String FILES_NAME = "_files";
+  public static final String FILE_LIST = "_file_list";
+  public static final String FILE_LIST_EXTERNAL = "_file_list_external";
   public static final String DATA_PATH_NAME = "data";
   public static final String METADATA_PATH_NAME = "metadata";
 
@@ -162,11 +165,16 @@ public class EximUtil {
   /**
    * Wrapper class for mapping source and target path for copying managed table data.
    */
-  public static class ManagedTableCopyPath {
+  public static class ManagedTableCopyPath implements StringConvertibleObject {
+    private static final String URI_SEPARATOR = "#";
     private ReplicationSpec replicationSpec;
     private static boolean nullSrcPathForTest = false;
     private Path srcPath;
     private Path tgtPath;
+
+    public ManagedTableCopyPath(ReplicationSpec replicationSpec) {
+      this.replicationSpec = replicationSpec;
+    }
 
     public ManagedTableCopyPath(ReplicationSpec replicationSpec, Path srcPath, Path tgtPath) {
       this.replicationSpec = replicationSpec;
@@ -215,6 +223,26 @@ public class EximUtil {
       if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
         nullSrcPathForTest = aNullSrcPath;
       }
+    }
+
+    @Override
+    public String convertToString() {
+      StringBuilder objInStr = new StringBuilder();
+      objInStr.append(srcPath)
+              .append(URI_SEPARATOR)
+              .append(tgtPath);
+      return objInStr.toString();
+    }
+
+    @Override
+    public void loadFromString(String objectInStr) {
+      String paths[] = objectInStr.split(URI_SEPARATOR);
+      this.srcPath = new Path(paths[0]);
+      this.tgtPath = new Path(paths[1]);
+    }
+
+    private String getEmptyOrString(String str) {
+      return (str == null) ? "" : str;
     }
   }
 

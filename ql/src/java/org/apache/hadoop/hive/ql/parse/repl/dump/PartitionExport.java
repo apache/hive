@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse.repl.dump;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
@@ -74,7 +75,8 @@ class PartitionExport {
     this.callersSession = SessionState.get();
   }
 
-  List<ManagedTableCopyPath> write(final ReplicationSpec forReplicationSpec, boolean isExportTask)
+  List<ManagedTableCopyPath> write(final ReplicationSpec forReplicationSpec, boolean isExportTask,
+                                   FileList fileList, boolean dataCopyAtLoad)
           throws InterruptedException, HiveException {
     List<Future<?>> futures = new LinkedList<>();
     List<ManagedTableCopyPath> managedTableCopyPaths = new LinkedList<>();
@@ -114,16 +116,19 @@ class PartitionExport {
         String threadName = Thread.currentThread().getName();
         LOG.debug("Thread: {}, start partition dump {}", threadName, partitionName);
         try {
-          // Data Copy in case of ExportTask
+          // Data Copy in case of ExportTask or when dataCopyAtLoad is true
           List<Path> dataPathList = Utils.getDataPathList(partition.getDataLocation(),
                   forReplicationSpec, hiveConf);
-          Path rootDataDumpDir = paths.partitionMetadataExportDir(partitionName);
+          Path rootDataDumpDir = isExportTask
+                  ? paths.partitionMetadataExportDir(partitionName) : paths.partitionDataExportDir(partitionName);
           new FileOperations(dataPathList, rootDataDumpDir, distCpDoAsUser, hiveConf, mmCtx)
-                  .export(isExportTask);
+                  .export(isExportTask, dataCopyAtLoad);
           Path dataDumpDir = new Path(paths.dataExportRootDir(), partitionName);
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
-          return new ManagedTableCopyPath(forReplicationSpec, partition.getDataLocation(),
-                  dataDumpDir);
+          if (!(isExportTask || dataCopyAtLoad)) {
+            fileList.add(new ManagedTableCopyPath(forReplicationSpec, partition.getDataLocation(),
+                    dataDumpDir).convertToString());
+          }
         } catch (Exception e) {
           throw new RuntimeException(e.getMessage(), e);
         }
@@ -132,11 +137,7 @@ class PartitionExport {
     consumer.shutdown();
     for (Future<?> future : futures) {
       try {
-        Object retVal =  future.get();
-        if (retVal != null) {
-          ManagedTableCopyPath managedTableCopyPath = (ManagedTableCopyPath) retVal;
-          managedTableCopyPaths.add(managedTableCopyPath);
-        }
+        future.get();
       } catch (Exception e) {
         LOG.error("failed", e.getCause());
         throw new HiveException(e.getCause().getMessage(), e.getCause());

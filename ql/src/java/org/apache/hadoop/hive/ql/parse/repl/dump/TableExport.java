@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -98,8 +99,7 @@ public class TableExport {
     this.mmCtx = mmCtx;
   }
 
-  public List<ManagedTableCopyPath> write(boolean isExportTask) throws SemanticException {
-    List<ManagedTableCopyPath> managedTableCopyPaths = Collections.emptyList();
+  public void write(boolean isExportTask, FileList fileList, boolean dataCopyAtLoad) throws SemanticException {
     if (tableSpec == null) {
       writeMetaData(null);
     } else if (shouldExport()) {
@@ -107,12 +107,11 @@ public class TableExport {
       writeMetaData(withPartitions);
       if (!replicationSpec.isMetadataOnly() && !(replicationSpec.isRepl()
               && tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE))) {
-        managedTableCopyPaths = writeData(withPartitions, isExportTask);
+        writeData(withPartitions, isExportTask, fileList, dataCopyAtLoad);
       }
     } else if (isExportTask) {
       throw new SemanticException(ErrorMsg.INCOMPATIBLE_SCHEMA.getMsg());
     }
-    return managedTableCopyPaths;
   }
 
   private PartitionIterable getPartitions() throws SemanticException {
@@ -163,28 +162,28 @@ public class TableExport {
     }
   }
 
-  private List<ManagedTableCopyPath> writeData(PartitionIterable partitions, boolean isExportTask)
+  private void writeData(PartitionIterable partitions, boolean isExportTask, FileList fileList, boolean dataCopyAtLoad)
           throws SemanticException {
-    List<ManagedTableCopyPath> managedTableCopyPaths = new ArrayList<>();
     try {
       if (tableSpec.tableHandle.isPartitioned()) {
         if (partitions == null) {
           throw new IllegalStateException("partitions cannot be null for partitionTable :"
               + tableSpec.getTableName().getTable());
         }
-        managedTableCopyPaths = new PartitionExport(
-                paths, partitions, distCpDoAsUser, conf, mmCtx).write(replicationSpec, isExportTask);
+        new PartitionExport(paths, partitions, distCpDoAsUser, conf, mmCtx).write(replicationSpec, isExportTask,
+                fileList, dataCopyAtLoad);
       } else {
         List<Path> dataPathList = Utils.getDataPathList(tableSpec.tableHandle.getDataLocation(),
                 replicationSpec, conf);
 
         // this is the data copy
-        managedTableCopyPaths.add(new ManagedTableCopyPath(replicationSpec, tableSpec.tableHandle.getDataLocation(),
-                paths.dataExportDir()));
+        if (!(isExportTask || dataCopyAtLoad)) {
+          fileList.add(new ManagedTableCopyPath(replicationSpec, tableSpec.tableHandle.getDataLocation(),
+                  paths.dataExportDir()).convertToString());
+        }
         new FileOperations(dataPathList, paths.dataExportDir(), distCpDoAsUser, conf, mmCtx)
-                  .export(isExportTask);
+                  .export(isExportTask, (dataCopyAtLoad));
       }
-      return managedTableCopyPaths;
     } catch (Exception e) {
       throw new SemanticException(e.getMessage(), e);
     }
@@ -246,6 +245,10 @@ public class TableExport {
 
     Path partitionMetadataExportDir(String partitionName) throws SemanticException {
       return exportDir(new Path(metadataExportRootDir(), partitionName));
+    }
+
+    Path partitionDataExportDir(String partitionName) throws SemanticException {
+      return exportDir(new Path(dataExportRootDir(), partitionName));
     }
 
     /**

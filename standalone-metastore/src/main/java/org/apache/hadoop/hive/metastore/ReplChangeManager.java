@@ -145,6 +145,13 @@ public class ReplChangeManager {
     return instance;
   }
 
+  public static synchronized ReplChangeManager getInstance() {
+    if (!inited) {
+      throw new IllegalStateException("Replication Change Manager is not initialized.");
+    }
+    return instance;
+  }
+
   private ReplChangeManager(Configuration conf) throws MetaException {
     try {
       if (!inited) {

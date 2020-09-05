@@ -17,8 +17,11 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
+import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,14 +31,22 @@ import javax.security.auth.login.LoginException;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
+import org.apache.hadoop.hive.metastore.utils.Retry;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
+import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,9 +79,11 @@ public class FileOperations {
     exportFileSystem = exportRootDataDir.getFileSystem(hiveConf);
   }
 
-  public void export(boolean isExportTask) throws Exception {
+  public void export(boolean isExportTask, boolean dataCopyAtLoad) throws Exception {
     if (isExportTask) {
       copyFiles();
+    } else if (dataCopyAtLoad) {
+      exportFilesAsList();
     } else {
       validateSrcPathListExists();
     }
@@ -164,5 +177,84 @@ public class FileOperations {
       logger.error("exporting data files in dir : " + dataPathList + " to " + exportRootDataDir + " failed");
       throw new FileNotFoundException(FILE_NOT_FOUND.format(e.getMessage()));
     }
+  }
+
+  /**
+   * This needs the root data directory to which the data needs to be exported to.
+   * The data export here is a list of files either in table/partition that are written to the _files
+   * in the exportRootDataDir provided.
+   */
+   void exportFilesAsList() throws SemanticException, IOException, LoginException {
+    if (dataPathList.isEmpty()) {
+      return;
+    }
+    Retry<Void> retryable = new Retry<Void>(IOException.class) {
+      @Override
+      public Void execute() throws Exception {
+        try (BufferedWriter writer = writer()) {
+          for (Path dataPath : dataPathList) {
+            writeFilesList(listFilesInDir(dataPath), writer, AcidUtils.getAcidSubDir(dataPath));
+          }
+        } catch (IOException e) {
+          if (e instanceof FileNotFoundException) {
+            logger.error("exporting data files in dir : " + dataPathList + " to " + exportRootDataDir + " failed");
+            throw new FileNotFoundException(FILE_NOT_FOUND.format(e.getMessage()));
+          }
+          // in case of io error, reset the file system object
+          FileSystem.closeAllForUGI(Utils.getUGI());
+          dataFileSystem = dataPathList.get(0).getFileSystem(hiveConf);
+          exportFileSystem = exportRootDataDir.getFileSystem(hiveConf);
+          Path exportPath = new Path(exportRootDataDir, EximUtil.FILES_NAME);
+          if (exportFileSystem.exists(exportPath)) {
+            exportFileSystem.delete(exportPath, true);
+          }
+          throw e;
+        }
+        return null;
+      }
+    };
+    try {
+      retryable.run();
+    } catch (Exception e) {
+      throw new SemanticException(e);
+    }
+  }
+
+  private void writeFilesList(FileStatus[] fileStatuses, BufferedWriter writer, String encodedSubDirs)
+          throws IOException {
+    for (FileStatus fileStatus : fileStatuses) {
+      if (fileStatus.isDirectory()) {
+        // Write files inside the sub-directory.
+        Path subDir = fileStatus.getPath();
+        writeFilesList(listFilesInDir(subDir), writer, encodedSubDir(encodedSubDirs, subDir));
+      } else {
+        writer.write(encodedUri(fileStatus, encodedSubDirs));
+        writer.newLine();
+      }
+    }
+  }
+
+  private BufferedWriter writer() throws IOException {
+    Path exportToFile = new Path(exportRootDataDir, EximUtil.FILES_NAME);
+    logger.debug("exporting data files in dir : " + dataPathList + " to " + exportToFile);
+    return new BufferedWriter(
+            new OutputStreamWriter(exportFileSystem.create(exportToFile))
+    );
+  }
+
+  private String encodedSubDir(String encodedParentDirs, Path subDir) {
+    if (null == encodedParentDirs) {
+      return subDir.getName();
+    } else {
+      return encodedParentDirs + Path.SEPARATOR + subDir.getName();
+    }
+  }
+
+  private String encodedUri(FileStatus fileStatus, String encodedSubDir)
+          throws IOException {
+    ReplChangeManager replChangeManager = ReplChangeManager.getInstance();
+    Path currentDataFilePath = fileStatus.getPath();
+    String checkSum = ReplChangeManager.checksumFor(currentDataFilePath, dataFileSystem);
+    return replChangeManager.encodeFileUri(currentDataFilePath.toString(), checkSum, encodedSubDir);
   }
 }

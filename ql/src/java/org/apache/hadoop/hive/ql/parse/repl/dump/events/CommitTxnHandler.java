@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 
 import javax.security.auth.login.LoginException;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,11 +57,17 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
     return deserializer.getCommitTxnMessage(stringRepresentation);
   }
 
-  private void writeDumpFiles(Table qlMdTable, Partition ptn, Iterable<String> files, Context withinContext)
+  private void writeDumpFiles(Table qlMdTable, Partition ptn, Iterable<String> files, Context withinContext,
+                              Path dataPath)
           throws IOException, LoginException, MetaException, HiveFatalException {
-    // encoded filename/checksum of files, write into _files
-    for (String file : files) {
-      writeFileEntry(qlMdTable, ptn, file, withinContext);
+    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+    if (copyAtLoad) {
+      // encoded filename/checksum of files, write into _files
+      writeEncodedDumpFiles(withinContext, files, dataPath);
+    } else {
+      for (String file : files) {
+        writeFileEntry(qlMdTable, ptn, file, withinContext);
+      }
     }
   }
 
@@ -81,10 +88,13 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
             withinContext.hiveConf);
 
     if ((null == qlPtns) || qlPtns.isEmpty()) {
-      writeDumpFiles(qlMdTable, null, fileListArray.get(0), withinContext);
+      Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
+      writeDumpFiles(qlMdTable, null, fileListArray.get(0), withinContext, dataPath);
     } else {
       for (int idx = 0; idx < qlPtns.size(); idx++) {
-        writeDumpFiles(qlMdTable, qlPtns.get(idx), fileListArray.get(idx), withinContext);
+        Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME + File.separator
+                + qlPtns.get(idx).getName());
+        writeDumpFiles(qlMdTable, qlPtns.get(idx), fileListArray.get(idx), withinContext, dataPath);
       }
     }
   }

@@ -38,7 +38,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -86,6 +88,23 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
   @Override
   public long toEventId() {
     return event.getEventId();
+  }
+
+  private BufferedWriter writer(Context withinContext, Path dataPath) throws IOException {
+    Path filesPath = new Path(dataPath, EximUtil.FILES_NAME);
+    FileSystem fs = dataPath.getFileSystem(withinContext.hiveConf);
+    return new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));
+  }
+
+  protected void writeEncodedDumpFiles(Context withinContext, Iterable<String> files, Path dataPath)
+          throws IOException {
+    // encoded filename/checksum of files, write into _files
+    try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
+      for (String file : files) {
+        fileListWriter.write(file);
+        fileListWriter.newLine();
+      }
+    }
   }
 
   protected void writeFileEntry(Table table, Partition ptn, String file, Context withinContext)
