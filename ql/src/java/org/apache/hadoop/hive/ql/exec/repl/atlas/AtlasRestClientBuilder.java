@@ -44,6 +44,7 @@ public class AtlasRestClientBuilder {
   private UserGroupInformation userGroupInformation;
   protected String incomingUrl;
   protected String[] baseUrls;
+  private HiveConf hiveConf;
 
   public AtlasRestClientBuilder(String urls) {
     this.incomingUrl = urls;
@@ -69,7 +70,7 @@ public class AtlasRestClientBuilder {
     initializeAtlasApplicationProperties();
     AtlasClientV2 clientV2 = new AtlasClientV2(this.userGroupInformation,
             this.userGroupInformation.getShortUserName(), baseUrls);
-    return new AtlasRestClientImpl(clientV2);
+    return new AtlasRestClientImpl(clientV2, hiveConf);
   }
 
   private AtlasRestClientBuilder setUGInfo() throws SemanticException {

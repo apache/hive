@@ -173,7 +173,7 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       inputStream = atlasRestClient.exportData(exportRequest);
       FileSystem fs = atlasReplInfo.getStagingDir().getFileSystem(atlasReplInfo.getConf());
       Path exportFilePath = new Path(atlasReplInfo.getStagingDir(), ReplUtils.REPL_ATLAS_EXPORT_FILE_NAME);
-      numBytesWritten = Utils.writeFile(fs, exportFilePath, inputStream);
+      numBytesWritten = Utils.writeFile(fs, exportFilePath, inputStream, conf);
     } catch (SemanticException ex) {
       throw ex;
     } catch (Exception ex) {

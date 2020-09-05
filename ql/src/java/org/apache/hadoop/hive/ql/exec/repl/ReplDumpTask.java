@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.DbLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
@@ -111,6 +112,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.HashMap;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
@@ -641,22 +643,21 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     }
     return currentEventMaxLimit;
   }
-  private void cleanFailedEventDirIfExists(Path dumpDir, long resumeFrom) throws IOException {
+  private void cleanFailedEventDirIfExists(Path dumpDir, long resumeFrom) throws SemanticException {
     Path nextEventRoot = new Path(dumpDir, String.valueOf(resumeFrom + 1));
-    Retry<Void> retriable = new Retry<Void>(IOException.class) {
-      @Override
-      public Void execute() throws IOException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(IOException.class).build();
+    try {
+      retryable.executeCallable((Callable<Void>) () -> {
         FileSystem fs = FileSystem.get(nextEventRoot.toUri(), conf);
         if (fs.exists(nextEventRoot))  {
           fs.delete(nextEventRoot, true);
         }
         return null;
-      }
-    };
-    try {
-      retriable.run();
+      });
     } catch (Exception e) {
-      throw new IOException(e);
+      throw new SemanticException(e);
     }
   }
 

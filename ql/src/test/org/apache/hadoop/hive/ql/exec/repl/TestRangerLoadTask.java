@@ -71,7 +71,7 @@ public class TestRangerLoadTask {
       .thenCallRealMethod();
     Mockito.when(mockClient.addDenyPolicies(Mockito.anyList(), Mockito.anyString(), Mockito.anyString(),
       Mockito.anyString())).thenCallRealMethod();
-    Mockito.when(mockClient.checkConnection(Mockito.anyString())).thenReturn(true);
+    Mockito.when(mockClient.checkConnection(Mockito.anyString(), Mockito.any())).thenReturn(true);
     Mockito.when(work.getMetricCollector()).thenReturn(metricCollector);
   }
 
@@ -187,9 +187,10 @@ public class TestRangerLoadTask {
     ArgumentCaptor<String> rangerEndpoint = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> serviceName = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> targetDb = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<HiveConf> confCaptor = ArgumentCaptor.forClass(HiveConf.class);
     Mockito.verify(mockClient,
         Mockito.times(1)).importRangerPolicies(rangerPolicyCapture.capture(),
-        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture());
+        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture(), confCaptor.capture());
     Assert.assertEquals("tgtdb", targetDb.getAllValues().get(0));
     Assert.assertEquals("rangerEndpoint", rangerEndpoint.getAllValues().get(0));
     Assert.assertEquals("hive", serviceName.getAllValues().get(0));
@@ -251,9 +252,10 @@ public class TestRangerLoadTask {
     ArgumentCaptor<String> rangerEndpoint = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> serviceName = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> targetDb = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<HiveConf> confCaptor = ArgumentCaptor.forClass(HiveConf.class);
     Mockito.verify(mockClient,
         Mockito.times(1)).importRangerPolicies(rangerPolicyCapture.capture(),
-        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture());
+        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture(), confCaptor.capture());
     Assert.assertEquals("tgtdb", targetDb.getAllValues().get(0));
     Assert.assertEquals("rangerEndpoint", rangerEndpoint.getAllValues().get(0));
     Assert.assertEquals("hive", serviceName.getAllValues().get(0));
