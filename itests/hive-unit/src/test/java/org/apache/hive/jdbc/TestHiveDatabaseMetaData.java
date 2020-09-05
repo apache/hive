@@ -45,7 +45,7 @@ public class TestHiveDatabaseMetaData {
   private static HiveConnection connection = new HiveConnection();
 
   @Before
-  public void setup() throws Exception {
+  public static void setup() throws Exception {
     jdbcConnectionParams.setHiveConfs(map);
     connection.setConnParams(jdbcConnectionParams);
     hiveDatabaseMetaData = new HiveDatabaseMetaData(connection, null, null);
