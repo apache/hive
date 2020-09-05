@@ -397,17 +397,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
         checkFileFormats(db, tbd, table);
 
-        // for transactional table if write id is not set during replication from a cluster with STRICT_MANAGED set
-        // to false then set it now.
-        if (tbd.getWriteId() <= 0 && AcidUtils.isTransactionalTable(table.getParameters())) {
-          Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
-          if (writeId == null) {
-            throw new HiveException("MoveTask : Write id is not set in the config by open txn task for migration");
-          }
-          tbd.setWriteId(writeId);
-          tbd.setStmtId(context.getHiveTxnManager().getStmtIdAndIncrement());
-        }
-
         boolean isFullAcidOp = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID
             && !tbd.isMmTable(); //it seems that LoadTableDesc has Operation.INSERT only for CTAS...
 

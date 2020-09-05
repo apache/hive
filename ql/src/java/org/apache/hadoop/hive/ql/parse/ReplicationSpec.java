@@ -46,8 +46,6 @@ public class ReplicationSpec {
   //TxnIds snapshot
   private String validTxnList = null;
   private Type specType = Type.DEFAULT; // DEFAULT means REPL_LOAD or BOOTSTRAP_DUMP or EXPORT
-  private boolean isMigratingToTxnTable = false;
-  private boolean isMigratingToExternalTable = false;
   private boolean needDupCopyCheck = false;
   //Determine if replication is done using repl or export-import
   private boolean isRepl = false;
@@ -404,20 +402,6 @@ public class ReplicationSpec {
     }
   }
 
-  public boolean isMigratingToTxnTable() {
-    return isMigratingToTxnTable;
-  }
-  public void setMigratingToTxnTable() {
-    isMigratingToTxnTable = true;
-  }
-
-  public boolean isMigratingToExternalTable() {
-    return isMigratingToExternalTable;
-  }
-
-  public void setMigratingToExternalTable() {
-    isMigratingToExternalTable = true;
-  }
 
   public static void copyLastReplId(Map<String, String> srcParameter, Map<String, String> destParameter) {
     String lastReplId = srcParameter.get(ReplicationSpec.KEY.CURR_STATE_ID.toString());

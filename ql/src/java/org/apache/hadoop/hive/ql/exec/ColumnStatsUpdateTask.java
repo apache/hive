@@ -304,17 +304,9 @@ public class ColumnStatsUpdateTask extends Task<ColumnStatsUpdateWork> {
       Table tbl = db.getTable(dbName, tblName);
       long writeId = work.getWriteId();
       // If it's a transactional table on source and target, we will get a valid writeId
-      // associated with it. Otherwise it's a non-transactional table on source migrated to a
-      // transactional table on target, we need to craft a valid writeId here.
+      // associated with it.
       if (AcidUtils.isTransactionalTable(tbl)) {
         ValidWriteIdList writeIds;
-        if (work.getIsMigratingToTxn()) {
-          Long tmpWriteId = ReplUtils.getMigrationCurrentTblWriteId(conf);
-          if (tmpWriteId == null) {
-            throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
-          }
-          writeId = tmpWriteId;
-        }
 
         // We need a valid writeId list to update column statistics for a transactional table. We
         // do not have a valid writeId list which was used to update the column stats on the

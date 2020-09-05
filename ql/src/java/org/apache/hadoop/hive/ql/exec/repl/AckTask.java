@@ -24,6 +24,8 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
@@ -35,12 +37,14 @@ import java.io.Serializable;
 public class AckTask extends Task<AckWork> implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private Logger LOG = LoggerFactory.getLogger(AckTask.class);
 
     @Override
     public int execute() {
         try {
           Path ackPath = work.getAckFilePath();
           Utils.create(ackPath, conf);
+          LOG.info("Created ack file : {} ", ackPath);
         } catch (SemanticException e) {
             setException(e);
             return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();

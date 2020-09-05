@@ -57,8 +57,6 @@ public class ReplCopyWork extends CopyWork {
 
   private String distCpDoAsUser = null;
 
-  private boolean copyToMigratedTxnTable;
-
   private boolean checkDuplicateCopy = false;
 
   private boolean overWrite = false;
@@ -110,14 +108,6 @@ public class ReplCopyWork extends CopyWork {
 
   public void setAutoPurge(boolean isAutoPurge) {
     this.isAutoPurge = isAutoPurge;
-  }
-
-  public boolean isCopyToMigratedTxnTable() {
-    return copyToMigratedTxnTable;
-  }
-
-  public void setCopyToMigratedTxnTable(boolean copyToMigratedTxnTable) {
-    this.copyToMigratedTxnTable = copyToMigratedTxnTable;
   }
 
   public boolean isNeedCheckDuplicateCopy() {

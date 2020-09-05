@@ -92,37 +92,11 @@ public class ReplTxnTask extends Task<ReplTxnWork> {
         LOG.info("Replayed OpenTxn Event for policy " + replPolicy + " with srcTxn " +
             work.getTxnIds().toString() + " and target txn id " + txnIds.toString());
         return 0;
-      case REPL_MIGRATION_OPEN_TXN:
-        // if transaction is already opened (mostly by repl load command), then close it.
-        if (txnManager.isTxnOpen()) {
-          long txnId = txnManager.getCurrentTxnId();
-          txnManager.commitTxn();
-          LOG.info("Committed txn from REPL_MIGRATION_OPEN_TXN : " + txnId);
-        }
-        Long txnIdMigration = txnManager.openTxn(context, user);
-        long writeId = txnManager.getTableWriteId(work.getDbName(), work.getTableName());
-        String validTxnList = txnManager.getValidTxns().toString();
-        conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList);
-        conf.set(ReplUtils.REPL_CURRENT_TBL_WRITE_ID, Long.toString(writeId));
-        LOG.info("Started open txn for migration : " + txnIdMigration + " with  valid txn list : " +
-            validTxnList + " and write id " + writeId);
-        return 0;
       case REPL_ABORT_TXN:
         for (long txnId : work.getTxnIds()) {
           txnManager.replRollbackTxn(replPolicy, txnId);
           LOG.info("Replayed AbortTxn Event for policy " + replPolicy + " with srcTxn " + txnId);
         }
-        return 0;
-      case REPL_MIGRATION_COMMIT_TXN:
-        assert (work.getReplLastIdInfo() != null);
-        long txnIdMigrationCommit = txnManager.getCurrentTxnId();
-        CommitTxnRequest commitTxnRequestMigr = new CommitTxnRequest(txnIdMigrationCommit);
-        commitTxnRequestMigr.setReplLastIdInfo(work.getReplLastIdInfo());
-        txnManager.replCommitTxn(commitTxnRequestMigr);
-        conf.unset(ValidTxnList.VALID_TXNS_KEY);
-        conf.unset(ReplUtils.REPL_CURRENT_TBL_WRITE_ID);
-        LOG.info("Committed Migration Txn with replLastIdInfo: " + work.getReplLastIdInfo() + " for txnId: " +
-            txnIdMigrationCommit);
         return 0;
       case REPL_COMMIT_TXN:
         // Currently only one commit txn per event is supported.

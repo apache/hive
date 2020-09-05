@@ -84,7 +84,7 @@ public class TestRetryable {
   @Test
   public void testRetrySuccessValidExceptionList() throws Throwable {
     Retryable retryable = Retryable.builder()
-      .withTotalDuration(30)
+      .withTotalDuration(60)
       .withInitialDelay(1)
       .withBackoff(1.0)
       .withRetryOnExceptionList(Arrays.asList(NullPointerException.class, IOException.class)).build();

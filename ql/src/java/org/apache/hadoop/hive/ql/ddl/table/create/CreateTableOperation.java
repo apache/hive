@@ -107,15 +107,7 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
     Long writeId = 0L;
     EnvironmentContext environmentContext = null;
     if (replicationSpec != null && replicationSpec.isInReplicationScope()) {
-      if (replicationSpec.isMigratingToTxnTable()) {
-        // for migration we start the transaction and allocate write id in repl txn task for migration.
-        writeId = ReplUtils.getMigrationCurrentTblWriteId(context.getConf());
-        if (writeId == null) {
-          throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
-        }
-      } else {
-        writeId = desc.getReplWriteId();
-      }
+      writeId = desc.getReplWriteId();
 
       // In case of replication statistics is obtained from the source, so do not update those
       // on replica.

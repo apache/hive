@@ -263,7 +263,6 @@ public class LoadPartitions {
 
     boolean isOnlyDDLOperation = event.replicationSpec().isMetadataOnly()
         || (TableType.EXTERNAL_TABLE.equals(table.getTableType())
-        && !event.replicationSpec().isMigratingToExternalTable()
     );
 
     if (isOnlyDDLOperation) {
@@ -284,17 +283,8 @@ public class LoadPartitions {
     if (event.replicationSpec().isInReplicationScope() &&
             context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
       loadFileType = LoadFileType.IGNORE;
-      if (event.replicationSpec().isMigratingToTxnTable()) {
-        // Migrating to transactional tables in bootstrap load phase.
-        // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
-        // ReplTxnTask added earlier in the DAG ensure that the write-id=1 is made valid in HMS metadata.
-        stagingDir = new Path(stagingDir, AcidUtils.baseDir(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID));
-      }
     } else {
-       loadFileType = event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL :
-          (event.replicationSpec().isMigratingToTxnTable()
-              ? LoadFileType.KEEP_EXISTING
-              : LoadFileType.OVERWRITE_EXISTING);
+      loadFileType = event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
       stagingDir = PathUtils.getExternalTmpPath(replicaWarehousePartitionLocation, context.pathInfo);
     }
     boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
@@ -342,26 +332,11 @@ public class LoadPartitions {
                                     LoadFileType loadFileType) {
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
     if (AcidUtils.isTransactionalTable(table)) {
-      if (event.replicationSpec().isMigratingToTxnTable()) {
-        // Write-id is hardcoded to 1 so that for migration, we just move all original files under base_1 dir.
-        // ReplTxnTask added earlier in the DAG ensure that the write-id is made valid in HMS metadata.
-        LoadTableDesc loadTableWork = new LoadTableDesc(
-                tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
-                loadFileType, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID
-        );
-        loadTableWork.setInheritTableSpecs(false);
-        loadTableWork.setStmtId(0);
-
-        // Need to set insertOverwrite so base_1 is created instead of delta_1_1_0.
-        loadTableWork.setInsertOverwrite(true);
-        moveWork.setLoadTableWork(loadTableWork);
-      } else {
-        LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
-                Collections.singletonList(tmpPath),
-                Collections.singletonList(new Path(partSpec.getLocation())),
-                true, null, null);
-        moveWork.setMultiFilesDesc(loadFilesWork);
-      }
+      LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
+        Collections.singletonList(tmpPath),
+        Collections.singletonList(new Path(partSpec.getLocation())),
+        true, null, null);
+      moveWork.setMultiFilesDesc(loadFilesWork);
     } else {
       LoadTableDesc loadTableWork = new LoadTableDesc(
               tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
@@ -371,7 +346,6 @@ public class LoadPartitions {
       moveWork.setLoadTableWork(loadTableWork);
     }
     moveWork.setIsInReplicationScope(event.replicationSpec().isInReplicationScope());
-
     return TaskFactory.get(moveWork, context.hiveConf);
   }
 
@@ -387,9 +361,6 @@ public class LoadPartitions {
       throws MetaException, HiveException {
     String child = Warehouse.makePartPath(partSpec.getPartSpec());
     if (tableDesc.isExternal()) {
-      if (event.replicationSpec().isMigratingToExternalTable()) {
-        return new Path(tableDesc.getLocation(), child);
-      }
       String externalLocation =
           ReplExternalTables.externalTableLocation(context.hiveConf, partSpec.getLocation());
       return new Path(externalLocation);

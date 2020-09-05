@@ -67,8 +67,7 @@ public class TruncatePartitionHandler extends AbstractMessageHandler {
     updatedMetadata.set(context.dmd.getEventTo().toString(), tName.getDb(), tName.getTable(), partSpec);
 
     try {
-      return ReplUtils.addOpenTxnTaskForMigration(tName.getDb(), tName.getTable(),
-              context.hiveConf, updatedMetadata, truncatePtnTask, tblObj);
+      return ReplUtils.addChildTask(truncatePtnTask);
     } catch (Exception e) {
       throw new SemanticException(e.getMessage());
     }

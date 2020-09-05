@@ -46,8 +46,7 @@ public class TruncateTableHandler extends AbstractMessageHandler {
     updatedMetadata.set(context.dmd.getEventTo().toString(), tName.getDb(), tName.getTable(), null);
 
     try {
-      return ReplUtils.addOpenTxnTaskForMigration(tName.getDb(), tName.getTable(),
-              context.hiveConf, updatedMetadata, truncateTableTask, msg.getTableObjBefore());
+      return ReplUtils.addChildTask(truncateTableTask);
     } catch (Exception e) {
       throw new SemanticException(e.getMessage());
     }

@@ -4,6 +4,7 @@ set hive.test.mode.prefix=;
 set hive.test.mode.nosamplelist=replsrc,repldst;
 set metastore.try.direct.sql=false;
 set hive.metastore.rawstore.impl=org.apache.hadoop.hive.metastore.ObjectStore;
+set hive.repl.data.copy.lazy=false;
 
 drop table if exists replsrc;
 drop table if exists repldst;

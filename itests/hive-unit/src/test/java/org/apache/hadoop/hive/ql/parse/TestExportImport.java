@@ -55,6 +55,7 @@ public class TestExportImport {
     conf.set("dfs.client.use.datanode.hostname", "true");
     conf.set("hadoop.proxyuser." + Utils.getUGI().getShortUserName() + ".hosts", "*");
     conf.set("hive.repl.include.external.tables", "false");
+    conf.set(HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname, "false");
     MiniDFSCluster miniDFSCluster =
         new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
     HashMap<String, String> overridesForHiveConf = new HashMap<String, String>() {{
