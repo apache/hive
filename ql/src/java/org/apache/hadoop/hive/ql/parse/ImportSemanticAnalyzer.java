@@ -1198,6 +1198,10 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       // have been already created when replaying previous events. So no need to create table
       // again.
       if (x.getEventType() != DumpType.EVENT_COMMIT_TXN) {
+        //Don't set location for managed tables while creating the table.
+        if (x.getEventType() == DumpType.EVENT_CREATE_TABLE && !tblDesc.isExternal()) {
+          tblDesc.setLocation(null);
+        }
         Task t = createTableTask(tblDesc, x);
         if (dependentTasks != null) {
           dependentTasks.forEach(task -> t.addDependentTask(task));
