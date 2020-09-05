@@ -109,7 +109,7 @@ class CompactionTxnHandler extends TxnHandler {
         final String sCheckAborted = "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\","
             + "MIN(\"TXN_STARTED\"), COUNT(*)"
             + "FROM \"TXNS\", \"TXN_COMPONENTS\" "
-            + "WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = '" + TXN_ABORTED + "' "
+            + "WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = " + TxnStatus.ABORTED + " "
             + "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\""
             + (checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold);
 
@@ -462,7 +462,7 @@ class CompactionTxnHandler extends TxnHandler {
          * See {@link ql.txn.compactor.Cleaner.removeFiles()}
          */
         s = "SELECT DISTINCT \"TXN_ID\" FROM \"TXNS\", \"TXN_COMPONENTS\" WHERE \"TXN_ID\" = \"TC_TXNID\" "
-            + "AND \"TXN_STATE\" = '" + TXN_ABORTED + "' AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ?";
+            + "AND \"TXN_STATE\" = " + TxnStatus.ABORTED + " AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ?";
         if (info.highestWriteId != 0) s += " AND \"TC_WRITEID\" <= ?";
         if (info.partName != null) s += " AND \"TC_PARTITION\" = ?";
 
@@ -574,7 +574,7 @@ class CompactionTxnHandler extends TxnHandler {
 
         // If there are aborted txns, then the minimum aborted txnid could be the min_uncommitted_txnid
         // if lesser than both NEXT_TXN_ID.ntxn_next and min(MIN_HISTORY_LEVEL .mhl_min_open_txnid).
-        String s = "SELECT MIN(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + quoteChar(TXN_ABORTED);
+        String s = "SELECT MIN(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED;
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         if (rs.next()) {
@@ -626,7 +626,7 @@ class CompactionTxnHandler extends TxnHandler {
         stmt = dbConn.createStatement();
         String s = "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE " +
             "\"TXN_ID\" NOT IN (SELECT \"TC_TXNID\" FROM \"TXN_COMPONENTS\") AND " +
-            "\"TXN_STATE\" = '" + TXN_ABORTED + "'";
+            "\"TXN_STATE\" = " + TxnStatus.ABORTED;
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
         List<Long> txnids = new ArrayList<>();
@@ -868,7 +868,7 @@ class CompactionTxnHandler extends TxnHandler {
             quoteString(ci.tableName) + "," +
             (ci.partName == null ? "" : quoteString(ci.partName) + ",") +
             ci.highestWriteId + ", " +
-            quoteChar(OperationType.COMPACT.getSqlConst()) + ")";
+            OperationType.COMPACT + ")";
         if(LOG.isDebugEnabled()) {
           LOG.debug("About to execute: " + sqlText);
         }
