@@ -39,16 +39,14 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.EncryptionZoneUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.hive.shims.HadoopShims.HdfsEncryptionShim;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +57,6 @@ public class ReplChangeManager {
   private static boolean inited = false;
   private static boolean enabled = false;
   private static Map<String, String> encryptionZoneToCmrootMapping = new HashMap<>();
-  private HadoopShims hadoopShims;
   private static Configuration conf;
   private String msUser;
   private String msGroup;
@@ -158,7 +155,6 @@ public class ReplChangeManager {
         if (MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED)) {
           ReplChangeManager.enabled = true;
           ReplChangeManager.conf = conf;
-          hadoopShims = ShimLoader.getHadoopShims();
           cmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMDIR);
           encryptedCmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMENCRYPTEDDIR);
           fallbackNonEncryptedCmRootDir = MetastoreConf.getVar(conf, ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR);
@@ -171,12 +167,10 @@ public class ReplChangeManager {
           Path cmroot = new Path(cmRootDir);
           createCmRoot(cmroot);
           FileSystem cmRootFs = cmroot.getFileSystem(conf);
-          HdfsEncryptionShim pathEncryptionShim = hadoopShims
-                  .createHdfsEncryptionShim(cmRootFs, conf);
-          if (pathEncryptionShim.isPathEncrypted(cmroot)) {
+          if (EncryptionZoneUtils.isPathEncrypted(cmroot, conf)) {
             //If cm root is encrypted we keep using it for the encryption zone
             String encryptionZonePath = cmRootFs.getUri()
-                    + pathEncryptionShim.getEncryptionZoneForPath(cmroot).getPath();
+                    + EncryptionZoneUtils.getEncryptionZoneForPath(cmroot, conf).getPath();
             encryptionZoneToCmrootMapping.put(encryptionZonePath, cmRootDir);
           } else {
             encryptionZoneToCmrootMapping.put(NO_ENCRYPTION, cmRootDir);
@@ -187,7 +181,7 @@ public class ReplChangeManager {
               throw new MetaException(ConfVars.REPLCMENCRYPTEDDIR.getHiveName() + " should be absolute path");
             }
             createCmRoot(cmRootFallback);
-            if (pathEncryptionShim.isPathEncrypted(cmRootFallback)) {
+            if (EncryptionZoneUtils.isPathEncrypted(cmRootFallback, conf)) {
               throw new MetaException(ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.getHiveName()
                       + " should not be encrypted");
             }
@@ -574,10 +568,9 @@ public class ReplChangeManager {
     String cmrootDir = fallbackNonEncryptedCmRootDir;
     String encryptionZonePath = NO_ENCRYPTION;
     if (enabled) {
-      HdfsEncryptionShim pathEncryptionShim = hadoopShims.createHdfsEncryptionShim(path.getFileSystem(conf), conf);
-      if (pathEncryptionShim.isPathEncrypted(path)) {
+      if (EncryptionZoneUtils.isPathEncrypted(path, conf)) {
         encryptionZonePath = path.getFileSystem(conf).getUri()
-                + pathEncryptionShim.getEncryptionZoneForPath(path).getPath();
+                + EncryptionZoneUtils.getEncryptionZoneForPath(path, conf).getPath();
         //For encryption zone, create cm at the relative path specified by hive.repl.cm.encryptionzone.rootdir
         //at the root of the encryption zone
         cmrootDir = encryptionZonePath + Path.SEPARATOR + encryptedCmRootDir;

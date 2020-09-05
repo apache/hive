@@ -77,7 +77,7 @@ class InsertHandler extends AbstractEventHandler<InsertMessage> {
         withinContext.hiveConf);
     Iterable<String> files = eventMessage.getFiles();
 
-    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
 
     /*
       * Insert into/overwrite operation shall operate on one or more partitions or even partitions from multiple tables.

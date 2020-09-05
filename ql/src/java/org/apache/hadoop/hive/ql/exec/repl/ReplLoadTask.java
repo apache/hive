@@ -119,7 +119,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       if (shouldLoadAuthorizationMetadata()) {
         initiateAuthorizationLoadTask();
       }
-      LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY));
+      LOG.info("Data copy at load enabled : {}", conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET));
       if (work.isIncrementalLoad()) {
         return executeIncrementalLoad();
       } else {
@@ -344,7 +344,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   }
 
   private void addLazyDataCopyTask(TaskTracker loadTaskTracker) throws IOException {
-    boolean dataCopyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+    boolean dataCopyAtLoad = conf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     if (dataCopyAtLoad) {
       if (work.getExternalTableDataCopyItr() == null) {
         Path extTableBackingFile = new Path(work.dumpDirectory, EximUtil.FILE_LIST_EXTERNAL);

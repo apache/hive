@@ -32,10 +32,9 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.EncryptionZoneUtils;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hdfs.DFSTestUtil;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.ipc.RemoteException;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
@@ -65,7 +64,6 @@ public class TestMetaStoreMultipleEncryptionZones {
     private static MiniDFSCluster miniDFSCluster;
     private static String cmroot;
     private static FileSystem fs;
-    private static HadoopShims.HdfsEncryptionShim shimCm;
     private static String cmrootEncrypted;
     private static String jksFile = System.getProperty("java.io.tmpdir") + "/test.jks";
     private static String cmrootFallBack;
@@ -92,8 +90,6 @@ public class TestMetaStoreMultipleEncryptionZones {
         hiveConf.set(HiveConf.ConfVars.REPLCMENCRYPTEDDIR.varname, cmrootEncrypted);
         hiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmrootFallBack);
         initReplChangeManager();
-        //Create cm in encrypted zone
-        shimCm = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
 
         try {
             client = new HiveMetaStoreClient(hiveConf);
@@ -156,7 +152,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb1 = new Path(warehouse.getWhRoot(), dbName1 +".db");
         warehouseFs.delete(dirDb1, true);
         warehouseFs.mkdirs(dirDb1);
-        shimCm.createEncryptionZone(dirDb1, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirDb1, "test_key_db", conf);
         Path dirTbl1 = new Path(dirDb1, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -165,7 +161,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb2 = new Path(warehouse.getWhRoot(), dbName2 +".db");
         warehouseFs.delete(dirDb2, true);
         warehouseFs.mkdirs(dirDb2);
-        shimCm.createEncryptionZone(dirDb2, "test_key_cm");
+        EncryptionZoneUtils.createEncryptionZone(dirDb2, "test_key_cm", conf);
         Path dirTbl2 = new Path(dirDb2, tblName2);
         warehouseFs.mkdirs(dirTbl2);
         Path part12 = new Path(dirTbl2, "part1");
@@ -274,13 +270,13 @@ public class TestMetaStoreMultipleEncryptionZones {
         warehouseFs.mkdirs(dirDb);
         Path dirTbl1 = new Path(dirDb, tblName1);
         warehouseFs.mkdirs(dirTbl1);
-        shimCm.createEncryptionZone(dirTbl1, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
         Path part11 = new Path(dirTbl1, "part1");
         createFile(part11, "testClearer11");
 
         Path dirTbl2 = new Path(dirDb, tblName2);
         warehouseFs.mkdirs(dirTbl2);
-        shimCm.createEncryptionZone(dirTbl2, "test_key_cm");
+        EncryptionZoneUtils.createEncryptionZone(dirTbl2, "test_key_cm", conf);
         Path part12 = new Path(dirTbl2, "part1");
         createFile(part12, "testClearer12");
 
@@ -350,7 +346,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
         Path dirDb1 = new Path(warehouse.getWhRoot(), dbName1 +".db");
         warehouseFs.mkdirs(dirDb1);
-        shimCm.createEncryptionZone(dirDb1, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirDb1, "test_key_db", conf);
         Path dirTbl1 = new Path(dirDb1, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -358,7 +354,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
         Path dirDb2 = new Path(warehouse.getWhRoot(), dbName2 +".db");
         warehouseFs.mkdirs(dirDb2);
-        shimCm.createEncryptionZone(dirDb2, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirDb2, "test_key_db", conf);
         Path dirTbl2 = new Path(dirDb2, tblName2);
         warehouseFs.mkdirs(dirTbl2);
         Path part12 = new Path(dirTbl2, "part1");
@@ -465,7 +461,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
         warehouseFs.delete(dirDb, true);
         warehouseFs.mkdirs(dirDb);
-        shimCm.createEncryptionZone(dirDb, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirDb, "test_key_db", conf);
         Path dirTbl1 = new Path(dirDb, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -614,7 +610,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
         warehouseFs.delete(dirDb, true);
         warehouseFs.mkdirs(dirDb);
-        shimCm.createEncryptionZone(dirDb, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirDb, "test_key_db", conf);
         Path dirTbl1 = new Path(dirDb, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -707,13 +703,13 @@ public class TestMetaStoreMultipleEncryptionZones {
         warehouseFs.mkdirs(dirDb);
         Path dirTbl1 = new Path(dirDb, tblName1);
         warehouseFs.mkdirs(dirTbl1);
-        shimCm.createEncryptionZone(dirTbl1, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
         Path part11 = new Path(dirTbl1, "part1");
         createFile(part11, "testClearer11");
 
         Path dirTbl2 = new Path(dirDb, tblName2);
         warehouseFs.mkdirs(dirTbl2);
-        shimCm.createEncryptionZone(dirTbl2, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirTbl2, "test_key_db", conf);
         Path part12 = new Path(dirTbl2, "part1");
         createFile(part12, "testClearer12");
 
@@ -799,13 +795,13 @@ public class TestMetaStoreMultipleEncryptionZones {
         warehouseFs.mkdirs(dirDb);
         Path dirTbl1 = new Path(dirDb, tblName1);
         warehouseFs.mkdirs(dirTbl1);
-        shimCm.createEncryptionZone(dirTbl1, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
         Path part11 = new Path(dirTbl1, "part1");
         createFile(part11, "testClearer11");
 
         Path dirTbl2 = new Path(dirDb, tblName2);
         warehouseFs.mkdirs(dirTbl2);
-        shimCm.createEncryptionZone(dirTbl2, "test_key_cm");
+        EncryptionZoneUtils.createEncryptionZone(dirTbl2, "test_key_cm", conf);
         Path part12 = new Path(dirTbl2, "part1");
         createFile(part12, "testClearer12");
 
@@ -930,7 +926,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb1 = new Path(warehouse.getWhRoot(), dbName1 +".db");
         warehouseFs.delete(dirDb1, true);
         warehouseFs.mkdirs(dirDb1);
-        shimCm.createEncryptionZone(dirDb1, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirDb1, "test_key_db", conf);
         Path dirTbl1 = new Path(dirDb1, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -939,7 +935,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb2 = new Path(warehouse.getWhRoot(), dbName2 +".db");
         warehouseFs.delete(dirDb2, true);
         warehouseFs.mkdirs(dirDb2);
-        shimCm.createEncryptionZone(dirDb2, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirDb2, "test_key_db", conf);
         Path dirTbl2 = new Path(dirDb2, tblName2);
         warehouseFs.mkdirs(dirTbl2);
         Path part12 = new Path(dirTbl2, "part1");
@@ -1020,7 +1016,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
         Path dirDb1 = new Path(warehouse.getWhRoot(), dbName1 +".db");
         warehouseFs.mkdirs(dirDb1);
-        shimCm.createEncryptionZone(dirDb1, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirDb1, "test_key_db", conf);
         Path dirTbl1 = new Path(dirDb1, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -1028,7 +1024,7 @@ public class TestMetaStoreMultipleEncryptionZones {
 
         Path dirDb2 = new Path(warehouse.getWhRoot(), dbName2 +".db");
         warehouseFs.mkdirs(dirDb2);
-        shimCm.createEncryptionZone(dirDb2, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirDb2, "test_key_db", conf);
         Path dirTbl2 = new Path(dirDb2, tblName2);
         warehouseFs.mkdirs(dirTbl2);
         Path part12 = new Path(dirTbl2, "part1");
@@ -1125,7 +1121,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         Path dirDb = new Path(warehouse.getWhRoot(), dbName +".db");
         warehouseFs.delete(dirDb, true);
         warehouseFs.mkdirs(dirDb);
-        shimCm.createEncryptionZone(dirDb, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirDb, "test_key_db", conf);
         Path dirTbl1 = new Path(dirDb, tblName1);
         warehouseFs.mkdirs(dirTbl1);
         Path part11 = new Path(dirTbl1, "part1");
@@ -1233,7 +1229,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         warehouseFs.mkdirs(dirDb);
         Path dirTbl1 = new Path(dirDb, "tbl1");
         warehouseFs.mkdirs(dirTbl1);
-        shimCm.createEncryptionZone(dirTbl1, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
         Path part11 = new Path(dirTbl1, "part1");
         createFile(part11, "testClearer11");
 
@@ -1262,7 +1258,6 @@ public class TestMetaStoreMultipleEncryptionZones {
         FileSystem cmfs = new Path(cmrootCmClearer).getFileSystem(hiveConfCmClearer);
         cmfs.mkdirs(warehouseCmClearer.getWhRoot());
 
-        HadoopShims.HdfsEncryptionShim shimCmEncrypted = ShimLoader.getHadoopShims().createHdfsEncryptionShim(cmfs, conf);
 
         FileSystem fsWarehouse = warehouseCmClearer.getWhRoot().getFileSystem(hiveConfCmClearer);
         long now = System.currentTimeMillis();
@@ -1271,7 +1266,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         fsWarehouse.mkdirs(dirDb);
         Path dirTbl1 = new Path(dirDb, "tbl1");
         fsWarehouse.mkdirs(dirTbl1);
-        shimCmEncrypted.createEncryptionZone(dirTbl1, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
         Path part11 = new Path(dirTbl1, "part1");
         createFile(part11, "testClearer11");
         String fileChksum11 = ReplChangeManager.checksumFor(part11, fsWarehouse);
@@ -1280,7 +1275,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         String fileChksum12 = ReplChangeManager.checksumFor(part12, fsWarehouse);
         Path dirTbl2 = new Path(dirDb, "tbl2");
         fsWarehouse.mkdirs(dirTbl2);
-        shimCmEncrypted.createEncryptionZone(dirTbl2, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirTbl2, "test_key_db", conf);
         Path part21 = new Path(dirTbl2, "part1");
         createFile(part21, "testClearer21");
         String fileChksum21 = ReplChangeManager.checksumFor(part21, fsWarehouse);
@@ -1289,7 +1284,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         String fileChksum22 = ReplChangeManager.checksumFor(part22, fsWarehouse);
         Path dirTbl3 = new Path(dirDb, "tbl3");
         fsWarehouse.mkdirs(dirTbl3);
-        shimCmEncrypted.createEncryptionZone(dirTbl3, "test_key_cm");
+        EncryptionZoneUtils.createEncryptionZone(dirTbl3, "test_key_cm", conf);
         Path part31 = new Path(dirTbl3, "part1");
         createFile(part31, "testClearer31");
         String fileChksum31 = ReplChangeManager.checksumFor(part31, fsWarehouse);
@@ -1371,8 +1366,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         encryptedHiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmrootFallBack);
 
         //Create cm in encrypted zone
-        HadoopShims.HdfsEncryptionShim shimCmEncrypted = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
-        shimCmEncrypted.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db", conf);
         ReplChangeManager.resetReplChangeManagerInstance();
         Warehouse warehouseEncrypted = new Warehouse(encryptedHiveConf);
         FileSystem warehouseFsEncrypted = warehouseEncrypted.getWhRoot().getFileSystem(encryptedHiveConf);
@@ -1384,7 +1378,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         warehouseFsEncrypted.mkdirs(dirDb);
         Path dirTbl1 = new Path(dirDb, "tbl1");
         warehouseFsEncrypted.mkdirs(dirTbl1);
-        shimCmEncrypted.createEncryptionZone(dirTbl1, "test_key_db");
+        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
         Path part11 = new Path(dirTbl1, "part1");
         createFile(part11, "testClearer11");
 
@@ -1436,9 +1430,8 @@ public class TestMetaStoreMultipleEncryptionZones {
             encryptedHiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmRootFallbackEncrypted);
 
             //Create cm in encrypted zone
-            HadoopShims.HdfsEncryptionShim shimCmEncrypted = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
-            shimCmEncrypted.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db");
-            shimCmEncrypted.createEncryptionZone(new Path(cmRootFallbackEncrypted), "test_key_db");
+            EncryptionZoneUtils.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db", conf);
+            EncryptionZoneUtils.createEncryptionZone(new Path(cmRootFallbackEncrypted), "test_key_db", conf);
             ReplChangeManager.resetReplChangeManagerInstance();
             boolean exceptionThrown = false;
             try {
@@ -1474,8 +1467,7 @@ public class TestMetaStoreMultipleEncryptionZones {
             encryptedHiveConf.set(HiveConf.ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.varname, cmRootFallbackEncrypted);
 
             //Create cm in encrypted zone
-            HadoopShims.HdfsEncryptionShim shimCmEncrypted = ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, conf);
-            shimCmEncrypted.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db");
+            EncryptionZoneUtils.createEncryptionZone(new Path(cmrootdirEncrypted), "test_key_db", conf);
 
             ReplChangeManager.resetReplChangeManagerInstance();
             boolean exceptionThrown = false;

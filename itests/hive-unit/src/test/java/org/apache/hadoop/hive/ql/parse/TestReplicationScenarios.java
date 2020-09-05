@@ -183,7 +183,7 @@ public class TestReplicationScenarios {
     hconf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, true);
     hconf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, true);
     hconf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE, true);
-    hconf.setBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY, false);
+    hconf.setBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET, false);
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
@@ -605,7 +605,7 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + ".ptned_empty", empty, driver);
     verifySetup("SELECT * from " + dbName + ".unptned_empty", empty, driver);
 
-    String lazyCopyClause = " with ('" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname  + "'='true')";
+    String lazyCopyClause = " with ('" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname  + "'='true')";
 
     advanceDumpDir();
     run("REPL DUMP " + dbName + lazyCopyClause, driver);
@@ -1654,7 +1654,7 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName
             + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
-    List<String> lazyCopyClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'");
+    List<String> lazyCopyClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName, lazyCopyClause);
 
     String[] unptnData = new String[] {"eleven", "twelve"};
