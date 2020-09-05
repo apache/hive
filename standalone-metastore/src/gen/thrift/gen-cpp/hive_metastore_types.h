@@ -828,6 +828,8 @@ class ReplicationMetricList;
 
 class GetReplicationMetricsRequest;
 
+class GetOpenTxnsRequest;
+
 class MetaException;
 
 class UnknownTableException;
@@ -17262,6 +17264,46 @@ class GetReplicationMetricsRequest {
 void swap(GetReplicationMetricsRequest &a, GetReplicationMetricsRequest &b);
 
 inline std::ostream& operator<<(std::ostream& out, const GetReplicationMetricsRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+class GetOpenTxnsRequest {
+ public:
+
+  GetOpenTxnsRequest(const GetOpenTxnsRequest&);
+  GetOpenTxnsRequest& operator=(const GetOpenTxnsRequest&);
+  GetOpenTxnsRequest() {
+  }
+
+  virtual ~GetOpenTxnsRequest() throw();
+  std::vector<TxnType::type>  excludeTxnTypes;
+
+  void __set_excludeTxnTypes(const std::vector<TxnType::type> & val);
+
+  bool operator == (const GetOpenTxnsRequest & rhs) const
+  {
+    if (!(excludeTxnTypes == rhs.excludeTxnTypes))
+      return false;
+    return true;
+  }
+  bool operator != (const GetOpenTxnsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const GetOpenTxnsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(GetOpenTxnsRequest &a, GetOpenTxnsRequest &b);
+
+inline std::ostream& operator<<(std::ostream& out, const GetOpenTxnsRequest& obj)
 {
   obj.printTo(out);
   return out;

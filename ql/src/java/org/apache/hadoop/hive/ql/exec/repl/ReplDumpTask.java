@@ -37,11 +37,14 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
+import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
+import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
 import org.apache.hadoop.hive.metastore.utils.Retry;
-import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -50,6 +53,8 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.lockmgr.DbLockManager;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -91,7 +96,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
@@ -106,6 +110,7 @@ import java.util.Base64;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.Writer;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZER;
@@ -970,6 +975,33 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return openTxns;
   }
 
+  List<Long> getOpenTxns(ValidTxnList validTxnList, String dbName) throws LockException {
+    HiveLockManager lockManager = getTxnMgr().getLockManager();
+    long[] invalidTxns = validTxnList.getInvalidTransactions();
+    List<Long> openTxns = new ArrayList<>();
+    Set<Long> dbTxns = new HashSet<>();
+    if (lockManager instanceof DbLockManager) {
+      ShowLocksRequest request = new ShowLocksRequest();
+      request.setDbname(dbName.toLowerCase());
+      ShowLocksResponse showLocksResponse = ((DbLockManager)lockManager).getLocks(request);
+      for (ShowLocksResponseElement showLocksResponseElement : showLocksResponse.getLocks()) {
+        dbTxns.add(showLocksResponseElement.getTxnid());
+      }
+      for (long invalidTxn : invalidTxns) {
+        if (dbTxns.contains(invalidTxn) && !validTxnList.isTxnAborted(invalidTxn)) {
+          openTxns.add(invalidTxn);
+        }
+      }
+    } else {
+      for (long invalidTxn : invalidTxns) {
+        if (!validTxnList.isTxnAborted(invalidTxn)) {
+          openTxns.add(invalidTxn);
+        }
+      }
+    }
+    return openTxns;
+  }
+
   // Get list of valid transactions for Repl Dump. Also wait for a given amount of time for the
   // open transactions to finish. Abort any open transactions after the wait is over.
   String getValidTxnListForReplDump(Hive hiveDb, long waitUntilTime) throws HiveException {
@@ -981,7 +1013,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // phase won't be able to replicate those txns. So, the logic is to wait for the given amount
     // of time to see if all open txns < current txn is getting aborted/committed. If not, then
     // we forcefully abort those txns just like AcidHouseKeeperService.
-    ValidTxnList validTxnList = getTxnMgr().getValidTxns();
+    //Exclude readonly and repl created tranasactions
+    List<TxnType> excludedTxns = Arrays.asList(TxnType.READ_ONLY, TxnType.REPL_CREATED);
+    ValidTxnList validTxnList = getTxnMgr().getValidTxns(excludedTxns);
     while (System.currentTimeMillis() < waitUntilTime) {
       // If there are no txns which are open for the given ValidTxnList snapshot, then just return it.
       if (getOpenTxns(validTxnList).isEmpty()) {
@@ -994,20 +1028,27 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       } catch (InterruptedException e) {
         LOG.info("REPL DUMP thread sleep interrupted", e);
       }
-      validTxnList = getTxnMgr().getValidTxns();
+      validTxnList = getTxnMgr().getValidTxns(excludedTxns);
     }
 
     // After the timeout just force abort the open txns
-    List<Long> openTxns = getOpenTxns(validTxnList);
-    if (!openTxns.isEmpty()) {
-      hiveDb.abortTransactions(openTxns);
-      validTxnList = getTxnMgr().getValidTxns();
-      if (validTxnList.getMinOpenTxn() != null) {
-        openTxns = getOpenTxns(validTxnList);
-        LOG.warn("REPL DUMP unable to force abort all the open txns: {} after timeout due to unknown reasons. " +
-                "However, this is rare case that shouldn't happen.", openTxns);
-        throw new IllegalStateException("REPL DUMP triggered abort txns failed for unknown reasons.");
+    if (conf.getBoolVar(REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT)) {
+      List<Long> openTxns = getOpenTxns(validTxnList, work.dbNameOrPattern);
+      if (!openTxns.isEmpty()) {
+        //abort only write transactions for the db under replication if abort transactions is enabled.
+        hiveDb.abortTransactions(openTxns);
+        validTxnList = getTxnMgr().getValidTxns(excludedTxns);
+        openTxns = getOpenTxns(validTxnList, work.dbNameOrPattern);
+        if (!openTxns.isEmpty()) {
+          LOG.warn("REPL DUMP unable to force abort all the open txns: {} after timeout due to unknown reasons. " +
+            "However, this is rare case that shouldn't happen.", openTxns);
+          throw new IllegalStateException("REPL DUMP triggered abort txns failed for unknown reasons.");
+        }
       }
+    } else {
+      LOG.warn("Force abort all the open txns is disabled after timeout");
+      throw new IllegalStateException("REPL DUMP cannot proceed. Force abort all the open txns is disabled. Enable " +
+        "hive.repl.bootstrap.dump.abort.write.txn.after.timeout to proceed.");
     }
     return validTxnList.toString();
   }

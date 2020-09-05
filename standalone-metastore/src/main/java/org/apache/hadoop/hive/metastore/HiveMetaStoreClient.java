@@ -3438,6 +3438,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public ValidTxnList getValidTxns(long currentTxn, List<TxnType> excludeTxnTypes) throws TException {
+    return TxnUtils.createValidReadTxnList(client.get_open_txns_req(new GetOpenTxnsRequest(excludeTxnTypes)),
+      currentTxn);
+  }
+
+  @Override
   public ValidWriteIdList getValidWriteIds(String fullTableName) throws TException {
     GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(Collections.singletonList(fullTableName));
     GetValidWriteIdsResponse validWriteIds = getValidWriteIdsInternal(rqst);

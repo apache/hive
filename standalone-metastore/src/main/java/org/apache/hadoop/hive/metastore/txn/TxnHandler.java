@@ -393,6 +393,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     return getOpenTxnsList(false).toOpenTxnsResponse();
   }
 
+  @Override
+  @RetrySemantics.ReadOnly
+  public GetOpenTxnsResponse getOpenTxns(List<TxnType> excludeTxnTypes) throws MetaException {
+    return getOpenTxnsList(false).toOpenTxnsResponse(excludeTxnTypes);
+  }
+
   private OpenTxnList getOpenTxnsList(boolean infoFields) throws MetaException {
     try {
       // We need to figure out the current transaction number and the list of

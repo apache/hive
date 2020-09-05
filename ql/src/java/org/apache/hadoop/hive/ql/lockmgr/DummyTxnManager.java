@@ -282,6 +282,11 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
+  public ValidTxnList getValidTxns(List<TxnType> excludeTxnTypes) throws LockException {
+    return new ValidReadTxnList();
+  }
+
+  @Override
   public ValidTxnWriteIdList getValidWriteIds(List<String> tableList,
                                               String validTxnList) throws LockException {
     return new ValidTxnWriteIdList(getCurrentTxnId());
