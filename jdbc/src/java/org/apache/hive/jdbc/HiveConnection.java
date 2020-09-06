@@ -914,7 +914,7 @@ public class HiveConnection implements java.sql.Connection {
       Stream.of(ConfVars.values()).forEach(conf -> {
         String key = JdbcConnectionParams.HIVE_CONF_PREFIX + conf.varname;
         // Update Server HiveConf, only if it's not already set from the client.
-        if (!connParams.getHiveConfs().containsKey(key)) {
+        if (serverHiveConf.containsKey(conf.varname) && !connParams.getHiveConfs().containsKey(key)) {
           connParams.getHiveConfs().put(key, serverHiveConf.get(conf.varname));
         }
       });

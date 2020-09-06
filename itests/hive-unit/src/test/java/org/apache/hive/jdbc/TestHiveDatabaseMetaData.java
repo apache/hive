@@ -39,31 +39,20 @@ import static org.junit.Assert.*;
  */
 public class TestHiveDatabaseMetaData {
 
-  private static Map<String, String> map = new LinkedHashMap<String, String>();
-  private static JdbcConnectionParams jdbcConnectionParams = new JdbcConnectionParams();
-  private static HiveDatabaseMetaData hiveDatabaseMetaData;
-  private static HiveConnection connection = new HiveConnection();
+  private Map<String, String> map = new LinkedHashMap<String, String>();
+  private JdbcConnectionParams jdbcConnectionParams = new JdbcConnectionParams();
+  private HiveDatabaseMetaData hiveDatabaseMetaData;
+  private HiveConnection connection = new HiveConnection();
 
   @Before
-  public static void setup() throws Exception {
+  public void setup() throws Exception {
     jdbcConnectionParams.setHiveConfs(map);
     connection.setConnParams(jdbcConnectionParams);
     hiveDatabaseMetaData = new HiveDatabaseMetaData(connection, null, null);
   }
 
-
   @Test
-  public void test() throws SQLException {
-    // We need to invoke all the tests inside a single method, since JdbcConnectionParams is a static class
-    // and that can affect the results, especially when tests are run in parallel.
-    testHiveConnectionUdateServerHiveConf();
-    testGetHiveDefaultNullsLastNullConfig();
-    testGetHiveDefaultNullsLast();
-    testNullsAreSortedHigh();
-    testNullsAreSortedLow();
-  }
-
-  public static void testGetHiveDefaultNullsLastNullConfig() {
+  public void testGetHiveDefaultNullsLastNullConfig() {
     map.remove(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY);
     try {
       hiveDatabaseMetaData.nullsAreSortedLow();
@@ -73,7 +62,8 @@ public class TestHiveDatabaseMetaData {
     }
   }
 
-  public static void testGetHiveDefaultNullsLast() throws SQLException {
+  @Test
+  public void testGetHiveDefaultNullsLast() throws SQLException {
     map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
     assertTrue(hiveDatabaseMetaData.getHiveDefaultNullsLast(map));
 
@@ -82,21 +72,24 @@ public class TestHiveDatabaseMetaData {
 
   }
 
-  public static void testNullsAreSortedHigh() throws SQLException {
+  @Test
+  public void testNullsAreSortedHigh() throws SQLException {
     map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
     assertFalse(hiveDatabaseMetaData.nullsAreSortedHigh());
     map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
     assertTrue(hiveDatabaseMetaData.nullsAreSortedHigh());
   }
 
-  public static void testNullsAreSortedLow() throws SQLException {
+  @Test
+  public void testNullsAreSortedLow() throws SQLException {
     map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "false");
     assertTrue(hiveDatabaseMetaData.nullsAreSortedLow());
     map.put(Utils.JdbcConnectionParams.HIVE_DEFAULT_NULLS_LAST_KEY, "true");
     assertFalse(hiveDatabaseMetaData.nullsAreSortedLow());
   }
 
-  public static void testHiveConnectionUdateServerHiveConf() {
+  @Test
+  public void testHiveConnectionUdateServerHiveConf() {
     Map<String, String> serverHiveConf = new HashMap<>();
     serverHiveConf.put("hive.server2.thrift.resultset.default.fetch.size", Integer.toString(87));
     serverHiveConf.put("hive.default.nulls.last", "false");
