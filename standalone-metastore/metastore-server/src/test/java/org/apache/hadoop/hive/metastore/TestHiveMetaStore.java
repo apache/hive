@@ -1175,7 +1175,7 @@ public abstract class TestHiveMetaStore {
     silentDropDatabase(TEST_DB1_NAME);
 
     String dbLocation =
-        MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test/_testDB_create_";
+      MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test/_testDB_create_";
     FileSystem fs = FileSystem.get(new Path(dbLocation).toUri(), conf);
     fs.mkdirs(
         new Path(MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/test"),
@@ -2105,12 +2105,11 @@ public abstract class TestHiveMetaStore {
       silentDropDatabase(dbName);
 
       String extWarehouse =  MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL);
-      LOG.info("external warehouse set to:" + extWarehouse);
       if (extWarehouse == null || extWarehouse.trim().isEmpty()) {
         extWarehouse = "/tmp/external";
       }
       String dbLocation =
-          extWarehouse + "/_testDB_table_database_";
+        MetastoreConf.getVar(conf, ConfVars.WAREHOUSE_EXTERNAL) + "/_testDB_table_database_";
       String mgdLocation =
           MetastoreConf.getVar(conf, ConfVars.WAREHOUSE) + "/_testDB_table_database_";
       new DatabaseBuilder()
