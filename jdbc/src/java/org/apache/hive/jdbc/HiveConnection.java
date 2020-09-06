@@ -913,7 +913,7 @@ public class HiveConnection implements java.sql.Connection {
       // Iterate over all Server configurations.
       Stream.of(ConfVars.values()).forEach(conf -> {
         String key = JdbcConnectionParams.HIVE_CONF_PREFIX + conf.varname;
-        // Update Server HiveConf, only if it's not already set from the client.
+        // Update Server HiveConf, only if a given configuration is not already set from the client.
         if (serverHiveConf.containsKey(conf.varname) && !connParams.getHiveConfs().containsKey(key)) {
           connParams.getHiveConfs().put(key, serverHiveConf.get(conf.varname));
         }
