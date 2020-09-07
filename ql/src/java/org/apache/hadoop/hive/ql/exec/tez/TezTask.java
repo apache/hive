@@ -517,7 +517,7 @@ public class TezTask extends Task<TezWork> {
           wx.setConf(TEZ_MEMORY_RESERVE_FRACTION, Double.toString(frac));
         } // Otherwise just leave it up to Tez to decide how much memory to allocate
         dag.addVertex(wx);
-        utils.addCredentials(workUnit, dag);
+        utils.addCredentials(workUnit, dag, conf);
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + workUnit.getName());
         workToVertex.put(workUnit, wx);
         workToConf.put(workUnit, wxConf);

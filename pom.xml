@@ -182,6 +182,7 @@
     <jodd.version>3.5.2</jodd.version>
     <json.version>1.8</json.version>
     <junit.version>4.11</junit.version>
+    <kafka.version>2.4.1.7.1.4.0-SNAPSHOT</kafka.version>
     <kryo.version>3.0.3</kryo.version>
     <kudu.version>1.10.0</kudu.version>
     <!-- Leaving libfb303 at 0.9.3 regardless of libthrift: As per THRIFT-4613 The Apache Thrift project does not publish items related to fb303 at this point -->

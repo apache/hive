@@ -859,6 +859,17 @@
       <version>${jersey.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+      <version>${kafka.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.shiro</groupId>
+          <artifactId>shiro-crypto-cipher</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>findbugs-annotations</artifactId>
       <version>3.0.1</version>
