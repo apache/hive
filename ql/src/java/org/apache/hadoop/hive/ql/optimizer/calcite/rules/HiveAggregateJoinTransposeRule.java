@@ -299,7 +299,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
 
       RelNode r = relBuilder.build();
       boolean transform = false;
-      if (uniqueBased) {
+      if (uniqueBased && aggConvertedToProjects) {
         transform = isGroupingUnique(join, aggregate.getGroupSet());
       }
       if (!transform && costBased) {
