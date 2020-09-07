@@ -37,6 +37,7 @@ import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.AggregateJoinTransposeRule;
 import org.apache.calcite.rel.type.RelDataType;
@@ -302,6 +303,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
       if (shouldForceTransform || afterCost.isLt(beforeCost)) {
         call.transformTo(r);
       }
+
     } catch (Exception e) {
       if (noColsMissingStats.get() > 0) {
         LOG.warn("Missing column stats (see previous messages), skipping aggregate-join transpose in CBO");
@@ -352,6 +354,18 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
           return true;
         }
       }
+    }
+    if (input instanceof Project) {
+      Project project = (Project) input;
+      ImmutableBitSet.Builder newGroup = ImmutableBitSet.builder();
+      for (int g : groups.asList()) {
+        RexNode rex = project.getChildExps().get(g);
+        if (rex instanceof RexInputRef) {
+          RexInputRef rexInputRef = (RexInputRef) rex;
+          newGroup.set(rexInputRef.getIndex());
+        }
+      }
+      return isGroupingUnique(project.getInput(), newGroup.build());
     }
     return false;
   }
