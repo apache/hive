@@ -181,9 +181,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         if (unique) {
           ++uniqueCount;
           relBuilder.push(joinInput);
-          if (!belowAggregateKey.equals(fieldSet)) {
-            relBuilder.project(belowAggregateKey.asList().stream().map(relBuilder::field).collect(Collectors.toList()));
-          }
+          relBuilder.project(belowAggregateKey.asList().stream().map(relBuilder::field).collect(Collectors.toList()));
           side.newInput = relBuilder.build();
         } else {
           List<AggregateCall> belowAggCalls = new ArrayList<>();
