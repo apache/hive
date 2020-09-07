@@ -363,4 +363,7 @@ public class HiveAlgorithmsUtil {
     return mq.splitCount(largeInput);
   }
 
+  public double getCpuUnitCost() {
+    return cpuUnitCost;
+  }
 }
