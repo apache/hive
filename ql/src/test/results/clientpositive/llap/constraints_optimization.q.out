@@ -2689,7 +2689,7 @@ POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(c_customer_id=[$1])
-  HiveSemiJoin(condition=[=($0, $2)], joinType=[inner])
+  HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
     HiveProject(c_customer_sk=[$0], c_customer_id=[$1])
       HiveTableScan(table=[[default, customer]], table:alias=[customer])
     HiveProject(c_customer_sk=[$0])
@@ -2743,7 +2743,7 @@ POSTHOOK: Input: default@store_sales
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(c_first_name=[$1])
-  HiveSemiJoin(condition=[=($0, $2)], joinType=[inner])
+  HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
     HiveProject(c_customer_sk=[$0], c_first_name=[$8])
       HiveTableScan(table=[[default, customer]], table:alias=[customer])
     HiveProject(c_customer_sk=[$0])

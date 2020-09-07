@@ -156,7 +156,7 @@ POSTHOOK: Output: default@acidtlb
 CBO PLAN:
 HiveSortExchange(distribution=[any], collation=[[0]])
   HiveProject(row__id=[$1], a=[$0], _o__c2=[450])
-    HiveSemiJoin(condition=[=($0, $2)], joinType=[inner])
+    HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
       HiveProject(a=[$0], ROW__ID=[$4])
         HiveFilter(condition=[<($0, 65)])
           HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])
@@ -209,7 +209,7 @@ POSTHOOK: Output: default@acidtlb
 CBO PLAN:
 HiveSortExchange(distribution=[any], collation=[[0]])
   HiveProject(ROW__ID=[$1])
-    HiveSemiJoin(condition=[=($0, $2)], joinType=[inner])
+    HiveSemiJoin(condition=[=($0, $2)], joinType=[semi])
       HiveProject(a=[$0], ROW__ID=[$4])
         HiveFilter(condition=[IS NOT NULL($0)])
           HiveTableScan(table=[[default, acidtlb]], table:alias=[acidtlb])

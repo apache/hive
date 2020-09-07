@@ -392,7 +392,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (XPROD_EDGE), Reducer 5 (XPROD_EDGE)
-        Reducer 3 <- Map 6 (XPROD_EDGE), Reducer 2 (XPROD_EDGE)
+        Reducer 3 <- Map 4 (XPROD_EDGE), Reducer 2 (XPROD_EDGE)
         Reducer 5 <- Map 4 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -439,17 +439,6 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 196 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: bigint)
-            Execution mode: vectorized, llap
-            LLAP IO: no inputs
-        Map 6 
-            Map Operator Tree:
-                TableScan
-                  alias: part_null_n0
-                  filterExpr: p_name is null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: p_name is null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                       Limit
