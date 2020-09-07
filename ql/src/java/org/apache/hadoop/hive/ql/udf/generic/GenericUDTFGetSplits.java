@@ -474,7 +474,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
           DagUtils.createTezLrMap(appJarLr, null));
       String vertexName = wx.getName();
       dag.addVertex(wx);
-      utils.addCredentials(mapWork, dag);
+      utils.addCredentials(mapWork, dag, job);
 
 
       // we have the dag now proceed to get the splits:
