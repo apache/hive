@@ -275,7 +275,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       } catch (HiveException e) {
         throw new RuntimeException(e);
       }
-      try (IDriver d = DriverFactory.newDriver(hiveConf)) {
+      QueryState qs = new QueryState.Builder().withHiveConf(hiveConf).nonIsolated().build();
+      try (Driver d = new Driver(qs)) {
         LOG.info("Ready to run the query: " + query);
         syncThreadStart(cdlIn, cdlOut);
         try {
@@ -425,12 +426,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     stats = getTxnTableStats(msClient, tableName);
     boolean hasStats = 0 != stats.size();
     if (hasStats) {
-      // Either the truncate run before or the analyze
-      if (stats.get(0).getStatsData().getLongStats().getNumDVs() > 0) {
-        verifyLongStats(1, 0, 0, stats);
-      } else {
-        verifyLongStats(0, 0, 0, stats);
-      }
+      verifyLongStats(0, 0, 0, stats);
     }
 
     // Stats should be valid after analyze.

@@ -94,7 +94,7 @@ class DriverTxnHandler {
   private Context context;
   private Runnable txnRollbackRunner;
 
-  DriverTxnHandler(Driver driver, DriverContext driverContext, DriverState driverState) {
+  DriverTxnHandler(DriverContext driverContext, DriverState driverState) {
     this.driverContext = driverContext;
     this.driverState = driverState;
   }
@@ -318,7 +318,7 @@ class DriverTxnHandler {
    *  Write the current set of valid write ids for the operated acid tables into the configuration so
    *  that it can be read by the input format.
    */
-  private ValidTxnWriteIdList recordValidWriteIds() throws LockException {
+  ValidTxnWriteIdList recordValidWriteIds() throws LockException {
     String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
     if (Strings.isNullOrEmpty(txnString)) {
       throw new IllegalStateException("calling recordValidWritsIdss() without initializing ValidTxnList " +
@@ -380,32 +380,12 @@ class DriverTxnHandler {
     }
   }
 
-  void validateTxnListState() throws CommandProcessorException {
-    try {
-      if (!isValidTxnListState()) {
-        LOG.warn("Reexecuting after acquiring locks, since snapshot was outdated.");
-        // Snapshot was outdated when locks were acquired, hence regenerate context,
-        // txn list and retry (see ReExecutionRetryLockPlugin)
-        try {
-          endTransactionAndCleanup(false);
-        } catch (LockException e) {
-          DriverUtils.handleHiveException(driverContext, e, 12, null);
-        }
-        HiveException e = new HiveException(
-            "Operation could not be executed, " + Driver.SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + ".");
-        DriverUtils.handleHiveException(driverContext, e, 14, null);
-      }
-    } catch (LockException e) {
-      DriverUtils.handleHiveException(driverContext, e, 13, null);
-    }
-  }
-  
   /**
    * Checks whether txn list has been invalidated while planning the query.
    * This would happen if query requires exclusive/semi-shared lock, and there has been a committed transaction
    * on the table over which the lock is required.
    */
-  private boolean isValidTxnListState() throws LockException {
+  boolean isValidTxnListState() throws LockException {
     // 1) Get valid txn list.
     String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
     if (txnString == null) {
@@ -493,6 +473,7 @@ class DriverTxnHandler {
           // Check if there was a conflicting write between current SNAPSHOT generation and locking.
           if (currentWriteIdList.isWriteIdRangeValid(writeIdList.getHighWatermark() + 1,
               currentWriteIdList.getHighWatermark()) != ValidWriteIdList.RangeResponse.NONE) {
+            driverContext.setOutdatedTxn(true);
             return false;
           }
           // Check that write id is still valid

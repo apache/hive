@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -71,10 +72,6 @@ public class Driver implements IDriver {
   private static final String CLASS_NAME = Driver.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final LogHelper CONSOLE = new LogHelper(LOG);
-
-  // Exception message that ReExecutionRetryLockPlugin will recognize
-  public static final String SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED =
-      "snapshot was outdated when locks were acquired";
 
   private int maxRows = 100;
   private ByteStream.Output bos = new ByteStream.Output();
@@ -137,13 +134,13 @@ public class Driver implements IDriver {
   public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager) {
     driverContext = new DriverContext(queryState, queryInfo, new HookRunner(queryState.getConf(), CONSOLE),
         txnManager);
-    driverTxnHandler = new DriverTxnHandler(this, driverContext, driverState);
+    driverTxnHandler = new DriverTxnHandler(driverContext, driverState);
   }
 
   /**
    * Compiles a new HQL command, but potentially resets taskID counter. Not resetting task counter is useful for
    * generating re-entrant QL queries.
-   * 
+   *
    * @param command  The HiveQL query to compile
    * @param resetTaskIds Resets taskID counter if true.
    * @return 0 for ok
@@ -159,7 +156,7 @@ public class Driver implements IDriver {
 
   /**
    * Compiles an HQL command, creates an execution plan for it.
-   * 
+   *
    * @param deferClose indicates if the close/destroy should be deferred when the process has been interrupted, it
    *        should be set to true if the compile is called within another method like runInternal, which defers the
    *        close to the called in that method.
@@ -490,7 +487,57 @@ public class Driver implements IDriver {
       DriverUtils.checkInterrupted(driverState, driverContext, "at acquiring the lock.", null, null);
 
       lockAndRespond();
-      driverTxnHandler.validateTxnListState();
+
+      try {
+        if (!driverTxnHandler.isValidTxnListState()) {
+          LOG.info("Compiling after acquiring locks");
+          // Snapshot was outdated when locks were acquired, hence regenerate context,
+          // txn list and retry
+          // TODO: Lock acquisition should be moved before analyze, this is a bit hackish.
+          // Currently, we acquire a snapshot, we compile the query wrt that snapshot,
+          // and then, we acquire locks. If snapshot is still valid, we continue as usual.
+          // But if snapshot is not valid, we recompile the query.
+          if (driverContext.isOutdatedTxn()) {
+            driverContext.getTxnManager().rollbackTxn();
+
+            String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
+            driverContext.getTxnManager().openTxn(context, userFromUGI, driverContext.getTxnType());
+            lockAndRespond();
+          }
+          driverContext.setRetrial(true);
+          driverContext.getBackupContext().addSubContext(context);
+          driverContext.getBackupContext().setHiveLocks(context.getHiveLocks());
+          context = driverContext.getBackupContext();
+          driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
+            driverContext.getTxnManager().getValidTxns().toString());
+          if (driverContext.getPlan().hasAcidResourcesInQuery()) {
+            driverTxnHandler.recordValidWriteIds();
+          }
+
+          if (!alreadyCompiled) {
+            // compile internal will automatically reset the perf logger
+            compileInternal(command, true);
+          } else {
+            // Since we're reusing the compiled plan, we need to update its start time for current run
+            driverContext.getPlan().setQueryStartTime(driverContext.getQueryDisplay().getQueryStartTime());
+          }
+
+          if (!driverTxnHandler.isValidTxnListState()) {
+            // Throw exception
+            DriverUtils.handleHiveException(driverContext, new HiveException("Operation could not be executed"), 14, null);
+          }
+
+          //Reset the PerfLogger
+          perfLogger = SessionState.getPerfLogger(true);
+
+          // the reason that we set the txn manager for the cxt here is because each
+          // query has its own ctx object. The txn mgr is shared across the
+          // same instance of Driver, which can run multiple queries.
+          context.setHiveTxnManager(driverContext.getTxnManager());
+        }
+      } catch (LockException e) {
+        DriverUtils.handleHiveException(driverContext, e, 13, null);
+      }
 
       try {
         taskQueue = new TaskQueue(context); // for canceling the query (should be bound to session?)
