@@ -541,7 +541,7 @@ public class ReduceSinkDeDuplicationUtils {
         return false;
       }
     }
-    cRS.getConf().setKeyCols(ExprNodeDescUtils.backtrack(cKeysInParentRS, cRS, pRS));
+    cRS.getConf().setKeyCols(cKeysInParentRS);
 
     // Backtrack partition columns of cRS to pRS
     // If we cannot backtrack any of the columns, bail out
@@ -554,7 +554,7 @@ public class ReduceSinkDeDuplicationUtils {
         return false;
       }
     }
-    cRS.getConf().setPartitionCols(ExprNodeDescUtils.backtrack(cPartitionInParentRS, cRS, pRS));
+    cRS.getConf().setPartitionCols(cPartitionInParentRS);
 
     // Backtrack value columns of cRS to pRS
     // If we cannot backtrack any of the columns, bail out
@@ -567,7 +567,7 @@ public class ReduceSinkDeDuplicationUtils {
         return false;
       }
     }
-    cRS.getConf().setValueCols(ExprNodeDescUtils.backtrack(cValueInParentRS, cRS, pRS));
+    cRS.getConf().setValueCols(cValueInParentRS);
 
     // Backtrack bucket columns of cRS to pRS (if any)
     // If we cannot backtrack any of the columns, bail out
@@ -581,7 +581,7 @@ public class ReduceSinkDeDuplicationUtils {
           return false;
         }
       }
-      cRS.getConf().setBucketCols(ExprNodeDescUtils.backtrack(cBucketInParentRS, cRS, pRS));
+      cRS.getConf().setBucketCols(cBucketInParentRS);
     }
 
     // Update column expression map

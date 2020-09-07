@@ -142,14 +142,14 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
       List<String> outputValueColumnNames, int tag, List<ExprNodeDesc> partitionCols, int numReducers,
       final TableDesc keySerializeInfo, final TableDesc valueSerializeInfo,
       AcidUtils.Operation writeType) {
-    this.keyCols = keyCols;
+    setKeyCols(keyCols);
     this.numDistributionKeys = numDistributionKeys;
-    this.valueCols = valueCols;
+    setValueCols(valueCols);
     this.outputKeyColumnNames = outputKeyColumnNames;
     this.outputValueColumnNames = outputValueColumnNames;
     this.tag = tag;
     this.numReducers = numReducers;
-    this.partitionCols = partitionCols;
+    setPartitionCols(partitionCols);
     this.keySerializeInfo = keySerializeInfo;
     this.valueSerializeInfo = valueSerializeInfo;
     this.distinctColumnIndices = distinctColumnIndices;
@@ -238,7 +238,8 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
     return keyCols;
   }
 
-  public void setKeyCols(final java.util.ArrayList<ExprNodeDesc> keyCols) {
+  public void setKeyCols(List<ExprNodeDesc> keyCols) {
+    assert keyCols == null || keyCols.stream().allMatch(Objects::nonNull);
     this.keyCols = keyCols;
   }
 
@@ -261,6 +262,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   public void setValueCols(List<ExprNodeDesc> valueCols) {
+    assert valueCols == null || valueCols.stream().allMatch(Objects::nonNull);
     this.valueCols = valueCols;
   }
 
@@ -281,6 +283,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   public void setPartitionCols(
       final List<ExprNodeDesc> partitionCols) {
+    assert partitionCols == null || partitionCols.stream().allMatch(Objects::nonNull);
     this.partitionCols = partitionCols;
   }
 
@@ -459,6 +462,7 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   }
 
   public void setBucketCols(List<ExprNodeDesc> bucketCols) {
+    assert bucketCols == null || bucketCols.stream().allMatch(Objects::nonNull);
     this.bucketCols = bucketCols;
   }
 
