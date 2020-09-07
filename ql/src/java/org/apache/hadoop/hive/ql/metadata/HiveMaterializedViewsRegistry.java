@@ -181,17 +181,17 @@ public final class HiveMaterializedViewsRegistry {
               if (existingMVTable.getCreateTime() < mvTable.getCreateTime() ||
                   (existingMVTable.getCreateTime() == mvTable.getCreateTime() &&
                       existingMVTable.getCreationMetadata().getMaterializationTime() <= mvTable.getCreationMetadata().getMaterializationTime())) {
-                refreshMaterializedView(db.getConf(), existingMVTable, mvTable);
+                refreshMaterializedView(db.getConf(), db, existingMVTable, mvTable);
               }
             } else {
               // Simply replace if it still does not exist
-              refreshMaterializedView(db.getConf(), null, mvTable);
+              refreshMaterializedView(db.getConf(), db, null, mvTable);
             }
           }
           LOG.info("Materialized views registry has been refreshed");
         } else {
           for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
-            refreshMaterializedView(db.getConf(), null, mvTable);
+            refreshMaterializedView(db.getConf(), db, null, mvTable);
           }
           initialized.set(true);
           LOG.info("Materialized views registry has been initialized");
@@ -214,10 +214,10 @@ public final class HiveMaterializedViewsRegistry {
   /**
    * Parses and creates a materialization.
    */
-  public RelOptMaterialization createMaterialization(HiveConf conf, Table materializedViewTable) {
+  public RelOptMaterialization createMaterialization(HiveConf conf, Hive db, Table materializedViewTable) {
     // First we parse the view query and create the materialization object
     final String viewQuery = materializedViewTable.getViewExpandedText();
-    final RelNode viewScan = createMaterializedViewScan(conf, materializedViewTable);
+    final RelNode viewScan = createMaterializedViewScan(conf, db, materializedViewTable);
     if (viewScan == null) {
       LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
           " ignored; error creating view replacement");
@@ -246,7 +246,7 @@ public final class HiveMaterializedViewsRegistry {
   /**
    * Adds a newly created materialized view to the cache.
    */
-  public void createMaterializedView(HiveConf conf, Table materializedViewTable) {
+  public void createMaterializedView(HiveConf conf, Hive db, Table materializedViewTable) {
     final boolean cache = !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
         .equals("DUMMY");
     if (!cache) {
@@ -271,7 +271,7 @@ public final class HiveMaterializedViewsRegistry {
       dbMap = prevDbMap;
     }
 
-    RelOptMaterialization materialization = createMaterialization(conf, materializedViewTable);
+    RelOptMaterialization materialization = createMaterialization(conf, db, materializedViewTable);
     if (materialization == null) {
       return;
     }
@@ -286,7 +286,7 @@ public final class HiveMaterializedViewsRegistry {
   /**
    * Update the materialized view in the registry (if existing materialized view matches).
    */
-  public void refreshMaterializedView(HiveConf conf, Table oldMaterializedViewTable, Table materializedViewTable) {
+  public void refreshMaterializedView(HiveConf conf, Hive db, Table oldMaterializedViewTable, Table materializedViewTable) {
     final boolean cache = !conf.get(HiveConf.ConfVars.HIVE_SERVER2_MATERIALIZED_VIEWS_REGISTRY_IMPL.varname)
         .equals("DUMMY");
     if (!cache) {
@@ -311,7 +311,7 @@ public final class HiveMaterializedViewsRegistry {
     if (prevDbMap != null) {
       dbMap = prevDbMap;
     }
-    final RelOptMaterialization newMaterialization = createMaterialization(conf, materializedViewTable);
+    final RelOptMaterialization newMaterialization = createMaterialization(conf, db, materializedViewTable);
     if (newMaterialization == null) {
       return;
     }
@@ -390,7 +390,7 @@ public final class HiveMaterializedViewsRegistry {
     return null;
   }
 
-  private static RelNode createMaterializedViewScan(HiveConf conf, Table viewTable) {
+  private static RelNode createMaterializedViewScan(HiveConf conf, Hive db, Table viewTable) {
     // 0. Recreate cluster
     final RelDataTypeSystem typeSystem = CalcitePlanner.createTypeSystem(conf);
     final RexBuilder rexBuilder = new RexBuilder(new JavaTypeFactoryImpl(typeSystem));
@@ -488,12 +488,9 @@ public final class HiveMaterializedViewsRegistry {
 
       List<Interval> intervals = Collections.singletonList(DruidTable.DEFAULT_INTERVAL);
       rowType = dtFactory.createStructType(druidColTypes, druidColNames);
-      // We can pass null for Hive object because it is only used to retrieve tables
-      // if constraints on a table object are existing, but constraints cannot be defined
-      // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger(),
+          conf, db, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger(),
           tableType);
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
@@ -504,12 +501,9 @@ public final class HiveMaterializedViewsRegistry {
           optTable, druidTable, ImmutableList.<RelNode>of(scan), ImmutableMap.of());
     } else {
       // Build Hive Table Scan Rel.
-      // We can pass null for Hive object because it is only used to retrieve tables
-      // if constraints on a table object are existing, but constraints cannot be defined
-      // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger(),
+          conf, db, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger(),
           tableType);
       tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);

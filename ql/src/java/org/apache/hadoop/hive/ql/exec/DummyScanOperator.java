@@ -23,6 +23,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
@@ -37,8 +38,15 @@ import java.util.ArrayList;
  */
 public class DummyScanOperator extends TableScanOperator {
   public DummyScanOperator(CompilationOpContext opContext, RowSchema schema) {
+    this(opContext, schema, null);
+  }
+
+  public DummyScanOperator(CompilationOpContext opContext, RowSchema schema, TableScanDesc tableScanDesc) {
     super(opContext);
     this.setSchema(schema);
+    if (tableScanDesc != null) {
+      this.setConf(tableScanDesc);
+    }
   }
 
   @Override

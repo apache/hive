@@ -38,6 +38,7 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.core.TableScan;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
@@ -366,9 +367,10 @@ public class HiveMaterializedViewUtils {
           scan.getTable(), dq.getDruidTable(), ImmutableList.of(dq.getTableScan()),
           DruidSqlOperatorConverter.getDefaultMap());
     } else {
+      RelDataType rowType = scan.getTable().getRowType();
+      RelOptHiveTable newTable = ((RelOptHiveTable) scan.getTable()).copy(rowType, false);
       newScan = new HiveTableScan(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
-          (RelOptHiveTable) scan.getTable(), ((RelOptHiveTable) scan.getTable()).getName(),
-          null, false, false);
+        newTable, ((RelOptHiveTable) scan.getTable()).getName(), null, false, false);
     }
     return newScan;
   }

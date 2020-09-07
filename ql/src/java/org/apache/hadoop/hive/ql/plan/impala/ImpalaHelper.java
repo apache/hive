@@ -144,7 +144,7 @@ public class ImpalaHelper {
       Preconditions.checkState(rootRelNode instanceof ImpalaPlanRel, "Plan contains operators not supported by Impala");
       ImpalaPlanRel impalaRelNode = (ImpalaPlanRel) rootRelNode;
       ImpalaPlanner impalaPlanner = new ImpalaPlanner(queryContext, fileSinkDesc, db, qb,
-          getImpalaStmtType(stmtType), getImpalaResultStmtType(stmtType), timeline);
+          getImpalaStmtType(stmtType, qb), timeline);
       ImpalaPlannerContext planCtx = impalaPlanner.getPlannerContext();
       impalaPlanner.initTargetTable();
       planCtx.getTableLoader().loadTablesAndPartitions(db, txnWriteIdList);
@@ -158,36 +158,20 @@ public class ImpalaHelper {
   }
 
   /**
-   * Top-level statement type being executed. There may be multiple ExecRequests
-   * with different statement types submitted under this top-level statement.
-   */
-  private TStmtType getImpalaStmtType(CalcitePlanner.PreCboCtx.Type stmtType) {
-    switch (stmtType) {
-      case NONE:
-        return TStmtType.QUERY;
-      case CTAS:
-      case INSERT:
-        return TStmtType.DML;
-      case VIEW:
-        return TStmtType.DDL;
-      default:
-        throw new RuntimeException("Unsupported statement type "+stmtType.toString());
-    }
-  }
-
-  /**
    * Statement type for the current request being submitted to Impala.
    */
-  private TStmtType getImpalaResultStmtType(CalcitePlanner.PreCboCtx.Type stmtType) {
+  private TStmtType getImpalaStmtType(CalcitePlanner.PreCboCtx.Type stmtType,
+      QB qb) {
     switch (stmtType) {
       case NONE:
         return TStmtType.QUERY;
+      case CTAS:
       case INSERT:
         return TStmtType.DML;
-      case CTAS:
-        return TStmtType.DML;
       case VIEW:
-        return TStmtType.DDL;
+        // Views are treated as DDL. Materialized Views are treated as DML since Impala will
+        // execute the initial build.
+        return qb.isMaterializedView() ? TStmtType.DML : TStmtType.DDL;
       default:
         throw new RuntimeException("Unsupported statement type "+stmtType.toString());
     }

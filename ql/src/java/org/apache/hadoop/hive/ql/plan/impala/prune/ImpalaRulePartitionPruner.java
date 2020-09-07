@@ -124,7 +124,8 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
       throws HiveException {
     List<Expr> partitionConjuncts =
         Lists.newArrayList(impalaConjuncts.getNormalizedPartitionConjuncts());
-    String partitionConjunctsKey = PrunerUtils.getTableKey(table.getHiveTableMD()) +
+    // Remove "impala:" as part of CDPD-17313
+    String partitionConjunctsKey = "impala:" + PrunerUtils.getTableKey(table.getHiveTableMD()) +
         impalaConjuncts.createPartitionKey();
     LOG.info("Partition pruned key is : " + partitionConjunctsKey);
     PrunedPartitionList cachedValue = partitionCache.get(partitionConjunctsKey);
@@ -173,8 +174,8 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
   public PrunedPartitionList getNonPruneList(HiveConf conf,
       Map<String, PrunedPartitionList> partitionCache) throws HiveException {
     Preconditions.checkNotNull(table);
-
-    String tableKey = PrunerUtils.getTableKey(table.getHiveTableMD());
+    // Remove "impala:" as part of CDPD-17313
+    String tableKey = "impala:" + PrunerUtils.getTableKey(table.getHiveTableMD());
     PrunedPartitionList cachedValue = partitionCache.get(tableKey);
     if (cachedValue != null) {
       return cachedValue;

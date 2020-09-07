@@ -1797,7 +1797,7 @@ public class Hive {
           if (outdated) {
             if (!cachedMaterializedViewTable.equals(materializedViewTable)) {
               // We ignore and update the registry
-              HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, cachedMaterializedViewTable, materializedViewTable);
+              HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, this, cachedMaterializedViewTable, materializedViewTable);
               result = false;
             } else {
               // Obtain additional information if we should try incremental rewriting / rebuild
@@ -1812,7 +1812,7 @@ public class Hive {
             }
           } else if (!cachedMaterializedViewTable.equals(materializedViewTable)) {
             // Update the registry
-            HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, cachedMaterializedViewTable, materializedViewTable);
+            HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, this, cachedMaterializedViewTable, materializedViewTable);
           }
         }
       }
@@ -1893,7 +1893,10 @@ public class Hive {
         if (outdated) {
           // The MV is outdated, see whether we should consider it for rewriting or not
           boolean ignore;
-          if (forceMVContentsUpToDate && !tryIncrementalRebuild) {
+          if (conf.getEngine() == Engine.IMPALA) {
+            // IMPALA currently does not support incremental rebuilds or rewriting
+            ignore = true;
+          } else if (forceMVContentsUpToDate && !tryIncrementalRebuild) {
             // We will not try partial rewriting for rebuild if incremental rebuild is disabled
             ignore = true;
           } else if (!forceMVContentsUpToDate && !tryIncrementalRewriting) {
@@ -1944,9 +1947,9 @@ public class Hive {
               " was not in the cache");
         }
         materialization = HiveMaterializedViewsRegistry.get().createMaterialization(
-            conf, materializedViewTable);
+            conf, this, materializedViewTable);
         if (materialization != null) {
-          HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, null, materializedViewTable);
+          HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, this, null, materializedViewTable);
           if (outdated) {
             // We will rewrite it to include the filters on transaction list
             // so we can produce partial rewritings

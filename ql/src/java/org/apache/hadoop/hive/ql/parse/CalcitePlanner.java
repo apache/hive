@@ -302,6 +302,7 @@ import org.apache.hadoop.hive.ql.parse.type.RexNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.ImpalaQueryDesc;
@@ -1689,6 +1690,24 @@ public class CalcitePlanner extends SemanticAnalyzer {
       Preconditions.checkNotNull(this.impalaHelper);
       final String dbname = SessionState.get().getCurrentDatabase();
       final String username = StringUtils.defaultString(SessionState.get().getUserName());
+
+      // The purpose for this loop is to setup DummyTableScan operations with a valid
+      // TableScanDesc so later points of code that rely on them can examine them to
+      // information about tables scanned. (The immediate need was for CREATE MATERIALIZED
+      // VIEW)
+      for (String alias : getQB().getTabAliases()) {
+        if (alias.equals(DUMMY_TABLE)) {
+          continue;
+        }
+
+        Table tab = getQB().getMetaData().getSrcForAlias(alias);
+        RowResolver rowResolver = getRowResolver(alias, getQB(), tab);
+        TableScanDesc tableScanDesc = createTableScanDesc(alias, tab);
+        TableScanOperator tableScanOp = new DummyScanOperator(getOpContext(),
+            rowResolver.getRowSchema(), tableScanDesc);
+        // topOps needs to have a TableScanOperator for a plan to compile.
+        topOps.put(alias, tableScanOp);
+      }
 
       // CDPD-8391: Refactor and get rid of this at some point, the DummyScanOperator
       // isn't really needed.

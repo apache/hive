@@ -86,17 +86,15 @@ public class ImpalaPlanner {
   public final Hive db_;
   private final QB qb_;
   private TStmtType stmtType_;
-  private TStmtType resultStmtType_;
   private ImpalaPlannerContext ctx_;
   private FileSinkDesc fileSinkDesc_;
   private static final Logger LOG = LoggerFactory.getLogger(ImpalaPlanner.class);
 
   public ImpalaPlanner(ImpalaQueryContext queryContext, FileSinkDesc fileSinkDesc, Hive db, QB qb,
-      TStmtType stmtType, TStmtType resultStmtType, EventSequence timeline) throws HiveException {
+      TStmtType stmtType, EventSequence timeline) throws HiveException {
     db_ = db;
     qb_ = qb;
     stmtType_ = stmtType;
-    resultStmtType_ = resultStmtType;
     fileSinkDesc_ = fileSinkDesc;
     ctx_ = new ImpalaPlannerContext(queryContext, timeline);
   }
@@ -168,7 +166,7 @@ public class ImpalaPlanner {
     queryExecRequest.setHost_list(ctx_.getHostLocations());
 
     // compute resource requirements of the final plan
-    boolean isQuery = getResultStmtType() == TStmtType.QUERY;
+    boolean isQuery = stmtType_ == TStmtType.QUERY;
     Planner.computeResourceReqs(fragments, ctx_.getQueryCtx(), queryExecRequest,
         ctx_, isQuery);
 
@@ -223,7 +221,7 @@ public class ImpalaPlanner {
   }
 
   void initTargetTable() throws HiveException {
-    if (resultStmtType_ == TStmtType.DML) {
+    if (stmtType_ == TStmtType.DML) {
       ctx_.initTxnId();
       // Use FileSinkDesc to determine expected location of query results
       org.apache.hadoop.hive.ql.metadata.Table tab = fileSinkDesc_.getTable();
@@ -237,7 +235,7 @@ public class ImpalaPlanner {
 
       if (tab != null ) {
         org.apache.hadoop.hive.metastore.api.Table msTbl = tab.getTTable();
-        if (qb_.isCTAS()) {
+        if (qb_.isCTAS() || qb_.isMaterializedView()) {
           // Create a dummy target for a CTAS table (the HMS object is created after execution)
           try {
             org.apache.hadoop.hive.metastore.api.Database msDb = db_.getDatabase(tab.getDbName());
@@ -265,7 +263,7 @@ public class ImpalaPlanner {
 
   boolean isInsertDirectory() {
     String dest = getQB().getParseInfo().getClauseNames().iterator().next();
-    return (resultStmtType_ == TStmtType.DML &&
+    return (stmtType_ == TStmtType.DML &&
            (getQB().getMetaData().getDestTypeForAlias(dest) == QBMetaData.DEST_DFS_FILE ||
             getQB().getMetaData().getDestTypeForAlias(dest) == QBMetaData.DEST_LOCAL_FILE));
   }
@@ -428,14 +426,6 @@ public class ImpalaPlanner {
     return qb_;
   }
 
-  private TStmtType getStmtType() {
-    return stmtType_;
-  }
-
-  private TStmtType getResultStmtType() {
-    return resultStmtType_;
-  }
-
   private TExecRequest createExecRequest(TQueryCtx queryCtx, PlanFragment planFragmentRoot,
       TQueryExecRequest queryExecRequest) {
     TExecRequest result = new TExecRequest();
@@ -449,8 +439,8 @@ public class ImpalaPlanner {
 
     result.setQuery_exec_request(queryExecRequest);
 
-    result.setStmt_type(getStmtType());
-    result.getQuery_exec_request().setStmt_type(getResultStmtType());
+    result.setStmt_type(stmtType_);
+    result.getQuery_exec_request().setStmt_type(stmtType_);
 
     // fill in the metadata using the root fragment's PlanRootSink
     Preconditions.checkState(planFragmentRoot.hasSink());

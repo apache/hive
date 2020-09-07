@@ -11503,77 +11503,79 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return (qb.getId() == null ? alias : qb.getId() + ":" + alias).toLowerCase();
   }
 
+  private void setTableSerdeParams(Table tab, Map<String, String> properties) {
+    // Including parameters passed in the query
+    if (properties == null) {
+      return;
+    }
+
+    for (Entry<String, String> prop : properties.entrySet()) {
+      if (tab.getSerdeParam(prop.getKey()) != null) {
+        LOG.warn("SerDe property in input query overrides stored SerDe property");
+      }
+      tab.setSerdeParam(prop.getKey(), prop.getValue());
+    }
+  }
+
+  private List<VirtualColumn> getTableVirtualColumns(Table tab) {
+    if (tab.isNonNative()) {
+      return new ArrayList<VirtualColumn>();
+    }
+    return VirtualColumn.getRegistry(conf);
+  }
+
+  protected RowResolver getRowResolver(String alias, QB qb, Table tab) {
+    // Determine row schema for TSOP.
+    // Include column names from SerDe, the partition and virtual columns.
+    RowResolver rwsch = new RowResolver();
+    try {
+      // Obtain inspector for schema
+      StructObjectInspector roi = (StructObjectInspector) tab.getDeserializer().getObjectInspector();
+      for (StructField field : roi.getAllStructFieldRefs()) {
+        ColumnInfo colInfo = new ColumnInfo(field.getFieldName(),
+            TypeInfoUtils.getTypeInfoFromObjectInspector(field.getFieldObjectInspector()),
+              alias, false);
+        colInfo.setSkewedCol(isSkewedCol(alias, qb, field.getFieldName()));
+        rwsch.put(alias, field.getFieldName(), colInfo);
+      }
+    } catch (SerDeException e) {
+      throw new RuntimeException(e);
+    }
+    // Hack!! - refactor once the metadata APIs with types are ready
+    // Finally add the partitioning columns
+    for (FieldSchema part_col : tab.getPartCols()) {
+      LOG.trace("Adding partition col: " + part_col);
+      rwsch.put(alias, part_col.getName(), new ColumnInfo(part_col.getName(),
+            TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
+    }
+
+    for (VirtualColumn vc : getTableVirtualColumns(tab)) {
+      rwsch.put(alias, vc.getName().toLowerCase(),
+          new ColumnInfo(vc.getName(), vc.getTypeInfo(), alias, true, vc.getIsHidden()));
+    }
+
+    return rwsch;
+  }
+
+  protected TableScanDesc createTableScanDesc(String alias, Table tab) {
+    return new TableScanDesc(alias, getTableVirtualColumns(tab), tab);
+  }
+
+
   @SuppressWarnings("nls")
   private Operator genTablePlan(String alias, QB qb) throws SemanticException {
 
     String alias_id = getAliasId(alias, qb);
     Table tab = qb.getMetaData().getSrcForAlias(alias);
     RowResolver rwsch;
-
     // is the table already present
     TableScanOperator top = topOps.get(alias_id);
-
-    // Obtain table props in query
-    Map<String, String> properties = qb.getTabPropsForAlias(alias);
-
     if (top == null) {
-      // Determine row schema for TSOP.
-      // Include column names from SerDe, the partition and virtual columns.
-      rwsch = new RowResolver();
-      try {
-        // Including parameters passed in the query
-        if (properties != null) {
-          for (Entry<String, String> prop : properties.entrySet()) {
-            if (tab.getSerdeParam(prop.getKey()) != null) {
-              LOG.warn("SerDe property in input query overrides stored SerDe property");
-            }
-            tab.setSerdeParam(prop.getKey(), prop.getValue());
-          }
-        }
-        // Obtain inspector for schema
-        StructObjectInspector rowObjectInspector = (StructObjectInspector) tab
-            .getDeserializer().getObjectInspector();
-        List<? extends StructField> fields = rowObjectInspector
-            .getAllStructFieldRefs();
-        for (int i = 0; i < fields.size(); i++) {
-          /**
-           * if the column is a skewed column, use ColumnInfo accordingly
-           */
-          ColumnInfo colInfo = new ColumnInfo(fields.get(i).getFieldName(),
-              TypeInfoUtils.getTypeInfoFromObjectInspector(fields.get(i)
-                  .getFieldObjectInspector()), alias, false);
-          colInfo.setSkewedCol((isSkewedCol(alias, qb, fields.get(i)
-              .getFieldName())) ? true : false);
-          rwsch.put(alias, fields.get(i).getFieldName(), colInfo);
-        }
-      } catch (SerDeException e) {
-        throw new RuntimeException(e);
-      }
-      // Hack!! - refactor once the metadata APIs with types are ready
-      // Finally add the partitioning columns
-      for (FieldSchema part_col : tab.getPartCols()) {
-        LOG.trace("Adding partition col: " + part_col);
-        rwsch.put(alias, part_col.getName(), new ColumnInfo(part_col.getName(),
-            TypeInfoFactory.getPrimitiveTypeInfo(part_col.getType()), alias, true));
-      }
-
-      // put all virtual columns in RowResolver.
-      Iterator<VirtualColumn> vcs = VirtualColumn.getRegistry(conf).iterator();
-      // use a list for easy cumtomize
-      List<VirtualColumn> vcList = new ArrayList<VirtualColumn>();
-      if(!tab.isNonNative()) {
-        // Virtual columns are only for native tables
-        while (vcs.hasNext()) {
-          VirtualColumn vc = vcs.next();
-          rwsch.put(alias, vc.getName().toLowerCase(), new ColumnInfo(vc.getName(),
-                  vc.getTypeInfo(), alias, true, vc.getIsHidden()
-          ));
-          vcList.add(vc);
-        }
-      }
-
+      Map<String, String> properties = qb.getTabPropsForAlias(alias);
+      setTableSerdeParams(tab, properties);
+      rwsch = getRowResolver(alias, qb, tab);
       // Create the root of the operator tree
-      TableScanDesc tsDesc = new TableScanDesc(alias, vcList, tab);
+      TableScanDesc tsDesc = createTableScanDesc(alias, tab);
       setupStats(tsDesc, qb.getParseInfo(), tab, alias, rwsch);
 
       SplitSample sample = nameToSplitSample.get(alias_id);
@@ -11755,14 +11757,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   static boolean isSkewedCol(String alias, QB qb, String colName) {
-    boolean isSkewedCol = false;
-    List<String> skewedCols = qb.getSkewedColumnNames(alias);
-    for (String skewedCol : skewedCols) {
+    for (String skewedCol : qb.getSkewedColumnNames(alias)) {
       if (skewedCol.equalsIgnoreCase(colName)) {
-        isSkewedCol = true;
+        return true;
       }
     }
-    return isSkewedCol;
+    return false;
   }
 
   private void setupStats(TableScanDesc tsDesc, QBParseInfo qbp, Table tab, String alias,
@@ -13168,7 +13168,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Set<String> getTablesUsed(ParseContext parseCtx) throws SemanticException {
     Set<String> tablesUsed = new HashSet<>();
     for (TableScanOperator topOp : parseCtx.getTopOps().values()) {
-      Table table = topOp.getConf().getTableMetadata();
+      TableScanDesc tableScanDesc = topOp.getConf();
+      if (tableScanDesc == null) {
+        continue;
+      }
+
+      Table table = tableScanDesc.getTableMetadata();
       if (!table.isMaterializedTable() && !table.isView()) {
         // Add to signature
         tablesUsed.add(table.getFullyQualifiedName());

@@ -135,7 +135,7 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * too.
    */
   public HiveTableScan copyIncludingTable(RelDataType newRowtype) {
-    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table).copy(newRowtype), this.tblAlias, this.concatQbIDAlias,
+    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table).copy(newRowtype, true), this.tblAlias, this.concatQbIDAlias,
         newRowtype, this.useQBIdInDigest, this.insideView);
   }
 

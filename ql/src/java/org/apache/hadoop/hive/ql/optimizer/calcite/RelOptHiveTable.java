@@ -194,7 +194,7 @@ public class RelOptHiveTable implements RelOptTable {
     return RelOptTableImpl.columnStrategies(this);
   }
 
-  public RelOptHiveTable copy(RelDataType newRowType) {
+  public RelOptHiveTable copy(RelDataType newRowType, boolean sharePartitionCache) {
     // 1. Build map of column name to col index of original schema
     // Assumption: Hive Table can not contain duplicate column names
     Map<String, Integer> nameToColIndxMap = new HashMap<String, Integer>();
@@ -224,10 +224,11 @@ public class RelOptHiveTable implements RelOptTable {
       }
     }
 
+    Map<String, PrunedPartitionList> ppCache = sharePartitionCache ? partitionCache : new HashMap<>();
     // 3. Build new Table
     return new RelOptHiveTable(this.schema, this.typeFactory, this.qualifiedTblName, newRowType,
         this.hiveTblMetadata, newHiveNonPartitionCols, newHivePartitionCols, newHiveVirtualCols,
-        this.hiveConf, this.db, this.tablesCache, this.partitionCache, this.colStatsCache,
+        this.hiveConf, this.db, this.tablesCache, ppCache, this.colStatsCache,
         this.noColsMissingStats, this.tableType);
   }
 
