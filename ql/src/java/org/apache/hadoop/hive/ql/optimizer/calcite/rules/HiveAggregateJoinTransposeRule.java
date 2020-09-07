@@ -26,6 +26,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -147,7 +149,8 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         int fieldCount = joinInput.getRowType().getFieldCount();
         final ImmutableBitSet fieldSet =
             ImmutableBitSet.range(offset, offset + fieldCount);
-        final ImmutableBitSet belowAggregateKeyNotShifted = fieldSet;
+        final ImmutableBitSet belowAggregateKeyNotShifted =
+            belowAggregateColumns.intersect(fieldSet);
         for (Ord<Integer> c : Ord.zip(belowAggregateKeyNotShifted)) {
           map.put(c.e, belowOffset + c.i);
         }
@@ -176,7 +179,9 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         }
         if (unique) {
           ++uniqueCount;
-          side.newInput = joinInput;
+          relBuilder.push(joinInput);
+          relBuilder.project(belowAggregateKey.asList().stream().map(relBuilder::field).collect(Collectors.toList()));
+          side.newInput = relBuilder.build();
         } else {
           List<AggregateCall> belowAggCalls = new ArrayList<>();
           final SqlSplittableAggFunction.Registry<AggregateCall>
