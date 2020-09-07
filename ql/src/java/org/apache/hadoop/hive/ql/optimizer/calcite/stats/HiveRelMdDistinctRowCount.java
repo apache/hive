@@ -20,9 +20,12 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.stats;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.metadata.ChainedRelMetadataProvider;
 import org.apache.calcite.rel.metadata.ReflectiveRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMdDistinctRowCount;
 import org.apache.calcite.rel.metadata.RelMdUtil;
@@ -35,11 +38,14 @@ import org.apache.calcite.util.BuiltInMethod;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.NumberUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
+
+import com.google.common.collect.ImmutableList;
 
 public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
 
@@ -57,10 +63,7 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
     List<ColStatistics> colStats = htRel.getColStat(projIndxLst);
     Double noDistinctRows = 1.0;
     for (ColStatistics cStat : colStats) {
-      long countDistinct = cStat.getCountDistint();
-      if (countDistinct > 0) {
-        noDistinctRows *= countDistinct;
-      }
+      noDistinctRows *= cStat.getCountDistint();
     }
 
     return Math.min(noDistinctRows, mq.getRowCount(htRel));

@@ -43,6 +43,7 @@ public class HiveRelMdUniqueKeys implements MetadataHandler<BuiltInMetadata.Uniq
     return BuiltInMetadata.UniqueKeys.DEF;
   }
 
+
   public Set<ImmutableBitSet> getUniqueKeys(HiveTableScan rel, RelMetadataQuery mq,
                                             boolean ignoreNulls) {
     RelOptHiveTable tbl = (RelOptHiveTable) rel.getTable();

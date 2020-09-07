@@ -69,9 +69,8 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
   }
 
   public boolean isBucketedInput() {
-    RelNode input = this.getInput();
-    final RelMetadataQuery mq = input.getCluster().getMetadataQuery();
-    return mq.distribution(input).getKeys().
+    final RelMetadataQuery mq = this.getInput().getCluster().getMetadataQuery();
+    return mq.distribution(this).getKeys().
             containsAll(groupSet.asList());
   }
 
