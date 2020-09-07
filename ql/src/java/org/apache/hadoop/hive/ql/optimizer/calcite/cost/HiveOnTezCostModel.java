@@ -90,12 +90,12 @@ public class HiveOnTezCostModel extends HiveCostModel {
       final RelMetadataQuery mq = aggregate.getCluster().getMetadataQuery();
       // 1. Sum of input cardinalities
       final Double inputRowCount = mq.getRowCount(aggregate.getInput());
-      final Double rowCount = mq.getRowCount(aggregate);
-      if (inputRowCount == null || rowCount == null) {
+      final Double outputRowCount = mq.getRowCount(aggregate);
+      if (inputRowCount == null || outputRowCount == null) {
         return null;
       }
       // 2. CPU cost = sorting cost
-      final double cpuCost = algoUtils.computeSortCPUCost(rowCount) + inputRowCount * algoUtils.getCpuUnitCost();
+      final double cpuCost = algoUtils.computeSortCPUCost(outputRowCount) + inputRowCount * algoUtils.getCpuUnitCost();
       // 3. IO cost = cost of writing intermediary results to local FS +
       //              cost of reading from local FS for transferring to GBy +
       //              cost of transferring map outputs to GBy operator
@@ -103,9 +103,9 @@ public class HiveOnTezCostModel extends HiveCostModel {
       if (rAverageSize == null) {
         return null;
       }
-      final double ioCost = algoUtils.computeSortIOCost(new Pair<Double, Double>(rowCount, rAverageSize));
+      final double ioCost = algoUtils.computeSortIOCost(new Pair<Double, Double>(outputRowCount, rAverageSize));
       // 4. Result
-      return HiveCost.FACTORY.makeCost(rowCount, cpuCost, ioCost);
+      return HiveCost.FACTORY.makeCost(outputRowCount, cpuCost, ioCost);
     }
   }
 
