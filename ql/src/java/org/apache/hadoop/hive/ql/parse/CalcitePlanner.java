@@ -2426,9 +2426,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 2. Run aggregate-join transpose (cost based)
       //    If it failed because of missing stats, we continue with
       //    the rest of optimizations
-      if (conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE)) {
+      if (conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE) || conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE_UNIQUE)) {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-            new HiveAggregateJoinTransposeRule(noColsMissingStats));
+            new HiveAggregateJoinTransposeRule(noColsMissingStats,
+                conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE),
+                conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE_UNIQUE)));
       }
 
       // 3. Convert Join + GBy to semijoin

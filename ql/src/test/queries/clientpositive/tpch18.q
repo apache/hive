@@ -11,6 +11,7 @@
 use tpch_0_001;
 
 set hive.transpose.aggr.join=true;
+set hive.transpose.aggr.join.unique=true;
 set hive.mapred.mode=nonstrict;
 
 create view q18_tmp_cached as

@@ -74,10 +74,14 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
 
   private final boolean allowFunctions;
   private final AtomicInteger noColsMissingStats;
+  private boolean costBased;
+  private boolean uniqueBased;
 
-  /** Creates an AggregateJoinTransposeRule that may push down functions. */
-  public HiveAggregateJoinTransposeRule(AtomicInteger noColsMissingStats) {
+  /** Creates an AggregateJoinTransposeRule that may push down functions.  */
+  public HiveAggregateJoinTransposeRule(AtomicInteger noColsMissingStats, boolean costBased, boolean uniqueBased) {
     super(HiveAggregate.class, HiveJoin.class, HiveRelFactories.HIVE_BUILDER, true);
+    this.costBased = costBased;
+    this.uniqueBased = uniqueBased;
     this.allowFunctions = true;
     this.noColsMissingStats = noColsMissingStats;
   }
@@ -293,15 +297,19 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
             newAggCalls);
       }
 
-      // Make a cost based decision to pick cheaper plan
       RelNode r = relBuilder.build();
-      RelOptCost afterCost = mq.getCumulativeCost(r);
-      RelOptCost beforeCost = mq.getCumulativeCost(aggregate);
-      boolean shouldForceTransform = isGroupingUnique(join, aggregate.getGroupSet());
-      if (shouldForceTransform || afterCost.isLt(beforeCost)) {
+      boolean transform = false;
+      if (uniqueBased) {
+        transform = isGroupingUnique(join, aggregate.getGroupSet());
+      }
+      if (!transform && costBased) {
+        RelOptCost afterCost = mq.getCumulativeCost(r);
+        RelOptCost beforeCost = mq.getCumulativeCost(aggregate);
+        transform = afterCost.isLt(beforeCost);
+      }
+      if (transform) {
         call.transformTo(r);
       }
-
     } catch (Exception e) {
       if (noColsMissingStats.get() > 0) {
         LOG.warn("Missing column stats (see previous messages), skipping aggregate-join transpose in CBO");
