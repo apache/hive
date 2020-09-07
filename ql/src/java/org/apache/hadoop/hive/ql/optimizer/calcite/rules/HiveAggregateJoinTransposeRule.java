@@ -21,7 +21,6 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -324,11 +323,8 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
       return false;
     }
     RelMetadataQuery mq = input.getCluster().getMetadataQuery();
-    Set<ImmutableBitSet> uKeys = mq.getUniqueKeys(input);
-    for (ImmutableBitSet u : uKeys) {
-      if (groups.contains(u)) {
-        return true;
-      }
+    if (mq.areColumnsUnique(input, groups)) {
+      return true;
     }
     if (input instanceof Join) {
       Join join = (Join) input;
