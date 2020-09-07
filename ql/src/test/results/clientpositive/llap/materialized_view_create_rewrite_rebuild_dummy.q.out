@@ -215,6 +215,8 @@ STAGE PLANS:
   Stage: Stage-4
     Create View
       columns: a int, c decimal(10,2)
+      table properties:
+        materializedview.engine tez
       expanded text: SELECT `cmv_basetable_n1`.`a`, `cmv_basetable_2_n0`.`c`
   FROM `default`.`cmv_basetable_n1` JOIN `default`.`cmv_basetable_2_n0` ON (`cmv_basetable_n1`.`a` = `cmv_basetable_2_n0`.`a`)
   WHERE `cmv_basetable_2_n0`.`c` > 10.0

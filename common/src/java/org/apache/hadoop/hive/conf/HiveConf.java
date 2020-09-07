@@ -1885,6 +1885,12 @@ public class HiveConf extends Configuration {
         "Default file format for CREATE MATERIALIZED VIEW statement"),
     HIVE_MATERIALIZED_VIEW_SERDE("hive.materializedview.serde",
         "org.apache.hadoop.hive.ql.io.orc.OrcSerde", "Default SerDe used for materialized views"),
+    HIVE_MATERIALIZED_VIEW_REWRITING_ENGINE_STRICT("hive.materializedview.rewriting.engine.strict", true,
+        "Whether to only allow usage of materialized views that have been created with current engine\n" +
+        "during rewriting"),
+    HIVE_MATERIALIZED_VIEW_REBUILD_ENGINE_STRICT("hive.materializedview.rebuild.engine.strict", true,
+        "Whether to only allow usage of materialized views that have been created with current engine\n" +
+        "during rebuild"),
 
     HIVE_ENABLE_JDBC_PUSHDOWN("hive.jdbc.pushdown.enable", true,
         "Flag to control enabling pushdown of operators into JDBC connection and subsequent SQL generation\n" +

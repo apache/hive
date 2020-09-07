@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.ddl.view.materialized.alter.rebuild;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.conf.Constants;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -28,6 +30,7 @@ import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
@@ -83,7 +86,15 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         // Cannot rebuild not materialized view
         throw new SemanticException(ErrorMsg.REBUILD_NO_MATERIALIZED_VIEW);
       }
-
+      // Check engine for the materialization
+      if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_ENGINE_STRICT)) {
+        final String materializationEngine = table.getProperty(Constants.MATERIALIZED_VIEW_ENGINE);
+        if (materializationEngine != null
+            && !conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE).equals(materializationEngine)) {
+          throw new SemanticException(ErrorMsg.REBUILD_MATERIALIZED_VIEW_DIFFERENT_ENGINE,
+              materializationEngine);
+        }
+      }
       // We need to use the expanded text for the materialized view, as it will contain
       // the qualified table aliases, etc.
       String viewText = table.getViewExpandedText();

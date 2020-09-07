@@ -70,6 +70,7 @@ Table Parameters:
 	bucketing_version   	2                   
 	comment             	this is the first view
 	key                 	foo                 
+	materializedview.engine	tez                 
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	580                 
@@ -98,6 +99,7 @@ COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","c":"true
 bucketing_version	2
 comment	this is the first view
 key	foo
+materializedview.engine	tez
 numFiles	1
 numFilesErasureCoded	0
 numRows	5
@@ -162,6 +164,7 @@ Table Parameters:
 	comment             	this is the second view
 	key                 	alice               
 	key2                	bob                 
+	materializedview.engine	tez                 
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	5                   
@@ -242,6 +245,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
 	comment             	this is the third view
+	materializedview.engine	tez                 
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1025                
@@ -333,6 +337,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\"}}
 	bucketing_version   	2                   
 	comment             	this is the last view
+	materializedview.engine	tez                 
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	5                   

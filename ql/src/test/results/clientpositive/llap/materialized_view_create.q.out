@@ -47,6 +47,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"b\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	1025                
@@ -109,6 +110,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	580                 
@@ -246,6 +248,7 @@ POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true","d":"true","f":"true"}}
 bucketing_version	2
 key	value
+materializedview.engine	tez
 numFiles	1
 numFilesErasureCoded	0
 numRows	5

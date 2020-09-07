@@ -88,6 +88,7 @@ COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 bucketing_version	2
 druid.datasource	default.cmv_mat_view_n2
 druid.segment.granularity	HOUR
+materializedview.engine	tez
 numFiles	0
 numFilesErasureCoded	0
 numRows	2
@@ -136,6 +137,7 @@ COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true"}
 bucketing_version	2
 druid.datasource	default.cmv_mat_view2_n0
 druid.segment.granularity	HOUR
+materializedview.engine	tez
 numFiles	0
 numFilesErasureCoded	0
 numRows	3
@@ -586,6 +588,7 @@ bucketing_version	2
 druid.datasource	default.cmv_mat_view2_n0
 druid.segment.granularity	HOUR
 #### A masked pattern was here ####
+materializedview.engine	tez
 numFiles	0
 numFilesErasureCoded	0
 numRows	3

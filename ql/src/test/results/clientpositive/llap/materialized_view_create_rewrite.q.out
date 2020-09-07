@@ -56,6 +56,7 @@ POSTHOOK: query: show tblproperties cmv_mat_view_n10
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","b":"true","c":"true"}}
 bucketing_version	2
+materializedview.engine	tez
 numFiles	1
 numFilesErasureCoded	0
 numRows	2
@@ -90,6 +91,7 @@ POSTHOOK: query: show tblproperties cmv_mat_view2_n4
 POSTHOOK: type: SHOW_TBLPROPERTIES
 COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"a":"true","c":"true"}}
 bucketing_version	2
+materializedview.engine	tez
 numFiles	1
 numFilesErasureCoded	0
 numRows	2

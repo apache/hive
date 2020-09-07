@@ -73,12 +73,17 @@ public class HiveMaterializedViewUtils {
   private HiveMaterializedViewUtils() {}
 
   public static Table extractTable(RelOptMaterialization materialization) {
+    RelNode tableRel = materialization.tableRel;
+    if (tableRel instanceof Filter) {
+      // There is a Filter on top (may be due to grouping sets)
+      tableRel = tableRel.getInput(0);
+    }
     RelOptHiveTable cachedMaterializedViewTable;
-    if (materialization.tableRel instanceof Project) {
+    if (tableRel instanceof Project) {
       // There is a Project on top (due to nullability)
-      cachedMaterializedViewTable = (RelOptHiveTable) materialization.tableRel.getInput(0).getTable();
+      cachedMaterializedViewTable = (RelOptHiveTable) tableRel.getInput(0).getTable();
     } else {
-      cachedMaterializedViewTable = (RelOptHiveTable) materialization.tableRel.getTable();
+      cachedMaterializedViewTable = (RelOptHiveTable) tableRel.getTable();
     }
     return cachedMaterializedViewTable.getHiveTableMD();
   }

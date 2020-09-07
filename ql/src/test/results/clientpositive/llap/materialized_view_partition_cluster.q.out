@@ -129,6 +129,8 @@ STAGE PLANS:
       partition columns: partkey double
       columns: value string, key string
       sort columns: key string
+      table properties:
+        materializedview.engine tez
       expanded text: SELECT `value`, `key`, `partkey` FROM (SELECT `src_txn`.`value`, `src_txn`.`key`, `src_txn`.`key` + 100 as `partkey` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `cluster_mv_1`
       name: default.cluster_mv_1
       original text: SELECT value, key, key + 100 as partkey FROM src_txn where key > 200 and key < 250
@@ -292,6 +294,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	materializedview.distribute.columns	[\"key\"]           
+	materializedview.engine	tez                 
 	materializedview.sort.columns	[\"key\"]           
 	numFiles            	32                  
 	numPartitions       	32                  
@@ -1800,6 +1803,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	materializedview.distribute.columns	[\"key\",\"tes\\\"t\",\"te*#\\\"s\\\"t\"]
+	materializedview.engine	tez                 
 	materializedview.sort.columns	[\"key\",\"tes\\\"t\",\"te*#\\\"s\\\"t\"]
 	numFiles            	32                  
 	numPartitions       	32                  
@@ -2593,6 +2597,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
 	materializedview.distribute.columns	[\"key\",\"tes\\\"t\",\"te*#\\\"s\\\"t\"]
+	materializedview.engine	tez                 
 	materializedview.sort.columns	[\"key\",\"tes\\\"t\",\"te*#\\\"s\\\"t\"]
 	numFiles            	32                  
 	numPartitions       	32                  

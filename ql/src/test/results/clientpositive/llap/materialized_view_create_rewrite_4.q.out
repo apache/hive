@@ -220,6 +220,7 @@ STAGE PLANS:
     Create View
       columns: a int, c decimal(10,2), _c2 bigint
       table properties:
+        materializedview.engine tez
         transactional true
       expanded text: SELECT `cmv_basetable_n5`.`a`, `cmv_basetable_2_n2`.`c`, sum(`cmv_basetable_2_n2`.`d`)
   FROM `default`.`cmv_basetable_n5` JOIN `default`.`cmv_basetable_2_n2` ON (`cmv_basetable_n5`.`a` = `cmv_basetable_2_n2`.`a`)
@@ -290,6 +291,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	0                   
@@ -529,6 +531,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	0                   
@@ -1016,6 +1019,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	3                   
 	numRows             	3                   
 	rawDataSize         	0                   
@@ -1321,6 +1325,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	2                   
 	numRows             	3                   
 	rawDataSize         	0                   
@@ -1626,6 +1631,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"_c2\":\"true\",\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	0                   
@@ -2040,6 +2046,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	3                   
 	numRows             	3                   
 	rawDataSize         	0                   

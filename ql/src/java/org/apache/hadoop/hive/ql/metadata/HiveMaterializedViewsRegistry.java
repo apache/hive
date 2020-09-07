@@ -59,8 +59,6 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
-import org.apache.hadoop.hive.ql.optimizer.calcite.ImpalaTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -224,12 +222,19 @@ public final class HiveMaterializedViewsRegistry {
       return null;
     }
     final RelNode queryRel;
+    final String currentEngine = conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE);
+    final String engineString = materializedViewTable.getProperty(Constants.MATERIALIZED_VIEW_ENGINE);
+    if (engineString != null) {
+      conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, engineString);
+    }
     try {
       queryRel = ParseUtils.parseQuery(conf, viewQuery);
     } catch (Exception e) {
       LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
           " ignored; error parsing original query; " + e);
       return null;
+    } finally {
+      conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, currentEngine);
     }
 
     return new RelOptMaterialization(viewScan, queryRel,

@@ -216,6 +216,7 @@ STAGE PLANS:
     Create View
       columns: a int, c decimal(10,2)
       table properties:
+        materializedview.engine tez
         rewriting.time.window 5min
       expanded text: SELECT `cmv_basetable_n3`.`a`, `cmv_basetable_2_n1`.`c`
   FROM `default`.`cmv_basetable_n3` JOIN `default`.`cmv_basetable_2_n1` ON (`cmv_basetable_n3`.`a` = `cmv_basetable_2_n1`.`a`)
@@ -284,6 +285,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	232                 
@@ -518,6 +520,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	232                 
@@ -857,6 +860,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	2                   
 	numRows             	3                   
 	rawDataSize         	348                 

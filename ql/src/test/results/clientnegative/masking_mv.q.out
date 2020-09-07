@@ -108,6 +108,8 @@ STAGE PLANS:
   Stage: Stage-8
     Create View
       columns: key int
+      table properties:
+        materializedview.engine mr
       expanded text: select `masking_test_n_mv`.`key` from `default`.`masking_test_n_mv`
       name: default.masking_test_view_n_mv
       original text: select key from masking_test_n_mv

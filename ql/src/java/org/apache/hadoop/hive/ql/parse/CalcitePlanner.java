@@ -570,7 +570,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         try {
           // 0. Gen Optimized Plan
-          RelNode newPlan = logicalPlan();
+          RelNode newPlan = enginePlan();
 
           if (isImpalaPlan) {
             // 2. If we are creating a view, populate the definition
@@ -1571,30 +1571,36 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
   /**
    * Get optimized logical plan for the given QB tree in the semAnalyzer.
-   *
-   * @return
-   * @throws SemanticException
    */
   RelNode logicalPlan() throws SemanticException {
-    RelNode optimizedOptiqPlan = null;
+    return plan(false);
+  }
 
-    CalcitePlannerAction calcitePlannerAction = null;
+  /**
+   * Get engine-specific optimized logical plan for the given QB tree
+   * in the semAnalyzer.
+   */
+  RelNode enginePlan() throws SemanticException {
+    return plan(true);
+  }
+
+  private RelNode plan(boolean generateEnginePlan) throws SemanticException {
     if (this.columnAccessInfo == null) {
       this.columnAccessInfo = new ColumnAccessInfo();
     }
-    calcitePlannerAction = new CalcitePlannerAction(
+    CalcitePlannerAction calcitePlannerAction = new CalcitePlannerAction(
+        generateEnginePlan,
         prunedPartitions,
         ctx.getOpContext().getColStatsCache(),
         this.columnAccessInfo);
 
     try {
-      optimizedOptiqPlan = Frameworks.withPlanner(calcitePlannerAction, Frameworks
-          .newConfigBuilder().typeSystem(createTypeSystem(conf)).build());
+      return Frameworks.withPlanner(calcitePlannerAction,
+          Frameworks.newConfigBuilder().typeSystem(createTypeSystem(conf)).build());
     } catch (Exception e) {
       rethrowCalciteException(e);
       throw new AssertionError("rethrowCalciteException didn't throw for " + e.getMessage());
     }
-    return optimizedOptiqPlan;
   }
 
   /**
@@ -1923,6 +1929,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * Code responsible for Calcite plan generation and optimization.
    */
   private class CalcitePlannerAction implements Frameworks.PlannerAction<RelNode> {
+    private final boolean generateEnginePlan;
     private RelOptCluster                                 cluster;
     private RelOptSchema                                  relOptSchema;
     private FunctionHelper                                functionHelper;
@@ -1944,9 +1951,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
     LinkedHashMap<RelNode, ImmutableMap<String, Integer>> relToHiveColNameCalcitePosMap = new LinkedHashMap<RelNode, ImmutableMap<String, Integer>>();
 
     CalcitePlannerAction(
+        boolean generateEnginePlan,
         Map<String, PrunedPartitionList> partitionCache,
         Map<String, ColumnStatsList> colStatsCache,
         ColumnAccessInfo columnAccessInfo) {
+      this.generateEnginePlan = generateEnginePlan;
       this.partitionCache = partitionCache;
       this.colStatsCache = colStatsCache;
       this.columnAccessInfo = columnAccessInfo;
@@ -2053,17 +2062,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
       calciteOptimizedPlan = applyPostJoinOrderingTransform(calciteOptimizedPlan,
           mdProvider.getMetadataProvider(), executorProvider);
 
-      if (impalaHelper != null) {
-        perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-        HepProgram hepProgram = impalaHelper.getHepProgram(getDb());
-        // The last parameter here (noDag="true") allows for the creation of separate nodes
-        // even if they are equivalent.
-        // While this does have the potential to have a bigger memory footprint, the nodes being
-        // replaced in these rules are 1:1, so it should be ok here.
-        calciteOptimizedPlan =
-            executeProgram(calciteOptimizedPlan, hepProgram, mdProvider.getMetadataProvider(),
-                executorProvider, null, true);
-        perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Impala transformation rules");
+      if (generateEnginePlan) {
+        switch (conf.getEngine()) {
+        case IMPALA:
+          perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+          HepProgram hepProgram = impalaHelper.getHepProgram(getDb());
+          // The last parameter here (noDag="true") allows for the creation of separate nodes
+          // even if they are equivalent.
+          // While this does have the potential to have a bigger memory footprint, the nodes being
+          // replaced in these rules are 1:1, so it should be ok here.
+          calciteOptimizedPlan =
+              executeProgram(calciteOptimizedPlan, hepProgram, mdProvider.getMetadataProvider(),
+                  executorProvider, null, true);
+          perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Impala transformation rules");
+        default:
+          // Nothing to do for other engines for the time being
+        }
       }
 
       if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
@@ -2277,15 +2291,28 @@ public class CalcitePlanner extends SemanticAnalyzer {
             materializations = db.getPreprocessedMaterializedViews(tablesUsedQuery, getTxnMgr());
           }
         }
-        // We need to use the current cluster for the scan operator on views,
-        // otherwise the planner will throw an Exception (different planners)
-        materializations = materializations.stream().map(materialization -> {
-          final RelNode viewScan = materialization.tableRel;
-          final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
-              optCluster, viewScan);
-          return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
-              materialization.qualifiedTableName);
-        }).collect(Collectors.toList());
+        final boolean strict = conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_ENGINE_STRICT);
+        final String engine = conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE);
+        materializations = materializations.stream()
+            .filter(materialization -> {
+              // We filter the materializations for current engine if needed
+              if (strict) {
+                final Table materializedViewTable = HiveMaterializedViewUtils.extractTable(materialization);
+                final String materializationEngine = materializedViewTable.getProperty(Constants.MATERIALIZED_VIEW_ENGINE);
+                return materializationEngine == null || materializationEngine.equals(engine);
+              }
+              return true;
+            })
+            .map(materialization -> {
+              // We need to use the current cluster for the scan operator on views,
+              // otherwise the planner will throw an Exception (different planners)
+              final RelNode viewScan = materialization.tableRel;
+              final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
+                  optCluster, viewScan);
+              return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
+                  materialization.qualifiedTableName);
+            })
+            .collect(Collectors.toList());
       } catch (HiveException e) {
         LOG.warn("Exception loading materialized views", e);
       }

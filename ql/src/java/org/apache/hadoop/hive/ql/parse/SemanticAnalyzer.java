@@ -14081,7 +14081,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<String> sortColNames = null;
     List<String> distributeColNames = null;
     boolean isMaterialized = ast.getToken().getType() == HiveParser.TOK_CREATE_MATERIALIZED_VIEW;
-    boolean isRebuild = false;
     String location = null;
     RowFormatParams rowFormatParams = new RowFormatParams();
     StorageFormat storageFormat = new StorageFormat(conf);
@@ -14207,16 +14206,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     unparseTranslator.enable();
 
     if (isMaterialized) {
+      if (tblProps == null) {
+        tblProps = new HashMap<>();
+      }
+      // Record engine in the table properties at creation time
+      tblProps.put(Constants.MATERIALIZED_VIEW_ENGINE, conf.getVar(ConfVars.HIVE_EXECUTION_ENGINE));
       if (makeAcid()) {
-        if (tblProps == null) {
-          tblProps = new HashMap<>();
-        }
         tblProps = convertToAcidByDefault(storageFormat, dbDotTable, null, tblProps);
       }
 
       createVwDesc = new CreateViewDesc(
           dbDotTable, cols, comment, tblProps, partColNames, sortColNames, distributeColNames,
-          ifNotExists, isRebuild, rewriteEnabled, isAlterViewAs,
+          ifNotExists, false, rewriteEnabled, isAlterViewAs,
           storageFormat.getInputFormat(), storageFormat.getOutputFormat(),
           location, storageFormat.getSerde(), storageFormat.getStorageHandler(),
           storageFormat.getSerdeProps());

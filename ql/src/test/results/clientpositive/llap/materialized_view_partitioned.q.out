@@ -112,6 +112,8 @@ STAGE PLANS:
     Create View
       partition columns: key string
       columns: value string
+      table properties:
+        materializedview.engine tez
       expanded text: SELECT `value`, `key` FROM (SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250) `partition_mv_1`
       name: default.partition_mv_1
       original text: SELECT value, key FROM src_txn where key > 200 and key < 250
@@ -241,6 +243,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	32                  
 	numPartitions       	32                  
 	numRows             	55                  

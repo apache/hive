@@ -126,14 +126,14 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: test@case665558
 POSTHOOK: Input: test@viewcase665558
 #### A masked pattern was here ####
+NULL	NULL	1	NULL
 NULL	NULL	1	1
 NULL	NULL	1	4
 NULL	NULL	1	5
-NULL	NULL	1	NULL
-NULL	NULL	2	1
 NULL	NULL	2	NULL
-NULL	NULL	3	1
+NULL	NULL	2	1
 NULL	NULL	3	NULL
+NULL	NULL	3	1
 PREHOOK: query: drop database test cascade
 PREHOOK: type: DROPDATABASE
 PREHOOK: Input: database:test

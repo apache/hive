@@ -91,6 +91,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	232                 
@@ -150,6 +151,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	2                   
 	numRows             	2                   
 	rawDataSize         	232                 
@@ -209,6 +211,7 @@ Table Type:         	MATERIALIZED_VIEW
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"a\":\"true\",\"c\":\"true\"}}
 	bucketing_version   	2                   
+	materializedview.engine	tez                 
 	numFiles            	2                   
 	numRows             	3                   
 	rawDataSize         	348                 

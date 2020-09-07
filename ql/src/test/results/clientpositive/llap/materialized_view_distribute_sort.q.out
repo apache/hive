@@ -123,6 +123,8 @@ STAGE PLANS:
       distribute columns: key string
       columns: value string, key string
       sort columns: value string
+      table properties:
+        materializedview.engine tez
       expanded text: SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250
       name: default.distribute_mv_1
       original text: SELECT value, key FROM src_txn where key > 200 and key < 250
@@ -179,6 +181,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	bucketing_version   	2                   
 	materializedview.distribute.columns	[\"key\"]           
+	materializedview.engine	tez                 
 	materializedview.sort.columns	[\"value\"]         
 	numFiles            	1                   
 	numRows             	55                  
@@ -405,6 +408,8 @@ STAGE PLANS:
       distribute columns: value string
       columns: key string, value string
       sort columns: value string, key string
+      table properties:
+        materializedview.engine tez
       expanded text: SELECT `src_txn`.`key`, `src_txn`.`value` FROM `default`.`src_txn` where `src_txn`.`key` > 200 and `src_txn`.`key` < 250
       name: default.distribute_mv_2
       original text: SELECT key, value FROM src_txn where key > 200 and key < 250
@@ -461,6 +466,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	bucketing_version   	2                   
 	materializedview.distribute.columns	[\"value\"]         
+	materializedview.engine	tez                 
 	materializedview.sort.columns	[\"value\",\"key\"] 
 	numFiles            	1                   
 	numRows             	55                  
@@ -939,6 +945,8 @@ STAGE PLANS:
       distribute columns: key string
       columns: value string, key string
       sort columns: value string, key string
+      table properties:
+        materializedview.engine tez
       expanded text: SELECT `src_txn`.`value`, `src_txn`.`key` FROM `default`.`src_txn`, `default`.`src_txn_2`
 WHERE `src_txn`.`key` = `src_txn_2`.`key`
   AND `src_txn`.`key` > 200 AND `src_txn`.`key` < 250
@@ -1005,6 +1013,7 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
 	bucketing_version   	2                   
 	materializedview.distribute.columns	[\"key\"]           
+	materializedview.engine	tez                 
 	materializedview.sort.columns	[\"value\",\"key\"] 
 	numFiles            	1                   
 	numRows             	117                 
