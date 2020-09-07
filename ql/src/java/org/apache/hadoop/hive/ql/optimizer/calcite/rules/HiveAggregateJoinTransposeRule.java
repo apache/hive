@@ -32,10 +32,12 @@ import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.JoinInfo;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
@@ -47,7 +49,6 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlAggFunction;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlSplittableAggFunction;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.util.ImmutableBitSet;
@@ -331,11 +332,9 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
     }
     if (input instanceof Join) {
       Join join = (Join) input;
-      RexBuilder rexBuilder = input.getCluster().getRexBuilder();
-      SimpleConditionInfo cond = new SimpleConditionInfo(join.getCondition(), rexBuilder);
-
-      if (cond.valid) {
-        ImmutableBitSet newGroup = groups.intersect(ImmutableBitSet.fromBitSet(cond.fields));
+      JoinInfo ji = JoinInfo.of(join.getLeft(), join.getRight(), join.getCondition());
+      if (ji.isEqui()) {
+        ImmutableBitSet newGroup = groups.intersect(InputFinder.bits(join.getCondition()));
         RelNode l = join.getLeft();
         RelNode r = join.getRight();
 
@@ -366,46 +365,6 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
       return isGroupingUnique(project.getInput(), newGroup.build());
     }
     return false;
-  }
-
-  static class SimpleConditionInfo {
-
-    private boolean valid = true;
-
-    private BitSet fields = new BitSet();
-
-    public SimpleConditionInfo(RexNode condition, RexBuilder rexBuilder) {
-      RexNode cnf = RexUtil.toCnf(rexBuilder, condition);
-      if (cnf.getKind() == SqlKind.AND) {
-        RexCall andCall = (RexCall) cnf;
-        for (RexNode op : andCall.operands) {
-          process(op);
-        }
-      }
-      else {
-        process(cnf);
-      }
-    }
-
-    private void process(RexNode n) {
-      if (n.getKind() == SqlKind.EQUALS) {
-        RexCall c = (RexCall) n;
-        for (RexNode f : c.getOperands()) {
-          processField(f);
-        }
-      } else {
-        valid = false;
-      }
-    }
-
-    private void processField(RexNode f) {
-      if (f instanceof RexInputRef) {
-        RexInputRef rexInputRef = (RexInputRef) f;
-        fields.set(rexInputRef.getIndex());
-      } else {
-        valid = false;
-      }
-    }
   }
 
   /** Computes the closure of a set of columns according to a given list of
