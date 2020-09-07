@@ -249,7 +249,7 @@ class DriverTxnHandler {
     }
   }
 
-  private void setWriteIdForAcidFileSinks() throws SemanticException, LockException {
+  void setWriteIdForAcidFileSinks() throws SemanticException, LockException {
     if (!driverContext.getPlan().getAcidSinks().isEmpty()) {
       List<FileSinkDesc> acidSinks = new ArrayList<>(driverContext.getPlan().getAcidSinks());
       //sorting makes tests easier to write since file names and ROW__IDs depend on statementId

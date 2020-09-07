@@ -426,7 +426,12 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     stats = getTxnTableStats(msClient, tableName);
     boolean hasStats = 0 != stats.size();
     if (hasStats) {
-      verifyLongStats(0, 0, 0, stats);
+      // Either the truncate run before or the analyze
+      if (stats.get(0).getStatsData().getLongStats().getNumDVs() > 0) {
+        verifyLongStats(1, 0, 0, stats);
+      } else {
+        verifyLongStats(0, 0, 0, stats);
+      }
     }
 
     // Stats should be valid after analyze.

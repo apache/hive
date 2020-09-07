@@ -5167,6 +5167,8 @@ public class HiveConf extends Configuration {
             + "  hiveserver: runtime statistics are persisted in the hiveserver - all sessions share it\n"
             + "  metastore: runtime statistics are persisted in the metastore as well"),
 
+    HIVE_TXN_MAX_RETRYSNAPSHOT_COUNT("hive.txn.retrysnapshot.max.count", 5, new RangeValidator(1, 20),
+        "Maximum number of snapshot invalidate attempts per request."),
 
     HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.reexecution.max.count", 1,
         "Maximum number of re-executions for a single query."),

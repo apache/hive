@@ -48,6 +48,7 @@ import org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -72,6 +73,9 @@ public class Driver implements IDriver {
   private static final String CLASS_NAME = Driver.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final LogHelper CONSOLE = new LogHelper(LOG);
+
+  private static final String SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED =
+      "snapshot was outdated when locks were acquired";
 
   private int maxRows = 100;
   private ByteStream.Output bos = new ByteStream.Output();
@@ -488,45 +492,51 @@ public class Driver implements IDriver {
 
       lockAndRespond();
 
+      int retryShapshotCnt = 0;
+      int maxRetrySnapshotCnt = HiveConf.getIntVar(driverContext.getConf(),
+        HiveConf.ConfVars.HIVE_TXN_MAX_RETRYSNAPSHOT_COUNT);
+
       try {
-        if (!driverTxnHandler.isValidTxnListState()) {
-          LOG.info("Compiling after acquiring locks");
-          // Snapshot was outdated when locks were acquired, hence regenerate context,
-          // txn list and retry
+        while (!driverTxnHandler.isValidTxnListState() && ++retryShapshotCnt <= maxRetrySnapshotCnt) {
+          LOG.info("Re-compiling after acquiring locks, attempt #" + retryShapshotCnt);
+          // Snapshot was outdated when locks were acquired, hence regenerate context, txn list and retry.
           // TODO: Lock acquisition should be moved before analyze, this is a bit hackish.
-          // Currently, we acquire a snapshot, we compile the query wrt that snapshot,
-          // and then, we acquire locks. If snapshot is still valid, we continue as usual.
+          // Currently, we acquire a snapshot, compile the query with that snapshot, and then - acquire locks.
+          // If snapshot is still valid, we continue as usual.
           // But if snapshot is not valid, we recompile the query.
           if (driverContext.isOutdatedTxn()) {
+            LOG.info("Snapshot is outdated, re-initiating transaction ...");
             driverContext.getTxnManager().rollbackTxn();
 
             String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
             driverContext.getTxnManager().openTxn(context, userFromUGI, driverContext.getTxnType());
             lockAndRespond();
           }
+
           driverContext.setRetrial(true);
           driverContext.getBackupContext().addSubContext(context);
           driverContext.getBackupContext().setHiveLocks(context.getHiveLocks());
           context = driverContext.getBackupContext();
+
           driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
             driverContext.getTxnManager().getValidTxns().toString());
+
           if (driverContext.getPlan().hasAcidResourcesInQuery()) {
+            compileInternal(context.getCmd(), true);
             driverTxnHandler.recordValidWriteIds();
+            driverTxnHandler.setWriteIdForAcidFileSinks();
           }
+          // Since we're reusing the compiled plan, we need to update its start time for current run
+          driverContext.getPlan().setQueryStartTime(driverContext.getQueryDisplay().getQueryStartTime());
+        }
 
-          if (!alreadyCompiled) {
-            // compile internal will automatically reset the perf logger
-            compileInternal(command, true);
-          } else {
-            // Since we're reusing the compiled plan, we need to update its start time for current run
-            driverContext.getPlan().setQueryStartTime(driverContext.getQueryDisplay().getQueryStartTime());
-          }
+        if (retryShapshotCnt > maxRetrySnapshotCnt) {
+          // Throw exception
+          HiveException e = new HiveException(
+              "Operation could not be executed, " + SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + ".");
+          DriverUtils.handleHiveException(driverContext, e, 14, null);
 
-          if (!driverTxnHandler.isValidTxnListState()) {
-            // Throw exception
-            DriverUtils.handleHiveException(driverContext, new HiveException("Operation could not be executed"), 14, null);
-          }
-
+        } else if (retryShapshotCnt != 0) {
           //Reset the PerfLogger
           perfLogger = SessionState.getPerfLogger(true);
 
@@ -535,7 +545,7 @@ public class Driver implements IDriver {
           // same instance of Driver, which can run multiple queries.
           context.setHiveTxnManager(driverContext.getTxnManager());
         }
-      } catch (LockException e) {
+      } catch (LockException | SemanticException e) {
         DriverUtils.handleHiveException(driverContext, e, 13, null);
       }
 
