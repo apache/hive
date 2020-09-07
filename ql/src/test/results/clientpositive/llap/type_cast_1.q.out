@@ -1,0 +1,36 @@
+PREHOOK: query: EXPLAIN
+SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: 5 (type: int)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+5

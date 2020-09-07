@@ -1,0 +1,280 @@
+PREHOOK: query: create table over1k_n4(
+t tinyint,
+si smallint,
+i int,
+b bigint,
+f float,
+d double,
+bo boolean,
+s string,
+ts timestamp,
+`dec` decimal(4,2),
+bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@over1k_n4
+POSTHOOK: query: create table over1k_n4(
+t tinyint,
+si smallint,
+i int,
+b bigint,
+f float,
+d double,
+bo boolean,
+s string,
+ts timestamp,
+`dec` decimal(4,2),
+bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@over1k_n4
+PREHOOK: query: load data local inpath '../../data/files/over1k' overwrite into table over1k_n4
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over1k_n4
+POSTHOOK: query: load data local inpath '../../data/files/over1k' overwrite into table over1k_n4
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over1k_n4
+PREHOOK: query: load data local inpath '../../data/files/over1k' into table over1k_n4
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@over1k_n4
+POSTHOOK: query: load data local inpath '../../data/files/over1k' into table over1k_n4
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@over1k_n4
+PREHOOK: query: analyze table over1k_n4 compute statistics
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n4
+PREHOOK: Output: default@over1k_n4
+POSTHOOK: query: analyze table over1k_n4 compute statistics
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n4
+POSTHOOK: Output: default@over1k_n4
+PREHOOK: query: analyze table over1k_n4 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@over1k_n4
+PREHOOK: Output: default@over1k_n4
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table over1k_n4 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@over1k_n4
+POSTHOOK: Output: default@over1k_n4
+#### A masked pattern was here ####
+PREHOOK: query: explain select count(*) from over1k_n4 where (
+(t=1 and si=2)
+or (t=2 and si=3)
+or (t=3 and si=4) 
+or (t=4 and si=5) 
+or (t=5 and si=6) 
+or (t=6 and si=7) 
+or (t=7 and si=8)
+or (t=9 and si=10)
+or (t=10 and si=11)
+or (t=11 and si=12)
+or (t=12 and si=13)
+or (t=13 and si=14) 
+or (t=14 and si=15) 
+or (t=15 and si=16) 
+or (t=16 and si=17) 
+or (t=17 and si=18)
+or (t=27 and si=28)
+or (t=37 and si=38)
+or (t=47 and si=48)
+or (t=52 and si=53))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from over1k_n4 where (
+(t=1 and si=2)
+or (t=2 and si=3)
+or (t=3 and si=4) 
+or (t=4 and si=5) 
+or (t=5 and si=6) 
+or (t=6 and si=7) 
+or (t=7 and si=8)
+or (t=9 and si=10)
+or (t=10 and si=11)
+or (t=11 and si=12)
+or (t=12 and si=13)
+or (t=13 and si=14) 
+or (t=14 and si=15) 
+or (t=15 and si=16) 
+or (t=16 and si=17) 
+or (t=17 and si=18)
+or (t=27 and si=28)
+or (t=37 and si=38)
+or (t=47 and si=48)
+or (t=52 and si=53))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over1k_n4
+                  filterExpr: (((t = 1Y) and (si = 2S)) or ((t = 2Y) and (si = 3S)) or ((t = 3Y) and (si = 4S)) or ((t = 4Y) and (si = 5S)) or ((t = 5Y) and (si = 6S)) or ((t = 6Y) and (si = 7S)) or ((t = 7Y) and (si = 8S)) or ((t = 9Y) and (si = 10S)) or ((t = 10Y) and (si = 11S)) or ((t = 11Y) and (si = 12S)) or ((t = 12Y) and (si = 13S)) or ((t = 13Y) and (si = 14S)) or ((t = 14Y) and (si = 15S)) or ((t = 15Y) and (si = 16S)) or ((t = 16Y) and (si = 17S)) or ((t = 17Y) and (si = 18S)) or ((t = 27Y) and (si = 28S)) or ((t = 37Y) and (si = 38S)) or ((t = 47Y) and (si = 48S)) or ((t = 52Y) and (si = 53S))) (type: boolean)
+                  Statistics: Num rows: 2098 Data size: 16744 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (((t = 1Y) and (si = 2S)) or ((t = 2Y) and (si = 3S)) or ((t = 3Y) and (si = 4S)) or ((t = 4Y) and (si = 5S)) or ((t = 5Y) and (si = 6S)) or ((t = 6Y) and (si = 7S)) or ((t = 7Y) and (si = 8S)) or ((t = 9Y) and (si = 10S)) or ((t = 10Y) and (si = 11S)) or ((t = 11Y) and (si = 12S)) or ((t = 12Y) and (si = 13S)) or ((t = 13Y) and (si = 14S)) or ((t = 14Y) and (si = 15S)) or ((t = 15Y) and (si = 16S)) or ((t = 16Y) and (si = 17S)) or ((t = 17Y) and (si = 18S)) or ((t = 27Y) and (si = 28S)) or ((t = 37Y) and (si = 38S)) or ((t = 47Y) and (si = 48S)) or ((t = 52Y) and (si = 53S))) (type: boolean)
+                    Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      Statistics: Num rows: 20 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.95
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select count(*) from over1k_n4 where (
+(t=1 and si=2)
+or (t=2 and si=3)
+or (t=3 and si=4) 
+or (t=4 and si=5) 
+or (t=5 and si=6) 
+or (t=6 and si=7) 
+or (t=7 and si=8)
+or (t=9 and si=10)
+or (t=10 and si=11)
+or (t=11 and si=12)
+or (t=12 and si=13)
+or (t=13 and si=14) 
+or (t=14 and si=15) 
+or (t=15 and si=16) 
+or (t=16 and si=17) 
+or (t=17 and si=18)
+or (t=27 and si=28)
+or (t=37 and si=38)
+or (t=47 and si=48)
+or (t=52 and si=53))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over1k_n4
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from over1k_n4 where (
+(t=1 and si=2)
+or (t=2 and si=3)
+or (t=3 and si=4) 
+or (t=4 and si=5) 
+or (t=5 and si=6) 
+or (t=6 and si=7) 
+or (t=7 and si=8)
+or (t=9 and si=10)
+or (t=10 and si=11)
+or (t=11 and si=12)
+or (t=12 and si=13)
+or (t=13 and si=14) 
+or (t=14 and si=15) 
+or (t=15 and si=16) 
+or (t=16 and si=17) 
+or (t=17 and si=18)
+or (t=27 and si=28)
+or (t=37 and si=38)
+or (t=47 and si=48)
+or (t=52 and si=53))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over1k_n4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: over1k_n4
+                  filterExpr: (((t = 1Y) and (si = 2S)) or ((t = 2Y) and (si = 3S)) or ((t = 3Y) and (si = 4S)) or ((t = 4Y) and (si = 5S)) or ((t = 5Y) and (si = 6S)) or ((t = 6Y) and (si = 7S)) or ((t = 7Y) and (si = 8S)) or ((t = 9Y) and (si = 10S)) or ((t = 10Y) and (si = 11S)) or ((t = 11Y) and (si = 12S)) or ((t = 12Y) and (si = 13S)) or ((t = 13Y) and (si = 14S)) or ((t = 14Y) and (si = 15S)) or ((t = 15Y) and (si = 16S)) or ((t = 16Y) and (si = 17S)) or ((t = 17Y) and (si = 18S)) or ((t = 27Y) and (si = 28S)) or ((t = 37Y) and (si = 38S)) or ((t = 47Y) and (si = 48S)) or ((t = 52Y) and (si = 53S))) (type: boolean)
+                  Statistics: Num rows: 2098 Data size: 211174 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (((t = 1Y) and (si = 2S)) or ((t = 2Y) and (si = 3S)) or ((t = 3Y) and (si = 4S)) or ((t = 4Y) and (si = 5S)) or ((t = 5Y) and (si = 6S)) or ((t = 6Y) and (si = 7S)) or ((t = 7Y) and (si = 8S)) or ((t = 9Y) and (si = 10S)) or ((t = 10Y) and (si = 11S)) or ((t = 11Y) and (si = 12S)) or ((t = 12Y) and (si = 13S)) or ((t = 13Y) and (si = 14S)) or ((t = 14Y) and (si = 15S)) or ((t = 15Y) and (si = 16S)) or ((t = 16Y) and (si = 17S)) or ((t = 17Y) and (si = 18S)) or ((t = 27Y) and (si = 28S)) or ((t = 37Y) and (si = 38S)) or ((t = 47Y) and (si = 48S)) or ((t = 52Y) and (si = 53S))) (type: boolean)
+                    Statistics: Num rows: 2098 Data size: 211174 Basic stats: COMPLETE Column stats: NONE
+                    Select Operator
+                      Statistics: Num rows: 2098 Data size: 211174 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        aggregations: count()
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                          value expressions: _col0 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

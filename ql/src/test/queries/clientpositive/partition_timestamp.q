@@ -15,7 +15,7 @@ insert overwrite table partition_timestamp_1 partition(dt='2001-01-01 02:00:00',
 insert overwrite table partition_timestamp_1 partition(dt='2001-01-01 03:00:00', region= '10')
   select * from src tablesample (11 rows);
 
-select distinct dt from partition_timestamp_1;
+select distinct dt from partition_timestamp_1 order by dt;
 select * from partition_timestamp_1 where dt = '2000-01-01 01:00:00' and region = '2' order by key,value;
 
 -- 10

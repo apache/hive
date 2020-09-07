@@ -37,6 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -49,6 +50,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Context.Operation;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -58,6 +60,7 @@ import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
@@ -241,9 +244,25 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         work.getCboPlan(), work.getOptimizedSQL());
   }
 
+  public JSONObject getJSONPlan(PrintStream out, ExplainWork work, String stageIdRearrange)
+          throws Exception {
+    return getJSONPlan(out, work.getRootTasks(), work.getFetchTask(),
+            work.isFormatted(), work.getExtended(), work.isAppendTaskType(), work.getCboInfo(),
+            work.getCboPlan(), work.getOptimizedSQL(), stageIdRearrange);
+  }
+
+  public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,
+                                boolean jsonOutput, boolean isExtended, boolean appendTaskType, String cboInfo,
+                                String cboPlan, String optimizedSQL) throws Exception {
+    return getJSONPlan(
+            out, tasks, fetchTask, jsonOutput, isExtended,
+            appendTaskType, cboInfo, cboPlan, optimizedSQL,
+            conf.getVar(ConfVars.HIVESTAGEIDREARRANGE));
+  }
+
   public JSONObject getJSONPlan(PrintStream out, List<Task<?>> tasks, Task<?> fetchTask,
       boolean jsonOutput, boolean isExtended, boolean appendTaskType, String cboInfo,
-      String cboPlan, String optimizedSQL) throws Exception {
+      String cboPlan, String optimizedSQL, String stageIdRearrange) throws Exception {
 
     // If the user asked for a formatted output, dump the json output
     // in the output stream
@@ -271,7 +290,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       }
     }
 
-    List<Task> ordered = StageIDsRearranger.getExplainOrder(conf, tasks);
+    List<Task> ordered = StageIDsRearranger.getExplainOrder(tasks, stageIdRearrange);
 
     if (fetchTask != null) {
       fetchTask.setParentTasks((List)StageIDsRearranger.getFetchSources(tasks));
@@ -372,7 +391,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     if (jsonOutput) {
       out = null;
     }
-    List<LockComponent> lockComponents = AcidUtils.makeLockComponents(work.getOutputs(), work.getInputs(), conf);
+    Operation operation = Optional.of(work).map(ExplainWork::getParseContext)
+        .map(ParseContext::getContext).map(Context::getOperation)
+        .orElse(Operation.OTHER);
+
+    List<LockComponent> lockComponents = AcidUtils.makeLockComponents(work.getOutputs(), work.getInputs(),
+        operation, conf);
     if (null != out) {
       out.print("LOCK INFORMATION:\n");
     }

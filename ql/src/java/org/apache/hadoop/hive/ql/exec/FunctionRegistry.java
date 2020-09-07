@@ -285,6 +285,7 @@ public final class FunctionRegistry {
     system.registerGenericUDF("quote", GenericUDFQuote.class);
     system.registerGenericUDF("nvl", GenericUDFCoalesce.class); //HIVE-20961
     system.registerGenericUDF("split", GenericUDFSplit.class);
+    system.registerGenericUDF("split_map_privs", GenericUDFStringToPrivilege.class);
     system.registerGenericUDF("str_to_map", GenericUDFStringToMap.class);
     system.registerGenericUDF("translate", GenericUDFTranslate.class);
     system.registerGenericUDF("validate_acid_sort_order", GenericUDFValidateAcidSortOrder.class);
@@ -467,13 +468,15 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());
 
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
+    system.registerGenericUDF("ndv_compute_bit_vector", GenericUDFNDVComputeBitVector.class);
+    system.registerGenericUDAF("compute_bit_vector", new GenericUDAFComputeBitVector());
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerGenericUDAF("approx_distinct", new GenericUDAFApproximateDistinct());
     system.registerUDAF("percentile", UDAFPercentile.class);
     system.registerGenericUDAF("percentile_cont", new GenericUDAFPercentileCont());
     system.registerGenericUDAF("percentile_disc", new GenericUDAFPercentileDisc());
 
-    DataSketchesFunctions.register(system);
+    system.registerUDFPlugin(DataSketchesFunctions.INSTANCE);
 
     // Generic UDFs
     system.registerGenericUDF("reflect", GenericUDFReflect.class);
@@ -829,6 +832,7 @@ public final class FunctionRegistry {
       return a;
     }
 
+
     if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
       // It is not primitive; check if it is a struct and we can infer a common class
       if (a.getCategory() == Category.STRUCT && b.getCategory() == Category.STRUCT) {
@@ -845,6 +849,15 @@ public final class FunctionRegistry {
       // Same primitive category but different qualifiers.
       // Rely on getTypeInfoForPrimitiveCategory() to sort out the type params.
       return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcA);
+    }
+
+    if (pcA == PrimitiveCategory.VOID) {
+      // Handle NULL, we return the type of pcB
+      return b;
+    }
+    if (pcB == PrimitiveCategory.VOID) {
+      // Handle NULL, we return the type of pcA
+      return a;
     }
 
     PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
@@ -1362,6 +1375,13 @@ public final class FunctionRegistry {
   }
 
   /**
+   * Returns whether the exprNodeDesc is a node of "negative".
+   */
+  public static boolean isOpNegative(ExprNodeDesc desc) {
+    return GenericUDFOPNegative.class == getGenericUDFClassFromExprDesc(desc);
+  }
+
+  /**
    * Returns whether the exprNodeDesc is node of "cast".
    */
   public static boolean isOpCast(ExprNodeDesc desc) {
@@ -1529,11 +1549,6 @@ public final class FunctionRegistry {
       return (TableFunctionResolver) ReflectionUtils.newInstance(tfInfo.getFunctionClass(), null);
     }
     return null;
-  }
-
-  public static TableFunctionResolver getWindowingTableFunction()
-      throws SemanticException {
-    return getTableFunctionResolver(WINDOWING_TABLE_FUNCTION);
   }
 
   public static boolean isNoopFunction(String fnName) {

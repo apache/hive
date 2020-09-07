@@ -49,7 +49,6 @@ STAGE PLANS:
                           null sort order: zz
                           sort order: ++
                           Statistics: Num rows: 2048 Data size: 16176 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -177,7 +176,6 @@ STAGE PLANS:
                               native: true
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                           Statistics: Num rows: 9173 Data size: 72384 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.3
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -428,7 +426,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 131 Data size: 1048 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.3
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -581,7 +578,6 @@ STAGE PLANS:
                               nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                               partitionColumns: 0:tinyint
                           Statistics: Num rows: 131 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
-                          TopN Hash Memory Usage: 0.3
             Execution mode: vectorized, llap
             LLAP IO: all inputs
             Map Vectorization:
@@ -627,22 +623,29 @@ STAGE PLANS:
                 mode: mergepartial
                 outputColumnNames: _col0
                 Statistics: Num rows: 131 Data size: 264 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 20
-                  Limit Vectorization:
-                      className: VectorLimitOperator
+                Select Operator
+                  expressions: _col0 (type: tinyint)
+                  outputColumnNames: _col0
+                  Select Vectorization:
+                      className: VectorSelectOperator
                       native: true
-                  Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
-                  File Output Operator
-                    compressed: false
-                    File Sink Vectorization:
-                        className: VectorFileSinkOperator
-                        native: false
+                      projectedOutputColumnNums: [0]
+                  Limit
+                    Number of rows: 20
+                    Limit Vectorization:
+                        className: VectorLimitOperator
+                        native: true
                     Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    File Output Operator
+                      compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
+                      Statistics: Num rows: 20 Data size: 44 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -835,7 +838,6 @@ STAGE PLANS:
                           native: true
                           nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                       Statistics: Num rows: 131 Data size: 1312 Basic stats: COMPLETE Column stats: COMPLETE
-                      TopN Hash Memory Usage: 0.3
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -1081,7 +1083,6 @@ STAGE PLANS:
                         native: true
                         nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                     Statistics: Num rows: 4586 Data size: 64088 Basic stats: COMPLETE Column stats: COMPLETE
-                    TopN Hash Memory Usage: 0.3
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Vectorization:

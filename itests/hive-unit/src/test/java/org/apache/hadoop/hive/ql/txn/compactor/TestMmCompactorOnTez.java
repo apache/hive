@@ -21,6 +21,7 @@ import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -44,9 +45,13 @@ import java.util.List;
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
 
 /**
- * Test functionality of MmMinorQueryCompactor,.
+ * Test functionality of MmMinorQueryCompactor.
  */
 public class TestMmCompactorOnTez extends CompactorOnTezTest {
+
+  public TestMmCompactorOnTez() {
+    mmCompaction = true;
+  }
 
   @Test public void testMmMinorCompactionNotPartitionedWithoutBuckets() throws Exception {
     String dbName = "default";
@@ -79,7 +84,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     // Verify bucket files in delta dirs
     List<String> expectedBucketFiles = Collections.singletonList("000000_0");
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
-        CompactorTestUtil.getBucketFileNames(fs, table, null, actualDeltasAfterComp.get(0)));
+        CompactorTestUtil.getBucketFileNamesForMMTables(fs, table, null, actualDeltasAfterComp.get(0)));
     verifyAllContents(tableName, testDataProvider, expectedData);
     // Clean up
     testDataProvider.dropTable(tableName);
@@ -122,7 +127,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     // Verify bucket files in delta dirs
     List<String> expectedBucketFiles = Arrays.asList("000000_0", "000001_0");
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
-        CompactorTestUtil.getBucketFileNames(fs, table, null, actualDeltasAfterComp.get(0)));
+        CompactorTestUtil.getBucketFileNamesForMMTables(fs, table, null, actualDeltasAfterComp.get(0)));
     verifyAllContents(tableName, testDataProvider, expectedData);
     // Clean up
     testDataProvider.dropTable(tableName);
@@ -166,7 +171,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     List<String> expectedBucketFiles = Collections.singletonList("000000_0");
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil
-            .getBucketFileNames(fs, table, partitionToday, actualDeltasAfterCompPartToday.get(0)));
+            .getBucketFileNamesForMMTables(fs, table, partitionToday, actualDeltasAfterCompPartToday.get(0)));
     verifyAllContents(tableName, dataProvider, expectedData);
     // Clean up
     dataProvider.dropTable(tableName);
@@ -238,7 +243,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     List<String> expectedBucketFiles = Arrays.asList("000000_0", "000001_0");
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
         CompactorTestUtil
-            .getBucketFileNames(fs, table, partitionToday, actualDeltasAfterCompPartToday.get(0)));
+            .getBucketFileNamesForMMTables(fs, table, partitionToday, actualDeltasAfterCompPartToday.get(0)));
     verifyAllContents(tableName, dataProvider, expectedData);
     // Clean up
     dataProvider.dropTable(tableName);
@@ -279,7 +284,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     // Verify bucket file in delta dir
     List<String> expectedBucketFile = Collections.singletonList("000000_0");
     Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFile,
-        CompactorTestUtil.getBucketFileNames(fs, table, null, actualDeltasAfterComp.get(0)));
+        CompactorTestUtil.getBucketFileNamesForMMTables(fs, table, null, actualDeltasAfterComp.get(0)));
     verifyAllContents(tableName, dataProvider, expectedData);
     // Clean up
     dataProvider.dropTable(tableName);
@@ -301,7 +306,6 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     CompactorTestUtil.runCleaner(conf);
     verifySuccessulTxn(1);
-    List<ShowCompactResponseElement> compacts;
     // Insert test data into test table
     dataProvider.insertMmTestData(tableName);
     // Run a compaction
@@ -341,7 +345,6 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MINOR, true);
     CompactorTestUtil.runCleaner(conf);
     verifySuccessulTxn(1);
-    List<ShowCompactResponseElement> compacts;
     // Verify delta directories after compaction
     Assert.assertEquals("Delta directories does not match after minor compaction",
         Collections.singletonList("delta_0000001_0000003_v0000007"),
@@ -382,7 +385,6 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
     CompactorTestUtil.runCompaction(conf, dbName, tableName, CompactionType.MAJOR, true);
     CompactorTestUtil.runCleaner(conf);
     verifySuccessulTxn(1);
-    List<ShowCompactResponseElement> compacts;
     // Verify base directory after compaction
     Assert.assertEquals("Base directory does not match after major compaction",
         Collections.singletonList("base_0000003_v0000007"),
@@ -401,7 +403,7 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
         Collections.singletonList("base_0000003_v0000007"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
     Assert.assertEquals("Delta directories does not match after minor compaction",
-        Collections.singletonList("delta_0000001_0000006_v0000016"),
+        Collections.singletonList("delta_0000004_0000006_v0000016"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
     verifyAllContents(tableName, dataProvider, expectedData);
   }
@@ -528,6 +530,53 @@ public class TestMmCompactorOnTez extends CompactorOnTezTest {
         Collections.singletonList("delta_0000001_0000009_v0000014"),
         CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
     verifyAllContents(tableName, testDataProvider, expectedData);
+  }
+
+  @Test public void testMmMajorCompactionDb() throws Exception {
+    testMmCompactionDb(CompactionType.MAJOR, "base_0000003_v0000009");
+  }
+
+  @Test public void testMmMinorCompactionDb() throws Exception {
+    testMmCompactionDb(CompactionType.MINOR, "delta_0000001_0000003_v0000009");
+  }
+
+  /**
+   * Make sure db is specified in compaction queries.
+   */
+  private void testMmCompactionDb(CompactionType compactionType, String resultDirName) throws Exception {
+    String dbName = "myDb";
+    String tableName = "testMmCompactionDb";
+    // Create test table
+    TestDataProvider dataProvider = new TestDataProvider();
+    dataProvider.createDb(dbName);
+    dataProvider.createMmTable(dbName, tableName, false, false, "orc");
+    // Find the location of the table
+    IMetaStoreClient metaStoreClient = new HiveMetaStoreClient(conf);
+    Table table = metaStoreClient.getTable(dbName, tableName);
+    FileSystem fs = FileSystem.get(conf);
+    // Insert test data into test table
+    dataProvider.insertMmTestData(dbName, tableName);
+    // Get all data before compaction is run
+    List<String> expectedData = dataProvider.getAllData(dbName, tableName, false);
+    Collections.sort(expectedData);
+    // Run a compaction
+    CompactorTestUtil.runCompaction(conf, dbName, tableName, compactionType, true);
+    CompactorTestUtil.runCleaner(conf);
+    verifySuccessulTxn(1);
+    // Verify directories after compaction
+    PathFilter pathFilter = compactionType == CompactionType.MAJOR ? AcidUtils.baseFileFilter :
+        AcidUtils.deltaFileFilter;
+    Assert.assertEquals("Result directories does not match after " + compactionType.name()
+            + " compaction", Collections.singletonList(resultDirName),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, pathFilter, table, null));
+    List<String> actualData = dataProvider.getAllData(dbName, tableName, false);
+    Collections.sort(actualData);
+    Assert.assertEquals(expectedData, actualData);
+  }
+
+  @Test public void testVectorizationOff() throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    testMmMinorCompactionAfterMajor();
   }
 
   /**

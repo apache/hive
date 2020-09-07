@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.ConsumerFeedback;
 import org.apache.hadoop.hive.llap.DebugUtils;
+import org.apache.hadoop.hive.llap.IllegalCacheConfigurationException;
 import org.apache.hadoop.hive.llap.LlapHiveUtils;
 import org.apache.hadoop.hive.llap.cache.BufferUsageManager;
 import org.apache.hadoop.hive.llap.cache.LlapDataBuffer;
@@ -219,16 +220,13 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
 
     // LlapInputFormat needs to know the file schema to decide if schema evolution is supported.
     orcReader = null;
+    PartitionDesc partitionDesc = LlapHiveUtils.partitionDescForPath(split.getPath(), parts);
     cacheTag = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_TRACK_CACHE_USAGE)
-        ? LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), true, parts) : null;
+        ? LlapHiveUtils.getDbAndTableNameForMetrics(split.getPath(), true, partitionDesc) : null;
     // 1. Get file metadata from cache, or create the reader and read it.
     // Don't cache the filesystem object for now; Tez closes it and FS cache will fix all that
     fsSupplier = getFsSupplier(split.getPath(), jobConf);
-    fileKey = determineFileId(fsSupplier, split,
-        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID),
-        HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID),
-        !HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_USE_FILEID_PATH)
-        );
+    fileKey = determineFileId(fsSupplier, split, daemonConf);
     fileMetadata = getFileFooterFromCacheOrDisk();
     final TypeDescription fileSchema = fileMetadata.getSchema();
 
@@ -496,8 +494,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private static Object determineFileId(Supplier<FileSystem> fsSupplier,
-    FileSplit split,
-      boolean allowSynthetic, boolean checkDefaultFs, boolean forceSynthetic) throws IOException {
+    FileSplit split, Configuration daemonConf) throws IOException {
+
     if (split instanceof OrcSplit) {
       Object fileKey = ((OrcSplit)split).getFileKey();
       if (fileKey != null) {
@@ -505,7 +503,17 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       }
     }
     LOG.warn("Split for " + split.getPath() + " (" + split.getClass() + ") does not have file ID");
-    return HdfsUtils.getFileId(fsSupplier.get(), split.getPath(), allowSynthetic, checkDefaultFs, forceSynthetic);
+    return determineFileId(fsSupplier, split.getPath(), daemonConf);
+  }
+
+  private static Object determineFileId(Supplier<FileSystem> fsSupplier, Path path, Configuration daemonConf)
+      throws IOException {
+
+    boolean allowSynthetic = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_ALLOW_SYNTHETIC_FILEID);
+    boolean checkDefaultFs = HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_CACHE_DEFAULT_FS_FILE_ID);
+    boolean forceSynthetic = !HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_USE_FILEID_PATH);
+
+    return HdfsUtils.getFileId(fsSupplier.get(), path, allowSynthetic, checkDefaultFs, forceSynthetic);
   }
 
   /**
@@ -537,7 +545,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     path = split.getPath();
     if (fileKey instanceof Long && HiveConf.getBoolVar(
         daemonConf, ConfVars.LLAP_IO_USE_FILEID_PATH)) {
-      path = HdfsUtils.getFileIdPath(fsSupplier.get(), path, (long)fileKey);
+      path = HdfsUtils.getFileIdPath(path, (long)fileKey);
     }
     LlapIoImpl.ORC_LOGGER.trace("Creating reader for {} ({})", path, split.getPath());
     long startTime = counters.startTimeCounter();
@@ -563,6 +571,52 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   /**
+   * Looks up metadata for the given Orc file in the cache. Will read it in, in case of a cache miss.
+   * @param path
+   * @param jobConf
+   * @param tag
+   * @param daemonConf
+   * @param metadataCache
+   * @return
+   * @throws IOException
+   */
+  public static OrcTail getOrcTailForPath(Path path, Configuration jobConf, CacheTag tag,
+      Configuration daemonConf, MetadataCache metadataCache, Object fileKey) throws IOException {
+    Supplier<FileSystem> fsSupplier = getFsSupplier(path, jobConf);
+    if (fileKey == null) {
+      fileKey = determineFileId(fsSupplier, path, daemonConf);
+    }
+
+    if(fileKey == null || metadataCache == null) {
+      throw new IllegalCacheConfigurationException("LLAP metadata cache not available for path " + path.toString());
+    }
+
+    LlapBufferOrBuffers tailBuffers = metadataCache.getFileMetadata(fileKey);
+    try {
+      // Cache hit
+      if (tailBuffers != null) {
+        return getOrcTailFromLlapBuffers(tailBuffers);
+      }
+
+      // Cache miss
+      throwIfCacheOnlyRead(HiveConf.getBoolVar(jobConf, ConfVars.LLAP_IO_CACHE_ONLY));
+
+      ReaderOptions opts = EncodedOrcFile.readerOptions(jobConf).filesystem(fsSupplier);
+      Reader reader = EncodedOrcFile.createReader(path, opts);
+      ByteBuffer tailBufferBb = reader.getSerializedFileFooter();
+      tailBuffers = metadataCache.putFileMetadata(fileKey, tailBufferBb, tag, new AtomicBoolean(false));
+      return getOrcTailFromLlapBuffers(tailBuffers);
+
+    } finally {
+      // By this time buffers got locked at either cache look up or cache insert times.
+      if (tailBuffers != null) {
+        metadataCache.decRefBuffer(tailBuffers);
+      }
+    }
+
+  }
+
+  /**
    *  Gets file metadata for the split from cache, or reads it from the file.
    */
   private OrcFileMetadata getFileFooterFromCacheOrDisk() throws IOException {
@@ -574,31 +628,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       tailBuffers = metadataCache.getFileMetadata(fileKey);
       if (tailBuffers != null) {
         try {
-          MemoryBuffer tailBuffer = tailBuffers.getSingleBuffer();
-          ByteBuffer bb = null;
-          if (tailBuffer != null) {
-            bb = tailBuffer.getByteBufferDup();
-            // TODO: remove the copy after ORC-158 and ORC-197
-            // if (bb.isDirect()) {
-              ByteBuffer dupBb = tailBuffer.getByteBufferDup(); // Don't mess with the cached object.
-              bb = ByteBuffer.allocate(dupBb.remaining());
-              bb.put(dupBb);
-              bb.flip();
-            // }
-          } else {
-            // TODO: add the ability to extractFileTail to read from multiple buffers?
-            MemoryBuffer[] tailBufferArray = tailBuffers.getMultipleBuffers();
-            int totalSize = 0;
-            for (MemoryBuffer buf : tailBufferArray) {
-              totalSize += buf.getByteBufferRaw().remaining();
-            }
-            bb = ByteBuffer.allocate(totalSize);
-            for (MemoryBuffer buf : tailBufferArray) {
-              bb.put(buf.getByteBufferDup());
-            }
-            bb.flip();
-          }
-          OrcTail orcTail = ReaderImpl.extractFileTail(bb);
+          OrcTail orcTail = getOrcTailFromLlapBuffers(tailBuffers);
+          counters.incrCounter(LlapIOCounters.METADATA_CACHE_HIT);
           FileTail tail = orcTail.getFileTail();
           stats = orcTail.getStripeStatisticsProto();
           stripes = new ArrayList<>(tail.getFooter().getStripesCount());
@@ -607,15 +638,15 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           }
           return new OrcFileMetadata(
               fileKey, tail.getFooter(), tail.getPostscript(), stats, stripes,
-            ReaderImpl.getFileVersion(tail.getPostscript().getVersionList()));
+              ReaderImpl.getFileVersion(tail.getPostscript().getVersionList()));
         } finally {
           // We don't need the buffer anymore.
           metadataCache.decRefBuffer(tailBuffers);
-          counters.incrCounter(LlapIOCounters.METADATA_CACHE_HIT);
         }
+      } else {
+        counters.incrCounter(LlapIOCounters.METADATA_CACHE_MISS);
+        throwIfCacheOnlyRead(isReadCacheOnly);
       }
-      counters.incrCounter(LlapIOCounters.METADATA_CACHE_MISS);
-      throwIfCacheOnlyRead(isReadCacheOnly);
     }
     ensureOrcReader();
     ByteBuffer tailBufferBb = orcReader.getSerializedFileFooter();
@@ -626,6 +657,42 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     FileTail ft = orcReader.getFileTail();
     return new OrcFileMetadata(fileKey, ft.getFooter(), ft.getPostscript(),
         orcReader.getOrcProtoStripeStatistics(), orcReader.getStripes(), orcReader.getFileVersion());
+  }
+
+
+  /**
+   * Utility function to produce a deseralized OrcTail instance from LLAP buffers retrieved from metadata cache.
+   * Expects buffers are already locked before invocation, and caller releases them thereafter.
+   * @param tailBuffers
+   * @return
+   * @throws IOException
+   */
+  private static OrcTail getOrcTailFromLlapBuffers(LlapBufferOrBuffers tailBuffers) throws IOException {
+    MemoryBuffer tailBuffer = tailBuffers.getSingleBuffer();
+    ByteBuffer bb = null;
+    if (tailBuffer != null) {
+      bb = tailBuffer.getByteBufferDup();
+      // TODO: remove the copy after ORC-158 and ORC-197
+      // if (bb.isDirect()) {
+      ByteBuffer dupBb = tailBuffer.getByteBufferDup(); // Don't mess with the cached object.
+      bb = ByteBuffer.allocate(dupBb.remaining());
+      bb.put(dupBb);
+      bb.flip();
+      // }
+    } else {
+      // TODO: add the ability to extractFileTail to read from multiple buffers?
+      MemoryBuffer[] tailBufferArray = tailBuffers.getMultipleBuffers();
+      int totalSize = 0;
+      for (MemoryBuffer buf : tailBufferArray) {
+        totalSize += buf.getByteBufferRaw().remaining();
+      }
+      bb = ByteBuffer.allocate(totalSize);
+      for (MemoryBuffer buf : tailBufferArray) {
+        bb.put(buf.getByteBufferDup());
+      }
+      bb.flip();
+    }
+    return ReaderImpl.extractFileTail(bb);
   }
 
   private OrcProto.StripeFooter buildStripeFooter(

@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
@@ -87,7 +88,8 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
     // 3. Virtual columns
     Set<Integer> newVcolsInCalcite = new HashSet<Integer>();
     newVcolsInCalcite.addAll(inputs[0].vcolsInCalcite);
-    if (joinRel instanceof HiveMultiJoin || !((joinRel instanceof Join) && ((Join) joinRel).isSemiJoin())) {
+    if (joinRel instanceof HiveMultiJoin || !((joinRel instanceof Join) &&
+            ((((Join) joinRel).isSemiJoin()) || (((Join) joinRel).getJoinType() == JoinRelType.ANTI)))) {
       int shift = inputs[0].inputs.get(0).getSchema().getSignature().size();
       for (int i = 1; i < inputs.length; i++) {
         newVcolsInCalcite.addAll(HiveCalciteUtil.shiftVColsSet(inputs[i].vcolsInCalcite, shift));
@@ -103,7 +105,7 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
     // 4. Extract join key expressions from HiveSortExchange
     ExprNodeDesc[][] joinExpressions = new ExprNodeDesc[inputs.length][];
     for (int i = 0; i < inputs.length; i++) {
-      joinExpressions[i] = ((HiveSortExchange) joinRel.getInput(i)).getJoinExpressions();
+      joinExpressions[i] = ((HiveSortExchange) joinRel.getInput(i)).getKeyExpressions();
     }
 
     // 5. Extract rest of join predicate info. We infer the rest of join condition
@@ -116,6 +118,8 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
       joinFilters = ((HiveMultiJoin)joinRel).getJoinFilters();
     } else if (joinRel instanceof HiveSemiJoin){
       joinFilters = ImmutableList.of(((HiveSemiJoin)joinRel).getJoinFilter());
+    } else if (joinRel instanceof HiveAntiJoin){
+      joinFilters = ImmutableList.of(((HiveAntiJoin)joinRel).getJoinFilter());
     } else {
       throw new SemanticException("Can't handle join type: " + joinRel.getClass().getName());
     }
@@ -159,12 +163,24 @@ class JoinVisitor extends HiveRelNodeVisitor<RelNode> {
       noOuterJoin = !hmj.isOuterJoin();
     } else {
       joinCondns = new JoinCondDesc[1];
-      semiJoin = (join instanceof Join) && ((Join) join).isSemiJoin();
+      JoinRelType joinRelType = JoinRelType.INNER;
+      if (join instanceof Join) {
+        joinRelType = ((Join) join).getJoinType();
+      }
       JoinType joinType;
-      if (semiJoin) {
-        joinType = JoinType.LEFTSEMI;
-      } else {
-        joinType = transformJoinType(((Join)join).getJoinType());
+      switch (joinRelType) {
+        case SEMI:
+          joinType = JoinType.LEFTSEMI;
+          semiJoin = true;
+          break;
+        case ANTI:
+          joinType = JoinType.ANTI;
+          semiJoin = true;
+          break;
+        default:
+          assert join instanceof Join;
+          joinType = transformJoinType(((Join)join).getJoinType());
+          semiJoin = false;
       }
       joinCondns[0] = new JoinCondDesc(new JoinCond(0, 1, joinType));
       noOuterJoin = joinType != JoinType.FULLOUTER && joinType != JoinType.LEFTOUTER

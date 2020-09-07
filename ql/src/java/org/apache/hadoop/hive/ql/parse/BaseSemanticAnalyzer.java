@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
@@ -176,10 +177,13 @@ public abstract class BaseSemanticAnalyzer {
    */
   private Boolean autoCommitValue;
 
+  protected Boolean prepareQuery = false;
+
   public Boolean getAutoCommitValue() {
     return autoCommitValue;
   }
-  void setAutoCommitValue(Boolean autoCommit) {
+
+  public void setAutoCommitValue(Boolean autoCommit) {
     autoCommitValue = autoCommit;
   }
 
@@ -189,6 +193,10 @@ public abstract class BaseSemanticAnalyzer {
 
   public String getCboInfo() {
     return ctx.getCboInfo();
+  }
+
+  public boolean isPrepareQuery() {
+    return prepareQuery;
   }
 
   class RowFormatParams {
@@ -283,6 +291,10 @@ public abstract class BaseSemanticAnalyzer {
     this.ctx = ctx;
   }
 
+  public Context getCtx() {
+    return this.ctx;
+  }
+
   public void analyze(ASTNode ast, Context ctx) throws SemanticException {
     initCtx(ctx);
     init(true);
@@ -314,13 +326,6 @@ public abstract class BaseSemanticAnalyzer {
 
   protected void reset(boolean clearPartsCache) {
     rootTasks = new ArrayList<Task<?>>();
-  }
-
-  public static String stripIdentifierQuotes(String val) {
-    if ((val.charAt(0) == '`' && val.charAt(val.length() - 1) == '`')) {
-      val = val.substring(1, val.length() - 1);
-    }
-    return val;
   }
 
   public static String stripQuotes(String val) {
@@ -950,9 +955,18 @@ public abstract class BaseSemanticAnalyzer {
       throw new SemanticException("empty struct not allowed.");
     }
     StringBuilder buffer = new StringBuilder(typeStr);
+    Set<String> attributeIdentifiers = new HashSet<>(children);
     for (int i = 0; i < children; i++) {
       ASTNode child = (ASTNode) typeNode.getChild(i);
-      buffer.append(unescapeIdentifier(child.getChild(0).getText())).append(":");
+
+      String attributeIdentifier = unescapeIdentifier(child.getChild(0).getText());
+      if (attributeIdentifiers.contains(attributeIdentifier)) {
+        throw new SemanticException(ErrorMsg.AMBIGUOUS_STRUCT_ATTRIBUTE, attributeIdentifier);
+      } else {
+        attributeIdentifiers.add(attributeIdentifier);
+      }
+
+      buffer.append(attributeIdentifier).append(":");
       buffer.append(getTypeStringFromAST((ASTNode) child.getChild(1)));
       if (i < children - 1) {
         buffer.append(",");
@@ -1560,7 +1574,7 @@ public abstract class BaseSemanticAnalyzer {
     for (Entry<ASTNode, ExprNodeDesc> astExprNodePair : astExprNodeMap.entrySet()) {
       String astKeyName = astExprNodePair.getKey().toString().toLowerCase();
       if (astExprNodePair.getKey().getType() == HiveParser.Identifier) {
-        astKeyName = stripIdentifierQuotes(astKeyName);
+        astKeyName = ParseUtils.stripIdentifierQuotes(astKeyName);
       }
       String colType = partCols.get(astKeyName);
       ObjectInspector inputOI = TypeInfoUtils.getStandardJavaObjectInspectorFromTypeInfo
@@ -1758,6 +1772,7 @@ public abstract class BaseSemanticAnalyzer {
     prop.setProperty("columns", colTypes[0]);
     prop.setProperty("columns.types", colTypes[1]);
     prop.setProperty(serdeConstants.SERIALIZATION_LIB, LazySimpleSerDe.class.getName());
+    prop.setProperty(hive_metastoreConstants.TABLE_BUCKETING_VERSION, "-1");
     FetchWork fetch =
         new FetchWork(ctx.getResFile(), new TableDesc(TextInputFormat.class,
             IgnoreKeyTextOutputFormat.class, prop), -1);

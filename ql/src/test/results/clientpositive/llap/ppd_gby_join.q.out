@@ -1,0 +1,556 @@
+PREHOOK: query: EXPLAIN
+SELECT src1.c1, count(1) 
+FROM
+(SELECT src.key AS c1, src.value AS c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key AS c3, src.value AS c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
+GROUP BY src1.c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT src1.c1, count(1) 
+FROM
+(SELECT src.key AS c1, src.value AS c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key AS c3, src.value AS c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
+GROUP BY src1.c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: ((key > '20') and (key < '400') and ((value < 'val_50') or (key > '2')) and (key <> '4')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((key > '20') and (key < '400') and ((value < 'val_50') or (key > '2')) and (key <> '4')) (type: boolean)
+                    Statistics: Num rows: 36 Data size: 6408 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 36 Data size: 3132 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 36 Data size: 3132 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: ((key > '20') and (key < '400') and (key <> '4')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((key > '20') and (key < '400') and (key <> '4')) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 56 Data size: 4872 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0 (type: string)
+                  minReductionHashAggr: 0.58928573
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 23 Data size: 2185 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 23 Data size: 2185 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 23 Data size: 2185 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 23 Data size: 2185 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT src1.c1, count(1) 
+FROM
+(SELECT src.key AS c1, src.value AS c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key AS c3, src.value AS c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
+GROUP BY src1.c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT src1.c1, count(1) 
+FROM
+(SELECT src.key AS c1, src.value AS c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key AS c3, src.value AS c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
+GROUP BY src1.c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+200	4
+201	1
+202	1
+203	4
+205	4
+207	4
+208	9
+209	4
+213	4
+214	1
+216	4
+217	4
+218	1
+219	4
+221	4
+222	1
+223	4
+224	4
+226	1
+228	1
+229	4
+230	25
+233	4
+235	1
+237	4
+238	4
+239	4
+24	4
+241	1
+242	4
+244	1
+247	1
+248	1
+249	1
+252	1
+255	4
+256	4
+257	1
+258	1
+26	4
+260	1
+262	1
+263	1
+265	4
+266	1
+27	1
+272	4
+273	9
+274	1
+275	1
+277	16
+278	4
+28	1
+280	4
+281	4
+282	4
+283	1
+284	1
+285	1
+286	1
+287	1
+288	4
+289	1
+291	1
+292	1
+296	1
+298	9
+30	1
+302	1
+305	1
+306	1
+307	4
+308	1
+309	4
+310	1
+311	9
+315	1
+316	9
+317	4
+318	9
+321	4
+322	4
+323	1
+325	4
+327	9
+33	1
+331	4
+332	1
+333	4
+335	1
+336	1
+338	1
+339	1
+34	1
+341	1
+342	4
+344	4
+345	1
+348	25
+35	9
+351	1
+353	4
+356	1
+360	1
+362	1
+364	1
+365	1
+366	1
+367	4
+368	1
+369	9
+37	4
+373	1
+374	1
+375	1
+377	1
+378	1
+379	1
+382	4
+384	9
+386	1
+389	1
+392	1
+393	1
+394	1
+395	4
+396	9
+397	4
+399	4
+PREHOOK: query: EXPLAIN
+SELECT src1.c1, count(1) 
+FROM
+(SELECT src.key AS c1, src.value AS c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key AS c3, src.value AS c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
+GROUP BY src1.c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT src1.c1, count(1) 
+FROM
+(SELECT src.key AS c1, src.value AS c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key AS c3, src.value AS c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
+GROUP BY src1.c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: ((key > '20') and (key < '400') and ((value < 'val_50') or (key > '2')) and (key <> '4')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((key > '20') and (key < '400') and ((value < 'val_50') or (key > '2')) and (key <> '4')) (type: boolean)
+                    Statistics: Num rows: 36 Data size: 6408 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 36 Data size: 3132 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 36 Data size: 3132 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  filterExpr: ((key > '20') and (key < '400') and (key <> '4')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((key > '20') and (key < '400') and (key <> '4')) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0
+                Statistics: Num rows: 56 Data size: 4872 Basic stats: COMPLETE Column stats: COMPLETE
+                Group By Operator
+                  aggregations: count()
+                  keys: _col0 (type: string)
+                  minReductionHashAggr: 0.58928573
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  Statistics: Num rows: 23 Data size: 2185 Basic stats: COMPLETE Column stats: COMPLETE
+                  Reduce Output Operator
+                    key expressions: _col0 (type: string)
+                    null sort order: z
+                    sort order: +
+                    Map-reduce partition columns: _col0 (type: string)
+                    Statistics: Num rows: 23 Data size: 2185 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col1 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 23 Data size: 2185 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 23 Data size: 2185 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT src1.c1, count(1) 
+FROM
+(SELECT src.key AS c1, src.value AS c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key AS c3, src.value AS c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
+GROUP BY src1.c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT src1.c1, count(1) 
+FROM
+(SELECT src.key AS c1, src.value AS c2 from src where src.key > '1' ) src1
+JOIN
+(SELECT src.key AS c3, src.value AS c4 from src where src.key > '2' ) src2
+ON src1.c1 = src2.c3 AND src1.c1 < '400'
+WHERE src1.c1 > '20' AND (src1.c2 < 'val_50' OR src1.c1 > '2') AND (src2.c3 > '50' OR src1.c1 < '50') AND (src2.c3 <> '4')
+GROUP BY src1.c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+200	4
+201	1
+202	1
+203	4
+205	4
+207	4
+208	9
+209	4
+213	4
+214	1
+216	4
+217	4
+218	1
+219	4
+221	4
+222	1
+223	4
+224	4
+226	1
+228	1
+229	4
+230	25
+233	4
+235	1
+237	4
+238	4
+239	4
+24	4
+241	1
+242	4
+244	1
+247	1
+248	1
+249	1
+252	1
+255	4
+256	4
+257	1
+258	1
+26	4
+260	1
+262	1
+263	1
+265	4
+266	1
+27	1
+272	4
+273	9
+274	1
+275	1
+277	16
+278	4
+28	1
+280	4
+281	4
+282	4
+283	1
+284	1
+285	1
+286	1
+287	1
+288	4
+289	1
+291	1
+292	1
+296	1
+298	9
+30	1
+302	1
+305	1
+306	1
+307	4
+308	1
+309	4
+310	1
+311	9
+315	1
+316	9
+317	4
+318	9
+321	4
+322	4
+323	1
+325	4
+327	9
+33	1
+331	4
+332	1
+333	4
+335	1
+336	1
+338	1
+339	1
+34	1
+341	1
+342	4
+344	4
+345	1
+348	25
+35	9
+351	1
+353	4
+356	1
+360	1
+362	1
+364	1
+365	1
+366	1
+367	4
+368	1
+369	9
+37	4
+373	1
+374	1
+375	1
+377	1
+378	1
+379	1
+382	4
+384	9
+386	1
+389	1
+392	1
+393	1
+394	1
+395	4
+396	9
+397	4
+399	4

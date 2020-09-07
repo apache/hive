@@ -22,6 +22,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -45,6 +46,13 @@ public interface Validator {
 
     public StringSet(String... values) {
       this(false, values);
+    }
+
+    public <T extends Enum<T>>StringSet(EnumSet<T> enumSet) {
+      caseSensitive = false;
+      for (T e : enumSet) {
+        expected.add(e.toString().toLowerCase());
+      }
     }
 
     public StringSet(boolean caseSensitive, String... values) {
@@ -354,19 +362,21 @@ public interface Validator {
 
     @Override
     public String validate(String value) {
+      if (value == null) return null;
       final Path path = FileSystems.getDefault().getPath(value);
-      if (path == null && value != null) {
+      if (path == null) {
         return String.format("Path '%s' provided could not be located.", value);
+      } else {
+        final boolean isDir = Files.isDirectory(path);
+        final boolean isWritable = Files.isWritable(path);
+        if (!isDir) {
+          return String.format("Path '%s' provided is not a directory.", value);
+        }
+        if (!isWritable) {
+          return String.format("Path '%s' provided is not writable.", value);
+        }
+        return null;
       }
-      final boolean isDir = Files.isDirectory(path);
-      final boolean isWritable = Files.isWritable(path);
-      if (!isDir) {
-        return String.format("Path '%s' provided is not a directory.", value);
-      }
-      if (!isWritable) {
-        return String.format("Path '%s' provided is not writable.", value);
-      }
-      return null;
     }
 
     @Override

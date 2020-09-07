@@ -74,7 +74,10 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 public class TestOrcRawRecordMerger {
 
@@ -111,6 +114,52 @@ public class TestOrcRawRecordMerger {
     assertEquals(-1, left.compareTo(ri));
     assertEquals(false, ri.equals(left));
     assertEquals(false, left.equals(ri));
+  }
+
+  @Test
+  public void testIntersect() {
+    OrcRawRecordMerger.KeyInterval ki1 = generateKeyInterval(1000L, 2000L);
+    OrcRawRecordMerger.KeyInterval ki2 = generateKeyInterval(1500L, 2500L);
+    checkIntersect(ki1, ki2, true);
+
+    ki2 = generateKeyInterval(500L, 1000L);
+    checkIntersect(ki1, ki2, true);
+
+    ki2 = generateKeyInterval(500L, 999L);
+    checkIntersect(ki1, ki2, false);
+
+    ki2 = generateKeyInterval(500L, null);
+    checkIntersect(ki1, ki2, true);
+
+    ki2 = generateKeyInterval(2500L, null);
+    checkIntersect(ki1, ki2, false);
+
+    ki2 = generateKeyInterval(null, null);
+    checkIntersect(ki1, ki2, true);
+  }
+
+  private static OrcRawRecordMerger.KeyInterval generateKeyInterval(Long minRowId, Long maxRowId) {
+    RecordIdentifier min = null;
+    if (minRowId != null) {
+      min = new RecordIdentifier(1, 100, minRowId);
+    }
+    RecordIdentifier max = null;
+    if (maxRowId != null) {
+      max = new RecordIdentifier(1, 100, maxRowId);
+    }
+    return new OrcRawRecordMerger.KeyInterval(min, max);
+  }
+
+  private static void checkIntersect(OrcRawRecordMerger.KeyInterval ki1, OrcRawRecordMerger.KeyInterval ki2,
+      boolean isIntersect)
+  {
+    if (isIntersect) {
+      assertTrue(ki1.isIntersects(ki2));
+      assertTrue(ki2.isIntersects(ki1));
+    } else {
+      assertFalse(ki1.isIntersects(ki2));
+      assertFalse(ki2.isIntersects(ki1));
+    }
   }
 
   private static void setRow(OrcStruct event,
@@ -169,19 +218,19 @@ public class TestOrcRawRecordMerger {
     setRow(row4, OrcRecordUpdater.INSERT_OPERATION, 40, 50, 60, 130, "fourth");
     OrcStruct row5 = new OrcStruct(OrcRecordUpdater.FIELDS);
     setRow(row5, OrcRecordUpdater.INSERT_OPERATION, 40, 50, 61, 140, "fifth");
-    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class), Mockito.any(HiveConf.class)))
+    when(reader.rowsOptions(any(Reader.Options.class), any(HiveConf.class)))
         .thenReturn(recordReader);
 
-    Mockito.when(recordReader.hasNext()).
+    when(recordReader.hasNext()).
         thenReturn(true, true, true, true, true, false);
 
-    Mockito.when(recordReader.getProgress()).thenReturn(1.0f);
+    when(recordReader.getProgress()).thenReturn(1.0f);
 
-    Mockito.when(recordReader.next(null)).thenReturn(row1);
-    Mockito.when(recordReader.next(row1)).thenReturn(row2);
-    Mockito.when(recordReader.next(row2)).thenReturn(row3);
-    Mockito.when(recordReader.next(row3)).thenReturn(row4);
-    Mockito.when(recordReader.next(row4)).thenReturn(row5);
+    when(recordReader.next(null)).thenReturn(row1);
+    when(recordReader.next(row1)).thenReturn(row2);
+    when(recordReader.next(row2)).thenReturn(row3);
+    when(recordReader.next(row3)).thenReturn(row4);
+    when(recordReader.next(row4)).thenReturn(row5);
 
     return reader;
   }
@@ -275,16 +324,17 @@ public class TestOrcRawRecordMerger {
     OrcStruct row4 = createOriginalRow("fourth");
     OrcStruct row5 = createOriginalRow("fifth");
 
-    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class), Mockito.any(HiveConf.class)))
+    // HiveConf argument of rowsOptions can be null
+    when(reader.rowsOptions(any(Reader.Options.class), any()))
         .thenReturn(recordReader);
-    Mockito.when(recordReader.hasNext()).
+    when(recordReader.hasNext()).
         thenReturn(true, true, true, true, true, false);
-    Mockito.when(recordReader.getRowNumber()).thenReturn(0L, 1L, 2L, 3L, 4L);
-    Mockito.when(recordReader.next(null)).thenReturn(row1);
-    Mockito.when(recordReader.next(row1)).thenReturn(row2);
-    Mockito.when(recordReader.next(row2)).thenReturn(row3);
-    Mockito.when(recordReader.next(row3)).thenReturn(row4);
-    Mockito.when(recordReader.next(row4)).thenReturn(row5);
+    when(recordReader.getRowNumber()).thenReturn(0L, 1L, 2L, 3L, 4L);
+    when(recordReader.next(null)).thenReturn(row1);
+    when(recordReader.next(row1)).thenReturn(row2);
+    when(recordReader.next(row2)).thenReturn(row3);
+    when(recordReader.next(row3)).thenReturn(row4);
+    when(recordReader.next(row4)).thenReturn(row5);
     return reader;
   }
 
@@ -415,8 +465,8 @@ public class TestOrcRawRecordMerger {
     typeBuilder.setKind(OrcProto.Type.Kind.STRING);
     types.add(typeBuilder.build());
 
-    Mockito.when(reader.getTypes()).thenReturn(types);
-    Mockito.when(reader.rowsOptions(Mockito.any(Reader.Options.class), Mockito.any(HiveConf.class)))
+    when(reader.getTypes()).thenReturn(types);
+    when(reader.rowsOptions(any(Reader.Options.class), any()))
         .thenReturn(recordReader);
 
     OrcStruct row1 = new OrcStruct(OrcRecordUpdater.FIELDS);
@@ -430,22 +480,22 @@ public class TestOrcRawRecordMerger {
     OrcStruct row5 = new OrcStruct(OrcRecordUpdater.FIELDS);
     setRow(row5, OrcRecordUpdater.INSERT_OPERATION, 40, 50, 61, 140, "fifth");
 
-    Mockito.when(recordReader.hasNext()).
+    when(recordReader.hasNext()).
         thenReturn(true, true, true, true, true, false);
 
-    Mockito.when(recordReader.getProgress()).thenReturn(1.0f);
+    when(recordReader.getProgress()).thenReturn(1.0f);
 
-    Mockito.when(recordReader.next(null)).thenReturn(row1, row4);
-    Mockito.when(recordReader.next(row1)).thenReturn(row2);
-    Mockito.when(recordReader.next(row2)).thenReturn(row3);
-    Mockito.when(recordReader.next(row3)).thenReturn(row5);
+    when(recordReader.next(null)).thenReturn(row1, row4);
+    when(recordReader.next(row1)).thenReturn(row2);
+    when(recordReader.next(row2)).thenReturn(row3);
+    when(recordReader.next(row3)).thenReturn(row5);
 
-    Mockito.when(reader.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME))
+    when(reader.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME))
         .thenReturn(true);
-    Mockito.when(reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME))
+    when(reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME))
         .thenReturn(ByteBuffer.wrap("10,20,30;40,50,60;40,50,61"
             .getBytes("UTF-8")));
-    Mockito.when(reader.getStripes())
+    when(reader.getStripes())
         .thenReturn(createStripes(2, 2, 1));
 
     OrcRawRecordMerger merger = new OrcRawRecordMerger(conf, false, reader,
@@ -594,7 +644,7 @@ public class TestOrcRawRecordMerger {
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testEmpty:200:" + Long.MAX_VALUE);
-    AcidUtils.Directory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, false, null, false);
+    AcidUtils.Directory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, false);
 
     Path basePath = AcidUtils.createBucketFile(directory.getBaseDirectory(),
         BUCKET);
@@ -665,8 +715,7 @@ public class TestOrcRawRecordMerger {
     conf.set(ValidTxnList.VALID_TXNS_KEY,
         new ValidReadTxnList(new long[0], new BitSet(), 1000, Long.MAX_VALUE).writeToString());
     ValidWriteIdList writeIdList = new ValidReaderWriteIdList("testNewBaseAndDelta:200:" + Long.MAX_VALUE);
-    AcidUtils.Directory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, use130Format, null,
-        use130Format);
+    AcidUtils.Directory directory = AcidUtils.getAcidState(fs, root, conf, writeIdList, null, use130Format);
 
     assertEquals(new Path(root, "base_0000100"), directory.getBaseDirectory());
     assertEquals(new Path(root, use130Format ?

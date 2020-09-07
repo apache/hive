@@ -276,6 +276,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     if (this.statement != null && (this.statement instanceof HiveStatement)) {
       HiveStatement s = (HiveStatement) this.statement;
       s.closeClientOperation();
+      s.closeOnResultSetCompletion();
     } else {
       // for those stmtHandle passed from HiveDatabaseMetaData instead of Statement
       closeOperationHandle(stmtHandle);
@@ -331,7 +332,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     try {
       TFetchOrientation orientation = TFetchOrientation.FETCH_NEXT;
       if (fetchFirst) {
-        // If we are asked to start from begining, clear the current fetched resultset
+        // If we are asked to start from beginning, clear the current fetched resultset
         orientation = TFetchOrientation.FETCH_FIRST;
         fetchedRows = null;
         fetchedRowsItr = null;
@@ -340,6 +341,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       if (fetchedRows == null || !fetchedRowsItr.hasNext()) {
         TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle,
             orientation, fetchSize);
+        LOG.debug("HiveQueryResultsFetchReq: {}", fetchReq);
         TFetchResultsResp fetchResp;
         fetchResp = client.FetchResults(fetchReq);
         Utils.verifySuccessWithInfo(fetchResp.getStatus());

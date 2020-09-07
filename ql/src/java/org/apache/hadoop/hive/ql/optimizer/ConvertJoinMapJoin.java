@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.CommonMergeJoinDesc;
+import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -207,7 +208,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     // map join operator by default has no bucket cols and num of reduce sinks
     // reduced by 1
     mapJoinOp.setOpTraits(new OpTraits(null, -1, null,
-        joinOp.getOpTraits().getNumReduceSinks(), joinOp.getOpTraits().getBucketingVersion()));
+        joinOp.getOpTraits().getNumReduceSinks()));
     preserveOperatorInfos(mapJoinOp, joinOp, context);
     // propagate this change till the next RS
     for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
@@ -543,9 +544,9 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     context.parseContext.getContext().getPlanMapper().link(joinOp, mergeJoinOp);
     int numReduceSinks = joinOp.getOpTraits().getNumReduceSinks();
     OpTraits opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(), numBuckets,
-      joinOp.getOpTraits().getSortCols(), numReduceSinks,
-      joinOp.getOpTraits().getBucketingVersion());
+        joinOp.getOpTraits().getSortCols(), numReduceSinks);
     mergeJoinOp.setOpTraits(opTraits);
+    mergeJoinOp.getConf().setBucketingVersion(joinOp.getConf().getBucketingVersion());
     preserveOperatorInfos(mergeJoinOp, joinOp, context);
 
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
@@ -590,8 +591,8 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
         }
 
         // insert the dummy store operator here
-        DummyStoreOperator dummyStoreOp = new TezDummyStoreOperator(
-            mergeJoinOp.getCompilationOpContext());
+        DummyStoreOperator dummyStoreOp = new TezDummyStoreOperator(mergeJoinOp.getCompilationOpContext());
+        dummyStoreOp.setConf(new DummyStoreDesc());
         dummyStoreOp.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
         dummyStoreOp.setChildOperators(new ArrayList<Operator<? extends OperatorDesc>>());
         dummyStoreOp.getChildOperators().add(mergeJoinOp);
@@ -611,8 +612,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       return;
     }
     currentOp.setOpTraits(new OpTraits(opTraits.getBucketColNames(),
-      opTraits.getNumBuckets(), opTraits.getSortCols(), opTraits.getNumReduceSinks(),
-            opTraits.getBucketingVersion()));
+        opTraits.getNumBuckets(), opTraits.getSortCols(), opTraits.getNumReduceSinks()));
     for (Operator<? extends OperatorDesc> childOp : currentOp.getChildOperators()) {
       if ((childOp instanceof ReduceSinkOperator) || (childOp instanceof GroupByOperator)) {
         break;
@@ -670,8 +670,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
 
     // we can set the traits for this join operator
     opTraits = new OpTraits(joinOp.getOpTraits().getBucketColNames(),
-        tezBucketJoinProcCtx.getNumBuckets(), null, joinOp.getOpTraits().getNumReduceSinks(),
-        joinOp.getOpTraits().getBucketingVersion());
+        tezBucketJoinProcCtx.getNumBuckets(), null, joinOp.getOpTraits().getNumReduceSinks());
     mapJoinOp.setOpTraits(opTraits);
     preserveOperatorInfos(mapJoinOp, joinOp, context);
     setNumberOfBucketsOnChildren(mapJoinOp);
@@ -767,7 +766,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
       if (!(parentOp instanceof ReduceSinkOperator)) {
         // could be mux/demux operators. Currently not supported
-        LOG.info("Found correlation optimizer operators. Cannot convert to SMB at this time.");
+        LOG.debug("Found correlation optimizer operators. Cannot convert to SMB at this time.");
         return false;
       }
       ReduceSinkOperator rsOp = (ReduceSinkOperator) parentOp;
@@ -788,14 +787,20 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
           return false;
         }
       }
+      // check Parent's traits are same as rs
+      OpTraits parentTraits = rsOp.getParentOperators().get(0).getOpTraits();
+      if (null == parentTraits) {
+        // programming error - shouldn't be null
+        return false;
+      }
 
-      if (!checkColEquality(rsOp.getParentOperators().get(0).getOpTraits().getSortCols(), rsOp
+      if (!checkColEquality(parentTraits.getSortCols(), rsOp
           .getOpTraits().getSortCols(), rsOp.getColumnExprMap(), false)) {
         LOG.info("We cannot convert to SMB because the sort column names do not match.");
         return false;
       }
 
-      if (!checkColEquality(rsOp.getParentOperators().get(0).getOpTraits().getBucketColNames(), rsOp
+      if (!checkColEquality(parentTraits.getBucketColNames(), rsOp
           .getOpTraits().getBucketColNames(), rsOp.getColumnExprMap(), true)) {
         LOG.info("We cannot convert to SMB because bucket column names do not match.");
         return false;
@@ -815,10 +820,9 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
       // Check if the parent is coming from a table scan, if so, what is the version of it.
       assert parentOp.getParentOperators() != null && parentOp.getParentOperators().size() == 1;
-      Operator<?> op = parentOp.getParentOperators().get(0);
-      while(op != null && !(op instanceof TableScanOperator
-              || op instanceof ReduceSinkOperator
-              || op instanceof CommonJoinOperator)) {
+      Operator<?> op = parentOp;
+      while (op != null && !(op instanceof TableScanOperator || op instanceof ReduceSinkOperator
+          || op instanceof CommonJoinOperator)) {
         // If op has parents it is guaranteed to be 1.
         List<Operator<?>> parents = op.getParentOperators();
         Preconditions.checkState(parents.size() == 0 || parents.size() == 1);
@@ -826,8 +830,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       }
 
       if (op instanceof TableScanOperator) {
-        int localVersion = ((TableScanOperator)op).getConf().
-                getTableMetadata().getBucketingVersion();
+        int localVersion = ((TableScanOperator) op).getConf().getTableMetadata().getBucketingVersion();
         if (bucketingVersion == -1) {
           bucketingVersion = localVersion;
         } else if (bucketingVersion != localVersion) {
@@ -951,6 +954,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       switch (joinCondDesc.getType()) {
         case JoinDesc.INNER_JOIN:
         case JoinDesc.LEFT_SEMI_JOIN:
+        case JoinDesc.ANTI_JOIN:
         case JoinDesc.UNIQUE_JOIN:
           hasOuter = false;
           break;
@@ -1537,8 +1541,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
             joinOp.getOpTraits().getBucketColNames(),
             numReducers,
             null,
-            joinOp.getOpTraits().getNumReduceSinks(),
-            joinOp.getOpTraits().getBucketingVersion());
+            joinOp.getOpTraits().getNumReduceSinks());
         mapJoinOp.setOpTraits(opTraits);
         preserveOperatorInfos(mapJoinOp, joinOp, context);
         // propagate this change till the next RS

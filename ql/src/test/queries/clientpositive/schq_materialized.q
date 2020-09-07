@@ -1,3 +1,4 @@
+--! qt:disabled:flaky HIVE-23691
 --! qt:authorizer
 --! qt:scheduledqueryservice
 --! qt:transactional
@@ -59,8 +60,8 @@ SELECT empid, deptname FROM emps
 JOIN depts ON (emps.deptno = depts.deptno)
 WHERE hire_date >= '2018-01-01';
 
--- create a schedule to rebuild mv
-create scheduled query d cron '0 0 * * * ? *' defined as 
+-- create a schedule to rebuild mv (in the far future)
+create scheduled query d cron '0 0 0 1 * ? 2030' defined as 
   alter materialized view mv1 rebuild;
 
 set hive.support.quoted.identifiers=none;
@@ -68,7 +69,7 @@ select `(NEXT_EXECUTION|SCHEDULED_QUERY_ID)?+.+` from sys.scheduled_queries;
 
 alter scheduled query d execute;
 
-!sleep 10;
+!sleep 30;
 
 -- the scheduled execution will fail - because of missing TXN; but overall it works..
 select state,error_message from sys.scheduled_executions;

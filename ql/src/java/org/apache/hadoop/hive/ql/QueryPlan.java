@@ -34,6 +34,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
@@ -60,6 +61,8 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TJSONProtocol;
 import org.apache.thrift.transport.TMemoryBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -70,6 +73,8 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class QueryPlan implements Serializable {
   private static final long serialVersionUID = 1L;
+
+  private static final Logger LOG = LoggerFactory.getLogger(QueryPlan.class);
 
   private String cboInfo;
   private String queryString;
@@ -117,6 +122,8 @@ public class QueryPlan implements Serializable {
   private final DDLDescWithWriteId acidDdlDesc;
   private Boolean autoCommitValue;
 
+  private Boolean prepareQuery;
+
   public QueryPlan() {
     this(null);
   }
@@ -128,6 +135,7 @@ public class QueryPlan implements Serializable {
     this.acidSinks = Collections.emptySet();
     this.acidDdlDesc = null;
     this.acidAnalyzeTable = null;
+    this.prepareQuery = false;
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId,
@@ -160,6 +168,7 @@ public class QueryPlan implements Serializable {
     this.acidDdlDesc = sem.getAcidDdlDesc();
     this.acidAnalyzeTable = sem.getAcidAnalyzeTable();
     this.cboInfo = sem.getCboInfo();
+    this.prepareQuery = false;
   }
 
   /**
@@ -190,6 +199,14 @@ public class QueryPlan implements Serializable {
 
   public String getQueryId() {
     return queryId;
+  }
+
+  public void setPrepareQuery(boolean prepareQuery) {
+    this.prepareQuery = prepareQuery;
+  }
+
+  public boolean isPrepareQuery() {
+    return prepareQuery;
   }
 
   public static String makeQueryId() {
@@ -643,7 +660,7 @@ public class QueryPlan implements Serializable {
     try {
       return getJSONQuery(getQueryPlan());
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Unable to produce query plan JSON string", e);
       return e.toString();
     }
   }
@@ -655,11 +672,10 @@ public class QueryPlan implements Serializable {
     try {
       q.write(oprot);
     } catch (TException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LOG.warn("Unable to produce query plan Thrift string", e);
       return q.toString();
     }
-    return tmb.toString("UTF-8");
+    return tmb.toString(StandardCharsets.UTF_8);
   }
 
   public String toBinaryString() throws IOException {
@@ -669,8 +685,7 @@ public class QueryPlan implements Serializable {
     try {
       q.write(oprot);
     } catch (TException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      LOG.warn("Unable to produce query plan binary string", e);
       return q.toString();
     }
     byte[] buf = new byte[tmb.length()];
@@ -868,4 +883,6 @@ public class QueryPlan implements Serializable {
   public String getCboInfo() {
     return cboInfo;
   }
+
+
 }

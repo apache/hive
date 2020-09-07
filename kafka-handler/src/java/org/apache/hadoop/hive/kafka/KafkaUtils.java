@@ -27,14 +27,19 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.config.SslConfigs;
 import org.apache.kafka.common.errors.AuthenticationException;
 import org.apache.kafka.common.errors.AuthorizationException;
 import org.apache.kafka.common.errors.InvalidTopicException;
@@ -46,8 +51,12 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -63,6 +72,9 @@ final class KafkaUtils {
   private final static Logger log = LoggerFactory.getLogger(KafkaUtils.class);
   private static final String JAAS_TEMPLATE = "com.sun.security.auth.module.Krb5LoginModule required "
       + "useKeyTab=true storeKey=true keyTab=\"%s\" principal=\"%s\";";
+  private static final String JAAS_TEMPLATE_SCRAM =
+      "org.apache.kafka.common.security.scram.ScramLoginModule required "
+          + "username=\"%s\" password=\"%s\" serviceName=\"%s\" tokenauth=true;";
 
   private KafkaUtils() {
   }
@@ -115,9 +127,79 @@ final class KafkaUtils {
     if (UserGroupInformation.isSecurityEnabled()) {
       addKerberosJaasConf(configuration, props);
     }
-    // user can always override stuff
+
+    // user can always override stuff, but SSL properties are derived from configuration, because they require local
+    //   files. These need to modified afterwards. This works because these properties use the standard consumer prefix.
     props.putAll(extractExtraProperties(configuration, CONSUMER_CONFIGURATION_PREFIX));
+    setupKafkaSslProperties(configuration, props);
+
     return props;
+  }
+
+  static void setupKafkaSslProperties(Configuration configuration, Properties props) {
+    // Setup SSL via credentials keystore if necessary
+    final String credKeystore = configuration.get(KafkaTableProperties.HIVE_KAFKA_SSL_CREDENTIAL_KEYSTORE.getName());
+    if (!(credKeystore == null) && !credKeystore.isEmpty()) {
+      final String truststorePasswdConfig =
+          configuration.get(KafkaTableProperties.HIVE_KAFKA_SSL_TRUSTSTORE_PASSWORD.getName());
+      final String keystorePasswdConfig =
+          configuration.get(KafkaTableProperties.HIVE_KAFKA_SSL_KEYSTORE_PASSWORD.getName());
+      final String keyPasswdConfig = configuration.get(KafkaTableProperties.HIVE_KAFKA_SSL_KEY_PASSWORD.getName());
+
+      String resourcesDir = HiveConf.getVar(configuration, HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR);
+      try {
+        String truststoreLoc = configuration.get(KafkaTableProperties.HIVE_SSL_TRUSTSTORE_LOCATION_CONFIG.getName());
+        Path truststorePath = new Path(truststoreLoc);
+        props.setProperty(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG,
+            new File(resourcesDir + "/" + truststorePath.getName()).getAbsolutePath());
+        writeStoreToLocal(configuration, truststoreLoc, new File(resourcesDir).getAbsolutePath());
+
+        final String truststorePasswd = Utilities.getPasswdFromKeystore(credKeystore, truststorePasswdConfig);
+        props.setProperty(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, truststorePasswd);
+
+        // ssl.keystore.password is only needed if two-way authentication is configured.
+        if(!keystorePasswdConfig.isEmpty()) {
+          log.info("Kafka keystore configured, configuring local keystore");
+          String keystoreLoc = configuration.get(KafkaTableProperties.HIVE_SSL_KEYSTORE_LOCATION_CONFIG.getName());
+          Path keystorePath = new Path(keystoreLoc);
+          props.setProperty(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG,
+              new File(resourcesDir + "/" + keystorePath.getName()).getAbsolutePath());
+          writeStoreToLocal(configuration, keystoreLoc, new File(resourcesDir).getAbsolutePath());
+
+          final String keystorePasswd = Utilities.getPasswdFromKeystore(credKeystore, keystorePasswdConfig);
+          props.setProperty(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, keystorePasswd);
+        }
+
+        // ssl.key.password is optional for clients.
+        if(!keyPasswdConfig.isEmpty()) {
+          final String keyPasswd = Utilities.getPasswdFromKeystore(credKeystore, keyPasswdConfig);
+          props.setProperty(SslConfigs.SSL_KEY_PASSWORD_CONFIG, keyPasswd);
+        }
+      } catch (IOException | URISyntaxException e) {
+        throw new IllegalStateException("Unable to retrieve password from the credential keystore", e);
+      }
+    }
+  }
+
+  private static void writeStoreToLocal(Configuration configuration, String hdfsLoc, String localDest)
+      throws IOException, URISyntaxException {
+    if(!"hdfs".equals(new URI(hdfsLoc).getScheme())) {
+      throw new IllegalArgumentException("Kafka stores must be located in HDFS, but received: " + hdfsLoc);
+    }
+    try {
+      // Make sure the local resources directory is created
+      File localDir = new File(localDest);
+      if(!localDir.exists()) {
+        if(!localDir.mkdirs()) {
+          throw new IOException("Unable to create local directory, " + localDest);
+        }
+      }
+      URI uri = new URI(hdfsLoc);
+      FileSystem fs = FileSystem.get(new URI(hdfsLoc), configuration);
+      fs.copyToLocalFile(new Path(uri.toString()), new Path(localDest));
+    } catch (URISyntaxException e) {
+      throw new IOException("Unable to download store", e);
+    }
   }
 
   private static Map<String, String> extractExtraProperties(final Configuration configuration, String prefix) {
@@ -150,6 +232,8 @@ final class KafkaUtils {
 
     // user can always override stuff
     properties.putAll(extractExtraProperties(configuration, PRODUCER_CONFIGURATION_PREFIX));
+    setupKafkaSslProperties(configuration, properties);
+
     String taskId = configuration.get("mapred.task.id", null);
     properties.setProperty(CommonClientConfigs.CLIENT_ID_CONFIG,
         taskId == null ? "random_" + UUID.randomUUID().toString() : taskId);
@@ -294,10 +378,22 @@ final class KafkaUtils {
       log.error("Can not construct kerberos principal", e);
       throw new RuntimeException(e);
     }
-    final String jaasConf = String.format(JAAS_TEMPLATE, keyTab, principal);
+    String jaasConf = String.format(JAAS_TEMPLATE, keyTab, principal);
     props.setProperty("sasl.jaas.config", jaasConf);
+
+    if (configuration instanceof JobConf) {
+      Credentials creds = ((JobConf) configuration).getCredentials();
+      Token<?> token = creds.getToken(new Text("KAFKA_DELEGATION_TOKEN"));
+
+      if (token != null) {
+        log.info("Kafka delegation token has been found: {}", token);
+        props.setProperty("sasl.mechanism", "SCRAM-SHA-256");
+
+        jaasConf = String.format(JAAS_TEMPLATE_SCRAM, new String(token.getIdentifier()),
+            Base64.getEncoder().encodeToString(token.getPassword()), token.getService());
+        props.setProperty("sasl.jaas.config", jaasConf);
+      }
+    }
     log.info("Kafka client running with following JAAS = [{}]", jaasConf);
   }
-
-
 }

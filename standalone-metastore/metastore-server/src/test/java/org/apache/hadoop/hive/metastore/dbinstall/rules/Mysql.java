@@ -49,7 +49,7 @@ public class Mysql extends DatabaseRule {
 
   @Override
   public String getJdbcDriver() {
-    return org.mariadb.jdbc.Driver.class.getName();
+    return "org.mariadb.jdbc.Driver";
   }
 
   @Override
@@ -59,7 +59,7 @@ public class Mysql extends DatabaseRule {
 
   @Override
   public String getInitialJdbcUrl() {
-    return "jdbc:mysql://localhost:3306/";
+    return "jdbc:mysql://localhost:3306/?allowPublicKeyRetrieval=true";
   }
 
   @Override

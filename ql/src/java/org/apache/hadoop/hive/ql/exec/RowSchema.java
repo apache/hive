@@ -65,16 +65,15 @@ public class RowSchema implements Serializable {
     for (ColumnInfo columnInfo: this.signature) {
       if (columnInfo.getTabAlias() == null) {
         if (tabAlias == null) {
-          if(columnInfo.getAlias() != null && alias != null &&
+          if(columnInfo.getAlias() != null &&
                   columnInfo.getAlias().equals(alias)) {
             return columnInfo;
           }
         }
-      }
-      else {
+      } else {
         if (tabAlias != null) {
           if (columnInfo.getTabAlias().equals(tabAlias) &&
-                  columnInfo.getAlias() != null && alias != null &&
+                  columnInfo.getAlias() != null &&
                   columnInfo.getAlias().equals(alias)) {
             return columnInfo;
           }

@@ -28,8 +28,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.split.SplitLocationProvider;
+import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 
 public class Utils {
@@ -47,8 +50,29 @@ public class Utils {
         && HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS) 
         && useCacheAffinity;
     SplitLocationProvider splitLocationProvider;
-    LOG.info("SplitGenerator using llap affinitized locations: " + useCustomLocations);
-    if (useCustomLocations) {
+    final String locationProviderClass = HiveConf.getVar(conf, HiveConf.ConfVars.LLAP_SPLIT_LOCATION_PROVIDER_CLASS);
+    final boolean customLocationProvider =
+      !HostAffinitySplitLocationProvider.class.getName().equals(locationProviderClass);
+    LOG.info("SplitGenerator using llap affinitized locations: {} locationProviderClass: {}", useCustomLocations, locationProviderClass);
+    if (customLocationProvider) {
+      SplitLocationProvider locationProviderImpl;
+      try {
+        // the implementation of SplitLocationProvider may have Configuration as a single arg constructor, so we try
+        // invoking that constructor first. If that does not exist, the fallback will use no-arg constructor.
+        locationProviderImpl = JavaUtils
+          .newInstance(JavaUtils.getClass(locationProviderClass, SplitLocationProvider.class),
+            new Class<?>[]{Configuration.class}, new Object[]{conf});
+      } catch (Exception e) {
+        LOG.warn("Unable to instantiate {} class. Will try no-arg constructor invocation..", locationProviderClass, e);
+        try {
+          locationProviderImpl = JavaUtils.newInstance(JavaUtils.getClass(locationProviderClass,
+            SplitLocationProvider.class));
+        } catch (Exception ex) {
+          throw new IOException(ex);
+        }
+      }
+      return locationProviderImpl;
+    } else if (useCustomLocations) {
       LlapRegistryService serviceRegistry = LlapRegistryService.getClient(conf);
       return getCustomSplitLocationProvider(serviceRegistry, LOG);
     } else {
@@ -100,5 +124,30 @@ public class Utils {
       }
     }
     return new HostAffinitySplitLocationProvider(locations);
+  }
+
+
+  /**
+   * Merges two different tez counters into one
+   *
+   * @param counter1 - tez counter 1
+   * @param counter2 - tez counter 2
+   * @return - merged tez counter
+   */
+  public static TezCounters mergeTezCounters(final TezCounters counter1, final TezCounters counter2) {
+    TezCounters merged = new TezCounters();
+    if (counter1 != null) {
+      for (String counterGroup : counter1.getGroupNames()) {
+        merged.addGroup(counter1.getGroup(counterGroup));
+      }
+    }
+
+    if (counter2 != null) {
+      for (String counterGroup : counter2.getGroupNames()) {
+        merged.addGroup(counter2.getGroup(counterGroup));
+      }
+    }
+
+    return merged;
   }
 }

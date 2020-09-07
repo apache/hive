@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ddl.process.kill.KillQueriesOperation;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
@@ -202,7 +203,7 @@ public abstract class BaseJdbcWithMiniLlap {
     }
   }
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testLlapInputFormatEndToEnd() throws Exception {
     createTestTable("testtab1");
 
@@ -615,7 +616,7 @@ public abstract class BaseJdbcWithMiniLlap {
   }
 
 
-  @Test(timeout = 60000)
+  @Test(timeout = 120000)
   public void testComplexQuery() throws Exception {
     createTestTable("testtab1");
 
@@ -784,6 +785,8 @@ public abstract class BaseJdbcWithMiniLlap {
     con2.close();
 
     assertNotNull("tExecute", tExecuteHolder.throwable);
+    assertEquals(HiveStatement.QUERY_CANCELLED_MESSAGE + " "+ KillQueriesOperation.KILL_QUERY_MESSAGE,
+        tExecuteHolder.throwable.getMessage());
     assertNull("tCancel", tKillHolder.throwable);
   }
 

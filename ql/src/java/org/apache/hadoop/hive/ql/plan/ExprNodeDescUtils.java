@@ -19,8 +19,10 @@
 package org.apache.hadoop.hive.ql.plan;
 
 import com.google.common.collect.Multimap;
+
+import java.util.Arrays;
 import java.util.Collection;
-import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -202,6 +204,33 @@ public class ExprNodeDescUtils {
       }
     }
     return false;
+  }
+
+
+  /**
+   * Creates a conjunction (AND) of two expressions flattening nested conjunctions if possible.
+   * <p>
+   * The method is equivalent to calling: {@code and(Arrays.asList(e1, e2))}
+   * </p>
+   */
+  public static ExprNodeGenericFuncDesc and(ExprNodeDesc e1, ExprNodeDesc e2) {
+    return and(Arrays.asList(e1, e2));
+  }
+
+  /**
+   * Creates a conjunction (AND) of the given expressions flattening nested conjunctions if possible.
+   * <pre>
+   * Input: OR(A, B), C, AND(D, AND(E, F))
+   * Output: AND(OR(A, B), C, D, E, F)
+   * </pre>
+   * TODO: Replace mergePredicates ?
+   */
+  public static ExprNodeGenericFuncDesc and(List<ExprNodeDesc> exps) {
+    List<ExprNodeDesc> flatExps = new ArrayList<>();
+    for (ExprNodeDesc e : exps) {
+      split(e, flatExps);
+    }
+    return new ExprNodeGenericFuncDesc(TypeInfoFactory.booleanTypeInfo, new GenericUDFOPAnd(), "and", flatExps);
   }
 
   /**
@@ -664,17 +693,21 @@ public class ExprNodeDescUtils {
 
   public static PrimitiveTypeInfo deriveMinArgumentCast(
       ExprNodeDesc childExpr, TypeInfo targetType) {
+    return deriveMinArgumentCast(childExpr.getTypeInfo(), targetType);
+  }
+
+  public static PrimitiveTypeInfo deriveMinArgumentCast(
+      TypeInfo childTi, TypeInfo targetType) {
     assert targetType instanceof PrimitiveTypeInfo : "Not a primitive type" + targetType;
     PrimitiveTypeInfo pti = (PrimitiveTypeInfo)targetType;
     // We only do the minimum cast for decimals. Other types are assumed safe; fix if needed.
     // We also don't do anything for non-primitive children (maybe we should assert).
     if ((pti.getPrimitiveCategory() != PrimitiveCategory.DECIMAL)
-        || (!(childExpr.getTypeInfo() instanceof PrimitiveTypeInfo))) {
+        || (!(childTi instanceof PrimitiveTypeInfo))) {
       return pti;
     }
-    PrimitiveTypeInfo childTi = (PrimitiveTypeInfo)childExpr.getTypeInfo();
     // If the child is also decimal, no cast is needed (we hope - can target type be narrower?).
-    return HiveDecimalUtils.getDecimalTypeForPrimitiveCategory(childTi);
+    return HiveDecimalUtils.getDecimalTypeForPrimitiveCategory((PrimitiveTypeInfo) childTi);
   }
 
   /**

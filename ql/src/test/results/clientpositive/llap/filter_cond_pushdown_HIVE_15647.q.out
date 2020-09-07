@@ -1,0 +1,440 @@
+PREHOOK: query: CREATE TABLE sales_HIVE_15647 (store_id INTEGER, store_number INTEGER, customer_id INTEGER)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@sales_HIVE_15647
+POSTHOOK: query: CREATE TABLE sales_HIVE_15647 (store_id INTEGER, store_number INTEGER, customer_id INTEGER)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@sales_HIVE_15647
+PREHOOK: query: CREATE TABLE store_HIVE_15647 (store_id INTEGER, salad_bar BOOLEAN)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@store_HIVE_15647
+POSTHOOK: query: CREATE TABLE store_HIVE_15647 (store_id INTEGER, salad_bar BOOLEAN)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@store_HIVE_15647
+PREHOOK: query: explain select count(*) from
+sales_HIVE_15647 as sales 
+join store_HIVE_15647 as store on sales.store_id = store.store_id
+where ((store.salad_bar)) and ((sales.store_number) <=> (sales.customer_id))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sales_hive_15647
+PREHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from
+sales_HIVE_15647 as sales 
+join store_HIVE_15647 as store on sales.store_id = store.store_id
+where ((store.salad_bar)) and ((sales.store_number) <=> (sales.customer_id))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sales_hive_15647
+POSTHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: sales
+                  filterExpr: ((store_number IS NOT DISTINCT FROM customer_id) and store_id is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((store_number IS NOT DISTINCT FROM customer_id) and store_id is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: store_id (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: store_id (type: int)
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: store
+                  filterExpr: (store_id is not null and salad_bar) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (store_id is not null and salad_bar) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: store_id (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: store_id (type: int)
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 store_id (type: int)
+                  1 store_id (type: int)
+                Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select count(*) from
+sales_HIVE_15647 as sales 
+join store_HIVE_15647 as store on sales.store_id = store.store_id
+where ((store.salad_bar)) and ((sales.store_number) = (sales.customer_id))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sales_hive_15647
+PREHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from
+sales_HIVE_15647 as sales 
+join store_HIVE_15647 as store on sales.store_id = store.store_id
+where ((store.salad_bar)) and ((sales.store_number) = (sales.customer_id))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sales_hive_15647
+POSTHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: sales
+                  filterExpr: ((store_number = customer_id) and store_id is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((store_number = customer_id) and store_id is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: store_id (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: store_id (type: int)
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: store
+                  filterExpr: (store_id is not null and salad_bar) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (store_id is not null and salad_bar) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: store_id (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: store_id (type: int)
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 store_id (type: int)
+                  1 store_id (type: int)
+                Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select count(*) from
+sales_HIVE_15647 as sales 
+join store_HIVE_15647 as store on sales.store_id = store.store_id
+where ((store.salad_bar = true)) and ((sales.store_number) <=> (sales.customer_id))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sales_hive_15647
+PREHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from
+sales_HIVE_15647 as sales 
+join store_HIVE_15647 as store on sales.store_id = store.store_id
+where ((store.salad_bar = true)) and ((sales.store_number) <=> (sales.customer_id))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sales_hive_15647
+POSTHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: sales
+                  filterExpr: ((store_number IS NOT DISTINCT FROM customer_id) and store_id is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: ((store_number IS NOT DISTINCT FROM customer_id) and store_id is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: store_id (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: store_id (type: int)
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: store
+                  filterExpr: (store_id is not null and (salad_bar = true)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (store_id is not null and (salad_bar = true)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: store_id (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: store_id (type: int)
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 store_id (type: int)
+                  1 store_id (type: int)
+                Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select count(*) from
+sales_HIVE_15647 as sales 
+join store_HIVE_15647 as store on sales.store_id = store.store_id
+where ((store.salad_bar = false)) and ((sales.store_number) > (sales.customer_id))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@sales_hive_15647
+PREHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from
+sales_HIVE_15647 as sales 
+join store_HIVE_15647 as store on sales.store_id = store.store_id
+where ((store.salad_bar = false)) and ((sales.store_number) > (sales.customer_id))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@sales_hive_15647
+POSTHOOK: Input: default@store_hive_15647
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: sales
+                  filterExpr: (store_id is not null and (store_number > customer_id)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (store_id is not null and (store_number > customer_id)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: store_id (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: store_id (type: int)
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: store
+                  filterExpr: (store_id is not null and (salad_bar = false)) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Filter Operator
+                    predicate: (store_id is not null and (salad_bar = false)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Reduce Output Operator
+                      key expressions: store_id (type: int)
+                      null sort order: z
+                      sort order: +
+                      Map-reduce partition columns: store_id (type: int)
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 store_id (type: int)
+                  1 store_id (type: int)
+                Statistics: Num rows: 1 Data size: 13 Basic stats: COMPLETE Column stats: NONE
+                Group By Operator
+                  aggregations: count()
+                  minReductionHashAggr: 0.99
+                  mode: hash
+                  outputColumnNames: _col0
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

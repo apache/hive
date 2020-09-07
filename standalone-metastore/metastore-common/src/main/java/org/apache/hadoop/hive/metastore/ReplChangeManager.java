@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -39,16 +40,14 @@ import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.utils.EncryptionZoneUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.metastore.utils.StringUtils;
-import org.apache.hadoop.hive.shims.HadoopShims;
-import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hadoop.hive.shims.HadoopShims.HdfsEncryptionShim;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +59,6 @@ public class ReplChangeManager {
   private static boolean inited = false;
   private static boolean enabled = false;
   private static Map<String, String> encryptionZoneToCmrootMapping = new HashMap<>();
-  private static HadoopShims hadoopShims = ShimLoader.getHadoopShims();
   private static Configuration conf;
   private String msUser;
   private String msGroup;
@@ -147,6 +145,13 @@ public class ReplChangeManager {
     return instance;
   }
 
+  public static synchronized ReplChangeManager getInstance() {
+    if (!inited) {
+      throw new IllegalStateException("Replication Change Manager is not initialized.");
+    }
+    return instance;
+  }
+
   private ReplChangeManager(Configuration conf) throws MetaException {
     try {
       if (!inited) {
@@ -165,12 +170,10 @@ public class ReplChangeManager {
           Path cmroot = new Path(cmRootDir);
           createCmRoot(cmroot);
           FileSystem cmRootFs = cmroot.getFileSystem(conf);
-          HdfsEncryptionShim pathEncryptionShim = hadoopShims
-                  .createHdfsEncryptionShim(cmRootFs, conf);
-          if (pathEncryptionShim.isPathEncrypted(cmroot)) {
+          if (EncryptionZoneUtils.isPathEncrypted(cmroot, conf)) {
             //If cm root is encrypted we keep using it for the encryption zone
             String encryptionZonePath = cmRootFs.getUri()
-                    + pathEncryptionShim.getEncryptionZoneForPath(cmroot).getPath();
+                    + EncryptionZoneUtils.getEncryptionZoneForPath(cmroot, conf).getPath();
             encryptionZoneToCmrootMapping.put(encryptionZonePath, cmRootDir);
           } else {
             encryptionZoneToCmrootMapping.put(NO_ENCRYPTION, cmRootDir);
@@ -181,7 +184,7 @@ public class ReplChangeManager {
               throw new MetaException(ConfVars.REPLCMENCRYPTEDDIR.getHiveName() + " should be absolute path");
             }
             createCmRoot(cmRootFallback);
-            if (pathEncryptionShim.isPathEncrypted(cmRootFallback)) {
+            if (EncryptionZoneUtils.isPathEncrypted(cmRootFallback, conf)) {
               throw new MetaException(ConfVars.REPLCMFALLBACKNONENCRYPTEDDIR.getHiveName()
                       + " should not be encrypted");
             }
@@ -292,7 +295,7 @@ public class ReplChangeManager {
         // xattr has limited capacity. We shall revisit and store all original
         // locations if orig-loc becomes important
         try {
-          fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes());
+          fs.setXAttr(cmPath, ORIG_LOC_TAG, path.toString().getBytes(StandardCharsets.UTF_8));
         } catch (UnsupportedOperationException e) {
           LOG.warn("Error setting xattr for {}", path.toString());
         }
@@ -403,7 +406,7 @@ public class ReplChangeManager {
    */
   // TODO: this needs to be enhanced once change management based filesystem is implemented
   // Currently using fileuri#checksum#cmrooturi#subdirs as the format
-  public static String encodeFileUri(String fileUriStr, String fileChecksum, String encodedSubDir)
+  public String encodeFileUri(String fileUriStr, String fileChecksum, String encodedSubDir)
           throws IOException {
     if (instance == null) {
       throw new IllegalStateException("Uninitialized ReplChangeManager instance.");
@@ -551,16 +554,15 @@ public class ReplChangeManager {
   }
 
   @VisibleForTesting
-  static Path getCmRoot(Path path) throws IOException {
+  Path getCmRoot(Path path) throws IOException {
     Path cmroot = null;
     //Default path if hive.repl.cm dir is encrypted
     String cmrootDir = fallbackNonEncryptedCmRootDir;
     String encryptionZonePath = NO_ENCRYPTION;
     if (enabled) {
-      HdfsEncryptionShim pathEncryptionShim = hadoopShims.createHdfsEncryptionShim(path.getFileSystem(conf), conf);
-      if (pathEncryptionShim.isPathEncrypted(path)) {
+      if (EncryptionZoneUtils.isPathEncrypted(path, conf)) {
         encryptionZonePath = path.getFileSystem(conf).getUri()
-                + pathEncryptionShim.getEncryptionZoneForPath(path).getPath();
+                + EncryptionZoneUtils.getEncryptionZoneForPath(path, conf).getPath();
         //For encryption zone, create cm at the relative path specified by hive.repl.cm.encryptionzone.rootdir
         //at the root of the encryption zone
         cmrootDir = encryptionZonePath + Path.SEPARATOR + encryptedCmRootDir;

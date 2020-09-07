@@ -1,0 +1,229 @@
+WARNING: Comparing a bigint and a double may result in a loss of precision.
+PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT STDDEV_SAMP(csmallint),
+       (STDDEV_SAMP(csmallint) - 10.175),
+       STDDEV_POP(ctinyint),
+       (STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)),
+       (-(STDDEV_POP(ctinyint))),
+       (STDDEV_SAMP(csmallint) % 79.553),
+       (-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))),
+       STDDEV_SAMP(cfloat),
+       (-(STDDEV_SAMP(csmallint))),
+       SUM(cfloat),
+       ((-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))) / (STDDEV_SAMP(csmallint) - 10.175)),
+       (-((STDDEV_SAMP(csmallint) - 10.175))),
+       AVG(cint),
+       (-3728 - STDDEV_SAMP(csmallint)),
+       STDDEV_POP(cint),
+       (AVG(cint) / STDDEV_SAMP(cfloat))
+FROM   alltypesparquet
+WHERE  (((cint <= cfloat)
+         AND ((79.553 != cbigint)
+              AND (ctimestamp2 = -29071)))
+        OR ((cbigint > cdouble)
+            AND ((79.553 <= csmallint)
+                 AND (ctimestamp1 > ctimestamp2))))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN VECTORIZATION EXPRESSION
+SELECT STDDEV_SAMP(csmallint),
+       (STDDEV_SAMP(csmallint) - 10.175),
+       STDDEV_POP(ctinyint),
+       (STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)),
+       (-(STDDEV_POP(ctinyint))),
+       (STDDEV_SAMP(csmallint) % 79.553),
+       (-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))),
+       STDDEV_SAMP(cfloat),
+       (-(STDDEV_SAMP(csmallint))),
+       SUM(cfloat),
+       ((-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))) / (STDDEV_SAMP(csmallint) - 10.175)),
+       (-((STDDEV_SAMP(csmallint) - 10.175))),
+       AVG(cint),
+       (-3728 - STDDEV_SAMP(csmallint)),
+       STDDEV_POP(cint),
+       (AVG(cint) / STDDEV_SAMP(cfloat))
+FROM   alltypesparquet
+WHERE  (((cint <= cfloat)
+         AND ((79.553 != cbigint)
+              AND (ctimestamp2 = -29071)))
+        OR ((cbigint > cdouble)
+            AND ((79.553 <= csmallint)
+                 AND (ctimestamp1 > ctimestamp2))))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: alltypesparquet
+                  filterExpr: (((UDFToFloat(cint) <= cfloat) and (CAST( cbigint AS decimal(22,3)) <> 79.553) and (UDFToDouble(ctimestamp2) = -29071.0D)) or ((UDFToDouble(cbigint) > cdouble) and (CAST( csmallint AS decimal(8,3)) >= 79.553) and (ctimestamp1 > ctimestamp2))) (type: boolean)
+                  Statistics: Num rows: 12288 Data size: 1027540 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterExprOrExpr(children: FilterExprAndExpr(children: FilterDoubleColLessEqualDoubleColumn(col 13:float, col 4:float)(children: CastLongToFloatViaLongToDouble(col 2:int) -> 13:float), FilterDecimalColNotEqualDecimalScalar(col 14:decimal(22,3), val 79.553)(children: CastLongToDecimal(col 3:bigint) -> 14:decimal(22,3)), FilterDoubleColEqualDoubleScalar(col 15:double, val -29071.0)(children: CastTimestampToDouble(col 9:timestamp) -> 15:double)), FilterExprAndExpr(children: FilterDoubleColGreaterDoubleColumn(col 16:double, col 5:double)(children: CastLongToDouble(col 3:bigint) -> 16:double), FilterDecimal64ColGreaterEqualDecimal64Scalar(col 17:decimal(8,3)/DECIMAL_64, val 79553)(children: CastLongToDecimal64(col 1:smallint) -> 17:decimal(8,3)/DECIMAL_64), FilterTimestampColGreaterTimestampColumn(col 8:timestamp, col 9:timestamp)))
+                    predicate: (((UDFToFloat(cint) <= cfloat) and (CAST( cbigint AS decimal(22,3)) <> 79.553) and (UDFToDouble(ctimestamp2) = -29071.0D)) or ((UDFToDouble(cbigint) > cdouble) and (CAST( csmallint AS decimal(8,3)) >= 79.553) and (ctimestamp1 > ctimestamp2))) (type: boolean)
+                    Statistics: Num rows: 2503 Data size: 209380 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: csmallint (type: smallint), ctinyint (type: tinyint), cfloat (type: float), cint (type: int), UDFToDouble(csmallint) (type: double), (UDFToDouble(csmallint) * UDFToDouble(csmallint)) (type: double), UDFToDouble(ctinyint) (type: double), (UDFToDouble(ctinyint) * UDFToDouble(ctinyint)) (type: double), UDFToDouble(cfloat) (type: double), (UDFToDouble(cfloat) * UDFToDouble(cfloat)) (type: double), UDFToDouble(cint) (type: double), (UDFToDouble(cint) * UDFToDouble(cint)) (type: double)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [1, 0, 4, 2, 18, 21, 22, 25, 4, 26, 27, 30]
+                          selectExpressions: CastLongToDouble(col 1:smallint) -> 18:double, DoubleColMultiplyDoubleColumn(col 19:double, col 20:double)(children: CastLongToDouble(col 1:smallint) -> 19:double, CastLongToDouble(col 1:smallint) -> 20:double) -> 21:double, CastLongToDouble(col 0:tinyint) -> 22:double, DoubleColMultiplyDoubleColumn(col 23:double, col 24:double)(children: CastLongToDouble(col 0:tinyint) -> 23:double, CastLongToDouble(col 0:tinyint) -> 24:double) -> 25:double, DoubleColMultiplyDoubleColumn(col 4:double, col 4:double)(children: col 4:float, col 4:float) -> 26:double, CastLongToDouble(col 2:int) -> 27:double, DoubleColMultiplyDoubleColumn(col 28:double, col 29:double)(children: CastLongToDouble(col 2:int) -> 28:double, CastLongToDouble(col 2:int) -> 29:double) -> 30:double
+                      Statistics: Num rows: 2503 Data size: 209380 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: sum(_col5), sum(_col4), count(_col0), sum(_col7), sum(_col6), count(_col1), sum(_col9), sum(_col8), count(_col2), sum(_col2), sum(_col3), count(_col3), sum(_col11), sum(_col10)
+                        Group By Vectorization:
+                            aggregators: VectorUDAFSumDouble(col 21:double) -> double, VectorUDAFSumDouble(col 18:double) -> double, VectorUDAFCount(col 1:smallint) -> bigint, VectorUDAFSumDouble(col 25:double) -> double, VectorUDAFSumDouble(col 22:double) -> double, VectorUDAFCount(col 0:tinyint) -> bigint, VectorUDAFSumDouble(col 26:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCount(col 4:float) -> bigint, VectorUDAFSumDouble(col 4:float) -> double, VectorUDAFSumLong(col 2:int) -> bigint, VectorUDAFCount(col 2:int) -> bigint, VectorUDAFSumDouble(col 30:double) -> double, VectorUDAFSumDouble(col 27:double) -> double
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                        Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          null sort order: 
+                          sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                          Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col0 (type: double), _col1 (type: double), _col2 (type: bigint), _col3 (type: double), _col4 (type: double), _col5 (type: bigint), _col6 (type: double), _col7 (type: double), _col8 (type: bigint), _col9 (type: double), _col10 (type: bigint), _col11 (type: bigint), _col12 (type: double), _col13 (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0), sum(VALUE._col1), count(VALUE._col2), sum(VALUE._col3), sum(VALUE._col4), count(VALUE._col5), sum(VALUE._col6), sum(VALUE._col7), count(VALUE._col8), sum(VALUE._col9), sum(VALUE._col10), count(VALUE._col11), sum(VALUE._col12), sum(VALUE._col13)
+                Group By Vectorization:
+                    aggregators: VectorUDAFSumDouble(col 0:double) -> double, VectorUDAFSumDouble(col 1:double) -> double, VectorUDAFCountMerge(col 2:bigint) -> bigint, VectorUDAFSumDouble(col 3:double) -> double, VectorUDAFSumDouble(col 4:double) -> double, VectorUDAFCountMerge(col 5:bigint) -> bigint, VectorUDAFSumDouble(col 6:double) -> double, VectorUDAFSumDouble(col 7:double) -> double, VectorUDAFCountMerge(col 8:bigint) -> bigint, VectorUDAFSumDouble(col 9:double) -> double, VectorUDAFSumLong(col 10:bigint) -> bigint, VectorUDAFCountMerge(col 11:bigint) -> bigint, VectorUDAFSumDouble(col 12:double) -> double, VectorUDAFSumDouble(col 13:double) -> double
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5) (type: double), (power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5) - 10.175D) (type: double), power(((_col3 - ((_col4 * _col4) / _col5)) / _col5), 0.5) (type: double), (power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5) * (power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5) - 10.175D)) (type: double), (- power(((_col3 - ((_col4 * _col4) / _col5)) / _col5), 0.5)) (type: double), (power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5) % 79.553D) (type: double), (- (power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5) * (power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5) - 10.175D))) (type: double), power(((_col6 - ((_col7 * _col7) / _col8)) / CASE WHEN ((_col8 = 1L)) THEN (null) ELSE ((_col8 - 1)) END), 0.5) (type: double), (- power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5)) (type: double), _col9 (type: double), ((- (power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5) * (power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5) - 10.175D))) / (power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5) - 10.175D)) (type: double), (- (power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5) - 10.175D)) (type: double), (UDFToDouble(_col10) / _col11) (type: double), (-3728.0D - power(((_col0 - ((_col1 * _col1) / _col2)) / CASE WHEN ((_col2 = 1L)) THEN (null) ELSE ((_col2 - 1)) END), 0.5)) (type: double), power(((_col12 - ((_col13 * _col13) / _col11)) / _col11), 0.5) (type: double), ((UDFToDouble(_col10) / _col11) / power(((_col6 - ((_col7 * _col7) / _col8)) / CASE WHEN ((_col8 = 1L)) THEN (null) ELSE ((_col8 - 1)) END), 0.5)) (type: double)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [21, 30, 35, 53, 59, 68, 87, 95, 104, 9, 133, 143, 145, 154, 159, 170]
+                      selectExpressions: FuncPowerDoubleToDouble(col 20:double)(children: DoubleColDivideLongColumn(col 16:double, col 19:bigint)(children: DoubleColSubtractDoubleColumn(col 0:double, col 15:double)(children: DoubleColDivideLongColumn(col 14:double, col 2:bigint)(children: DoubleColMultiplyDoubleColumn(col 1:double, col 1:double) -> 14:double) -> 15:double) -> 16:double, IfExprNullCondExpr(col 17:boolean, null, col 18:bigint)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 17:boolean, LongColSubtractLongScalar(col 2:bigint, val 1) -> 18:bigint) -> 19:bigint) -> 20:double) -> 21:double, DoubleColSubtractDoubleScalar(col 29:double, val 10.175)(children: FuncPowerDoubleToDouble(col 28:double)(children: DoubleColDivideLongColumn(col 24:double, col 27:bigint)(children: DoubleColSubtractDoubleColumn(col 0:double, col 23:double)(children: DoubleColDivideLongColumn(col 22:double, col 2:bigint)(children: DoubleColMultiplyDoubleColumn(col 1:double, col 1:double) -> 22:double) -> 23:double) -> 24:double, IfExprNullCondExpr(col 25:boolean, null, col 26:bigint)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 25:boolean, LongColSubtractLongScalar(col 2:bigint, val 1) -> 26:bigint) -> 27:bigint) -> 28:double) -> 29:double) -> 30:double, FuncPowerDoubleToDouble(col 34:double)(children: DoubleColDivideLongColumn(col 33:double, col 5:bigint)(children: DoubleColSubtractDoubleColumn(col 3:double, col 32:double)(children: DoubleColDivideLongColumn(col 31:double, col 5:bigint)(children: DoubleColMultiplyDoubleColumn(col 4:double, col 4:double) -> 31:double) -> 32:double) -> 33:double) -> 34:double) -> 35:double, DoubleColMultiplyDoubleColumn(col 43:double, col 52:double)(children: FuncPowerDoubleToDouble(col 42:double)(children: DoubleColDivideLongColumn(col 38:double, col 41:bigint)(children: DoubleColSubtractDoubleColumn(col 0:double, col 37:double)(children: DoubleColDivideLongColumn(col 36:double, col 2:bigint)(children: DoubleColMultiplyDoubleColumn(col 1:double, col 1:double) -> 36:double) -> 37:double) -> 38:double, IfExprNullCondExpr(col 39:boolean, null, col 40:bigint)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 39:boolean, LongColSubtractLongScalar(col 2:bigint, val 1) -> 40:bigint) -> 41:bigint) -> 42:double) -> 43:double, DoubleColSubtractDoubleScalar(col 51:double, val 10.175)(children: FuncPowerDoubleToDouble(col 50:double)(children: DoubleColDivideLongColumn(col 46:double, col 49:bigint)(children: DoubleColSubtractDoubleColumn(col 0:double, col 45:double)(children: DoubleColDivideLongColumn(col 44:double, col 2:bigint)(children: DoubleColMultiplyDoubleColumn(col 1:double, col 1:double) -> 44:double) -> 45:double) -> 46:double, IfExprNullCondExpr(col 47:boolean, null, col 48:bigint)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 47:boolean, LongColSubtractLongScalar(col 2:bigint, val 1) -> 48:bigint) -> 49:bigint) -> 50:double) -> 51:double) -> 52:double) -> 53:double, DoubleColUnaryMinus(col 58:double)(children: FuncPowerDoubleToDouble(col 57:double)(children: DoubleColDivideLongColumn(col 56:double, col 5:bigint)(children: DoubleColSubtractDoubleColumn(col 3:double, col 55:double)(children: DoubleColDivideLongColumn(col 54:double, col 5:bigint)(children: DoubleColMultiplyDoubleColumn(col 4:double, col 4:double) -> 54:double) -> 55:double) -> 56:double) -> 57:double) -> 58:double) -> 59:double, DoubleColModuloDoubleScalar(col 67:double, val 79.553)(children: FuncPowerDoubleToDouble(col 66:double)(children: DoubleColDivideLongColumn(col 62:double, col 65:bigint)(children: DoubleColSubtractDoubleColumn(col 0:double, col 61:double)(children: DoubleColDivideLongColumn(col 60:double, col 2:bigint)(children: DoubleColMultiplyDoubleColumn(col 1:double, col 1:double) -> 60:double) -> 61:double) -> 62:double, IfExprNullCondExpr(col 63:boolean, null, col 64:bigint)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 63:boolean, LongColSubtractLongScalar(col 2:bigint, val 1) -> 64:bigint) -> 65:bigint) -> 66:double) -> 67:double) -> 68:double, DoubleColUnaryMinus(col 86:double)(children: DoubleColMultiplyDoubleColumn(col 76:double, col 85:double)(children: FuncPowerDoubleToDouble(col 75:double)(children: DoubleColDivideLongColumn(col 71:double, col 74:bigint)(children: DoubleColSubtractDoubleColumn(col 0:double, col 70:double)(children: DoubleColDivideLongColumn(col 69:double, col 2:bigint)(children: DoubleColMultiplyDoubleColumn(col 1:double, col 1:double) -> 69:double) -> 70:double) -> 71:double, IfExprNullCondExpr(col 72:boolean, null, col 73:bigint)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 72:boolean, LongColSubtractLongScalar(col 2:bigint, val 1) -> 73:bigint) -> 74:bigint) -> 75:double) -> 76:double, DoubleColSubtractDoubleScalar(col 84:double, val 10.175)(children: FuncPowerDoubleToDouble(col 83:double)(children: DoubleColDivideLongColumn(col 79:double, col 82:bigint)(children: DoubleColSubtractDoubleColumn(col 0:double, col 78:double)(children: DoubleColDivideLongColumn(col 77:double, col 2:bigint)(children: DoubleColMultiplyDoubleColumn(col 1:double, col 1:double) -> 77:double) -> 78:double) -> 79:double, IfExprNullCondExpr(col 80:boolean, null, col 81:bigint)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 80:boolean, LongColSubtractLongScalar(col 2:bigint, val 1) -> 81:bigint) -> 82:bigint) -> 83:double) -> 84:double) -> 85:double) -> 86:double) -> 87:double, FuncPowerDoubleToDouble(col 94:double)(children: DoubleColDivideLongColumn(col 90:double, col 93:bigint)(children: DoubleColSubtractDoubleColumn(col 6:double, col 89:double)(children: DoubleColDivideLongColumn(col 88:double, col 8:bigint)(children: DoubleColMultiplyDoubleColumn(col 7:double, col 7:double) -> 88:double) -> 89:double) -> 90:double, IfExprNullCondExpr(col 91:boolean, null, col 92:bigint)(children: LongColEqualLongScalar(col 8:bigint, val 1) -> 91:boolean, LongColSubtractLongScalar(col 8:bigint, val 1) -> 92:bigint) -> 93:bigint) -> 94:double) -> 95:double, DoubleColUnaryMinus(col 103:double)(children: FuncPowerDoubleToDouble(col 102:double)(children: DoubleColDivideLongColumn(col 98:double, col 101:bigint)(children: DoubleColSubtractDoubleColumn(col 0:double, col 97:double)(children: DoubleColDivideLongColumn(col 96:double, col 2:bigint)(children: DoubleColMultiplyDoubleColumn(col 1:double, col 1:double) -> 96:double) -> 97:double) -> 98:double, IfExprNullCondExpr(col 99:boolean, null, col 100:bigint)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 99:boolean, LongColSubtractLongScalar(col 2:bigint, val 1) -> 100:bigint) -> 101:bigint) -> 102:double) -> 103:double) -> 104:double, DoubleColDivideDoubleColumn(col 123:double, col 132:double)(children: DoubleColUnaryMinus(col 122:double)(children: DoubleColMultiplyDoubleColumn(col 112:double, col 121:double)(children: FuncPowerDoubleToDouble(col 111:double)(children: DoubleColDivideLongColumn(col 107:double, col 110:bigint)(children: DoubleColSubtractDoubleColumn(col 0:double, col 106:double)(children: DoubleColDivideLongColumn(col 105:double, col 2:bigint)(children: DoubleColMultiplyDoubleColumn(col 1:double, col 1:double) -> 105:double) -> 106:double) -> 107:double, IfExprNullCondExpr(col 108:boolean, null, col 109:bigint)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 108:boolean, LongColSubtractLongScalar(col 2:bigint, val 1) -> 109:bigint) -> 110:bigint) -> 111:double) -> 112:double, DoubleColSubtractDoubleScalar(col 120:double, val 10.175)(children: FuncPowerDoubleToDouble(col 119:double)(children: DoubleColDivideLongColumn(col 115:double, col 118:bigint)(children: DoubleColSubtractDoubleColumn(col 0:double, col 114:double)(children: DoubleColDivideLongColumn(col 113:double, col 2:bigint)(children: DoubleColMultiplyDoubleColumn(col 1:double, col 1:double) -> 113:double) -> 114:double) -> 115:double, IfExprNullCondExpr(col 116:boolean, null, col 117:bigint)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 116:boolean, LongColSubtractLongScalar(col 2:bigint, val 1) -> 117:bigint) -> 118:bigint) -> 119:double) -> 120:double) -> 121:double) -> 122:double) -> 123:double, DoubleColSubtractDoubleScalar(col 131:double, val 10.175)(children: FuncPowerDoubleToDouble(col 130:double)(children: DoubleColDivideLongColumn(col 126:double, col 129:bigint)(children: DoubleColSubtractDoubleColumn(col 0:double, col 125:double)(children: DoubleColDivideLongColumn(col 124:double, col 2:bigint)(children: DoubleColMultiplyDoubleColumn(col 1:double, col 1:double) -> 124:double) -> 125:double) -> 126:double, IfExprNullCondExpr(col 127:boolean, null, col 128:bigint)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 127:boolean, LongColSubtractLongScalar(col 2:bigint, val 1) -> 128:bigint) -> 129:bigint) -> 130:double) -> 131:double) -> 132:double) -> 133:double, DoubleColUnaryMinus(col 142:double)(children: DoubleColSubtractDoubleScalar(col 141:double, val 10.175)(children: FuncPowerDoubleToDouble(col 140:double)(children: DoubleColDivideLongColumn(col 136:double, col 139:bigint)(children: DoubleColSubtractDoubleColumn(col 0:double, col 135:double)(children: DoubleColDivideLongColumn(col 134:double, col 2:bigint)(children: DoubleColMultiplyDoubleColumn(col 1:double, col 1:double) -> 134:double) -> 135:double) -> 136:double, IfExprNullCondExpr(col 137:boolean, null, col 138:bigint)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 137:boolean, LongColSubtractLongScalar(col 2:bigint, val 1) -> 138:bigint) -> 139:bigint) -> 140:double) -> 141:double) -> 142:double) -> 143:double, DoubleColDivideLongColumn(col 144:double, col 11:bigint)(children: CastLongToDouble(col 10:bigint) -> 144:double) -> 145:double, DoubleScalarSubtractDoubleColumn(val -3728.0, col 153:double)(children: FuncPowerDoubleToDouble(col 152:double)(children: DoubleColDivideLongColumn(col 148:double, col 151:bigint)(children: DoubleColSubtractDoubleColumn(col 0:double, col 147:double)(children: DoubleColDivideLongColumn(col 146:double, col 2:bigint)(children: DoubleColMultiplyDoubleColumn(col 1:double, col 1:double) -> 146:double) -> 147:double) -> 148:double, IfExprNullCondExpr(col 149:boolean, null, col 150:bigint)(children: LongColEqualLongScalar(col 2:bigint, val 1) -> 149:boolean, LongColSubtractLongScalar(col 2:bigint, val 1) -> 150:bigint) -> 151:bigint) -> 152:double) -> 153:double) -> 154:double, FuncPowerDoubleToDouble(col 158:double)(children: DoubleColDivideLongColumn(col 157:double, col 11:bigint)(children: DoubleColSubtractDoubleColumn(col 12:double, col 156:double)(children: DoubleColDivideLongColumn(col 155:double, col 11:bigint)(children: DoubleColMultiplyDoubleColumn(col 13:double, col 13:double) -> 155:double) -> 156:double) -> 157:double) -> 158:double) -> 159:double, DoubleColDivideDoubleColumn(col 161:double, col 169:double)(children: DoubleColDivideLongColumn(col 160:double, col 11:bigint)(children: CastLongToDouble(col 10:bigint) -> 160:double) -> 161:double, FuncPowerDoubleToDouble(col 168:double)(children: DoubleColDivideLongColumn(col 164:double, col 167:bigint)(children: DoubleColSubtractDoubleColumn(col 6:double, col 163:double)(children: DoubleColDivideLongColumn(col 162:double, col 8:bigint)(children: DoubleColMultiplyDoubleColumn(col 7:double, col 7:double) -> 162:double) -> 163:double) -> 164:double, IfExprNullCondExpr(col 165:boolean, null, col 166:bigint)(children: LongColEqualLongScalar(col 8:bigint, val 1) -> 165:boolean, LongColSubtractLongScalar(col 8:bigint, val 1) -> 166:bigint) -> 167:bigint) -> 168:double) -> 169:double) -> 170:double
+                  Statistics: Num rows: 1 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
+                    Statistics: Num rows: 1 Data size: 128 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+WARNING: Comparing a bigint and a double may result in a loss of precision.
+PREHOOK: query: SELECT STDDEV_SAMP(csmallint),
+       (STDDEV_SAMP(csmallint) - 10.175),
+       STDDEV_POP(ctinyint),
+       (STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)),
+       (-(STDDEV_POP(ctinyint))),
+       (STDDEV_SAMP(csmallint) % 79.553),
+       (-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))),
+       STDDEV_SAMP(cfloat),
+       (-(STDDEV_SAMP(csmallint))),
+       SUM(cfloat),
+       ((-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))) / (STDDEV_SAMP(csmallint) - 10.175)),
+       (-((STDDEV_SAMP(csmallint) - 10.175))),
+       AVG(cint),
+       (-3728 - STDDEV_SAMP(csmallint)),
+       STDDEV_POP(cint),
+       (AVG(cint) / STDDEV_SAMP(cfloat))
+FROM   alltypesparquet
+WHERE  (((cint <= cfloat)
+         AND ((79.553 != cbigint)
+              AND (ctimestamp2 = -29071)))
+        OR ((cbigint > cdouble)
+            AND ((79.553 <= csmallint)
+                 AND (ctimestamp1 > ctimestamp2))))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT STDDEV_SAMP(csmallint),
+       (STDDEV_SAMP(csmallint) - 10.175),
+       STDDEV_POP(ctinyint),
+       (STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)),
+       (-(STDDEV_POP(ctinyint))),
+       (STDDEV_SAMP(csmallint) % 79.553),
+       (-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))),
+       STDDEV_SAMP(cfloat),
+       (-(STDDEV_SAMP(csmallint))),
+       SUM(cfloat),
+       ((-((STDDEV_SAMP(csmallint) * (STDDEV_SAMP(csmallint) - 10.175)))) / (STDDEV_SAMP(csmallint) - 10.175)),
+       (-((STDDEV_SAMP(csmallint) - 10.175))),
+       AVG(cint),
+       (-3728 - STDDEV_SAMP(csmallint)),
+       STDDEV_POP(cint),
+       (AVG(cint) / STDDEV_SAMP(cfloat))
+FROM   alltypesparquet
+WHERE  (((cint <= cfloat)
+         AND ((79.553 != cbigint)
+              AND (ctimestamp2 = -29071)))
+        OR ((cbigint > cdouble)
+            AND ((79.553 <= csmallint)
+                 AND (ctimestamp1 > ctimestamp2))))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesparquet
+#### A masked pattern was here ####
+0.0	-10.175	34.287285216637066	-0.0	-34.287285216637066	0.0	0.0	34.3469009551564	-0.0	197.89499950408936	-0.0	10.175	NULL	-3728.0	NULL	NULL

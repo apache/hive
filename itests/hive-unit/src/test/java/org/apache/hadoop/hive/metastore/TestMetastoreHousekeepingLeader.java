@@ -49,7 +49,7 @@ public class TestMetastoreHousekeepingLeader extends MetastoreHousekeepingLeader
       Assert.assertTrue("No thread with name " + entry.getKey() + " found.", entry.getValue());
     }
 
-    for (Map.Entry<Class, Boolean> entry : threadClasses.entrySet()) {
+    for (Map.Entry<Class<? extends Thread>, Boolean> entry : threadClasses.entrySet()) {
       if (entry.getValue()) {
         LOG.info("Found thread for " + entry.getKey().getSimpleName());
       }

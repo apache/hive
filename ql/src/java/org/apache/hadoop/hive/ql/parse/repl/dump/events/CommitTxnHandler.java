@@ -39,12 +39,10 @@ import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.DumpType;
 import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
-import org.apache.hadoop.fs.FileSystem;
 
 import javax.security.auth.login.LoginException;
-import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,18 +57,16 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
     return deserializer.getCommitTxnMessage(stringRepresentation);
   }
 
-  private BufferedWriter writer(Context withinContext, Path dataPath) throws IOException {
-    Path filesPath = new Path(dataPath, EximUtil.FILES_NAME);
-    FileSystem fs = dataPath.getFileSystem(withinContext.hiveConf);
-    return new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));
-  }
-
-  private void writeDumpFiles(Table qlMdTable, Context withinContext, Iterable<String> files, Path dataPath)
+  private void writeDumpFiles(Table qlMdTable, Partition ptn, Iterable<String> files, Context withinContext,
+                              Path dataPath)
           throws IOException, LoginException, MetaException, HiveFatalException {
-    // encoded filename/checksum of files, write into _files
-    try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
+    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
+    if (copyAtLoad) {
+      // encoded filename/checksum of files, write into _files
+      writeEncodedDumpFiles(withinContext, files, dataPath);
+    } else {
       for (String file : files) {
-        writeFileEntry(qlMdTable.getDbName(), qlMdTable, file, fileListWriter, withinContext);
+        writeFileEntry(qlMdTable, ptn, file, withinContext);
       }
     }
   }
@@ -93,11 +89,12 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
     if ((null == qlPtns) || qlPtns.isEmpty()) {
       Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME);
-      writeDumpFiles(qlMdTable, withinContext, fileListArray.get(0), dataPath);
+      writeDumpFiles(qlMdTable, null, fileListArray.get(0), withinContext, dataPath);
     } else {
       for (int idx = 0; idx < qlPtns.size(); idx++) {
-        Path dataPath = new Path(withinContext.eventRoot, qlPtns.get(idx).getName());
-        writeDumpFiles(qlMdTable, withinContext, fileListArray.get(idx), dataPath);
+        Path dataPath = new Path(withinContext.eventRoot, EximUtil.DATA_PATH_NAME + File.separator
+                + qlPtns.get(idx).getName());
+        writeDumpFiles(qlMdTable, qlPtns.get(idx), fileListArray.get(idx), withinContext, dataPath);
       }
     }
   }

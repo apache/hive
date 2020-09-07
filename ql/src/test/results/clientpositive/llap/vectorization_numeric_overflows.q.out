@@ -1,0 +1,1366 @@
+PREHOOK: query: CREATE TABLE test_overflow (
+    ctinyint1 TINYINT,
+    ctinyint2 TINYINT,
+    csmallint1 SMALLINT,
+    csmallint2 SMALLINT,
+    cint1 INT,
+    cint2 INT,
+    cbigint1 BIGINT,
+    cbigint2 BIGINT,
+    cfloat1 FLOAT,
+    cfloat2 FLOAT,
+    cdouble1 DOUBLE,
+    cdouble2 DOUBLE)
+STORED AS PARQUET
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_overflow
+POSTHOOK: query: CREATE TABLE test_overflow (
+    ctinyint1 TINYINT,
+    ctinyint2 TINYINT,
+    csmallint1 SMALLINT,
+    csmallint2 SMALLINT,
+    cint1 INT,
+    cint2 INT,
+    cbigint1 BIGINT,
+    cbigint2 BIGINT,
+    cfloat1 FLOAT,
+    cfloat2 FLOAT,
+    cdouble1 DOUBLE,
+    cdouble2 DOUBLE)
+STORED AS PARQUET
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_overflow
+PREHOOK: query: insert into test_overflow values (-128, 127, -32768, 32767, -2147483648, 2147483647, -9223372036854775808, 9223372036854775807, 1.401298464324817E-45, 3.4028234663852886E38, 4.9E-324, 1.7976931348623157E308)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_overflow
+POSTHOOK: query: insert into test_overflow values (-128, 127, -32768, 32767, -2147483648, 2147483647, -9223372036854775808, 9223372036854775807, 1.401298464324817E-45, 3.4028234663852886E38, 4.9E-324, 1.7976931348623157E308)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_overflow
+POSTHOOK: Lineage: test_overflow.cbigint1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cbigint2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cdouble1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cdouble2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cfloat1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cfloat2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cint1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cint2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.csmallint1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.csmallint2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.ctinyint1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.ctinyint2 SCRIPT []
+PREHOOK: query: insert into test_overflow values (127, -128, 32767, -32768, 2147483647, -2147483648, 9223372036854775807, -9223372036854775808, 3.4028234663852886E38, 1.401298464324817E-45, 1.7976931348623157E308, 4.9E-324)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_overflow
+POSTHOOK: query: insert into test_overflow values (127, -128, 32767, -32768, 2147483647, -2147483648, 9223372036854775807, -9223372036854775808, 3.4028234663852886E38, 1.401298464324817E-45, 1.7976931348623157E308, 4.9E-324)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_overflow
+POSTHOOK: Lineage: test_overflow.cbigint1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cbigint2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cdouble1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cdouble2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cfloat1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cfloat2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cint1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cint2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.csmallint1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.csmallint2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.ctinyint1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.ctinyint2 SCRIPT []
+PREHOOK: query: insert into test_overflow values (64, 65, 32767, -32768, 1073741824, 1073741825, 9223372036854775807, -9223372036854775808, 3.4028234663852886E38, 1.401298464324817E-45, 1.7976931348623157E308, 4.9E-324)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@test_overflow
+POSTHOOK: query: insert into test_overflow values (64, 65, 32767, -32768, 1073741824, 1073741825, 9223372036854775807, -9223372036854775808, 3.4028234663852886E38, 1.401298464324817E-45, 1.7976931348623157E308, 4.9E-324)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@test_overflow
+POSTHOOK: Lineage: test_overflow.cbigint1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cbigint2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cdouble1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cdouble2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cfloat1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cfloat2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cint1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.cint2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.csmallint1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.csmallint2 SCRIPT []
+POSTHOOK: Lineage: test_overflow.ctinyint1 SCRIPT []
+POSTHOOK: Lineage: test_overflow.ctinyint2 SCRIPT []
+PREHOOK: query: select * from test_overflow order by cint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_overflow order by cint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+-128	127	-32768	32767	-2147483648	2147483647	-9223372036854775808	9223372036854775807	1.4E-45	3.4028235E38	4.9E-324	1.7976931348623157E308
+64	65	32767	-32768	1073741824	1073741825	9223372036854775807	-9223372036854775808	3.4028235E38	1.4E-45	1.7976931348623157E308	4.9E-324
+127	-128	32767	-32768	2147483647	-2147483648	9223372036854775807	-9223372036854775808	3.4028235E38	1.4E-45	1.7976931348623157E308	4.9E-324
+PREHOOK: query: explain vectorization expression
+select cint1, (cint1-2) from test_overflow where (cint1 - 2) > 0 order by cint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression
+select cint1, (cint1-2) from test_overflow where (cint1 - 2) > 0 order by cint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_overflow
+                  filterExpr: ((cint1 - 2) > 0) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColGreaterLongScalar(col 13:int, val 0)(children: LongColSubtractLongScalarChecked(col 4:int, val 2) -> 13:int)
+                    predicate: ((cint1 - 2) > 0) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cint1 (type: int), (cint1 - 2) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [4, 14]
+                          selectExpressions: LongColSubtractLongScalarChecked(col 4:int, val 2) -> 14:int
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cint1, (cint1-2) from test_overflow where (cint1 - 2) > 0 order by cint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select cint1, (cint1-2) from test_overflow where (cint1 - 2) > 0 order by cint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+-2147483648	2147483646
+1073741824	1073741822
+2147483647	2147483645
+PREHOOK: query: select cint1, (cint1-2) from test_overflow where (cint1 - 2) > 0 order by cint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select cint1, (cint1-2) from test_overflow where (cint1 - 2) > 0 order by cint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+-2147483648	2147483646
+1073741824	1073741822
+2147483647	2147483645
+PREHOOK: query: explain vectorization expression
+select cint2, (cint2+2) from test_overflow where (cint2 + 2) < 0 order by cint2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression
+select cint2, (cint2+2) from test_overflow where (cint2 + 2) < 0 order by cint2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_overflow
+                  filterExpr: ((cint2 + 2) < 0) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColLessLongScalar(col 13:int, val 0)(children: LongColAddLongScalarChecked(col 5:int, val 2) -> 13:int)
+                    predicate: ((cint2 + 2) < 0) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cint2 (type: int), (cint2 + 2) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [5, 14]
+                          selectExpressions: LongColAddLongScalarChecked(col 5:int, val 2) -> 14:int
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cint2, (cint2+2) from test_overflow where (cint2 + 2) < 0 order by cint2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select cint2, (cint2+2) from test_overflow where (cint2 + 2) < 0 order by cint2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+-2147483648	-2147483646
+2147483647	-2147483647
+PREHOOK: query: select cint2, (cint2+2) from test_overflow where (cint2 + 2) < 0 order by cint2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select cint2, (cint2+2) from test_overflow where (cint2 + 2) < 0 order by cint2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+-2147483648	-2147483646
+2147483647	-2147483647
+PREHOOK: query: explain vectorization expression
+select cint2, (cint2 * 2) from test_overflow where (cint2 * 2) < 0 order by cint2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression
+select cint2, (cint2 * 2) from test_overflow where (cint2 * 2) < 0 order by cint2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_overflow
+                  filterExpr: ((cint2 * 2) < 0) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColLessLongScalar(col 13:int, val 0)(children: LongColMultiplyLongScalarChecked(col 5:int, val 2) -> 13:int)
+                    predicate: ((cint2 * 2) < 0) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: cint2 (type: int), (cint2 * 2) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [5, 14]
+                          selectExpressions: LongColMultiplyLongScalarChecked(col 5:int, val 2) -> 14:int
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int)
+                        null sort order: z
+                        sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: int), VALUE._col0 (type: int)
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select cint2, (cint2 * 2) from test_overflow where (cint2 * 2) < 0 order by cint2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select cint2, (cint2 * 2) from test_overflow where (cint2 * 2) < 0 order by cint2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+1073741825	-2147483646
+2147483647	-2
+PREHOOK: query: select cint2, (cint2 * 2) from test_overflow where (cint2 * 2) < 0 order by cint2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select cint2, (cint2 * 2) from test_overflow where (cint2 * 2) < 0 order by cint2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+1073741825	-2147483646
+2147483647	-2
+PREHOOK: query: explain vectorization expression
+select ctinyint1, (ctinyint1-2Y) from test_overflow where (ctinyint1 - 2Y) > 0  order by ctinyint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression
+select ctinyint1, (ctinyint1-2Y) from test_overflow where (ctinyint1 - 2Y) > 0  order by ctinyint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_overflow
+                  filterExpr: ((ctinyint1 - 2Y) > 0) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColGreaterLongScalar(col 13:tinyint, val 0)(children: LongColSubtractLongScalarChecked(col 0:tinyint, val 2) -> 13:tinyint)
+                    predicate: ((ctinyint1 - 2Y) > 0) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ctinyint1 (type: tinyint), (ctinyint1 - 2Y) (type: tinyint)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 14]
+                          selectExpressions: LongColSubtractLongScalarChecked(col 0:tinyint, val 2) -> 14:tinyint
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: tinyint)
+                        null sort order: z
+                        sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: tinyint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: tinyint), VALUE._col0 (type: tinyint)
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ctinyint1, (ctinyint1-2Y) from test_overflow where (ctinyint1 - 2Y) > 0  order by ctinyint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select ctinyint1, (ctinyint1-2Y) from test_overflow where (ctinyint1 - 2Y) > 0  order by ctinyint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+-128	126
+64	62
+127	125
+PREHOOK: query: select ctinyint1, (ctinyint1-2Y) from test_overflow where (ctinyint1 - 2Y) > 0  order by ctinyint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select ctinyint1, (ctinyint1-2Y) from test_overflow where (ctinyint1 - 2Y) > 0  order by ctinyint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+-128	126
+64	62
+127	125
+PREHOOK: query: explain vectorization expression
+select ctinyint2, (ctinyint2 + 2) from test_overflow where (ctinyint2 + 2Y) < 0  order by ctinyint2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression
+select ctinyint2, (ctinyint2 + 2) from test_overflow where (ctinyint2 + 2Y) < 0  order by ctinyint2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_overflow
+                  filterExpr: ((ctinyint2 + 2Y) < 0) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColLessLongScalar(col 13:tinyint, val 0)(children: LongColAddLongScalarChecked(col 1:tinyint, val 2) -> 13:tinyint)
+                    predicate: ((ctinyint2 + 2Y) < 0) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ctinyint2 (type: tinyint), (ctinyint2 + 2) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [1, 14]
+                          selectExpressions: LongColAddLongScalarChecked(col 1:tinyint, val 2) -> 14:int
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: tinyint)
+                        null sort order: z
+                        sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: tinyint), VALUE._col0 (type: int)
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ctinyint2, (ctinyint2 + 2) from test_overflow where (ctinyint2 + 2Y) < 0  order by ctinyint2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select ctinyint2, (ctinyint2 + 2) from test_overflow where (ctinyint2 + 2Y) < 0  order by ctinyint2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+-128	-126
+127	129
+PREHOOK: query: select ctinyint2, (ctinyint2 + 2) from test_overflow where (ctinyint2 + 2Y) < 0 order by ctinyint2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select ctinyint2, (ctinyint2 + 2) from test_overflow where (ctinyint2 + 2Y) < 0 order by ctinyint2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+-128	-126
+127	129
+PREHOOK: query: explain vectorization expression
+select csmallint2, csmallint2 * 2 from test_overflow where (csmallint2 * 2S) < 0 order by csmallint2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression
+select csmallint2, csmallint2 * 2 from test_overflow where (csmallint2 * 2S) < 0 order by csmallint2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_overflow
+                  filterExpr: ((csmallint2 * 2S) < 0) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColLessLongScalar(col 13:smallint, val 0)(children: LongColMultiplyLongScalarChecked(col 3:smallint, val 2) -> 13:smallint)
+                    predicate: ((csmallint2 * 2S) < 0) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: csmallint2 (type: smallint), (csmallint2 * 2) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [3, 14]
+                          selectExpressions: LongColMultiplyLongScalarChecked(col 3:smallint, val 2) -> 14:int
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: smallint)
+                        null sort order: z
+                        sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: int)
+                outputColumnNames: _col0, _col1
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1]
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select csmallint2, csmallint2 * 2 from test_overflow where (csmallint2 * 2S) < 0 order by csmallint2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select csmallint2, csmallint2 * 2 from test_overflow where (csmallint2 * 2S) < 0 order by csmallint2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+32767	65534
+PREHOOK: query: explain vectorization expression
+select csmallint2, csmallint2 * 2 from test_overflow where (csmallint2 * 2S) < 0 order by csmallint2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression
+select csmallint2, csmallint2 * 2 from test_overflow where (csmallint2 * 2S) < 0 order by csmallint2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: false
+  enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_overflow
+                  filterExpr: ((csmallint2 * 2S) < 0) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((csmallint2 * 2S) < 0) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: csmallint2 (type: smallint), (csmallint2 * 2) (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: smallint)
+                        null sort order: z
+                        sort order: +
+                        Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: int)
+            Execution mode: llap
+            LLAP IO: all inputs (cache only)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: smallint), VALUE._col0 (type: int)
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select csmallint2, csmallint2 * 2 from test_overflow where (csmallint2 * 2S) < 0 order by csmallint2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select csmallint2, csmallint2 * 2 from test_overflow where (csmallint2 * 2S) < 0 order by csmallint2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+32767	65534
+PREHOOK: query: create table parquettable (t1 tinyint, t2 tinyint, i1 int, i2 int) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@parquettable
+POSTHOOK: query: create table parquettable (t1 tinyint, t2 tinyint, i1 int, i2 int) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@parquettable
+PREHOOK: query: insert into parquettable values (-104, 25,2147483647, 10), (-112, 24, -2147483648, 10), (54, 9, 2147483647, -50)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@parquettable
+POSTHOOK: query: insert into parquettable values (-104, 25,2147483647, 10), (-112, 24, -2147483648, 10), (54, 9, 2147483647, -50)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@parquettable
+POSTHOOK: Lineage: parquettable.i1 SCRIPT []
+POSTHOOK: Lineage: parquettable.i2 SCRIPT []
+POSTHOOK: Lineage: parquettable.t1 SCRIPT []
+POSTHOOK: Lineage: parquettable.t2 SCRIPT []
+PREHOOK: query: explain vectorization expression select t1, t2, (t1-t2) as diff from parquettable where (t1-t2) < 50 order by diff desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquettable
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression select t1, t2, (t1-t2) as diff from parquettable where (t1-t2) < 50 order by diff desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquettable
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: false
+  enabledConditionsNotMet: [hive.vectorized.execution.enabled IS false]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: parquettable
+                  filterExpr: ((t1 - t2) < 50) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((t1 - t2) < 50) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: t1 (type: tinyint), t2 (type: tinyint), (t1 - t2) (type: tinyint)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: tinyint)
+                        null sort order: a
+                        sort order: -
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: tinyint), _col1 (type: tinyint)
+            Execution mode: llap
+            LLAP IO: all inputs (cache only)
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: tinyint), VALUE._col1 (type: tinyint), KEY.reducesinkkey0 (type: tinyint)
+                outputColumnNames: _col0, _col1, _col2
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select t1, t2, (t1-t2) as diff from parquettable where (t1-t2) < 50 order by diff desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquettable
+#### A masked pattern was here ####
+POSTHOOK: query: select t1, t2, (t1-t2) as diff from parquettable where (t1-t2) < 50 order by diff desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquettable
+#### A masked pattern was here ####
+54	9	45
+PREHOOK: query: select t1, t2, (t1-t2) as diff from parquettable where (t1-t2) < 50 order by diff desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquettable
+#### A masked pattern was here ####
+POSTHOOK: query: select t1, t2, (t1-t2) as diff from parquettable where (t1-t2) < 50 order by diff desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquettable
+#### A masked pattern was here ####
+54	9	45
+PREHOOK: query: explain vectorization expression select i1, i2, (i1-i2) as diff from parquettable where (i1-i2) < 50 order by diff desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquettable
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression select i1, i2, (i1-i2) as diff from parquettable where (i1-i2) < 50 order by diff desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquettable
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: parquettable
+                  filterExpr: ((i1 - i2) < 50) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColLessLongScalar(col 5:int, val 50)(children: LongColSubtractLongColumnChecked(col 2:int, col 3:int) -> 5:int)
+                    predicate: ((i1 - i2) < 50) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: i1 (type: int), i2 (type: int), (i1 - i2) (type: int)
+                      outputColumnNames: _col0, _col1, _col2
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [2, 3, 6]
+                          selectExpressions: LongColSubtractLongColumnChecked(col 2:int, col 3:int) -> 6:int
+                      Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col2 (type: int)
+                        null sort order: a
+                        sort order: -
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col1 (type: int)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: VALUE._col0 (type: int), VALUE._col1 (type: int), KEY.reducesinkkey0 (type: int)
+                outputColumnNames: _col0, _col1, _col2
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 2, 0]
+                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select i1, i2, (i1-i2) as diff from parquettable where (i1-i2) < 50 order by diff desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquettable
+#### A masked pattern was here ####
+POSTHOOK: query: select i1, i2, (i1-i2) as diff from parquettable where (i1-i2) < 50 order by diff desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquettable
+#### A masked pattern was here ####
+2147483647	-50	-2147483599
+PREHOOK: query: select i1, i2, (i1-i2) as diff from parquettable where (i1-i2) < 50 order by diff desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@parquettable
+#### A masked pattern was here ####
+POSTHOOK: query: select i1, i2, (i1-i2) as diff from parquettable where (i1-i2) < 50 order by diff desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@parquettable
+#### A masked pattern was here ####
+2147483647	-50	-2147483599
+PREHOOK: query: select cint1 from test_overflow where -cint1 >= 0 order by cint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select cint1 from test_overflow where -cint1 >= 0 order by cint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+PREHOOK: query: select cfloat1 from test_overflow where -cfloat1 >= 0 order by cfloat1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select cfloat1 from test_overflow where -cfloat1 >= 0 order by cfloat1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+PREHOOK: query: select cint1 from test_overflow where -cint1 >= 0 order by cint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select cint1 from test_overflow where -cint1 >= 0 order by cint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+PREHOOK: query: select cfloat1 from test_overflow where -cfloat1 >= 0 order by cfloat1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select cfloat1 from test_overflow where -cfloat1 >= 0 order by cfloat1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+PREHOOK: query: select cint1, 2*cint2 from test_overflow where 2*cint2 >= 0 order by cint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select cint1, 2*cint2 from test_overflow where 2*cint2 >= 0 order by cint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+2147483647	0
+PREHOOK: query: select cint1, 2*cint2 from test_overflow where 2*cint2 >= 0 order by cint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select cint1, 2*cint2 from test_overflow where 2*cint2 >= 0 order by cint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+2147483647	0
+PREHOOK: query: select 2147483648 from test_overflow
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select 2147483648 from test_overflow
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+2147483648
+2147483648
+2147483648
+PREHOOK: query: select 2147483648 from test_overflow
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select 2147483648 from test_overflow
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+2147483648
+2147483648
+2147483648
+PREHOOK: query: select * from test_overflow where pmod(cint1, 1073741825) > 0 order by cint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_overflow where pmod(cint1, 1073741825) > 0 order by cint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+-128	127	-32768	32767	-2147483648	2147483647	-9223372036854775808	9223372036854775807	1.4E-45	3.4028235E38	4.9E-324	1.7976931348623157E308
+127	-128	32767	-32768	2147483647	-2147483648	9223372036854775807	-9223372036854775808	3.4028235E38	1.4E-45	1.7976931348623157E308	4.9E-324
+PREHOOK: query: select * from test_overflow where pmod(cint1, 1073741825) > 0  order by cint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_overflow where pmod(cint1, 1073741825) > 0  order by cint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+-128	127	-32768	32767	-2147483648	2147483647	-9223372036854775808	9223372036854775807	1.4E-45	3.4028235E38	4.9E-324	1.7976931348623157E308
+127	-128	32767	-32768	2147483647	-2147483648	9223372036854775807	-9223372036854775808	3.4028235E38	1.4E-45	1.7976931348623157E308	4.9E-324
+PREHOOK: query: select * from test_overflow where pmod(csmallint1, 16385S) > 0  order by ctinyint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_overflow where pmod(csmallint1, 16385S) > 0  order by ctinyint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+-128	127	-32768	32767	-2147483648	2147483647	-9223372036854775808	9223372036854775807	1.4E-45	3.4028235E38	4.9E-324	1.7976931348623157E308
+64	65	32767	-32768	1073741824	1073741825	9223372036854775807	-9223372036854775808	3.4028235E38	1.4E-45	1.7976931348623157E308	4.9E-324
+127	-128	32767	-32768	2147483647	-2147483648	9223372036854775807	-9223372036854775808	3.4028235E38	1.4E-45	1.7976931348623157E308	4.9E-324
+PREHOOK: query: explain vectorization expression select * from test_overflow where pmod(csmallint1, 16385S) > 0 order by ctinyint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: explain vectorization expression select * from test_overflow where pmod(csmallint1, 16385S) > 0 order by ctinyint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+PLAN VECTORIZATION:
+  enabled: true
+  enabledConditionsMet: [hive.vectorized.execution.enabled IS true]
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: test_overflow
+                  filterExpr: ((csmallint1 pmod 16385S) > 0) (type: boolean)
+                  Statistics: Num rows: 3 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
+                  Filter Operator
+                    Filter Vectorization:
+                        className: VectorFilterOperator
+                        native: true
+                        predicateExpression: FilterLongColGreaterLongScalar(col 13:smallint, val 0)(children: PosModLongToLong(col 2, divisor 16385) -> 13:smallint)
+                    predicate: ((csmallint1 pmod 16385S) > 0) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: ctinyint1 (type: tinyint), ctinyint2 (type: tinyint), csmallint1 (type: smallint), csmallint2 (type: smallint), cint1 (type: int), cint2 (type: int), cbigint1 (type: bigint), cbigint2 (type: bigint), cfloat1 (type: float), cfloat2 (type: float), cdouble1 (type: double), cdouble2 (type: double)
+                      outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                      Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: tinyint)
+                        null sort order: z
+                        sort order: +
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkObjectHashOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                        Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: tinyint), _col2 (type: smallint), _col3 (type: smallint), _col4 (type: int), _col5 (type: int), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: float), _col9 (type: float), _col10 (type: double), _col11 (type: double)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs (cache only)
+            Map Vectorization:
+                enabled: true
+                enabledConditionsMet: hive.vectorized.use.vectorized.input.format IS true
+                inputFormatFeatureSupport: []
+                featureSupportInUse: []
+                inputFileFormats: org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat
+                allNative: true
+                usesVectorUDFAdaptor: false
+                vectorized: true
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Vectorization:
+                enabled: true
+                enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+            Reduce Operator Tree:
+              Select Operator
+                expressions: KEY.reducesinkkey0 (type: tinyint), VALUE._col0 (type: tinyint), VALUE._col1 (type: smallint), VALUE._col2 (type: smallint), VALUE._col3 (type: int), VALUE._col4 (type: int), VALUE._col5 (type: bigint), VALUE._col6 (type: bigint), VALUE._col7 (type: float), VALUE._col8 (type: float), VALUE._col9 (type: double), VALUE._col10 (type: double)
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+                Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  File Sink Vectorization:
+                      className: VectorFileSinkOperator
+                      native: false
+                  Statistics: Num rows: 1 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select * from test_overflow where pmod(csmallint1, 16385S) > 0 order by ctinyint1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+POSTHOOK: query: select * from test_overflow where pmod(csmallint1, 16385S) > 0 order by ctinyint1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_overflow
+#### A masked pattern was here ####
+-128	127	-32768	32767	-2147483648	2147483647	-9223372036854775808	9223372036854775807	1.4E-45	3.4028235E38	4.9E-324	1.7976931348623157E308
+64	65	32767	-32768	1073741824	1073741825	9223372036854775807	-9223372036854775808	3.4028235E38	1.4E-45	1.7976931348623157E308	4.9E-324
+127	-128	32767	-32768	2147483647	-2147483648	9223372036854775807	-9223372036854775808	3.4028235E38	1.4E-45	1.7976931348623157E308	4.9E-324

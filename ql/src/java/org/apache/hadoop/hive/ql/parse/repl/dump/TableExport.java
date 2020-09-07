@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -33,7 +34,7 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.TableSpec;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
-import org.apache.hadoop.hive.ql.parse.EximUtil.ReplPathMapping;
+import org.apache.hadoop.hive.ql.parse.EximUtil.DataCopyPath;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
@@ -47,7 +48,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -97,8 +97,7 @@ public class TableExport {
     this.mmCtx = mmCtx;
   }
 
-  public List<ReplPathMapping> write(boolean isExportTask) throws SemanticException {
-    List<ReplPathMapping> replPathMappings = Collections.emptyList();
+  public void write(boolean isExportTask, FileList fileList, boolean dataCopyAtLoad) throws SemanticException {
     if (tableSpec == null) {
       writeMetaData(null);
     } else if (shouldExport()) {
@@ -106,12 +105,11 @@ public class TableExport {
       writeMetaData(withPartitions);
       if (!replicationSpec.isMetadataOnly()
               && !(replicationSpec.isRepl() && tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE))) {
-        replPathMappings = writeData(withPartitions, isExportTask);
+        writeData(withPartitions, isExportTask, fileList, dataCopyAtLoad);
       }
     } else if (isExportTask) {
       throw new SemanticException(ErrorMsg.INCOMPATIBLE_SCHEMA.getMsg());
     }
-    return replPathMappings;
   }
 
   private PartitionIterable getPartitions() throws SemanticException {
@@ -162,24 +160,26 @@ public class TableExport {
     }
   }
 
-  private List<ReplPathMapping> writeData(PartitionIterable partitions, boolean isExportTask) throws SemanticException {
-    List<ReplPathMapping> replCopyPathMappings = new LinkedList<>();
+  private void writeData(PartitionIterable partitions, boolean isExportTask, FileList fileList, boolean dataCopyAtLoad)
+          throws SemanticException {
     try {
       if (tableSpec.tableHandle.isPartitioned()) {
         if (partitions == null) {
           throw new IllegalStateException("partitions cannot be null for partitionTable :"
               + tableSpec.getTableName().getTable());
         }
-        replCopyPathMappings = new PartitionExport(
-                paths, partitions, distCpDoAsUser, conf, mmCtx).write(replicationSpec, isExportTask);
+        new PartitionExport(paths, partitions, distCpDoAsUser, conf, mmCtx).write(replicationSpec, isExportTask,
+                fileList, dataCopyAtLoad);
       } else {
         List<Path> dataPathList = Utils.getDataPathList(tableSpec.tableHandle.getDataLocation(),
                 replicationSpec, conf);
-        replCopyPathMappings.add(new ReplPathMapping(tableSpec.tableHandle.getDataLocation(), paths.dataExportDir()));
+        if (!(isExportTask || dataCopyAtLoad)) {
+          fileList.add(new DataCopyPath(replicationSpec, tableSpec.tableHandle.getDataLocation(),
+                  paths.dataExportDir()).convertToString());
+        }
         new FileOperations(dataPathList, paths.dataExportDir(), distCpDoAsUser, conf, mmCtx)
-                .export(isExportTask);
+                .export(isExportTask, (dataCopyAtLoad));
       }
-      return replCopyPathMappings;
     } catch (Exception e) {
       throw new SemanticException(e.getMessage(), e);
     }
@@ -197,22 +197,29 @@ public class TableExport {
   public static class Paths {
     private final String astRepresentationForErrorMsg;
     private final HiveConf conf;
-    //variable access should not be done and use exportRootDir() instead.
-    private final Path _exportRootDir;
+    //metadataExportRootDir and dataExportRootDir variable access should not be done and use
+    // metadataExportRootDir() and dataExportRootDir() instead.
+    private final Path metadataExportRootDir;
+    private final Path dataExportRootDir;
     private final FileSystem exportFileSystem;
-    private boolean writeData, exportRootDirCreated = false;
+    private boolean writeData, metadataExportRootDirCreated = false, dataExportRootDirCreated = false;
 
-    public Paths(String astRepresentationForErrorMsg, Path dbRoot, String tblName, HiveConf conf,
+    public Paths(String astRepresentationForErrorMsg, Path dbMetadataRoot, Path dbDataRoot,
+                 String tblName, HiveConf conf,
         boolean shouldWriteData) throws SemanticException {
       this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
       this.conf = conf;
       this.writeData = shouldWriteData;
-      Path tableRoot = new Path(dbRoot, tblName);
-      URI exportRootDir = EximUtil.getValidatedURI(conf, tableRoot.toUri().toString());
-      validateTargetDir(exportRootDir);
-      this._exportRootDir = new Path(exportRootDir);
+      Path tableRootForMetadataDump = new Path(dbMetadataRoot, tblName);
+      Path tableRootForDataDump = new Path(dbDataRoot, tblName);
+      URI metadataExportRootDirUri = EximUtil.getValidatedURI(conf, tableRootForMetadataDump.toUri().toString());
+      validateTargetDir(metadataExportRootDirUri);
+      URI dataExportRootDirUri = EximUtil.getValidatedURI(conf, tableRootForDataDump.toUri().toString());
+      validateTargetDataDir(dataExportRootDirUri);
+      this.metadataExportRootDir = new Path(metadataExportRootDirUri);
+      this.dataExportRootDir = new Path(dataExportRootDirUri);
       try {
-        this.exportFileSystem = this._exportRootDir.getFileSystem(conf);
+        this.exportFileSystem = this.metadataExportRootDir.getFileSystem(conf);
       } catch (IOException e) {
         throw new SemanticException(e);
       }
@@ -222,37 +229,62 @@ public class TableExport {
         boolean shouldWriteData) throws SemanticException {
       this.astRepresentationForErrorMsg = astRepresentationForErrorMsg;
       this.conf = conf;
-      this._exportRootDir = new Path(EximUtil.getValidatedURI(conf, path));
+      this.metadataExportRootDir = new Path(EximUtil.getValidatedURI(conf, path));
+      this.dataExportRootDir = new Path(new Path(EximUtil.getValidatedURI(conf, path)), EximUtil.DATA_PATH_NAME);
       this.writeData = shouldWriteData;
       try {
-        this.exportFileSystem = _exportRootDir.getFileSystem(conf);
+        this.exportFileSystem = metadataExportRootDir.getFileSystem(conf);
       } catch (IOException e) {
         throw new SemanticException(e);
       }
     }
 
-    Path partitionExportDir(String partitionName) throws SemanticException {
-      return exportDir(new Path(exportRootDir(), partitionName));
+    Path partitionMetadataExportDir(String partitionName) throws SemanticException {
+      return exportDir(new Path(metadataExportRootDir(), partitionName));
+    }
+
+    Path partitionDataExportDir(String partitionName) throws SemanticException {
+      return exportDir(new Path(dataExportRootDir(), partitionName));
     }
 
     /**
-     * Access to the {@link #_exportRootDir} should only be done via this method
+     * Access to the {@link #metadataExportRootDir} should only be done via this method
      * since the creation of the directory is delayed until we figure out if we want
      * to write something or not. This is specifically important to prevent empty non-native
      * directories being created in repl dump.
      */
-    public Path exportRootDir() throws SemanticException {
-      if (!exportRootDirCreated) {
+    public Path metadataExportRootDir() throws SemanticException {
+      if (!metadataExportRootDirCreated) {
         try {
-          if (!exportFileSystem.exists(this._exportRootDir) && writeData) {
-            exportFileSystem.mkdirs(this._exportRootDir);
+          if (!exportFileSystem.exists(this.metadataExportRootDir) && writeData) {
+            exportFileSystem.mkdirs(this.metadataExportRootDir);
           }
-          exportRootDirCreated = true;
+          metadataExportRootDirCreated = true;
         } catch (IOException e) {
           throw new SemanticException(e);
         }
       }
-      return _exportRootDir;
+      return metadataExportRootDir;
+    }
+
+    /**
+     * Access to the {@link #dataExportRootDir} should only be done via this method
+     * since the creation of the directory is delayed until we figure out if we want
+     * to write something or not. This is specifically important to prevent empty non-native
+     * directories being created in repl dump.
+     */
+    public Path dataExportRootDir() throws SemanticException {
+      if (!dataExportRootDirCreated) {
+        try {
+          if (!exportFileSystem.exists(this.dataExportRootDir) && writeData) {
+            exportFileSystem.mkdirs(this.dataExportRootDir);
+          }
+          dataExportRootDirCreated = true;
+        } catch (IOException e) {
+          throw new SemanticException(e);
+        }
+      }
+      return dataExportRootDir;
     }
 
     private Path exportDir(Path exportDir) throws SemanticException {
@@ -268,7 +300,7 @@ public class TableExport {
     }
 
     private Path metaDataExportFile() throws SemanticException {
-      return new Path(exportRootDir(), EximUtil.METADATA_NAME);
+      return new Path(metadataExportRootDir(), EximUtil.METADATA_NAME);
     }
 
     /**
@@ -276,7 +308,7 @@ public class TableExport {
      * Partition's data export directory is created within the export semantics of partition.
      */
     private Path dataExportDir() throws SemanticException {
-      return exportDir(new Path(exportRootDir(), EximUtil.DATA_PATH_NAME));
+      return exportDir(dataExportRootDir());
     }
 
     /**
@@ -302,6 +334,30 @@ public class TableExport {
                   astRepresentationForErrorMsg + ": " + "Target is not an empty directory : "
                       + rootDirExportFile);
             }
+          }
+        } catch (FileNotFoundException ignored) {
+        }
+      } catch (IOException e) {
+        throw new SemanticException(astRepresentationForErrorMsg, e);
+      }
+    }
+
+    /**
+     * this level of validation might not be required as the root directory in which we dump will
+     * be different for each run hence possibility of it having data is not there.
+     */
+    private void validateTargetDataDir(URI rootDirExportFile) throws SemanticException {
+      try {
+        FileSystem fs = FileSystem.get(rootDirExportFile, conf);
+        Path toPath = new Path(rootDirExportFile.getScheme(), rootDirExportFile.getAuthority(),
+                rootDirExportFile.getPath());
+        try {
+          FileStatus tgt = fs.getFileStatus(toPath);
+          // target exists
+          if (!tgt.isDirectory()) {
+            throw new SemanticException(
+                    astRepresentationForErrorMsg + ": " + "Target is not a directory : "
+                            + rootDirExportFile);
           }
         } catch (FileNotFoundException ignored) {
         }
@@ -342,7 +398,7 @@ public class TableExport {
           authEntities.inputs.add(new ReadEntity(tableSpec.tableHandle));
         }
       }
-      authEntities.outputs.add(toWriteEntity(paths.exportRootDir(), conf));
+      authEntities.outputs.add(toWriteEntity(paths.metadataExportRootDir(), conf));
     } catch (Exception e) {
       throw new SemanticException(e);
     }

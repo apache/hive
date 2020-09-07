@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.AccessController;
@@ -93,6 +94,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.TempTable;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook;
@@ -106,6 +108,7 @@ import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,6 +142,9 @@ public class SessionState implements ISessionAuthState{
   private final Map<String, TempTable> tempPartitions =
       new ConcurrentHashMap<>();
 
+  // Prepared statement plans
+  private final Map<String, BaseSemanticAnalyzer> preparePlanMap = new ConcurrentHashMap<>();
+
   protected ClassLoader parentLoader;
 
   // Session-scope compile lock.
@@ -153,6 +159,11 @@ public class SessionState implements ISessionAuthState{
    * silent mode.
    */
   protected boolean isSilent;
+
+  /**
+   * silent mode.
+   */
+  protected boolean isQtestLogging;
 
   /**
    * verbose mode
@@ -366,6 +377,10 @@ public class SessionState implements ISessionAuthState{
     }
   }
 
+  public boolean getIsQtestLogging() {
+    return isQtestLogging;
+  }
+
   public boolean isHiveServerQuery() {
     return this.isHiveServerQuery;
   }
@@ -375,6 +390,10 @@ public class SessionState implements ISessionAuthState{
       sessionConf.setBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT, isSilent);
     }
     this.isSilent = isSilent;
+  }
+
+  public void setIsQtestLogging(boolean isQtestLogging) {
+    this.isQtestLogging = isQtestLogging;
   }
 
   public ReentrantLock getCompileLock() {
@@ -390,11 +409,11 @@ public class SessionState implements ISessionAuthState{
   }
 
   public void setIsUsingThriftJDBCBinarySerDe(boolean isUsingThriftJDBCBinarySerDe) {
-	this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
+    this.isUsingThriftJDBCBinarySerDe = isUsingThriftJDBCBinarySerDe;
   }
 
   public boolean getIsUsingThriftJDBCBinarySerDe() {
-	return isUsingThriftJDBCBinarySerDe;
+    return isUsingThriftJDBCBinarySerDe;
   }
 
   public void setIsHiveServerQuery(boolean isHiveServerQuery) {
@@ -416,7 +435,6 @@ public class SessionState implements ISessionAuthState{
     resourceMaps = new ResourceMaps();
     // Must be deterministic order map for consistent q-test output across Java versions
     overriddenConfigurations = new LinkedHashMap<String, String>();
-    overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
     // if there isn't already a session name, go ahead and create it.
     if (StringUtils.isEmpty(conf.getVar(HiveConf.ConfVars.HIVESESSIONID))) {
       conf.setVar(HiveConf.ConfVars.HIVESESSIONID, makeSessionId());
@@ -1174,6 +1192,17 @@ public class SessionState implements ISessionAuthState{
       return (ss != null) ? ss.getIsSilent() : isSilent;
     }
 
+
+    /**
+     * Is the logging to the info stream is enabled, or not.
+     * @return True if the logging is disabled to the HiveServer2 or HiveCli info stream
+     */
+    public boolean getIsQtestLogging() {
+      SessionState ss = SessionState.get();
+      // use the session or the one supplied in constructor
+      return (ss != null) ? ss.getIsQtestLogging() : false;
+    }
+
     /**
      * Logs into the log file.
      * BeeLine uses the operation log file to show the logs to the user, so depending on the
@@ -1265,7 +1294,9 @@ public class SessionState implements ISessionAuthState{
      * @param detail Extra detail to log which will be not printed if null
      */
     public void printError(String error, String detail) {
-      getErrStream().println(error);
+      if(!getIsSilent() || getIsQtestLogging()) {
+        getErrStream().println(error);
+      }
       LOG.error(error + StringUtils.defaultString(detail));
     }
   }
@@ -1809,6 +1840,26 @@ public class SessionState implements ISessionAuthState{
       Hive.closeCurrent();
     }
     progressMonitor = null;
+    // Hadoop's ReflectionUtils caches constructors for the classes it instantiated.
+    // In UDFs, this can result in classloaders not getting GCed for a temporary function,
+    // resulting in a PermGen leak when used extensively from HiveServer2
+    // There are lots of places where hadoop's ReflectionUtils is still used. Until all of them are
+    // cleared up, we would have to retain this to avoid mem leak.
+    clearReflectionUtilsCache();
+  }
+
+  private void clearReflectionUtilsCache() {
+    Method clearCacheMethod;
+    try {
+      clearCacheMethod = ReflectionUtils.class.getDeclaredMethod("clearCache");
+      if (clearCacheMethod != null) {
+        clearCacheMethod.setAccessible(true);
+        clearCacheMethod.invoke(null);
+        LOG.debug("Cleared Hadoop ReflectionUtils CONSTRUCTOR_CACHE");
+      }
+    } catch (Exception e) {
+      LOG.info("Failed to clear up Hadoop ReflectionUtils CONSTRUCTOR_CACHE", e);
+    }
   }
 
   private void unCacheDataNucleusClassLoaders() {
@@ -1926,6 +1977,11 @@ public class SessionState implements ISessionAuthState{
   public Map<String, Map<String, Table>> getTempTables() {
     return tempTables;
   }
+
+  public Map<String, BaseSemanticAnalyzer> getPreparePlans() {
+    return preparePlanMap;
+  }
+
   public Map<String, TempTable> getTempPartitions() {
     return tempPartitions;
   }

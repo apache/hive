@@ -34,61 +34,78 @@ public class LlapRecordReaderQueueSizeTest {
   private static final int MAX_BUFFERED_SIZE = 1 << 30; //1GB
 
   @Test public void testMaxEqMin() {
-    int expected = LlapRecordReader.determineQueueLimit(0, 100, 100, null, true);
+    int expected = LlapRecordReader.determineQueueLimit(0, 100, 100, null, null,true);
     Assert.assertEquals(100, expected);
   }
 
   @Test public void testMaxIsEnforced() {
     TypeInfo[] cols = { new DecimalTypeInfo() };
-    int actual = LlapRecordReader.determineQueueLimit(Long.MAX_VALUE, 10, 1, cols, true);
+    int[] colsProjected = {0};
+    int actual = LlapRecordReader.determineQueueLimit(Long.MAX_VALUE, 10, 1, cols, colsProjected, true);
     Assert.assertEquals(10, actual);
   }
 
   @Test public void testMinIsEnforced() {
     TypeInfo[] cols = { new DecimalTypeInfo() };
-    int actual = LlapRecordReader.determineQueueLimit(0, 10, 5, cols, true);
+    int[] colsProjected = {0};
+    int actual = LlapRecordReader.determineQueueLimit(0, 10, 5, cols, colsProjected, true);
     Assert.assertEquals(5, actual);
   }
 
   @Test public void testOrderDecimal64VsFatDecimals() {
     TypeInfo[] cols = IntStream.range(0, 300).mapToObj(i -> new DecimalTypeInfo()).toArray(TypeInfo[]::new);
-    int actual = LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, cols, true);
+    int[] colsProjected = IntStream.range(0, 300).toArray();
+    int actual = LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, cols, colsProjected, true);
     Assert.assertEquals(75, actual);
     // the idea it to see an order of 10 when using fat Decimals
-    actual = LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, cols, false);
+    actual = LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, cols, colsProjected, false);
     Assert.assertEquals(7, actual);
   }
 
   @Test public void testOrderDecimal64VsLong() {
     TypeInfo[] decimalCols = ArrayOf(() -> new DecimalTypeInfo(TypeDescription.MAX_DECIMAL64_PRECISION, 0));
     TypeInfo[] longCols = ArrayOf(() -> TypeInfoFactory.longTypeInfo);
-    Assert.assertEquals(LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, longCols, true),
-        LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, decimalCols, true));
+    int[] colsProjected = IntStream.range(0, 300).toArray();
+    Assert.assertEquals(LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, longCols, colsProjected, true),
+        LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, decimalCols, colsProjected, true));
   }
 
   @Test public void testStringsColumns() {
     TypeInfo[] charsCols = ArrayOf(() -> TypeInfoFactory.charTypeInfo);
     TypeInfo[] stringCols = ArrayOf(() -> TypeInfoFactory.stringTypeInfo);
     TypeInfo[] binaryCols = ArrayOf(() -> TypeInfoFactory.binaryTypeInfo);
-    Assert.assertEquals(LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, stringCols, true), 9);
-    Assert.assertEquals(9, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, charsCols, true));
-    Assert.assertEquals(9, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, binaryCols, true));
+    int[] colsProjected = IntStream.range(0, 300).toArray();
+    Assert.assertEquals(LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, stringCols, colsProjected, true), 9);
+    Assert.assertEquals(9, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, charsCols, colsProjected, true));
+    Assert.assertEquals(9, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, binaryCols, colsProjected, true));
   }
 
   @Test public void testLongColumns() {
     TypeInfo[] longsCols = ArrayOf(() -> TypeInfoFactory.longTypeInfo);
     TypeInfo[] intCols = ArrayOf(() -> TypeInfoFactory.intTypeInfo);
     TypeInfo[] byteCols = ArrayOf(() -> TypeInfoFactory.byteTypeInfo);
-    Assert.assertEquals(75, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, longsCols, true));
-    Assert.assertEquals(75, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, intCols, true));
-    Assert.assertEquals(75, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, byteCols, true));
+    int[] colsProjected = IntStream.range(0, 300).toArray();
+    Assert.assertEquals(75, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, longsCols, colsProjected, true));
+    Assert.assertEquals(75, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, intCols, colsProjected, true));
+    Assert.assertEquals(75, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, byteCols, colsProjected, true));
   }
 
   @Test public void testTimestampsColumns() {
     TypeInfo[] tsCols = ArrayOf(() -> TypeInfoFactory.timestampTypeInfo);
     TypeInfo[] intervalCols = ArrayOf(() -> TypeInfoFactory.intervalDayTimeTypeInfo);
-    Assert.assertEquals(38, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, tsCols, true));
-    Assert.assertEquals(38, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, intervalCols, true));
+    int[] colsProjected = IntStream.range(0, 300).toArray();
+    Assert.assertEquals(38, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, tsCols, colsProjected, true));
+    Assert.assertEquals(38, LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, intervalCols, colsProjected, true));
+  }
+
+  @Test public void testProjectedColumns() {
+    TypeInfo[] cols = IntStream.range(0, 300).mapToObj(i -> new DecimalTypeInfo()).toArray(TypeInfo[]::new);
+    int[] colsProjected = {0};
+    int actual = LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, cols, colsProjected, true);
+    Assert.assertEquals(10000, actual);
+    // the idea it to see an order of 10 when using fat Decimals
+    actual = LlapRecordReader.determineQueueLimit(MAX_BUFFERED_SIZE, 10000, 5, cols, colsProjected, false);
+    Assert.assertEquals(10000, actual);
   }
 
   private static TypeInfo[] ArrayOf(Supplier<TypeInfo> supplier) {

@@ -57,12 +57,17 @@ public class ReplCopyWork extends CopyWork {
 
   private String distCpDoAsUser = null;
 
-  private boolean copyToMigratedTxnTable;
-
   private boolean checkDuplicateCopy = false;
+
+  private boolean overWrite = false;
 
   public ReplCopyWork(final Path srcPath, final Path destPath, boolean errorOnSrcEmpty) {
     super(srcPath, destPath, errorOnSrcEmpty);
+  }
+
+  public ReplCopyWork(final Path srcPath, final Path destPath, boolean errorOnSrcEmpty, boolean overWrite) {
+    this(srcPath, destPath, errorOnSrcEmpty);
+    this.overWrite = overWrite;
   }
 
   public void setReadSrcAsFilesList(boolean readSrcAsFilesList) {
@@ -105,19 +110,15 @@ public class ReplCopyWork extends CopyWork {
     this.isAutoPurge = isAutoPurge;
   }
 
-  public boolean isCopyToMigratedTxnTable() {
-    return copyToMigratedTxnTable;
-  }
-
-  public void setCopyToMigratedTxnTable(boolean copyToMigratedTxnTable) {
-    this.copyToMigratedTxnTable = copyToMigratedTxnTable;
-  }
-
   public boolean isNeedCheckDuplicateCopy() {
     return checkDuplicateCopy;
   }
 
   public void setCheckDuplicateCopy(boolean flag) {
     checkDuplicateCopy = flag;
+  }
+
+  public boolean isOverWrite() {
+    return overWrite;
   }
 }

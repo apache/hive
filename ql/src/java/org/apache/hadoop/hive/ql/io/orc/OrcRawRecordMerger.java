@@ -463,7 +463,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
          */
         //the split is from something other than the 1st file of the logical bucket - compute offset
         AcidUtils.Directory directoryState = AcidUtils.getAcidState(null, mergerOptions.getRootPath(), conf,
-            validWriteIdList, Ref.from(false), true, null, true);
+            validWriteIdList, Ref.from(false), true);
         for (HadoopShims.HdfsFileStatusWithId f : directoryState.getOriginalFiles()) {
           int bucketIdFromPath = AcidUtils.parseBucketId(f.getFileStatus().getPath());
           if (bucketIdFromPath != bucketId) {
@@ -577,7 +577,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       assert options.getOffset() == 0;
       assert options.getMaxOffset() == Long.MAX_VALUE;
       AcidUtils.Directory directoryState = AcidUtils.getAcidState(null, mergerOptions.getRootPath(), conf,
-          validWriteIdList, Ref.from(false), true, null, true);
+          validWriteIdList, Ref.from(false), true);
       /**
        * Note that for reading base_x/ or delta_x_x/ with non-acid schema,
        * {@link Options#getRootPath()} is set to base_x/ or delta_x_x/ which causes all it's
@@ -695,6 +695,10 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
       return Objects.hash(minKey, maxKey);
     }
 
+    public boolean isIntersects(KeyInterval other) {
+      return (minKey == null || other.maxKey == null || minKey.compareTo(other.maxKey) <= 0) &&
+          (maxKey == null || other.minKey == null || maxKey.compareTo(other.minKey) >= 0);
+    }
   }
   /**
    * Find the key range for original bucket files.
@@ -1079,7 +1083,11 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           assert mergerOptions.getBaseDir() != null : "no baseDir?: " + mergerOptions.getRootPath();
           //we are compacting and it's acid schema so create a reader for the 1st bucket file that is not empty
           FileSystem fs = mergerOptions.getBaseDir().getFileSystem(conf);
-          Path bucketPath = AcidUtils.createBucketFile(mergerOptions.getBaseDir(), bucket);
+          String attemptId = null;
+          if (deltasToAttemptId != null) {
+            attemptId = deltasToAttemptId.get(mergerOptions.getBaseDir().toString());
+          }
+          Path bucketPath = AcidUtils.createBucketFile(mergerOptions.getBaseDir(), bucket, attemptId);
           if(fs.exists(bucketPath) && fs.getFileStatus(bucketPath).getLen() > 0) {
             //doing major compaction - it's possible where full compliment of bucket files is not
             //required (on Tez) that base_x/ doesn't have a file for 'bucket'

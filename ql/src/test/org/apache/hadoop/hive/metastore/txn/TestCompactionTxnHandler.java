@@ -68,6 +68,7 @@ public class TestCompactionTxnHandler {
 
   public TestCompactionTxnHandler() throws Exception {
     TxnDbUtil.setConfValues(conf);
+    TxnDbUtil.prepDb(conf);
     // Set config so that TxnUtils.buildQueryWithINClauseStrings() will
     // produce multiple queries
     conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 1);
@@ -410,7 +411,7 @@ public class TestCompactionTxnHandler {
     txnHandler.commitTxn(new CommitTxnRequest(txnid));
     assertEquals(0, txnHandler.numLocksInLockTable());
 
-    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100);
+    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(100, -1L);
     assertEquals(2, potentials.size());
     boolean sawMyTable = false, sawYourTable = false;
     for (CompactionInfo ci : potentials) {
@@ -422,13 +423,13 @@ public class TestCompactionTxnHandler {
     assertTrue(sawMyTable);
     assertTrue(sawYourTable);
 
-    potentials = txnHandler.findPotentialCompactions(100, 1);
+    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
     assertEquals(2, potentials.size());
 
     //simulate auto-compaction interval
     TimeUnit.SECONDS.sleep(2);
 
-    potentials = txnHandler.findPotentialCompactions(100, 1);
+    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
     assertEquals(0, potentials.size());
 
     //simulate prev failed compaction
@@ -437,7 +438,7 @@ public class TestCompactionTxnHandler {
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
     txnHandler.markFailed(ci);
 
-    potentials = txnHandler.findPotentialCompactions(100, 1);
+    potentials = txnHandler.findPotentialCompactions(100, -1, 1);
     assertEquals(1, potentials.size());
   }
 
@@ -512,9 +513,14 @@ public class TestCompactionTxnHandler {
     // Check that we are cleaning up the empty aborted transactions
     GetOpenTxnsResponse txnList = txnHandler.getOpenTxns();
     assertEquals(3, txnList.getOpen_txnsSize());
-    txnHandler.cleanEmptyAbortedTxns();
+    // Create one aborted for low water mark
+    txnid = openTxn();
+    txnHandler.abortTxn(new AbortTxnRequest(txnid));
+    txnHandler.setOpenTxnTimeOutMillis(1);
+    txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnList = txnHandler.getOpenTxns();
-    assertEquals(2, txnList.getOpen_txnsSize());
+    assertEquals(3, txnList.getOpen_txnsSize());
+    txnHandler.setOpenTxnTimeOutMillis(1000);
 
     rqst = new CompactionRequest("mydb", "foo", CompactionType.MAJOR);
     rqst.setPartitionname("bar");
@@ -529,9 +535,13 @@ public class TestCompactionTxnHandler {
     txnHandler.markCleaned(ci);
 
     txnHandler.openTxns(new OpenTxnRequest(1, "me", "localhost"));
-    txnHandler.cleanEmptyAbortedTxns();
+    // The open txn will became the low water mark
+    Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
+    txnHandler.setOpenTxnTimeOutMillis(1);
+    txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnList = txnHandler.getOpenTxns();
     assertEquals(3, txnList.getOpen_txnsSize());
+    txnHandler.setOpenTxnTimeOutMillis(1000);
   }
 
   @Test
@@ -565,7 +575,7 @@ public class TestCompactionTxnHandler {
     txnHandler.addDynamicPartitions(adp);
     txnHandler.commitTxn(new CommitTxnRequest(txnId));
 
-    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(1000);
+    Set<CompactionInfo> potentials = txnHandler.findPotentialCompactions(1000, -1L);
     assertEquals(2, potentials.size());
     SortedSet<CompactionInfo> sorted = new TreeSet<CompactionInfo>(potentials);
 
@@ -581,9 +591,67 @@ public class TestCompactionTxnHandler {
     }
   }
 
+  @Test
+  public void testEnqueueTimeEvenAfterFailed() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setPartitionname(partitionName);
+    long before = System.currentTimeMillis();
+    txnHandler.compact(rqst);
+    long after = System.currentTimeMillis();
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
+    assertTrue(element.isSetEnqueueTime());
+    long enqueueTime = element.getEnqueueTime();
+    assertTrue(enqueueTime <= after);
+    assertTrue(enqueueTime >= before);
+
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    txnHandler.markFailed(ci);
+
+    checkEnqueueTime(enqueueTime);
+  }
+
+  @Test
+  public void testEnqueueTimeThroughLifeCycle() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setPartitionname(partitionName);
+    long before = System.currentTimeMillis();
+    txnHandler.compact(rqst);
+    long after = System.currentTimeMillis();
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
+    assertTrue(element.isSetEnqueueTime());
+    long enqueueTime = element.getEnqueueTime();
+    assertTrue(enqueueTime <= after);
+    assertTrue(enqueueTime >= before);
+
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = "bob";
+    txnHandler.updateCompactorState(ci, openTxn());
+    checkEnqueueTime(enqueueTime);
+
+    txnHandler.markCompacted(ci);
+    checkEnqueueTime(enqueueTime);
+
+    txnHandler.markCleaned(ci);
+    checkEnqueueTime(enqueueTime);
+  }
+
+  private void checkEnqueueTime(long enqueueTime) throws MetaException {
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
+    assertTrue(element.isSetEnqueueTime());
+    assertEquals(enqueueTime, element.getEnqueueTime());
+  }
+
   @Before
   public void setUp() throws Exception {
-    TxnDbUtil.prepDb(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 

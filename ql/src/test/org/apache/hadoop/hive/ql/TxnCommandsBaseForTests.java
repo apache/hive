@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -33,7 +35,10 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -56,7 +61,9 @@ public abstract class TxnCommandsBaseForTests {
   @Rule
   public TestName testName = new TestName();
   protected HiveConf hiveConf;
-  Driver d;
+  protected Driver d;
+  protected TxnStore txnHandler;
+
   public enum Table {
     ACIDTBL("acidTbl"),
     ACIDTBLPART("acidTblPart"),
@@ -75,9 +82,18 @@ public abstract class TxnCommandsBaseForTests {
     }
   }
 
+  public TxnStore getTxnStore() {
+    return txnHandler;
+  }
+
   @Before
   public void setUp() throws Exception {
     setUpInternal();
+
+    // set up metastore client cache
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
+      HiveMetaStoreClientWithLocalCache.init();
+    }
   }
   void initHiveConf() {
     hiveConf = new HiveConf(this.getClass());
@@ -106,6 +122,7 @@ public abstract class TxnCommandsBaseForTests {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
     hiveConf.setBoolean("mapred.input.dir.recursive", true);
     TxnDbUtil.setConfValues(hiveConf);
+    txnHandler = TxnUtils.getTxnStore(hiveConf);
     TxnDbUtil.prepDb(hiveConf);
     File f = new File(getWarehouseDir());
     if (f.exists()) {
@@ -153,8 +170,34 @@ public abstract class TxnCommandsBaseForTests {
    * takes raw data and turns it into a string as if from Driver.getResults()
    * sorts rows in dictionary order
    */
-  List<String> stringifyValues(int[][] rowsIn) {
-    return TestTxnCommands2.stringifyValues(rowsIn);
+  public static List<String> stringifyValues(int[][] rowsIn) {
+    assert rowsIn.length > 0;
+    int[][] rows = rowsIn.clone();
+    Arrays.sort(rows, new RowComp());
+    List<String> rs = new ArrayList<>();
+    for(int[] row : rows) {
+      assert row.length > 0;
+      StringBuilder sb = new StringBuilder();
+      for(int value : row) {
+        sb.append(value).append("\t");
+      }
+      sb.setLength(sb.length() - 1);
+      rs.add(sb.toString());
+    }
+    return rs;
+  }
+  static class RowComp implements Comparator<int[]> {
+    @Override
+    public int compare(int[] row1, int[] row2) {
+      assert row1 != null && row2 != null && row1.length == row2.length;
+      for(int i = 0; i < row1.length; i++) {
+        int comp = Integer.compare(row1[i], row2[i]);
+        if(comp != 0) {
+          return comp;
+        }
+      }
+      return 0;
+    }
   }
   protected String makeValuesClause(int[][] rows) {
     return TestTxnCommands2.makeValuesClause(rows);
@@ -172,7 +215,7 @@ public abstract class TxnCommandsBaseForTests {
   private static void runCompactorThread(HiveConf hiveConf, CompactorThreadType type)
       throws Exception {
     AtomicBoolean stop = new AtomicBoolean(true);
-    CompactorThread t = null;
+    CompactorThread t;
     switch (type) {
       case INITIATOR:
         t = new Initiator();
@@ -188,8 +231,7 @@ public abstract class TxnCommandsBaseForTests {
     }
     t.setThreadId((int) t.getId());
     t.setConf(hiveConf);
-    AtomicBoolean looped = new AtomicBoolean();
-    t.init(stop, looped);
+    t.init(stop);
     t.run();
   }
 
@@ -200,12 +242,12 @@ public abstract class TxnCommandsBaseForTests {
     } catch (CommandProcessorException e) {
       throw new RuntimeException(stmt + " failed: " + e);
     }
-    List<String> rs = new ArrayList<String>();
+    List<String> rs = new ArrayList<>();
     d.getResults(rs);
     return rs;
   }
 
-  CommandProcessorException runStatementOnDriverNegative(String stmt) throws Exception {
+  protected CommandProcessorException runStatementOnDriverNegative(String stmt) {
     try {
       d.run(stmt);
     } catch (CommandProcessorException e) {

@@ -14,6 +14,8 @@
 package org.apache.hadoop.hive.ql.io.parquet.convert;
 
 import java.math.BigDecimal;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
@@ -21,6 +23,7 @@ import java.util.Optional;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.io.parquet.read.DataWritableReadSupport;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTime;
 import org.apache.hadoop.hive.ql.io.parquet.timestamp.NanoTimeUtils;
@@ -43,6 +46,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
+import org.apache.parquet.Preconditions;
 import org.apache.parquet.column.Dictionary;
 import org.apache.parquet.io.api.Binary;
 import org.apache.parquet.io.api.PrimitiveConverter;
@@ -662,9 +666,25 @@ public enum ETypeConverter {
       };
     }
   },
-  ETIMESTAMP_CONVERTER(TimestampWritableV2.class) {
+  EINT96_TIMESTAMP_CONVERTER(TimestampWritableV2.class) {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent, TypeInfo hiveTypeInfo) {
+      if (hiveTypeInfo != null) {
+        String typeName = TypeInfoUtils.getBaseName(hiveTypeInfo.getTypeName());
+        switch (typeName) {
+          case serdeConstants.BIGINT_TYPE_NAME:
+            return new BinaryConverter<LongWritable>(type, parent, index) {
+              @Override
+              protected LongWritable convert(Binary binary) {
+                Preconditions.checkArgument(binary.length() == 12, "Must be 12 bytes");
+                ByteBuffer buf = binary.toByteBuffer();
+                buf.order(ByteOrder.LITTLE_ENDIAN);
+                long longVal = buf.getLong();
+                return new LongWritable(longVal);
+              }
+            };
+        }
+      }
       return new BinaryConverter<TimestampWritableV2>(type, parent, index) {
         @Override
         protected TimestampWritableV2 convert(Binary binary) {
@@ -679,8 +699,10 @@ public enum ETypeConverter {
           // time zone in order to emulate time zone agnostic behavior.
           boolean skipConversion = Boolean.parseBoolean(
               metadata.get(HiveConf.ConfVars.HIVE_PARQUET_TIMESTAMP_SKIP_CONVERSION.varname));
+          boolean legacyConversion = Boolean.parseBoolean(
+              metadata.get(ConfVars.HIVE_PARQUET_TIMESTAMP_LEGACY_CONVERSION_ENABLED.varname));
           Timestamp ts = NanoTimeUtils.getTimestamp(nt, skipConversion,
-              DataWritableReadSupport.getWriterTimeZoneId(metadata));
+              DataWritableReadSupport.getWriterTimeZoneId(metadata), legacyConversion);
           return new TimestampWritableV2(ts);
         }
       };
@@ -690,6 +712,22 @@ public enum ETypeConverter {
     @Override
     PrimitiveConverter getConverter(final PrimitiveType type, final int index, final ConverterParent parent,
         TypeInfo hiveTypeInfo) {
+      if (hiveTypeInfo != null) {
+        String typeName = TypeInfoUtils.getBaseName(hiveTypeInfo.getTypeName());
+        switch (typeName) {
+          case serdeConstants.BIGINT_TYPE_NAME:
+            return new BinaryConverter<LongWritable>(type, parent, index) {
+              @Override
+              protected LongWritable convert(Binary binary) {
+                Preconditions.checkArgument(binary.length() == 8, "Must be 8 bytes");
+                ByteBuffer buf = binary.toByteBuffer();
+                buf.order(ByteOrder.LITTLE_ENDIAN);
+                long longVal = buf.getLong();
+                return new LongWritable(longVal);
+              }
+            };
+        }
+      }
       return new PrimitiveConverter() {
         @Override
         public void addLong(final long value) {
@@ -735,8 +773,7 @@ public enum ETypeConverter {
   public static PrimitiveConverter getNewConverter(final PrimitiveType type, final int index,
                                                    final ConverterParent parent, final TypeInfo hiveTypeInfo) {
     if (type.isPrimitive() && (type.asPrimitiveType().getPrimitiveTypeName().equals(PrimitiveType.PrimitiveTypeName.INT96))) {
-      //TODO- cleanup once parquet support Timestamp type annotation.
-      return ETypeConverter.ETIMESTAMP_CONVERTER.getConverter(type, index, parent, hiveTypeInfo);
+      return EINT96_TIMESTAMP_CONVERTER.getConverter(type, index, parent, hiveTypeInfo);
     }
     if (type.getLogicalTypeAnnotation() != null) {
       Optional<PrimitiveConverter> converter = type.getLogicalTypeAnnotation()

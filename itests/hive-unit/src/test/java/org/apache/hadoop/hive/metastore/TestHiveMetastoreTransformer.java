@@ -193,7 +193,14 @@ public class TestHiveMetastoreTransformer {
       tbl2 = client.getTable(dbName, tblName);
       assertEquals("Expected buckets does not match:", buckets, tbl2.getSd().getNumBuckets()); // no transformation
       assertEquals("Table access type does not match expected value:" + tblName,
-              8, tbl2.getAccessType()); // RW with HIVEBUCKET2 but no EXTWRITE
+              ACCESSTYPE_READWRITE, tbl2.getAccessType()); // RW with HIVEBUCKET2 but no EXTWRITE
+      resetHMSClient();
+
+      setHMSClient("testTransformerAcceptsUnmodifiedMetadata", (new String[] { "ACCEPTS_UNMODIFIED_METADATA" }));
+      tbl2 = client.getTable(dbName, tblName);
+      assertEquals("Expected buckets does not match:", buckets, tbl2.getSd().getNumBuckets()); // no transformation
+      assertEquals("Table access type does not match expected value:" + tblName,
+          ACCESSTYPE_READONLY, tbl2.getAccessType()); // RO without HIVEBUCKET2 but with ACCEPTS_UNMODIFIED_METADATA
       resetHMSClient();
 
       tblName = "test_ext_bucketed_wc";
@@ -217,7 +224,6 @@ public class TestHiveMetastoreTransformer {
       assertEquals(buckets, tbl2.getSd().getNumBuckets()); // client has the HIVEBUCKET2 capability, retain bucketing info
       assertNull(tbl2.getRequiredWriteCapabilities());
       assertNull(tbl2.getRequiredReadCapabilities());
-
       resetHMSClient();
 
       setHMSClient("testTransformerExternalTableRO", (new String[] { "EXTREAD", "EXTWRITE"}));
@@ -229,7 +235,17 @@ public class TestHiveMetastoreTransformer {
               tbl2.getRequiredWriteCapabilities());
       assertTrue("Returned required capabilities list does not contain HIVEBUCKET2",
               tbl2.getRequiredWriteCapabilities().contains("HIVEBUCKET2"));
+      resetHMSClient();
 
+      setHMSClient("testTransformerExternalTableROwAUM", (new String[] { "EXTREAD", "EXTWRITE", "ACCEPTS_UNMODIFIED_METADATA"}));
+      tbl2 = client.getTable(dbName, tblName);
+      assertEquals("Table access type does not match the expected value:" + tblName,
+          ACCESSTYPE_READONLY, tbl2.getAccessType());
+      assertEquals(buckets, tbl2.getSd().getNumBuckets()); // client has no HIVEBUCKET2 capability, but has ACCEPTS_UNMODIFIED_METADATA
+      assertNotNull("Required write capabilities is null",
+          tbl2.getRequiredWriteCapabilities());
+      assertTrue("Returned required capabilities list does not contain HIVEBUCKET2",
+          tbl2.getRequiredWriteCapabilities().contains("HIVEBUCKET2"));
       resetHMSClient();
 
       tblName = "test_ext_unbucketed_wc";
@@ -286,7 +302,6 @@ public class TestHiveMetastoreTransformer {
       assertEquals("Table access type does not match the expected value:" + tblName,
           ACCESSTYPE_READWRITE, tbl2.getAccessType());
       assertEquals(buckets, tbl2.getSd().getNumBuckets()); // client has SPARKBUCKET capability
-
       resetHMSClient();
 
       LOG.info("Test execution complete:testTransformerExternalTable");
@@ -867,7 +882,17 @@ public class TestHiveMetastoreTransformer {
       parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
 
       for (Partition part : parts) {
-        assertEquals("Partition bucket count does not match", -1, part.getSd().getNumBuckets());
+        assertEquals("Partition bucket count does not match", bucketCount, part.getSd().getNumBuckets());
+      }
+
+      // processor has ACCEPTS_UNMODIFIED_METADATA
+      capabilities.clear();
+      capabilities.add("ACCEPTS_UNMODIFIED_METADATA");
+      setHMSClient("TestGetPartitionByNames#3", (String[])(capabilities.toArray(new String[0])));
+      parts = client.getPartitionsByNames(dbName, tblName, partValues, false, null);
+
+      for (Partition part : parts) {
+        assertEquals("Partition bucket count does not match", bucketCount, part.getSd().getNumBuckets());
       }
 
       tblName = "test_parts_mgd_insert_wc";
@@ -1358,8 +1383,10 @@ public class TestHiveMetastoreTransformer {
       resetHMSClient();
 
       String dbName = "testdb";
+      String dbWithLocation = "dbWithLocation";
       try {
         silentDropDatabase(dbName);
+        silentDropDatabase(dbWithLocation);
       } catch (Exception e) {
         LOG.info("Drop database failed for " + dbName);
       }
@@ -1380,7 +1407,7 @@ public class TestHiveMetastoreTransformer {
       setHMSClient("TestGetDatabaseACIDWRITE", (String[])(capabilities.toArray(new String[0])));
 
       db = client.getDatabase(dbName);
-      assertFalse("Database location not expected to be external warehouse:actual=" + db.getLocationUri(),
+      assertTrue("Database location expected to be external warehouse:actual=" + db.getLocationUri(),
           db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
       resetHMSClient();
 
@@ -1389,8 +1416,33 @@ public class TestHiveMetastoreTransformer {
       setHMSClient("TestGetDatabaseINSERTWRITE", (String[])(capabilities.toArray(new String[0])));
 
       db = client.getDatabase(dbName);
-      assertFalse("Database location not expected to be external warehouse:actual=" + db.getLocationUri(),
+      assertTrue("Database location expected to be external warehouse:actual=" + db.getLocationUri(),
           db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
+      resetHMSClient();
+
+      Warehouse wh = new Warehouse(conf);
+      String mgdPath = wh.getDefaultDatabasePath(dbWithLocation, false).toString();
+      new DatabaseBuilder()
+          .setName(dbWithLocation)
+          .setLocation(mgdPath)
+          .create(client, conf);
+
+      capabilities = new ArrayList<>();
+      capabilities.add("EXTWRITE");
+      setHMSClient("TestGetDatabaseWithLocation", (String[])(capabilities.toArray(new String[0])));
+
+      db = client.getDatabase(dbWithLocation);
+      assertTrue("Database location expected to be external warehouse:actual=" + db.getLocationUri(),
+          db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
+      assertNull("Database managed location expected to be null", db.getManagedLocationUri());
+      resetHMSClient();
+
+      capabilities.add("HIVEMANAGEDINSERTWRITE");
+      setHMSClient("TestGetDatabaseWithLocation#2", (String[])(capabilities.toArray(new String[0])));
+
+      db = client.getDatabase(dbWithLocation);
+      assertTrue("Database location expected to be external warehouse", db.getLocationUri().contains(conf.get(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname())));
+      assertEquals("Database managedLocationUri expected to be set to locationUri", mgdPath, db.getManagedLocationUri());
       resetHMSClient();
     } catch (Exception e) {
       System.err.println(org.apache.hadoop.util.StringUtils.stringifyException(e));
@@ -1860,7 +1912,7 @@ public class TestHiveMetastoreTransformer {
     PartitionBuilder partitionBuilder = new PartitionBuilder().inTable(table);
     values.forEach(val -> partitionBuilder.addValue(val));
     Partition p = partitionBuilder.build(conf);
-    p.getSd().setNumBuckets(-1); // PartitionBuilder uses 0 as default whereas we use -1 for Tables.
+    p.getSd().setNumBuckets(table.getSd().getNumBuckets());
     client.add_partition(p);
   }
 }

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse.type;
 
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rex.RexBuilder;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
@@ -93,6 +94,8 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   private final boolean allowSubQueryExpr;
 
+  private RexBuilder rexBuilder;
+
   /**
    * Constructor.
    *
@@ -103,11 +106,27 @@ public class TypeCheckCtx implements NodeProcessorCtx {
     this(inputRR, true, false);
   }
 
+  public TypeCheckCtx(RowResolver inputRR, RexBuilder rexBuilder) {
+    this(inputRR, rexBuilder, true, false);
+  }
+
   public TypeCheckCtx(RowResolver inputRR, boolean useCaching, boolean foldExpr) {
     this(inputRR, useCaching, foldExpr, false, true, true, true, true, true, true, true);
   }
 
+  public TypeCheckCtx(RowResolver inputRR, RexBuilder rexBuilder, boolean useCaching, boolean foldExpr) {
+    this(inputRR, rexBuilder, useCaching, foldExpr, false, true, true, true, true, true, true, true);
+  }
+
   public TypeCheckCtx(RowResolver inputRR, boolean useCaching, boolean foldExpr,
+    boolean allowStatefulFunctions, boolean allowDistinctFunctions, boolean allowGBExprElimination,
+    boolean allowAllColRef, boolean allowFunctionStar, boolean allowWindowing,
+    boolean allowIndexExpr, boolean allowSubQueryExpr) {
+    this(inputRR, null, useCaching, foldExpr, allowStatefulFunctions, allowDistinctFunctions, allowGBExprElimination,
+      allowAllColRef, allowFunctionStar, allowWindowing, allowIndexExpr, allowSubQueryExpr);
+  }
+
+  public TypeCheckCtx(RowResolver inputRR, RexBuilder rexBuilder, boolean useCaching, boolean foldExpr,
       boolean allowStatefulFunctions, boolean allowDistinctFunctions, boolean allowGBExprElimination,
       boolean allowAllColRef, boolean allowFunctionStar, boolean allowWindowing,
       boolean allowIndexExpr, boolean allowSubQueryExpr) {
@@ -125,6 +144,7 @@ public class TypeCheckCtx implements NodeProcessorCtx {
     this.allowSubQueryExpr = allowSubQueryExpr;
     this.outerRR = null;
     this.subqueryToRelNode = null;
+    this.rexBuilder = rexBuilder;
   }
 
   /**
@@ -270,5 +290,9 @@ public class TypeCheckCtx implements NodeProcessorCtx {
 
   public boolean isCBOExecuted() {
     return foldExpr;
+  }
+
+  public RexBuilder getRexBuilder() {
+    return rexBuilder;
   }
 }

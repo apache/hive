@@ -22,12 +22,19 @@ package org.apache.hadoop.hive.metastore.columnstats.merge;
 import org.apache.hadoop.hive.common.ndv.NumDistinctValueEstimator;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.columnstats.cache.DoubleColumnStatsDataInspector;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.columnstats.ColumnsStatsUtils.doubleInspectorFromStats;
 
 public class DoubleColumnStatsMerger extends ColumnStatsMerger {
+
+  private static final Logger LOG = LoggerFactory.getLogger(DoubleColumnStatsMerger.class);
+
   @Override
   public void merge(ColumnStatisticsObj aggregateColStats, ColumnStatisticsObj newColStats) {
+    LOG.debug("Merging statistics: [aggregateColStats:{}, newColStats: {}]", aggregateColStats, newColStats);
+
     DoubleColumnStatsDataInspector aggregateData = doubleInspectorFromStats(aggregateColStats);
     DoubleColumnStatsDataInspector newData = doubleInspectorFromStats(newColStats);
     setLowValue(aggregateData, newData);
@@ -55,22 +62,34 @@ public class DoubleColumnStatsMerger extends ColumnStatsMerger {
   }
 
   public void setLowValue(DoubleColumnStatsDataInspector aggregateData, DoubleColumnStatsDataInspector newData) {
-    if (!aggregateData.isSetLowValue() && !newData.isSetLowValue()) {
+    final double lowValue;
+
+    if (aggregateData.isSetLowValue() && newData.isSetLowValue()) {
+      lowValue = Math.min(aggregateData.getLowValue(), newData.getLowValue());
+    } else if (aggregateData.isSetLowValue()) {
+      lowValue = aggregateData.getLowValue();
+    } else if (newData.isSetLowValue()) {
+      lowValue = newData.getLowValue();
+    } else {
       return;
     }
-    double lowValue = Math.min(
-        aggregateData.isSetLowValue() ? aggregateData.getLowValue() : Double.MAX_VALUE,
-        newData.isSetLowValue() ? newData.getLowValue() : Double.MAX_VALUE);
+
     aggregateData.setLowValue(lowValue);
   }
 
   public void setHighValue(DoubleColumnStatsDataInspector aggregateData, DoubleColumnStatsDataInspector newData) {
-    if (!aggregateData.isSetHighValue() && !newData.isSetHighValue()) {
+    final double highValue;
+
+    if (aggregateData.isSetHighValue() && newData.isSetHighValue()) {
+      highValue = Math.max(aggregateData.getHighValue(), newData.getHighValue());
+    } else if (aggregateData.isSetHighValue()) {
+      highValue = aggregateData.getHighValue();
+    } else if (newData.isSetHighValue()) {
+      highValue = newData.getHighValue();
+    } else {
       return;
     }
-    double highValue = Math.max(
-        aggregateData.isSetHighValue() ? aggregateData.getHighValue() : Double.MIN_VALUE,
-        newData.isSetHighValue() ? newData.getHighValue() : Double.MIN_VALUE);
+
     aggregateData.setHighValue(highValue);
   }
 }

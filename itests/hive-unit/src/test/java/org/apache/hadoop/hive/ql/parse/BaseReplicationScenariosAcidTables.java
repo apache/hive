@@ -17,12 +17,23 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.LockComponent;
+import org.apache.hadoop.hive.metastore.api.LockRequest;
+import org.apache.hadoop.hive.metastore.api.LockType;
+import org.apache.hadoop.hive.metastore.api.LockLevel;
+import org.apache.hadoop.hive.metastore.api.DataOperationType;
+import org.apache.hadoop.hive.metastore.api.NoSuchLockException;
+import org.apache.hadoop.hive.metastore.api.TxnOpenException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.UnlockRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -41,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,6 +70,8 @@ public class BaseReplicationScenariosAcidTables {
   public final TestName testName = new TestName();
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
+  private static final Path REPLICA_EXTERNAL_BASE = new Path("/replica_external_base");
+  protected static String fullyQualifiedReplicaExternalBase;
   static WarehouseInstance primary;
   static WarehouseInstance replica, replicaNonAcid;
   static HiveConf conf;
@@ -83,10 +97,13 @@ public class BaseReplicationScenariosAcidTables {
       put("mapred.input.dir.recursive", "true");
       put("hive.metastore.disallow.incompatible.col.type.changes", "false");
       put("hive.in.repl.test", "true");
+      put("metastore.warehouse.tenant.colocation", "true");
+      put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
     }};
 
     acidEnableConf.putAll(overrides);
 
+    setReplicaExternalBase(miniDFSCluster.getFileSystem(), acidEnableConf);
     primary = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
     acidEnableConf.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replica = new WarehouseInstance(LOG, miniDFSCluster, acidEnableConf);
@@ -98,6 +115,12 @@ public class BaseReplicationScenariosAcidTables {
     }};
     overridesForHiveConf1.put(MetastoreConf.ConfVars.REPLDIR.getHiveName(), primary.repldDir);
     replicaNonAcid = new WarehouseInstance(LOG, miniDFSCluster, overridesForHiveConf1);
+  }
+
+  private static void setReplicaExternalBase(FileSystem fs, Map<String, String> confMap) throws IOException {
+    fs.mkdirs(REPLICA_EXTERNAL_BASE);
+    fullyQualifiedReplicaExternalBase =  fs.getFileStatus(REPLICA_EXTERNAL_BASE).getPath().toString();
+    confMap.put(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname, fullyQualifiedReplicaExternalBase);
   }
 
   @AfterClass
@@ -324,18 +347,30 @@ public class BaseReplicationScenariosAcidTables {
     return txns;
   }
 
-  void allocateWriteIdsForTables(String primaryDbName, Map<String, Long> tables,
-                                         TxnStore txnHandler,
-                                         List<Long> txns, HiveConf primaryConf) throws Throwable {
+  List<Long> allocateWriteIdsForTablesAndAquireLocks(String primaryDbName, Map<String, Long> tables,
+                                                     TxnStore txnHandler,
+                                                     List<Long> txns, HiveConf primaryConf) throws Throwable {
     AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest();
     rqst.setDbName(primaryDbName);
-
+    List<Long> lockIds = new ArrayList<>();
     for(Map.Entry<String, Long> entry : tables.entrySet()) {
       rqst.setTableName(entry.getKey());
       rqst.setTxnIds(txns);
       txnHandler.allocateTableWriteIds(rqst);
+      for (long txnId : txns) {
+        LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE,
+          primaryDbName);
+        comp.setTablename(entry.getKey());
+        comp.setOperationType(DataOperationType.UPDATE);
+        List<LockComponent> components = new ArrayList<LockComponent>(1);
+        components.add(comp);
+        LockRequest lockRequest = new LockRequest(components, "u1", "hostname");
+        lockRequest.setTxnid(txnId);
+        lockIds.add(txnHandler.lock(lockRequest).getLockid());
+      }
     }
     verifyWriteIdsForTables(tables, primaryConf, primaryDbName);
+    return lockIds;
   }
 
   void verifyWriteIdsForTables(Map<String, Long> tables, HiveConf conf, String dbName)
@@ -361,6 +396,17 @@ public class BaseReplicationScenariosAcidTables {
                     "select count(*) from TXNS where txn_state = 'a' and " + txnIdRange));
   }
 
+  void verifyAllOpenTxnsNotAborted(List<Long> txns, HiveConf primaryConf) throws Throwable {
+    int numTxns = txns.size();
+    String txnIdRange = " txn_id >= " + txns.get(0) + " and txn_id <= " + txns.get(numTxns - 1);
+    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
+      numTxns, TxnDbUtil.countQueryAgent(primaryConf,
+        "select count(*) from TXNS where txn_state = 'o' and " + txnIdRange));
+    Assert.assertEquals(TxnDbUtil.queryToString(primaryConf, "select * from TXNS"),
+      0, TxnDbUtil.countQueryAgent(primaryConf,
+        "select count(*) from TXNS where txn_state = 'a' and " + txnIdRange));
+  }
+
   void verifyNextId(Map<String, Long> tables, String dbName, HiveConf conf) throws Throwable {
     // Verify the next write id
     for(Map.Entry<String, Long> entry : tables.entrySet()) {
@@ -381,6 +427,13 @@ public class BaseReplicationScenariosAcidTables {
                           TxnDbUtil.countQueryAgent(conf,
                     "select count(*) from COMPACTION_QUEUE where cq_database = '" + dbName
                             + "' and cq_table = '" + entry.getKey() + "'"));
+    }
+  }
+
+  void releaseLocks(TxnStore txnStore, List<Long> lockIds) throws NoSuchLockException,
+    TxnOpenException, MetaException {
+    for (Long lockId : lockIds) {
+      txnStore.unlock(new UnlockRequest(lockId));
     }
   }
 }

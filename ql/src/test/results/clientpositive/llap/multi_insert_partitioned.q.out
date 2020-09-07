@@ -1,0 +1,578 @@
+PREHOOK: query: drop table intermediate_n3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table intermediate_n3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table intermediate_n3(key int) partitioned by (p int) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@intermediate_n3
+POSTHOOK: query: create table intermediate_n3(key int) partitioned by (p int) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@intermediate_n3
+PREHOOK: query: insert into table intermediate_n3 partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate_n3@p=455
+POSTHOOK: query: insert into table intermediate_n3 partition(p='455') select distinct key from src where key >= 0 order by key desc limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate_n3@p=455
+POSTHOOK: Lineage: intermediate_n3 PARTITION(p=455).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table intermediate_n3 partition(p='456') select distinct key from src where key is not null order by key asc limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate_n3@p=456
+POSTHOOK: query: insert into table intermediate_n3 partition(p='456') select distinct key from src where key is not null order by key asc limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate_n3@p=456
+POSTHOOK: Lineage: intermediate_n3 PARTITION(p=456).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: insert into table intermediate_n3 partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@intermediate_n3@p=457
+POSTHOOK: query: insert into table intermediate_n3 partition(p='457') select distinct key from src where key >= 100 order by key asc limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@intermediate_n3@p=457
+POSTHOOK: Lineage: intermediate_n3 PARTITION(p=457).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: drop table multi_partitioned
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table multi_partitioned
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table multi_partitioned (key int, key2 int) partitioned by (p int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@multi_partitioned
+POSTHOOK: query: create table multi_partitioned (key int, key2 int) partitioned by (p int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@multi_partitioned
+PREHOOK: query: from intermediate_n3
+insert into table multi_partitioned partition(p=1) select p, key
+insert into table multi_partitioned partition(p=2) select key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n3
+PREHOOK: Input: default@intermediate_n3@p=455
+PREHOOK: Input: default@intermediate_n3@p=456
+PREHOOK: Input: default@intermediate_n3@p=457
+PREHOOK: Output: default@multi_partitioned@p=1
+PREHOOK: Output: default@multi_partitioned@p=2
+POSTHOOK: query: from intermediate_n3
+insert into table multi_partitioned partition(p=1) select p, key
+insert into table multi_partitioned partition(p=2) select key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n3
+POSTHOOK: Input: default@intermediate_n3@p=455
+POSTHOOK: Input: default@intermediate_n3@p=456
+POSTHOOK: Input: default@intermediate_n3@p=457
+POSTHOOK: Output: default@multi_partitioned@p=1
+POSTHOOK: Output: default@multi_partitioned@p=2
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key2 SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=2).key SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=2).key2 SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:p, type:int, comment:null), ]
+PREHOOK: query: select * from multi_partitioned order by key, key2, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi_partitioned
+PREHOOK: Input: default@multi_partitioned@p=1
+PREHOOK: Input: default@multi_partitioned@p=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from multi_partitioned order by key, key2, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi_partitioned
+POSTHOOK: Input: default@multi_partitioned@p=1
+POSTHOOK: Input: default@multi_partitioned@p=2
+#### A masked pattern was here ####
+0	456	2
+10	456	2
+100	457	2
+103	457	2
+455	97	1
+455	98	1
+456	0	1
+456	10	1
+457	100	1
+457	103	1
+97	455	2
+98	455	2
+PREHOOK: query: desc formatted multi_partitioned
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@multi_partitioned
+POSTHOOK: query: desc formatted multi_partitioned
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@multi_partitioned
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+key2                	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	2                   
+	numPartitions       	2                   
+	numRows             	12                  
+	rawDataSize         	74                  
+	totalSize           	86                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: from intermediate_n3
+insert overwrite table multi_partitioned partition(p=2) select p, key
+insert overwrite table multi_partitioned partition(p=1) select key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n3
+PREHOOK: Input: default@intermediate_n3@p=455
+PREHOOK: Input: default@intermediate_n3@p=456
+PREHOOK: Input: default@intermediate_n3@p=457
+PREHOOK: Output: default@multi_partitioned@p=1
+PREHOOK: Output: default@multi_partitioned@p=2
+POSTHOOK: query: from intermediate_n3
+insert overwrite table multi_partitioned partition(p=2) select p, key
+insert overwrite table multi_partitioned partition(p=1) select key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n3
+POSTHOOK: Input: default@intermediate_n3@p=455
+POSTHOOK: Input: default@intermediate_n3@p=456
+POSTHOOK: Input: default@intermediate_n3@p=457
+POSTHOOK: Output: default@multi_partitioned@p=1
+POSTHOOK: Output: default@multi_partitioned@p=2
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key2 SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=2).key SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=2).key2 SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from multi_partitioned order by key, key2, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi_partitioned
+PREHOOK: Input: default@multi_partitioned@p=1
+PREHOOK: Input: default@multi_partitioned@p=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from multi_partitioned order by key, key2, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi_partitioned
+POSTHOOK: Input: default@multi_partitioned@p=1
+POSTHOOK: Input: default@multi_partitioned@p=2
+#### A masked pattern was here ####
+0	456	1
+10	456	1
+100	457	1
+103	457	1
+455	97	2
+455	98	2
+456	0	2
+456	10	2
+457	100	2
+457	103	2
+97	455	1
+98	455	1
+PREHOOK: query: desc formatted multi_partitioned
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@multi_partitioned
+POSTHOOK: query: desc formatted multi_partitioned
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@multi_partitioned
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+key2                	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	2                   
+	numPartitions       	2                   
+	numRows             	12                  
+	rawDataSize         	74                  
+	totalSize           	86                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: from intermediate_n3
+insert into table multi_partitioned partition(p=2) select p, key
+insert overwrite table multi_partitioned partition(p=1) select key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n3
+PREHOOK: Input: default@intermediate_n3@p=455
+PREHOOK: Input: default@intermediate_n3@p=456
+PREHOOK: Input: default@intermediate_n3@p=457
+PREHOOK: Output: default@multi_partitioned@p=1
+PREHOOK: Output: default@multi_partitioned@p=2
+POSTHOOK: query: from intermediate_n3
+insert into table multi_partitioned partition(p=2) select p, key
+insert overwrite table multi_partitioned partition(p=1) select key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n3
+POSTHOOK: Input: default@intermediate_n3@p=455
+POSTHOOK: Input: default@intermediate_n3@p=456
+POSTHOOK: Input: default@intermediate_n3@p=457
+POSTHOOK: Output: default@multi_partitioned@p=1
+POSTHOOK: Output: default@multi_partitioned@p=2
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key2 SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=2).key SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=2).key2 SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select * from multi_partitioned order by key, key2, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi_partitioned
+PREHOOK: Input: default@multi_partitioned@p=1
+PREHOOK: Input: default@multi_partitioned@p=2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from multi_partitioned order by key, key2, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi_partitioned
+POSTHOOK: Input: default@multi_partitioned@p=1
+POSTHOOK: Input: default@multi_partitioned@p=2
+#### A masked pattern was here ####
+0	456	1
+10	456	1
+100	457	1
+103	457	1
+455	97	2
+455	97	2
+455	98	2
+455	98	2
+456	0	2
+456	0	2
+456	10	2
+456	10	2
+457	100	2
+457	100	2
+457	103	2
+457	103	2
+97	455	1
+98	455	1
+PREHOOK: query: desc formatted multi_partitioned
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@multi_partitioned
+POSTHOOK: query: desc formatted multi_partitioned
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@multi_partitioned
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+key2                	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	3                   
+	numPartitions       	2                   
+	numRows             	18                  
+	rawDataSize         	111                 
+	totalSize           	129                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: from intermediate_n3
+insert into table multi_partitioned partition(p) select p, key, p
+insert into table multi_partitioned partition(p=1) select key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n3
+PREHOOK: Input: default@intermediate_n3@p=455
+PREHOOK: Input: default@intermediate_n3@p=456
+PREHOOK: Input: default@intermediate_n3@p=457
+PREHOOK: Output: default@multi_partitioned
+PREHOOK: Output: default@multi_partitioned@p=1
+POSTHOOK: query: from intermediate_n3
+insert into table multi_partitioned partition(p) select p, key, p
+insert into table multi_partitioned partition(p=1) select key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n3
+POSTHOOK: Input: default@intermediate_n3@p=455
+POSTHOOK: Input: default@intermediate_n3@p=456
+POSTHOOK: Input: default@intermediate_n3@p=457
+POSTHOOK: Output: default@multi_partitioned@p=1
+POSTHOOK: Output: default@multi_partitioned@p=455
+POSTHOOK: Output: default@multi_partitioned@p=456
+POSTHOOK: Output: default@multi_partitioned@p=457
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key2 SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=455).key SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=455).key2 SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=456).key SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=456).key2 SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=457).key SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=457).key2 SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:key, type:int, comment:null), ]
+PREHOOK: query: select key, key2, p from multi_partitioned order by key, key2, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi_partitioned
+PREHOOK: Input: default@multi_partitioned@p=1
+PREHOOK: Input: default@multi_partitioned@p=2
+PREHOOK: Input: default@multi_partitioned@p=455
+PREHOOK: Input: default@multi_partitioned@p=456
+PREHOOK: Input: default@multi_partitioned@p=457
+#### A masked pattern was here ####
+POSTHOOK: query: select key, key2, p from multi_partitioned order by key, key2, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi_partitioned
+POSTHOOK: Input: default@multi_partitioned@p=1
+POSTHOOK: Input: default@multi_partitioned@p=2
+POSTHOOK: Input: default@multi_partitioned@p=455
+POSTHOOK: Input: default@multi_partitioned@p=456
+POSTHOOK: Input: default@multi_partitioned@p=457
+#### A masked pattern was here ####
+0	456	1
+0	456	1
+10	456	1
+10	456	1
+100	457	1
+100	457	1
+103	457	1
+103	457	1
+455	97	2
+455	97	2
+455	97	455
+455	98	2
+455	98	2
+455	98	455
+456	0	2
+456	0	2
+456	0	456
+456	10	2
+456	10	2
+456	10	456
+457	100	2
+457	100	2
+457	100	457
+457	103	2
+457	103	2
+457	103	457
+97	455	1
+97	455	1
+98	455	1
+98	455	1
+PREHOOK: query: desc formatted multi_partitioned
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@multi_partitioned
+POSTHOOK: query: desc formatted multi_partitioned
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@multi_partitioned
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+key2                	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	7                   
+	numPartitions       	5                   
+	numRows             	30                  
+	rawDataSize         	185                 
+	totalSize           	215                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: from intermediate_n3
+insert into table multi_partitioned partition(p) select p, key, 1
+insert into table multi_partitioned partition(p=1) select key, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@intermediate_n3
+PREHOOK: Input: default@intermediate_n3@p=455
+PREHOOK: Input: default@intermediate_n3@p=456
+PREHOOK: Input: default@intermediate_n3@p=457
+PREHOOK: Output: default@multi_partitioned
+PREHOOK: Output: default@multi_partitioned@p=1
+POSTHOOK: query: from intermediate_n3
+insert into table multi_partitioned partition(p) select p, key, 1
+insert into table multi_partitioned partition(p=1) select key, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@intermediate_n3
+POSTHOOK: Input: default@intermediate_n3@p=455
+POSTHOOK: Input: default@intermediate_n3@p=456
+POSTHOOK: Input: default@intermediate_n3@p=457
+POSTHOOK: Output: default@multi_partitioned@p=1
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:p, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key2 SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: multi_partitioned PARTITION(p=1).key2 SIMPLE [(intermediate_n3)intermediate_n3.FieldSchema(name:p, type:int, comment:null), ]
+PREHOOK: query: select key, key2, p from multi_partitioned order by key, key2, p
+PREHOOK: type: QUERY
+PREHOOK: Input: default@multi_partitioned
+PREHOOK: Input: default@multi_partitioned@p=1
+PREHOOK: Input: default@multi_partitioned@p=2
+PREHOOK: Input: default@multi_partitioned@p=455
+PREHOOK: Input: default@multi_partitioned@p=456
+PREHOOK: Input: default@multi_partitioned@p=457
+#### A masked pattern was here ####
+POSTHOOK: query: select key, key2, p from multi_partitioned order by key, key2, p
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@multi_partitioned
+POSTHOOK: Input: default@multi_partitioned@p=1
+POSTHOOK: Input: default@multi_partitioned@p=2
+POSTHOOK: Input: default@multi_partitioned@p=455
+POSTHOOK: Input: default@multi_partitioned@p=456
+POSTHOOK: Input: default@multi_partitioned@p=457
+#### A masked pattern was here ####
+0	456	1
+0	456	1
+0	456	1
+10	456	1
+10	456	1
+10	456	1
+100	457	1
+100	457	1
+100	457	1
+103	457	1
+103	457	1
+103	457	1
+455	97	1
+455	97	2
+455	97	2
+455	97	455
+455	98	1
+455	98	2
+455	98	2
+455	98	455
+456	0	1
+456	0	2
+456	0	2
+456	0	456
+456	10	1
+456	10	2
+456	10	2
+456	10	456
+457	100	1
+457	100	2
+457	100	2
+457	100	457
+457	103	1
+457	103	2
+457	103	2
+457	103	457
+97	455	1
+97	455	1
+97	455	1
+98	455	1
+98	455	1
+98	455	1
+PREHOOK: query: desc formatted multi_partitioned
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@multi_partitioned
+POSTHOOK: query: desc formatted multi_partitioned
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@multi_partitioned
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+key2                	int                 	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+p                   	int                 	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	9                   
+	numPartitions       	5                   
+	numRows             	42                  
+	rawDataSize         	259                 
+	totalSize           	301                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: drop table multi_partitioned
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@multi_partitioned
+PREHOOK: Output: default@multi_partitioned
+POSTHOOK: query: drop table multi_partitioned
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@multi_partitioned
+POSTHOOK: Output: default@multi_partitioned
+PREHOOK: query: drop table intermediate_n3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@intermediate_n3
+PREHOOK: Output: default@intermediate_n3
+POSTHOOK: query: drop table intermediate_n3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@intermediate_n3
+POSTHOOK: Output: default@intermediate_n3

@@ -34,8 +34,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorDeserializeRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedBatchUtil;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -189,24 +187,32 @@ public class ReduceRecordSource implements RecordSource {
         BinarySortableSerDe binarySortableSerDe = (BinarySortableSerDe) inputKeyDeserializer;
 
         keyBinarySortableDeserializeToRow =
-                  new VectorDeserializeRow<BinarySortableDeserializeRead>(
-                        new BinarySortableDeserializeRead(
-                                  VectorizedBatchUtil.typeInfosFromStructObjectInspector(
-                                      keyStructInspector),
-                                  /* useExternalBuffer */ true,
-                                  binarySortableSerDe.getSortOrders(),
-                                  binarySortableSerDe.getNullMarkers(),
-                                  binarySortableSerDe.getNotNullMarkers()));
+            new VectorDeserializeRow<BinarySortableDeserializeRead>(
+                new BinarySortableDeserializeRead(
+                    VectorizedBatchUtil.typeInfosFromStructObjectInspector(
+                        keyStructInspector),
+                    (batchContext.getRowdataTypePhysicalVariations().length > firstValueColumnOffset)
+                        ? Arrays.copyOfRange(batchContext.getRowdataTypePhysicalVariations(), 0,
+                            firstValueColumnOffset)
+                        : batchContext.getRowdataTypePhysicalVariations(),
+                    /* useExternalBuffer */ true,
+                    binarySortableSerDe.getSortOrders(),
+                    binarySortableSerDe.getNullMarkers(),
+                    binarySortableSerDe.getNotNullMarkers()));
         keyBinarySortableDeserializeToRow.init(0);
 
         final int valuesSize = valueStructInspectors.getAllStructFieldRefs().size();
         if (valuesSize > 0) {
           valueLazyBinaryDeserializeToRow =
-                  new VectorDeserializeRow<LazyBinaryDeserializeRead>(
-                        new LazyBinaryDeserializeRead(
-                            VectorizedBatchUtil.typeInfosFromStructObjectInspector(
-                                       valueStructInspectors),
-                            /* useExternalBuffer */ true));
+              new VectorDeserializeRow<LazyBinaryDeserializeRead>(
+                  new LazyBinaryDeserializeRead(
+                      VectorizedBatchUtil.typeInfosFromStructObjectInspector(
+                          valueStructInspectors),
+                      (batchContext.getRowdataTypePhysicalVariations().length >= totalColumns)
+                          ? Arrays.copyOfRange(batchContext.getRowdataTypePhysicalVariations(),
+                              firstValueColumnOffset, totalColumns)
+                          : null,
+                      /* useExternalBuffer */ true));
           valueLazyBinaryDeserializeToRow.init(firstValueColumnOffset);
 
           // Create data buffers for value bytes column vectors.
@@ -234,7 +240,7 @@ public class ReduceRecordSource implements RecordSource {
         throw new RuntimeException("Reduce operator initialization failed", e);
       }
     }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
   }
 
   public TableDesc getKeyTableDesc() {

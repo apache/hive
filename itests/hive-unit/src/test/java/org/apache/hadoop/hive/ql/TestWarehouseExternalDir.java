@@ -166,7 +166,7 @@ public class TestWarehouseExternalDir {
 
       stmt.execute("create table twed_db1.tab1(c1 string, c2 string)");
       tab = db.getTable("twed_db1", "tab1");
-      checkTableLocation(tab, new Path(new Path(whRootManagedPath, "twed_db1.db"), "tab1"));
+      checkTableLocation(tab, new Path(new Path(whRootExternalPath, "twed_db1.db"), "tab1"));
     }
   }
 

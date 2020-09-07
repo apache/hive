@@ -1,0 +1,271 @@
+PREHOOK: query: explain select * from src union all select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select * from src union all select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Map 1 <- Union 2 (CONTAINS)
+        Map 3 <- Union 2 (CONTAINS)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 3 
+            Map Operator Tree:
+                TableScan
+                  alias: src
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: key (type: string), value (type: string)
+                    outputColumnNames: _col0, _col1
+                    Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      compressed: false
+                      Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Union 2 
+            Vertex: Union 2
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: create table t1_n3(c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n3
+POSTHOOK: query: create table t1_n3(c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n3
+PREHOOK: query: insert into t1_n3 values (1),(1),(2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t1_n3
+POSTHOOK: query: insert into t1_n3 values (1),(1),(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t1_n3
+POSTHOOK: Lineage: t1_n3.c SCRIPT []
+PREHOOK: query: create table t2_n2(c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2_n2
+POSTHOOK: query: create table t2_n2(c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2_n2
+PREHOOK: query: insert into t2_n2 values (2),(1),(2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2_n2
+POSTHOOK: query: insert into t2_n2 values (2),(1),(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2_n2
+POSTHOOK: Lineage: t2_n2.c SCRIPT []
+PREHOOK: query: create table t3_n1(c int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t3_n1
+POSTHOOK: query: create table t3_n1(c int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t3_n1
+PREHOOK: query: insert into t3_n1 values (2),(3),(2)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t3_n1
+POSTHOOK: query: insert into t3_n1 values (2),(3),(2)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t3_n1
+POSTHOOK: Lineage: t3_n1.c SCRIPT []
+PREHOOK: query: (select * from t1_n3) union all select * from t2_n2 union select * from t3_n1 order by c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n3
+PREHOOK: Input: default@t2_n2
+PREHOOK: Input: default@t3_n1
+#### A masked pattern was here ####
+POSTHOOK: query: (select * from t1_n3) union all select * from t2_n2 union select * from t3_n1 order by c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n3
+POSTHOOK: Input: default@t2_n2
+POSTHOOK: Input: default@t3_n1
+#### A masked pattern was here ####
+1
+2
+3
+PREHOOK: query: (select * from t1_n3) union all (select * from t2_n2 union select * from t3_n1) order by c
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n3
+PREHOOK: Input: default@t2_n2
+PREHOOK: Input: default@t3_n1
+#### A masked pattern was here ####
+POSTHOOK: query: (select * from t1_n3) union all (select * from t2_n2 union select * from t3_n1) order by c
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n3
+POSTHOOK: Input: default@t2_n2
+POSTHOOK: Input: default@t3_n1
+#### A masked pattern was here ####
+1
+1
+1
+2
+2
+3
+PREHOOK: query: (select * from src order by key limit 1)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: (select * from src order by key limit 1)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+PREHOOK: query: (select * from src) union all select * from src order by key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: (select * from src) union all select * from src order by key limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+PREHOOK: query: (select * from src limit 1) union all select * from src order by key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: (select * from src limit 1) union all select * from src order by key limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+PREHOOK: query: ((select * from src)) union all select * from src order by key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: ((select * from src)) union all select * from src order by key limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+PREHOOK: query: select * from src union all ((select * from src)) order by key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src union all ((select * from src)) order by key limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+PREHOOK: query: select * from src union all ((select * from src limit 1)) order by key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src union all ((select * from src limit 1)) order by key limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+PREHOOK: query: select * from src union all (select * from src) order by key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src union all (select * from src) order by key limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+PREHOOK: query: (select * from src order by key) union all (select * from src) order by key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: (select * from src order by key) union all (select * from src) order by key limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+PREHOOK: query: (select * from src order by key) union all (select * from src limit 1) order by key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: (select * from src order by key) union all (select * from src limit 1) order by key limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	val_0
+PREHOOK: query: select count(*) from (select key from src union select key from src)cool_cust
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from (select key from src union select key from src)cool_cust
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+309
+PREHOOK: query: with  cross_items as
+ (select key, k
+ from src,
+ (select iss.key k
+ from src iss
+ union all
+ select ics.key k
+ from src ics
+ ) x
+ where key = k
+)
+select * from cross_items order by key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: with  cross_items as
+ (select key, k
+ from src,
+ (select iss.key k
+ from src iss
+ union all
+ select ics.key k
+ from src ics
+ ) x
+ where key = k
+)
+select * from cross_items order by key limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+0	0

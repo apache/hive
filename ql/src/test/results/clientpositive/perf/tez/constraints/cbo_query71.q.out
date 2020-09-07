@@ -90,12 +90,12 @@ POSTHOOK: Input: default@web_sales
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 HiveProject(brand_id=[$0], brand=[$1], t_hour=[$2], t_minute=[$3], ext_price=[$4])
-  HiveSortLimit(sort0=[$4], sort1=[$5], dir0=[DESC-nulls-last], dir1=[ASC])
+  HiveSortLimit(sort0=[$4], sort1=[$5], dir0=[DESC], dir1=[ASC])
     HiveProject(brand_id=[$2], brand=[$3], t_hour=[$0], t_minute=[$1], ext_price=[$4], (tok_table_or_col i_brand_id)=[$2])
       HiveAggregate(group=[{1, 2, 7, 8}], agg#0=[sum($3)])
         HiveJoin(condition=[=($5, $0)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveProject(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
-            HiveFilter(condition=[IN($9, _UTF-16LE'breakfast', _UTF-16LE'dinner')])
+            HiveFilter(condition=[IN($9, _UTF-16LE'breakfast':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'dinner':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
               HiveTableScan(table=[[default, time_dim]], table:alias=[time_dim])
           HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
             HiveProject(ext_price=[$0], sold_item_sk=[$1], time_sk=[$2])

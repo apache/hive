@@ -71,6 +71,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
 import org.apache.hadoop.hive.common.JvmMetrics;
 import org.apache.hadoop.hive.llap.daemon.impl.ContainerRunnerImpl;
+import org.apache.hadoop.hive.llap.daemon.impl.TaskExecutorService;
 import org.apache.hadoop.metrics2.MetricsCollector;
 import org.apache.hadoop.metrics2.MetricsInfo;
 import org.apache.hadoop.metrics2.MetricsRecordBuilder;
@@ -213,7 +214,7 @@ public class LlapDaemonExecutorMetrics implements MetricsSource {
       this.userMetricsInfoMap.put(i, miu);
       this.executorThreadCpuTime[i] = registry.newGauge(mic, 0L);
       this.executorThreadUserTime[i] = registry.newGauge(miu, 0L);
-      this.executorNames.put(ContainerRunnerImpl.THREAD_NAME_FORMAT_PREFIX + i, i);
+      this.executorNames.put(TaskExecutorService.TASK_EXECUTOR_THREAD_NAME_FORMAT_PREFIX + i, i);
     }
 
     if (timedWindowAverageDataPoints > 0) {

@@ -34,10 +34,18 @@ import org.junit.Rule;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class TestMetaStoreLdapAuthenticationProviderImpl {
@@ -66,21 +74,21 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
   public void authenticateGivenBlankPassword() throws Exception {
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, new LdapSearchFactory());
     expectAuthenticationExceptionForInvalidPassword();
-    auth.Authenticate("user", "");
+    auth.authenticate("user", "");
   }
 
   @Test
   public void authenticateGivenStringWithNullCharacterForPassword() throws Exception {
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, new LdapSearchFactory());
     expectAuthenticationExceptionForInvalidPassword();
-    auth.Authenticate("user", "\0");
+    auth.authenticate("user", "\0");
   }
 
   @Test
   public void authenticateGivenNullForPassword() throws Exception {
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, new LdapSearchFactory());
     expectAuthenticationExceptionForInvalidPassword();
-    auth.Authenticate("user", null);
+    auth.authenticate("user", null);
   }
 
   @Test
@@ -90,13 +98,13 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
 
     DirSearchFactory factory = mock(DirSearchFactory.class);
 
-    when(search.findUserDn("user1")).thenReturn("cn=user1,ou=PowerUsers,dc=mycorp,dc=com");
+    lenient().when(search.findUserDn("user1")).thenReturn("cn=user1,ou=PowerUsers,dc=mycorp,dc=com");
 
     when(factory.getInstance(conf, "cn=user1,ou=PowerUsers,dc=mycorp,dc=com", "Blah")).thenReturn(search);
     when(factory.getInstance(conf, "cn=user1,ou=Users,dc=mycorp,dc=com", "Blah")).thenThrow(AuthenticationException.class);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate("user1", "Blah");
+    auth.authenticate("user1", "Blah");
 
     verify(factory, times(2)).getInstance(isA(Configuration.class), anyString(), eq("Blah"));
     verify(search, atLeastOnce()).close();
@@ -223,7 +231,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
 
     when(search.findUserDn("user3")).thenReturn("cn=user3,ou=PowerUsers,dc=mycorp,dc=com");
 
-    when(search.findGroupsForUser("cn=user3,ou=PowerUsers,dc=mycorp,dc=com"))
+    lenient().when(search.findGroupsForUser("cn=user3,ou=PowerUsers,dc=mycorp,dc=com"))
         .thenReturn(Arrays.asList(
             "cn=testGroup,ou=Groups,dc=mycorp,dc=com",
             "cn=group3,ou=Groups,dc=mycorp,dc=com"));
@@ -253,7 +261,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
         "(&(objectClass=person)(|(memberOf=CN=Domain Admins,CN=Users,DC=apache,DC=org)(memberOf=CN=Administrators,CN=Builtin,DC=apache,DC=org)))");
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.METASTORE_PLAIN_LDAP_USERFILTER, "user3");
 
-    when(search.findUserDn("user3")).thenReturn("cn=user3,ou=PowerUsers,dc=mycorp,dc=com");
+    lenient().when(search.findUserDn("user3")).thenReturn("cn=user3,ou=PowerUsers,dc=mycorp,dc=com");
     when(search.executeCustomQuery(anyString())).thenReturn(Arrays.asList(
         "cn=user1,ou=PowerUsers,dc=mycorp,dc=com",
         "cn=user2,ou=PowerUsers,dc=mycorp,dc=com"));
@@ -274,7 +282,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.isUserMemberOfGroup("user1", groupDn)).thenReturn(true);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate("user1", "Blah");
+    auth.authenticate("user1", "Blah");
 
     verify(factory, times(1)).getInstance(isA(Configuration.class), anyString(), eq("Blah"));
     verify(search, times(1)).findGroupDn(anyString());
@@ -296,7 +304,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.isUserMemberOfGroup("user1", groupDn)).thenReturn(false);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate("user1", "Blah");
+    auth.authenticate("user1", "Blah");
   }
 
   @Test
@@ -319,7 +327,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.isUserMemberOfGroup("user1", "cn=HIVE-USERS2,ou=Groups,ou=branch1,dc=mycorp,dc=com")).thenReturn(true);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate("user1", "Blah");
+    auth.authenticate("user1", "Blah");
 
     verify(factory, times(1)).getInstance(isA(Configuration.class), anyString(), eq("Blah"));
     verify(search, times(2)).findGroupDn(anyString());
@@ -344,7 +352,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.findUserDn(eq(authUser))).thenReturn(authFullUser);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate(authUser, authPass);
+    auth.authenticate(authUser, authPass);
 
     verify(factory, times(1)).getInstance(isA(Configuration.class), eq(bindUser), eq(bindPass));
     verify(factory, times(1)).getInstance(isA(Configuration.class), eq(authFullUser), eq(authPass));
@@ -362,7 +370,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     conf.set(CredentialProviderFactory.CREDENTIAL_PROVIDER_PATH, credentialsPath);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate(authUser, authPass);
+    auth.authenticate(authUser, authPass);
 
     verify(factory, times(1)).getInstance(isA(Configuration.class), eq(authUser), eq(authPass));
   }
@@ -380,7 +388,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.findUserDn(eq(authUser))).thenReturn(authFullUser);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate(authUser, authPass);
+    auth.authenticate(authUser, authPass);
 
     verify(factory, times(1)).getInstance(isA(Configuration.class), eq(bindUser), eq(bindPass));
     verify(factory, times(1)).getInstance(isA(Configuration.class), eq(authFullUser), eq(authPass));
@@ -403,7 +411,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.findUserDn(eq(authUser))).thenReturn(authFullUser);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate(authUser, authPass);
+    auth.authenticate(authUser, authPass);
   }
 
   @Test
@@ -420,7 +428,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(search.findUserDn(eq(authUser))).thenThrow(NamingException.class);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate(authUser, authPass);
+    auth.authenticate(authUser, authPass);
   }
 
   @Test
@@ -436,7 +444,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
     when(factory.getInstance(any(Configuration.class), eq(bindUser), eq(bindPass))).thenThrow(AuthenticationException.class);
 
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
-    auth.Authenticate(authUser, authPass);
+    auth.authenticate(authUser, authPass);
   }
 
   private void expectAuthenticationExceptionForInvalidPassword() {
@@ -447,7 +455,7 @@ public class TestMetaStoreLdapAuthenticationProviderImpl {
   private void authenticateUserAndCheckSearchIsClosed(String user) throws IOException {
     auth = new MetaStoreLdapAuthenticationProviderImpl(conf, factory);
     try {
-      auth.Authenticate(user, "password doesn't matter");
+      auth.authenticate(user, "password doesn't matter");
     } finally {
       verify(search, atLeastOnce()).close();
     }

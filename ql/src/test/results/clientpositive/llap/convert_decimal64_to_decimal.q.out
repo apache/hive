@@ -161,6 +161,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: decimal0801_col_4 is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:decimal0801_col_4, smallTablePos:1, keyRatio:0.6833333333333333
                   Statistics: Num rows: 1080 Data size: 109984 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -200,7 +201,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 958 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 894 Data size: 3224 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count(_col1)
                           Group By Vectorization:
@@ -383,6 +384,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: decimal0801_col_4 is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:decimal0801_col_4, smallTablePos:1, keyRatio:0.6833333333333333
                   Statistics: Num rows: 1080 Data size: 109984 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -421,7 +423,7 @@ STAGE PLANS:
                         outputColumnNames: _col1
                         input vertices:
                           1 Map 3
-                        Statistics: Num rows: 958 Data size: 3480 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 894 Data size: 3224 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           aggregations: count(_col1)
                           Group By Vectorization:

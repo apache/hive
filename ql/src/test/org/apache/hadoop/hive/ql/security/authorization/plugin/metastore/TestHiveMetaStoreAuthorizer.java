@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.ColumnType;
@@ -35,10 +36,12 @@ import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.junit.Before;
 import org.junit.Test;
+import java.util.Map;
 
 import java.io.File;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /*
 Test whether HiveAuthorizer for MetaStore operation is trigger and HiveMetaStoreAuthzInfo is created by HiveMetaStoreAuthorizer
@@ -137,10 +140,37 @@ public class TestHiveMetaStoreAuthorizer {
               .setOwner(authorizedUser)
               .build(conf);
       hmsHandler.create_table(viewObj);
+      Map<String, String> params = viewObj.getParameters();
+      assertTrue(params.containsKey("Authorized"));
+      assertTrue("false".equalsIgnoreCase(params.get("Authorized")));
     } catch (Exception e) {
-      String err = e.getMessage();
-      String expected = "Operation type CREATE_VIEW not allowed for user:" + authorizedUser;
-      assertEquals(expected, err);
+      // no Exceptions for user same as normal user is now allowed CREATE_VIEW operation
+    }
+  }
+
+  @Test
+  public void testC2_AlterView_anyUser() throws Exception{
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      Table viewObj = new TableBuilder()
+              .setTableName(viewName)
+              .setType(TableType.VIRTUAL_VIEW.name())
+              .addCol("name", ColumnType.STRING_TYPE_NAME)
+              .setOwner(authorizedUser)
+              .build(conf);
+      hmsHandler.create_table(viewObj);
+      viewObj = new TableBuilder()
+              .setTableName(viewName)
+              .setType(TableType.VIRTUAL_VIEW.name())
+              .addCol("dep", ColumnType.STRING_TYPE_NAME)
+              .setOwner(authorizedUser)
+              .build(conf);
+      hmsHandler.alter_table("default", viewName, viewObj);
+      Map<String, String> params = viewObj.getParameters();
+      assertTrue(params.containsKey("Authorized"));
+      assertTrue("false".equalsIgnoreCase(params.get("Authorized")));
+    } catch (Exception e) {
+      // no Exceptions for user same as normal user is now allowed Alter_VIEW operation
     }
   }
 
@@ -281,6 +311,52 @@ public class TestHiveMetaStoreAuthorizer {
       hmsHandler.drop_catalog(new DropCatalogRequest(catalogName));
     } catch (Exception e) {
       // no Exceptions for superuser as hive is allowed CREATE CATALOG operation
+    }
+  }
+
+  @Test
+  public void testNShowDatabaseAuthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      hmsHandler.get_all_databases();
+    } catch (Exception e) {
+      // no Exceptions for show database as authorized user.
+    }
+  }
+
+  @Test
+  public void testOShowDatabaseUnauthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
+    try {
+      hmsHandler.get_all_databases();
+    } catch (Exception e) {
+      String err = e.getMessage();
+      if (StringUtils.isNotEmpty(err)) {
+        assert(true);
+      }
+    }
+  }
+
+  @Test
+  public void testPShowTablesAuthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(authorizedUser));
+    try {
+      hmsHandler.get_all_tables("default");
+    } catch (Exception e) {
+      // no Exceptions for show tables as authorized user.
+    }
+  }
+
+  @Test
+  public void testQShowTablesUnauthorizedUser() throws Exception {
+    UserGroupInformation.setLoginUser(UserGroupInformation.createRemoteUser(unAuthorizedUser));
+    try {
+      hmsHandler.get_all_tables("default");
+    } catch (Exception e) {
+      String err = e.getMessage();
+      if (StringUtils.isNotEmpty(err)) {
+        assert(true);
+      }
     }
   }
 }

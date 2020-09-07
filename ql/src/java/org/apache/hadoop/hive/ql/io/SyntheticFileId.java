@@ -97,4 +97,16 @@ public final class SyntheticFileId implements Writable {
       in.skipBytes(extraBytes);
     }
   }
+
+  public long getPathHash() {
+    return pathHash;
+  }
+
+  public long getModTime() {
+    return modTime;
+  }
+
+  public long getLength() {
+    return length;
+  }
 }

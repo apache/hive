@@ -45,6 +45,9 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConvertDecimal64ToDecimal;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorCoalesce;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DecimalColDivideDecimalScalar;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinAntiJoinLongOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinAntiJoinMultiKeyOperator;
+import org.apache.hadoop.hive.ql.exec.vector.mapjoin.VectorMapJoinAntiJoinStringOperator;
 import org.apache.hadoop.hive.ql.exec.vector.reducesink.*;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -2315,6 +2318,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       ArrayList<String> reduceColumnNames = new ArrayList<String>();
       ArrayList<TypeInfo> reduceTypeInfos = new ArrayList<TypeInfo>();
+      ArrayList<DataTypePhysicalVariation> reduceDataTypePhysicalVariations = new ArrayList<DataTypePhysicalVariation>();
 
       if (reduceWork.getNeedsTagging()) {
         setNodeIssue("Tagging not supported");
@@ -2350,6 +2354,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         for (StructField field: keyFields) {
           reduceColumnNames.add(Utilities.ReduceField.KEY.toString() + "." + field.getFieldName());
           reduceTypeInfos.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getFieldObjectInspector().getTypeName()));
+          reduceDataTypePhysicalVariations.add(DataTypePhysicalVariation.NONE);
         }
 
         columnSortOrder = keyTableProperties.getProperty(serdeConstants.SERIALIZATION_SORT_ORDER);
@@ -2370,7 +2375,16 @@ public class Vectorizer implements PhysicalPlanResolver {
 
           for (StructField field: valueFields) {
             reduceColumnNames.add(Utilities.ReduceField.VALUE.toString() + "." + field.getFieldName());
-            reduceTypeInfos.add(TypeInfoUtils.getTypeInfoFromTypeString(field.getFieldObjectInspector().getTypeName()));
+            TypeInfo reduceTypeInfo = TypeInfoUtils.getTypeInfoFromTypeString(
+                field.getFieldObjectInspector().getTypeName());
+            reduceTypeInfos.add(reduceTypeInfo);
+            if (reduceTypeInfo instanceof DecimalTypeInfo &&
+                HiveDecimalWritable.isPrecisionDecimal64(((DecimalTypeInfo)reduceTypeInfo).getPrecision())) {
+              reduceDataTypePhysicalVariations.add(DataTypePhysicalVariation.DECIMAL_64);
+            }
+            else {
+              reduceDataTypePhysicalVariations.add(DataTypePhysicalVariation.NONE);
+            }
           }
         }
       } catch (Exception e) {
@@ -2379,6 +2393,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
       vectorTaskColumnInfo.setAllColumnNames(reduceColumnNames);
       vectorTaskColumnInfo.setAllTypeInfos(reduceTypeInfos);
+      vectorTaskColumnInfo.setAlldataTypePhysicalVariations(reduceDataTypePhysicalVariations);
 
       vectorTaskColumnInfo.setReduceColumnSortOrder(columnSortOrder);
       vectorTaskColumnInfo.setReduceColumnNullOrder(columnNullOrder);
@@ -3404,6 +3419,10 @@ public class Vectorizer implements PhysicalPlanResolver {
       vectorMapJoinVariation = VectorMapJoinVariation.LEFT_SEMI;
       hashTableKind = HashTableKind.HASH_SET;
       break;
+    case JoinDesc.ANTI_JOIN:
+        vectorMapJoinVariation = VectorMapJoinVariation.LEFT_ANTI;
+        hashTableKind = HashTableKind.HASH_SET;
+        break;
     default:
       throw new HiveException("Unknown join type " + joinType);
     }
@@ -3426,6 +3445,9 @@ public class Vectorizer implements PhysicalPlanResolver {
       case LEFT_SEMI:
         opClass = VectorMapJoinLeftSemiLongOperator.class;
         break;
+      case LEFT_ANTI:
+        opClass = VectorMapJoinAntiJoinLongOperator.class;
+        break;
       case OUTER:
         opClass = VectorMapJoinOuterLongOperator.class;
         break;
@@ -3447,6 +3469,9 @@ public class Vectorizer implements PhysicalPlanResolver {
       case LEFT_SEMI:
         opClass = VectorMapJoinLeftSemiStringOperator.class;
         break;
+      case LEFT_ANTI:
+        opClass = VectorMapJoinAntiJoinStringOperator.class;
+        break;
       case OUTER:
         opClass = VectorMapJoinOuterStringOperator.class;
         break;
@@ -3467,6 +3492,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         break;
       case LEFT_SEMI:
         opClass = VectorMapJoinLeftSemiMultiKeyOperator.class;
+        break;
+      case LEFT_ANTI:
+        opClass = VectorMapJoinAntiJoinMultiKeyOperator.class;
         break;
       case OUTER:
         opClass = VectorMapJoinOuterMultiKeyOperator.class;
@@ -4010,9 +4038,6 @@ public class Vectorizer implements PhysicalPlanResolver {
 
     LOG.info("Vectorizer vectorizeOperator reduce sink class " + opClass.getSimpleName());
 
-    // Get the bucketing version
-    int bucketingVersion = ((ReduceSinkOperator)op).getBucketingVersion();
-
     Operator<? extends OperatorDesc> vectorOp = null;
     try {
       vectorOp = OperatorFactory.getVectorOperator(
@@ -4024,9 +4049,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       throw new HiveException(e);
     }
 
-    // Set the bucketing version
     Preconditions.checkArgument(vectorOp instanceof VectorReduceSinkCommonOperator);
-    vectorOp.setBucketingVersion(bucketingVersion);
 
     return vectorOp;
   }
@@ -5070,6 +5093,10 @@ public class Vectorizer implements PhysicalPlanResolver {
 
         // Determine input vector expression using the VectorizationContext.
         inputVectorExpression = vContext.getVectorExpression(exprNodeDesc);
+
+        if (inputVectorExpression.getOutputColumnVectorType() == ColumnVector.Type.DECIMAL_64) {
+          inputVectorExpression = vContext.wrapWithDecimal64ToDecimalConversion(inputVectorExpression);
+        }
 
         TypeInfo typeInfo = exprNodeDesc.getTypeInfo();
         columnVectorType = VectorizationContext.getColumnVectorTypeFromTypeInfo(typeInfo);

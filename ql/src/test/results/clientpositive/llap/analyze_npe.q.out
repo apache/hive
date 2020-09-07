@@ -1,0 +1,215 @@
+PREHOOK: query: drop table if exists explain_npe_map
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists explain_npe_map
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists explain_npe_array
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists explain_npe_array
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists explain_npe_struct
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists explain_npe_struct
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table explain_npe_map    ( c1 map<string, string> )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@explain_npe_map
+POSTHOOK: query: create table explain_npe_map    ( c1 map<string, string> )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@explain_npe_map
+PREHOOK: query: create table explain_npe_array  ( c1 array<string> )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@explain_npe_array
+POSTHOOK: query: create table explain_npe_array  ( c1 array<string> )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@explain_npe_array
+PREHOOK: query: create table explain_npe_struct ( c1 struct<name:string, age:int> )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@explain_npe_struct
+POSTHOOK: query: create table explain_npe_struct ( c1 struct<name:string, age:int> )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@explain_npe_struct
+PREHOOK: query: explain select c1 from explain_npe_map where c1 is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@explain_npe_map
+#### A masked pattern was here ####
+POSTHOOK: query: explain select c1 from explain_npe_map where c1 is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@explain_npe_map
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: explain_npe_map
+          filterExpr: c1 is null (type: boolean)
+          Filter Operator
+            predicate: c1 is null (type: boolean)
+            Select Operator
+              expressions: Const map<string,string> null (type: map<string,string>)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: explain select c1 from explain_npe_array where c1 is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@explain_npe_array
+#### A masked pattern was here ####
+POSTHOOK: query: explain select c1 from explain_npe_array where c1 is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@explain_npe_array
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: explain_npe_array
+          filterExpr: c1 is null (type: boolean)
+          Filter Operator
+            predicate: c1 is null (type: boolean)
+            Select Operator
+              expressions: Const array<string> null (type: array<string>)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: explain select c1 from explain_npe_struct where c1 is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@explain_npe_struct
+#### A masked pattern was here ####
+POSTHOOK: query: explain select c1 from explain_npe_struct where c1 is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@explain_npe_struct
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: explain_npe_struct
+          filterExpr: c1 is null (type: boolean)
+          Filter Operator
+            predicate: c1 is null (type: boolean)
+            Select Operator
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: explain select c1 from explain_npe_map where c1 is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@explain_npe_map
+#### A masked pattern was here ####
+POSTHOOK: query: explain select c1 from explain_npe_map where c1 is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@explain_npe_map
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: explain_npe_map
+          filterExpr: c1 is null (type: boolean)
+          Filter Operator
+            predicate: c1 is null (type: boolean)
+            Select Operator
+              expressions: Const map<string,string> null (type: map<string,string>)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: explain select c1 from explain_npe_array where c1 is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@explain_npe_array
+#### A masked pattern was here ####
+POSTHOOK: query: explain select c1 from explain_npe_array where c1 is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@explain_npe_array
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: explain_npe_array
+          filterExpr: c1 is null (type: boolean)
+          Filter Operator
+            predicate: c1 is null (type: boolean)
+            Select Operator
+              expressions: Const array<string> null (type: array<string>)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: explain select c1 from explain_npe_struct where c1 is null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@explain_npe_struct
+#### A masked pattern was here ####
+POSTHOOK: query: explain select c1 from explain_npe_struct where c1 is null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@explain_npe_struct
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: explain_npe_struct
+          filterExpr: c1 is null (type: boolean)
+          Filter Operator
+            predicate: c1 is null (type: boolean)
+            Select Operator
+              expressions: null (type: void)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: drop table if exists explain_npe_map
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@explain_npe_map
+PREHOOK: Output: default@explain_npe_map
+POSTHOOK: query: drop table if exists explain_npe_map
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@explain_npe_map
+POSTHOOK: Output: default@explain_npe_map
+PREHOOK: query: drop table if exists explain_npe_array
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@explain_npe_array
+PREHOOK: Output: default@explain_npe_array
+POSTHOOK: query: drop table if exists explain_npe_array
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@explain_npe_array
+POSTHOOK: Output: default@explain_npe_array
+PREHOOK: query: drop table if exists explain_npe_struct
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@explain_npe_struct
+PREHOOK: Output: default@explain_npe_struct
+POSTHOOK: query: drop table if exists explain_npe_struct
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@explain_npe_struct
+POSTHOOK: Output: default@explain_npe_struct

@@ -106,6 +106,7 @@ public class Compiler {
       DriverUtils.checkInterrupted(driverState, driverContext, "after analyzing query.", null, null);
 
       plan = createPlan(sem);
+      initializeFetchTask(plan);
       authorize(sem);
       explainOutput(sem, plan);
     } catch (CommandProcessorException cpe) {
@@ -124,7 +125,7 @@ public class Compiler {
   }
 
   private void initialize(String rawCommand) throws CommandProcessorException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.COMPILE);
     driverState.compilingWithLocking();
 
     VariableSubstitution variableSubstitution = new VariableSubstitution(new HiveVariableSource() {
@@ -158,7 +159,7 @@ public class Compiler {
   }
 
   private void parse() throws ParseException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARSE);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.PARSE);
 
     // Trigger query hook before compilation
     driverContext.getHookRunner().runBeforeParseHook(context.getCmd());
@@ -170,11 +171,11 @@ public class Compiler {
     } finally {
       driverContext.getHookRunner().runAfterParseHook(context.getCmd(), !success);
     }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.PARSE);
   }
 
   private BaseSemanticAnalyzer analyze() throws Exception {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.ANALYZE);
 
     driverContext.getHookRunner().runBeforeCompileHook(context.getCmd());
 
@@ -188,7 +189,6 @@ public class Compiler {
     // because at that point we need access to the objects.
     Hive.get().getMSC().flushCache();
 
-    driverContext.setBackupContext(new Context(context));
     boolean executeHooks = driverContext.getHookRunner().hasPreAnalyzeHooks();
 
     HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
@@ -234,7 +234,7 @@ public class Compiler {
     // validate the plan
     sem.validate();
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.ANALYZE);
 
     return sem;
   }
@@ -257,7 +257,7 @@ public class Compiler {
 
   private void openTransaction(TxnType txnType) throws LockException, CommandProcessorException {
     if (DriverUtils.checkConcurrency(driverContext) && startImplicitTxn(driverContext.getTxnManager()) &&
-        !driverContext.getTxnManager().isTxnOpen()) {
+        !driverContext.getTxnManager().isTxnOpen() && txnType != TxnType.COMPACTION) {
       String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
       driverContext.getTxnManager().openTxn(context, userFromUGI, txnType);
     }
@@ -339,15 +339,22 @@ public class Compiler {
     plan.setOptimizedCBOPlan(context.getCalcitePlan());
     plan.setOptimizedQueryString(context.getOptimizedSql());
 
-    driverContext.getConf().set("mapreduce.workflow.id", "hive_" + driverContext.getQueryId());
-    driverContext.getConf().set("mapreduce.workflow.name", driverContext.getQueryString());
+    // this is required so that later driver can skip executing prepare queries
+    if (sem.isPrepareQuery()) {
+      plan.setPrepareQuery(true);
+    }
+    return plan;
+  }
 
+  protected void initializeFetchTask(QueryPlan plan) {
+    // for PREPARE statement we should avoid initializing operators
+    if (plan.isPrepareQuery()) {
+      return;
+    }
     // initialize FetchTask right here
     if (plan.getFetchTask() != null) {
       plan.getFetchTask().initialize(driverContext.getQueryState(), plan, null, context);
     }
-
-    return plan;
   }
 
   /**
@@ -400,7 +407,7 @@ public class Compiler {
         HiveConf.getBoolVar(driverContext.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
 
       try {
-        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
+        perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
         // Authorization check for kill query will be in KillQueryImpl
         // As both admin or operation owner can perform the operation.
         // Which is not directly supported in authorizer
@@ -411,7 +418,7 @@ public class Compiler {
         CONSOLE.printError("Authorization failed:" + authExp.getMessage() + ". Use SHOW GRANT to get more details.");
         throw DriverUtils.createProcessorException(driverContext, 403, authExp.getMessage(), "42000", null);
       } finally {
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
+        perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
       }
     }
   }
@@ -467,7 +474,7 @@ public class Compiler {
       }
     }
 
-    double duration = perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.COMPILE) / 1000.00;
+    double duration = perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.COMPILE) / 1000.00;
     ImmutableMap<String, Long> compileHMSTimings = Hive.dumpMetaCallTimingWithoutEx("compilation");
     driverContext.getQueryDisplay().setHmsTimings(QueryDisplay.Phase.COMPILATION, compileHMSTimings);
 

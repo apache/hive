@@ -62,75 +62,6 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     super();
   }
 
-  // If file is already present in base directory, then remove it from the list.
-  // Check  HIVE-21197 for more detail
-  private void updateSrcFileListForDupCopy(FileSystem dstFs, Path toPath, List<ReplChangeManager.FileInfo> srcFiles,
-                                           long writeId, int stmtId) throws IOException {
-    FileStatus[] statuses;
-    try {
-      statuses = dstFs.listStatus(toPath, path -> {
-        String fn = path.getName();
-        try {
-          return dstFs.getFileStatus(path).isDirectory() && fn.startsWith(AcidUtils.BASE_PREFIX);
-        } catch (IOException e) {
-          LOG.error("File listing failed for " + toPath, e);
-          throw new RuntimeException(e.getMessage());
-        }
-      });
-    } catch (FileNotFoundException e) {
-      LOG.debug("Path {} does not exist, will be created before copy", toPath);
-      return;
-    }
-
-    if (statuses.length > 1) {
-      // if more than one base directory is present, then it means one or more replace operation is done. Any duplicate
-      // check after that may cause data loss as the check will happen with the first base directory
-      // which is no more valid.
-      LOG.info("Number of base directory {} in path {} is more than one. Duplicate check should not be done.",
-              statuses, toPath);
-      return;
-    }
-
-    ListIterator<ReplChangeManager.FileInfo> iter = srcFiles.listIterator();
-    Path basePath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(true, writeId, writeId, stmtId));
-    while (iter.hasNext()) {
-      Path filePath = new Path(basePath, iter.next().getSourcePath().getName());
-      if (dstFs.exists(filePath)) {
-        LOG.debug("File " + filePath + " is already present in base directory. So removing it from the list.");
-        iter.remove();
-      }
-    }
-  }
-
-  private void renameFileCopiedFromCmPath(Path toPath, FileSystem dstFs, List<ReplChangeManager.FileInfo> srcFiles)
-          throws IOException {
-    for (ReplChangeManager.FileInfo srcFile : srcFiles) {
-      if (srcFile.isUseSourcePath()) {
-        continue;
-      }
-      String destFileName = srcFile.getCmPath().getName();
-      Path destRoot = CopyUtils.getCopyDestination(srcFile, toPath);
-      Path destFile = new Path(destRoot, destFileName);
-      if (dstFs.exists(destFile)) {
-        String destFileWithSourceName = srcFile.getSourcePath().getName();
-        Path newDestFile = new Path(destRoot, destFileWithSourceName);
-
-        // if the new file exist then delete it before renaming, to avoid rename failure. If the copy is done
-        // directly to table path (bypassing staging directory) then there might be some stale files from previous
-        // incomplete/failed load. No need of recycle as this is a case of stale file.
-        if (dstFs.exists(newDestFile)) {
-          LOG.debug(" file " + newDestFile + " is deleted before renaming");
-          dstFs.delete(newDestFile, true);
-        }
-        boolean result = dstFs.rename(destFile, newDestFile);
-        if (!result) {
-          throw new IllegalStateException(
-                  "could not rename " + destFile.getName() + " to " + newDestFile.getName());
-        }
-      }
-    }
-  }
-
   @Override
   public int execute() {
     LOG.debug("ReplCopyTask.execute()");
@@ -188,35 +119,6 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
             return 0;
           }
         }
-
-        if (work.isCopyToMigratedTxnTable()) {
-          if (work.isNeedCheckDuplicateCopy()) {
-            updateSrcFileListForDupCopy(dstFs, toPath, srcFiles,
-                    ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID);
-            if (srcFiles.isEmpty()) {
-              LOG.info("All files are already present in the base directory. Skipping copy task.");
-              return 0;
-            }
-          }
-          // If direct (move optimized) copy is triggered for data to a migrated transactional table, then it
-          // should have a write ID allocated by parent ReplTxnTask. Use it to create the base or delta directory.
-          // The toPath received in ReplCopyWork is pointing to table/partition base location.
-          // So, just need to append the base or delta directory.
-          // getDeleteDestIfExist returns true if it is repl load for replace/insert overwrite event and
-          // hence need to create base directory. If false, then it is repl load for regular insert into or
-          // load flow and hence just create delta directory.
-          Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
-          if (writeId == null) {
-            console.printError("ReplCopyTask : Write id is not set in the config by open txn task for migration");
-            return 6;
-          }
-          // Set stmt id 0 for bootstrap load as the directory needs to be searched during incremental load to avoid any
-          // duplicate copy from the source. Check HIVE-21197 for more detail.
-          int stmtId = (writeId.equals(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID)) ?
-                  ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_STMT_ID :
-                    context.getHiveTxnManager().getStmtIdAndIncrement();
-          toPath = new Path(toPath, AcidUtils.baseOrDeltaSubdir(work.getDeleteDestIfExist(), writeId, writeId, stmtId));
-        }
       } else {
         // This flow is usually taken for IMPORT command
         FileStatus[] srcs = LoadSemanticAnalyzer.matchFilesOrDir(srcFs, fromPath);
@@ -231,12 +133,10 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
             return 0;
           }
         }
-
         for (FileStatus oneSrc : srcs) {
           console.printInfo("Copying file: " + oneSrc.getPath().toString());
           LOG.debug("ReplCopyTask :cp:{}=>{}", oneSrc.getPath(), toPath);
-          srcFiles.add(new ReplChangeManager.FileInfo(oneSrc.getPath().getFileSystem(conf),
-                                                      oneSrc.getPath(), null));
+          srcFiles.add(new ReplChangeManager.FileInfo(oneSrc.getPath().getFileSystem(conf), oneSrc.getPath(), null));
         }
       }
 
@@ -255,12 +155,13 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
         return 2;
       }
       // Copy the files from different source file systems to one destination directory
-      new CopyUtils(rwork.distCpDoAsUser(), conf, dstFs).copyAndVerify(toPath, srcFiles, fromPath);
+      CopyUtils copyUtils = new CopyUtils(rwork.distCpDoAsUser(), conf, dstFs);
+      copyUtils.copyAndVerify(toPath, srcFiles, fromPath, work.isOverWrite());
 
       // If a file is copied from CM path, then need to rename them using original source file name
       // This is needed to avoid having duplicate files in target if same event is applied twice
       // where the first event refers to source path and  second event refers to CM path
-      renameFileCopiedFromCmPath(toPath, dstFs, srcFiles);
+      copyUtils.renameFileCopiedFromCmPath(toPath, dstFs, srcFiles);
       return 0;
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
@@ -321,27 +222,28 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
     return "REPL_COPY";
   }
 
-  public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
-                                        HiveConf conf, boolean isAutoPurge, boolean needRecycle,
-                                        boolean copyToMigratedTxnTable) {
-    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, isAutoPurge, needRecycle,
-                           copyToMigratedTxnTable, true);
-  }
 
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                         HiveConf conf, boolean isAutoPurge, boolean needRecycle,
-                                        boolean copyToMigratedTxnTable, boolean readSourceAsFileList) {
+                                        boolean readSourceAsFileList) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, isAutoPurge, needRecycle,
+            readSourceAsFileList, false);
+  }
+
+  private static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
+                                        HiveConf conf, boolean isAutoPurge, boolean needRecycle,
+                                        boolean readSourceAsFileList,
+                                        boolean overWrite) {
     Task<?> copyTask = null;
     LOG.debug("ReplCopyTask:getLoadCopyTask: {}=>{}", srcPath, dstPath);
     if ((replicationSpec != null) && replicationSpec.isInReplicationScope()){
-      ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false);
+      ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false, overWrite);
       rcwork.setReadSrcAsFilesList(readSourceAsFileList);
-      if (replicationSpec.isReplace() && (conf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION) || copyToMigratedTxnTable)) {
+      if (replicationSpec.isReplace() && (conf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION))) {
         rcwork.setDeleteDestIfExist(true);
         rcwork.setAutoPurge(isAutoPurge);
         rcwork.setNeedRecycle(needRecycle);
       }
-      rcwork.setCopyToMigratedTxnTable(copyToMigratedTxnTable);
       // For replace case, duplicate check should not be done. The new base directory will automatically make the older
       // data invisible. Doing duplicate check and ignoring copy will cause consistency issue if there are multiple
       // replace events getting replayed in the first incremental load.
@@ -359,11 +261,17 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
 
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                         HiveConf conf) {
-    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false, false);
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false,
+      true, false);
   }
 
+  /*
+   * Invoked in the bootstrap path.
+   * Overwrite set to true
+   */
   public static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
-                                          HiveConf conf, boolean readSourceAsFileList) {
-    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false, false, readSourceAsFileList);
+                                          HiveConf conf, boolean readSourceAsFileList, boolean overWrite) {
+    return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false,
+            readSourceAsFileList, overWrite);
   }
 }

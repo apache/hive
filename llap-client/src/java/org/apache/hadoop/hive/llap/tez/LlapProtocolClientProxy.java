@@ -54,7 +54,7 @@ public class LlapProtocolClientProxy
         HiveConf.getTimeVar(conf, ConfVars.LLAP_TASK_COMMUNICATOR_CONNECTION_TIMEOUT_MS,
             TimeUnit.MILLISECONDS),
         HiveConf.getTimeVar(conf, ConfVars.LLAP_TASK_COMMUNICATOR_CONNECTION_SLEEP_BETWEEN_RETRIES_MS,
-            TimeUnit.MILLISECONDS), -1, 1);
+            TimeUnit.MILLISECONDS), -1, HiveConf.getIntVar(conf, ConfVars.LLAP_MAX_CONCURRENT_REQUESTS_PER_NODE));
   }
 
   public void registerDag(RegisterDagRequestProto request, String host, int port,
@@ -108,7 +108,7 @@ public class LlapProtocolClientProxy
     }
   }
 
-  private class SubmitWorkCallable extends NodeCallableRequest<SubmitWorkRequestProto, SubmitWorkResponseProto> {
+  private class SubmitWorkCallable extends AsyncCallableRequest<SubmitWorkRequestProto, SubmitWorkResponseProto> {
 
     protected SubmitWorkCallable(LlapNodeId nodeId,
                           SubmitWorkRequestProto submitWorkRequestProto,
@@ -117,8 +117,8 @@ public class LlapProtocolClientProxy
     }
 
     @Override
-    public SubmitWorkResponseProto call() throws Exception {
-      return getProxy(nodeId, null).submitWork(null, request);
+    public void callInternal() throws Exception {
+      getProxy(nodeId, null).submitWork(null, request);
     }
   }
 

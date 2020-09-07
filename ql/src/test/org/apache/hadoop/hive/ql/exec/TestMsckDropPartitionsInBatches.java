@@ -17,15 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.CheckResult.PartitionResult;
@@ -34,7 +25,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Msck;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.MetastoreException;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -50,7 +41,22 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * Unit test for function dropPartitionsInBatches in DDLTask.
@@ -74,7 +80,7 @@ public class TestMsckDropPartitionsInBatches {
     SessionState.start(hiveConf);
     db = new HiveMetaStoreClient(hiveConf);
     msck = new Msck( false, false);
-    msck.init(hiveConf);
+    msck.init(Msck.getMsckConf(hiveConf));
   }
 
   @Before
@@ -166,7 +172,7 @@ public class TestMsckDropPartitionsInBatches {
 
   private void runDropPartitions(int partCount, int batchSize, int maxRetries, int exceptionStatus)
     throws Exception {
-    IMetaStoreClient spyDb = Mockito.spy(db);
+    IMetaStoreClient spyDb = spy(db);
 
     // create partCount dummy partitions
     Set<PartitionResult> partsNotInFs = dropPartsNotInFs(partCount);
@@ -204,10 +210,9 @@ public class TestMsckDropPartitionsInBatches {
         expectedCallCount++;
 
         // only first call throws exception
-        Mockito.doThrow(MetastoreException.class).doCallRealMethod().doCallRealMethod().when(spyDb)
-          .dropPartitions(Mockito.eq(table.getCatName()), Mockito.eq(table.getDbName()),
-            Mockito.eq(table.getTableName()),
-            Mockito.any(List.class), Mockito.any(PartitionDropOptions.class));
+        doThrow(MetaException.class).doCallRealMethod().doCallRealMethod().when(spyDb)
+            .dropPartitions(eq(table.getCatName()), eq(table.getDbName()),
+            eq(table.getTableName()), anyList(), any(PartitionDropOptions.class));
       }
 
       expectedBatchSizes = new int[expectedCallCount];
@@ -242,9 +247,9 @@ public class TestMsckDropPartitionsInBatches {
         expectedBatchSizes[i] = Integer.min(partCount, actualBatchSize);
       }
       // all calls fail
-      Mockito.doThrow(MetastoreException.class).when(spyDb)
-        .dropPartitions(Mockito.eq(table.getCatName()), Mockito.eq(table.getDbName()), Mockito.eq(table.getTableName()),
-          Mockito.any(List.class), Mockito.any(PartitionDropOptions.class));
+      doThrow(MetaException.class).when(spyDb)
+          .dropPartitions(eq(table.getCatName()), eq(table.getDbName()), eq(table.getTableName()),
+            anyList(), any(PartitionDropOptions.class));
 
       Exception ex = null;
       try {
@@ -260,9 +265,9 @@ public class TestMsckDropPartitionsInBatches {
     // there should be expectedCallCount calls to drop partitions with each batch size of
     // actualBatchSize
     ArgumentCaptor<List> argument = ArgumentCaptor.forClass(List.class);
-    Mockito.verify(spyDb, Mockito.times(expectedCallCount))
-      .dropPartitions(Mockito.eq(table.getCatName()), Mockito.eq(table.getDbName()), Mockito.eq(table.getTableName()),
-        argument.capture(), Mockito.any(PartitionDropOptions.class));
+    verify(spyDb, times(expectedCallCount))
+        .dropPartitions(eq(table.getCatName()), eq(table.getDbName()), eq(table.getTableName()),
+        argument.capture(), any(PartitionDropOptions.class));
 
     // confirm the batch sizes were as expected
     List<List> droppedParts = argument.getAllValues();
@@ -326,7 +331,7 @@ public class TestMsckDropPartitionsInBatches {
 
   /**
    * Tests the number of calls to dropPartitions and the respective batch sizes when first call to
-   * dropPartitions throws MetastoreException. The batch size should be reduced once by the
+   * dropPartitions throws MetaException. The batch size should be reduced once by the
    * decayingFactor 2, iow after batch size is halved.
    *
    * @throws Exception
@@ -338,7 +343,7 @@ public class TestMsckDropPartitionsInBatches {
 
   /**
    * Tests the retries exhausted case when Hive.DropPartitions method call always keep throwing
-   * MetastoreException. The batch sizes should exponentially decreased based on the decaying factor and
+   * MetaException. The batch sizes should exponentially decreased based on the decaying factor and
    * ultimately give up when it reaches 0.
    *
    * @throws Exception

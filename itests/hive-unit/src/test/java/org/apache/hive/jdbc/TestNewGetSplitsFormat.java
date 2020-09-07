@@ -29,6 +29,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ import java.util.UUID;
 /**
  * TestNewGetSplitsFormat.
  */
+@Ignore("test unstable HIVE-23524")
 public class TestNewGetSplitsFormat extends BaseJdbcWithMiniLlap {
 
   @BeforeClass public static void beforeTest() throws Exception {
@@ -54,6 +56,12 @@ public class TestNewGetSplitsFormat extends BaseJdbcWithMiniLlap {
   @Override public void testDataTypes() throws Exception {
     TestJdbcWithMiniLlapVectorArrow testJdbcWithMiniLlapVectorArrow = new TestJdbcWithMiniLlapVectorArrow();
     testJdbcWithMiniLlapVectorArrow.testDataTypes();
+  }
+
+  @Override
+  @Ignore
+  public void testMultipleBatchesOfComplexTypes() {
+    // ToDo: FixMe
   }
 
   @Override protected int processQuery(String currentDatabase, String query, int numSplits, RowProcessor rowProcessor)

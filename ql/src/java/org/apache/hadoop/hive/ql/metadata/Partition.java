@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.metadata;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -511,7 +512,7 @@ public class Partition implements Serializable {
           tPartition.getSd().getSerdeInfo().getSerializationLib(), e);
     }
 
-    return new ArrayList<FieldSchema>();
+    return Collections.emptyList();
   }
 
   public String getLocation() {

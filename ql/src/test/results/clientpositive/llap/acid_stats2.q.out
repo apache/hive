@@ -1,0 +1,780 @@
+PREHOOK: query: create table stats3(key int,value string) stored as orc tblproperties ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats3
+POSTHOOK: query: create table stats3(key int,value string) stored as orc tblproperties ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats3
+PREHOOK: query: insert into table stats3  values (1, "foo")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats3
+POSTHOOK: query: insert into table stats3  values (1, "foo")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats3
+POSTHOOK: Lineage: stats3.key SCRIPT []
+POSTHOOK: Lineage: stats3.value SCRIPT []
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+1
+PREHOOK: query: insert into table stats3  values (2, "bar")
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats3
+POSTHOOK: query: insert into table stats3  values (2, "bar")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats3
+POSTHOOK: Lineage: stats3.key SCRIPT []
+POSTHOOK: Lineage: stats3.value SCRIPT []
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+2
+PREHOOK: query: update stats3 set value = "baz" where key = 4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+PREHOOK: Output: default@stats3
+POSTHOOK: query: update stats3 set value = "baz" where key = 4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+POSTHOOK: Output: default@stats3
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+2
+PREHOOK: query: update stats3 set value = "baz" where key = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+PREHOOK: Output: default@stats3
+POSTHOOK: query: update stats3 set value = "baz" where key = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+POSTHOOK: Output: default@stats3
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+2
+PREHOOK: query: delete from stats3 where key = 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+PREHOOK: Output: default@stats3
+POSTHOOK: query: delete from stats3 where key = 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+POSTHOOK: Output: default@stats3
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+2
+PREHOOK: query: delete from stats3 where key = 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+PREHOOK: Output: default@stats3
+POSTHOOK: query: delete from stats3 where key = 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+POSTHOOK: Output: default@stats3
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+1
+PREHOOK: query: delete from stats3 where key = 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+PREHOOK: Output: default@stats3
+POSTHOOK: query: delete from stats3 where key = 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+POSTHOOK: Output: default@stats3
+PREHOOK: query: explain select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats3
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats3
+#### A masked pattern was here ####
+0
+PREHOOK: query: drop table stats3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats3
+PREHOOK: Output: default@stats3
+POSTHOOK: query: drop table stats3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats3
+POSTHOOK: Output: default@stats3
+PREHOOK: query: create table stats4(key int,value string) partitioned by (ds string) clustered by (value) into 2 buckets stored as orc tblproperties ("transactional"="true")
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@stats4
+POSTHOOK: query: create table stats4(key int,value string) partitioned by (ds string) clustered by (value) into 2 buckets stored as orc tblproperties ("transactional"="true")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@stats4
+PREHOOK: query: insert into table stats4 partition (ds) values (12341234, 'bob', 'today'),(123471234871239847, 'bob', 'today'),(431, 'tracy', 'tomorrow')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@stats4
+POSTHOOK: query: insert into table stats4 partition (ds) values (12341234, 'bob', 'today'),(123471234871239847, 'bob', 'today'),(431, 'tracy', 'tomorrow')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@stats4
+POSTHOOK: Output: default@stats4@ds=today
+POSTHOOK: Output: default@stats4@ds=tomorrow
+POSTHOOK: Lineage: stats4 PARTITION(ds=today).key SCRIPT []
+POSTHOOK: Lineage: stats4 PARTITION(ds=today).value SCRIPT []
+POSTHOOK: Lineage: stats4 PARTITION(ds=tomorrow).key SCRIPT []
+POSTHOOK: Lineage: stats4 PARTITION(ds=tomorrow).value SCRIPT []
+PREHOOK: query: desc formatted stats4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats4
+POSTHOOK: query: desc formatted stats4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats4
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	2                   
+	numPartitions       	2                   
+	numRows             	3                   
+	rawDataSize         	0                   
+	totalSize           	1548                
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[value]             	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: desc formatted stats4 partition(ds='tomorrow')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats4
+POSTHOOK: query: desc formatted stats4 partition(ds='tomorrow')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats4
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[tomorrow]          	 
+Database:           	default             	 
+Table:              	stats4              	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	1                   
+	numRows             	1                   
+	rawDataSize         	0                   
+	totalSize           	749                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[value]             	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: desc formatted stats4 partition(ds='today')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats4
+POSTHOOK: query: desc formatted stats4 partition(ds='today')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats4
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[today]             	 
+Database:           	default             	 
+Table:              	stats4              	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	0                   
+	totalSize           	799                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[value]             	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: explain select count(*) from stats4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats4
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats4
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats4
+#### A masked pattern was here ####
+3
+PREHOOK: query: delete from stats4 where value = 'tracy' and ds = 'tomorrow'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats4
+PREHOOK: Input: default@stats4@ds=tomorrow
+PREHOOK: Output: default@stats4@ds=tomorrow
+POSTHOOK: query: delete from stats4 where value = 'tracy' and ds = 'tomorrow'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats4
+POSTHOOK: Input: default@stats4@ds=tomorrow
+POSTHOOK: Output: default@stats4@ds=tomorrow
+PREHOOK: query: desc formatted stats4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats4
+POSTHOOK: query: desc formatted stats4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats4
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	3                   
+	numPartitions       	2                   
+	numRows             	2                   
+	rawDataSize         	0                   
+	totalSize           	2247                
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[value]             	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: desc formatted stats4 partition(ds='tomorrow')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats4
+POSTHOOK: query: desc formatted stats4 partition(ds='tomorrow')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats4
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[tomorrow]          	 
+Database:           	default             	 
+Table:              	stats4              	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	2                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	1448                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[value]             	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: desc formatted stats4 partition(ds='today')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats4
+POSTHOOK: query: desc formatted stats4 partition(ds='today')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats4
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[today]             	 
+Database:           	default             	 
+Table:              	stats4              	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"key\":\"true\",\"value\":\"true\"}}
+	numFiles            	1                   
+	numRows             	2                   
+	rawDataSize         	0                   
+	totalSize           	799                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[value]             	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: explain select count(*) from stats4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats4
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats4
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats4
+#### A masked pattern was here ####
+2
+PREHOOK: query: explain select count(*) from stats4 where ds = 'tomorrow'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats4
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats4 where ds = 'tomorrow'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats4 where ds = 'tomorrow'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats4
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats4 where ds = 'tomorrow'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats4
+#### A masked pattern was here ####
+0
+PREHOOK: query: delete from stats4 where key > 12341234 and ds = 'today'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats4
+PREHOOK: Input: default@stats4@ds=today
+PREHOOK: Output: default@stats4@ds=today
+POSTHOOK: query: delete from stats4 where key > 12341234 and ds = 'today'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats4
+POSTHOOK: Input: default@stats4@ds=today
+POSTHOOK: Output: default@stats4@ds=today
+PREHOOK: query: desc formatted stats4
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats4
+POSTHOOK: query: desc formatted stats4
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats4
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	4                   
+	numPartitions       	2                   
+	numRows             	1                   
+	rawDataSize         	0                   
+	totalSize           	2941                
+	transactional       	true                
+	transactional_properties	default             
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[value]             	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: desc formatted stats4 partition(ds='tomorrow')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats4
+POSTHOOK: query: desc formatted stats4 partition(ds='tomorrow')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats4
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[tomorrow]          	 
+Database:           	default             	 
+Table:              	stats4              	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	2                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	1448                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[value]             	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: desc formatted stats4 partition(ds='today')
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@stats4
+POSTHOOK: query: desc formatted stats4 partition(ds='today')
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@stats4
+# col_name            	data_type           	comment             
+key                 	int                 	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Partition Information	 	 
+Partition Value:    	[today]             	 
+Database:           	default             	 
+Table:              	stats4              	 
+#### A masked pattern was here ####
+Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	numFiles            	2                   
+	numRows             	1                   
+	rawDataSize         	0                   
+	totalSize           	1493                
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.ql.io.orc.OrcSerde	 
+InputFormat:        	org.apache.hadoop.hive.ql.io.orc.OrcInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	2                   	 
+Bucket Columns:     	[value]             	 
+Sort Columns:       	[]                  	 
+PREHOOK: query: explain select count(*) from stats4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats4
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats4
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats4
+#### A masked pattern was here ####
+1
+PREHOOK: query: explain select count(*) from stats4 where ds = 'tomorrow'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats4
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(*) from stats4 where ds = 'tomorrow'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats4
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(*) from stats4 where ds = 'tomorrow'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stats4
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from stats4 where ds = 'tomorrow'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stats4
+#### A masked pattern was here ####
+0
+PREHOOK: query: drop table stats4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@stats4
+PREHOOK: Output: default@stats4
+POSTHOOK: query: drop table stats4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@stats4
+POSTHOOK: Output: default@stats4

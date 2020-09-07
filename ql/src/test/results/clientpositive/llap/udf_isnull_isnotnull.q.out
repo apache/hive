@@ -1,0 +1,135 @@
+PREHOOK: query: DESCRIBE FUNCTION isnull
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION isnull
+POSTHOOK: type: DESCFUNCTION
+isnull a - Returns true if a is NULL and false otherwise
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED isnull
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED isnull
+POSTHOOK: type: DESCFUNCTION
+isnull a - Returns true if a is NULL and false otherwise
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull
+Function type:BUILTIN
+PREHOOK: query: DESCRIBE FUNCTION isnotnull
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION isnotnull
+POSTHOOK: type: DESCFUNCTION
+isnotnull a - Returns true if a is not NULL and false otherwise
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED isnotnull
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED isnotnull
+POSTHOOK: type: DESCFUNCTION
+isnotnull a - Returns true if a is not NULL and false otherwise
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull
+Function type:BUILTIN
+PREHOOK: query: EXPLAIN
+SELECT NULL IS NULL,
+       1 IS NOT NULL, 
+       'my string' IS NOT NULL
+FROM src
+WHERE true IS NOT NULL LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT NULL IS NULL,
+       1 IS NOT NULL, 
+       'my string' IS NOT NULL
+FROM src
+WHERE true IS NOT NULL LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: true (type: boolean), true (type: boolean), true (type: boolean)
+              outputColumnNames: _col0, _col1, _col2
+              ListSink
+
+PREHOOK: query: SELECT NULL IS NULL,
+       1 IS NOT NULL, 
+       'my string' IS NOT NULL
+FROM src
+WHERE true IS NOT NULL LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT NULL IS NULL,
+       1 IS NOT NULL, 
+       'my string' IS NOT NULL
+FROM src
+WHERE true IS NOT NULL LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+true	true	true
+PREHOOK: query: EXPLAIN
+FROM src_thrift
+SELECT src_thrift.lint IS NOT NULL, 
+       src_thrift.lintstring IS NOT NULL, 
+       src_thrift.mstringstring IS NOT NULL
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+FROM src_thrift
+SELECT src_thrift.lint IS NOT NULL, 
+       src_thrift.lintstring IS NOT NULL, 
+       src_thrift.mstringstring IS NOT NULL
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src_thrift
+          filterExpr: (lint is not null and mstringstring is not null) (type: boolean)
+          Filter Operator
+            predicate: (lint is not null and mstringstring is not null) (type: boolean)
+            Limit
+              Number of rows: 1
+              Select Operator
+                expressions: lint is not null (type: boolean), lintstring is not null (type: boolean), mstringstring is not null (type: boolean)
+                outputColumnNames: _col0, _col1, _col2
+                ListSink
+
+PREHOOK: query: FROM src_thrift
+SELECT src_thrift.lint IS NOT NULL, 
+       src_thrift.lintstring IS NOT NULL, 
+       src_thrift.mstringstring IS NOT NULL
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src_thrift
+SELECT src_thrift.lint IS NOT NULL, 
+       src_thrift.lintstring IS NOT NULL, 
+       src_thrift.mstringstring IS NOT NULL
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+true	true	true

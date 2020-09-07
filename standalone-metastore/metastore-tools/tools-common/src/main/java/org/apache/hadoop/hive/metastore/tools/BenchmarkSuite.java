@@ -75,7 +75,7 @@ public final class BenchmarkSuite {
   // List of benchmarks. All benchmarks are executed in the order
   // they are inserted
   private final List<String> benchmarks = new ArrayList<>();
-  // Once benchmarks are executed, results are stored in TreeMap to prserve the order.
+  // Once benchmarks are executed, results are stored in TreeMap to preserve the order.
   private final Map<String, DescriptiveStatistics> result = new TreeMap<>();
   // Whether sanitizing of results is requested
   private boolean doSanitize = false;
@@ -115,7 +115,7 @@ public final class BenchmarkSuite {
   }
 
   /**
-   * Run all benchmarks in the 'names' list.
+     * Run all benchmarks in the 'names' list.
    * @param names list of benchmarks to run
    * @return this to allow chaining
    */

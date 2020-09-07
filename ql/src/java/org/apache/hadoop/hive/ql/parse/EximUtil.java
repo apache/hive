@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.repl.util.StringConvertibleObject;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -45,13 +46,13 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.io.ReplicationSpecSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.TableSerializer;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetadataJson;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.thrift.TException;
 import org.json.JSONException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -74,7 +75,10 @@ public class EximUtil {
 
   public static final String METADATA_NAME = "_metadata";
   public static final String FILES_NAME = "_files";
+  public static final String FILE_LIST = "_file_list";
+  public static final String FILE_LIST_EXTERNAL = "_file_list_external";
   public static final String DATA_PATH_NAME = "data";
+  public static final String METADATA_PATH_NAME = "metadata";
 
   private static final Logger LOG = LoggerFactory.getLogger(EximUtil.class);
 
@@ -158,37 +162,86 @@ public class EximUtil {
   }
 
   /**
-   * Wrapper class for mapping replication source and target path for copying data.
+   * Wrapper class for mapping source and target path for copying managed table data and function's binary.
    */
-  public static class ReplPathMapping {
+  public static class DataCopyPath implements StringConvertibleObject {
+    private static final String URI_SEPARATOR = "#";
+    private ReplicationSpec replicationSpec;
+    private static boolean nullSrcPathForTest = false;
     private Path srcPath;
     private Path tgtPath;
 
-    public ReplPathMapping(Path srcPath, Path tgtPath) {
+    public DataCopyPath(ReplicationSpec replicationSpec) {
+      this.replicationSpec = replicationSpec;
+    }
+
+    public DataCopyPath(ReplicationSpec replicationSpec, Path srcPath, Path tgtPath) {
+      this.replicationSpec = replicationSpec;
       if (srcPath == null) {
-        throw new IllegalArgumentException("Source Path can not be null.");
+        throw new IllegalArgumentException("Source path can not be null.");
       }
       this.srcPath = srcPath;
       if (tgtPath == null) {
-        throw new IllegalArgumentException("Target Path can not be null.");
+        throw new IllegalArgumentException("Target path can not be null.");
       }
       this.tgtPath = tgtPath;
     }
 
     public Path getSrcPath() {
+      if (nullSrcPathForTest) {
+        return null;
+      }
       return srcPath;
-    }
-
-    public void setSrcPath(Path srcPath) {
-      this.srcPath = srcPath;
     }
 
     public Path getTargetPath() {
       return tgtPath;
     }
 
-    public void setTargetPath(Path targetPath) {
-      this.tgtPath = targetPath;
+    @Override
+    public String toString() {
+      return "DataCopyPath{"
+              + "fullyQualifiedSourcePath=" + srcPath
+              + ", fullyQualifiedTargetPath=" + tgtPath
+              + '}';
+    }
+
+    public ReplicationSpec getReplicationSpec() {
+      return replicationSpec;
+    }
+
+    public void setReplicationSpec(ReplicationSpec replicationSpec) {
+      this.replicationSpec = replicationSpec;
+    }
+
+    /**
+     * To be used only for testing purpose.
+     * It has been used to make repl dump operation fail.
+     */
+    public static void setNullSrcPath(HiveConf conf, boolean aNullSrcPath) {
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+        nullSrcPathForTest = aNullSrcPath;
+      }
+    }
+
+    @Override
+    public String convertToString() {
+      StringBuilder objInStr = new StringBuilder();
+      objInStr.append(srcPath)
+              .append(URI_SEPARATOR)
+              .append(tgtPath);
+      return objInStr.toString();
+    }
+
+    @Override
+    public void loadFromString(String objectInStr) {
+      String paths[] = objectInStr.split(URI_SEPARATOR);
+      this.srcPath = new Path(paths[0]);
+      this.tgtPath = new Path(paths[1]);
+    }
+
+    private String getEmptyOrString(String str) {
+      return (str == null) ? "" : str;
     }
   }
 
@@ -339,6 +392,19 @@ public class EximUtil {
         new ReplicationSpecSerializer().writeTo(writer, replicationSpec);
       }
       new TableSerializer(tableHandle, partitions, hiveConf).writeTo(writer, replicationSpec);
+    }
+  }
+
+  public static MetaData getMetaDataFromLocation(String fromLocn, HiveConf conf)
+      throws SemanticException, IOException {
+    URI fromURI = getValidatedURI(conf, PlanUtils.stripQuotes(fromLocn));
+    Path fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(), fromURI.getPath());
+    FileSystem fs = FileSystem.get(fromURI, conf);
+
+    try {
+      return readMetaData(fs, new Path(fromPath, EximUtil.METADATA_NAME));
+    } catch (IOException e) {
+      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
     }
   }
 

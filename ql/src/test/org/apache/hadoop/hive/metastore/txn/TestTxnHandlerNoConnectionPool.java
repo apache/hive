@@ -29,11 +29,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.SQLException;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This test checks that the transaction handler works when the connection pool is set to none.
@@ -49,13 +48,7 @@ public class TestTxnHandlerNoConnectionPool {
   public void setUp() throws Exception {
     conf.setVar(HiveConf.ConfVars.METASTORE_CONNECTION_POOLING_TYPE, "None");
     TxnDbUtil.setConfValues(conf);
-    try {
-      TxnDbUtil.prepDb(conf);
-    } catch (SQLException e) {
-      // Usually this means we've already created the tables, so clean them and then try again
-      tearDown();
-      TxnDbUtil.prepDb(conf);
-    }
+    TxnDbUtil.prepDb(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
   }
 

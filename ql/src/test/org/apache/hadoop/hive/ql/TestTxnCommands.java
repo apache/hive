@@ -36,13 +36,16 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.LockState;
 import org.apache.hadoop.hive.metastore.api.LockType;
@@ -68,6 +71,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.txn.compactor.CompactorTestUtilities;
 import org.apache.thrift.TException;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -271,8 +275,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       } catch (HiveException e) {
         throw new RuntimeException(e);
       }
-      QueryState qs = new QueryState.Builder().withHiveConf(hiveConf).nonIsolated().build();
-      try (Driver d = new Driver(qs)) {
+      try (IDriver d = DriverFactory.newDriver(hiveConf)) {
         LOG.info("Ready to run the query: " + query);
         syncThreadStart(cdlIn, cdlOut);
         try {
@@ -422,7 +425,12 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     stats = getTxnTableStats(msClient, tableName);
     boolean hasStats = 0 != stats.size();
     if (hasStats) {
-      verifyLongStats(0, 0, 0, stats);
+      // Either the truncate run before or the analyze
+      if (stats.get(0).getStatsData().getLongStats().getNumDVs() > 0) {
+        verifyLongStats(1, 0, 0, stats);
+      } else {
+        verifyLongStats(0, 0, 0, stats);
+      }
     }
 
     // Stats should be valid after analyze.
@@ -611,6 +619,22 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     List<String> rs1 = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     Assert.assertEquals("Content didn't match after commit rs1", allData, rs1);
   }
+
+  @Test
+  public void testDeleteOfMultipleInserts() throws Exception {
+    runStatementOnDriver("START TRANSACTION");
+    int[][] rows1 = {{1,2},{3,4}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(rows1));
+    int[][] rows2 = {{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(rows2));
+    runStatementOnDriver("commit");
+    runStatementOnDriver("delete from " + Table.ACIDTBL + " where b = 2");
+    runStatementOnDriver("delete from " + Table.ACIDTBL + " where b = 8");
+    List<String> rs2 = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] remain = {{3,4},{5,6}};
+    Assert.assertEquals("Content didn't match after delete ", stringifyValues(remain), rs2);
+  }
+
   @Test
   public void testDelete() throws Exception {
     int[][] rows1 = {{1,2},{3,4}};
@@ -1178,15 +1202,15 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
     //run Compaction
     runStatementOnDriver("alter table "+ TestTxnCommands2.Table.NONACIDORCTBL +" compact 'major'");
-    TestTxnCommands2.runWorker(hiveConf);
+    runWorker(hiveConf);
 
     query = "select ROW__ID, a, b" + (isVectorized ? "" : ", INPUT__FILE__NAME") + " from "
         + Table.NONACIDORCTBL + " order by ROW__ID";
     String[][] expected2 = new String[][] {
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
-        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000020/bucket_00001"},
-        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000020/bucket_00001"}
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":0}\t1\t2", "nonacidorctbl/base_10000001_v0000019/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":1}\t0\t12", "nonacidorctbl/base_10000001_v0000019/bucket_00001"},
+        {"{\"writeid\":0,\"bucketid\":536936448,\"rowid\":2}\t1\t5", "nonacidorctbl/base_10000001_v0000019/bucket_00001"},
+        {"{\"writeid\":10000001,\"bucketid\":536936448,\"rowid\":0}\t1\t17", "nonacidorctbl/base_10000001_v0000019/bucket_00001"}
     };
     checkResult(expected2, query, isVectorized, "after major compact", LOG);
     //make sure they are the same before and after compaction
@@ -1238,7 +1262,19 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertEquals(stringifyValues(expected), r);
   }
   @Test
-  public void testVersioning() throws Exception {
+  public void testVersioningVersionFileEnabled() throws Exception {
+    acidVersionTest(true);
+  }
+
+  @Test
+  public void testVersioningVersionFileDisabled() throws Exception {
+    acidVersionTest(false);
+  }
+
+  private void acidVersionTest(boolean enableVersionFile) throws Exception {
+    boolean originalEnableVersionFile = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, enableVersionFile);
+
     hiveConf.set(MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID.getVarname(), "true");
     // Need to close the thread local Hive object so that configuration change is reflected to HMS.
     Hive.closeCurrent();
@@ -1247,52 +1283,48 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     int[][] data = {{1, 2}};
     //create 1 delta file bucket_00000
     runStatementOnDriver("insert into T" + makeValuesClause(data));
+    runStatementOnDriver("update T set a=3 where b=2");
 
-    //delete the bucket files so now we have empty delta dirs
-    List<String> rs = runStatementOnDriver("select distinct INPUT__FILE__NAME from T");
     FileSystem fs = FileSystem.get(hiveConf);
-    Assert.assertTrue(rs != null && rs.size() == 1 && rs.get(0).contains(AcidUtils.DELTA_PREFIX));
-    Path  filePath = new Path(rs.get(0));
-    int version = AcidUtils.OrcAcidVersion.getAcidVersionFromDataFile(filePath, fs);
-    //check it has expected version marker
-    Assert.assertEquals("Unexpected version marker in " + filePath,
-        AcidUtils.OrcAcidVersion.ORC_ACID_VERSION, version);
+    RemoteIterator<LocatedFileStatus> files = fs.listFiles(new Path(getWarehouseDir(), "t"), true);
+    CompactorTestUtilities.checkAcidVersion(files, fs, enableVersionFile,
+        new String[] { AcidUtils.DELTA_PREFIX, AcidUtils.DELETE_DELTA_PREFIX });
 
-    //check that delta dir has a version file with expected value
-    filePath = filePath.getParent();
-    Assert.assertTrue(filePath.getName().startsWith(AcidUtils.DELTA_PREFIX));
-    int versionFromMetaFile = AcidUtils.OrcAcidVersion
-                                  .getAcidVersionFromMetaFile(filePath, fs);
-    Assert.assertEquals("Unexpected version marker in " + filePath,
-        AcidUtils.OrcAcidVersion.ORC_ACID_VERSION, versionFromMetaFile);
-
-    runStatementOnDriver("insert into T" + makeValuesClause(data));
-    runStatementOnDriver("alter table T compact 'major'");
+    runStatementOnDriver("alter table T compact 'minor'");
     TestTxnCommands2.runWorker(hiveConf);
 
-    //check status of compaction job
+    // Check status of compaction job
     TxnStore txnHandler = TxnUtils.getTxnStore(hiveConf);
     ShowCompactResponse resp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals("Unexpected number of compactions in history", 1, resp.getCompactsSize());
     Assert.assertEquals("Unexpected 0 compaction state",
         TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(0).getState());
     Assert.assertTrue(resp.getCompacts().get(0).getHadoopJobId().startsWith("job_local"));
+    Assert.assertTrue(resp.getCompacts().get(0).getType().equals(CompactionType.MINOR));
 
-    rs = runStatementOnDriver("select distinct INPUT__FILE__NAME from T");
-    Assert.assertTrue(rs != null && rs.size() == 1 && rs.get(0).contains(AcidUtils.BASE_PREFIX));
+    // Check the files after minor compaction
+    files = fs.listFiles(new Path(getWarehouseDir(), "t"), true);
+    CompactorTestUtilities.checkAcidVersion(files, fs, enableVersionFile,
+        new String[] { AcidUtils.DELTA_PREFIX, AcidUtils.DELETE_DELTA_PREFIX });
 
-    filePath = new Path(rs.get(0));
-    version = AcidUtils.OrcAcidVersion.getAcidVersionFromDataFile(filePath, fs);
-    //check that files produced by compaction still have the version marker
-    Assert.assertEquals("Unexpected version marker in " + filePath,
-        AcidUtils.OrcAcidVersion.ORC_ACID_VERSION, version);
+    runStatementOnDriver("insert into T" + makeValuesClause(data));
 
-    //check that compacted base dir has a version file with expected value
-    filePath = filePath.getParent();
-    Assert.assertTrue(filePath.getName().startsWith(AcidUtils.BASE_PREFIX));
-    versionFromMetaFile = AcidUtils.OrcAcidVersion.getAcidVersionFromMetaFile(
-        filePath, fs);
-    Assert.assertEquals("Unexpected version marker in " + filePath,
-        AcidUtils.OrcAcidVersion.ORC_ACID_VERSION, versionFromMetaFile);
+    runStatementOnDriver("alter table T compact 'major'");
+    TestTxnCommands2.runWorker(hiveConf);
+
+    // Check status of compaction job
+    txnHandler = TxnUtils.getTxnStore(hiveConf);
+    resp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals("Unexpected number of compactions in history", 2, resp.getCompactsSize());
+    Assert.assertEquals("Unexpected 1 compaction state",
+        TxnStore.CLEANING_RESPONSE, resp.getCompacts().get(1).getState());
+    Assert.assertTrue(resp.getCompacts().get(1).getHadoopJobId().startsWith("job_local"));
+
+    // Check the files after major compaction
+    files = fs.listFiles(new Path(getWarehouseDir(), "t"), true);
+    CompactorTestUtilities.checkAcidVersion(files, fs, enableVersionFile,
+        new String[] { AcidUtils.DELTA_PREFIX, AcidUtils.DELETE_DELTA_PREFIX, AcidUtils.BASE_PREFIX });
+
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, originalEnableVersionFile);
   }
 }

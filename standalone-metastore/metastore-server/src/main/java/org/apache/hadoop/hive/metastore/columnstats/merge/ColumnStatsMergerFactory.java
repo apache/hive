@@ -19,6 +19,8 @@
 
 package org.apache.hadoop.hive.metastore.columnstats.merge;
 
+import java.util.Objects;
+
 import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
@@ -31,60 +33,64 @@ import org.apache.hadoop.hive.metastore.columnstats.cache.LongColumnStatsDataIns
 import org.apache.hadoop.hive.metastore.columnstats.cache.StringColumnStatsDataInspector;
 import org.apache.hadoop.hive.metastore.columnstats.cache.TimestampColumnStatsDataInspector;
 
+import com.google.common.base.Preconditions;
+
 public class ColumnStatsMergerFactory {
 
   private ColumnStatsMergerFactory() {
   }
 
-  public static ColumnStatsMerger getColumnStatsMerger(ColumnStatisticsObj statsObjNew,
-      ColumnStatisticsObj statsObjOld) {
-    ColumnStatsMerger agg;
-    _Fields typeNew = statsObjNew.getStatsData().getSetField();
-    _Fields typeOld = statsObjOld.getStatsData().getSetField();
-    // make sure that they have the same type
-    typeNew = typeNew == typeOld ? typeNew : null;
+  /**
+   * Get a statistics merger to merge the given statistics object.
+   *
+   * @param statsObjNew A statistics object to merger
+   * @param statsObjOld A statistics object to merger
+   * @return A ColumnStatsMerger object that can process the requested type
+   * @throws IllegalArgumentException if the column statistics objects are of
+   *           two different types or if they are of an unknown type
+   * @throws NullPointerException if statistics object is {@code null}
+   */
+  public static ColumnStatsMerger getColumnStatsMerger(final ColumnStatisticsObj statsObjNew,
+      final ColumnStatisticsObj statsObjOld) {
+    Objects.requireNonNull(statsObjNew, "Column 1 statistcs cannot be null");
+    Objects.requireNonNull(statsObjOld, "Column 2 statistcs cannot be null");
+
+    final _Fields typeNew = statsObjNew.getStatsData().getSetField();
+    final _Fields typeOld = statsObjOld.getStatsData().getSetField();
+
+    Preconditions.checkArgument(typeNew == typeOld, "The column types must match: [" + typeNew + "::" + typeOld + "]");
+
     switch (typeNew) {
     case BOOLEAN_STATS:
-      agg = new BooleanColumnStatsMerger();
-      break;
-    case LONG_STATS: {
-      agg = new LongColumnStatsMerger();
-      break;
-    }
-    case DOUBLE_STATS: {
-      agg = new DoubleColumnStatsMerger();
-      break;
-    }
-    case STRING_STATS: {
-      agg = new StringColumnStatsMerger();
-      break;
-    }
+      return new BooleanColumnStatsMerger();
+    case LONG_STATS:
+      return new LongColumnStatsMerger();
+    case DOUBLE_STATS:
+      return new DoubleColumnStatsMerger();
+    case STRING_STATS:
+      return new StringColumnStatsMerger();
     case BINARY_STATS:
-      agg = new BinaryColumnStatsMerger();
-      break;
-    case DECIMAL_STATS: {
-      agg = new DecimalColumnStatsMerger();
-      break;
-    }
-    case DATE_STATS: {
-      agg = new DateColumnStatsMerger();
-      break;
-    }
-    case TIMESTAMP_STATS: {
-      agg = new TimestampColumnStatsMerger();
-      break;
-    }
+      return new BinaryColumnStatsMerger();
+    case DECIMAL_STATS:
+      return new DecimalColumnStatsMerger();
+    case DATE_STATS:
+      return new DateColumnStatsMerger();
+    case TIMESTAMP_STATS:
+      return new TimestampColumnStatsMerger();
     default:
-      throw new IllegalArgumentException("Unknown stats type " + statsObjNew.getStatsData().getSetField());
+      throw new IllegalArgumentException("Unknown stats type: " + statsObjNew.getStatsData().getSetField());
     }
-    return agg;
   }
 
-  public static ColumnStatisticsObj newColumnStaticsObj(String colName, String colType, _Fields type) {
-    ColumnStatisticsObj cso = new ColumnStatisticsObj();
-    ColumnStatisticsData csd = new ColumnStatisticsData();
-    cso.setColName(colName);
-    cso.setColType(colType);
+  public static ColumnStatisticsObj newColumnStaticsObj(final String colName, final String colType,
+      final _Fields type) {
+    final ColumnStatisticsObj cso = new ColumnStatisticsObj();
+    final ColumnStatisticsData csd = new ColumnStatisticsData();
+
+    Objects.requireNonNull(colName, "Column name cannot be null");
+    Objects.requireNonNull(colType, "Column type cannot be null");
+    Objects.requireNonNull(type, "Field type cannot be null");
+
     switch (type) {
     case BOOLEAN_STATS:
       csd.setBooleanStats(new BooleanColumnStatsData());
@@ -119,10 +125,13 @@ public class ColumnStatsMergerFactory {
       break;
 
     default:
-      throw new IllegalArgumentException("Unknown stats type");
+      throw new IllegalArgumentException("Unknown stats type: " + type);
     }
 
+    cso.setColName(colName);
+    cso.setColType(colType);
     cso.setStatsData(csd);
+
     return cso;
   }
 

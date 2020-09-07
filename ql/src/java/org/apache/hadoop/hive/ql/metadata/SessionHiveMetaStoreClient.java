@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
@@ -55,6 +55,8 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -68,6 +70,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
+import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
@@ -76,7 +79,9 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -106,7 +111,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isExternalTa
  * so the readers of the objects in these maps should have the most recent view of the object.
  * But again, could be fragile.
  */
-public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements IMetaStoreClient {
+public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCache implements IMetaStoreClient {
   private static final Logger LOG = LoggerFactory.getLogger(SessionHiveMetaStoreClient.class);
 
   SessionHiveMetaStoreClient(Configuration conf, Boolean allowEmbedded) throws MetaException {
@@ -724,7 +729,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
 
   private void truncateTempTable(org.apache.hadoop.hive.metastore.api.Table table) throws MetaException, TException {
 
-    boolean isAutopurge = "true".equalsIgnoreCase(table.getParameters().get("auto.purge"));
+    boolean isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
     try {
       // this is not transactional
       Path location = new Path(table.getSd().getLocation());
@@ -736,13 +741,13 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
         HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(conf, fs, location);
         FileStatus targetStatus = fs.getFileStatus(location);
         String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-        FileUtils.moveToTrash(fs, location, conf, isAutopurge);
+        FileUtils.moveToTrash(fs, location, conf, isSkipTrash);
         fs.mkdirs(location);
         HdfsUtils.setFullFileStatus(conf, status, targetGroup, fs, location, false);
       } else {
         FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
         if ((statuses != null) && (statuses.length > 0)) {
-          boolean success = Hive.trashFiles(fs, statuses, conf, isAutopurge);
+          boolean success = Hive.trashFiles(fs, statuses, conf, isSkipTrash);
           if (!success) {
             throw new HiveException("Error in deleting the contents of " + location.toString());
           }
@@ -1097,6 +1102,24 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     List<Partition> partitions = tt.listPartitionsWithAuthInfo(userName, groupNames);
     return getPartitionsForMaxParts(tableName, partitions, maxParts);
   }
+  
+  @Override
+  public GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(
+      GetPartitionsPsWithAuthRequest req)
+      throws MetaException, TException, NoSuchObjectException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(req.getDbName(),
+        req.getTblName());
+    if (table == null) {
+      return super.listPartitionsWithAuthInfoRequest(req);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    List<Partition> partitions = tt
+        .listPartitionsWithAuthInfo(req.getUserName(), req.getGroupNames());
+    GetPartitionsPsWithAuthResponse response = new GetPartitionsPsWithAuthResponse();
+    response.setPartitions(
+        getPartitionsForMaxParts(req.getTblName(), partitions, req.getMaxParts()));
+    return response;
+  }
 
   @Override
   public List<String> listPartitionNames(String catName, String dbName, String tblName,
@@ -1179,6 +1202,21 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   }
 
   @Override
+  public boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(req.getDbName(), req.getTblName());
+    if (table == null) {
+      return super.listPartitionsSpecByExpr(req, result);
+    }
+    assert result != null;
+
+    result.addAll(
+        MetaStoreServerUtils.getPartitionspecsGroupedByStorageDescriptor(table,
+            getPartitionsForMaxParts(req.getTblName(), getPartitionedTempTable(table).listPartitionsByFilter(
+                generateJDOFilter(table, req.getExpr(), req.getDefaultPartitionName())), req.getMaxParts())));
+    return result.isEmpty();
+  }
+
+  @Override
   public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
                                               List<String> partNames, boolean getColStats, String engine) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
@@ -1205,7 +1243,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
     if (partition == null) {
       throw new NoSuchObjectException("Partition with partition values " +
               (pvals != null ? Arrays.toString(pvals.toArray()) : "null") +
-              " for table " + tableName + " in database " + dbName + "and for user " +
+              " for table " + tableName + " in database " + dbName + " and for user " +
               userName + " and group names " + (groupNames != null ? Arrays.toString(groupNames.toArray()) : "null") +
               " is not found.");
     }
@@ -1526,9 +1564,10 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClient implements I
   private String generateJDOFilter(org.apache.hadoop.hive.metastore.api.Table table, ExpressionTree exprTree)
       throws MetaException {
 
+    assert table != null;
     ExpressionTree.FilterBuilder filterBuilder = new ExpressionTree.FilterBuilder(true);
     Map<String, Object> params = new HashMap<>();
-    exprTree.generateJDOFilterFragment(conf, table, params, filterBuilder);
+    exprTree.generateJDOFilterFragment(conf, params, filterBuilder, table.getPartitionKeys());
     StringBuilder stringBuilder = new StringBuilder(filterBuilder.getFilter());
     // replace leading &&
     stringBuilder.replace(0, 4, "");

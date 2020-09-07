@@ -38,10 +38,10 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
+import org.apache.hadoop.hive.ql.plan.CopyWork;
 import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -193,15 +193,20 @@ public class CreateFunctionHandler extends AbstractMessageHandler {
           new Path(functionsRootDir).getFileSystem(context.hiveConf)
       );
 
-      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
-          metadata.getReplicationSpec(), new Path(sourceUri), qualifiedDestinationPath,
-          context.hiveConf
-      );
-      replCopyTasks.add(copyTask);
+      replCopyTasks.add(getCopyTask(sourceUri, qualifiedDestinationPath));
       ResourceUri destinationUri =
           new ResourceUri(resourceUri.getResourceType(), qualifiedDestinationPath.toString());
       context.log.debug("copy source uri : {} to destination uri: {}", sourceUri, destinationUri);
       return destinationUri;
+    }
+
+    private Task<?> getCopyTask(String sourceUri, Path dest) {
+      boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
+      if (copyAtLoad ) {
+        return ReplCopyTask.getLoadCopyTask(metadata.getReplicationSpec(), new Path(sourceUri), dest, context.hiveConf);
+      } else {
+        return TaskFactory.get(new CopyWork(new Path(sourceUri), dest, true, false), context.hiveConf);
+      }
     }
   }
 }

@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniDFSShim;
 import org.apache.hadoop.hive.shims.HadoopShims.MiniMrShim;
@@ -62,6 +63,7 @@ public class MiniHS2 extends AbstractHiveService {
 
   public static final String HS2_BINARY_MODE = "binary";
   public static final String HS2_HTTP_MODE = "http";
+  public static final String HS2_ALL_MODE = "all";
   private static final String driverName = "org.apache.hive.jdbc.HiveDriver";
   private static final FsPermission FULL_PERM = new FsPermission((short)00777);
   private static final FsPermission WRITE_ALL_PERM = new FsPermission((short)00733);
@@ -82,6 +84,7 @@ public class MiniHS2 extends AbstractHiveService {
   private MiniClusterType miniClusterType = MiniClusterType.LOCALFS_ONLY;
   private boolean usePortsFromConf = false;
   private PamAuthenticator pamAuthenticator;
+  private boolean createTransactionalTables;
 
   public enum MiniClusterType {
     MR,
@@ -102,6 +105,7 @@ public class MiniHS2 extends AbstractHiveService {
     private String authType = "KERBEROS";
     private boolean isHA = false;
     private boolean cleanupLocalDirOnStartup = true;
+    private boolean createTransactionalTables = true;
     private boolean isMetastoreSecure;
     private String metastoreServerPrincipal;
     private String metastoreServerKeyTab;
@@ -114,6 +118,10 @@ public class MiniHS2 extends AbstractHiveService {
       this.miniClusterType = MiniClusterType.MR;
       return this;
     }
+    public Builder withMiniTez() {
+      this.miniClusterType = MiniClusterType.TEZ;
+      return this;
+    }
 
     public Builder withMiniKdc(String serverPrincipal, String serverKeytab) {
       this.useMiniKdc = true;
@@ -124,6 +132,11 @@ public class MiniHS2 extends AbstractHiveService {
 
     public Builder withAuthenticationType(String authType) {
       this.authType = authType;
+      return this;
+    }
+
+    public Builder withTransactionalTables(boolean createTransactionalTables) {
+      this.createTransactionalTables = createTransactionalTables;
       return this;
     }
 
@@ -189,7 +202,7 @@ public class MiniHS2 extends AbstractHiveService {
         hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_BINARY_MODE);
       }
       return new MiniHS2(hiveConf, miniClusterType, useMiniKdc, serverPrincipal, serverKeytab,
-          isMetastoreRemote, usePortsFromConf, authType, isHA, cleanupLocalDirOnStartup,
+          isMetastoreRemote, createTransactionalTables, usePortsFromConf, authType, isHA, cleanupLocalDirOnStartup,
           isMetastoreSecure, metastoreServerPrincipal, metastoreServerKeyTab, dataNodes);
     }
   }
@@ -227,7 +240,7 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   private MiniHS2(HiveConf hiveConf, MiniClusterType miniClusterType, boolean useMiniKdc,
-      String serverPrincipal, String serverKeytab, boolean isMetastoreRemote,
+      String serverPrincipal, String serverKeytab, boolean isMetastoreRemote, boolean createTransactionalTables,
       boolean usePortsFromConf, String authType, boolean isHA, boolean cleanupLocalDirOnStartup,
       boolean isMetastoreSecure, String metastoreServerPrincipal, String metastoreKeyTab,
       int dataNodes) throws Exception {
@@ -253,6 +266,7 @@ public class MiniHS2 extends AbstractHiveService {
     this.isMetastoreSecure = isMetastoreSecure;
     this.cleanupLocalDirOnStartup = cleanupLocalDirOnStartup;
     this.usePortsFromConf = usePortsFromConf;
+    this.createTransactionalTables = createTransactionalTables;
     baseDir = getBaseDir();
     localFS = FileSystem.getLocal(hiveConf);
     FileSystem fs;
@@ -344,19 +358,20 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType) throws Exception {
-    this(hiveConf, clusterType, false);
+    this(hiveConf, clusterType, false, false);
   }
 
-  public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType, boolean usePortsFromConf)
+  public MiniHS2(HiveConf hiveConf, MiniClusterType clusterType, boolean usePortsFromConf, boolean isMetastoreRemote)
       throws Exception {
     this(hiveConf, clusterType, false, null, null,
-        false, usePortsFromConf, "KERBEROS", false, true,
+        isMetastoreRemote, true, usePortsFromConf, "KERBEROS", false, true,
         false, null, null, DEFAULT_DATANODE_COUNT);
   }
 
   public void start(Map<String, String> confOverlay) throws Exception {
     if (isMetastoreRemote) {
-      MetaStoreTestUtils.startMetaStoreWithRetry(getHiveConf());
+      MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(), getHiveConf(),
+              false, false, false, false, createTransactionalTables);
       setWareHouseDir(MetastoreConf.getVar(getHiveConf(), MetastoreConf.ConfVars.WAREHOUSE));
     }
 
@@ -566,8 +581,20 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   /**
-   * Build zk base JDBC URL
-   * @return
+   * Build base JDBC URL
+   * @return URL
+   */
+  public String getBaseHttpJdbcURL() {
+    String transportMode = getConfProperty(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname);
+    if(!transportMode.equalsIgnoreCase(HS2_ALL_MODE)) {
+      return getBaseJdbcURL();
+    }
+    return "jdbc:hive2://" + getHost() + ":" + getHttpPort() + "/";
+  }
+
+  /**
+   * Build zk base JDBC URL.
+   * @return URL
    */
   private String getZKBaseJdbcURL() throws Exception {
     HiveConf hiveConf = getServerConf();
@@ -576,6 +603,24 @@ public class MiniHS2 extends AbstractHiveService {
       return "jdbc:hive2://" + zkEnsemble + "/";
     }
     throw new Exception("Server's HiveConf is null. Unable to read ZooKeeper configs.");
+  }
+
+  /**
+   * Returns HTTP connection URL for this server instance.
+   * @return URL
+   * @throws Exception
+   */
+  public synchronized String getHttpJdbcURL() throws Exception {
+    String transportMode = getConfProperty(ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname);
+    if(!transportMode.equalsIgnoreCase(HS2_ALL_MODE)) {
+      return getJdbcURL();
+    }
+    try {
+      getHiveConf().setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_HTTP_MODE);
+      return getJdbcURL("default");
+    } finally {
+      getHiveConf().setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, HS2_ALL_MODE);
+    }
   }
 
   private boolean isHttpTransportMode() {

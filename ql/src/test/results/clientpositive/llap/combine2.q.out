@@ -1,0 +1,271 @@
+PREHOOK: query: USE default
+PREHOOK: type: SWITCHDATABASE
+PREHOOK: Input: database:default
+POSTHOOK: query: USE default
+POSTHOOK: type: SWITCHDATABASE
+POSTHOOK: Input: database:default
+PREHOOK: query: create table combine2_n0(key string) partitioned by (value string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@combine2_n0
+POSTHOOK: query: create table combine2_n0(key string) partitioned by (value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@combine2_n0
+PREHOOK: query: insert overwrite table combine2_n0 partition(value) 
+select * from (
+   select key, value from src where key < 10
+   union all 
+   select key, '|' as value from src where key = 11
+   union all
+   select key, '2010-04-21 09:45:00' value from src where key = 19) s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@combine2_n0
+POSTHOOK: query: insert overwrite table combine2_n0 partition(value) 
+select * from (
+   select key, value from src where key < 10
+   union all 
+   select key, '|' as value from src where key = 11
+   union all
+   select key, '2010-04-21 09:45:00' value from src where key = 19) s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@combine2_n0
+POSTHOOK: Output: default@combine2_n0@value=2010-04-21 09%3A45%3A00
+POSTHOOK: Output: default@combine2_n0@value=val_0
+POSTHOOK: Output: default@combine2_n0@value=val_2
+POSTHOOK: Output: default@combine2_n0@value=val_4
+POSTHOOK: Output: default@combine2_n0@value=val_5
+POSTHOOK: Output: default@combine2_n0@value=val_8
+POSTHOOK: Output: default@combine2_n0@value=val_9
+POSTHOOK: Output: default@combine2_n0@value=|
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=2010-04-21 09:45:00).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=val_0).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=val_2).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=val_4).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=val_5).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=val_8).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=val_9).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: combine2_n0 PARTITION(value=|).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: show partitions combine2_n0
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@combine2_n0
+POSTHOOK: query: show partitions combine2_n0
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@combine2_n0
+value=2010-04-21 09%3A45%3A00
+value=val_0
+value=val_2
+value=val_4
+value=val_5
+value=val_8
+value=val_9
+value=|
+PREHOOK: query: explain
+select key, value from combine2_n0 where value is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@combine2_n0
+PREHOOK: Input: default@combine2_n0@value=2010-04-21 09%3A45%3A00
+PREHOOK: Input: default@combine2_n0@value=val_0
+PREHOOK: Input: default@combine2_n0@value=val_2
+PREHOOK: Input: default@combine2_n0@value=val_4
+PREHOOK: Input: default@combine2_n0@value=val_5
+PREHOOK: Input: default@combine2_n0@value=val_8
+PREHOOK: Input: default@combine2_n0@value=val_9
+PREHOOK: Input: default@combine2_n0@value=|
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select key, value from combine2_n0 where value is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@combine2_n0
+POSTHOOK: Input: default@combine2_n0@value=2010-04-21 09%3A45%3A00
+POSTHOOK: Input: default@combine2_n0@value=val_0
+POSTHOOK: Input: default@combine2_n0@value=val_2
+POSTHOOK: Input: default@combine2_n0@value=val_4
+POSTHOOK: Input: default@combine2_n0@value=val_5
+POSTHOOK: Input: default@combine2_n0@value=val_8
+POSTHOOK: Input: default@combine2_n0@value=val_9
+POSTHOOK: Input: default@combine2_n0@value=|
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: combine2_n0
+          filterExpr: value is not null (type: boolean)
+          Select Operator
+            expressions: key (type: string), value (type: string)
+            outputColumnNames: _col0, _col1
+            ListSink
+
+PREHOOK: query: select key, value from combine2_n0 where value is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@combine2_n0
+PREHOOK: Input: default@combine2_n0@value=2010-04-21 09%3A45%3A00
+PREHOOK: Input: default@combine2_n0@value=val_0
+PREHOOK: Input: default@combine2_n0@value=val_2
+PREHOOK: Input: default@combine2_n0@value=val_4
+PREHOOK: Input: default@combine2_n0@value=val_5
+PREHOOK: Input: default@combine2_n0@value=val_8
+PREHOOK: Input: default@combine2_n0@value=val_9
+PREHOOK: Input: default@combine2_n0@value=|
+#### A masked pattern was here ####
+POSTHOOK: query: select key, value from combine2_n0 where value is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@combine2_n0
+POSTHOOK: Input: default@combine2_n0@value=2010-04-21 09%3A45%3A00
+POSTHOOK: Input: default@combine2_n0@value=val_0
+POSTHOOK: Input: default@combine2_n0@value=val_2
+POSTHOOK: Input: default@combine2_n0@value=val_4
+POSTHOOK: Input: default@combine2_n0@value=val_5
+POSTHOOK: Input: default@combine2_n0@value=val_8
+POSTHOOK: Input: default@combine2_n0@value=val_9
+POSTHOOK: Input: default@combine2_n0@value=|
+#### A masked pattern was here ####
+0	val_0
+0	val_0
+0	val_0
+11	|
+19	2010-04-21 09:45:00
+2	val_2
+4	val_4
+5	val_5
+5	val_5
+5	val_5
+8	val_8
+9	val_9
+PREHOOK: query: explain extended
+select count(1) from combine2_n0 where value is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@combine2_n0
+#### A masked pattern was here ####
+POSTHOOK: query: explain extended
+select count(1) from combine2_n0 where value is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@combine2_n0
+#### A masked pattern was here ####
+OPTIMIZED SQL: SELECT COUNT(*) AS `$f0`
+FROM `default`.`combine2_n0`
+WHERE `value` IS NOT NULL
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(1) from combine2_n0 where value is not null
+PREHOOK: type: QUERY
+PREHOOK: Input: default@combine2_n0
+#### A masked pattern was here ####
+POSTHOOK: query: select count(1) from combine2_n0 where value is not null
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@combine2_n0
+#### A masked pattern was here ####
+12
+PREHOOK: query: explain
+select ds, count(1) from srcpart where ds is not null group by ds
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: explain
+select ds, count(1) from srcpart where ds is not null group by ds
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  filterExpr: ds is not null (type: boolean)
+                  Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: ds
+                    Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: count()
+                      keys: ds (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1000 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1000 Data size: 192000 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: bigint)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: count(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 2 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select ds, count(1) from srcpart where ds is not null group by ds
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select ds, count(1) from srcpart where ds is not null group by ds
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-09/hr=12
+#### A masked pattern was here ####
+2008-04-08	1000
+2008-04-09	1000

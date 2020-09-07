@@ -1,0 +1,43 @@
+PREHOOK: query: EXPLAIN
+SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 5
+      Processor Tree:
+        TableScan
+          alias: x
+          filterExpr: (UDFToDouble(key) < 300.0D) (type: boolean)
+          Filter Operator
+            predicate: (UDFToDouble(key) < 300.0D) (type: boolean)
+            Limit
+              Number of rows: 5
+              Select Operator
+                expressions: key (type: string), value (type: string)
+                outputColumnNames: _col0, _col1
+                ListSink
+
+PREHOOK: query: SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+238	val_238
+86	val_86
+27	val_27
+165	val_165
+255	val_255

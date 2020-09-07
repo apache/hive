@@ -1,5 +1,7 @@
---! qt:dataset:alltypesorc,alltypesparquet,part,src,src1,srcbucket,srcbucket2,src_cbo,src_json,src_sequencefile,src_thrift,srcpart,cbo_t1,cbo_t2,cbo_t3,lineitem
+--! qt:dataset:src,part,srcbucket:ONLY
 --! qt:sysdb
+-- Mask the enqueue time which is based on current time
+--! qt:replace:/(initiated\s+NULL\s+NULL\s+)[0-9]*(\s+NULL)/$1#Masked#$2/
 
 set hive.strict.checks.cartesian.product=false;
 
@@ -81,9 +83,10 @@ select skewed_col_name from skewed_col_names order by skewed_col_name limit 5;
 
 select count(*) from skewed_col_value_loc_map;
 
-select count(*) from skewed_string_list;
+-- HIVE-23289: there are fallout in these tables from previous tests
+select * from skewed_string_list limit 0;
 
-select count(*) from skewed_string_list_values;
+select * from skewed_string_list_values limit 0;
 
 select count(*) from skewed_values;
 

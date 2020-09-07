@@ -23,7 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,6 +38,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
@@ -98,7 +99,10 @@ public class TestHiveAuthorizerCheckInvocation {
     conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
     conf.setVar(ConfVars.HIVE_TXN_MANAGER, DbTxnManager.class.getName());
+    conf.setBoolVar(ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED, true);
     conf.setVar(HiveConf.ConfVars.HIVEMAPREDMODE, "nonstrict");
+
+    TxnDbUtil.prepDb(conf);
 
     SessionState.start(conf);
     driver = new Driver(conf);
@@ -158,6 +162,19 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("no of columns used", 3, tableObj.getColumns().size());
     assertEquals("Columns used", Arrays.asList("city", "i", "k"),
         getSortedList(tableObj.getColumns()));
+  }
+
+  @Test
+  public void testQueryCacheIgnored() throws Exception {
+
+    reset(mockedAuthorizer);
+    int status = driver.compile("select i from " + acidTableName
+        + " where i > 0 ", true);
+    assertEquals(0, status);
+    List<HivePrivilegeObject> outputs = getHivePrivilegeObjectInputs().getRight();
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+    assertEquals("No outputs for a select", 0, outputs.size());
+    assertEquals("One input for this select", 1, inputs.size());
   }
 
   @Test
@@ -285,7 +302,7 @@ public class TestHiveAuthorizerCheckInvocation {
     assertTrue("db name", dbName.equalsIgnoreCase(dbObj.getDbname()));
 
     // actually create the permanent function
-    driver.run(null, true);
+    driver.run();
 
     // Verify privilege objects
     reset(mockedAuthorizer);

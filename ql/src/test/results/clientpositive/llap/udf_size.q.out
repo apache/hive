@@ -1,0 +1,75 @@
+PREHOOK: query: DESCRIBE FUNCTION size
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION size
+POSTHOOK: type: DESCFUNCTION
+size(a) - Returns the size of a
+PREHOOK: query: DESCRIBE FUNCTION EXTENDED size
+PREHOOK: type: DESCFUNCTION
+POSTHOOK: query: DESCRIBE FUNCTION EXTENDED size
+POSTHOOK: type: DESCFUNCTION
+size(a) - Returns the size of a
+Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFSize
+Function type:BUILTIN
+PREHOOK: query: EXPLAIN
+FROM src_thrift
+SELECT size(src_thrift.lint), 
+       size(src_thrift.lintstring), 
+       size(src_thrift.mstringstring),
+       size(null)
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+FROM src_thrift
+SELECT size(src_thrift.lint), 
+       size(src_thrift.lintstring), 
+       size(src_thrift.mstringstring),
+       size(null)
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        TableScan
+          alias: src_thrift
+          filterExpr: (lint is not null and mstringstring is not null) (type: boolean)
+          Filter Operator
+            predicate: (lint is not null and mstringstring is not null) (type: boolean)
+            Limit
+              Number of rows: 1
+              Select Operator
+                expressions: size(lint) (type: int), size(lintstring) (type: int), size(mstringstring) (type: int), -1 (type: int)
+                outputColumnNames: _col0, _col1, _col2, _col3
+                ListSink
+
+PREHOOK: query: FROM src_thrift
+SELECT size(src_thrift.lint), 
+       size(src_thrift.lintstring), 
+       size(src_thrift.mstringstring),
+       size(null)
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+POSTHOOK: query: FROM src_thrift
+SELECT size(src_thrift.lint), 
+       size(src_thrift.lintstring), 
+       size(src_thrift.mstringstring),
+       size(null)
+WHERE  src_thrift.lint IS NOT NULL 
+       AND NOT (src_thrift.mstringstring IS NULL) LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_thrift
+#### A masked pattern was here ####
+3	1	1	-1

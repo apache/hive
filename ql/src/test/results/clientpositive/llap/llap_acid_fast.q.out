@@ -313,7 +313,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 4
-                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col1:float, VALUE._col2:double, VALUE._col3:smallint
+                    dataColumns: KEY.reducesinkkey0:struct<writeid:bigint,bucketid:int,rowid:bigint>, VALUE._col0:float, VALUE._col1:double, VALUE._col2:smallint
                     partitionColumnCount: 0
                     scratchColumnTypeNames: [bigint, bigint]
             Reduce Operator Tree:

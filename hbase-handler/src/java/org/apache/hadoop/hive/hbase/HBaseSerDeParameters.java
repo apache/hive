@@ -167,6 +167,7 @@ public class HBaseSerDeParameters {
     throw new IllegalArgumentException("Invalid column name " + columnName);
   }
 
+  @Override
   public String toString() {
     return "[" + columnMappingString + ":" + getColumnNames() + ":" + getColumnTypes() + "]";
   }

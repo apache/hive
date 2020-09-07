@@ -1,0 +1,337 @@
+PREHOOK: query: select
+  interval_day_time('2 1:2:3'),
+  interval_day_time(cast('2 1:2:3' as string)),
+  interval_day_time(cast('2 1:2:3' as varchar(10))),
+  interval_day_time(cast('2 1:2:3' as char(10))),
+  interval_day_time('2 1:2:3') = interval '2 1:2:3' day to second
+from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select
+  interval_day_time('2 1:2:3'),
+  interval_day_time(cast('2 1:2:3' as string)),
+  interval_day_time(cast('2 1:2:3' as varchar(10))),
+  interval_day_time(cast('2 1:2:3' as char(10))),
+  interval_day_time('2 1:2:3') = interval '2 1:2:3' day to second
+from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+2 01:02:03.000000000	2 01:02:03.000000000	2 01:02:03.000000000	2 01:02:03.000000000	true
+Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from srcpart join (select ds as ds, ds as `date` from srcpart group by ds) s on (srcpart.ds = s.ds) where s.`date` = '2008-04-08'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+#### A masked pattern was here ####
+1000
+PREHOOK: query: drop view t1_n107
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view t1_n107
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create table t1_new (key string, value string) partitioned by (ds string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_new
+POSTHOOK: query: create table t1_new (key string, value string) partitioned by (ds string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_new
+PREHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-15')
+select 'key1', 'value1' from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1_new@ds=2011-10-15
+POSTHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-15')
+select 'key1', 'value1' from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1_new@ds=2011-10-15
+POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).key SIMPLE []
+POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).value SIMPLE []
+PREHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-16')
+select 'key2', 'value2' from src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@t1_new@ds=2011-10-16
+POSTHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-16')
+select 'key2', 'value2' from src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@t1_new@ds=2011-10-16
+POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).key SIMPLE []
+POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).value SIMPLE []
+PREHOOK: query: create view t1_n107 partitioned on (ds) as
+select * from
+(
+select key, value, ds from t1_new
+union all
+select key, value, ds from t1_new
+)subq
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1_new
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t1_n107
+POSTHOOK: query: create view t1_n107 partitioned on (ds) as
+select * from
+(
+select key, value, ds from t1_new
+union all
+select key, value, ds from t1_new
+)subq
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1_new
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t1_n107
+POSTHOOK: Lineage: t1_n107.key EXPRESSION [(t1_new)t1_new.FieldSchema(name:key, type:string, comment:null), ]
+POSTHOOK: Lineage: t1_n107.value EXPRESSION [(t1_new)t1_new.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select * from t1_n107 where ds = '2011-10-15'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1_n107
+PREHOOK: Input: default@t1_new
+PREHOOK: Input: default@t1_new@ds=2011-10-15
+#### A masked pattern was here ####
+POSTHOOK: query: select * from t1_n107 where ds = '2011-10-15'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1_n107
+POSTHOOK: Input: default@t1_new
+POSTHOOK: Input: default@t1_new@ds=2011-10-15
+#### A masked pattern was here ####
+key1	value1	2011-10-15
+key1	value1	2011-10-15
+PREHOOK: query: explain select array(1,2,3) from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: explain select array(1,2,3) from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          Select Operator
+            expressions: array(1,2,3) (type: array<int>)
+            outputColumnNames: _col0
+            ListSink
+
+PREHOOK: query: EXPLAIN
+select key from (SELECT key from src where key = 1+3)s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+select key from (SELECT key from src where key = 1+3)s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: src
+          filterExpr: (UDFToDouble(key) = 4.0D) (type: boolean)
+          Filter Operator
+            predicate: (UDFToDouble(key) = 4.0D) (type: boolean)
+            Select Operator
+              expressions: key (type: string)
+              outputColumnNames: _col0
+              ListSink
+
+PREHOOK: query: select * from (select key from src where key = '1')subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select key from src where key = '1')subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+PREHOOK: query: select '1'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select '1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: select * from (select '1')subq
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select '1')subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+1
+PREHOOK: query: select * from (select key from src where false)subq
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select * from (select key from src where false)subq
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN
+SELECT x.key, z.value, y.value
+FROM src1 x JOIN src y ON (x.key = y.key and y.key = 1+2)
+JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11+3)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+PREHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN
+SELECT x.key, z.value, y.value
+FROM src1 x JOIN src y ON (x.key = y.key and y.key = 1+2)
+JOIN srcpart z ON (x.value = z.value and z.ds='2008-04-08' and z.hr=11+3)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+POSTHOOK: Input: default@srcpart
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 4 (SIMPLE_EDGE)
+        Reducer 3 <- Map 5 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: x
+                  filterExpr: ((UDFToDouble(key) = 3.0D) and value is not null) (type: boolean)
+                  Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((UDFToDouble(key) = 3.0D) and value is not null) (type: boolean)
+                    Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col1 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col1 (type: string)
+                        Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: z
+                  filterExpr: ((ds = '2008-04-08') and (UDFToDouble(hr) = 14.0D) and value is not null) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 452 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ((ds = '2008-04-08') and (UDFToDouble(hr) = 14.0D) and value is not null) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 452 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 84 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: unknown
+        Map 5 
+            Map Operator Tree:
+                TableScan
+                  alias: y
+                  filterExpr: (UDFToDouble(key) = 3.0D) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) = 3.0D) (type: boolean)
+                    Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col1 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col2
+                Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  key expressions: _col0 (type: string)
+                  null sort order: z
+                  sort order: +
+                  Map-reduce partition columns: _col0 (type: string)
+                  Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col2 (type: string)
+        Reducer 3 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 _col0 (type: string)
+                  1 _col0 (type: string)
+                outputColumnNames: _col0, _col2, _col4
+                Statistics: Num rows: 1 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col2 (type: string), _col4 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 1 Data size: 261 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

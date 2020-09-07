@@ -30,8 +30,6 @@
 
   <properties>
     <hive.path.to.root>../..</hive.path.to.root>
-    <!-- Determines the log level of the console logger, hive.log is independent of this-->
-    <test.console.log.level>OFF</test.console.log.level>
 <!--    <initScript></initScript>-->
     <qfile></qfile>
     <qfile_regex></qfile_regex>
@@ -43,7 +41,7 @@
   </properties>
 
   <dependencies>
-    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
+    <!-- dependencies are always listed in sorted order by groupId, artifactId -->
     <!-- test intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -207,6 +205,12 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-hdfs</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-all</artifactId>
+      <version>${netty.hadoop.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -395,6 +399,10 @@
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>io.netty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
@@ -424,9 +432,55 @@
         <test.warehouse.scheme></test.warehouse.scheme>
       </properties>
     </profile>
+    <profile>
+      <id>qsplits</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-split-tests</id>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <target>
+                    <exec executable="bash" failonerror="true">
+                      <arg value="${basedir}/../bin/generate-cli-splits.sh"/>
+                      <arg value="src/test/java"/>
+                      <arg value="target/generated-test-sources"/>
+                    </exec>
+                  </target>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>add-test-source</id>
+                <phase>generate-sources</phase>
+                <goals>
+                  <goal>add-test-source</goal>
+                </goals>
+                <configuration>
+                  <sources>
+                    <source>target/generated-test-sources</source>
+                  </sources>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
-
- <build>
+  <build>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -529,5 +583,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>

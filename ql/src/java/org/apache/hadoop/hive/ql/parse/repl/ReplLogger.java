@@ -19,13 +19,19 @@ package org.apache.hadoop.hive.ql.parse.repl;
 
 import org.apache.hadoop.hive.metastore.TableType;
 
-public abstract class ReplLogger {
+/**
+ * ReplLogger.
+ *
+ * Logger class for Repl Events.
+ **/
+public abstract class ReplLogger<T> {
 
   public ReplLogger() {
   }
 
   public abstract void startLog();
-  public abstract void endLog(String lastReplId);
+
+  public abstract void endLog(T logVal);
 
   public void tableLog(String tableName, TableType tableType) {
   }

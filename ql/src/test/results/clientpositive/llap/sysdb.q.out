@@ -72,30 +72,6 @@ PREHOOK: query: show grant user hive_test_user
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user
 POSTHOOK: type: SHOW_GRANT
-default	alltypesorc			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	alltypesorc			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	alltypesorc			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	alltypesorc			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	alltypesparquet			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	alltypesparquet			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	alltypesparquet			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	alltypesparquet			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	cbo_t1			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	cbo_t1			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	cbo_t1			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	cbo_t1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	cbo_t2			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	cbo_t2			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	cbo_t2			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	cbo_t2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	cbo_t3			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	cbo_t3			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	cbo_t3			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	cbo_t3			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	lineitem			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	lineitem			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	lineitem			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	lineitem			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	moretypes			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -116,46 +92,18 @@ default	src			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	src			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src1			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src1			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src1			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src1			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	src_buck			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src_cbo			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src_cbo			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src_cbo			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src_cbo			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src_json			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src_json			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src_json			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src_json			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src_sequencefile			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src_sequencefile			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src_sequencefile			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src_sequencefile			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	src_skew			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	src_thrift			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	src_thrift			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	src_thrift			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	src_thrift			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 default	srcbucket			hive_test_user	USER	DELETE	true	-1	hive_test_user
 default	srcbucket			hive_test_user	USER	INSERT	true	-1	hive_test_user
 default	srcbucket			hive_test_user	USER	SELECT	true	-1	hive_test_user
 default	srcbucket			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	srcbucket2			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	srcbucket2			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	srcbucket2			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	srcbucket2			hive_test_user	USER	UPDATE	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	DELETE	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	INSERT	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	SELECT	true	-1	hive_test_user
-default	srcpart			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 information_schema	column_privileges			hive_test_user	USER	DELETE	true	-1	hive_test_user
 information_schema	column_privileges			hive_test_user	USER	INSERT	true	-1	hive_test_user
 information_schema	column_privileges			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -292,6 +240,10 @@ sys	partitions			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	partitions			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+sys	replication_metrics			hive_test_user	USER	DELETE	true	-1	hive_test_user
+sys	replication_metrics			hive_test_user	USER	INSERT	true	-1	hive_test_user
+sys	replication_metrics			hive_test_user	USER	SELECT	true	-1	hive_test_user
+sys	replication_metrics			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	role_map			hive_test_user	USER	SELECT	true	-1	hive_test_user
@@ -428,7 +380,6 @@ POSTHOOK: Input: sys@bucketing_cols
 #### A masked pattern was here ####
 key	0
 key	0
-key	0
 value	0
 PREHOOK: query: select t.tbl_name, c.column_name from tbls t join sds s on t.sd_id=s.sd_id join columns_v2 c on s.cd_id=c.cd_id order by t.tbl_name, c.column_name
 PREHOOK: type: QUERY
@@ -442,48 +393,9 @@ POSTHOOK: Input: sys@columns_v2
 POSTHOOK: Input: sys@sds
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-alltypesorc	cbigint
-alltypesorc	cboolean1
-alltypesorc	cboolean2
-alltypesorc	cdouble
-alltypesorc	cfloat
-alltypesorc	cint
-alltypesorc	csmallint
-alltypesorc	cstring1
-alltypesorc	cstring2
-alltypesorc	ctimestamp1
-alltypesorc	ctimestamp2
-alltypesorc	ctinyint
-alltypesparquet	cbigint
-alltypesparquet	cboolean1
-alltypesparquet	cboolean2
-alltypesparquet	cdouble
-alltypesparquet	cfloat
-alltypesparquet	cint
-alltypesparquet	csmallint
-alltypesparquet	cstring1
-alltypesparquet	cstring2
-alltypesparquet	ctimestamp1
-alltypesparquet	ctimestamp2
-alltypesparquet	ctinyint
 bucketing_cols	bucket_col_name
 bucketing_cols	integer_idx
 bucketing_cols	sd_id
-cbo_t1	c_boolean
-cbo_t1	c_float
-cbo_t1	c_int
-cbo_t1	key
-cbo_t1	value
-cbo_t2	c_boolean
-cbo_t2	c_float
-cbo_t2	c_int
-cbo_t2	key
-cbo_t2	value
-cbo_t3	c_boolean
-cbo_t3	c_float
-cbo_t3	c_int
-cbo_t3	key
-cbo_t3	value
 cds	cd_id
 column_privileges	column_name
 column_privileges	grantee
@@ -546,6 +458,7 @@ columns_v2	comment
 columns_v2	integer_idx
 columns_v2	type_name
 compaction_queue	cq_database
+compaction_queue	cq_enqueue_time
 compaction_queue	cq_error_message
 #### A masked pattern was here ####
 compaction_queue	cq_highest_write_id
@@ -564,6 +477,8 @@ compactions	c_database
 compactions	c_database
 compactions	c_duration
 compactions	c_duration
+compactions	c_enqueue_time
+compactions	c_enqueue_time
 #### A masked pattern was here ####
 compactions	c_highest_write_id
 compactions	c_highest_write_id
@@ -587,6 +502,7 @@ compactions	c_worker_id
 compactions	c_worker_id
 completed_compactions	cc_database
 completed_compactions	cc_end
+completed_compactions	cc_enqueue_time
 completed_compactions	cc_error_message
 #### A masked pattern was here ####
 completed_compactions	cc_highest_write_id
@@ -664,22 +580,6 @@ key_constraints	parent_integer_idx
 key_constraints	parent_tbl_id
 key_constraints	position
 key_constraints	update_rule
-lineitem	l_comment
-lineitem	l_commitdate
-lineitem	l_discount
-lineitem	l_extendedprice
-lineitem	l_linenumber
-lineitem	l_linestatus
-lineitem	l_orderkey
-lineitem	l_partkey
-lineitem	l_quantity
-lineitem	l_receiptdate
-lineitem	l_returnflag
-lineitem	l_shipdate
-lineitem	l_shipinstruct
-lineitem	l_shipmode
-lineitem	l_suppkey
-lineitem	l_tax
 locks	acquired_at
 locks	agent_info
 locks	blockedby_ext_id
@@ -784,6 +684,11 @@ partitions	part_id
 partitions	part_name
 partitions	sd_id
 partitions	tbl_id
+replication_metrics	dump_execution_id
+replication_metrics	metadata
+replication_metrics	policy_name
+replication_metrics	progress
+replication_metrics	scheduled_execution_id
 role_map	add_time
 role_map	grant_option
 role_map	grantor
@@ -881,32 +786,11 @@ sort_cols	order
 sort_cols	sd_id
 src	key
 src	value
-src1	key
-src1	value
 src_buck	key
 src_buck	value
-src_cbo	key
-src_cbo	value
-src_json	json
-src_sequencefile	key
-src_sequencefile	value
 src_skew	key
-src_thrift	aint
-src_thrift	astring
-src_thrift	attributes
-src_thrift	lint
-src_thrift	lintstring
-src_thrift	lstring
-src_thrift	mstringstring
-src_thrift	unionfield1
-src_thrift	unionfield2
-src_thrift	unionfield3
 srcbucket	key
 srcbucket	value
-srcbucket2	key
-srcbucket2	value
-srcpart	key
-srcpart	value
 tab_col_stats	avg_col_len
 tab_col_stats	big_decimal_high_value
 tab_col_stats	big_decimal_low_value
@@ -1112,11 +996,6 @@ POSTHOOK: query: select part_name from partitions order by part_name limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partitions
 #### A masked pattern was here ####
-ds=2008-04-08/hr=11
-ds=2008-04-08/hr=12
-ds=2008-04-09/hr=11
-ds=2008-04-09/hr=12
-dt=2014
 PREHOOK: query: select pkey_name, pkey_type from partition_keys order by pkey_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_keys
@@ -1125,10 +1004,6 @@ POSTHOOK: query: select pkey_name, pkey_type from partition_keys order by pkey_n
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_keys
 #### A masked pattern was here ####
-ds	string
-dt	string
-dt	string
-hr	string
 PREHOOK: query: select part_key_val, integer_idx from partition_key_vals order by part_key_val, integer_idx limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_key_vals
@@ -1137,11 +1012,6 @@ POSTHOOK: query: select part_key_val, integer_idx from partition_key_vals order 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_key_vals
 #### A masked pattern was here ####
-11	1
-11	1
-12	1
-12	1
-2008-04-08	0
 PREHOOK: query: select param_key, param_value from partition_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@partition_params
@@ -1150,11 +1020,6 @@ POSTHOOK: query: select param_key, param_value from partition_params order by pa
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_params
 #### A masked pattern was here ####
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
-COLUMN_STATS_ACCURATE	{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}
 PREHOOK: query: select grantor, principal_name from part_col_privs order by grantor, principal_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@part_col_privs
@@ -1323,7 +1188,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-91
+73
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -1342,8 +1207,8 @@ POSTHOOK: Input: sys@serdes
 #### A masked pattern was here ####
 NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
 NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
-NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
-NULL	org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe
+NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 PREHOOK: query: select param_key, param_value from serde_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
@@ -1353,11 +1218,11 @@ POSTHOOK: query: select param_key, param_value from serde_params order by param_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@serde_params
 #### A masked pattern was here ####
-field.delim	,
-field.delim	,
-field.delim	,
-field.delim	,
-field.delim	,
+serialization.format	1
+serialization.format	1
+serialization.format	1
+serialization.format	1
+serialization.format	1
 PREHOOK: query: select skewed_col_name from skewed_col_names order by skewed_col_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_col_names
@@ -1376,24 +1241,22 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_col_value_loc_map
 #### A masked pattern was here ####
 0
-PREHOOK: query: select count(*) from skewed_string_list
+PREHOOK: query: select * from skewed_string_list limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_string_list
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from skewed_string_list
+POSTHOOK: query: select * from skewed_string_list limit 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_string_list
 #### A masked pattern was here ####
-3
-PREHOOK: query: select count(*) from skewed_string_list_values
+PREHOOK: query: select * from skewed_string_list_values limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_string_list_values
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from skewed_string_list_values
+POSTHOOK: query: select * from skewed_string_list_values limit 0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_string_list_values
 #### A masked pattern was here ####
-3
 PREHOOK: query: select count(*) from skewed_values
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_values
@@ -1432,11 +1295,11 @@ POSTHOOK: query: select tbl_name from tbls order by tbl_name limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-alltypesorc
-alltypesparquet
 bucketing_cols
-cbo_t1
-cbo_t2
+cds
+column_privileges
+columns
+columns_v2
 PREHOOK: query: select column_name, grantor, principal_name from tbl_col_privs order by column_name, principal_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@tbl_col_privs
@@ -1466,16 +1329,16 @@ POSTHOOK: query: select table_name, column_name, num_nulls, num_distincts from t
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
-alltypesorc	cbigint	3115	5917
-alltypesorc	cboolean1	3114	NULL
-alltypesorc	cboolean2	3115	NULL
-alltypesorc	cdouble	3114	5527
-alltypesorc	cfloat	3115	131
-alltypesorc	cint	3115	6104
-alltypesorc	csmallint	3114	5666
-alltypesorc	cstring1	3114	5979
-alltypesorc	cstring2	3115	6122
-alltypesorc	ctimestamp1	3115	35
+part	p_brand	0	16
+part	p_comment	0	25
+part	p_container	0	18
+part	p_mfgr	0	5
+part	p_name	0	25
+part	p_partkey	0	25
+part	p_retailprice	0	25
+part	p_size	0	21
+part	p_type	0	24
+src	key	0	316
 PREHOOK: query: select table_name, partition_name, column_name, num_nulls, num_distincts from part_col_stats order by table_name, partition_name, column_name limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@part_col_stats
@@ -1484,16 +1347,6 @@ POSTHOOK: query: select table_name, partition_name, column_name, num_nulls, num_
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@part_col_stats
 #### A masked pattern was here ####
-cbo_t1	dt=2014	c_boolean	2	NULL
-cbo_t1	dt=2014	c_float	2	1
-cbo_t1	dt=2014	c_int	2	1
-cbo_t1	dt=2014	key	2	4
-cbo_t1	dt=2014	value	2	4
-cbo_t2	dt=2014	c_boolean	2	NULL
-cbo_t2	dt=2014	c_float	2	2
-cbo_t2	dt=2014	c_int	2	2
-cbo_t2	dt=2014	key	2	5
-cbo_t2	dt=2014	value	2	5
 PREHOOK: query: select schema_version from version order by schema_version limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -1551,11 +1404,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@partition_params
 POSTHOOK: Input: sys@partition_stats_view
 #### A masked pattern was here ####
-{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}	1	20	262	282
-{"BASIC_STATS":"true","COLUMN_STATS":{"c_boolean":"true","c_float":"true","c_int":"true","key":"true","value":"true"}}	1	20	262	282
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
-{"BASIC_STATS":"true","COLUMN_STATS":{"key":"true","value":"true"}}	1	500	5312	5812
 PREHOOK: query: describe sys.tab_col_stats
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: sys@tab_col_stats
@@ -1654,7 +1502,7 @@ POSTHOOK: query: select max(num_distincts) from sys.tab_col_stats
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@tab_col_stats
 #### A masked pattern was here ####
-6122
+431
 PREHOOK: query: select * from compactions
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@compaction_queue
@@ -1667,8 +1515,8 @@ POSTHOOK: Input: sys@compaction_queue
 POSTHOOK: Input: sys@compactions
 POSTHOOK: Input: sys@completed_compactions
 #### A masked pattern was here ####
-1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: use INFORMATION_SCHEMA
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:information_schema
@@ -1704,27 +1552,14 @@ POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-default	default	alltypesorc	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	alltypesparquet	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	cbo_t1	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	cbo_t2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	cbo_t3	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	lineitem	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	moretypes	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	part	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	scr_txn	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	scr_txn_2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src1	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src_buck	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src_cbo	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src_json	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src_sequencefile	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	src_skew	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	src_thrift	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	default	srcbucket	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	srcbucket2	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
-default	default	srcpart	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	information_schema	column_privileges	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	columns	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	information_schema	compactions	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
@@ -1759,6 +1594,7 @@ default	sys	partition_keys	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_params	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	partition_stats_view	VIEW	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL
 default	sys	partitions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
+default	sys	replication_metrics	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	role_map	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	roles	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
 default	sys	scheduled_executions	BASE_TABLE	NULL	NULL	NULL	NULL	NULL	YES	NO	NULL
@@ -1803,16 +1639,16 @@ POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-hive_test_user	hive_test_user	default	default	alltypesorc	DELETE	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesorc	INSERT	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesorc	SELECT	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesorc	UPDATE	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesparquet	DELETE	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesparquet	INSERT	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesparquet	SELECT	YES	NO
-hive_test_user	hive_test_user	default	default	alltypesparquet	UPDATE	YES	NO
-hive_test_user	hive_test_user	default	default	cbo_t1	DELETE	YES	NO
-hive_test_user	hive_test_user	default	default	cbo_t1	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	SELECT	YES	NO
+hive_test_user	hive_test_user	default	default	moretypes	UPDATE	YES	NO
+hive_test_user	hive_test_user	default	default	part	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	part	INSERT	YES	NO
+hive_test_user	hive_test_user	default	default	part	SELECT	YES	NO
+hive_test_user	hive_test_user	default	default	part	UPDATE	YES	NO
+hive_test_user	hive_test_user	default	default	scr_txn	DELETE	YES	NO
+hive_test_user	hive_test_user	default	default	scr_txn	INSERT	YES	NO
 PREHOOK: query: select table_catalog,table_schema,table_name,column_name,ordinal_position,column_default,is_nullable,data_type,character_maximum_length,character_octet_length,numeric_precision,numeric_precision_radix,numeric_scale,datetime_precision,interval_type,interval_precision,character_set_catalog,character_set_schema,character_set_name,collation_catalog,collation_schema,collation_name,udt_catalog,udt_schema,udt_name,scope_catalog,scope_schema,scope_name,maximum_cardinality,is_self_referencing,is_identity,identity_generation,identity_start,identity_increment,identity_maximum,identity_minimum,identity_cycle,is_generated,generation_expression,is_system_time_period_start,is_system_time_period_end,system_time_period_timestamp_generation,is_updatable,declared_data_type,declared_numeric_precision,declared_numeric_scale from COLUMNS where TABLE_NAME = 'alltypesorc' or TABLE_NAME = 'moretypes' order by TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@columns
@@ -1831,18 +1667,6 @@ POSTHOOK: Input: sys@sds
 POSTHOOK: Input: sys@tbl_col_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-default	default	alltypesorc	cbigint	3	NULL	YES	bigint	NULL	NULL	19	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	bigint	19	10
-default	default	alltypesorc	cboolean1	10	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
-default	default	alltypesorc	cboolean2	11	NULL	YES	boolean	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	boolean	NULL	NULL
-default	default	alltypesorc	cdouble	5	NULL	YES	double	NULL	NULL	53	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	double	53	2
-default	default	alltypesorc	cfloat	4	NULL	YES	float	NULL	NULL	23	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	float	23	2
-default	default	alltypesorc	cint	2	NULL	YES	int	NULL	NULL	10	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	int	10	10
-default	default	alltypesorc	csmallint	1	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
-default	default	alltypesorc	cstring1	6	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	string	NULL	NULL
-default	default	alltypesorc	cstring2	7	NULL	YES	string	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	string	NULL	NULL
-default	default	alltypesorc	ctimestamp1	8	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
-default	default	alltypesorc	ctimestamp2	9	NULL	YES	timestamp	NULL	NULL	NULL	NULL	NULL	9	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	timestamp	NULL	NULL
-default	default	alltypesorc	ctinyint	0	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
 default	default	moretypes	a	0	NULL	YES	decimal(10,2)	NULL	NULL	10	10	2	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	decimal(10,2)	10	10
 default	default	moretypes	b	1	NULL	YES	tinyint	NULL	NULL	3	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	tinyint	3	10
 default	default	moretypes	c	2	NULL	YES	smallint	NULL	NULL	5	10	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NO	NO	NULL	NULL	NULL	NULL	NULL	NULL	NEVER	NULL	NO	NO	NULL	YES	smallint	5	10
@@ -1917,5 +1741,5 @@ POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+1	default	default	scr_txn	NULL	major	initiated	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL
+2	default	default	scr_txn_2	NULL	minor	initiated	NULL	NULL	#Masked#	NULL	NULL	NULL	NULL	NULL

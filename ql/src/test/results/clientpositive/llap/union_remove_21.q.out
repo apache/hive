@@ -1,0 +1,190 @@
+PREHOOK: query: create table inputTbl1_n12(key string, val string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@inputTbl1_n12
+POSTHOOK: query: create table inputTbl1_n12(key string, val string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@inputTbl1_n12
+PREHOOK: query: create table outputTbl1_n17(key string) stored as textfile
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@outputTbl1_n17
+POSTHOOK: query: create table outputTbl1_n17(key string) stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@outputTbl1_n17
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n12
+PREHOOK: type: LOAD
+#### A masked pattern was here ####
+PREHOOK: Output: default@inputtbl1_n12
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1_n12
+POSTHOOK: type: LOAD
+#### A masked pattern was here ####
+POSTHOOK: Output: default@inputtbl1_n12
+PREHOOK: query: explain
+insert overwrite table outputTbl1_n17
+SELECT a.key
+FROM (
+  SELECT key, count(1) as `values` from inputTbl1_n12 group by key
+  UNION ALL
+  SELECT key, count(1) as `values` from inputTbl1_n12 group by key
+) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n12
+PREHOOK: Output: default@outputtbl1_n17
+POSTHOOK: query: explain
+insert overwrite table outputTbl1_n17
+SELECT a.key
+FROM (
+  SELECT key, count(1) as `values` from inputTbl1_n12 group by key
+  UNION ALL
+  SELECT key, count(1) as `values` from inputTbl1_n12 group by key
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n12
+POSTHOOK: Output: default@outputtbl1_n17
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 depends on stages: Stage-2
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: inputtbl1_n12
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  Select Operator
+                    expressions: key (type: string)
+                    outputColumnNames: key
+                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                    Group By Operator
+                      keys: key (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.outputtbl1_n17
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.outputtbl1_n17
+
+  Stage: Stage-2
+    Dependency Collection
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.outputtbl1_n17
+
+PREHOOK: query: insert overwrite table outputTbl1_n17
+SELECT a.key
+FROM (
+  SELECT key, count(1) as `values` from inputTbl1_n12 group by key
+  UNION ALL
+  SELECT key, count(1) as `values` from inputTbl1_n12 group by key
+) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@inputtbl1_n12
+PREHOOK: Output: default@outputtbl1_n17
+POSTHOOK: query: insert overwrite table outputTbl1_n17
+SELECT a.key
+FROM (
+  SELECT key, count(1) as `values` from inputTbl1_n12 group by key
+  UNION ALL
+  SELECT key, count(1) as `values` from inputTbl1_n12 group by key
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@inputtbl1_n12
+POSTHOOK: Output: default@outputtbl1_n17
+POSTHOOK: Lineage: outputtbl1_n17.key EXPRESSION [(inputtbl1_n12)inputtbl1_n12.FieldSchema(name:key, type:string, comment:null), ]
+PREHOOK: query: desc formatted outputTbl1_n17
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@outputtbl1_n17
+POSTHOOK: query: desc formatted outputTbl1_n17
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@outputtbl1_n17
+# col_name            	data_type           	comment             
+key                 	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	bucketing_version   	2                   
+	numFiles            	4                   
+	totalSize           	20                  
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from outputTbl1_n17
+PREHOOK: type: QUERY
+PREHOOK: Input: default@outputtbl1_n17
+#### A masked pattern was here ####
+POSTHOOK: query: select * from outputTbl1_n17
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@outputtbl1_n17
+#### A masked pattern was here ####
+1
+1
+2
+2
+3
+3
+7
+7
+8
+8

@@ -1,0 +1,80 @@
+PREHOOK: query: create table web_sales (
+    ws_order_number int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@web_sales
+POSTHOOK: query: create table web_sales (
+    ws_order_number int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@web_sales
+PREHOOK: query: create table web_returns (
+    wr_order_number int,
+    wr_returned_time_sk timestamp,
+    wr_return_quantity int
+)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@web_returns
+POSTHOOK: query: create table web_returns (
+    wr_order_number int,
+    wr_returned_time_sk timestamp,
+    wr_return_quantity int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@web_returns
+PREHOOK: query: explain cbo
+with ws_wh as
+    (select ws1.ws_order_number
+    from web_sales ws1,web_returns wr2
+    where ws1.ws_order_number = wr2.wr_order_number)
+select
+   ws_order_number
+from
+   web_sales ws1
+where
+ws1.ws_order_number in (select wr_order_number
+                            from web_returns,ws_wh
+                            where wr_order_number = ws_wh.ws_order_number)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@web_returns
+PREHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+with ws_wh as
+    (select ws1.ws_order_number
+    from web_sales ws1,web_returns wr2
+    where ws1.ws_order_number = wr2.wr_order_number)
+select
+   ws_order_number
+from
+   web_sales ws1
+where
+ws1.ws_order_number in (select wr_order_number
+                            from web_returns,ws_wh
+                            where wr_order_number = ws_wh.ws_order_number)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@web_returns
+POSTHOOK: Input: default@web_sales
+#### A masked pattern was here ####
+CBO PLAN:
+HiveSemiJoin(condition=[=($0, $1)], joinType=[semi])
+  HiveProject(ws_order_number=[$0])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
+  HiveProject(wr_order_number=[$0])
+    HiveJoin(condition=[=($1, $2)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(wr_order_number=[$0])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, web_returns]], table:alias=[web_returns])
+        HiveProject(ws_order_number=[$0])
+          HiveFilter(condition=[IS NOT NULL($0)])
+            HiveTableScan(table=[[default, web_sales]], table:alias=[ws1])
+      HiveProject(wr_order_number=[$0])
+        HiveFilter(condition=[IS NOT NULL($0)])
+          HiveTableScan(table=[[default, web_returns]], table:alias=[wr2])
+

@@ -21,9 +21,11 @@ package org.apache.hive.service.cli.thrift;
 import java.io.EOFException;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +40,7 @@ import javax.ws.rs.core.NewCookie;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.ByteStreams;
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.StringUtils;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.shims.HadoopShims.KerberosNameShim;
@@ -253,6 +254,13 @@ public class ThriftHttpServlet extends TServlet {
       response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
       if(isKerberosAuthMode(authType)) {
         response.addHeader(HttpAuthUtils.WWW_AUTHENTICATE, HttpAuthUtils.NEGOTIATE);
+      } else {
+        try {
+          LOG.error("Login attempt is failed for user : " +
+              getUsername(request, authType) + ". Error Messsage :" + e.getMessage());
+        } catch (Exception ex) {
+          // Ignore Exception
+        }
       }
       response.getWriter().println("Authentication Error: " + e.getMessage());
     }
@@ -498,7 +506,7 @@ public class ThriftHttpServlet extends TServlet {
         gssContext = manager.createContext(serverCreds);
         // Get service ticket from the authorization header
         String serviceTicketBase64 = getAuthHeader(request, authType);
-        byte[] inToken = Base64.decodeBase64(serviceTicketBase64.getBytes());
+        byte[] inToken = Base64.getDecoder().decode(serviceTicketBase64);
         gssContext.acceptSecContext(inToken, 0, inToken.length);
         // Authenticate or deny based on its context completion
         if (!gssContext.isEstablished()) {
@@ -511,6 +519,15 @@ public class ThriftHttpServlet extends TServlet {
         }
       }
       catch (GSSException e) {
+        if (gssContext != null) {
+          try {
+            LOG.error("Login attempt is failed for user : " +
+                getPrincipalWithoutRealmAndHost(gssContext.getSrcName().toString()) +
+                ". Error Messsage :" + e.getMessage());
+          } catch (Exception ex) {
+            // Ignore Exception
+          }
+        }
         throw new HttpAuthenticationException("Kerberos authentication failed: ", e);
       }
       finally {
@@ -577,11 +594,9 @@ public class ThriftHttpServlet extends TServlet {
 
   private String[] getAuthHeaderTokens(HttpServletRequest request,
       String authType) throws HttpAuthenticationException {
-    String authHeaderBase64 = getAuthHeader(request, authType);
-    String authHeaderString = StringUtils.newStringUtf8(
-        Base64.decodeBase64(authHeaderBase64.getBytes()));
-    String[] creds = authHeaderString.split(":");
-    return creds;
+    String authHeaderBase64Str = getAuthHeader(request, authType);
+    String authHeaderString = new String(Base64.getDecoder().decode(authHeaderBase64Str), StandardCharsets.UTF_8);
+    return authHeaderString.split(":");
   }
 
   /**
@@ -600,15 +615,13 @@ public class ThriftHttpServlet extends TServlet {
           "from the client is empty.");
     }
 
-    String authHeaderBase64String;
-    int beginIndex;
-    if (isKerberosAuthMode(authType)) {
-      beginIndex = (HttpAuthUtils.NEGOTIATE + " ").length();
-    }
-    else {
-      beginIndex = (HttpAuthUtils.BASIC + " ").length();
-    }
-    authHeaderBase64String = authHeader.substring(beginIndex);
+    LOG.debug("HTTP Auth Header [{}]", authHeader);
+
+    String[] parts = authHeader.split(" ");
+
+    // Assume the Base-64 string is always the last thing in the header
+    String authHeaderBase64String = parts[parts.length - 1];
+
     // Authorization header must have a payload
     if (authHeaderBase64String.isEmpty()) {
       throw new HttpAuthenticationException("Authorization header received " +

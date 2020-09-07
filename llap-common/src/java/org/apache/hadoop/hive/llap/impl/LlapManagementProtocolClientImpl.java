@@ -109,4 +109,15 @@ public class LlapManagementProtocolClientImpl implements LlapManagementProtocolP
       throw new ServiceException(e);
     }
   }
+
+  @Override
+  public LlapDaemonProtocolProtos.EvictEntityResponseProto evictEntity(
+      RpcController controller, LlapDaemonProtocolProtos.EvictEntityRequestProto request)
+      throws ServiceException {
+    try {
+      return getProxy().evictEntity(null, request);
+    } catch (IOException e) {
+      throw new ServiceException(e);
+    }
+  }
 }

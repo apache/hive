@@ -251,6 +251,19 @@ public interface HadoopShims {
         Class<RecordReader<K, V>> rrClass) throws IOException;
   }
 
+  /**
+   * List a directory for file status with ID.
+   *
+   * @param fs The {@code FileSystem} to load the path
+   * @param path The directory to list
+   * @param filter A filter to use on the files in the directory
+   * @return A list of file status with IDs
+   * @throws IOException An I/O exception of some sort has occurred
+   * @throws FileNotFoundException If the path is not found in the
+   *           {@code FileSystem}
+   * @throws UnsupportedOperationException the {@code FileSystem} is not a
+   *           {@code DistributedFileSystem}
+   */
   List<HdfsFileStatusWithId> listLocatedHdfsStatus(
       FileSystem fs, Path path, PathFilter filter) throws IOException;
 

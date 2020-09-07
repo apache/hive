@@ -895,7 +895,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: smallint)
                       Statistics: Num rows: 13 Data size: 63 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -913,7 +913,7 @@ STAGE PLANS:
                       Statistics: Num rows: 72 Data size: 2208 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: timestamp)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1171,7 +1171,7 @@ STAGE PLANS:
                       Statistics: Num rows: 11 Data size: 173 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: string)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -1189,7 +1189,7 @@ STAGE PLANS:
                       Statistics: Num rows: 81 Data size: 1703 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: decimal(38,18))
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -1454,7 +1454,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 12 Data size: 106 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -1471,7 +1471,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: int)
                       Statistics: Num rows: 39 Data size: 381 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:

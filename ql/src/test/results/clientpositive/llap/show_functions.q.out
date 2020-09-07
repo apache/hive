@@ -1,0 +1,1011 @@
+PREHOOK: query: EXPLAIN SHOW FUNCTIONS
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: EXPLAIN SHOW FUNCTIONS
+POSTHOOK: type: SHOWFUNCTIONS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Functions
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW FUNCTIONS
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS
+POSTHOOK: type: SHOWFUNCTIONS
+!
+!=
+$sum0
+%
+&
+*
++
+-
+/
+<
+<=
+<=>
+<>
+=
+==
+>
+>=
+^
+abs
+acos
+add_months
+aes_decrypt
+aes_encrypt
+and
+approx_distinct
+array
+array_contains
+ascii
+asin
+assert_true
+assert_true_oom
+atan
+avg
+base64
+between
+bin
+bloom_filter
+bround
+bucket_number
+buildversion
+cardinality_violation
+case
+cast_format
+cbrt
+ceil
+ceiling
+char_length
+character_length
+chr
+coalesce
+collect_list
+collect_set
+compute_bit_vector
+compute_stats
+concat
+concat_ws
+context_ngrams
+conv
+corr
+cos
+count
+covar_pop
+covar_samp
+crc32
+create_union
+cume_dist
+current_authorizer
+current_catalog
+current_database
+current_date
+current_groups
+current_schema
+current_timestamp
+current_user
+date_add
+date_format
+date_sub
+datediff
+datetime_legacy_hybrid_calendar
+day
+dayofmonth
+dayofweek
+decode
+degrees
+dense_rank
+div
+ds_cpc_estimate
+ds_cpc_estimate_bounds
+ds_cpc_sketch
+ds_cpc_stringify
+ds_cpc_union
+ds_cpc_union_f
+ds_freq_frequent_items
+ds_freq_sketch
+ds_freq_union
+ds_hll_estimate
+ds_hll_estimate_bounds
+ds_hll_sketch
+ds_hll_stringify
+ds_hll_union
+ds_hll_union_f
+ds_kll_cdf
+ds_kll_n
+ds_kll_pmf
+ds_kll_quantile
+ds_kll_quantiles
+ds_kll_rank
+ds_kll_sketch
+ds_kll_stringify
+ds_kll_union
+ds_quantile_doubles_cdf
+ds_quantile_doubles_k
+ds_quantile_doubles_n
+ds_quantile_doubles_pmf
+ds_quantile_doubles_quantile
+ds_quantile_doubles_quantiles
+ds_quantile_doubles_sketch
+ds_quantile_doubles_stringify
+ds_quantile_doubles_union
+ds_quantile_strings_cdf
+ds_quantile_strings_k
+ds_quantile_strings_n
+ds_quantile_strings_pmf
+ds_quantile_strings_quantile
+ds_quantile_strings_quantiles
+ds_quantile_strings_sketch
+ds_quantile_strings_stringify
+ds_quantile_strings_union
+ds_theta_estimate
+ds_theta_exclude
+ds_theta_intersect
+ds_theta_intersect_f
+ds_theta_sketch
+ds_theta_union
+ds_theta_union_f
+ds_tuple_arrayofdouble_estimate
+ds_tuple_arrayofdouble_estimate_bounds
+ds_tuple_arrayofdouble_means
+ds_tuple_arrayofdouble_n_retained
+ds_tuple_arrayofdouble_quantiles_sketch
+ds_tuple_arrayofdouble_sketch
+ds_tuple_arrayofdouble_ttest
+ds_tuple_arrayofdouble_union
+ds_tuple_arrayofdouble_values
+ds_tuple_arrayofdouble_variances
+ds_tuple_doublesummary_estimate
+ds_tuple_doublesummary_percentile
+ds_tuple_doublesummary_sketch
+ds_tuple_doublesummary_union
+e
+elt
+encode
+enforce_constraint
+exp
+explode
+extract_union
+factorial
+field
+find_in_set
+first_value
+floor
+floor_day
+floor_hour
+floor_minute
+floor_month
+floor_quarter
+floor_second
+floor_week
+floor_year
+format_number
+from_unixtime
+from_utc_timestamp
+get_json_object
+get_llap_splits
+get_splits
+get_sql_schema
+greatest
+grouping
+hash
+hex
+histogram_numeric
+hour
+if
+in
+in_bloom_filter
+in_file
+index
+initcap
+inline
+instr
+internal_interval
+isfalse
+isnotfalse
+isnotnull
+isnottrue
+isnull
+istrue
+java_method
+json_read
+json_tuple
+lag
+last_day
+last_value
+lcase
+lead
+least
+length
+levenshtein
+like
+likeall
+likeany
+ln
+locate
+log
+log10
+log2
+logged_in_user
+lower
+lpad
+ltrim
+map
+map_keys
+map_values
+mask
+mask_first_n
+mask_hash
+mask_last_n
+mask_show_first_n
+mask_show_last_n
+matchpath
+max
+md5
+mid
+min
+minute
+mod
+month
+months_between
+murmur_hash
+named_struct
+ndv_compute_bit_vector
+negative
+next_day
+ngrams
+noop
+noopstreaming
+noopwithmap
+noopwithmapstreaming
+not
+ntile
+nullif
+nvl
+octet_length
+or
+parse_url
+parse_url_tuple
+percent_rank
+percentile
+percentile_approx
+percentile_cont
+percentile_disc
+pi
+pmod
+posexplode
+position
+positive
+pow
+power
+printf
+quarter
+quote
+radians
+rand
+rank
+reflect
+reflect2
+regexp
+regexp_extract
+regexp_replace
+regr_avgx
+regr_avgy
+regr_count
+regr_intercept
+regr_r2
+regr_slope
+regr_sxx
+regr_sxy
+regr_syy
+repeat
+replace
+replicate_rows
+restrict_information_schema
+reverse
+rlike
+round
+row_number
+rpad
+rtrim
+second
+sentences
+sha
+sha1
+sha2
+shiftleft
+shiftright
+shiftrightunsigned
+sign
+sin
+size
+sort_array
+sort_array_by
+soundex
+space
+split
+split_map_privs
+sq_count_check
+sqrt
+stack
+std
+stddev
+stddev_pop
+stddev_samp
+str_to_map
+struct
+substr
+substring
+substring_index
+sum
+surrogate_key
+tan
+to_date
+to_epoch_milli
+to_unix_timestamp
+to_utc_timestamp
+translate
+trim
+trunc
+tumbling_window
+ucase
+udftoboolean
+udftobyte
+udftodouble
+udftofloat
+udftointeger
+udftolong
+udftoshort
+unbase64
+unhex
+unix_timestamp
+upper
+uuid
+validate_acid_sort_order
+var_pop
+var_samp
+variance
+version
+weekofyear
+when
+width_bucket
+windowingtablefunction
+xpath
+xpath_boolean
+xpath_double
+xpath_float
+xpath_int
+xpath_long
+xpath_number
+xpath_short
+xpath_string
+year
+|
+~
+PREHOOK: query: EXPLAIN SHOW FUNCTIONS LIKE 'c%'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: EXPLAIN SHOW FUNCTIONS LIKE 'c%'
+POSTHOOK: type: SHOWFUNCTIONS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Functions
+      pattern: c%
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW FUNCTIONS LIKE 'c%'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'c%'
+POSTHOOK: type: SHOWFUNCTIONS
+cardinality_violation
+case
+cast_format
+cbrt
+ceil
+ceiling
+char_length
+character_length
+chr
+coalesce
+collect_list
+collect_set
+compute_bit_vector
+compute_stats
+concat
+concat_ws
+context_ngrams
+conv
+corr
+cos
+count
+covar_pop
+covar_samp
+crc32
+create_union
+cume_dist
+current_authorizer
+current_catalog
+current_database
+current_date
+current_groups
+current_schema
+current_timestamp
+current_user
+PREHOOK: query: SHOW FUNCTIONS LIKE '%e'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE '%e'
+POSTHOOK: type: SHOWFUNCTIONS
+assert_true
+case
+coalesce
+current_database
+current_date
+decode
+ds_cpc_estimate
+ds_hll_estimate
+ds_kll_quantile
+ds_quantile_doubles_quantile
+ds_quantile_strings_quantile
+ds_theta_estimate
+ds_theta_exclude
+ds_tuple_arrayofdouble_estimate
+ds_tuple_doublesummary_estimate
+ds_tuple_doublesummary_percentile
+e
+encode
+explode
+first_value
+floor_minute
+from_unixtime
+in_file
+inline
+isfalse
+isnotfalse
+isnottrue
+istrue
+json_tuple
+last_value
+lcase
+like
+locate
+minute
+negative
+ntile
+parse_url_tuple
+percentile
+posexplode
+positive
+quote
+regexp_replace
+regr_slope
+replace
+reverse
+rlike
+size
+space
+to_date
+translate
+ucase
+udftobyte
+udftodouble
+variance
+xpath_double
+PREHOOK: query: SHOW FUNCTIONS LIKE 'log%'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'log%'
+POSTHOOK: type: SHOWFUNCTIONS
+log
+log10
+log2
+logged_in_user
+PREHOOK: query: SHOW FUNCTIONS LIKE '%date%'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE '%date%'
+POSTHOOK: type: SHOWFUNCTIONS
+current_date
+date_add
+date_format
+date_sub
+datediff
+datetime_legacy_hybrid_calendar
+to_date
+validate_acid_sort_order
+PREHOOK: query: SHOW FUNCTIONS LIKE '%%%'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE '%%%'
+POSTHOOK: type: SHOWFUNCTIONS
+!
+!=
+$sum0
+%
+&
+*
++
+-
+/
+<
+<=
+<=>
+<>
+=
+==
+>
+>=
+^
+abs
+acos
+add_months
+aes_decrypt
+aes_encrypt
+and
+approx_distinct
+array
+array_contains
+ascii
+asin
+assert_true
+assert_true_oom
+atan
+avg
+base64
+between
+bin
+bloom_filter
+bround
+bucket_number
+buildversion
+cardinality_violation
+case
+cast_format
+cbrt
+ceil
+ceiling
+char_length
+character_length
+chr
+coalesce
+collect_list
+collect_set
+compute_bit_vector
+compute_stats
+concat
+concat_ws
+context_ngrams
+conv
+corr
+cos
+count
+covar_pop
+covar_samp
+crc32
+create_union
+cume_dist
+current_authorizer
+current_catalog
+current_database
+current_date
+current_groups
+current_schema
+current_timestamp
+current_user
+date_add
+date_format
+date_sub
+datediff
+datetime_legacy_hybrid_calendar
+day
+dayofmonth
+dayofweek
+decode
+degrees
+dense_rank
+div
+ds_cpc_estimate
+ds_cpc_estimate_bounds
+ds_cpc_sketch
+ds_cpc_stringify
+ds_cpc_union
+ds_cpc_union_f
+ds_freq_frequent_items
+ds_freq_sketch
+ds_freq_union
+ds_hll_estimate
+ds_hll_estimate_bounds
+ds_hll_sketch
+ds_hll_stringify
+ds_hll_union
+ds_hll_union_f
+ds_kll_cdf
+ds_kll_n
+ds_kll_pmf
+ds_kll_quantile
+ds_kll_quantiles
+ds_kll_rank
+ds_kll_sketch
+ds_kll_stringify
+ds_kll_union
+ds_quantile_doubles_cdf
+ds_quantile_doubles_k
+ds_quantile_doubles_n
+ds_quantile_doubles_pmf
+ds_quantile_doubles_quantile
+ds_quantile_doubles_quantiles
+ds_quantile_doubles_sketch
+ds_quantile_doubles_stringify
+ds_quantile_doubles_union
+ds_quantile_strings_cdf
+ds_quantile_strings_k
+ds_quantile_strings_n
+ds_quantile_strings_pmf
+ds_quantile_strings_quantile
+ds_quantile_strings_quantiles
+ds_quantile_strings_sketch
+ds_quantile_strings_stringify
+ds_quantile_strings_union
+ds_theta_estimate
+ds_theta_exclude
+ds_theta_intersect
+ds_theta_intersect_f
+ds_theta_sketch
+ds_theta_union
+ds_theta_union_f
+ds_tuple_arrayofdouble_estimate
+ds_tuple_arrayofdouble_estimate_bounds
+ds_tuple_arrayofdouble_means
+ds_tuple_arrayofdouble_n_retained
+ds_tuple_arrayofdouble_quantiles_sketch
+ds_tuple_arrayofdouble_sketch
+ds_tuple_arrayofdouble_ttest
+ds_tuple_arrayofdouble_union
+ds_tuple_arrayofdouble_values
+ds_tuple_arrayofdouble_variances
+ds_tuple_doublesummary_estimate
+ds_tuple_doublesummary_percentile
+ds_tuple_doublesummary_sketch
+ds_tuple_doublesummary_union
+e
+elt
+encode
+enforce_constraint
+exp
+explode
+extract_union
+factorial
+field
+find_in_set
+first_value
+floor
+floor_day
+floor_hour
+floor_minute
+floor_month
+floor_quarter
+floor_second
+floor_week
+floor_year
+format_number
+from_unixtime
+from_utc_timestamp
+get_json_object
+get_llap_splits
+get_splits
+get_sql_schema
+greatest
+grouping
+hash
+hex
+histogram_numeric
+hour
+if
+in
+in_bloom_filter
+in_file
+index
+initcap
+inline
+instr
+internal_interval
+isfalse
+isnotfalse
+isnotnull
+isnottrue
+isnull
+istrue
+java_method
+json_read
+json_tuple
+lag
+last_day
+last_value
+lcase
+lead
+least
+length
+levenshtein
+like
+likeall
+likeany
+ln
+locate
+log
+log10
+log2
+logged_in_user
+lower
+lpad
+ltrim
+map
+map_keys
+map_values
+mask
+mask_first_n
+mask_hash
+mask_last_n
+mask_show_first_n
+mask_show_last_n
+matchpath
+max
+md5
+mid
+min
+minute
+mod
+month
+months_between
+murmur_hash
+named_struct
+ndv_compute_bit_vector
+negative
+next_day
+ngrams
+noop
+noopstreaming
+noopwithmap
+noopwithmapstreaming
+not
+ntile
+nullif
+nvl
+octet_length
+or
+parse_url
+parse_url_tuple
+percent_rank
+percentile
+percentile_approx
+percentile_cont
+percentile_disc
+pi
+pmod
+posexplode
+position
+positive
+pow
+power
+printf
+quarter
+quote
+radians
+rand
+rank
+reflect
+reflect2
+regexp
+regexp_extract
+regexp_replace
+regr_avgx
+regr_avgy
+regr_count
+regr_intercept
+regr_r2
+regr_slope
+regr_sxx
+regr_sxy
+regr_syy
+repeat
+replace
+replicate_rows
+restrict_information_schema
+reverse
+rlike
+round
+row_number
+rpad
+rtrim
+second
+sentences
+sha
+sha1
+sha2
+shiftleft
+shiftright
+shiftrightunsigned
+sign
+sin
+size
+sort_array
+sort_array_by
+soundex
+space
+split
+split_map_privs
+sq_count_check
+sqrt
+stack
+std
+stddev
+stddev_pop
+stddev_samp
+str_to_map
+struct
+substr
+substring
+substring_index
+sum
+surrogate_key
+tan
+to_date
+to_epoch_milli
+to_unix_timestamp
+to_utc_timestamp
+translate
+trim
+trunc
+tumbling_window
+ucase
+udftoboolean
+udftobyte
+udftodouble
+udftofloat
+udftointeger
+udftolong
+udftoshort
+unbase64
+unhex
+unix_timestamp
+upper
+uuid
+validate_acid_sort_order
+var_pop
+var_samp
+variance
+version
+weekofyear
+when
+width_bucket
+windowingtablefunction
+xpath
+xpath_boolean
+xpath_double
+xpath_float
+xpath_int
+xpath_long
+xpath_number
+xpath_short
+xpath_string
+year
+|
+~
+PREHOOK: query: EXPLAIN SHOW FUNCTIONS LIKE 'When'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: EXPLAIN SHOW FUNCTIONS LIKE 'When'
+POSTHOOK: type: SHOWFUNCTIONS
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+  Stage-1 depends on stages: Stage-0
+
+STAGE PLANS:
+  Stage: Stage-0
+    Show Functions
+      pattern: When
+
+  Stage: Stage-1
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SHOW FUNCTIONS LIKE 'When'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'When'
+POSTHOOK: type: SHOWFUNCTIONS
+when
+PREHOOK: query: SHOW FUNCTIONS LIKE 'max|min'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'max|min'
+POSTHOOK: type: SHOWFUNCTIONS
+max
+min
+PREHOOK: query: SHOW FUNCTIONS LIKE 'xpath%|m%'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'xpath%|m%'
+POSTHOOK: type: SHOWFUNCTIONS
+map
+map_keys
+map_values
+mask
+mask_first_n
+mask_hash
+mask_last_n
+mask_show_first_n
+mask_show_last_n
+matchpath
+max
+md5
+mid
+min
+minute
+mod
+month
+months_between
+murmur_hash
+xpath
+xpath_boolean
+xpath_double
+xpath_float
+xpath_int
+xpath_long
+xpath_number
+xpath_short
+xpath_string
+PREHOOK: query: SHOW FUNCTIONS LIKE 'nomatch'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'nomatch'
+POSTHOOK: type: SHOWFUNCTIONS
+PREHOOK: query: SHOW FUNCTIONS LIKE "log"
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE "log"
+POSTHOOK: type: SHOWFUNCTIONS
+log
+PREHOOK: query: SHOW FUNCTIONS LIKE 'log'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'log'
+POSTHOOK: type: SHOWFUNCTIONS
+log
+PREHOOK: query: SHOW FUNCTIONS LIKE `log`
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE `log`
+POSTHOOK: type: SHOWFUNCTIONS
+log
+PREHOOK: query: SHOW FUNCTIONS LIKE 'log%'
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE 'log%'
+POSTHOOK: type: SHOWFUNCTIONS
+log
+log10
+log2
+logged_in_user
+PREHOOK: query: SHOW FUNCTIONS LIKE "log%"
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE "log%"
+POSTHOOK: type: SHOWFUNCTIONS
+log
+log10
+log2
+logged_in_user
+PREHOOK: query: SHOW FUNCTIONS LIKE `log%`
+PREHOOK: type: SHOWFUNCTIONS
+POSTHOOK: query: SHOW FUNCTIONS LIKE `log%`
+POSTHOOK: type: SHOWFUNCTIONS
+log
+log10
+log2
+logged_in_user

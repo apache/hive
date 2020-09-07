@@ -16,23 +16,22 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <modules>
-    <module>metastore-common</module>
-    <module>metastore-server</module>
-    <module>metastore-tools</module>
-  </modules>
   <parent>
     <groupId>org.apache</groupId>
     <artifactId>apache</artifactId>
-    <version>18</version>
-    <relativePath></relativePath>
+    <version>23</version>
   </parent>
-
   <groupId>org.apache.hive</groupId>
   <artifactId>hive-standalone-metastore</artifactId>
   <version>4.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Hive Standalone Metastore</name>
+
+  <modules>
+    <module>metastore-common</module>
+    <module>metastore-server</module>
+    <module>metastore-tools</module>
+  </modules>
 
   <properties>
     <hive.version.shortname>4.0.0</hive.version.shortname>
@@ -40,11 +39,11 @@
 
     <!-- Build properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <maven.repo.local>${settings.localRepository}</maven.repo.local>
-    <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
     <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
     <checkstyle.conf.dir>${basedir}/${standalone.metastore.path.to.root}/checkstyle</checkstyle.conf.dir>
 
@@ -62,21 +61,19 @@
 
     <!-- Plugin versions -->
     <ant.contrib.version>1.0b3</ant.contrib.version>
-    <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
     <maven.checkstyle.plugin.version>2.17</maven.checkstyle.plugin.version>
-    <maven.surefire.version>2.20.1</maven.surefire.version>
+    <maven.surefire.plugin.version>3.0.0-M4</maven.surefire.plugin.version>
 
     <!-- Dependency versions -->
     <antlr.version>3.5.2</antlr.version>
-    <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
-    <commons-dbcp.version>1.4</commons-dbcp.version>
     <commons-lang3.version>3.9</commons-lang3.version>
     <commons-logging.version>1.1.3</commons-logging.version>
-    <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
-    <datanucleus-core.version>4.1.17</datanucleus-core.version>
-    <datanucleus-jdo.version>3.2.0-m3</datanucleus-jdo.version>
-    <datanucleus-rdbms.version>4.1.19</datanucleus-rdbms.version>
+    <commons-dbcp2.version>2.7.0</commons-dbcp2.version>
+    <datanucleus-api-jdo.version>5.2.2</datanucleus-api-jdo.version>
+    <datanucleus-core.version>5.2.2</datanucleus-core.version>
+    <datanucleus-jdo.version>3.2.0-m13</datanucleus-jdo.version>
+    <datanucleus-rdbms.version>5.2.2</datanucleus-rdbms.version>
     <derby.version>10.14.1.0</derby.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
@@ -84,13 +81,15 @@
     <guava.version>19.0</guava.version>
     <hadoop.version>3.1.0</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
-    <jackson.version>2.9.9</jackson.version>
+    <jackson.version>2.10.5</jackson.version>
     <javolution.version>5.5.1</javolution.version>
-    <junit.version>4.11</junit.version>
+    <junit.version>4.13</junit.version>
+    <junit.jupiter.version>5.6.2</junit.jupiter.version>
+    <junit.vintage.version>5.6.2</junit.vintage.version>
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.9.3-1</libthrift.version>
+    <libthrift.version>0.13.0</libthrift.version>
     <log4j2.version>2.12.1</log4j2.version>
-    <mockito-core.version>1.10.19</mockito-core.version>
+    <mockito-core.version>3.3.3</mockito-core.version>
     <orc.version>1.5.1</orc.version>
     <!-- com.google repo will be used except on Aarch64 platform. -->
     <protobuf.group>com.google.protobuf</protobuf.group>
@@ -100,16 +99,18 @@
     <jline.version>2.14.6</jline.version>
     <ST4.version>4.0.4</ST4.version>
     <storage-api.version>2.7.0-SNAPSHOT</storage-api.version>
+    <beanutils.version>1.9.4</beanutils.version>
     <hamcrest.version>1.3</hamcrest.version>
     <curator.version>4.2.0</curator.version>
     <zookeeper.version>3.5.5</zookeeper.version>
     <cron-utils.version>8.1.1</cron-utils.version>
+    <spotbugs.version>4.0.3</spotbugs.version>
+    <caffeine.version>2.8.4</caffeine.version>
 
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
-    <thrift.args>-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp
-      --gen php --gen py --gen rb
+    <thrift.args>-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb
     </thrift.args>
 
   </properties>
@@ -142,19 +143,9 @@
         <version>${protobuf.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.jolbox</groupId>
-        <artifactId>bonecp</artifactId>
-        <version>${bonecp.version}</version>
-      </dependency>
-      <dependency>
         <groupId>com.zaxxer</groupId>
         <artifactId>HikariCP</artifactId>
         <version>${hikaricp.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-dbcp</groupId>
-        <artifactId>commons-dbcp</artifactId>
-        <version>${commons-dbcp.version}</version>
       </dependency>
       <dependency>
         <groupId>io.dropwizard.metrics</groupId>
@@ -250,6 +241,11 @@
         <version>${storage-api.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-dbcp2</artifactId>
+        <version>${commons-dbcp2.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.apache.logging.log4j</groupId>
         <artifactId>log4j-slf4j-impl</artifactId>
         <version>${log4j2.version}</version>
@@ -315,6 +311,11 @@
         <artifactId>cron-utils</artifactId>
         <version>${cron-utils.version}</version>
       </dependency>
+      <dependency>
+        <groupId>com.github.ben-manes.caffeine</groupId>
+        <artifactId>caffeine</artifactId>
+        <version>${caffeine.version}</version>
+      </dependency>
 
       <!-- test scope dependencies -->
 
@@ -328,6 +329,18 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>${junit.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>${junit.jupiter.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.junit.vintage</groupId>
+        <artifactId>junit-vintage-engine</artifactId>
+        <version>${junit.vintage.version}</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -347,14 +360,6 @@
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>${mockito-core.version}</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <!-- Note, this is LGPL.  But we're only using it in a test and not changing it, so I
-        believe we are fine. -->
-        <groupId>org.mariadb.jdbc</groupId>
-        <artifactId>mariadb-java-client</artifactId>
-        <version>2.2.0</version>
         <scope>test</scope>
       </dependency>
       <dependency>
@@ -385,12 +390,10 @@
         <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>${maven.assembly.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.rat</groupId>
           <artifactId>apache-rat-plugin</artifactId>
-          <version>0.10</version>
           <configuration>
             <excludes>
               <exclude>binary-package-licenses/**</exclude>
@@ -415,7 +418,6 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>${maven.surefire.version}</version>
           <configuration>
             <failIfNoTests>false</failIfNoTests>
           </configuration>
@@ -477,6 +479,48 @@
         <arch>aarch64</arch>
       </os>
     </activation>
+    </profile>
+    <profile>
+      <id>spotbugs</id>
+      <build>
+        <plugins>
+          <!-- Execute as: com.github.spotbugs:spotbugs-maven-plugin:4.0.0:spotbugs -->
+          <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <version>4.0.0</version>
+            <dependencies>
+              <!-- Specify the version of spotbugs -->
+              <dependency>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs</artifactId>
+                <version>${spotbugs.version}</version>
+              </dependency>
+            </dependencies>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-maven-plugin</artifactId>
+            <version>4.0.0</version>
+            <configuration>
+              <fork>true</fork>
+              <maxHeap>2048</maxHeap>
+              <jvmArgs>-Djava.awt.headless=true -Xmx2048m -Xms512m</jvmArgs>
+              <excludeFilterFile>${basedir}/${standalone.metastore.path.to.root}/spotbugs/spotbugs-exclude.xml</excludeFilterFile>
+            </configuration>
+          </plugin>
+        </plugins>
+      </reporting>
     </profile>
   </profiles>
 </project>

@@ -104,6 +104,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1_n95
                   filterExpr: dec is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:dec, smallTablePos:1, keyRatio:0.09532888465204957
                   Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -233,7 +234,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)
+                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -526,6 +527,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1_n95
                   filterExpr: dec is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_27_container, bigKeyColName:dec, smallTablePos:1, keyRatio:0.09532888465204957
                   Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -659,7 +661,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)
+                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -720,6 +722,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1_n95
                   filterExpr: dec is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:dec, smallTablePos:1, keyRatio:1.1243680485338725
                   Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -843,7 +846,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)
+                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:
@@ -1136,6 +1139,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1_n95
                   filterExpr: dec is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:dec, smallTablePos:1, keyRatio:1.1243680485338725
                   Statistics: Num rows: 1049 Data size: 117488 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -1264,7 +1268,7 @@ STAGE PLANS:
                 vectorized: true
                 rowBatchContext:
                     dataColumnCount: 2
-                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)
+                    dataColumns: KEY.reducesinkkey0:decimal(4,2), VALUE._col0:decimal(4,0)/DECIMAL_64
                     partitionColumnCount: 0
                     scratchColumnTypeNames: []
             Reduce Operator Tree:

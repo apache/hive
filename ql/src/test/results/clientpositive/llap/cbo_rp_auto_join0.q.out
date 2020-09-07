@@ -1,0 +1,256 @@
+Warning: Shuffle Join MERGEJOIN[16][tables = [a:cbo_t1:cbo_t3, a:cbo_t2:cbo_t3]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain 
+select sum(hash(a.k1,a.v1,a.k2, a.v2))
+from (
+SELECT cbo_t1.key as k1, cbo_t1.value as v1, 
+       cbo_t2.key as k2, cbo_t2.value as v2 FROM 
+  (SELECT * FROM cbo_t3 WHERE cbo_t3.key < 10) cbo_t1 
+    JOIN 
+  (SELECT * FROM cbo_t3 WHERE cbo_t3.key < 10) cbo_t2
+  SORT BY k1, v1, k2, v2
+) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain 
+select sum(hash(a.k1,a.v1,a.k2, a.v2))
+from (
+SELECT cbo_t1.key as k1, cbo_t1.value as v1, 
+       cbo_t2.key as k2, cbo_t2.value as v2 FROM 
+  (SELECT * FROM cbo_t3 WHERE cbo_t3.key < 10) cbo_t1 
+    JOIN 
+  (SELECT * FROM cbo_t3 WHERE cbo_t3.key < 10) cbo_t2
+  SORT BY k1, v1, k2, v2
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 4 (XPROD_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a:cbo_t1:cbo_t3
+                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  Statistics: Num rows: 20 Data size: 3230 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: key, value
+                      Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: key (type: string), value (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: a:cbo_t2:cbo_t3
+                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  Statistics: Num rows: 20 Data size: 3230 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: key, value
+                      Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: key (type: string), value (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: key, value, key0, value0
+                Statistics: Num rows: 36 Data size: 12240 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: hash(key,value,key0,value0) (type: int)
+                  outputColumnNames: $f0
+                  Statistics: Num rows: 36 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: sum($f0)
+                    minReductionHashAggr: 0.9722222
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: $f0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+Warning: Shuffle Join MERGEJOIN[16][tables = [a:cbo_t1:cbo_t3, a:cbo_t2:cbo_t3]] in Stage 'Reducer 2' is a cross product
+PREHOOK: query: explain 
+select sum(hash(a.k1,a.v1,a.k2, a.v2))
+from (
+SELECT cbo_t1.key as k1, cbo_t1.value as v1, 
+       cbo_t2.key as k2, cbo_t2.value as v2 FROM 
+  (SELECT * FROM cbo_t3 WHERE cbo_t3.key < 10) cbo_t1 
+    JOIN 
+  (SELECT * FROM cbo_t3 WHERE cbo_t3.key < 10) cbo_t2
+  SORT BY k1, v1, k2, v2
+) a
+PREHOOK: type: QUERY
+PREHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+POSTHOOK: query: explain 
+select sum(hash(a.k1,a.v1,a.k2, a.v2))
+from (
+SELECT cbo_t1.key as k1, cbo_t1.value as v1, 
+       cbo_t2.key as k2, cbo_t2.value as v2 FROM 
+  (SELECT * FROM cbo_t3 WHERE cbo_t3.key < 10) cbo_t1 
+    JOIN 
+  (SELECT * FROM cbo_t3 WHERE cbo_t3.key < 10) cbo_t2
+  SORT BY k1, v1, k2, v2
+) a
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@cbo_t3
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (XPROD_EDGE), Map 4 (XPROD_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: a:cbo_t1:cbo_t3
+                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  Statistics: Num rows: 20 Data size: 3230 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: key, value
+                      Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: key (type: string), value (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 4 
+            Map Operator Tree:
+                TableScan
+                  alias: a:cbo_t2:cbo_t3
+                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  Statistics: Num rows: 20 Data size: 3230 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+                    Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string)
+                      outputColumnNames: key, value
+                      Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 6 Data size: 1020 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: key (type: string), value (type: string)
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: llap
+            Reduce Operator Tree:
+              Merge Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                keys:
+                  0 
+                  1 
+                outputColumnNames: key, value, key0, value0
+                Statistics: Num rows: 36 Data size: 12240 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: hash(key,value,key0,value0) (type: int)
+                  outputColumnNames: $f0
+                  Statistics: Num rows: 36 Data size: 144 Basic stats: COMPLETE Column stats: COMPLETE
+                  Group By Operator
+                    aggregations: sum($f0)
+                    minReductionHashAggr: 0.9722222
+                    mode: hash
+                    outputColumnNames: _col0
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: bigint)
+        Reducer 3 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                mode: mergepartial
+                outputColumnNames: $f0
+                Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+

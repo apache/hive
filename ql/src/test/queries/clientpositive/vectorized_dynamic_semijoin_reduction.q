@@ -35,6 +35,8 @@ EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a, dsrv_small b, 
 select count(*) from dsrv_big a, dsrv_small b, dsrv_small c where a.key_int = b.key_int and a.key_int = c.key_int;
 
 -- multiple keys
+-- When hive.tez.dynamic.semijoin.reduction.multicolumn is active and applied to the plan vectorized execution cannot be
+-- performed. We plan to address this case in HIVE-23976.
 EXPLAIN VECTORIZATION EXPRESSION select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_int = b.key_int);
 select count(*) from dsrv_big a join dsrv_small b on (a.key_str = b.key_str and a.key_int = b.key_int);
 

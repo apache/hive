@@ -20,11 +20,11 @@ package org.apache.hadoop.hive.ql.parse.repl.dump;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
-import org.apache.hadoop.hive.ql.parse.EximUtil;
-import org.apache.hadoop.hive.ql.parse.EximUtil.ReplPathMapping;
+import org.apache.hadoop.hive.ql.parse.EximUtil.DataCopyPath;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.dump.io.FileOperations;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
@@ -75,10 +75,11 @@ class PartitionExport {
     this.callersSession = SessionState.get();
   }
 
-  List<ReplPathMapping> write(final ReplicationSpec forReplicationSpec, boolean isExportTask)
+  List<DataCopyPath> write(final ReplicationSpec forReplicationSpec, boolean isExportTask,
+                                   FileList fileList, boolean dataCopyAtLoad)
           throws InterruptedException, HiveException {
     List<Future<?>> futures = new LinkedList<>();
-    List<ReplPathMapping> replCopyPathMappings = new LinkedList<>(); //Collections.synchronizedList(new LinkedList<>());
+    List<DataCopyPath> managedTableCopyPaths = new LinkedList<>();
     ExecutorService producer = Executors.newFixedThreadPool(1,
         new ThreadFactoryBuilder().setNameFormat("partition-submitter-thread-%d").build());
     futures.add(producer.submit(() -> {
@@ -115,14 +116,19 @@ class PartitionExport {
         String threadName = Thread.currentThread().getName();
         LOG.debug("Thread: {}, start partition dump {}", threadName, partitionName);
         try {
-          // this the data copy
+          // Data Copy in case of ExportTask or when dataCopyAtLoad is true
           List<Path> dataPathList = Utils.getDataPathList(partition.getDataLocation(),
                   forReplicationSpec, hiveConf);
-          Path rootDataDumpDir = paths.partitionExportDir(partitionName);
+          Path rootDataDumpDir = isExportTask
+                  ? paths.partitionMetadataExportDir(partitionName) : paths.partitionDataExportDir(partitionName);
           new FileOperations(dataPathList, rootDataDumpDir, distCpDoAsUser, hiveConf, mmCtx)
-                  .export(isExportTask);
+                  .export(isExportTask, dataCopyAtLoad);
+          Path dataDumpDir = new Path(paths.dataExportRootDir(), partitionName);
           LOG.debug("Thread: {}, finish partition dump {}", threadName, partitionName);
-          return new ReplPathMapping(partition.getDataLocation(), new Path(rootDataDumpDir, EximUtil.DATA_PATH_NAME));
+          if (!(isExportTask || dataCopyAtLoad)) {
+            fileList.add(new DataCopyPath(forReplicationSpec, partition.getDataLocation(),
+                    dataDumpDir).convertToString());
+          }
         } catch (Exception e) {
           throw new RuntimeException(e.getMessage(), e);
         }
@@ -131,11 +137,7 @@ class PartitionExport {
     consumer.shutdown();
     for (Future<?> future : futures) {
       try {
-        Object retVal =  future.get();
-        if (retVal != null) {
-          ReplPathMapping replPathMapping = (ReplPathMapping)retVal;
-          replCopyPathMappings.add(replPathMapping);
-        }
+        future.get();
       } catch (Exception e) {
         LOG.error("failed", e.getCause());
         throw new HiveException(e.getCause().getMessage(), e.getCause());
@@ -143,6 +145,6 @@ class PartitionExport {
     }
     // may be drive this via configuration as well.
     consumer.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
-    return replCopyPathMappings;
+    return managedTableCopyPaths;
   }
 }

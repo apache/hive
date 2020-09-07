@@ -18,6 +18,11 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import static org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.unescapeIdentifier;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_FUNCTION;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_FUNCTIONDI;
+import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_FUNCTIONSTAR;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,6 +35,9 @@ import java.util.AbstractMap.SimpleEntry;
 
 import org.antlr.runtime.tree.Tree;
 import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.lib.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.AnalyzeRewriteContext;
@@ -676,6 +684,47 @@ public class QBParseInfo {
 
   public boolean hasInsertTables() {
     return this.insertIntoTables.size() > 0 || this.insertOverwriteTables.size() > 0;
+  }
+
+  /**
+   * Check whether all the expressions in the select clause are aggregate function calls.
+   * This method starts iterating through the AST nodes representing the expressions in the select clause stored in
+   * this object. An expression is considered to be an aggregate function call if:
+   * <ul>
+   *   <li>the AST node type is either TOK_FUNCTION, TOK_FUNCTIONDI or TOK_FUNCTIONSTAR</li>
+   *   <li>the first child of the node is the name of the function</li>
+   *   <li>function is registered in Hive</li>
+   *   <li>the registered function with the specified name is a Generic User Defined Aggregate</li>
+   * </ul>
+   * If any of the mentioned criteria fails to match to the current expression this function returns false.
+   * @return true if all the expressions in the select clause are aggregate function calls.
+   * @throws SemanticException - thrown when {@link FunctionRegistry#getFunctionInfo} fails.
+   */
+  public boolean isFullyAggregate() throws SemanticException {
+    for (ASTNode selectClause : destToSelExpr.values()) {
+      for (Node node : selectClause.getChildren()) {
+        ASTNode selexpr = (ASTNode) node;
+        Tree expressionTypeToken = selexpr.getChild(0);
+        int selectExprType = expressionTypeToken.getType();
+        if (selectExprType != TOK_FUNCTION && selectExprType != TOK_FUNCTIONDI && selectExprType != TOK_FUNCTIONSTAR) {
+          return false;
+        }
+
+        if (expressionTypeToken.getChild(0).getType() != HiveParser.Identifier) {
+          return false;
+        }
+        String functionName = unescapeIdentifier(expressionTypeToken.getChild(0).getText());
+        FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo(functionName);
+        if (functionInfo == null) {
+          return false;
+        }
+        if (functionInfo.getGenericUDAFResolver() == null) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 }
 

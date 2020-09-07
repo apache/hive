@@ -25,10 +25,14 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import javax.management.ObjectName;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
+import org.apache.hadoop.hive.llap.ProactiveEviction;
+import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,10 +62,12 @@ import org.apache.hadoop.hive.llap.cache.SerDeLowLevelCacheImpl;
 import org.apache.hadoop.hive.llap.cache.SimpleAllocator;
 import org.apache.hadoop.hive.llap.cache.SimpleBufferManager;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
+import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.io.api.LlapIo;
 import org.apache.hadoop.hive.llap.io.decode.ColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.GenericColumnVectorProducer;
 import org.apache.hadoop.hive.llap.io.decode.OrcColumnVectorProducer;
+import org.apache.hadoop.hive.llap.io.encoded.OrcEncodedDataReader;
 import org.apache.hadoop.hive.llap.io.metadata.MetadataCache;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonIOMetrics;
@@ -75,11 +81,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.metrics2.util.MBeans;
 import org.apache.hive.common.util.FixedSizedObjectPool;
-
-
-
-
-
+import org.apache.orc.impl.OrcTail;
 
 
 import com.google.common.primitives.Ints;
@@ -245,6 +247,26 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     return 0;
   }
 
+  public long evictEntity(LlapDaemonProtocolProtos.EvictEntityRequestProto protoRequest) {
+    if (memoryManager == null || !HiveConf.getBoolVar(daemonConf, ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED)) {
+      return -1;
+    }
+    final ProactiveEviction.Request request = ProactiveEviction.Request.Builder.create()
+        .fromProtoRequest(protoRequest).build();
+    Predicate<LlapCacheableBuffer> predicate = buffer -> request.isTagMatch(buffer.getTag());
+    LOG.debug("Starting proactive eviction.");
+    long evictedBytes = memoryManager.evictEntity(predicate);
+    if (LOG.isDebugEnabled()) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("Evicted ").append(evictedBytes).append(" bytes from LLAP cache buffers that belong to table(s): ");
+      for (String table : request.getEntities().get(request.getSingleDbName()).keySet()) {
+        sb.append(table).append(" ");
+      }
+      LOG.debug(sb.toString());
+    }
+    return evictedBytes;
+  }
+
   @Override
   public InputFormat<NullWritable, VectorizedRowBatch> getInputFormat(
       InputFormat<?, ?> sourceInputFormat, Deserializer sourceSerDe) {
@@ -338,5 +360,11 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     for (LlapIoDebugDump child : debugDumpComponents) {
       child.debugDumpShort(sb);
     }
+  }
+
+  @Override
+  public OrcTail getOrcTailFromCache(Path path, Configuration jobConf, CacheTag tag, Object fileKey)
+      throws IOException {
+    return OrcEncodedDataReader.getOrcTailForPath(path, jobConf, tag, daemonConf, (MetadataCache) fileMetadataCache, fileKey);
   }
 }
