@@ -23,9 +23,13 @@ import com.google.common.collect.Sets;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
+import org.apache.calcite.rex.RexShuttle;
+import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.rex.RexVisitor;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
+import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexCall;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ImpalaRexVisitor.ImpalaInferMappingRexVisitor;
 import org.apache.hadoop.hive.ql.plan.impala.rex.ReferrableNode;
 import org.apache.impala.analysis.Analyzer;
@@ -42,12 +46,14 @@ public class ImpalaConjuncts {
 
   private final List<Expr> impalaPartitionConjuncts;
   private final List<Expr> impalaNonPartitionConjuncts;
+  private final List<Expr> normalizedPartitionConjuncts;
   private final List<RexNode> partitionConjuncts;
   private final List<RexNode> nonPartitionConjuncts;
 
   private ImpalaConjuncts() {
     this.impalaPartitionConjuncts = ImmutableList.of();
     this.impalaNonPartitionConjuncts = ImmutableList.of();
+    this.normalizedPartitionConjuncts = ImmutableList.of();
     this.partitionConjuncts = ImmutableList.of();
     this.nonPartitionConjuncts = ImmutableList.of();
   }
@@ -59,6 +65,7 @@ public class ImpalaConjuncts {
     Preconditions.checkNotNull(existingPartitionConjuncts);
     List<Expr> tmpImpalaPartitionConjuncts = Lists.newArrayList();
     List<Expr> tmpImpalaNonPartitionConjuncts = Lists.newArrayList();
+    List<Expr> tmpNormalizedPartitionConjuncts = Lists.newArrayList();
     List<RexNode> tmpPartitionConjuncts = Lists.newArrayList();
     List<RexNode> tmpNonPartitionConjuncts = Lists.newArrayList();
 
@@ -84,6 +91,12 @@ public class ImpalaConjuncts {
       if (partitionColsIndexes != null && visitor.hasPartitionColsOnly()) {
         tmpImpalaPartitionConjuncts.add(impalaConjunct);
         tmpPartitionConjuncts.add(andOperand);
+        // normalize the operand. If the expression contains a binary expression,
+        // the SlotRef portion needs to be the first parameter
+        // (e.g. 'where 1 <= my_col' --> 'where my_col >= 1')
+        RexNode normalizedAndOperand = normalizeOperand(rexBuilder, andOperand);
+        Expr normalizedImpalaConjunct = normalizedAndOperand.accept(visitor);
+        tmpNormalizedPartitionConjuncts.add(normalizedImpalaConjunct);
       } else {
         tmpImpalaNonPartitionConjuncts.add(impalaConjunct);
         tmpNonPartitionConjuncts.add(andOperand);
@@ -92,6 +105,7 @@ public class ImpalaConjuncts {
 
     this.impalaPartitionConjuncts = ImmutableList.copyOf(tmpImpalaPartitionConjuncts);
     this.impalaNonPartitionConjuncts = ImmutableList.copyOf(tmpImpalaNonPartitionConjuncts);
+    this.normalizedPartitionConjuncts = ImmutableList.copyOf(tmpNormalizedPartitionConjuncts);
     this.partitionConjuncts = ImmutableList.copyOf(tmpPartitionConjuncts);
     this.nonPartitionConjuncts = ImmutableList.copyOf(tmpNonPartitionConjuncts);
   }
@@ -104,6 +118,10 @@ public class ImpalaConjuncts {
     return impalaNonPartitionConjuncts;
   }
 
+  public List<Expr> getNormalizedPartitionConjuncts() {
+    return normalizedPartitionConjuncts;
+  }
+
   public List<RexNode> getPartitionConjuncts() {
     return partitionConjuncts;
   }
@@ -112,7 +130,29 @@ public class ImpalaConjuncts {
     return nonPartitionConjuncts;
   }
 
-  private static void validatePartitionConjuncts(List<RexNode> allConjuncts,
+  /**
+   * Normalize the operand. If the expression contains a binary expression,
+   * the SlotRef portion needs to be the first parameter
+   * (e.g. 'where 1 <= my_col' --> 'where my_col >= 1')
+   */
+  private static RexNode normalizeOperand(RexBuilder rexBuilder, RexNode node) {
+    RexVisitor<RexNode> visitor = new RexShuttle() {
+      @Override
+      public RexNode visitCall(RexCall call) {
+        if (ImpalaRexCall.isBinaryComparison(call.getKind()) &&
+            !RexUtil.containsInputRef(call.getOperands().get(0)) &&
+            RexUtil.containsInputRef(call.getOperands().get(1))) {
+          RexCall invertedCall = (RexCall) RexUtil.invert(rexBuilder, call);
+          call = (invertedCall != null) ? invertedCall : call;
+        }
+        return super.visitCall(call);
+      }
+    };
+
+    return node.accept(visitor);
+  }
+
+  private static void validatePartitionConjuncts(RexBuilder rexBuilder, List<RexNode> allConjuncts,
       List<RexNode> existingPartitionConjuncts) throws HiveException {
     if (existingPartitionConjuncts.isEmpty()) {
       return;
@@ -204,7 +244,7 @@ public class ImpalaConjuncts {
       RexBuilder rexBuilder, Set<Integer> partitionColsIndexes) throws HiveException {
     List<RexNode> andOperands =
         (filterCondition == null) ? Lists.newArrayList() : getConjuncts(filterCondition);
-    validatePartitionConjuncts(andOperands, existingPartitionConjuncts);
+    validatePartitionConjuncts(rexBuilder, andOperands, existingPartitionConjuncts);
     andOperands = removePartitionConjuncts(andOperands, existingPartitionConjuncts);
     return new ImpalaConjuncts(andOperands, existingPartitionConjuncts, analyzer, relNode,
         rexBuilder, partitionColsIndexes);

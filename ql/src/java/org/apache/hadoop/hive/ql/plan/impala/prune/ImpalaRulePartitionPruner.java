@@ -134,7 +134,7 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
 
       List<ImpalaBasicPartition> impalaPartitions = Lists.newArrayList();
       List<Expr> partitionConjuncts =
-          Lists.newArrayList(impalaConjuncts.getImpalaPartitionConjuncts());
+          Lists.newArrayList(impalaConjuncts.getNormalizedPartitionConjuncts());
       org.apache.impala.common.Pair<List<? extends FeFsPartition>, List<Expr>> pair =
           pruner.prunePartitions(analyzer, partitionConjuncts, true);
       // The partitions retrieved go through Impala's code which is of type "FeFsPartition".

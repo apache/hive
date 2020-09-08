@@ -32,10 +32,13 @@ import org.apache.impala.common.AnalysisException;
  * A CastExpr that is already marked as analyzed.
  */
 public class ImpalaCastExpr extends CastExpr {
+  private final Analyzer analyzer;
+
   public ImpalaCastExpr(Analyzer analyzer, Function fn, Type type, Expr param) throws HiveException {
     super(new TypeDef(type), param);
     this.fn_ = fn;
     this.type_ = type;
+    this.analyzer = analyzer;
     try {
       this.analyze(analyzer);
     } catch (AnalysisException e) {
@@ -48,6 +51,7 @@ public class ImpalaCastExpr extends CastExpr {
 
     this.fn_ = other.fn_;
     this.type_ = other.type_;
+    this.analyzer = other.analyzer;
   }
 
   @Override
@@ -60,10 +64,16 @@ public class ImpalaCastExpr extends CastExpr {
   }
 
   /**
-   * We need to override resetAnalysisState so that Impala Analyzer doesn't
-   * attempt to reanalyze this.
+   * We need to override resetAnalysisState so that Impala Analyzer keeps
+   * the Expr in its analyzed state.
    */
   @Override
   protected void resetAnalysisState() {
+    try {
+      super.resetAnalysisState();
+      this.analyze(analyzer);
+    } catch (AnalysisException e) {
+      throw new RuntimeException("Exception reanalyzing expression.", e);
+    }
   }
 }

@@ -29,9 +29,12 @@ import org.apache.impala.common.AnalysisException;
  * A StringLiteral that has most of the analysis done by Calcite.
  */
 public class ImpalaStringLiteral extends StringLiteral {
+  private final Analyzer analyzer;
+
   public ImpalaStringLiteral(Analyzer analyzer, Type type, String value) throws HiveException {
     super(value, type, false);
     try {
+      this.analyzer = analyzer;
       this.analyze(analyzer);
     } catch (AnalysisException e) {
       throw new HiveException("Exception in ImpalaStringLiteral instantiation", e);
@@ -40,6 +43,7 @@ public class ImpalaStringLiteral extends StringLiteral {
 
   public ImpalaStringLiteral(ImpalaStringLiteral other) {
     super(other);
+    this.analyzer = other.analyzer;
   }
 
   @Override
@@ -52,10 +56,16 @@ public class ImpalaStringLiteral extends StringLiteral {
   }
 
   /**
-   * We need to override resetAnalysisState so that Impala Analyzer doesn't
-   * attempt to reanalyze this.
+   * We need to override resetAnalysisState so that Impala Analyzer keeps
+   * the Expr in its analyzed state.
    */
   @Override
   protected void resetAnalysisState() {
+    try {
+      super.resetAnalysisState();
+      this.analyze(analyzer);
+    } catch (AnalysisException e) {
+      throw new RuntimeException("Exception reanalyzing expression.", e);
+    }
   }
 }

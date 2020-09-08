@@ -33,6 +33,8 @@ import java.util.List;
  * A CaseExpr that has most of the analysis done by Calcite.
  */
 public class ImpalaCaseExpr extends CaseExpr {
+  private final Analyzer analyzer;
+
   public ImpalaCaseExpr(Analyzer analyzer, Function fn, List<CaseWhenClause> whenClauses,
       Expr elseExpr, Type retType) throws HiveException {
     // Calcite never has the first parameter 'case' expression filled in.
@@ -40,6 +42,7 @@ public class ImpalaCaseExpr extends CaseExpr {
     try {
       this.fn_ = fn;
       this.type_ = retType;
+      this.analyzer = analyzer;
       this.analyze(analyzer);
     } catch (AnalysisException e) {
       throw new HiveException("Exception in ImpalaCaseExpr instantiation", e);
@@ -50,6 +53,7 @@ public class ImpalaCaseExpr extends CaseExpr {
     super(other);
     this.fn_ = other.fn_;
     this.type_ = other.type_;
+    this.analyzer = other.analyzer;
   }
 
   @Override
@@ -62,10 +66,16 @@ public class ImpalaCaseExpr extends CaseExpr {
   }
 
   /**
-   * We need to override resetAnalysisState so that Impala Analyzer doesn't
-   * attempt to reanalyze this.
+   * We need to override resetAnalysisState so that Impala Analyzer keeps
+   * the Expr in its analyzed state.
    */
   @Override
   protected void resetAnalysisState() {
+    try {
+      super.resetAnalysisState();
+      this.analyze(analyzer);
+    } catch (AnalysisException e) {
+      throw new RuntimeException("Exception reanalyzing expression.", e);
+    }
   }
 }

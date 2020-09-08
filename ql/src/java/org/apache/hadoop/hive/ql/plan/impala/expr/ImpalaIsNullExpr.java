@@ -31,12 +31,15 @@ import org.apache.impala.common.AnalysisException;
  * An IsNullExpr that is already marked as analyzed.
  */
 public class ImpalaIsNullExpr extends IsNullPredicate {
+  private final Analyzer analyzer;
+
   public ImpalaIsNullExpr(Analyzer analyzer, Function fn, Expr expr, boolean isNotNull,
       Type retType) throws HiveException {
     super(expr, isNotNull);
     try {
       this.fn_ = fn;
       this.type_ = retType;
+      this.analyzer = analyzer;
       this.analyze(analyzer);
       this.computeSelectivity();
     } catch (AnalysisException e) {
@@ -48,6 +51,7 @@ public class ImpalaIsNullExpr extends IsNullPredicate {
     super(other);
     this.fn_ = other.fn_;
     this.type_ = other.type_;
+    this.analyzer = other.analyzer;
   }
 
   @Override
@@ -60,10 +64,16 @@ public class ImpalaIsNullExpr extends IsNullPredicate {
   }
 
   /**
-   * We need to override resetAnalysisState so that Impala Analyzer doesn't
-   * attempt to reanalyze this.
+   * We need to override resetAnalysisState so that Impala Analyzer keeps
+   * the Expr in its analyzed state.
    */
   @Override
   protected void resetAnalysisState() {
+    try {
+      super.resetAnalysisState();
+      this.analyze(analyzer);
+    } catch (AnalysisException e) {
+      throw new RuntimeException("Exception reanalyzing expression.", e);
+    }
   }
 }

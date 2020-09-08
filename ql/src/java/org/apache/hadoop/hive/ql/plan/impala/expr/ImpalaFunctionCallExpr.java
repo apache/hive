@@ -37,12 +37,15 @@ import java.util.List;
  */
 public class ImpalaFunctionCallExpr extends FunctionCallExpr {
 
+  private final Analyzer analyzer;
+
   private final float addedCost;
 
   // c'tor that takes an explicit FunctionParams argument
   public ImpalaFunctionCallExpr(Analyzer analyzer, Function fn, FunctionParams funcParams,
       RexCall rexCall, Type retType) throws HiveException {
     super(fn.getFunctionName(), funcParams);
+    this.analyzer = analyzer;
     this.addedCost = getFunctionCallCost(rexCall);
     init(analyzer, fn, rexCall, retType);
   }
@@ -52,6 +55,7 @@ public class ImpalaFunctionCallExpr extends FunctionCallExpr {
       RexCall rexCall, Type retType) throws HiveException {
     super(fn.getFunctionName(), params);
     this.addedCost = getFunctionCallCost(rexCall);
+    this.analyzer = analyzer;
     init(analyzer, fn, rexCall, retType);
   }
 
@@ -69,6 +73,7 @@ public class ImpalaFunctionCallExpr extends FunctionCallExpr {
   public ImpalaFunctionCallExpr(ImpalaFunctionCallExpr other) {
     super(other);
     this.addedCost = other.addedCost;
+    this.analyzer = other.analyzer;
   }
 
   @Override
@@ -103,11 +108,22 @@ public class ImpalaFunctionCallExpr extends FunctionCallExpr {
   public Expr clone() { return new ImpalaFunctionCallExpr(this); }
 
   /**
-   * We need to override resetAnalysisState so that Impala Analyzer doesn't
-   * attempt to reanalyze this.
+   * We need to override resetAnalysisState so that Impala Analyzer keeps
+   * the Expr in its analyzed state.
    */
   @Override
   public void resetAnalysisState() {
+    try {
+      // The parent FunctionCallExpr sets the fn_ to null and sets it back again
+      // in analysisImpl.  Since we override analysisImpl, we save the Function here
+      // before resetting and set it again.
+      Function savedFunction = fn_;
+      super.resetAnalysisState();
+      fn_ = savedFunction;
+      this.analyze(analyzer);
+    } catch (AnalysisException e) {
+      throw new RuntimeException("Exception reanalyzing expression.", e);
+    }
   }
 
   private boolean isBinaryArithmetic(SqlKind sqlKind) {

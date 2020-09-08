@@ -30,8 +30,11 @@ import org.apache.impala.common.AnalysisException;
  * A NullLiteral that is already marked as analyzed.
  */
 public class ImpalaNullLiteral extends NullLiteral {
+  private final Analyzer analyzer;
+
   public ImpalaNullLiteral(Analyzer analyzer, Type type) throws HiveException {
     try {
+      this.analyzer = analyzer;
       this.analyze(analyzer);
     } catch (AnalysisException e) {
       throw new HiveException("Exception in ImpalaNullLiteral instantiation", e);
@@ -41,6 +44,7 @@ public class ImpalaNullLiteral extends NullLiteral {
 
   public ImpalaNullLiteral(ImpalaNullLiteral other) {
     super(other);
+    this.analyzer = other.analyzer;
   }
 
   @Override
@@ -53,12 +57,20 @@ public class ImpalaNullLiteral extends NullLiteral {
   }
 
   /**
-   * We need to override resetAnalysisState so that Impala Analyzer doesn't
-   * We override the resetAnalysisState so that Impala Analyzer doesn't
-   * attempt to reanalyze this.
+   * We need to override resetAnalysisState so that Impala Analyzer keeps
+   * the Expr in its analyzed state.
    */
   @Override
   protected void resetAnalysisState() {
+    try {
+      // Need to save the type before resettign.
+      Type savedType = type_;
+      super.resetAnalysisState();
+      this.analyze(analyzer);
+      uncheckedCastTo(savedType);
+    } catch (AnalysisException e) {
+      throw new RuntimeException("Exception reanalyzing expression.", e);
+    }
   }
 
   /**

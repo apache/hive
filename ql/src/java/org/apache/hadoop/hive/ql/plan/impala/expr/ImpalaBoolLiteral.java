@@ -28,9 +28,12 @@ import org.apache.impala.common.AnalysisException;
  * A BoolLiteral that has most of the analysis done by Calcite.
  */
 public class ImpalaBoolLiteral extends BoolLiteral {
+  private final Analyzer analyzer;
+
   public ImpalaBoolLiteral(Analyzer analyzer, boolean value) throws HiveException {
     super(value);
     try {
+      this.analyzer = analyzer;
       this.analyze(analyzer);
     } catch (AnalysisException e) {
       throw new HiveException("Exception in ImpalaBoolLiteral instantiation", e);
@@ -39,6 +42,7 @@ public class ImpalaBoolLiteral extends BoolLiteral {
 
   public ImpalaBoolLiteral(ImpalaBoolLiteral other) {
     super(other);
+    this.analyzer = other.analyzer;
   }
 
   @Override
@@ -51,10 +55,16 @@ public class ImpalaBoolLiteral extends BoolLiteral {
   }
 
   /**
-   * We need to override resetAnalysisState so that Impala Analyzer doesn't
-   * attempt to reanalyze this.
+   * We need to override resetAnalysisState so that Impala Analyzer keeps
+   * the Expr in its analyzed state.
    */
   @Override
   protected void resetAnalysisState() {
+    try {
+      super.resetAnalysisState();
+      this.analyze(analyzer);
+    } catch (AnalysisException e) {
+      throw new RuntimeException("Exception reanalyzing expression.", e);
+    }
   }
 }

@@ -30,12 +30,15 @@ import org.apache.impala.common.AnalysisException;
  * An ImpalaCompundExpr that has most of the analysis done by Calcite.
  */
 public class ImpalaCompoundExpr extends CompoundPredicate {
+  private final Analyzer analyzer;
+
   public ImpalaCompoundExpr (Analyzer analyzer, Function fn, Operator op, Expr e1, Expr e2,
       Type retType) throws HiveException {
     super(op, e1, e2);
     try {
       this.fn_ = fn;
       this.type_ = retType;
+      this.analyzer = analyzer;
       this.analyze(analyzer);
       this.computeSelectivity();
     } catch (AnalysisException e) {
@@ -47,6 +50,7 @@ public class ImpalaCompoundExpr extends CompoundPredicate {
     super(other);
     this.fn_ = other.fn_;
     this.type_ = other.type_;
+    this.analyzer = other.analyzer;
   }
 
   @Override
@@ -59,10 +63,16 @@ public class ImpalaCompoundExpr extends CompoundPredicate {
   }
 
   /**
-   * We need to override the resetAnalysisState so that Impala Analyzer doesn't
-   * attempt to reanalyze this.
+   * We need to override resetAnalysisState so that Impala Analyzer keeps
+   * the Expr in its analyzed state.
    */
   @Override
   protected void resetAnalysisState() {
+    try {
+      super.resetAnalysisState();
+      this.analyze(analyzer);
+    } catch (AnalysisException e) {
+      throw new RuntimeException("Exception reanalyzing expression.", e);
+    }
   }
 }

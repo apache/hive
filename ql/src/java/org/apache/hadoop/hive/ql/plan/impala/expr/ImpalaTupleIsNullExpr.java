@@ -28,9 +28,12 @@ import org.apache.impala.common.AnalysisException;
 import java.util.List;
 
 public class ImpalaTupleIsNullExpr extends TupleIsNullPredicate {
+  private final Analyzer analyzer;
+
   public ImpalaTupleIsNullExpr(List<TupleId> tupleIds, Analyzer analyzer) throws HiveException {
     super(tupleIds);
     try {
+      this.analyzer = analyzer;
       this.analyze(analyzer);
     } catch (AnalysisException e) {
       throw new HiveException("Exception in ImpalaTupleIsNullExpr instantiation", e);
@@ -41,6 +44,7 @@ public class ImpalaTupleIsNullExpr extends TupleIsNullPredicate {
     super(other);
     this.fn_ = other.fn_;
     this.type_ = other.type_;
+    this.analyzer = other.analyzer;
   }
 
   @Override
@@ -49,10 +53,16 @@ public class ImpalaTupleIsNullExpr extends TupleIsNullPredicate {
   }
 
   /**
-   * We need to override the resetAnalysisState so that Impala Analyzer doesn't
-   * attempt to reanalyze this.
+   * We need to override resetAnalysisState so that Impala Analyzer keeps
+   * the Expr in its analyzed state.
    */
   @Override
   protected void resetAnalysisState() {
+    try {
+      super.resetAnalysisState();
+      this.analyze(analyzer);
+    } catch (AnalysisException e) {
+      throw new RuntimeException("Exception reanalyzing expression.", e);
+    }
   }
 }

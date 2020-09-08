@@ -30,12 +30,15 @@ import org.apache.impala.common.AnalysisException;
  * A TimestampArithmeticExpr that has most of the analysis done by Calcite.
  */
 public class ImpalaTimestampArithmeticExpr extends TimestampArithmeticExpr {
+  private final Analyzer analyzer;
+
   public ImpalaTimestampArithmeticExpr(Analyzer analyzer, Function fn, Expr e1, Expr e2,
       String timeUnitIdent, Type retType) throws HiveException {
     super(fn.getName(), e1, e2, timeUnitIdent);
     try {
       this.fn_ = fn;
       this.type_ = retType;
+      this.analyzer = analyzer;
       this.analyze(analyzer);
     } catch (AnalysisException e) {
       throw new HiveException("Exception in ImpalaTimestampArithmeticExpr instantiation", e);
@@ -46,6 +49,7 @@ public class ImpalaTimestampArithmeticExpr extends TimestampArithmeticExpr {
     super(other);
     this.fn_ = other.fn_;
     this.type_ = other.type_;
+    this.analyzer = other.analyzer;
   }
 
   @Override
@@ -58,10 +62,16 @@ public class ImpalaTimestampArithmeticExpr extends TimestampArithmeticExpr {
   }
 
   /**
-   * We need to override resetAnalysisState so that Impala Analyzer doesn't
-   * attempt to reanalyze this.
+   * We need to override resetAnalysisState so that Impala Analyzer keeps
+   * the Expr in its analyzed state.
    */
   @Override
   protected void resetAnalysisState() {
+    try {
+      super.resetAnalysisState();
+      this.analyze(analyzer);
+    } catch (AnalysisException e) {
+      throw new RuntimeException("Exception reanalyzing expression.", e);
+    }
   }
 }

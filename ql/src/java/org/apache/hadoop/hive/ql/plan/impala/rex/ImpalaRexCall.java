@@ -376,7 +376,7 @@ public class ImpalaRexCall {
     return createCompoundExpr(analyzer, op, fnCompound, impalaExprList, retType);
   }
 
-  private static boolean isBinaryComparison(SqlKind sqlKind) {
+  public static boolean isBinaryComparison(SqlKind sqlKind) {
     switch (sqlKind) {
       case EQUALS:
       case NOT_EQUALS:
