@@ -70,7 +70,7 @@ public class TestParseDriverIntervals {
         return n;
       }
     }
-    ArrayList<Node> children = n.getChildren();
+    List<Node> children = n.getChildren();
     if (children != null) {
       for (Node c : children) {
         ASTNode r = findFunctionNode((ASTNode) c);

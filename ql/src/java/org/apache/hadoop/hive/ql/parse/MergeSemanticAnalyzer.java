@@ -593,7 +593,7 @@ public class MergeSemanticAnalyzer extends RewriteSemanticAnalyzer {
     assert whenClauseOperation.getType() == HiveParser.TOK_INSERT;
 
     // identify the node that contains the values to insert and the optional column list node
-    ArrayList<Node> children = whenClauseOperation.getChildren();
+    List<Node> children = whenClauseOperation.getChildren();
     ASTNode valuesNode =
         (ASTNode)children.stream().filter(n -> ((ASTNode)n).getType() == HiveParser.TOK_FUNCTION).findFirst().get();
     ASTNode columnListNode =

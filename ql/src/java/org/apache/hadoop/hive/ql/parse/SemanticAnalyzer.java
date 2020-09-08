@@ -14601,7 +14601,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      ArrayList childrenList = next.getChildren();
+      List<Node> childrenList = next.getChildren();
       for (int i = childrenList.size() - 1; i >= 0; i--) {
         stack.push((ASTNode)childrenList.get(i));
       }
