@@ -331,7 +331,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
       return false;
     }
     RelMetadataQuery mq = input.getCluster().getMetadataQuery();
-    if (mq.areColumnsUnique(input, groups)) {
+    if (mq != null && mq.areColumnsUnique(input, groups)) {
       return true;
     }
     if (input instanceof Join) {
