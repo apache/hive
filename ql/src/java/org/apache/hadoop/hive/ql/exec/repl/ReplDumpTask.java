@@ -421,6 +421,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   /**
+   * Decide whether to dump materialized views.
+   */
+  private boolean isMaterializedViewsReplEnabled() {
+    return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_MATERIALIZED_VIEWS);
+  }
+
+  /**
    * Decide whether to dump ACID tables.
    * @param tableName - Name of ACID table to be replicated
    * @return true if need to bootstrap dump ACID table and false if not.
@@ -543,6 +550,23 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (ev.getEventId() <= resumeFrom) {
         continue;
       }
+
+      //disable materialized-view replication if not configured
+      if(!isMaterializedViewsReplEnabled()){
+        String tblName = ev.getTableName();
+        if(tblName != null) {
+          try {
+            Table table = hiveDb.getTable(dbName, tblName);
+            if (table != null && TableType.MATERIALIZED_VIEW.equals(table.getTableType())){
+              LOG.info("Attempt to dump materialized view : " + tblName);
+              continue;
+            }
+          } catch (InvalidTableException te) {
+            LOG.debug(te.getMessage());
+          }
+        }
+      }
+
       Path evRoot = new Path(dumpRoot, String.valueOf(lastReplId));
       dumpEvent(ev, evRoot, dumpRoot, cmRoot, hiveDb);
       Utils.writeOutput(String.valueOf(lastReplId), ackFile, conf);
@@ -826,12 +850,19 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         Exception caught = null;
         try (Writer writer = new Writer(dbRoot, conf)) {
           for (String tblName : Utils.matchesTbl(hiveDb, dbName, work.replScope)) {
-            LOG.debug("Dumping table: " + tblName + " to db root " + dbRoot.toUri());
             Table table = null;
-
             try {
               HiveWrapper.Tuple<Table> tableTuple = new HiveWrapper(hiveDb, dbName).table(tblName, conf);
               table = tableTuple != null ? tableTuple.object : null;
+
+              //disable materialized-view replication if not configured
+              if(tableTuple != null && !isMaterializedViewsReplEnabled()
+                      && TableType.MATERIALIZED_VIEW.equals(tableTuple.object.getTableType())){
+                LOG.info("Attempt to dump materialized view : " + tblName);
+                continue;
+              }
+
+              LOG.debug("Dumping table: " + tblName + " to db root " + dbRoot.toUri());
               if (shouldDumpExternalTableLocation()
                       && TableType.EXTERNAL_TABLE.equals(tableTuple.object.getTableType())) {
                 LOG.debug("Adding table {} to external tables list", tblName);
