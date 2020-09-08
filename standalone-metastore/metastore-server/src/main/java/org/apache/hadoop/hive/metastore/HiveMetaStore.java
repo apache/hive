@@ -881,6 +881,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ms.getDatabase(DEFAULT_CATALOG_NAME, DEFAULT_DATABASE_NAME);
       } catch (NoSuchObjectException e) {
+        LOG.info("Started creating a default database with name: "+DEFAULT_DATABASE_NAME);
         Database db = new Database(DEFAULT_DATABASE_NAME, DEFAULT_DATABASE_COMMENT,
             wh.getDefaultDatabasePath(DEFAULT_DATABASE_NAME, true).toString(), null);
         db.setOwnerName(PUBLIC);
@@ -889,6 +890,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         long time = System.currentTimeMillis() / 1000;
         db.setCreateTime((int) time);
         ms.createDatabase(db);
+        LOG.info("Successfully created a default database with name: "+DEFAULT_DATABASE_NAME);
       }
     }
 
