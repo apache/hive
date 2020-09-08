@@ -2596,9 +2596,13 @@ public class HiveConf extends Configuration {
             + "to be used when reading the large table data. This will result less CPU cycles spent for decoding unused data."),
 
     // CTE
-    HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", -1,
+    HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", 3,
         "If the number of references to a CTE clause exceeds this threshold, Hive will materialize it\n" +
         "before executing the main query block. -1 will disable this feature."),
+    HIVE_CTE_MATERIALIZE_FULL_AGGREGATE_ONLY("hive.optimize.cte.materialize.full.aggregate.only", true,
+        "If enabled only CTEs with aggregate output will be pre-materialized. All CTEs otherwise." +
+            "Also the number of references to a CTE clause must exceeds the value of " +
+            "hive.optimize.cte.materialize.threshold"),
 
     HIVE_OPTIMIZE_BI_ENABLED("hive.optimize.bi.enabled", false,
         "Enables query rewrites based on approximate functions(sketches)."),
@@ -4897,6 +4901,32 @@ public class HiveConf extends Configuration {
     LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR("hive.llap.external.client.use.hybrid.calendar",
         false,
         "Whether to use hybrid calendar for parsing of data/timestamps."),
+
+    // ====== confs for llap-external-client cloud deployment ======
+    LLAP_EXTERNAL_CLIENT_CLOUD_DEPLOYMENT_SETUP_ENABLED(
+        "hive.llap.external.client.cloud.deployment.setup.enabled", false,
+        "Tells whether to enable additional RPC port, auth mechanism for llap external clients. This is meant"
+            + "for cloud based deployments. When true, it has following effects - \n"
+            + "1. Enables an extra RPC port on LLAP daemon to accept fragments from external clients. See"
+            + "hive.llap.external.client.cloud.rpc.port\n"
+            + "2. Uses external hostnames of LLAP in splits, so that clients can submit from outside of cloud. "
+            + "Env variable PUBLIC_HOSTNAME should be available on LLAP machines.\n"
+            + "3. Uses JWT based authentication for splits to be validated at LLAP. See "
+            + "hive.llap.external.client.cloud.jwt.shared.secret.provider"),
+    LLAP_EXTERNAL_CLIENT_CLOUD_RPC_PORT("hive.llap.external.client.cloud.rpc.port", 30004,
+        "The LLAP daemon RPC port for external clients when llap is running in cloud environment."),
+    LLAP_EXTERNAL_CLIENT_CLOUD_OUTPUT_SERVICE_PORT("hive.llap.external.client.cloud.output.service.port", 30005,
+                "LLAP output service port when llap is running in cloud environment"),
+    LLAP_EXTERNAL_CLIENT_CLOUD_JWT_SHARED_SECRET_PROVIDER(
+        "hive.llap.external.client.cloud.jwt.shared.secret.provider",
+        "org.apache.hadoop.hive.llap.security.DefaultJwtSharedSecretProvider",
+        "Shared secret provider to be used to sign JWT"),
+    LLAP_EXTERNAL_CLIENT_CLOUD_JWT_SHARED_SECRET("hive.llap.external.client.cloud.jwt.shared.secret",
+        "",
+        "The LLAP daemon RPC port for external clients when llap is running in cloud environment. "
+            + "Length of the secret should be >= 32 bytes"),
+    // ====== confs for llap-external-client cloud deployment ======
+
     LLAP_ENABLE_GRACE_JOIN_IN_LLAP("hive.llap.enable.grace.join.in.llap", false,
         "Override if grace join should be allowed to run in llap."),
 
