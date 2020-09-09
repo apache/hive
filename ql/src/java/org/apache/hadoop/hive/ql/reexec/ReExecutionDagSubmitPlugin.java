@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.reexec;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -36,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public class ReExecutionDagSubmitPlugin implements IReExecutionPlugin {
 
   private static final Logger LOG = LoggerFactory.getLogger(ReExecutionDagSubmitPlugin.class);
-  private int maxExecutions = 1;
+
   class LocalHook implements ExecuteWithHookContext {
 
     @Override
@@ -56,7 +55,6 @@ public class ReExecutionDagSubmitPlugin implements IReExecutionPlugin {
   @Override
   public void initialize(Driver driver) {
     driver.getHookRunner().addOnFailureHook(new LocalHook());
-    maxExecutions = 1 + driver.getConf().getIntVar(HiveConf.ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
   }
 
   private boolean retryPossible;
@@ -67,7 +65,7 @@ public class ReExecutionDagSubmitPlugin implements IReExecutionPlugin {
 
   @Override
   public boolean shouldReExecute(int executionNum, PlanMapper pm1, PlanMapper pm2) {
-    return (executionNum < maxExecutions) && retryPossible;
+    return retryPossible;
   }
 
   @Override
@@ -76,7 +74,7 @@ public class ReExecutionDagSubmitPlugin implements IReExecutionPlugin {
 
   @Override
   public boolean shouldReExecute(int executionNum) {
-    return (executionNum < maxExecutions) && retryPossible;
+    return retryPossible;
   }
 
   @Override

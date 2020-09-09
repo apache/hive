@@ -18824,6 +18824,10 @@ class CommitTxnRequest {
    * @var \metastore\CommitTxnKeyValue
    */
   public $keyValue = null;
+  /**
+   * @var bool
+   */
+  public $exclWriteEnabled = true;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -18855,6 +18859,10 @@ class CommitTxnRequest {
           'type' => TType::STRUCT,
           'class' => '\metastore\CommitTxnKeyValue',
           ),
+        6 => array(
+          'var' => 'exclWriteEnabled',
+          'type' => TType::BOOL,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -18872,6 +18880,9 @@ class CommitTxnRequest {
       }
       if (isset($vals['keyValue'])) {
         $this->keyValue = $vals['keyValue'];
+      }
+      if (isset($vals['exclWriteEnabled'])) {
+        $this->exclWriteEnabled = $vals['exclWriteEnabled'];
       }
     }
   }
@@ -18943,6 +18954,13 @@ class CommitTxnRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 6:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->exclWriteEnabled);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -18997,6 +19015,11 @@ class CommitTxnRequest {
       }
       $xfer += $output->writeFieldBegin('keyValue', TType::STRUCT, 5);
       $xfer += $this->keyValue->write($output);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->exclWriteEnabled !== null) {
+      $xfer += $output->writeFieldBegin('exclWriteEnabled', TType::BOOL, 6);
+      $xfer += $output->writeBool($this->exclWriteEnabled);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();
@@ -38679,7 +38702,7 @@ final class Constant extends \Thrift\Type\TConstant {
   }
 
   static protected function init_HMS_API() {
-    return "1.2.1";
+    return "1.2.2";
   }
 
   static protected function init_ACCESSTYPE_NONE() {

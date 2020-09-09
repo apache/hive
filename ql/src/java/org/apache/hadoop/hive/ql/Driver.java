@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -61,6 +62,7 @@ import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -86,6 +88,10 @@ public class Driver implements IDriver {
   private static final String CLASS_NAME = Driver.class.getName();
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final LogHelper CONSOLE = new LogHelper(LOG);
+
+  private static final String SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED =
+      "snapshot was outdated when locks were acquired";
+
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
   private Runnable shutdownRunner = null;
 
@@ -307,6 +313,36 @@ public class Driver implements IDriver {
     return driverContext.getFetchTask();
   }
 
+  private void setWriteIdForAcidFileSinks() throws SemanticException, LockException {
+    // Set the table write id in all of the acid file sinks
+    if (!driverContext.getPlan().getAcidSinks().isEmpty()) {
+      List<FileSinkDesc> acidSinks = new ArrayList<>(driverContext.getPlan().getAcidSinks());
+      //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
+      //so this makes (file name -> data) mapping stable
+      acidSinks.sort(Comparator.comparing(FileSinkDesc::getDirName));
+      for (FileSinkDesc desc : acidSinks) {
+        TableDesc tableInfo = desc.getTableInfo();
+        final TableName tn = HiveTableName.ofNullable(tableInfo.getTableName());
+        long writeId = driverContext.getTxnManager().getTableWriteId(tn.getDb(), tn.getTable());
+        desc.setTableWriteId(writeId);
+
+        /**
+         * it's possible to have > 1 FileSink writing to the same table/partition
+         * e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
+         * Insert ... Select ... Union All Select ... using
+         * {@link org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator#UNION_SUDBIR_PREFIX}
+         */
+        desc.setStatementId(driverContext.getTxnManager().getStmtIdAndIncrement());
+        String unionAllSubdir = "/" + AbstractFileMergeOperator.UNION_SUDBIR_PREFIX;
+        if(desc.getInsertOverwrite() && desc.getDirName().toString().contains(unionAllSubdir) &&
+          desc.isFullAcidTable()) {
+          throw new UnsupportedOperationException("QueryId=" + driverContext.getPlan().getQueryId() +
+            " is not supported due to OVERWRITE and UNION ALL.  Please use truncate + insert");
+        }
+      }
+    }
+  }
+
   /**
    * Acquire read and write locks needed by the statement. The list of objects to be locked are
    * obtained from the inputs and outputs populated by the compiler.  Locking strategy depends on
@@ -329,42 +365,13 @@ public class Driver implements IDriver {
     }
     try {
       String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
-
-      // Set the table write id in all of the acid file sinks
-      if (!driverContext.getPlan().getAcidSinks().isEmpty()) {
-        List<FileSinkDesc> acidSinks = new ArrayList<>(driverContext.getPlan().getAcidSinks());
-        //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
-        //so this makes (file name -> data) mapping stable
-        acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) ->
-          fsd1.getDirName().compareTo(fsd2.getDirName()));
-        for (FileSinkDesc desc : acidSinks) {
-          TableDesc tableInfo = desc.getTableInfo();
-          final TableName tn = HiveTableName.ofNullable(tableInfo.getTableName());
-          long writeId = driverContext.getTxnManager().getTableWriteId(tn.getDb(), tn.getTable());
-          desc.setTableWriteId(writeId);
-
-          /**
-           * it's possible to have > 1 FileSink writing to the same table/partition
-           * e.g. Merge stmt, multi-insert stmt when mixing DP and SP writes
-           * Insert ... Select ... Union All Select ... using
-           * {@link org.apache.hadoop.hive.ql.exec.AbstractFileMergeOperator#UNION_SUDBIR_PREFIX}
-           */
-          desc.setStatementId(driverContext.getTxnManager().getStmtIdAndIncrement());
-          String unionAllSubdir = "/" + AbstractFileMergeOperator.UNION_SUDBIR_PREFIX;
-          if(desc.getInsertOverwrite() && desc.getDirName().toString().contains(unionAllSubdir) &&
-              desc.isFullAcidTable()) {
-            throw new UnsupportedOperationException("QueryId=" + driverContext.getPlan().getQueryId() +
-                " is not supported due to OVERWRITE and UNION ALL.  Please use truncate + insert");
-          }
-        }
-      }
+      setWriteIdForAcidFileSinks();
 
       if (driverContext.getPlan().getAcidAnalyzeTable() != null) {
         // Allocate write ID for the table being analyzed.
         Table t = driverContext.getPlan().getAcidAnalyzeTable().getTable();
         driverContext.getTxnManager().getTableWriteId(t.getDbName(), t.getTableName());
       }
-
 
       DDLDescWithWriteId acidDdlDesc = driverContext.getPlan().getAcidDdlDesc();
       boolean hasAcidDdl = acidDdlDesc != null && acidDdlDesc.mayNeedWriteId();
@@ -673,45 +680,50 @@ public class Driver implements IDriver {
 
       lockAndRespond();
 
+      int retryShapshotCnt = 0;
+      int maxRetrySnapshotCnt = HiveConf.getIntVar(driverContext.getConf(),
+        HiveConf.ConfVars.HIVE_TXN_MAX_RETRYSNAPSHOT_COUNT);
+
       try {
-        if (!validTxnManager.isValidTxnListState()) {
-          LOG.info("Compiling after acquiring locks");
-          // Snapshot was outdated when locks were acquired, hence regenerate context,
-          // txn list and retry
+        while (!validTxnManager.isValidTxnListState() && ++retryShapshotCnt <= maxRetrySnapshotCnt) {
+          LOG.info("Re-compiling after acquiring locks, attempt #" + retryShapshotCnt);
+          // Snapshot was outdated when locks were acquired, hence regenerate context, txn list and retry.
           // TODO: Lock acquisition should be moved before analyze, this is a bit hackish.
-          // Currently, we acquire a snapshot, we compile the query wrt that snapshot,
-          // and then, we acquire locks. If snapshot is still valid, we continue as usual.
+          // Currently, we acquire a snapshot, compile the query with that snapshot, and then - acquire locks.
+          // If snapshot is still valid, we continue as usual.
           // But if snapshot is not valid, we recompile the query.
           if (driverContext.isOutdatedTxn()) {
+            LOG.info("Snapshot is outdated, re-initiating transaction ...");
             driverContext.getTxnManager().rollbackTxn();
 
             String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
             driverContext.getTxnManager().openTxn(context, userFromUGI, driverContext.getTxnType());
             lockAndRespond();
           }
+
           driverContext.setRetrial(true);
           driverContext.getBackupContext().addSubContext(context);
           driverContext.getBackupContext().setHiveLocks(context.getHiveLocks());
           context = driverContext.getBackupContext();
+
           driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
             driverContext.getTxnManager().getValidTxns().toString());
+
           if (driverContext.getPlan().hasAcidResourcesInQuery()) {
+            compileInternal(context.getCmd(), true);
             validTxnManager.recordValidWriteIds();
+            setWriteIdForAcidFileSinks();
           }
+          // Since we're reusing the compiled plan, we need to update its start time for current run
+          driverContext.getPlan().setQueryStartTime(driverContext.getQueryDisplay().getQueryStartTime());
+        }
 
-          if (!alreadyCompiled) {
-            // compile internal will automatically reset the perf logger
-            compileInternal(command, true);
-          } else {
-            // Since we're reusing the compiled plan, we need to update its start time for current run
-            driverContext.getPlan().setQueryStartTime(driverContext.getQueryDisplay().getQueryStartTime());
-          }
-
-          if (!validTxnManager.isValidTxnListState()) {
-            // Throw exception
-            throw handleHiveException(new HiveException("Operation could not be executed"), 14);
-          }
-
+        if (retryShapshotCnt > maxRetrySnapshotCnt) {
+          // Throw exception
+          HiveException e = new HiveException(
+              "Operation could not be executed, " + SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + ".");
+          throw handleHiveException(e, 14);
+        }  else if (retryShapshotCnt != 0) {
           //Reset the PerfLogger
           perfLogger = SessionState.getPerfLogger(true);
 
@@ -720,7 +732,7 @@ public class Driver implements IDriver {
           // same instance of Driver, which can run multiple queries.
           context.setHiveTxnManager(driverContext.getTxnManager());
         }
-      } catch (LockException e) {
+      } catch (LockException | SemanticException e) {
         throw handleHiveException(e, 13);
       }
 

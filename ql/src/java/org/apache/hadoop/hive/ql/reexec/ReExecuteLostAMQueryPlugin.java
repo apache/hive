@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.reexec;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
@@ -34,7 +33,6 @@ import java.util.regex.Pattern;
 public class ReExecuteLostAMQueryPlugin implements IReExecutionPlugin {
   private static final Logger LOG = LoggerFactory.getLogger(ReExecuteLostAMQueryPlugin.class);
   private boolean retryPossible;
-  private int maxExecutions = 1;
 
   // Lost am container have exit code -100, due to node failures. This pattern of exception is thrown when AM is managed
   // by HS2.
@@ -64,7 +62,6 @@ public class ReExecuteLostAMQueryPlugin implements IReExecutionPlugin {
   @Override
   public void initialize(Driver driver) {
     driver.getHookRunner().addOnFailureHook(new LocalHook());
-    maxExecutions = 1 + driver.getConf().getIntVar(HiveConf.ConfVars.HIVE_QUERY_MAX_REEXECUTION_COUNT);
   }
 
   @Override
@@ -73,7 +70,7 @@ public class ReExecuteLostAMQueryPlugin implements IReExecutionPlugin {
 
   @Override
   public boolean shouldReExecute(int executionNum) {
-    return (executionNum < maxExecutions) && retryPossible;
+    return retryPossible;
   }
 
   @Override

@@ -13078,6 +13078,7 @@ class CommitTxnRequest:
    - writeEventInfos
    - replLastIdInfo
    - keyValue
+   - exclWriteEnabled
   """
 
   thrift_spec = (
@@ -13087,14 +13088,16 @@ class CommitTxnRequest:
     (3, TType.LIST, 'writeEventInfos', (TType.STRUCT,(WriteEventInfo, WriteEventInfo.thrift_spec)), None, ), # 3
     (4, TType.STRUCT, 'replLastIdInfo', (ReplLastIdInfo, ReplLastIdInfo.thrift_spec), None, ), # 4
     (5, TType.STRUCT, 'keyValue', (CommitTxnKeyValue, CommitTxnKeyValue.thrift_spec), None, ), # 5
+    (6, TType.BOOL, 'exclWriteEnabled', None, True, ), # 6
   )
 
-  def __init__(self, txnid=None, replPolicy=None, writeEventInfos=None, replLastIdInfo=None, keyValue=None,):
+  def __init__(self, txnid=None, replPolicy=None, writeEventInfos=None, replLastIdInfo=None, keyValue=None, exclWriteEnabled=thrift_spec[6][4],):
     self.txnid = txnid
     self.replPolicy = replPolicy
     self.writeEventInfos = writeEventInfos
     self.replLastIdInfo = replLastIdInfo
     self.keyValue = keyValue
+    self.exclWriteEnabled = exclWriteEnabled
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -13138,6 +13141,11 @@ class CommitTxnRequest:
           self.keyValue.read(iprot)
         else:
           iprot.skip(ftype)
+      elif fid == 6:
+        if ftype == TType.BOOL:
+          self.exclWriteEnabled = iprot.readBool()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -13171,6 +13179,10 @@ class CommitTxnRequest:
       oprot.writeFieldBegin('keyValue', TType.STRUCT, 5)
       self.keyValue.write(oprot)
       oprot.writeFieldEnd()
+    if self.exclWriteEnabled is not None:
+      oprot.writeFieldBegin('exclWriteEnabled', TType.BOOL, 6)
+      oprot.writeBool(self.exclWriteEnabled)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -13187,6 +13199,7 @@ class CommitTxnRequest:
     value = (value * 31) ^ hash(self.writeEventInfos)
     value = (value * 31) ^ hash(self.replLastIdInfo)
     value = (value * 31) ^ hash(self.keyValue)
+    value = (value * 31) ^ hash(self.exclWriteEnabled)
     return value
 
   def __repr__(self):

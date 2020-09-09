@@ -29,7 +29,7 @@ namespace php metastore
 namespace cpp Apache.Hadoop.Hive
 
 const string DDL_TIME = "transient_lastDdlTime"
-const string HMS_API = "1.2.1"
+const string HMS_API = "1.2.2"
 const byte ACCESSTYPE_NONE       = 1;
 const byte ACCESSTYPE_READONLY   = 2;
 const byte ACCESSTYPE_WRITEONLY  = 4;
@@ -987,7 +987,8 @@ struct CommitTxnRequest {
     // Information to update the last repl id of table/partition along with commit txn (replication from 2.6 to 3.0)
     4: optional ReplLastIdInfo replLastIdInfo,
     // An optional key/value to store atomically with the transaction
-    5: optional CommitTxnKeyValue keyValue
+    5: optional CommitTxnKeyValue keyValue,
+    6: optional bool exclWriteEnabled = true
 }
 
 struct ReplTblWriteIdStateRequest {

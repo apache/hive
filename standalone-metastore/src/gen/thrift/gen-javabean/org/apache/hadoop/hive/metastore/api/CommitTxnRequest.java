@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
   private static final org.apache.thrift.protocol.TField WRITE_EVENT_INFOS_FIELD_DESC = new org.apache.thrift.protocol.TField("writeEventInfos", org.apache.thrift.protocol.TType.LIST, (short)3);
   private static final org.apache.thrift.protocol.TField REPL_LAST_ID_INFO_FIELD_DESC = new org.apache.thrift.protocol.TField("replLastIdInfo", org.apache.thrift.protocol.TType.STRUCT, (short)4);
   private static final org.apache.thrift.protocol.TField KEY_VALUE_FIELD_DESC = new org.apache.thrift.protocol.TField("keyValue", org.apache.thrift.protocol.TType.STRUCT, (short)5);
+  private static final org.apache.thrift.protocol.TField EXCL_WRITE_ENABLED_FIELD_DESC = new org.apache.thrift.protocol.TField("exclWriteEnabled", org.apache.thrift.protocol.TType.BOOL, (short)6);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
   private List<WriteEventInfo> writeEventInfos; // optional
   private ReplLastIdInfo replLastIdInfo; // optional
   private CommitTxnKeyValue keyValue; // optional
+  private boolean exclWriteEnabled; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -62,7 +64,8 @@ import org.slf4j.LoggerFactory;
     REPL_POLICY((short)2, "replPolicy"),
     WRITE_EVENT_INFOS((short)3, "writeEventInfos"),
     REPL_LAST_ID_INFO((short)4, "replLastIdInfo"),
-    KEY_VALUE((short)5, "keyValue");
+    KEY_VALUE((short)5, "keyValue"),
+    EXCL_WRITE_ENABLED((short)6, "exclWriteEnabled");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -87,6 +90,8 @@ import org.slf4j.LoggerFactory;
           return REPL_LAST_ID_INFO;
         case 5: // KEY_VALUE
           return KEY_VALUE;
+        case 6: // EXCL_WRITE_ENABLED
+          return EXCL_WRITE_ENABLED;
         default:
           return null;
       }
@@ -128,8 +133,9 @@ import org.slf4j.LoggerFactory;
 
   // isset id assignments
   private static final int __TXNID_ISSET_ID = 0;
+  private static final int __EXCLWRITEENABLED_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.REPL_POLICY,_Fields.WRITE_EVENT_INFOS,_Fields.REPL_LAST_ID_INFO,_Fields.KEY_VALUE};
+  private static final _Fields optionals[] = {_Fields.REPL_POLICY,_Fields.WRITE_EVENT_INFOS,_Fields.REPL_LAST_ID_INFO,_Fields.KEY_VALUE,_Fields.EXCL_WRITE_ENABLED};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -144,11 +150,15 @@ import org.slf4j.LoggerFactory;
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, ReplLastIdInfo.class)));
     tmpMap.put(_Fields.KEY_VALUE, new org.apache.thrift.meta_data.FieldMetaData("keyValue", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, CommitTxnKeyValue.class)));
+    tmpMap.put(_Fields.EXCL_WRITE_ENABLED, new org.apache.thrift.meta_data.FieldMetaData("exclWriteEnabled", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(CommitTxnRequest.class, metaDataMap);
   }
 
   public CommitTxnRequest() {
+    this.exclWriteEnabled = true;
+
   }
 
   public CommitTxnRequest(
@@ -181,6 +191,7 @@ import org.slf4j.LoggerFactory;
     if (other.isSetKeyValue()) {
       this.keyValue = new CommitTxnKeyValue(other.keyValue);
     }
+    this.exclWriteEnabled = other.exclWriteEnabled;
   }
 
   public CommitTxnRequest deepCopy() {
@@ -195,6 +206,8 @@ import org.slf4j.LoggerFactory;
     this.writeEventInfos = null;
     this.replLastIdInfo = null;
     this.keyValue = null;
+    this.exclWriteEnabled = true;
+
   }
 
   public long getTxnid() {
@@ -326,6 +339,28 @@ import org.slf4j.LoggerFactory;
     }
   }
 
+  public boolean isExclWriteEnabled() {
+    return this.exclWriteEnabled;
+  }
+
+  public void setExclWriteEnabled(boolean exclWriteEnabled) {
+    this.exclWriteEnabled = exclWriteEnabled;
+    setExclWriteEnabledIsSet(true);
+  }
+
+  public void unsetExclWriteEnabled() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __EXCLWRITEENABLED_ISSET_ID);
+  }
+
+  /** Returns true if field exclWriteEnabled is set (has been assigned a value) and false otherwise */
+  public boolean isSetExclWriteEnabled() {
+    return EncodingUtils.testBit(__isset_bitfield, __EXCLWRITEENABLED_ISSET_ID);
+  }
+
+  public void setExclWriteEnabledIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __EXCLWRITEENABLED_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TXNID:
@@ -368,6 +403,14 @@ import org.slf4j.LoggerFactory;
       }
       break;
 
+    case EXCL_WRITE_ENABLED:
+      if (value == null) {
+        unsetExclWriteEnabled();
+      } else {
+        setExclWriteEnabled((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -387,6 +430,9 @@ import org.slf4j.LoggerFactory;
 
     case KEY_VALUE:
       return getKeyValue();
+
+    case EXCL_WRITE_ENABLED:
+      return isExclWriteEnabled();
 
     }
     throw new IllegalStateException();
@@ -409,6 +455,8 @@ import org.slf4j.LoggerFactory;
       return isSetReplLastIdInfo();
     case KEY_VALUE:
       return isSetKeyValue();
+    case EXCL_WRITE_ENABLED:
+      return isSetExclWriteEnabled();
     }
     throw new IllegalStateException();
   }
@@ -471,6 +519,15 @@ import org.slf4j.LoggerFactory;
         return false;
     }
 
+    boolean this_present_exclWriteEnabled = true && this.isSetExclWriteEnabled();
+    boolean that_present_exclWriteEnabled = true && that.isSetExclWriteEnabled();
+    if (this_present_exclWriteEnabled || that_present_exclWriteEnabled) {
+      if (!(this_present_exclWriteEnabled && that_present_exclWriteEnabled))
+        return false;
+      if (this.exclWriteEnabled != that.exclWriteEnabled)
+        return false;
+    }
+
     return true;
   }
 
@@ -502,6 +559,11 @@ import org.slf4j.LoggerFactory;
     list.add(present_keyValue);
     if (present_keyValue)
       list.add(keyValue);
+
+    boolean present_exclWriteEnabled = true && (isSetExclWriteEnabled());
+    list.add(present_exclWriteEnabled);
+    if (present_exclWriteEnabled)
+      list.add(exclWriteEnabled);
 
     return list.hashCode();
   }
@@ -560,6 +622,16 @@ import org.slf4j.LoggerFactory;
     }
     if (isSetKeyValue()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.keyValue, other.keyValue);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetExclWriteEnabled()).compareTo(other.isSetExclWriteEnabled());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetExclWriteEnabled()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.exclWriteEnabled, other.exclWriteEnabled);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -625,6 +697,12 @@ import org.slf4j.LoggerFactory;
       } else {
         sb.append(this.keyValue);
       }
+      first = false;
+    }
+    if (isSetExclWriteEnabled()) {
+      if (!first) sb.append(", ");
+      sb.append("exclWriteEnabled:");
+      sb.append(this.exclWriteEnabled);
       first = false;
     }
     sb.append(")");
@@ -735,6 +813,14 @@ import org.slf4j.LoggerFactory;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 6: // EXCL_WRITE_ENABLED
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.exclWriteEnabled = iprot.readBool();
+              struct.setExclWriteEnabledIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -786,6 +872,11 @@ import org.slf4j.LoggerFactory;
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetExclWriteEnabled()) {
+        oprot.writeFieldBegin(EXCL_WRITE_ENABLED_FIELD_DESC);
+        oprot.writeBool(struct.exclWriteEnabled);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -817,7 +908,10 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetKeyValue()) {
         optionals.set(3);
       }
-      oprot.writeBitSet(optionals, 4);
+      if (struct.isSetExclWriteEnabled()) {
+        optionals.set(4);
+      }
+      oprot.writeBitSet(optionals, 5);
       if (struct.isSetReplPolicy()) {
         oprot.writeString(struct.replPolicy);
       }
@@ -836,6 +930,9 @@ import org.slf4j.LoggerFactory;
       if (struct.isSetKeyValue()) {
         struct.keyValue.write(oprot);
       }
+      if (struct.isSetExclWriteEnabled()) {
+        oprot.writeBool(struct.exclWriteEnabled);
+      }
     }
 
     @Override
@@ -843,7 +940,7 @@ import org.slf4j.LoggerFactory;
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.txnid = iprot.readI64();
       struct.setTxnidIsSet(true);
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(5);
       if (incoming.get(0)) {
         struct.replPolicy = iprot.readString();
         struct.setReplPolicyIsSet(true);
@@ -871,6 +968,10 @@ import org.slf4j.LoggerFactory;
         struct.keyValue = new CommitTxnKeyValue();
         struct.keyValue.read(iprot);
         struct.setKeyValueIsSet(true);
+      }
+      if (incoming.get(4)) {
+        struct.exclWriteEnabled = iprot.readBool();
+        struct.setExclWriteEnabledIsSet(true);
       }
     }
   }

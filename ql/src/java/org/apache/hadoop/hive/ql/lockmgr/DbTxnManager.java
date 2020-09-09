@@ -520,7 +520,7 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
         lockMgr.clearLocalLockRecords();
         stopHeartbeat();
       }
-      getMS().replCommitTxn(rqst);
+      getMS().commitTxn(rqst);
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(rqst.getTxnid()));
       throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(rqst.getTxnid()));
@@ -550,7 +550,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       lockMgr.clearLocalLockRecords();
       stopHeartbeat();
       LOG.debug("Committing txn " + JavaUtils.txnIdToString(txnId));
-      getMS().commitTxn(txnId);
+      CommitTxnRequest commitTxnRequest = new CommitTxnRequest(txnId);
+      commitTxnRequest.setExclWriteEnabled(conf.getBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK));
+      getMS().commitTxn(commitTxnRequest);
     } catch (NoSuchTxnException e) {
       LOG.error("Metastore could not find " + JavaUtils.txnIdToString(txnId));
       throw new LockException(e, ErrorMsg.TXN_NO_SUCH_TRANSACTION, JavaUtils.txnIdToString(txnId));
