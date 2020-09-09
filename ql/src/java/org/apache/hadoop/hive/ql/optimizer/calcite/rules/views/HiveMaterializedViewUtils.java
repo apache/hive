@@ -361,7 +361,7 @@ public class HiveMaterializedViewUtils {
    * @return false if user does not have privilege otherwise true
    * @throws HiveException
    */
-  public static boolean checkPrivilegeForMV(List<Table> cachedMVTableList) throws HiveException {
+  public static boolean checkPrivilegeForMaterializedViews(List<Table> cachedMVTableList) throws HiveException {
     List<HivePrivilegeObject> privObjects = new ArrayList<HivePrivilegeObject>();
 
     for (Table cachedMVTable:cachedMVTableList) {

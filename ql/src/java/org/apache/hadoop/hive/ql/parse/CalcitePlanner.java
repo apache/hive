@@ -2281,8 +2281,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       try {
-        if (!HiveMaterializedViewUtils.checkPrivilegeForMV(materializedViewsUsedAfterRewrite)) {
-          // if materialized views do not have appropriate privilges, we shouldn't be using them
+        if (!HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(materializedViewsUsedAfterRewrite)) {
+          // if materialized views do not have appropriate privileges, we shouldn't be using them
           return calcitePreMVRewritingPlan;
         }
       } catch (HiveException e) {
