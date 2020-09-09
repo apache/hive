@@ -7853,10 +7853,11 @@ void swap(ReplLastIdInfo &a, ReplLastIdInfo &b);
 std::ostream& operator<<(std::ostream& out, const ReplLastIdInfo& obj);
 
 typedef struct _CommitTxnRequest__isset {
-  _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false), replLastIdInfo(false), keyValue(false) {}
+  _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false), replLastIdInfo(false), exclWriteEnabled(true), keyValue(false) {}
   bool replPolicy :1;
   bool writeEventInfos :1;
   bool replLastIdInfo :1;
+  bool exclWriteEnabled :1;
   bool keyValue :1;
 } _CommitTxnRequest__isset;
 
@@ -7865,7 +7866,7 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
 
   CommitTxnRequest(const CommitTxnRequest&);
   CommitTxnRequest& operator=(const CommitTxnRequest&);
-  CommitTxnRequest() : txnid(0), replPolicy() {
+  CommitTxnRequest() : txnid(0), replPolicy(), exclWriteEnabled(true) {
   }
 
   virtual ~CommitTxnRequest() noexcept;
@@ -7873,6 +7874,7 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
   std::string replPolicy;
   std::vector<WriteEventInfo>  writeEventInfos;
   ReplLastIdInfo replLastIdInfo;
+  bool exclWriteEnabled;
   CommitTxnKeyValue keyValue;
 
   _CommitTxnRequest__isset __isset;
@@ -7884,6 +7886,8 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
   void __set_writeEventInfos(const std::vector<WriteEventInfo> & val);
 
   void __set_replLastIdInfo(const ReplLastIdInfo& val);
+
+  void __set_exclWriteEnabled(const bool val);
 
   void __set_keyValue(const CommitTxnKeyValue& val);
 
@@ -7902,6 +7906,10 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
     if (__isset.replLastIdInfo != rhs.__isset.replLastIdInfo)
       return false;
     else if (__isset.replLastIdInfo && !(replLastIdInfo == rhs.replLastIdInfo))
+      return false;
+    if (__isset.exclWriteEnabled != rhs.__isset.exclWriteEnabled)
+      return false;
+    else if (__isset.exclWriteEnabled && !(exclWriteEnabled == rhs.exclWriteEnabled))
       return false;
     if (__isset.keyValue != rhs.__isset.keyValue)
       return false;

@@ -1012,8 +1012,9 @@ struct CommitTxnRequest {
     3: optional list<WriteEventInfo> writeEventInfos,
     // Information to update the last repl id of table/partition along with commit txn (replication from 2.6 to 3.0)
     4: optional ReplLastIdInfo replLastIdInfo,
+    5: optional bool exclWriteEnabled = true,
     // An optional key/value to store atomically with the transaction
-    5: optional CommitTxnKeyValue keyValue,
+    6: optional CommitTxnKeyValue keyValue,
 }
 
 struct ReplTblWriteIdStateRequest {
