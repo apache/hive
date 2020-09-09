@@ -637,6 +637,10 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.HOURS),
       "Total allowed retry duration in hours inclusive of all retries. Once this is exhausted, " +
         "the policy instance will be marked as failed and will need manual intervention to restart."),
+    REPL_LOAD_PARTITIONS_BATCH_SIZE("hive.repl.load.partitions.batch.size", 10000,
+      "Provide the maximum number of partitions of a table that will be batched together during  \n"
+        + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
+        + "The data for these partitions will be copied before copying the metadata batch. "),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
