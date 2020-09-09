@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer.ppr;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,7 +49,10 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   private static final Logger LOG = LoggerFactory.getLogger(PartitionExpressionForMetastore.class);
 
   @Override
-  public String convertExprToFilter(byte[] exprBytes, String defaultPartitionName) throws MetaException {
+  public String convertExprToFilter(byte[] exprBytes, String defaultPartitionName, boolean useStringConversion) throws MetaException {
+    if (useStringConversion) {
+      return new String(exprBytes, StandardCharsets.UTF_8);
+    }
     ExprNodeGenericFuncDesc expr = deserializeExpr(exprBytes);
     if ((defaultPartitionName != null) && (!defaultPartitionName.isEmpty())) {
       try {

@@ -1,4 +1,5 @@
 SET metastore.expression.proxy=org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore;
+SET metastore.use.string.conversion=true;
 
 DROP TABLE IF EXISTS repairtable_filter;
 
@@ -136,6 +137,20 @@ dfs ${system:test.dfs.mkdir} ${system:test.local.warehouse.dir}/repairtable_filt
 dfs -touchz ${system:test.local.warehouse.dir}/repairtable_filter/p1=bbsc/p2=e/datafile;
 
 MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1!='bba', p2 like 'e%');
+show partitions repairtable_filter;
+
+-- Test DROP PARTITIONS
+
+dfs -rmr ${system:test.local.warehouse.dir}/repairtable_filter/p1=bbsc;
+MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1='bbsc');
+show partitions repairtable_filter;
+
+dfs -rmr ${system:test.local.warehouse.dir}/repairtable_filter/p1=bbw;
+MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 like 'b%');
+show partitions repairtable_filter;
+
+dfs -rmr ${system:test.local.warehouse.dir}/repairtable_filter/p1=bba;
+MSCK REPAIR TABLE default.repairtable_filter SYNC PARTITIONS (p1 like 'bb%');
 show partitions repairtable_filter;
 
 DROP TABLE repairtable_filter;

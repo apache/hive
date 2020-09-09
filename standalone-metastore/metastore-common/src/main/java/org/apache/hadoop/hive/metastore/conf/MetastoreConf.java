@@ -619,6 +619,7 @@ public class MetastoreConf {
     EXPRESSION_PROXY_CLASS("metastore.expression.proxy", "hive.metastore.expression.proxy",
         "org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore",
         "Class to use to process expressions in partition pruning."),
+    USE_STRING_CONVERSION("metastore.use.string.conversion", "hive.metastore.use.string.conversion", false, "NA"),
     FILE_METADATA_THREADS("metastore.file.metadata.threads",
         "hive.metastore.hbase.file.metadata.threads", 1,
         "Number of threads to use to read file metadata in background to cache it."),

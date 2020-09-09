@@ -19,9 +19,11 @@
 package org.apache.hadoop.hive.ql.ddl.misc.msck;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Msck;
@@ -37,6 +39,8 @@ import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.thrift.TException;
+
+import static org.apache.hadoop.hive.metastore.PartFilterExprUtil.createExpressionProxy;
 
 /**
  * Operation process of metastore check.
@@ -69,9 +73,14 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
               partitionExpirySeconds);
         }
       }
+      String strFilterExp = null;
+      if (desc.getFilterExp() != null) {
+        PartitionExpressionProxy expressionProxy = createExpressionProxy(context.getDb().getConf());
+        strFilterExp = expressionProxy.convertExprToFilter(desc.getFilterExp(), context.getDb().getConf().get(MetastoreConf.ConfVars.DEFAULTPARTITIONNAME.getVarname()), false);
+      }
 
       MsckInfo msckInfo = new MsckInfo(SessionState.get().getCurrentCatalog(), tableName.getDb(), tableName.getTable(),
-          desc.getFilterExp(), desc.getResFile(), desc.isRepairPartitions(),
+          desc.getFilterExp(), strFilterExp, desc.getResFile(), desc.isRepairPartitions(),
           desc.isAddPartitions(), desc.isDropPartitions(), partitionExpirySeconds);
       return msck.repair(msckInfo);
     } catch (MetaException e) {
