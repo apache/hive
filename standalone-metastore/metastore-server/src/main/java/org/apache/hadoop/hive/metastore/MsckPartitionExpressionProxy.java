@@ -47,7 +47,7 @@ public class MsckPartitionExpressionProxy implements PartitionExpressionProxy {
 
   @Override
   public String convertExprToFilter(final byte[] exprBytes, final String defaultPartitionName,
-                                    boolean decodeExpFilterToStr) throws MetaException {
+                                    boolean decodeFilterExpToStr) throws MetaException {
     return new String(exprBytes, StandardCharsets.UTF_8);
   }
 

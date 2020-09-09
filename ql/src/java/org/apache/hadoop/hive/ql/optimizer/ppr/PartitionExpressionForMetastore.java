@@ -49,9 +49,9 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   private static final Logger LOG = LoggerFactory.getLogger(PartitionExpressionForMetastore.class);
 
   @Override
-  public String convertExprToFilter(byte[] exprBytes, String defaultPartitionName, boolean decodeExpFilterToStr)
+  public String convertExprToFilter(byte[] exprBytes, String defaultPartitionName, boolean decodeFilterExpToStr)
       throws MetaException {
-    if (decodeExpFilterToStr) {
+    if (decodeFilterExpToStr) {
       return new String(exprBytes, StandardCharsets.UTF_8);
     }
     ExprNodeGenericFuncDesc expr = deserializeExpr(exprBytes);

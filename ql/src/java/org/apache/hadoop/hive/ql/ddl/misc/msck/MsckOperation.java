@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Msck;
@@ -74,15 +73,15 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
         }
       }
 
-      String strFilterExp = null;
+      String filterExpStr = null;
       if (desc.getFilterExp() != null) {
         PartitionExpressionProxy expressionProxy = createExpressionProxy(context.getDb().getConf());
-        strFilterExp = expressionProxy.convertExprToFilter(desc.getFilterExp(),
+        filterExpStr = expressionProxy.convertExprToFilter(desc.getFilterExp(),
             context.getDb().getConf().get(MetastoreConf.ConfVars.DEFAULTPARTITIONNAME.getVarname()), false);
       }
 
       MsckInfo msckInfo = new MsckInfo(SessionState.get().getCurrentCatalog(), tableName.getDb(), tableName.getTable(),
-          desc.getFilterExp(), strFilterExp, desc.getResFile(), desc.isRepairPartitions(),
+          desc.getFilterExp(), filterExpStr, desc.getResFile(), desc.isRepairPartitions(),
           desc.isAddPartitions(), desc.isDropPartitions(), partitionExpirySeconds);
       return msck.repair(msckInfo);
     } catch (MetaException e) {

@@ -46,7 +46,7 @@ public class PartFilterExprUtil {
     String filter = null;
     try {
       filter = expressionProxy.convertExprToFilter(expr, defaultPartitionName,
-          conf.getBoolean(MetastoreConf.ConfVars.DECODE_EXPRESSION_FILTER_TO_STRING.getVarname(), false));
+          conf.getBoolean(MetastoreConf.ConfVars.DECODE_FILTER_EXPRESSION_TO_STRING.getVarname(), false));
     } catch (MetaException ex) {
       // TODO MS-SPLIT - for now we have construct this by reflection because IMetaStoreClient
       // can't be

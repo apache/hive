@@ -1,5 +1,5 @@
 SET metastore.expression.proxy=org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore;
-SET metastore.decode.expression.filter.tostring=true;
+SET metastore.decode.filter.expression.tostring=true;
 
 DROP TABLE IF EXISTS repairtable_filter;
 
