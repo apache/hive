@@ -22,6 +22,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.service.rpc.thrift.TCancelOperationReq;
+import org.apache.hive.service.rpc.thrift.TCancelOperationResp;
 import org.apache.hive.service.rpc.thrift.TCloseOperationReq;
 import org.apache.hive.service.rpc.thrift.TCloseOperationResp;
 import org.apache.hive.service.rpc.thrift.TCloseSessionReq;
@@ -90,6 +92,8 @@ public class ImpalaSession {
     private int connectionTimeout;
     /* Fetch EOF status */
     private boolean fetchEOF = false;
+    /* Shutdown request */
+    private Boolean pendingCancel = new Boolean(false);
 
 
     public ImpalaSession(HiveConf conf) { init(conf); }
@@ -265,6 +269,12 @@ public class ImpalaSession {
         return resp.getResults();
     }
 
+    public void notifyShutdown() {
+      synchronized (pendingCancel) {
+        pendingCancel = true;
+      }
+    }
+
     public void closeOperation(TOperationHandle opHandle) throws HiveException {
         Preconditions.checkNotNull(opHandle);
         Preconditions.checkNotNull(client);
@@ -301,7 +311,20 @@ public class ImpalaSession {
         TGetOperationStatusReq statusReq = new TGetOperationStatusReq(opHandle);
 
         while (true) {
-          TGetOperationStatusResp statusResp = retryRPC("ExecutePlannedStatement",
+          synchronized (pendingCancel) {
+            if (pendingCancel) {
+              pendingCancel = false;
+              TCancelOperationReq cancelReq = new TCancelOperationReq(opHandle);
+              TCancelOperationResp cancelResp;
+              try {
+                  cancelResp = client.CancelOperation(cancelReq);
+              } catch (TException e) {
+                throw new HiveException(e);
+              }
+              checkThriftStatus(cancelResp.getStatus());
+            }
+          }
+          TGetOperationStatusResp statusResp = retryRPC("GetOperationStatus",
                   (c) -> c.GetOperationStatus(statusReq));
           if (statusResp.getOperationState() == TOperationState.FINISHED_STATE) {
             break;

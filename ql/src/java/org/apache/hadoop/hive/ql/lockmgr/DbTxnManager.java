@@ -728,7 +728,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       // The lock should not be held by other thread trying to stop the heartbeat for more than 31 seconds
       isLockAcquired = heartbeatTaskLock.tryLock(31000, TimeUnit.MILLISECONDS);
     } catch (InterruptedException e) {
-      // safe to go on
+      // Attempt to acquire the lock if the thread was interrupted to avoid leaving the heartbeat running.
+      isLockAcquired = heartbeatTaskLock.tryLock();
     }
 
     try {

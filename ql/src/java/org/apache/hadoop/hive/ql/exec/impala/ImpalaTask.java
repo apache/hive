@@ -39,6 +39,8 @@ import org.apache.hive.service.rpc.thrift.TOperationHandle;
  */
 public class ImpalaTask extends Task<ImpalaWork> {
 
+    private ImpalaSession session;
+
     @Override
     public void initialize(QueryState queryState, QueryPlan queryPlan, TaskQueue taskQueue, Context context) {
         super.initialize(queryState, queryPlan, taskQueue, context);
@@ -52,7 +54,7 @@ public class ImpalaTask extends Task<ImpalaWork> {
         boolean isPlannedMode = conf.getImpalaExecutionMode() == ImpalaExecutionMode.PLAN;
         boolean isStreaming;
         try {
-            ImpalaSession session = ImpalaSessionManager.getInstance().getSession(conf);
+            session = ImpalaSessionManager.getInstance().getSession(conf);
             TOperationHandle opHandle;
             switch (work.getType()) {
             case COMPILED_PLAN:
@@ -104,6 +106,14 @@ public class ImpalaTask extends Task<ImpalaWork> {
         }
 
         return rc;
+    }
+
+    @Override
+    public void shutdown() {
+      if(session != null) {
+        session.notifyShutdown();
+      }
+      super.shutdown();
     }
 
     @Override
