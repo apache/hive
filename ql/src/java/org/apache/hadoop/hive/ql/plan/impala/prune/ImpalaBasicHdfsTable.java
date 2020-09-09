@@ -31,8 +31,10 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.catalog.CatalogException;
 import org.apache.impala.catalog.Db;
 import org.apache.impala.catalog.FeFsPartition;
+import org.apache.impala.catalog.HdfsPartition;
 import org.apache.impala.catalog.HdfsStorageDescriptor;
 import org.apache.impala.catalog.HdfsTable;
+import org.apache.impala.catalog.PrunablePartition;
 import org.apache.thrift.TException;
 
 import com.google.common.base.Preconditions;
@@ -61,6 +63,8 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
 
   // track the partition names that need to be retrieved from HMS
   private final Set<String> namesToLoad = Sets.newHashSet();
+
+  private final Set<HdfsPartition> partitionsToLoad = Sets.newHashSet();
 
   private final String nullPartitionKeyValue;
 
@@ -122,8 +126,17 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
       partitions.add(partition);
       // track this name as one we will need to retrieve from HMS at translation time.
       namesToLoad.add(partition.getPartitionName());
+      partitionsToLoad.add((HdfsPartition) partition);
     }
     return partitions;
+  }
+
+  public Set<HdfsPartition> getPartitionsNotToLoad() {
+    Set<HdfsPartition> allPartitions = Sets.newHashSet();
+    for (PrunablePartition p : getPartitions()) {
+      allPartitions.add((HdfsPartition) p);
+    }
+    return Sets.difference(allPartitions, partitionsToLoad);
   }
 
   /**

@@ -100,6 +100,12 @@ public class ImpalaHdfsTable extends HdfsTable {
       Table msTbl = getMetaStoreTable();
       // initialize variables needed in parent HdfsTable
       loadSchema(msTbl);
+      // CDPD-16908 the initial msTbl should have all column stats and metadata info,
+      // there should be no need to refetch these.
+      loadAllColumnStats(client);
+      loadConstraintsInfo(client, msTbl);
+      // CDPD-16964: Is this the proper way to get valid writeIds?
+      loadValidWriteIdList(client);
       initializePartitionMetadata(msTbl);
       updateMdFromHmsTable(msTbl);
       nullPartitionKeyValue = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
@@ -174,6 +180,9 @@ public class ImpalaHdfsTable extends HdfsTable {
         for (Partition p : result.getPartitions()) {
           // Need to call "transformPartition" to convert Partition to HdfsPartition.
           addPartition(transformPartition(basicHdfsTable, p, partitionFds.get(p)));
+        }
+        for (HdfsPartition p : basicHdfsTable.getPartitionsNotToLoad()) {
+          addPartition(p);
         }
       }
     } catch (CatalogException|TException e) {
@@ -250,8 +259,11 @@ public class ImpalaHdfsTable extends HdfsTable {
     // need to reuse the same id for the newly created partition.
     Long id = basicHdfsTable.getIdFromName(partitionName);
     Preconditions.checkNotNull(id);
-    return new HdfsPartition(this, partition, keyValues, fileFormatDescriptor, fds, id,
+    HdfsPartition newPartition =  new HdfsPartition(this, partition, keyValues,
+        fileFormatDescriptor, fds, id,
         getPartitionLocationCompressor().new Location(partition.getSd().getLocation()),
         TAccessLevel.READ_ONLY);
+    newPartition.setNumRows(FeCatalogUtils.getRowCount(partition.getParameters()));
+    return newPartition;
   }
 }
