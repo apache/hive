@@ -684,6 +684,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   public void testCheckExpectedLocks() throws Exception {
     testCheckExpectedLocks(false);
   }
+
   @Test
   public void testCheckExpectedLocksSharedWrite() throws Exception {
     testCheckExpectedLocks(true);
@@ -753,10 +754,12 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   public void testCheckExpectedLocks2() throws Exception {
     testCheckExpectedLocks2(true);
   }
+
   @Test
   public void testCheckExpectedLocks2NoReadLock() throws Exception {
     testCheckExpectedLocks2(false);
   }
+
   public void testCheckExpectedLocks2(boolean readLocks) throws Exception {
     dropTable(new String[] {"tab_acid", "tab_not_acid"});
     driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
@@ -830,10 +833,12 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   public void testCheckExpectedReadLocksForNonAcidTables() throws Exception{
     testCheckExpectedReadLocksForNonAcidTables(true);
   }
+
   @Test
   public void testCheckExpectedReadLocksForNonAcidTablesNoReadLocks() throws Exception{
     testCheckExpectedReadLocksForNonAcidTables(false);
   }
+
   private void testCheckExpectedReadLocksForNonAcidTables(boolean readLocks) throws Exception {
     dropTable(new String[] {"tab_acid", "tab_not_acid"});
     driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
