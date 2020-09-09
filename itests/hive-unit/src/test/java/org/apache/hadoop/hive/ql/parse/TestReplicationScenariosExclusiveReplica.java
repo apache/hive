@@ -68,8 +68,8 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   }
 
   @Test
-  public void testRemoteStagingAndCopyTaskOnTarget() throws Throwable {
-    List<String> withClauseOptions = getStagingLocationConfig(replica.repldDir);
+  public void testDistCpCopyWithRemoteStagingAndCopyTaskOnTarget() throws Throwable {
+    List<String> withClauseOptions = getStagingLocationConfig(replica.repldDir, true);
     withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='" + false + "'");
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
@@ -124,8 +124,8 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   }
 
   @Test
-  public void testLocalStagingAndCopyTaskOnTarget() throws Throwable {
-    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir);
+  public void testDistCpCopyWithLocalStagingAndCopyTaskOnTarget() throws Throwable {
+    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir, true);
     withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='" + false + "'");
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
@@ -180,8 +180,8 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   }
 
   @Test
-  public void testRemoteStagingAndCopyTaskOnSource() throws Throwable {
-    List<String> withClauseOptions = getStagingLocationConfig(replica.repldDir);
+  public void testDistCpCopyWithRemoteStagingAndCopyTaskOnSource() throws Throwable {
+    List<String> withClauseOptions = getStagingLocationConfig(replica.repldDir, true);
     withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='" + false + "'");
     withClauseOptions.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='" + false + "'");
     WarehouseInstance.Tuple tuple = primary
@@ -237,8 +237,8 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   }
 
   @Test
-  public void testLocalStagingAndCopyTaskOnSource() throws Throwable {
-    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir);
+  public void testDistCpCopyWithLocalStagingAndCopyTaskOnSource() throws Throwable {
+    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir, true);
     withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='" + false + "'");
     withClauseOptions.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='" + false + "'");
     WarehouseInstance.Tuple tuple = primary
@@ -295,7 +295,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
 
   @Test
   public void testRegularCopyRemoteStagingAndCopyTaskOnSource() throws Throwable {
-    List<String> withClauseOptions = getStagingLocationConfig(replica.repldDir);
+    List<String> withClauseOptions = getStagingLocationConfig(replica.repldDir, false);
     withClauseOptions.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='" + false + "'");
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
@@ -351,7 +351,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
 
   @Test
   public void testRegularCopyWithLocalStagingAndCopyTaskOnTarget() throws Throwable {
-    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir);
+    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir, false);
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
             .run("create external table t1 (id int)")
@@ -409,7 +409,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
     String primaryDb = "primarydb1";
     String replicaDb = "repldb1";
     String tableName = "t1";
-    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir);
+    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir, false);
     WarehouseInstance.Tuple tuple = primary
             .run("create database " + primaryDb)
             .run("alter database "+ primaryDb + " set dbproperties('repl.source.for'='1,2,3')")
@@ -456,9 +456,15 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
     Assert.assertEquals(shouldExists, fileSystem.exists(dataFilePath));
   }
 
-  private List<String> getStagingLocationConfig(String stagingLoc) {
+  private List<String> getStagingLocationConfig(String stagingLoc, boolean addDistCpConfigs) throws IOException {
     List<String> confList = new ArrayList<>();
     confList.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + stagingLoc + "'");
+    if (addDistCpConfigs) {
+      confList.add("'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'");
+      confList.add("'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'");
+      confList.add("'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+              + UserGroupInformation.getCurrentUser().getUserName() + "'");
+    }
     return confList;
   }
 

@@ -160,7 +160,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       }
       // Copy the files from different source file systems to one destination directory
       CopyUtils copyUtils = new CopyUtils(rwork.distCpDoAsUser(), conf, dstFs);
-      copyUtils.copyAndVerify(toPath, srcFiles, fromPath, work.isOverWrite());
+      copyUtils.copyAndVerify(toPath, srcFiles, fromPath, work.readSrcAsFilesList(), work.isOverWrite());
 
       // If a file is copied from CM path, then need to rename them using original source file name
       // This is needed to avoid having duplicate files in target if same event is applied twice
