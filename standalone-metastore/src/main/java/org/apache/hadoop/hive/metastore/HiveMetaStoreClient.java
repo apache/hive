@@ -2114,28 +2114,33 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       boolean getColumnStats, String engine) throws TException {
     GetTableRequest req = new GetTableRequest(dbName, tableName);
     req.setCatName(catName);
-    req.setCapabilities(version);
     req.setGetColumnStats(getColumnStats);
     req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
-
     if (getColumnStats) {
       req.setEngine(engine);
     }
-    if (processorCapabilities != null)
-      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-    if (processorIdentifier != null)
-      req.setProcessorIdentifier(processorIdentifier);
     return getTable(req);
   }
 
   @Override
   public Table getTable(GetTableRequest req) throws TException {
+    Preconditions.checkArgument(!req.isGetColumnStats() || req.isSetEngine(),
+        "Engine must be set if requesting column statistics.");
+    if (processorCapabilities != null) {
+      req.setProcessorCapabilities(
+          new ArrayList<>(Arrays.asList(processorCapabilities)));
+    }
+    if (processorIdentifier != null) {
+      req.setProcessorIdentifier(processorIdentifier);
+    }
+    req.setCapabilities(version);
     if (!req.isSetValidWriteIdList()) {
       req.setValidWriteIdList(
           getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName())));
     }
     Table t = client.get_table_req(req).getTable();
-    return deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
+    return deepCopy(
+        FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
   }
 
   @Override
