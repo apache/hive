@@ -913,8 +913,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           txnid = targetTxnIds.get(0);
         }
 
-        TxnRecord txnRecord = lockTransactionRecord(stmt, txnid, TxnStatus.OPEN);
-        if (txnRecord == null) {
+        Optional<TxnType> txnType = getOpenTxnTypeAndLock(stmt, txnid);
+        if (!txnType.isPresent()) {
           TxnStatus status = findTxnState(txnid, stmt);
           if (status == TxnStatus.ABORTED) {
             if (rqst.isSetReplPolicy()) {
@@ -936,7 +936,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         if (transactionalListeners != null) {
           MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
-                  EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnid, txnRecord.type), dbConn, sqlGenerator);
+                  EventMessage.EventType.ABORT_TXN, new AbortTxnEvent(txnid, txnType.get()), dbConn, sqlGenerator);
         }
 
         LOG.debug("Going to commit");
@@ -1244,8 +1244,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
          * should not normally run concurrently (for same txn) but could due to bugs in the client
          * which could then corrupt internal transaction manager state.  Also competes with abortTxn().
          */
-        TxnRecord txnRecord = lockTransactionRecord(stmt, txnid, TxnStatus.OPEN);
-        if (txnRecord == null) {
+        Optional<TxnType> txnType = getOpenTxnTypeAndLock(stmt, txnid);
+        if (!txnType.isPresent()) {
           //if here, txn was not found (in expected state)
           TxnStatus actualTxnStatus = findTxnState(txnid, stmt);
           if (actualTxnStatus == TxnStatus.COMMITTED) {
@@ -1267,7 +1267,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
                 OperationType.UPDATE + "," + OperationType.DELETE + ")";
 
         long tempCommitId = generateTemporaryId();
-        if (txnRecord.type != TxnType.READ_ONLY
+        if (txnType.get() != TxnType.READ_ONLY
                 && !rqst.isSetReplPolicy()
                 && isUpdateOrDelete(stmt, conflictSQLSuffix)) {
 
@@ -1298,35 +1298,38 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
            */
           acquireTxnLock(stmt, false);
           commitId = getHighWaterMark(stmt);
-          /**
-           * see if there are any overlapping txns that wrote the same element, i.e. have a conflict
-           * Since entire commit operation is mutexed wrt other start/commit ops,
-           * committed.ws_commit_id <= current.ws_commit_id for all txns
-           * thus if committed.ws_commit_id < current.ws_txnid, transactions do NOT overlap
-           * For example, [17,20] is committed, [6,80] is being committed right now - these overlap
-           * [17,20] committed and [21,21] committing now - these do not overlap.
-           * [17,18] committed and [18,19] committing now - these overlap  (here 18 started while 17 was still running)
-           */
-          try (ResultSet rs = checkForWriteConflict(stmt, txnid)) {
-            if (rs.next()) {
-              //found a conflict, so let's abort the txn
-              String committedTxn = "[" + JavaUtils.txnIdToString(rs.getLong(1)) + "," + rs.getLong(2) + "]";
-              StringBuilder resource = new StringBuilder(rs.getString(3)).append("/").append(rs.getString(4));
-              String partitionName = rs.getString(5);
-              if (partitionName != null) {
-                resource.append('/').append(partitionName);
+
+          if (!rqst.isExclWriteEnabled()) {
+            /**
+             * see if there are any overlapping txns that wrote the same element, i.e. have a conflict
+             * Since entire commit operation is mutexed wrt other start/commit ops,
+             * committed.ws_commit_id <= current.ws_commit_id for all txns
+             * thus if committed.ws_commit_id < current.ws_txnid, transactions do NOT overlap
+             * For example, [17,20] is committed, [6,80] is being committed right now - these overlap
+             * [17,20] committed and [21,21] committing now - these do not overlap.
+             * [17,18] committed and [18,19] committing now - these overlap  (here 18 started while 17 was still running)
+             */
+            try (ResultSet rs = checkForWriteConflict(stmt, txnid)) {
+              if (rs.next()) {
+                //found a conflict, so let's abort the txn
+                String committedTxn = "[" + JavaUtils.txnIdToString(rs.getLong(1)) + "," + rs.getLong(2) + "]";
+                StringBuilder resource = new StringBuilder(rs.getString(3)).append("/").append(rs.getString(4));
+                String partitionName = rs.getString(5);
+                if (partitionName != null) {
+                  resource.append('/').append(partitionName);
+                }
+                String msg = "Aborting [" + JavaUtils.txnIdToString(txnid) + "," + commitId + "]" + " due to a write conflict on " + resource +
+                        " committed by " + committedTxn + " " + rs.getString(7) + "/" + rs.getString(8);
+                //remove WRITE_SET info for current txn since it's about to abort
+                dbConn.rollback(undoWriteSetForCurrentTxn);
+                LOG.info(msg);
+                //todo: should make abortTxns() write something into TXNS.TXN_META_INFO about this
+                if (abortTxns(dbConn, Collections.singletonList(txnid), false) != 1) {
+                  throw new IllegalStateException(msg + " FAILED!");
+                }
+                dbConn.commit();
+                throw new TxnAbortedException(msg);
               }
-              String msg = "Aborting [" + JavaUtils.txnIdToString(txnid) + "," + commitId + "]" + " due to a write conflict on " + resource +
-                      " committed by " + committedTxn + " " + rs.getString(7) + "/" + rs.getString(8);
-              //remove WRITE_SET info for current txn since it's about to abort
-              dbConn.rollback(undoWriteSetForCurrentTxn);
-              LOG.info(msg);
-              //todo: should make abortTxns() write something into TXNS.TXN_META_INFO about this
-              if (abortTxns(dbConn, Collections.singletonList(txnid), false) != 1) {
-                throw new IllegalStateException(msg + " FAILED!");
-              }
-              dbConn.commit();
-              throw new TxnAbortedException(msg);
             }
           }
         } else {
@@ -1343,7 +1346,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           assert true;
         }
 
-        if (txnRecord.type != TxnType.READ_ONLY && !rqst.isSetReplPolicy()) {
+        if (txnType.get() != TxnType.READ_ONLY && !rqst.isSetReplPolicy()) {
           moveTxnComponentsToCompleted(stmt, txnid, isUpdateDelete);
         } else if (rqst.isSetReplPolicy()) {
           if (rqst.isSetWriteEventInfos()) {
@@ -1371,14 +1374,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           deleteReplTxnMapEntry(dbConn, sourceTxnId, rqst.getReplPolicy());
         }
-        updateWSCommitIdAndCleanUpMetadata(stmt, txnid, txnRecord.type, commitId, tempCommitId);
+        updateWSCommitIdAndCleanUpMetadata(stmt, txnid, txnType.get(), commitId, tempCommitId);
         if (rqst.isSetKeyValue()) {
           updateKeyValueAssociatedWithTxn(rqst, stmt);
         }
 
         if (transactionalListeners != null) {
           MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
-                  EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, txnRecord.type), dbConn, sqlGenerator);
+                  EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, txnType.get()), dbConn, sqlGenerator);
         }
 
         LOG.debug("Going to commit");
@@ -2515,25 +2518,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    *
    * SELECT ... FOR UPDATE locks the row until the transaction commits or rolls back.
    * Second connection using `SELECT ... FOR UPDATE` will suspend until the lock is released.
-   * @param txnState the state this txn is expected to be in.  may be null
-   * @return null if no row was found
+   * @return the txnType wrapped in an {@link Optional}
    * @throws SQLException
    * @throws MetaException
    */
-  private TxnRecord lockTransactionRecord(Statement stmt, long txnId, TxnStatus txnState)
-      throws SQLException, MetaException {
+  private Optional<TxnType> getOpenTxnTypeAndLock(Statement stmt, long txnId) throws SQLException, MetaException {
     String query = "SELECT \"TXN_TYPE\" FROM \"TXNS\" WHERE \"TXN_ID\" = " + txnId
-        + (txnState != null ? " AND \"TXN_STATE\" = " + txnState : "");
+        + " AND \"TXN_STATE\" = " + TxnStatus.OPEN;
     try (ResultSet rs = stmt.executeQuery(sqlGenerator.addForUpdateClause(query))) {
-      return rs.next() ? new TxnRecord(rs.getInt(1)) : null;
-    }
-  }
-
-  private static final class TxnRecord {
-    private final TxnType type;
-
-    private TxnRecord(int txnType) {
-      this.type = TxnType.findByValue(txnType);
+      return rs.next() ? Optional.ofNullable(
+          TxnType.findByValue(rs.getInt(1))) : Optional.empty();
     }
   }
 
@@ -2559,8 +2553,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         stmt = dbConn.createStatement();
         if (isValidTxn(txnid)) {
           //this also ensures that txn is still there in expected state
-          TxnRecord txnRecord = lockTransactionRecord(stmt, txnid, TxnStatus.OPEN);
-          if (txnRecord == null) {
+          Optional<TxnType> txnType = getOpenTxnTypeAndLock(stmt, txnid);
+          if (!txnType.isPresent()) {
             ensureValidTxn(dbConn, txnid, stmt);
             shouldNeverHappen(txnid);
           }
@@ -3472,8 +3466,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         lockInternal();
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        TxnRecord txnRecord = lockTransactionRecord(stmt, rqst.getTxnid(), TxnStatus.OPEN);
-        if (txnRecord == null) {
+        Optional<TxnType> txnType = getOpenTxnTypeAndLock(stmt, rqst.getTxnid());
+        if (!txnType.isPresent()) {
           //ensures txn is still there and in expected state
           ensureValidTxn(dbConn, rqst.getTxnid(), stmt);
           shouldNeverHappen(rqst.getTxnid());
