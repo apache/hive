@@ -23,21 +23,24 @@ import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
+import org.apache.impala.util.EventSequence;
 
 import java.util.Set;
 
 
 public class HivePlannerContext implements Context {
-  private HiveAlgorithmsConf algoConfig;
-  private HiveRulesRegistry registry;
-  private CalciteConnectionConfig calciteConfig;
-  private SubqueryConf subqueryConfig;
-  private HiveConfPlannerContext isCorrelatedColumns;
-  private FunctionHelper functionHelper;
+  private final HiveAlgorithmsConf algoConfig;
+  private final HiveRulesRegistry registry;
+  private final CalciteConnectionConfig calciteConfig;
+  private final SubqueryConf subqueryConfig;
+  private final HiveConfPlannerContext isCorrelatedColumns;
+  private final FunctionHelper functionHelper;
+  private final EventSequence timeline;
 
   public HivePlannerContext(HiveAlgorithmsConf algoConfig, HiveRulesRegistry registry,
       CalciteConnectionConfig calciteConfig, Set<RelNode> corrScalarRexSQWithAgg,
-      HiveConfPlannerContext isCorrelatedColumns, FunctionHelper functionHelper) {
+      HiveConfPlannerContext isCorrelatedColumns, FunctionHelper functionHelper,
+      EventSequence timeline) {
     this.algoConfig = algoConfig;
     this.registry = registry;
     this.calciteConfig = calciteConfig;
@@ -47,6 +50,7 @@ public class HivePlannerContext implements Context {
     this.subqueryConfig = new SubqueryConf(corrScalarRexSQWithAgg);
     this.isCorrelatedColumns = isCorrelatedColumns;
     this.functionHelper = functionHelper;
+    this.timeline = timeline;
   }
 
   public <T> T unwrap(Class<T> clazz) {
@@ -67,6 +71,9 @@ public class HivePlannerContext implements Context {
     }
     if (clazz.isInstance(functionHelper)) {
       return clazz.cast(functionHelper);
+    }
+    if (clazz.isInstance(timeline)) {
+      return clazz.cast(timeline);
     }
     return null;
   }

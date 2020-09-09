@@ -177,7 +177,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelDistribution;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptMaterializationValidator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
-import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRexExecutorImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
@@ -274,6 +273,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSubQueryRemoveRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MarkEventRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAbstractSplitFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregationPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCExpandExpressionsRule;
@@ -320,6 +320,7 @@ import org.apache.hadoop.hive.ql.plan.ImpalaQueryDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
+import org.apache.hadoop.hive.ql.plan.impala.ImpalaHelper;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionHelper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
@@ -333,6 +334,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.impala.util.EventSequence;
 import org.joda.time.Interval;
 
 import java.io.IOException;
@@ -501,11 +503,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   public static RelOptPlanner createPlanner(HiveConf conf, FunctionHelper functionHelper) {
-    return createPlanner(conf, functionHelper, new HashSet<>());
+    return createPlanner(conf, null, functionHelper, new HashSet<>());
   }
 
   private static RelOptPlanner createPlanner(
-      HiveConf conf, FunctionHelper functionHelper, Set<RelNode> corrScalarRexSQWithAgg) {
+      HiveConf conf, EventSequence timeline, FunctionHelper functionHelper, Set<RelNode> corrScalarRexSQWithAgg) {
     final Double maxSplitSize = (double) HiveConf.getLongVar(
             conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
     final Double maxMemory = (double) HiveConf.getLongVar(
@@ -526,7 +528,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     HiveConfPlannerContext hiveConfPlannerContext =
         new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy);
     HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
-        corrScalarRexSQWithAgg, hiveConfPlannerContext, functionHelper);
+        corrScalarRexSQWithAgg, hiveConfPlannerContext, functionHelper, timeline);
     return HiveVolcanoPlanner.createPlanner(confContext);
   }
 
@@ -578,7 +580,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               saveViewDefinition();
             }
 
-            markEvent("Calcite plan generated");
+            markEvent("Calcite - Optimized plan generated");
             // 3. Create Impala operator
             sinkOp = getImpalaSinkOperator(newPlan, cboCtx);
 
@@ -1973,7 +1975,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
        */
       final RexBuilder rexBuilder = cluster.getRexBuilder();
       this.functionHelper = createFunctionHelper(rexBuilder);
-      RelOptPlanner planner = createPlanner(conf, functionHelper, corrScalarRexSQWithAgg);
+      RelOptPlanner planner = createPlanner(conf, impalaHelper != null ? impalaHelper.getTimeline() : null,
+          functionHelper, corrScalarRexSQWithAgg);
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
       this.cluster = optCluster;
       this.relOptSchema = relOptSchema;
@@ -1993,6 +1996,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         throw new RuntimeException(e);
       }
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
+      markEvent("Calcite - Plan created");
 
       // Create executor
       RexExecutor executorProvider = functionHelper.getRexExecutor();
@@ -2057,10 +2061,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
         calciteOptimizedPlan = calcitePreCboPlan;
         disableSemJoinReordering = false;
       }
+      markEvent("Calcite - Join order selection");
 
       // 5. Apply post-join order optimizations
       calciteOptimizedPlan = applyPostJoinOrderingTransform(calciteOptimizedPlan,
           mdProvider.getMetadataProvider(), executorProvider);
+      markEvent("Calcite - Post-join order optimization");
 
       if (generateEnginePlan) {
         switch (conf.getEngine()) {
@@ -2224,13 +2230,23 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
         "Calcite: Prejoin ordering transformation, Push Down Semi Joins"); */
 
+      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+          new MarkEventRule("Calcite - Pre-join ordering optimization"));
+
       // 6. Apply Partition Pruning
       generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
           new HivePartitionPruneRule(conf));
+      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+          new MarkEventRule("Calcite - Partition pruning executed"));
 
-      // 7. Projection Pruning (this introduces select above TS & hence needs to be run last due to PP)
+      // 7. Projection Pruning (this introduces select above TS & hence needs to be run last due to PP).
+      // The pruner retrieves the column statistics at this stage (only for those columns
+      // remaining in the plan). These statistics are retrieved only once: they are cached
+      // and reused throughout the rest of the planning phase.
       generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN,
           new HiveFieldTrimmerRule(true));
+      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+          new MarkEventRule("Calcite - Column statistics retrieved"));
 
       // 8. Rerun PPD through Project as column pruning would have introduced
       // DT above scans; By pushing filter just above TS, Hive can push it into
