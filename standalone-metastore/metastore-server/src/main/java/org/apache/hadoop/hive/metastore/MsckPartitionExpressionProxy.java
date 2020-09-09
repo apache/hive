@@ -46,7 +46,8 @@ public class MsckPartitionExpressionProxy implements PartitionExpressionProxy {
   private static final Logger LOG = LoggerFactory.getLogger(MsckPartitionExpressionProxy.class);
 
   @Override
-  public String convertExprToFilter(final byte[] exprBytes, final String defaultPartitionName, boolean useStringConversion) throws MetaException {
+  public String convertExprToFilter(final byte[] exprBytes, final String defaultPartitionName,
+                                    boolean decodeExpFilterToStr) throws MetaException {
     return new String(exprBytes, StandardCharsets.UTF_8);
   }
 

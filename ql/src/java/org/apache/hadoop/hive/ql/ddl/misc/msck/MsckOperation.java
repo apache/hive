@@ -73,10 +73,12 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
               partitionExpirySeconds);
         }
       }
+
       String strFilterExp = null;
       if (desc.getFilterExp() != null) {
         PartitionExpressionProxy expressionProxy = createExpressionProxy(context.getDb().getConf());
-        strFilterExp = expressionProxy.convertExprToFilter(desc.getFilterExp(), context.getDb().getConf().get(MetastoreConf.ConfVars.DEFAULTPARTITIONNAME.getVarname()), false);
+        strFilterExp = expressionProxy.convertExprToFilter(desc.getFilterExp(),
+            context.getDb().getConf().get(MetastoreConf.ConfVars.DEFAULTPARTITIONNAME.getVarname()), false);
       }
 
       MsckInfo msckInfo = new MsckInfo(SessionState.get().getCurrentCatalog(), tableName.getDb(), tableName.getTable(),

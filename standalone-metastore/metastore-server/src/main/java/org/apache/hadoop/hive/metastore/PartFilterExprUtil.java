@@ -45,8 +45,8 @@ public class PartFilterExprUtil {
     // if serialization fails we will throw incompatible metastore error to the client.
     String filter = null;
     try {
-      boolean useString = conf.getBoolean(MetastoreConf.ConfVars.USE_STRING_CONVERSION.getVarname(), false);
-      filter = expressionProxy.convertExprToFilter(expr, defaultPartitionName, useString);
+      filter = expressionProxy.convertExprToFilter(expr, defaultPartitionName,
+          conf.getBoolean(MetastoreConf.ConfVars.DECODE_EXPRESSION_FILTER_TO_STRING.getVarname(), false));
     } catch (MetaException ex) {
       // TODO MS-SPLIT - for now we have construct this by reflection because IMetaStoreClient
       // can't be

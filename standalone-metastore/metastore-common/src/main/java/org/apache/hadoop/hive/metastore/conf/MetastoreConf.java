@@ -619,7 +619,11 @@ public class MetastoreConf {
     EXPRESSION_PROXY_CLASS("metastore.expression.proxy", "hive.metastore.expression.proxy",
         "org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore",
         "Class to use to process expressions in partition pruning."),
-    USE_STRING_CONVERSION("metastore.use.string.conversion", "hive.metastore.use.string.conversion", false, "NA"),
+    DECODE_EXPRESSION_FILTER_TO_STRING("metastore.decode.expression.filter.tostring",
+        "hive.metastore.decode.expression.filter.tostring", false,
+        "If set to true convertExprToFilter method of PartitionExpressionForMetastore will decode \n" +
+            "byte array into string rather than ExprNode. This is specially required for \n" +
+            "msck command when used with filter conditions"),
     FILE_METADATA_THREADS("metastore.file.metadata.threads",
         "hive.metastore.hbase.file.metadata.threads", 1,
         "Number of threads to use to read file metadata in background to cache it."),

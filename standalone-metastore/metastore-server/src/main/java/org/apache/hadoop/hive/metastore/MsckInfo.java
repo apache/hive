@@ -65,7 +65,9 @@ public class MsckInfo {
     return filterExp;
   }
 
-  public String getStrFilter() { return strFilter; }
+  public String getStrFilter() {
+    return strFilter;
+  }
 
   public String getResFile() {
     return resFile;
