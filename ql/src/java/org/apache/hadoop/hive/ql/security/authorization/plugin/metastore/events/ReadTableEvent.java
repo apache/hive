@@ -20,7 +20,7 @@
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore.events;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
