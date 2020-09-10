@@ -84,6 +84,7 @@ public class CopyUtils {
     boolean useRegularCopy = regularCopy(sourceFs, srcFiles);
     try {
       if (useRegularCopy || readSrcAsFilesList) {
+        // Layout of data files may differ based on the type of tables.
         Map<FileSystem, Map< Path, List<ReplChangeManager.FileInfo>>> map = fsToFileMap(srcFiles, destRoot);
         for (Map.Entry<FileSystem, Map<Path, List<ReplChangeManager.FileInfo>>> entry : map.entrySet()) {
           Map<Path, List<ReplChangeManager.FileInfo>> destMap = entry.getValue();
@@ -104,6 +105,9 @@ public class CopyUtils {
           }
         }
       } else {
+        // When distCp is to be used and the srcFiles doesn't contain subDirs (readSrcAsFilesList=false),
+        // original from path should be used during distCp, as distCp copies dirItems of srcPath,
+        // not the srcPath folder itself.
         srcFiles.clear();
         srcFiles.add(new ReplChangeManager.FileInfo(sourceFs, origSrcPath, null));
         doCopyRetry(sourceFs, srcFiles, destRoot, proxyUser, useRegularCopy, overwrite);
