@@ -15508,7 +15508,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private ValidTxnWriteIdList getQueryValidTxnWriteIdList() throws SemanticException {
+  protected ValidTxnWriteIdList getQueryValidTxnWriteIdList() throws SemanticException {
     // TODO: Once HIVE-18948 is in, should be able to retrieve writeIdList from the conf.
     //cachedWriteIdList = AcidUtils.getValidTxnWriteIdList(conf);
     //

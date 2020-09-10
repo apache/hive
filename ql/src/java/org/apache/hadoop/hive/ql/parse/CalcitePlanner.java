@@ -1729,8 +1729,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
           writeId = loadTableDesc.getWriteId();
         }
       }
+      // We plumb through the QueryValidTxnWriteIdList() due to the fact that when we load
+      // ImpalaHdfsTable we make HMS calls that require a ValidWriteIdList (for transactional
+      // tables). This is typically done for most HMS calls automatically once compilation and
+      // lock acquistion is done, but since we are in the middle of compilation we can not
+      // rely on that behavior)
       ImpalaCompiledPlan compiledPlan = this.impalaHelper.compilePlan(
-          getDb(), impalaRel, resultDir, ctx.isExplainPlan(), getQB(), cboCtx.type, writeId);
+          getDb(), impalaRel, resultDir, ctx.isExplainPlan(), getQB(), cboCtx.type, writeId,
+          getQueryValidTxnWriteIdList());
       markEvent("Impala plan generated");
       return OperatorFactory.getAndMakeChild(new ImpalaQueryDesc(compiledPlan), fso);
     } catch (HiveException e) {

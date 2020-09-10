@@ -18,6 +18,8 @@
 package org.apache.hadoop.hive.ql.plan.impala;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -84,13 +86,19 @@ public class ImpalaTableLoader {
     return tableMap.get(table);
   }
 
-  public void loadTablesAndPartitions(Hive db) throws HiveException {
+  public void loadTablesAndPartitions(Hive db, ValidTxnWriteIdList txnWriteIdList) throws HiveException {
     timeline.markEvent("Metadata load started, loading " + queryContext.getBasicTables().size() +
         " tables.");
     for (ImpalaBasicHdfsTable basicTable : queryContext.getBasicTables()) {
       LOG.info("Loading metadata for table " + basicTable.getName());
       try {
-        tableMap.put(basicTable.getMetaStoreTable(), new ImpalaHdfsTable(basicTable, db.getMSC()));
+        ValidWriteIdList validWriteIdList = null;
+        if (txnWriteIdList != null) {
+          // Lets get this specific table's write id list
+          validWriteIdList = txnWriteIdList.getTableValidWriteIdList(basicTable.getFullName());
+        }
+        tableMap.put(basicTable.getMetaStoreTable(), new ImpalaHdfsTable(basicTable, db.getMSC(),
+              validWriteIdList));
       } catch (ImpalaException|MetaException e) {
         timeline.markEvent("Metadata load failed or table " + basicTable.getName() + ". Completed" +
             " for " + tableMap.entrySet().size() + " tables.");

@@ -25,6 +25,7 @@ import org.apache.calcite.plan.hep.HepProgram;
 import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -132,7 +133,8 @@ public class ImpalaHelper {
   }
 
   public ImpalaCompiledPlan compilePlan(Hive db, RelNode rootRelNode, Path resultPath,
-      boolean isExplain, QB qb, CalcitePlanner.PreCboCtx.Type stmtType, long writeId) throws HiveException {
+      boolean isExplain, QB qb, CalcitePlanner.PreCboCtx.Type stmtType, long writeId,
+      ValidTxnWriteIdList txnWriteIdList) throws HiveException {
     try {
       Preconditions.checkState(rootRelNode instanceof ImpalaPlanRel, "Plan contains operators not supported by Impala");
       ImpalaPlanRel impalaRelNode = (ImpalaPlanRel) rootRelNode;
@@ -140,7 +142,7 @@ public class ImpalaHelper {
           getImpalaStmtType(stmtType), getImpalaResultStmtType(stmtType), timeline, writeId);
       ImpalaPlannerContext planCtx = impalaPlanner.getPlannerContext();
       impalaPlanner.initTargetTable();
-      planCtx.getTableLoader().loadTablesAndPartitions(db);
+      planCtx.getTableLoader().loadTablesAndPartitions(db, txnWriteIdList);
 
       PlanNode rootImpalaNode = impalaRelNode.getRootPlanNode(planCtx);
       timeline.markEvent("Single node plan created");

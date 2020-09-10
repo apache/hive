@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.plan.impala.catalog;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
@@ -31,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable;
@@ -66,12 +68,18 @@ public class ImpalaHdfsTable extends HdfsTable {
 
   // a dummy partition needed for an unparttiioned table.
   private final FeFsPartition dummyPartition;
+  // This is a "compile time" ValidWriteIdList. Typically HMS clients will auto-set this
+  // for a variety of HMS calls automatically - but only after compilation (this is
+  // usualy setup via Driver#recordValidWriteIds). Since we are making HMS calls
+  // that require a ValidWriteIdList, we have to explicitly set this on the HMS calls.
+  private final ValidWriteIdList compileTimeWriteIdList;
 
   public ImpalaHdfsTable(HiveConf conf, Table msTbl, Db db, String name, String owner)
       throws HiveException {
     super(msTbl, db, name, owner);
     this.conf = conf;
     this.dummyPartition = null;
+    this.compileTimeWriteIdList = null;
     try {
       loadSchema(msTbl);
       initializePartitionMetadata(msTbl);
@@ -83,11 +91,12 @@ public class ImpalaHdfsTable extends HdfsTable {
   }
 
   public ImpalaHdfsTable(ImpalaBasicHdfsTable basicHdfsTable,
-      IMetaStoreClient client) throws HiveException, ImpalaException, MetaException {
+      IMetaStoreClient client, ValidWriteIdList compileTimeWriteIdList) throws HiveException, ImpalaException, MetaException {
     super(basicHdfsTable.getMetaStoreTable(), basicHdfsTable.getDb(),
         basicHdfsTable.getName(), basicHdfsTable.getOwnerUser());
     try {
       this.conf = basicHdfsTable.getConf();
+      this.compileTimeWriteIdList = compileTimeWriteIdList;
       Table msTbl = getMetaStoreTable();
       // initialize variables needed in parent HdfsTable
       loadSchema(msTbl);
@@ -205,6 +214,12 @@ public class ImpalaHdfsTable extends HdfsTable {
     request.setTbl_name(msTable_.getTableName());
     request.setNames(Lists.newArrayList(names));
     request.setGetFileMetadata(true);
+    Preconditions.checkState(
+        !AcidUtils.isTransactionalTable(msTable_) || compileTimeWriteIdList != null,
+        "Transaction tables must provide a ValidWriteIdList");
+    if (compileTimeWriteIdList != null) {
+      request.setValidWriteIdList(compileTimeWriteIdList.toString());
+    }
     return request;
   }
 
@@ -213,6 +228,12 @@ public class ImpalaHdfsTable extends HdfsTable {
     request.setDbName(msTable_.getDbName());
     request.setTblName(msTable_.getTableName());
     request.setGetFileMetadata(true);
+    Preconditions.checkState(
+        !AcidUtils.isTransactionalTable(msTable_) || compileTimeWriteIdList != null,
+        "Transaction tables must provide a ValidWriteIdList");
+    if (compileTimeWriteIdList != null) {
+      request.setValidWriteIdList(compileTimeWriteIdList.toString());
+    }
     return request;
   }
 
