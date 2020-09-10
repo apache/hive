@@ -38,29 +38,17 @@ import java.util.List;
  *  corresponding to the specific hook type.
  */
 public class HooksLoader {
-
   private static final Logger LOG = LoggerFactory.getLogger(HooksLoader.class);
-
   private final HiveConf conf;
-  // The containers that store different kinds of hooks
-  private final HookContainer[] containers;
-  // for unit test purpose, check change of the hooks after invoking loadHooksFromConf
-  private boolean forTest = false;
-
+  private final Hooks[] hooks;
   private SessionState.LogHelper console;
 
   public HooksLoader(HiveConf conf) {
     this.conf = conf;
-    this.containers = new HookContainer[HookContext.HookType.values().length];
-    for (int i = 0; i < containers.length; i++) {
-      containers[i] = new HookContainer();
+    this.hooks = new Hooks[HookContext.HookType.values().length];
+    for (int i = 0; i < hooks.length; i++) {
+      hooks[i] = new Hooks();
     }
-  }
-
-  @VisibleForTesting
-  HooksLoader(HiveConf conf, boolean forTest) {
-    this(conf);
-    this.forTest = forTest;
   }
 
   public HooksLoader(HiveConf conf, SessionState.LogHelper console) {
@@ -74,7 +62,7 @@ public class HooksLoader {
    */
   @VisibleForTesting
   void loadHooksFromConf(HookContext.HookType type) {
-    HookContainer container = containers[type.ordinal()];
+    Hooks container = hooks[type.ordinal()];
     if (!container.loadedFromConf) {
       container.loadedFromConf = true;
       List hooks = container.getHooks();
@@ -114,13 +102,9 @@ public class HooksLoader {
    * @param hook The hook that will be added
    */
   public void addHook(HookContext.HookType type, Object hook) {
-    Preconditions.checkNotNull(type);
-    Preconditions.checkNotNull(hook);
-    if (!forTest) {
-      loadHooksFromConf(type);
-    }
+    loadHooksFromConf(type);
     if (type.getHookClass().isAssignableFrom(hook.getClass())) {
-      containers[type.ordinal()].addHook(hook);
+      hooks[type.ordinal()].addHook(hook);
     } else {
       String message = "Error adding hook: " + hook.getClass().getName() + " into type: " + type +
           ", as the hook doesn't implement or extend: " + type.getHookClass().getName();
@@ -137,8 +121,6 @@ public class HooksLoader {
    * @return List of hooks
    */
   public <T> List<T> getHooks(HookContext.HookType type, Class<T> clazz) {
-    Preconditions.checkNotNull(type);
-    Preconditions.checkNotNull(clazz);
     if (!type.getHookClass().isAssignableFrom(clazz)) {
       String message = "The arg class: " + clazz.getName() + " should be the same as, "
           + "or the subclass of " + type.getHookClass().getName()
@@ -146,10 +128,8 @@ public class HooksLoader {
       logErrorMessage(message);
       throw new IllegalArgumentException(message);
     }
-    if (!forTest) {
-      loadHooksFromConf(type);
-    }
-    return containers[type.ordinal()].getHooks();
+    loadHooksFromConf(type);
+    return hooks[type.ordinal()].getHooks();
   }
 
   public List getHooks(HookContext.HookType type) {
@@ -161,8 +141,7 @@ public class HooksLoader {
    * should not be used outside the class
    * @param <T> the generic type of hooks
    */
-  private class HookContainer<T> {
-
+  private class Hooks<T> {
     private boolean loadedFromConf = false;
     private List<T> hooks = new ArrayList<T>();
     void addHook(T hook) {
@@ -172,7 +151,6 @@ public class HooksLoader {
     List<T> getHooks() {
       return this.hooks;
     }
-
   }
-
+  
 }
