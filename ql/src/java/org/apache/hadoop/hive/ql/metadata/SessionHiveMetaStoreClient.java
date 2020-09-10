@@ -55,6 +55,8 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
@@ -1153,6 +1155,96 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     }
     Collections.sort(result);
     return result;
+  }
+
+  @Override
+  public GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
+      throws NoSuchObjectException, MetaException, TException {
+    String dbName = req.getDbName(), tblName = req.getTblName();
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      return super.listPartitionNamesRequest(req);
+    }
+    List<String> partVals = req.getPartValues();
+    short maxParts = req.getMaxParts();
+    TempTable tt = getPartitionedTempTable(table);
+    List<Partition> partitions = tt.getPartitionsByPartitionVals(partVals);
+    List<String> result = new ArrayList<>();
+    for (int i = 0; i < ((maxParts < 0 || maxParts > partitions.size()) ? partitions.size() : maxParts); i++) {
+      result.add(makePartName(table.getPartitionKeys(), partitions.get(i).getValues()));
+    }
+    Collections.sort(result);
+    GetPartitionNamesPsResponse response = new GetPartitionNamesPsResponse();
+    response.setNames(result);
+    return response;
+  }
+
+  @Override
+  public List<String> listPartitionNames(PartitionsByExprRequest req)
+      throws MetaException, TException, NoSuchObjectException {
+    String dbName = req.getDbName(), tblName = req.getTblName();
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      return super.listPartitionNames(req);
+    }
+    List<Partition> partitionList = getPartitionedTempTable(table).listPartitions();
+    if (partitionList.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    byte[] expr = req.getExpr();
+    boolean isEmptyFilter = (expr == null || (expr.length == 1 && expr[0] == -1));
+    if (!isEmptyFilter) {
+      partitionList = getPartitionedTempTable(table).listPartitionsByFilter(
+          generateJDOFilter(table, expr, req.getDefaultPartitionName()));
+    }
+
+    List<String> results = new ArrayList<>();
+    Collections.sort(partitionList, new PartitionNamesComparator(table, req));
+    short maxParts = req.getMaxParts();
+    for(int i = 0; i < ((maxParts < 0 || maxParts > partitionList.size()) ? partitionList.size() : maxParts); i++) {
+      results.add(Warehouse.makePartName(table.getPartitionKeys(), partitionList.get(i).getValues()));
+    }
+    return results;
+  }
+
+  final class PartitionNamesComparator implements java.util.Comparator<Partition> {
+    private org.apache.hadoop.hive.metastore.api.Table table;
+    private PartitionsByExprRequest req;
+    PartitionNamesComparator(org.apache.hadoop.hive.metastore.api.Table table, PartitionsByExprRequest req) {
+      this.table = table;
+      this.req = req;
+    }
+    @Override
+    public int compare(Partition o1, Partition o2) {
+      List<Object[]> orders = MetaStoreUtils.makeOrderSpecs(req.getOrder());
+      for (Object[] order : orders) {
+        int partKeyIndex = (int) order[0];
+        boolean isAsc = "asc".equalsIgnoreCase((String)order[1]);
+        String partVal1 = o1.getValues().get(partKeyIndex), partVal2 = o2.getValues().get(partKeyIndex);
+        int val = partVal1.compareTo(partVal2);
+        if (val == 0) {
+          continue;
+        } else if (partVal1.equals(req.getDefaultPartitionName())) {
+          return isAsc ? 1 : -1;
+        } else if (partVal2.equals(req.getDefaultPartitionName())) {
+          return isAsc ? -1 : 1;
+        } else {
+          String type = table.getPartitionKeys().get(partKeyIndex).getType();
+          if (org.apache.hadoop.hive.metastore.ColumnType.IntegralTypes.contains(type)) {
+            val = (Double.valueOf(partVal1) - Double.valueOf(partVal2)) > 0 ? 1 : -1;
+          }
+          return isAsc ? val : - val;
+        }
+      }
+
+      try {
+        return Warehouse.makePartName(table.getPartitionKeys(), o1.getValues()).compareTo(
+            Warehouse.makePartName(table.getPartitionKeys(), o2.getValues()));
+      } catch (MetaException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 
   @Override
