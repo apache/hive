@@ -76,7 +76,7 @@ public class TestHooksLoader {
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_OOM_HOOKS,
         OomRunner.class.getName() + "," + OomRunner.class.getName() + "," + OomRunner.class.getName());
 
-    HooksLoader loader = new HooksLoader(hiveConf, true);
+    HooksLoader loader = new HooksLoader(hiveConf);
     verify(HookContext.HookType.OOM, loader, OomRunner.class, 0, 3);
     verify(HookContext.HookType.PRE_EXEC_HOOK, loader, PreExecHook.class, 0,2);
     verify(HookContext.HookType.POST_EXEC_HOOK, loader, PostExecHook.class, 0, 1);
@@ -90,7 +90,7 @@ public class TestHooksLoader {
 
   private <T> void verify(HookContext.HookType type, HooksLoader loader, Class<T> expectedCls,
       int beforeSize, int afterSize) throws Exception {
-    List<T> loadedHooks = loader.getHooks(type, expectedCls);
+    List loadedHooks = loader.getHooks(type, false);
     Assert.assertTrue(loadedHooks.size() == beforeSize);
     for (int i = 0; i < loadedHooks.size(); i++) {
       Assert.assertTrue(expectedCls.isAssignableFrom(loadedHooks.get(i).getClass()));

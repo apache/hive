@@ -71,7 +71,6 @@ public class HookContext {
     private final HiveConf.ConfVars confVar;
     // the super class or interface of the corresponding hooks
     private final Class hookClass;
-
     private final String description;
 
     HookType(HiveConf.ConfVars confVar, Class hookClass, String description) {
@@ -84,7 +83,7 @@ public class HookContext {
       return this.hookClass;
     }
 
-    public HiveConf.ConfVars getHookConfVar() {
+    public HiveConf.ConfVars getConfVar() {
       return this.confVar;
     }
 

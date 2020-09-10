@@ -39,8 +39,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hive.common.util.HiveStringUtils;
 
-import java.util.List;
-
 import static org.apache.hadoop.hive.ql.hooks.HookContext.HookType.*;
 
 /**

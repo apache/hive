@@ -18,13 +18,11 @@
 
 package org.apache.hadoop.hive.ql.hooks;
 
-import com.cronutils.utils.Preconditions;
 import com.cronutils.utils.VisibleForTesting;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.HiveStringUtils;
-import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,29 +59,24 @@ public class HooksLoader {
    * @param type hook type
    */
   @VisibleForTesting
-  void loadHooksFromConf(HookContext.HookType type) {
+  void loadHooksFromConf(HookContext.HookType type) throws Exception {
     Hooks container = hooks[type.ordinal()];
     if (!container.loadedFromConf) {
       container.loadedFromConf = true;
       List hooks = container.getHooks();
-      HiveConf.ConfVars confVars = type.getHookConfVar();
-      try {
-        Collection<String> csHooks = conf.getStringCollection(confVars.varname);
-        for (String clzName : csHooks) {
-          Class hookCls = Class.forName(clzName.trim(), true, Utilities.getSessionSpecifiedClassLoader());
-          if (type.getHookClass().isAssignableFrom(hookCls)) {
-            Object hookObj = ReflectionUtil.newInstance(hookCls, conf);
-            hooks.add(hookObj);
-          } else {
-            String message = "The class: " + clzName + " should be the subclass of " + type.getHookClass().getName() +
-                ", as the type: " + type + " defined";
-            logErrorMessage(message);
-            throw new ClassCastException(clzName + " cannot be cast to " + type.getHookClass().getName());
-          }
+      HiveConf.ConfVars confVars = type.getConfVar();
+      Collection<String> csHooks = conf.getStringCollection(confVars.varname);
+      for (String clzName : csHooks) {
+        Class hookCls = Class.forName(clzName.trim(), true, Utilities.getSessionSpecifiedClassLoader());
+        if (type.getHookClass().isAssignableFrom(hookCls)) {
+          Object hookObj = hookCls.newInstance();
+          hooks.add(hookObj);
+        } else {
+          String message = "The class: " + clzName + " should be the subclass of " + type.getHookClass().getName()
+              + ", as the type: " + type + " defined";
+          logErrorMessage(message);
+          throw new ClassCastException(clzName + " cannot be cast to " + type.getHookClass().getName());
         }
-      } catch (Exception e) {
-        String message = "Error loading hooks(" + confVars + "): " + HiveStringUtils.stringifyException(e);
-        throw new RuntimeException(message, e);
       }
     }
   }
@@ -102,9 +95,14 @@ public class HooksLoader {
    * @param hook The hook that will be added
    */
   public void addHook(HookContext.HookType type, Object hook) {
-    loadHooksFromConf(type);
     if (type.getHookClass().isAssignableFrom(hook.getClass())) {
-      hooks[type.ordinal()].addHook(hook);
+      try {
+        loadHooksFromConf(type);
+        hooks[type.ordinal()].addHook(hook);
+      } catch (Exception e) {
+        String message = "Error adding hooks(" + type.getConfVar() + "): " + HiveStringUtils.stringifyException(e);
+        throw new RuntimeException(message, e);
+      }
     } else {
       String message = "Error adding hook: " + hook.getClass().getName() + " into type: " + type +
           ", as the hook doesn't implement or extend: " + type.getHookClass().getName();
@@ -128,7 +126,20 @@ public class HooksLoader {
       logErrorMessage(message);
       throw new IllegalArgumentException(message);
     }
-    loadHooksFromConf(type);
+    try {
+      loadHooksFromConf(type);
+      return hooks[type.ordinal()].getHooks();
+    } catch (Exception e) {
+      String message = "Error getting hooks(" + type.getConfVar() + "): " + HiveStringUtils.stringifyException(e);
+      throw new RuntimeException(message, e);
+    }
+  }
+
+  @VisibleForTesting
+  public List getHooks(HookContext.HookType type, boolean loadFromConf) {
+    if (loadFromConf) {
+      return getHooks(type);
+    }
     return hooks[type.ordinal()].getHooks();
   }
 
