@@ -96,7 +96,7 @@ class AddPartitionHandler extends AbstractEventHandler {
         withinContext.replicationSpec,
         withinContext.hiveConf);
 
-    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     Iterator<PartitionFiles> partitionFilesIter = apm.getPartitionFilesIter().iterator();
 
     // We expect one to one mapping between partitions and file iterators. For external table, this

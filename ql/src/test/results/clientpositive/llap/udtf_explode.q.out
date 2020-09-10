@@ -34,11 +34,11 @@ STAGE PLANS:
             outputColumnNames: _col0
             UDTF Operator
               function name: explode
-              Select Operator
-                expressions: col (type: int)
-                outputColumnNames: _col0
-                Limit
-                  Number of rows: 3
+              Limit
+                Number of rows: 3
+                Select Operator
+                  expressions: col (type: int)
+                  outputColumnNames: _col0
                   ListSink
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT a.myCol, count(1) FROM (SELECT explode(array(1, 2, 3)) AS myCol FROM src LIMIT 3) a GROUP BY a.myCol
@@ -75,12 +75,12 @@ STAGE PLANS:
                     UDTF Operator
                       Statistics: Num rows: 500 Data size: 28000 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: explode
-                      Select Operator
-                        expressions: col (type: int)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                        Limit
-                          Number of rows: 3
+                      Limit
+                        Number of rows: 3
+                        Statistics: Num rows: 3 Data size: 168 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: col (type: int)
+                          outputColumnNames: _col0
                           Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             bucketingVersion: 2
@@ -94,7 +94,7 @@ STAGE PLANS:
                             value expressions: _col0 (type: int)
                             auto parallelism: false
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -136,12 +136,12 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: int)
-                outputColumnNames: _col0
+              Limit
+                Number of rows: 3
                 Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 3
+                Select Operator
+                  expressions: VALUE._col0 (type: int)
+                  outputColumnNames: _col0
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()
@@ -283,7 +283,7 @@ STAGE PLANS:
                             sort order: ++
                             Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -343,12 +343,12 @@ STAGE PLANS:
                     UDTF Operator
                       Statistics: Num rows: 500 Data size: 259500 Basic stats: COMPLETE Column stats: COMPLETE
                       function name: explode
-                      Select Operator
-                        expressions: key (type: int), value (type: string)
-                        outputColumnNames: _col0, _col1
-                        Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                        Limit
-                          Number of rows: 3
+                      Limit
+                        Number of rows: 3
+                        Statistics: Num rows: 3 Data size: 1557 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: key (type: int), value (type: string)
+                          outputColumnNames: _col0, _col1
                           Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                           Reduce Output Operator
                             bucketingVersion: 2
@@ -362,7 +362,7 @@ STAGE PLANS:
                             value expressions: _col0 (type: int), _col1 (type: string)
                             auto parallelism: false
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -404,12 +404,12 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             Needs Tagging: false
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: int), VALUE._col1 (type: string)
-                outputColumnNames: _col0, _col1
+              Limit
+                Number of rows: 3
                 Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 3
+                Select Operator
+                  expressions: VALUE._col0 (type: int), VALUE._col1 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 3 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count()

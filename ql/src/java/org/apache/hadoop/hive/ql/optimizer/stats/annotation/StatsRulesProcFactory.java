@@ -2514,6 +2514,7 @@ public class StatsRulesProcFactory {
       case JoinDesc.INNER_JOIN:
       case JoinDesc.UNIQUE_JOIN:
       case JoinDesc.LEFT_SEMI_JOIN:
+      case JoinDesc.ANTI_JOIN:
         break;
       }
       colStats.setNumNulls(newNumNulls);
@@ -2605,6 +2606,17 @@ public class StatsRulesProcFactory {
         case JoinDesc.LEFT_SEMI_JOIN:
           // max # of rows = rows from left side
           result = Math.min(rowCountParents.get(joinCond.getLeft()), result);
+          break;
+        case JoinDesc.ANTI_JOIN:
+          long leftRowCount = rowCountParents.get(joinCond.getLeft());
+          if (leftRowCount < result) {
+            // Ideally the inner join count should be less than the left row count. but if its not calculated
+            // properly then we can assume whole of left table will be selected.
+            result = leftRowCount;
+          } else {
+            // The number of result should be left reduced by the number of rows matching (ie inner join count).
+            result = leftRowCount - result;
+          }
           break;
         default:
           LOG.debug("Unhandled join type in stats estimation: " + joinCond.getType());

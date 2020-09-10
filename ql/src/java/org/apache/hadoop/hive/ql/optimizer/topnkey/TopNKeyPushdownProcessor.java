@@ -34,9 +34,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
@@ -162,7 +160,7 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
 
     LOG.debug("Pushing a copy of {} through {}", topNKey.getName(), groupBy.getName());
     final TopNKeyDesc newTopNKeyDesc = topNKeyDesc.combine(commonKeyPrefix);
-    pushdown(copyDown(groupBy, newTopNKeyDesc));
+    pushdown((TopNKeyOperator) copyDown(groupBy, newTopNKeyDesc));
 
     if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
       LOG.debug("Removing {} above {}", topNKey.getName(), groupBy.getName());
@@ -191,7 +189,7 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
 
     LOG.debug("Pushing a copy of {} through {}", topNKey.getName(), reduceSink.getName());
     final TopNKeyDesc newTopNKeyDesc = topNKeyDesc.combine(commonKeyPrefix);
-    pushdown(copyDown(reduceSink, newTopNKeyDesc));
+    pushdown((TopNKeyOperator) copyDown(reduceSink, newTopNKeyDesc));
 
     if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
       LOG.debug("Removing {} above {}", topNKey.getName(), reduceSink.getName());
@@ -252,7 +250,7 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
     LOG.debug("Pushing a copy of {} through {} and {}",
             topNKey.getName(), join.getName(), reduceSinkOperator.getName());
     final TopNKeyDesc newTopNKeyDesc = topNKeyDesc.combine(commonKeyPrefix);
-    pushdown(copyDown(reduceSinkOperator, newTopNKeyDesc));
+    pushdown((TopNKeyOperator) copyDown(reduceSinkOperator, newTopNKeyDesc));
 
     if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
       LOG.debug("Removing {} above {}", topNKey.getName(), join.getName());
@@ -278,85 +276,26 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
       LOG.debug("Not pushing {} through {} as non FK side of the join is filtered", topNKey.getName(), join.getName());
       return;
     }
-    // Check column origins:
-    //  1. If all OrderBy columns are coming from the child (FK) table:
-    //    -> move TopNKeyOperator
-    //  2. If the first n OrderBy columns are coming from the child (FK) table:
-    //    -> copy TopNKeyOperator with the first n columns, and leave the original in place
-    int prefixLength = keyColumnPrefixLength(join, topNKey, fkJoinInputIndex, topNKey.getConf().getKeyColumns());
-    if (prefixLength == 0) {
-      LOG.debug("Not pushing {} through {} as common key column prefix length is 0", topNKey.getName(), join.getName());
+    CommonKeyPrefix commonKeyPrefix = CommonKeyPrefix.map(
+            mapUntilColumnEquals(topNKeyDesc.getKeyColumns(), join.getColumnExprMap()),
+            topNKeyDesc.getColumnSortOrder(),
+            topNKeyDesc.getNullOrder(),
+            fkJoinInput.getConf().getKeyCols(),
+            fkJoinInput.getConf().getColumnExprMap(),
+            fkJoinInput.getConf().getOrder(),
+            fkJoinInput.getConf().getNullOrder());
+    if (commonKeyPrefix.isEmpty() || commonKeyPrefix.size() == topNKeyDesc.getPartitionKeyColumns().size()) {
       return;
     }
     LOG.debug("Pushing a copy of {} through {} and {}",
             topNKey.getName(), join.getName(), fkJoinInput.getName());
-    TopNKeyDesc newTopNKeyDesc = topNKeyDesc.withKeyColumns(prefixLength);
-    newTopNKeyDesc.setKeyColumns(remapColumns(join, fkJoinInput, newTopNKeyDesc.getKeyColumns()));
-    pushdown(copyDown(fkJoinInput, newTopNKeyDesc));
-    if (topNKeyDesc.getKeyColumns().size() == prefixLength) {
+    final TopNKeyDesc newTopNKeyDesc = topNKeyDesc.combine(commonKeyPrefix);
+    pushdown((TopNKeyOperator) copyDown(fkJoinInput, newTopNKeyDesc));
+
+    if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
       LOG.debug("Removing {} above {}", topNKey.getName(), join.getName());
       join.removeChildAndAdoptItsChildren(topNKey);
     }
-  }
-
-  /**
-   * Check if the first n keyColumns of the TopNKeyFilter
-   * are coming from expected side of the join (indicated by the expectedTag).
-   * @return n
-   */
-  private int keyColumnPrefixLength(
-          CommonJoinOperator<? extends JoinDesc> join,
-          TopNKeyOperator topNKeyOperator,
-          int expectedTag,
-          List<ExprNodeDesc> keyColumns) {
-    int commonPrefixLength = 0;
-    for (ExprNodeDesc orderByKey : keyColumns) {
-      if (tag(join, topNKeyOperator, orderByKey) == expectedTag) {
-        commonPrefixLength++;
-      } else {
-        return commonPrefixLength;
-      }
-    }
-    return commonPrefixLength;
-  }
-
-  private int tag(CommonJoinOperator<? extends JoinDesc> join, TopNKeyOperator topNKeyOperator, ExprNodeDesc column) {
-    String colName = columnOutputName(join, topNKeyOperator, column);
-    if (colName == null) {
-      return -1;
-    }
-    Byte tag = join.getConf().getReversedExprs().get(colName);
-    return tag == null ? -1 : tag;
-  }
-
-  private String columnOutputName(CommonJoinOperator<? extends JoinDesc> join, TopNKeyOperator topNKeyOperator, ExprNodeDesc column) {
-    ExprNodeDesc joinExprNode = backtrack(join, topNKeyOperator, column);
-    if (joinExprNode == null) {
-      return null;
-    }
-    for (Map.Entry<String, ExprNodeDesc> e : join.getColumnExprMap().entrySet()) {
-      if (e.getValue() == joinExprNode) {
-        return e.getKey();
-      }
-    }
-    return null;
-  }
-
-  private ExprNodeDesc backtrack(CommonJoinOperator<? extends JoinDesc> join, TopNKeyOperator topNKeyOperator, ExprNodeDesc column) {
-    try {
-      ExprNodeDesc joinExprNode = ExprNodeDescUtils.backtrack(column, topNKeyOperator, join);
-      if (joinExprNode == null || !(joinExprNode instanceof ExprNodeColumnDesc)) {
-        return null;
-      }
-      return joinExprNode;
-    } catch (SemanticException e) {
-      throw new RuntimeException(e);
-    }
-  }
-
-  private List<ExprNodeDesc> remapColumns(CommonJoinOperator<? extends JoinDesc> join, ReduceSinkOperator fkJoinInput, List<ExprNodeDesc> topNKeyColumns) {
-    List<ExprNodeDesc> joinCols = mapColumns(topNKeyColumns, join.getColumnExprMap());
-    return mapColumns(joinCols, fkJoinInput.getColumnExprMap());
   }
 
   private List<ExprNodeDesc> mapUntilColumnEquals(List<ExprNodeDesc> columns, Map<String,
@@ -440,22 +379,22 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
     return opDesc.isSame(desc);
   }
 
-  private static void moveDown(TopNKeyOperator topNKey) throws SemanticException {
+  public static void moveDown(Operator<? extends OperatorDesc> operator) throws SemanticException {
 
-    assert topNKey.getNumParent() == 1;
-    final Operator<? extends OperatorDesc> parent = topNKey.getParentOperators().get(0);
+    assert operator.getNumParent() == 1;
+    final Operator<? extends OperatorDesc> parent = operator.getParentOperators().get(0);
     final List<Operator<? extends OperatorDesc>> grandParents = parent.getParentOperators();
-    parent.removeChildAndAdoptItsChildren(topNKey);
+    parent.removeChildAndAdoptItsChildren(operator);
     for (Operator<? extends OperatorDesc> grandParent : grandParents) {
-      grandParent.replaceChild(parent, topNKey);
+      grandParent.replaceChild(parent, operator);
     }
-    topNKey.getParentOperators().clear();
-    topNKey.getParentOperators().addAll(grandParents);
+    operator.getParentOperators().clear();
+    operator.getParentOperators().addAll(grandParents);
 
-    topNKey.getChildOperators().clear();
-    topNKey.getChildOperators().add(parent);
+    operator.getChildOperators().clear();
+    operator.getChildOperators().add(parent);
 
     parent.getParentOperators().clear();
-    parent.getParentOperators().add(topNKey);
+    parent.getParentOperators().add(operator);
   }
 }

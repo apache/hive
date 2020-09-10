@@ -70,6 +70,7 @@ import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_O
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 import static org.apache.hadoop.hive.ql.exec.repl.bootstrap.load.ReplicationState.PartitionState;
+import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.REPL_CHECKPOINT_KEY;
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.isPartitioned;
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.partSpecToString;
 
@@ -169,34 +170,51 @@ public class LoadPartitions {
   }
 
   /**
-   * Get all partitions and consolidate them into single partition request.
+   * Get all partitions in a batch and consolidate them into single partition request.
    * Also, copy relevant stats and other information from original request.
    *
    * @throws SemanticException
    */
   private void addConsolidatedPartitionDesc() throws Exception {
-    List<AlterTableAddPartitionDesc.PartitionDesc> partitions = new LinkedList<>();
-    for (AlterTableAddPartitionDesc alterTableAddPartitionDesc : event.partitionDescriptions(tableDesc)) {
-
-      AlterTableAddPartitionDesc.PartitionDesc src = alterTableAddPartitionDesc.getPartitions().get(0);
-
-      partitions.add(new AlterTableAddPartitionDesc.PartitionDesc(
-          src.getPartSpec(), src.getLocation(), src.getPartParams(), src.getInputFormat(),
+    //Load partitions equal to batch size at one go for metadata only and for external tables.
+    int maxTasks = context.hiveConf.getIntVar(HiveConf.ConfVars.REPL_LOAD_PARTITIONS_BATCH_SIZE);
+    int currentPartitionCount = 0;
+    List<AlterTableAddPartitionDesc> partitionDescs = event.partitionDescriptions(tableDesc);
+    int totalPartitionCount = partitionDescs.size();
+    while (currentPartitionCount < totalPartitionCount) {
+      List<AlterTableAddPartitionDesc.PartitionDesc> partitions = new LinkedList<>();
+      int pendingPartitionCount = totalPartitionCount - currentPartitionCount;
+      int toPartitionCount = currentPartitionCount + Math.min(pendingPartitionCount, maxTasks);
+      List<AlterTableAddPartitionDesc> partitionBatch = partitionDescs.subList(currentPartitionCount,
+        toPartitionCount);
+      for (AlterTableAddPartitionDesc addPartitionDesc : partitionBatch) {
+        AlterTableAddPartitionDesc.PartitionDesc src = addPartitionDesc.getPartitions().get(0);
+        Map<String, String> partParams = src.getPartParams();
+        if (partParams == null) {
+          partParams = new HashMap<>();
+        }
+        partParams.put(REPL_CHECKPOINT_KEY, context.dumpDirectory);
+        Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, src);
+        partitions.add(new AlterTableAddPartitionDesc.PartitionDesc(
+          src.getPartSpec(), replicaWarehousePartitionLocation.toString(), partParams, src.getInputFormat(),
           src.getOutputFormat(), src.getNumBuckets(), src.getCols(), src.getSerializationLib(),
           src.getSerdeParams(), src.getBucketCols(), src.getSortCols(), src.getColStats(),
           src.getWriteId()));
-    }
-    AlterTableAddPartitionDesc consolidatedPartitionDesc = new AlterTableAddPartitionDesc(tableDesc.getDatabaseName(),
+      }
+      AlterTableAddPartitionDesc consolidatedPartitionDesc = new AlterTableAddPartitionDesc(tableDesc.getDatabaseName(),
         tableDesc.getTableName(), true, partitions);
 
-    addPartition(false, consolidatedPartitionDesc, null);
-    if (partitions.size() > 0) {
-      LOG.info("Added {} partitions", partitions.size());
+      //don't need to add ckpt task separately. Added as part of add partition task
+      addPartition((toPartitionCount < totalPartitionCount), consolidatedPartitionDesc, null);
+      if (partitions.size() > 0) {
+        LOG.info("Added {} partitions", partitions.size());
+      }
+      currentPartitionCount = toPartitionCount;
     }
   }
 
   private TaskTracker forNewTable() throws Exception {
-    if (isMetaDataOp()) {
+    if (isMetaDataOp() || TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
       // Place all partitions in single task to reduce load on HMS.
       addConsolidatedPartitionDesc();
       return tracker;
@@ -229,35 +247,12 @@ public class LoadPartitions {
    */
   private Task<?> tasksForAddPartition(Table table, AlterTableAddPartitionDesc addPartitionDesc, Task<?> ptnRootTask)
           throws MetaException, HiveException {
-    AlterTableAddPartitionDesc.PartitionDesc partSpec = addPartitionDesc.getPartitions().get(0);
-    Path sourceWarehousePartitionLocation = new Path(partSpec.getLocation());
-    Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, partSpec);
-    partSpec.setLocation(replicaWarehousePartitionLocation.toString());
-    LOG.debug("adding dependent CopyWork/AddPart/MoveWork for partition "
-        + partSpecToString(partSpec.getPartSpec()) + " with source location: "
-        + partSpec.getLocation());
-
     Task<?> addPartTask = TaskFactory.get(
-            new DDLWork(new HashSet<>(), new HashSet<>(), addPartitionDesc),
-            context.hiveConf
+      new DDLWork(new HashSet<>(), new HashSet<>(), addPartitionDesc),
+      context.hiveConf
     );
-
-    Task<?> ckptTask = ReplUtils.getTableCheckpointTask(
-            tableDesc,
-            (HashMap<String, String>)partSpec.getPartSpec(),
-            context.dumpDirectory,
-            context.hiveConf
-    );
-
-    boolean isOnlyDDLOperation = event.replicationSpec().isMetadataOnly()
-        || (TableType.EXTERNAL_TABLE.equals(table.getTableType())
-        && !event.replicationSpec().isMigratingToExternalTable()
-    );
-
-    if (isOnlyDDLOperation) {
-      // Set Checkpoint task as dependant to add partition tasks. So, if same dump is retried for
-      // bootstrap, we skip current partition update.
-      addPartTask.addDependentTask(ckptTask);
+    //checkpointing task already added as part of add batch of partition in case for metadata only and external tables
+    if (isMetaDataOp() || TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
       if (ptnRootTask == null) {
         ptnRootTask = addPartTask;
       } else {
@@ -266,26 +261,31 @@ public class LoadPartitions {
       return ptnRootTask;
     }
 
+    AlterTableAddPartitionDesc.PartitionDesc partSpec = addPartitionDesc.getPartitions().get(0);
+    Path sourceWarehousePartitionLocation = new Path(partSpec.getLocation());
+    Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, partSpec);
+    partSpec.setLocation(replicaWarehousePartitionLocation.toString());
+    LOG.debug("adding dependent CopyWork/AddPart/MoveWork for partition "
+      + partSpecToString(partSpec.getPartSpec()) + " with source location: "
+      + partSpec.getLocation());
+    Task<?> ckptTask = ReplUtils.getTableCheckpointTask(
+      tableDesc,
+      (HashMap<String, String>)partSpec.getPartSpec(),
+      context.dumpDirectory,
+      context.hiveConf
+    );
+
     Path stagingDir = replicaWarehousePartitionLocation;
     // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
     LoadFileType loadFileType;
     if (event.replicationSpec().isInReplicationScope() &&
             context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
       loadFileType = LoadFileType.IGNORE;
-      if (event.replicationSpec().isMigratingToTxnTable()) {
-        // Migrating to transactional tables in bootstrap load phase.
-        // It is enough to copy all the original files under base_1 dir and so write-id is hardcoded to 1.
-        // ReplTxnTask added earlier in the DAG ensure that the write-id=1 is made valid in HMS metadata.
-        stagingDir = new Path(stagingDir, AcidUtils.baseDir(ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID));
-      }
     } else {
-       loadFileType = event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL :
-          (event.replicationSpec().isMigratingToTxnTable()
-              ? LoadFileType.KEEP_EXISTING
-              : LoadFileType.OVERWRITE_EXISTING);
+      loadFileType = event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
       stagingDir = PathUtils.getExternalTmpPath(replicaWarehousePartitionLocation, context.pathInfo);
     }
-    boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+    boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
         event.replicationSpec(),
         new Path(event.dataPath() + Path.SEPARATOR + getPartitionName(sourceWarehousePartitionLocation)),
@@ -330,26 +330,11 @@ public class LoadPartitions {
                                     LoadFileType loadFileType) {
     MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
     if (AcidUtils.isTransactionalTable(table)) {
-      if (event.replicationSpec().isMigratingToTxnTable()) {
-        // Write-id is hardcoded to 1 so that for migration, we just move all original files under base_1 dir.
-        // ReplTxnTask added earlier in the DAG ensure that the write-id is made valid in HMS metadata.
-        LoadTableDesc loadTableWork = new LoadTableDesc(
-                tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
-                loadFileType, ReplUtils.REPL_BOOTSTRAP_MIGRATION_BASE_WRITE_ID
-        );
-        loadTableWork.setInheritTableSpecs(false);
-        loadTableWork.setStmtId(0);
-
-        // Need to set insertOverwrite so base_1 is created instead of delta_1_1_0.
-        loadTableWork.setInsertOverwrite(true);
-        moveWork.setLoadTableWork(loadTableWork);
-      } else {
-        LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
-                Collections.singletonList(tmpPath),
-                Collections.singletonList(new Path(partSpec.getLocation())),
-                true, null, null);
-        moveWork.setMultiFilesDesc(loadFilesWork);
-      }
+      LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
+        Collections.singletonList(tmpPath),
+        Collections.singletonList(new Path(partSpec.getLocation())),
+        true, null, null);
+      moveWork.setMultiFilesDesc(loadFilesWork);
     } else {
       LoadTableDesc loadTableWork = new LoadTableDesc(
               tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
@@ -359,7 +344,6 @@ public class LoadPartitions {
       moveWork.setLoadTableWork(loadTableWork);
     }
     moveWork.setIsInReplicationScope(event.replicationSpec().isInReplicationScope());
-
     return TaskFactory.get(moveWork, context.hiveConf);
   }
 
@@ -375,9 +359,6 @@ public class LoadPartitions {
       throws MetaException, HiveException {
     String child = Warehouse.makePartPath(partSpec.getPartSpec());
     if (tableDesc.isExternal()) {
-      if (event.replicationSpec().isMigratingToExternalTable()) {
-        return new Path(tableDesc.getLocation(), child);
-      }
       String externalLocation =
           ReplExternalTables.externalTableLocation(context.hiveConf, partSpec.getLocation());
       return new Path(externalLocation);

@@ -58,8 +58,8 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
     int rc = 0;
     Map<SparkStage, SparkStageProgress> lastProgressMap = null;
 
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
 
     startTime = System.currentTimeMillis();
     JobHandle.State state = null;
@@ -90,7 +90,7 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
           if (sparkJobState == JobExecutionStatus.RUNNING) {
             Map<SparkStage, SparkStageProgress> progressMap = sparkJobStatus.getSparkStageProgress();
             if (!running) {
-              perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
+              perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_TO_RUNNING);
               printAppInfo();
               console.printInfo("Hive on Spark Session Web UI URL: " + sparkJobStatus.getWebUIURL());
               // print job stages.
@@ -187,7 +187,7 @@ public class RemoteSparkJobMonitor extends SparkJobMonitor {
       }
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_RUN_JOB);
     return rc;
   }
 

@@ -25,6 +25,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
 import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -175,7 +177,9 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         }
         if (unique) {
           ++uniqueCount;
-          side.newInput = joinInput;
+          relBuilder.push(joinInput);
+          relBuilder.project(belowAggregateKey.asList().stream().map(relBuilder::field).collect(Collectors.toList()));
+          side.newInput = relBuilder.build();
         } else {
           List<AggregateCall> belowAggCalls = new ArrayList<>();
           final SqlSplittableAggFunction.Registry<AggregateCall>

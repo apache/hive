@@ -1378,38 +1378,12 @@ public interface IMetaStoreClient {
 
   /**
    * Get list of {@link PartitionSpec} matching specified serialized expression.
-   * @param dbName the database name
-   * @param tblName the table name
-   * @param expr expression, serialized from ExprNodeDesc
-   * @param maxParts the maximum number of partitions to return,
-   *    all partitions are returned if -1 is passed
-   * @param defaultPartName Default partition name from configuration. If blank, the
-   *    metastore server-side configuration is used.
-   * @param result the resulting list of partitions
+   * @param req PartitionsByExprRequest object
    * @return whether the resulting list contains partitions which may or may not match the expr
    * @throws TException thrift transport error or error executing the filter.
    */
-  boolean listPartitionsSpecByExpr(String dbName, String tblName,
-      byte[] expr, String defaultPartName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
+  boolean listPartitionsSpecByExpr(PartitionsByExprRequest req, List<PartitionSpec> result)
           throws TException;
-
-  /**
-   * Get list of {@link PartitionSpec} matching specified serialized expression.
-   * @param catName the catalog name
-   * @param dbName the database name
-   * @param tblName the table name
-   * @param expr expression, serialized from ExprNodeDesc
-   * @param maxParts the maximum number of partitions to return,
-   *    all partitions are returned if -1 is passed
-   * @param defaultPartitionName Default partition name from configuration. If blank, the
-   *    metastore server-side configuration is used.
-   * @param result the resulting list of partitions
-   * @return whether the resulting list contains partitions which may or may not match the expr
-   * @throws TException thrift transport error or error executing the filter.
-   */
-  boolean listPartitionsSpecByExpr(String catName, String dbName, String tblName,
-      byte[] expr, String defaultPartitionName, short maxParts, List<PartitionSpec> result, String validWriteIdList)
-      throws TException;
 
   /**
    * Get list of partitions matching specified serialized expression
@@ -3145,7 +3119,7 @@ public interface IMetaStoreClient {
    * aborted.  This can result from the transaction timing out.
    * @throws TException
    */
-  void replCommitTxn(CommitTxnRequest rqst)
+  void commitTxn(CommitTxnRequest rqst)
           throws NoSuchTxnException, TxnAbortedException, TException;
 
   /**

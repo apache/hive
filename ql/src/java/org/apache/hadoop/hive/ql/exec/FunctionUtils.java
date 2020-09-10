@@ -18,20 +18,24 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.util.List;
-
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 import org.apache.hadoop.hive.metastore.api.ResourceType;
 import org.apache.hadoop.hive.metastore.api.ResourceUri;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFResolver;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 
 /**
  * Function related utilities.
@@ -39,6 +43,22 @@ import com.google.common.collect.Multimap;
 public final class FunctionUtils {
   private FunctionUtils() {
     throw new UnsupportedOperationException("FunctionUtils should not be instantiated");
+  }
+
+  /**
+   * Extracts the UDAFE evaluators of the specified class from the provided aggregations.
+   */
+  public static <T extends GenericUDAFEvaluator> List<T> extractEvaluators(
+      Collection<? extends AggregationDesc> aggregations, Class<T> clazz) {
+    List<T> result = new ArrayList<>();
+    for (AggregationDesc d : aggregations) {
+      if (clazz.isInstance(d.getGenericUDAFEvaluator())) {
+        @SuppressWarnings("unchecked")
+        T t = (T) d.getGenericUDAFEvaluator();
+        result.add(t);
+      }
+    }
+    return result;
   }
 
   public static FunctionResource[] toFunctionResource(List<ResourceUri> resources) throws HiveException {

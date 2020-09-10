@@ -21,16 +21,16 @@ package org.apache.hadoop.hive.ql.exec;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.exec.NodeUtils.Function;
-import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignature;
-import org.apache.hadoop.hive.ql.optimizer.signature.OpTreeSignatureFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.parse.spark.SparkPartitionPruningSinkOperator;
@@ -52,6 +52,35 @@ import com.google.common.collect.Multimap;
 public class OperatorUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(OperatorUtils.class);
+
+  /**
+   * Return the ancestor of the specified operator at the provided path or null if the path is invalid.
+   *
+   * The method is equivalent to following code:
+   * <pre>{@code
+   *     op.getParentOperators().get(path[0])
+   *     .getParentOperators().get(path[1])
+   *     ...
+   *     .getParentOperators().get(path[n])
+   * }</pre>
+   * with additional checks about the validity of the provided path and the type of the ancestor.
+   *
+   * @param op the operator for which we
+   * @param clazz the class of the ancestor operator
+   * @param path the path leading to the desired ancestor
+   * @param <T> the type of the ancestor
+   * @return the ancestor of the specified operator at the provided path or null if the path is invalid.
+   */
+  public static <T> T ancestor(Operator<?> op, Class<T> clazz, int... path) {
+    Operator<?> target = op;
+    for (int i = 0; i < path.length; i++) {
+      if (target.getParentOperators() == null || path[i] > target.getParentOperators().size()) {
+        return null;
+      }
+      target = target.getParentOperators().get(path[i]);
+    }
+    return clazz.isInstance(target) ? clazz.cast(target) : null;
+  }
 
   public static <T> Set<T> findOperators(Operator<?> start, Class<T> clazz) {
     return findOperators(start, clazz, new HashSet<T>());
@@ -667,4 +696,33 @@ public class OperatorUtils {
     }
     return null;
   }
+
+  public static Set<Operator<?>> getAllOperatorsForSimpleFetch(Set<Operator<?>> opSet) {
+    Set<Operator<?>> returnSet = new LinkedHashSet<Operator<?>>();
+    Stack<Operator<?>> opStack = new Stack<Operator<?>>();
+    // add all children
+    opStack.addAll(opSet);
+    while (!opStack.empty()) {
+      Operator<?> op = opStack.pop();
+      returnSet.add(op);
+      if (op.getChildOperators() != null) {
+        opStack.addAll(op.getChildOperators());
+      }
+    }
+    return returnSet;
+  }
+
+  /**
+   * Given a {@link FetchTask} this returns a set of all the operators within the task
+   * @param task - Fetch Task
+   */
+  public static Set<Operator<?>> getAllFetchOperators(FetchTask task) {
+    if (task.getWork().getSource() == null)  {
+      return Collections.EMPTY_SET;
+    }
+    Set<Operator<?>> operatorList =  new HashSet<>();
+    operatorList.add(task.getWork().getSource());
+    return getAllOperatorsForSimpleFetch(operatorList);
+  }
+
 }

@@ -34,6 +34,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
@@ -121,6 +122,8 @@ public class QueryPlan implements Serializable {
   private final DDLDescWithWriteId acidDdlDesc;
   private Boolean autoCommitValue;
 
+  private Boolean prepareQuery;
+
   public QueryPlan() {
     this(null);
   }
@@ -132,6 +135,7 @@ public class QueryPlan implements Serializable {
     this.acidSinks = Collections.emptySet();
     this.acidDdlDesc = null;
     this.acidAnalyzeTable = null;
+    this.prepareQuery = false;
   }
 
   public QueryPlan(String queryString, BaseSemanticAnalyzer sem, Long startTime, String queryId,
@@ -164,6 +168,7 @@ public class QueryPlan implements Serializable {
     this.acidDdlDesc = sem.getAcidDdlDesc();
     this.acidAnalyzeTable = sem.getAcidAnalyzeTable();
     this.cboInfo = sem.getCboInfo();
+    this.prepareQuery = false;
   }
 
   /**
@@ -194,6 +199,14 @@ public class QueryPlan implements Serializable {
 
   public String getQueryId() {
     return queryId;
+  }
+
+  public void setPrepareQuery(boolean prepareQuery) {
+    this.prepareQuery = prepareQuery;
+  }
+
+  public boolean isPrepareQuery() {
+    return prepareQuery;
   }
 
   public static String makeQueryId() {
@@ -662,7 +675,7 @@ public class QueryPlan implements Serializable {
       LOG.warn("Unable to produce query plan Thrift string", e);
       return q.toString();
     }
-    return tmb.toString("UTF-8");
+    return tmb.toString(StandardCharsets.UTF_8);
   }
 
   public String toBinaryString() throws IOException {
@@ -870,4 +883,6 @@ public class QueryPlan implements Serializable {
   public String getCboInfo() {
     return cboInfo;
   }
+
+
 }

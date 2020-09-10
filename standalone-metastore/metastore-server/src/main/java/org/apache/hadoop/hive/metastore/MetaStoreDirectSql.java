@@ -21,8 +21,6 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.commons.lang3.StringUtils.normalizeSpace;
 import static org.apache.commons.lang3.StringUtils.repeat;
-import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -45,6 +43,7 @@ import javax.jdo.datastore.JDOConnection;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.metastore.AggregateStatsCache.AggrColStats;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -91,7 +90,6 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.ColStatsObjWithSourceInfo;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -188,7 +186,9 @@ class MetaStoreDirectSql {
         new ImmutableMap.Builder<>();
 
     for (java.lang.reflect.Field f : this.getClass().getDeclaredFields()) {
-      if (f.getAnnotation(TableName.class) == null) continue;
+      if (f.getAnnotation(TableName.class) == null) {
+        continue;
+      }
       try {
         String value = getFullyQualifiedName(schema, f.getName());
         f.set(this, value);
@@ -375,7 +375,7 @@ class MetaStoreDirectSql {
       String queryTextDbSelector= "select "
           + "\"DB_ID\", \"NAME\", \"DB_LOCATION_URI\", \"DESC\", "
           + "\"OWNER_NAME\", \"OWNER_TYPE\", \"CTLG_NAME\" , \"CREATE_TIME\", \"DB_MANAGED_LOCATION_URI\""
-          + "FROM "+ DBS
+          + " FROM "+ DBS
           + " where \"NAME\" = ? and \"CTLG_NAME\" = ? ";
       Object[] params = new Object[] { dbName, catName };
       queryDbSelector = pm.newQuery("javax.jdo.query.SQL", queryTextDbSelector);
@@ -984,8 +984,12 @@ class MetaStoreDirectSql {
       part.setCatName(catName);
       part.setDbName(dbName);
       part.setTableName(tblName);
-      if (fields[4] != null) part.setCreateTime(MetastoreDirectSqlUtils.extractSqlInt(fields[4]));
-      if (fields[5] != null) part.setLastAccessTime(MetastoreDirectSqlUtils.extractSqlInt(fields[5]));
+      if (fields[4] != null) {
+        part.setCreateTime(MetastoreDirectSqlUtils.extractSqlInt(fields[4]));
+      }
+      if (fields[5] != null) {
+        part.setLastAccessTime(MetastoreDirectSqlUtils.extractSqlInt(fields[5]));
+      }
       Long writeId = MetastoreDirectSqlUtils.extractSqlLong(fields[14]);
       if (writeId != null) {
         part.setWriteId(writeId);
@@ -993,7 +997,9 @@ class MetaStoreDirectSql {
       partitions.put(partitionId, part);
 
 
-      if (sdId == null) continue; // Probably a view.
+      if (sdId == null) {
+        continue; // Probably a view.
+      }
       assert serdeId != null;
 
       // We assume each partition has an unique SD.
@@ -1010,11 +1016,17 @@ class MetaStoreDirectSql {
           new ArrayList<List<String>>(), new HashMap<List<String>, String>()));
       sd.setInputFormat((String)fields[6]);
       Boolean tmpBoolean = MetastoreDirectSqlUtils.extractSqlBoolean(fields[7]);
-      if (tmpBoolean != null) sd.setCompressed(tmpBoolean);
+      if (tmpBoolean != null) {
+        sd.setCompressed(tmpBoolean);
+      }
       tmpBoolean = MetastoreDirectSqlUtils.extractSqlBoolean(fields[8]);
-      if (tmpBoolean != null) sd.setStoredAsSubDirectories(tmpBoolean);
+      if (tmpBoolean != null) {
+        sd.setStoredAsSubDirectories(tmpBoolean);
+      }
       sd.setLocation((String)fields[9]);
-      if (fields[10] != null) sd.setNumBuckets(MetastoreDirectSqlUtils.extractSqlInt(fields[10]));
+      if (fields[10] != null) {
+        sd.setNumBuckets(MetastoreDirectSqlUtils.extractSqlInt(fields[10]));
+      }
       sd.setOutputFormat((String)fields[11]);
       sdSb.append(sdId).append(",");
       part.setSd(sd);
@@ -1275,7 +1287,9 @@ class MetaStoreDirectSql {
     public void visit(LeafNode node) throws MetaException {
       int partColCount = partitionKeys.size();
       int partColIndex = node.getPartColIndexForFilter(partitionKeys, filterBuffer);
-      if (filterBuffer.hasError()) return;
+      if (filterBuffer.hasError()) {
+        return;
+      }
 
       String colTypeStr = partitionKeys.get(partColIndex).getType();
       FilterType colType = FilterType.fromType(colTypeStr);
@@ -2165,7 +2179,9 @@ class MetaStoreDirectSql {
    * effect will apply to the connection that is executing the queries otherwise.
    */
   public void prepareTxn() throws MetaException {
-    if (dbType != DatabaseProduct.MYSQL) return;
+    if (dbType != DatabaseProduct.MYSQL) {
+      return;
+    }
     try {
       assert pm.currentTransaction().isActive(); // must be inside tx together with queries
       executeNoResult("SET @@session.sql_mode=ANSI_QUOTES");
@@ -2958,6 +2974,23 @@ class MetaStoreDirectSql {
       executeNoResult(lockCommand);
     } catch (SQLException sqle) {
       throw new MetaException("Error while locking table " + tableName + ": " + sqle.getMessage());
+    }
+  }
+
+  public void deleteColumnStatsState(long tbl_id) throws MetaException {
+    // @formatter:off
+    String queryText = ""
+        + "delete from " + PARTITION_PARAMS + " "
+            + " where "
+            + "   \"PART_ID\" in (select p.\"PART_ID\"  from " + PARTITIONS + " p where"
+            + "   p.\"TBL_ID\" =  " + tbl_id + ")"
+            + "  and \"PARAM_KEY\" = '"+StatsSetupConst.COLUMN_STATS_ACCURATE + "'";
+    // @formatter:on
+
+    try {
+      executeNoResult(queryText);
+    } catch (SQLException e) {
+      throw new MetaException("Error removing column stat states:" + e.getMessage());
     }
   }
 }

@@ -134,3 +134,91 @@ EXPLAIN
 SELECT `lo_linenumber`, `c_custkey`
 FROM `lineorder_removal_n0`
 JOIN `customer_removal_n0` ON `lo_custkey` = `c_custkey`;
+
+-- FK-PK JOIN with FK side removal
+EXPLAIN
+SELECT customer_removal_n0.*
+FROM customer_removal_n0
+    JOIN
+    (SELECT lo_custkey
+    FROM lineorder_removal_n0
+    WHERE lo_custkey IS NOT NULL
+    GROUP BY lo_custkey) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey;
+
+-- FK-PK JOIN with FK side removal
+EXPLAIN
+SELECT customer_removal_n0.*
+FROM customer_removal_n0
+         JOIN
+     (SELECT lo_custkey, sum(lo_discount)  sm
+      FROM lineorder_removal_n0
+      WHERE lo_custkey IS NOT NULL
+      GROUP BY lo_custkey) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey
+WHERE fkSide.sm > 0;
+
+-- FK-PK JOIN with FK side removal, BUT without explicit IS NOT NULL on join column
+EXPLAIN
+SELECT customer_removal_n0.*
+FROM customer_removal_n0
+    JOIN (SELECT lo_custkey
+            FROM lineorder_removal_n0
+            GROUP BY lo_custkey) fkSide on fkSide.lo_custkey = customer_removal_n0.c_custkey;
+
+-- NEGATIVE for FK-PK JOIN with FK side removal, FK JOIN COL might not be distinct
+EXPLAIN
+SELECT customer_removal_n0.*
+FROM customer_removal_n0
+         JOIN (SELECT lo_linenumber,lo_custkey
+               FROM lineorder_removal_n0
+               WHERE lo_custkey IS NOT NULL
+               GROUP BY lo_linenumber, lo_custkey,lo_custkey
+             ) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey;
+
+-- FK side join col is PK as well (thus providing uniqueness without GROUP BY)
+CREATE TABLE `t1`(
+               `lo_orderkey` bigint,
+               `lo_linenumber` int,
+               `lo_custkey` bigint not null disable rely,
+               `lo_partkey` bigint not null disable rely,
+               `lo_orderdate` bigint,
+               `lo_revenue` double,
+               primary key (`lo_custkey`) disable rely,
+               constraint fkt1 foreign key (`lo_custkey`) references `customer_removal_n0`(`c_custkey`) disable rely,
+               constraint fkt2 foreign key (`lo_orderdate`) references `dates_removal_n0`(`d_datekey`) disable rely)
+    ROW FORMAT DELIMITED
+        FIELDS TERMINATED BY '|'
+    STORED AS TEXTFILE;
+
+EXPLAIN
+SELECT customer_removal_n0.*
+FROM customer_removal_n0
+         JOIN
+     (SELECT lo_custkey,lo_linenumber
+      FROM t1
+      WHERE lo_custkey IS NOT NULL) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey;
+DROP TABLE t1;
+
+-- FK side join col is UNIQUE and NOT NULL(thus providing uniqueness without GROUP BY)
+CREATE TABLE `t1`(
+                     `lo_orderkey` bigint,
+                     `lo_linenumber` int,
+                     `lo_custkey` bigint not null disable rely,
+                     `lo_partkey` bigint not null disable rely,
+                     `lo_orderdate` bigint,
+                     `lo_revenue` double,
+                     UNIQUE (`lo_custkey`) disable rely,
+                     constraint fkt1 foreign key (`lo_custkey`) references `customer_removal_n0`(`c_custkey`) disable rely,
+                     constraint fkt2 foreign key (`lo_orderdate`) references `dates_removal_n0`(`d_datekey`) disable rely)
+    ROW FORMAT DELIMITED
+        FIELDS TERMINATED BY '|'
+    STORED AS TEXTFILE;
+
+
+EXPLAIN
+SELECT customer_removal_n0.*
+FROM customer_removal_n0
+         JOIN
+     (SELECT lo_custkey,lo_linenumber
+      FROM t1) fkSide ON fkSide.lo_custkey = customer_removal_n0.c_custkey;
+
+DROP TABLE t1;

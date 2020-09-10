@@ -316,7 +316,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return inputFormat;
   }
 
-  private static boolean checkInputFormatForLlapEncode(Configuration conf, String ifName) {
+  public static boolean checkInputFormatForLlapEncode(Configuration conf, String ifName) {
     String formatList = HiveConf.getVar(conf, ConfVars.LLAP_IO_ENCODE_FORMATS);
     if (LOG.isDebugEnabled()) {
       LOG.debug("Checking " + ifName + " against " + formatList);
@@ -756,7 +756,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
     init(job);
     Path[] dirs = getInputPaths(job);
     JobConf newjob = new JobConf(job);
@@ -853,7 +853,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     if (LOG.isInfoEnabled()) {
       LOG.info("number of splits " + result.size());
     }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new HiveInputSplit[result.size()]);
   }
 

@@ -785,7 +785,8 @@ public final class OpProcFactory {
           exprs.addAll(finalCandidates);
         }
       }
-      
+
+      logExpr(nd, prunedPred);
       if (!nonFinalCandidates.isEmpty()) {
         createFilter((Operator) nd, nonFinalCandidates, owi);
       }

@@ -26,11 +26,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
-import org.apache.hadoop.hive.metastore.utils.Retry;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -48,6 +48,7 @@ import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,6 +56,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 public class Utils {
   private static Logger LOG = LoggerFactory.getLogger(Utils.class);
@@ -72,9 +74,11 @@ public class Utils {
 
   public static void writeOutput(List<List<String>> listValues, Path outputFile, HiveConf hiveConf, boolean update)
           throws SemanticException {
-    Retry<Void> retriable = new Retry<Void>(IOException.class) {
-      @Override
-      public Void execute() throws IOException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(hiveConf)
+      .withRetryOnException(IOException.class).build();
+    try {
+      retryable.executeCallable((Callable<Void>) () -> {
         DataOutputStream outStream = null;
         try {
           FileSystem fs = outputFile.getFileSystem(hiveConf);
@@ -91,19 +95,19 @@ public class Utils {
           IOUtils.closeStream(outStream);
         }
         return null;
-      }
-    };
-    try {
-      retriable.run();
+      });
     } catch (Exception e) {
       throw new SemanticException(e);
     }
   }
 
-  public static long writeFile(FileSystem fs, Path exportFilePath, InputStream is) throws SemanticException {
-    Retry<Long> retriable = new Retry<Long>(IOException.class) {
-      @Override
-      public Long execute() throws IOException {
+  public static long writeFile(FileSystem fs, Path exportFilePath, InputStream is,
+                               HiveConf conf) throws SemanticException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(IOException.class).build();
+    try {
+      return retryable.executeCallable(() -> {
         FSDataOutputStream fos = null;
         try {
           long bytesWritten;
@@ -120,19 +124,35 @@ public class Utils {
             fos.close();
           }
         }
-      }};
-    try {
-      return retriable.run();
+      });
     } catch (Exception e) {
       throw new SemanticException(e);
     }
   }
 
+  public static void writeStackTrace(Exception e, Path outputFile, HiveConf conf) throws SemanticException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(IOException.class).withFailOnException(FileNotFoundException.class).build();
+    try {
+      retryable.executeCallable((Callable<Void>) () -> {
+        PrintWriter pw = new PrintWriter(outputFile.getFileSystem(conf).create(outputFile));
+        e.printStackTrace(pw);
+        pw.close();
+        return null;
+      });
+    } catch (Exception ex) {
+      throw new SemanticException(ex);
+    }
+  }
+
   public static void writeOutput(String content, Path outputFile, HiveConf hiveConf)
           throws SemanticException {
-    Retry<Void> retriable = new Retry<Void>(IOException.class) {
-      @Override
-      public Void execute() throws IOException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(hiveConf)
+      .withRetryOnException(IOException.class).build();
+    try {
+      retryable.executeCallable((Callable<Void>) () -> {
         DataOutputStream outStream = null;
         try {
           FileSystem fs = outputFile.getFileSystem(hiveConf);
@@ -143,10 +163,7 @@ public class Utils {
           IOUtils.closeStream(outStream);
         }
         return null;
-      }
-    };
-    try {
-      retriable.run();
+      });
     } catch (Exception e) {
       throw new SemanticException(e);
     }
@@ -154,16 +171,15 @@ public class Utils {
 
   public static void create(Path outputFile, HiveConf hiveConf)
           throws SemanticException {
-    Retry<Void> retriable = new Retry<Void>(IOException.class) {
-      @Override
-      public Void execute() throws IOException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(hiveConf)
+      .withRetryOnException(IOException.class).build();
+    try {
+      retryable.executeCallable((Callable<Void>) () -> {
         FileSystem fs = outputFile.getFileSystem(hiveConf);
         fs.create(outputFile).close();
         return null;
-      }
-    };
-    try {
-      retriable.run();
+      });
     } catch (Exception e) {
       throw new SemanticException(e);
     }

@@ -275,7 +275,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
       } catch (HiveException e) {
         throw new RuntimeException(e);
       }
-      try (IDriver d = DriverFactory.newDriver(hiveConf)) {
+      QueryState qs = new QueryState.Builder().withHiveConf(hiveConf).nonIsolated().build();
+      try (Driver d = new Driver(qs)) {
         LOG.info("Ready to run the query: " + query);
         syncThreadStart(cdlIn, cdlOut);
         try {
@@ -619,6 +620,22 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     List<String> rs1 = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
     Assert.assertEquals("Content didn't match after commit rs1", allData, rs1);
   }
+
+  @Test
+  public void testDeleteOfMultipleInserts() throws Exception {
+    runStatementOnDriver("START TRANSACTION");
+    int[][] rows1 = {{1,2},{3,4}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(rows1));
+    int[][] rows2 = {{5,6},{7,8}};
+    runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) " + makeValuesClause(rows2));
+    runStatementOnDriver("commit");
+    runStatementOnDriver("delete from " + Table.ACIDTBL + " where b = 2");
+    runStatementOnDriver("delete from " + Table.ACIDTBL + " where b = 8");
+    List<String> rs2 = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a,b");
+    int[][] remain = {{3,4},{5,6}};
+    Assert.assertEquals("Content didn't match after delete ", stringifyValues(remain), rs2);
+  }
+
   @Test
   public void testDelete() throws Exception {
     int[][] rows1 = {{1,2},{3,4}};

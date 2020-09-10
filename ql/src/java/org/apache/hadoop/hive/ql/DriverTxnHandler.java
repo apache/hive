@@ -94,7 +94,7 @@ class DriverTxnHandler {
   private Context context;
   private Runnable txnRollbackRunner;
 
-  DriverTxnHandler(Driver driver, DriverContext driverContext, DriverState driverState) {
+  DriverTxnHandler(DriverContext driverContext, DriverState driverState) {
     this.driverContext = driverContext;
     this.driverState = driverState;
   }
@@ -214,7 +214,7 @@ class DriverTxnHandler {
    */
   private void acquireLocks() throws CommandProcessorException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
 
     if (!driverContext.getTxnManager().isTxnOpen() && driverContext.getTxnManager().supportsAcid()) {
       /* non acid txn managers don't support txns but fwd lock requests to lock managers
@@ -245,11 +245,11 @@ class DriverTxnHandler {
       throw DriverUtils.createProcessorException(driverContext, 10, errorMessage, ErrorMsg.findSQLState(e.getMessage()),
           e);
     } finally {
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.ACQUIRE_READ_WRITE_LOCKS);
     }
   }
 
-  private void setWriteIdForAcidFileSinks() throws SemanticException, LockException {
+  void setWriteIdForAcidFileSinks() throws SemanticException, LockException {
     if (!driverContext.getPlan().getAcidSinks().isEmpty()) {
       List<FileSinkDesc> acidSinks = new ArrayList<>(driverContext.getPlan().getAcidSinks());
       //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
@@ -318,7 +318,7 @@ class DriverTxnHandler {
    *  Write the current set of valid write ids for the operated acid tables into the configuration so
    *  that it can be read by the input format.
    */
-  private ValidTxnWriteIdList recordValidWriteIds() throws LockException {
+  ValidTxnWriteIdList recordValidWriteIds() throws LockException {
     String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
     if (Strings.isNullOrEmpty(txnString)) {
       throw new IllegalStateException("calling recordValidWritsIdss() without initializing ValidTxnList " +
@@ -380,32 +380,12 @@ class DriverTxnHandler {
     }
   }
 
-  void validateTxnListState() throws CommandProcessorException {
-    try {
-      if (!isValidTxnListState()) {
-        LOG.warn("Reexecuting after acquiring locks, since snapshot was outdated.");
-        // Snapshot was outdated when locks were acquired, hence regenerate context,
-        // txn list and retry (see ReExecutionRetryLockPlugin)
-        try {
-          endTransactionAndCleanup(false);
-        } catch (LockException e) {
-          DriverUtils.handleHiveException(driverContext, e, 12, null);
-        }
-        HiveException e = new HiveException(
-            "Operation could not be executed, " + Driver.SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + ".");
-        DriverUtils.handleHiveException(driverContext, e, 14, null);
-      }
-    } catch (LockException e) {
-      DriverUtils.handleHiveException(driverContext, e, 13, null);
-    }
-  }
-  
   /**
    * Checks whether txn list has been invalidated while planning the query.
    * This would happen if query requires exclusive/semi-shared lock, and there has been a committed transaction
    * on the table over which the lock is required.
    */
-  private boolean isValidTxnListState() throws LockException {
+  boolean isValidTxnListState() throws LockException {
     // 1) Get valid txn list.
     String txnString = driverContext.getConf().get(ValidTxnList.VALID_TXNS_KEY);
     if (txnString == null) {
@@ -493,6 +473,7 @@ class DriverTxnHandler {
           // Check if there was a conflicting write between current SNAPSHOT generation and locking.
           if (currentWriteIdList.isWriteIdRangeValid(writeIdList.getHighWatermark() + 1,
               currentWriteIdList.getHighWatermark()) != ValidWriteIdList.RangeResponse.NONE) {
+            driverContext.setOutdatedTxn(true);
             return false;
           }
           // Check that write id is still valid
@@ -614,7 +595,7 @@ class DriverTxnHandler {
 
   void endTransactionAndCleanup(boolean commit, HiveTxnManager txnManager) throws LockException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
     
     // If we've opened a transaction we need to commit or rollback rather than explicitly releasing the locks.
     driverContext.getConf().unset(ValidTxnList.VALID_TXNS_KEY);
@@ -633,7 +614,7 @@ class DriverTxnHandler {
       context.setHiveLocks(null);
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
   }
 
   private void commitOrRollback(boolean commit, HiveTxnManager txnManager) throws LockException {

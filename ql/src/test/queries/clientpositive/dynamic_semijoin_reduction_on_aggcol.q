@@ -1,3 +1,4 @@
+--! qt:disabled:flaky HIVE-24112
 --! qt:dataset:src
 set hive.explain.user=false;
 set hive.tez.dynamic.partition.pruning=true;

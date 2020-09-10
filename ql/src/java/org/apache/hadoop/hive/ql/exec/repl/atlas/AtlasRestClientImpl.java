@@ -27,8 +27,11 @@ import org.apache.atlas.model.impexp.AtlasServer;
 import org.apache.atlas.model.instance.AtlasEntity;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,12 +52,18 @@ import static com.sun.jersey.api.client.ClientResponse.Status.NOT_FOUND;
 /**
  * Implementation of RESTClient, encapsulates Atlas' REST APIs.
  */
-public class AtlasRestClientImpl extends RetryingClient implements AtlasRestClient {
+public class AtlasRestClientImpl extends RetryingClientTimeBased implements AtlasRestClient {
   private static final Logger LOG = LoggerFactory.getLogger(AtlasRestClientImpl.class);
   private final AtlasClientV2 clientV2;
 
-  public AtlasRestClientImpl(AtlasClientV2 clientV2) {
+  public AtlasRestClientImpl(AtlasClientV2 clientV2, HiveConf conf) {
     this.clientV2 = clientV2;
+    this.totalDurationInSeconds = conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION, TimeUnit.SECONDS);
+    this.initialDelayInSeconds = conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY, TimeUnit.SECONDS);
+    this.maxRetryDelayInSeconds = conf.getTimeVar(HiveConf.ConfVars
+      .REPL_RETRY_MAX_DELAY_BETWEEN_RETRIES, TimeUnit.SECONDS);
+    this.backOff = conf.getFloatVar(HiveConf.ConfVars.REPL_RETRY_BACKOFF_COEFFICIENT);
+    this.maxJitterInSeconds = (int) conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_JITTER, TimeUnit.SECONDS);
   }
 
   private <T> T runWithTimeout(Callable<T> callable, long timeout, TimeUnit timeUnit) throws Exception {
@@ -78,7 +87,7 @@ public class AtlasRestClientImpl extends RetryingClient implements AtlasRestClie
     }
   }
 
-  public InputStream exportData(AtlasExportRequest request) throws Exception {
+  public InputStream exportData(AtlasExportRequest request) throws SemanticException {
     LOG.debug("exportData: {}" + request);
     return invokeWithRetry(new Callable<InputStream>() {
       @Override
@@ -118,17 +127,15 @@ public class AtlasRestClientImpl extends RetryingClient implements AtlasRestClie
     return new AtlasImportResult(request, "", "", "", 0L);
   }
 
-  public AtlasServer getServer(String endpoint) throws SemanticException {
+  public AtlasServer getServer(String endpoint, HiveConf conf) throws SemanticException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(AtlasServiceException.class).build();
     try {
-      return clientV2.getServer(endpoint);
-    } catch (AtlasServiceException e) {
-      int statusCode = e.getStatus() != null ? e.getStatus().getStatusCode() : -1;
-      if (statusCode != NOT_FOUND.getStatusCode()) {
-        throw new SemanticException("Exception while getServer ", e.getCause());
-      }
-      LOG.warn("getServer of: {} returned: {}", endpoint, e.getMessage());
+      return retryable.executeCallable(() -> clientV2.getServer(endpoint));
+    } catch (Exception e) {
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
-    return null;
   }
 
   public String getEntityGuid(final String entityType,
@@ -142,12 +149,7 @@ public class AtlasRestClientImpl extends RetryingClient implements AtlasRestClie
 
     try {
       AtlasEntity.AtlasEntityWithExtInfo entityWithExtInfo = runWithTimeout(
-          new Callable<AtlasEntity.AtlasEntityWithExtInfo>() {
-            @Override
-            public AtlasEntity.AtlasEntityWithExtInfo call() throws Exception {
-              return clientV2.getEntityByAttribute(entityType, attributes);
-            }
-          }, entityApiTimeOut, TimeUnit.SECONDS);
+        () -> clientV2.getEntityByAttribute(entityType, attributes), entityApiTimeOut, TimeUnit.SECONDS);
 
       if (entityWithExtInfo == null || entityWithExtInfo.getEntity() == null) {
         LOG.warn("Atlas entity cannot be retrieved using: type: {} and {} - {}",
@@ -158,7 +160,8 @@ public class AtlasRestClientImpl extends RetryingClient implements AtlasRestClie
     } catch (AtlasServiceException e) {
       int statusCode = e.getStatus() != null ? e.getStatus().getStatusCode() : -1;
       if (statusCode != NOT_FOUND.getStatusCode()) {
-        throw new SemanticException("Exception while getEntityGuid ", e.getCause());
+        throw new SemanticException(ErrorMsg.REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE.format("Exception " +
+          "while getEntityGuid ", ReplUtils.REPL_ATLAS_SERVICE), e.getCause());
       }
       LOG.warn("getEntityGuid: Could not retrieve entity guid for: {}-{}-{}",
               entityType, attributeName, qualifiedName, e.getMessage());
@@ -168,11 +171,14 @@ public class AtlasRestClientImpl extends RetryingClient implements AtlasRestClie
     }
   }
 
-  public boolean getStatus() throws SemanticException {
+  public boolean getStatus(HiveConf conf) throws SemanticException {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(conf)
+      .withRetryOnException(Exception.class).build();
     try {
-      return clientV2.isServerReady();
-    } catch (AtlasServiceException e) {
-      throw new SemanticException(e.getCause());
+      return retryable.executeCallable(() -> clientV2.isServerReady());
+    } catch (Exception e) {
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
   }
 }

@@ -51,10 +51,6 @@ import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
-import org.apache.hadoop.hive.common.BlobStorageUtils;
-import org.apache.hadoop.hive.common.NoDynamicValuesException;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -2420,7 +2416,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       List<ParsedDelta> parsedDeltas,
       List<OrcProto.Type> readerTypes,
       UserGroupInformation ugi, boolean allowSyntheticFileIds, boolean isDefaultFs) {
-    List<DeltaMetaData> deltas = AcidUtils.serializeDeltas(parsedDeltas);
+    List<DeltaMetaData> deltas = AcidUtils.serializeDeleteDeltas(parsedDeltas);
     boolean[] covered = new boolean[context.numBuckets];
 
     // if we have a base to work from

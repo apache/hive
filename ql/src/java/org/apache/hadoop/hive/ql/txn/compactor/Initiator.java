@@ -62,12 +62,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_INTIATOR_THREAD_NAME_FORMAT;
 
 /**
  * A class to initiate compactions.  This will run in a separate thread.
@@ -78,13 +79,14 @@ public class Initiator extends MetaStoreCompactorThread {
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
   static final private String COMPACTORTHRESHOLD_PREFIX = "compactorthreshold.";
-  private Executor compactionExecutor;
 
   private long checkInterval;
   private long prevStart = -1;
+  private ExecutorService compactionExecutor;
 
   @Override
   public void run() {
+    LOG.info("Starting Initiator thread");
     // Make sure nothing escapes this run method and kills the metastore at large,
     // so wrap it in a big catch Throwable statement.
     try {
@@ -149,7 +151,7 @@ public class Initiator extends MetaStoreCompactorThread {
               String runAs = resolveUserToRunAs(tblNameOwners, t, p);
               /* checkForCompaction includes many file metadata checks and may be expensive.
                * Therefore, using a thread pool here and running checkForCompactions in parallel */
-              compactionList.add(CompletableFuture.runAsync(ThrowingRunnable.unchecked(() ->
+              compactionList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
                   scheduleCompactionIfRequired(ci, t, p, runAs)), compactionExecutor));
             } catch (Throwable t) {
               LOG.error("Caught exception while trying to determine if we should compact {}. " +
@@ -178,10 +180,15 @@ public class Initiator extends MetaStoreCompactorThread {
           Thread.sleep(checkInterval - elapsedTime);
         }
 
+        LOG.info("Initiator thread finished one loop.");
       } while (!stop.get());
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor initiator, exiting " +
           StringUtils.stringifyException(t));
+    } finally {
+      if (compactionExecutor != null) {
+        this.compactionExecutor.shutdownNow();
+      }
     }
   }
 
@@ -222,25 +229,13 @@ public class Initiator extends MetaStoreCompactorThread {
     return cache.get(fullTableName);
   }
 
-  private interface ThrowingRunnable<E extends Exception> {
-    void run() throws E;
-
-    static Runnable unchecked(ThrowingRunnable<?> r) {
-      return () -> {
-        try {
-          r.run();
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      };
-    }
-  }
-
   @Override
   public void init(AtomicBoolean stop) throws Exception {
     super.init(stop);
     checkInterval = conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CHECK_INTERVAL, TimeUnit.MILLISECONDS);
-    compactionExecutor = Executors.newFixedThreadPool(conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE));
+    compactionExecutor = CompactorUtil.createExecutorWithThreadFactory(
+            conf.getIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_REQUEST_QUEUE),
+            COMPACTOR_INTIATOR_THREAD_NAME_FORMAT);
   }
 
   private void recoverFailedCompactions(boolean remoteOnly) throws MetaException {
@@ -364,6 +359,7 @@ public class Initiator extends MetaStoreCompactorThread {
       boolean multiBase = dir.getObsolete().stream()
               .filter(path -> path.getName().startsWith(AcidUtils.BASE_PREFIX)).findAny().isPresent();
 
+      boolean initiateMajor =  bigEnough || (deltaSize == 0  && multiBase);
       if (LOG.isDebugEnabled()) {
         StringBuilder msg = new StringBuilder("delta size: ");
         msg.append(deltaSize);
@@ -375,11 +371,17 @@ public class Initiator extends MetaStoreCompactorThread {
         msg.append(deltaSize);
         msg.append(" threshold: ");
         msg.append(deltaPctThreshold);
-        msg.append(" will major compact: ");
+        msg.append(" delta/base ratio > ").append(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_PCT_THRESHOLD.varname)
+            .append(": ");
         msg.append(bigEnough);
+        msg.append(".");
+        if (!initiateMajor) {
+          msg.append("not");
+        }
+        msg.append(" initiating major compaction.");
         LOG.debug(msg.toString());
       }
-      if (bigEnough || (deltaSize == 0  && multiBase)) return CompactionType.MAJOR;
+      if (initiateMajor) return CompactionType.MAJOR;
     }
 
     String deltaNumProp = tblproperties.get(COMPACTORTHRESHOLD_PREFIX +
@@ -389,18 +391,18 @@ public class Initiator extends MetaStoreCompactorThread {
         Integer.parseInt(deltaNumProp);
     boolean enough = deltas.size() > deltaNumThreshold;
     if (!enough) {
+      LOG.debug("Not enough deltas to initiate compaction for table=" + ci.tableName + "partition=" + ci.partName
+          + ". Found: " + deltas.size() + " deltas, threshold is " + deltaNumThreshold);
       return null;
     }
     if (AcidUtils.isInsertOnlyTable(tblproperties)) {
-      LOG.debug("Requesting a major compaction for a MM table; found " + deltas.size()
-          + " delta files, threshold is " + deltaNumThreshold);
+      LOG.debug("Requesting a major compaction for a MM table; found " + deltas.size() + " deltas, threshold is "
+          + deltaNumThreshold);
       return CompactionType.MAJOR;
     }
-    // TODO: this log statement looks wrong
-    LOG.debug("Found " + deltas.size() + " delta files, threshold is " + deltaNumThreshold +
-        (enough ? "" : "not") + " and no base, requesting " + (noBase ? "major" : "minor") +
-        " compaction");
     // If there's no base file, do a major compaction
+    LOG.debug("Found " + deltas.size() + " delta files, and " + (noBase ? "no" : "has") + " base," +
+        "requesting " + (noBase ? "major" : "minor") + " compaction");
     return noBase ? CompactionType.MAJOR : CompactionType.MINOR;
   }
 
@@ -441,7 +443,7 @@ public class Initiator extends MetaStoreCompactorThread {
   private static boolean checkDynPartitioning(Table t, CompactionInfo ci){
     if (t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0 &&
             ci.partName  == null) {
-      LOG.debug("Skipping entry for " + ci.getFullTableName() + " as it is from dynamic" +
+      LOG.info("Skipping entry for " + ci.getFullTableName() + " as it is from dynamic" +
               " partitioning");
       return  true;
     }
@@ -457,7 +459,7 @@ public class Initiator extends MetaStoreCompactorThread {
     // todo: this is not robust. You can easily run `alter table` to start a compaction between
     // the time currentCompactions is generated and now
     if (lookForCurrentCompactions(currentCompactions, ci)) {
-      LOG.debug("Found currently initiated or working compaction for " +
+      LOG.info("Found currently initiated or working compaction for " +
           ci.getFullPartitionName() + " so we will not initiate another compaction");
       return false;
     }
@@ -470,7 +472,7 @@ public class Initiator extends MetaStoreCompactorThread {
         return false;
       }
 
-      if (replIsCompactionDisabledForDatabase(ci.dbname)) {
+      if (replIsCompactionDisabledForDatabase(ci.dbname) || replIsCompactionDisabledForTable(t)) {
         return false;
       }
 
@@ -478,7 +480,8 @@ public class Initiator extends MetaStoreCompactorThread {
         LOG.info("Table " + tableName(t) + " marked " + hive_metastoreConstants.TABLE_NO_AUTO_COMPACT +
             "=true so we will not compact it.");
         return false;
-      } else if (replIsCompactionDisabledForTable(t) || checkDynPartitioning(t, ci)) {
+      }
+      if (checkDynPartitioning(t, ci)) {
         return false;
       }
 

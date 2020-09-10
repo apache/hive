@@ -111,7 +111,7 @@ STAGE PLANS:
                         Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -148,7 +148,7 @@ STAGE PLANS:
                             Statistics: Num rows: 14 Data size: 2688 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col2 (type: string)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -368,7 +368,7 @@ STAGE PLANS:
                         Statistics: Num rows: 10 Data size: 930 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -401,7 +401,7 @@ STAGE PLANS:
                           Statistics: Num rows: 14 Data size: 1302 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: int)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:

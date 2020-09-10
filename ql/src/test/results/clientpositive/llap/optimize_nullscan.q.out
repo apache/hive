@@ -240,12 +240,12 @@ STAGE PLANS:
                   alias: srcpart
                   Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
-                  Select Operator
-                    expressions: key (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 174000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 0
+                  Limit
+                    Number of rows: 0
+                    Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 87 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         bucketingVersion: 2
@@ -598,7 +598,7 @@ STAGE PLANS:
                         value expressions: _col0 (type: bigint)
                         auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -950,12 +950,12 @@ STAGE PLANS:
                   alias: srcpart
                   Statistics: Num rows: 2000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
-                  Select Operator
-                    expressions: value (type: string)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2000 Data size: 182000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 0
+                  Limit
+                    Number of rows: 0
+                    Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: value (type: string)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 91 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         bucketingVersion: 2
@@ -1250,7 +1250,7 @@ STAGE PLANS:
                         GatherStats: false
                         MultiFileSpray: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
