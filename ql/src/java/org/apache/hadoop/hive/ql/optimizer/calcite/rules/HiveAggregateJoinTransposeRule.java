@@ -33,6 +33,7 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
+import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
@@ -330,6 +331,10 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
   private boolean isGroupingUnique(RelNode input, ImmutableBitSet groups) {
     if (groups.isEmpty()) {
       return false;
+    }
+    if(input instanceof HepRelVertex) {
+      HepRelVertex vertex = (HepRelVertex) input;
+      return isGroupingUnique(vertex.getCurrentRel(), groups);
     }
 
     RelMetadataQuery mq = input.getCluster().getMetadataQuery();
