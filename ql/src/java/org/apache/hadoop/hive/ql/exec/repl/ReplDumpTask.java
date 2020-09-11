@@ -102,6 +102,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 import java.util.UUID;
 import java.util.ArrayList;
@@ -304,8 +305,21 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (fs.exists(dumpRoot)) {
         FileStatus[] statuses = fs.listStatus(dumpRoot,
                 path -> !path.equals(currentDumpPath) && !path.toUri().getPath().equals(currentDumpPath.toString()));
+        int retainPrevDumpDirCount = conf.getIntVar(HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR_COUNT);
+        int numDumpDirs = statuses.length;
+        if(shouldRetainPrevDumpDirs()) {
+          Arrays.sort(statuses, (Comparator.<FileStatus>
+                  comparingLong(fileStatus1 -> fileStatus1.getModificationTime())
+                  .thenComparingLong(fileStatus2 -> fileStatus2.getModificationTime())));
+        }
         for (FileStatus status : statuses) {
-          fs.delete(status.getPath(), true);
+          //based on config, either delete all previous dump-dirs
+          //or delete a minimum number of oldest dump-directories
+          if(!shouldRetainPrevDumpDirs() || numDumpDirs > retainPrevDumpDirCount){
+            fs.delete(status.getPath(), true);
+            numDumpDirs--;
+
+          }
         }
       }
     } catch (Exception ex) {
@@ -425,6 +439,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
    */
   private boolean isMaterializedViewsReplEnabled() {
     return conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_MATERIALIZED_VIEWS);
+  }
+
+  /**
+   * Decide whether to retain previous dump-directories after repl-dump
+   */
+  private boolean shouldRetainPrevDumpDirs() {
+    return conf.getBoolVar(HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR);
   }
 
   /**
