@@ -31,6 +31,7 @@ public class HookUtils {
     if (conf != null && logString != null) {
       List<Redactor> queryRedactors = readHooksFromConf(conf, HookContext.HookType.REDACTOR);
       for (Redactor redactor : queryRedactors) {
+        redactor.setConf(conf);
         redactedString = redactor.redactQuery(redactedString);
       }
     }

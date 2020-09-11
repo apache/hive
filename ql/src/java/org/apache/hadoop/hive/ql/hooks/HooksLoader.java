@@ -59,24 +59,29 @@ public class HooksLoader {
    * @param type hook type
    */
   @VisibleForTesting
-  void loadHooksFromConf(HookContext.HookType type) throws Exception {
+  void loadHooksFromConf(HookContext.HookType type) {
     Hooks container = hooks[type.ordinal()];
     if (!container.loadedFromConf) {
       container.loadedFromConf = true;
       List hooks = container.getHooks();
       HiveConf.ConfVars confVars = type.getConfVar();
       Collection<String> csHooks = conf.getStringCollection(confVars.varname);
-      for (String clzName : csHooks) {
-        Class hookCls = Class.forName(clzName.trim(), true, Utilities.getSessionSpecifiedClassLoader());
-        if (type.getHookClass().isAssignableFrom(hookCls)) {
-          Object hookObj = hookCls.newInstance();
-          hooks.add(hookObj);
-        } else {
-          String message = "The class: " + clzName + " should be the subclass of " + type.getHookClass().getName()
-              + ", as the type: " + type + " defined";
-          logErrorMessage(message);
-          throw new ClassCastException(clzName + " cannot be cast to " + type.getHookClass().getName());
+      try {
+        for (String clzName : csHooks) {
+          Class hookCls = Class.forName(clzName.trim(), true, Utilities.getSessionSpecifiedClassLoader());
+          if (type.getHookClass().isAssignableFrom(hookCls)) {
+            Object hookObj = hookCls.newInstance();
+            hooks.add(hookObj);
+          } else {
+            String message = "The class: " + clzName + " should be the subclass of " + type.getHookClass().getName()
+                + ", as the type: " + type + " defined";
+            logErrorMessage(message);
+            throw new ClassCastException(clzName + " cannot be cast to " + type.getHookClass().getName());
+          }
         }
+      } catch(Exception e) {
+        String message = "Error loading hooks(" + confVars + "): " + HiveStringUtils.stringifyException(e);
+        throw new RuntimeException(message, e);
       }
     }
   }
@@ -96,13 +101,8 @@ public class HooksLoader {
    */
   public void addHook(HookContext.HookType type, Object hook) {
     if (type.getHookClass().isAssignableFrom(hook.getClass())) {
-      try {
-        loadHooksFromConf(type);
-        hooks[type.ordinal()].addHook(hook);
-      } catch (Exception e) {
-        String message = "Error adding hooks(" + type.getConfVar() + "): " + HiveStringUtils.stringifyException(e);
-        throw new RuntimeException(message, e);
-      }
+      loadHooksFromConf(type);
+      hooks[type.ordinal()].addHook(hook);
     } else {
       String message = "Error adding hook: " + hook.getClass().getName() + " into type: " + type +
           ", as the hook doesn't implement or extend: " + type.getHookClass().getName();
@@ -126,17 +126,12 @@ public class HooksLoader {
       logErrorMessage(message);
       throw new IllegalArgumentException(message);
     }
-    try {
-      loadHooksFromConf(type);
-      return hooks[type.ordinal()].getHooks();
-    } catch (Exception e) {
-      String message = "Error getting hooks(" + type.getConfVar() + "): " + HiveStringUtils.stringifyException(e);
-      throw new RuntimeException(message, e);
-    }
+    loadHooksFromConf(type);
+    return hooks[type.ordinal()].getHooks();
   }
 
   @VisibleForTesting
-  public List getHooks(HookContext.HookType type, boolean loadFromConf) {
+  List getHooks(HookContext.HookType type, boolean loadFromConf) {
     if (loadFromConf) {
       return getHooks(type);
     }
