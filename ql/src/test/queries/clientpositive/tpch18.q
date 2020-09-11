@@ -63,6 +63,9 @@ select 'add constraints';
 
 alter table orders add constraint pk_o primary key (o_orderkey) disable novalidate rely;
 alter table customer add constraint pk_c primary key (c_custkey) disable novalidate rely;
+alter table lineitem add constraint pk_l primary key (l_orderkey,l_linenumber) disable novalidate rely;
+
+alter table lineitem change column L_ORDERKEY L_ORDERKEY int constraint li_ok_nn not null disable novalidate rely;
 
 alter table lineitem add constraint li_o foreign key  (l_orderkey) references orders (o_orderkey) disable novalidate rely;
 alter table orders   add constraint or_c foreign key  (o_custkey) references customer (c_custkey) disable novalidate rely;

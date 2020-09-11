@@ -148,6 +148,18 @@ PREHOOK: query: alter table customer add constraint pk_c primary key (c_custkey)
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: alter table customer add constraint pk_c primary key (c_custkey) disable novalidate rely
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table lineitem add constraint pk_l primary key (l_orderkey,l_linenumber) disable novalidate rely
+PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
+POSTHOOK: query: alter table lineitem add constraint pk_l primary key (l_orderkey,l_linenumber) disable novalidate rely
+POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: alter table lineitem change column L_ORDERKEY L_ORDERKEY int constraint li_ok_nn not null disable novalidate rely
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: tpch_0_001@lineitem
+PREHOOK: Output: tpch_0_001@lineitem
+POSTHOOK: query: alter table lineitem change column L_ORDERKEY L_ORDERKEY int constraint li_ok_nn not null disable novalidate rely
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: tpch_0_001@lineitem
+POSTHOOK: Output: tpch_0_001@lineitem
 PREHOOK: query: alter table lineitem add constraint li_o foreign key  (l_orderkey) references orders (o_orderkey) disable novalidate rely
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: alter table lineitem add constraint li_o foreign key  (l_orderkey) references orders (o_orderkey) disable novalidate rely
@@ -233,8 +245,7 @@ HiveSortLimit(sort0=[$4], sort1=[$3], dir0=[DESC], dir1=[ASC], fetch=[100])
       HiveProject(l_orderkey=[$0], $f1=[$1])
         HiveAggregate(group=[{0}], agg#0=[sum($1)])
           HiveProject(l_orderkey=[$0], l_quantity=[$4])
-            HiveFilter(condition=[IS NOT NULL($0)])
-              HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[l])
+            HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[l])
       HiveProject(o_orderkey=[$0], o_totalprice=[$2], o_orderdate=[$3], c_custkey=[$4], c_name=[$5])
         HiveJoin(condition=[=($0, $6)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveJoin(condition=[=($4, $1)], joinType=[inner], algorithm=[none], cost=[not available])
@@ -245,8 +256,7 @@ HiveSortLimit(sort0=[$4], sort1=[$3], dir0=[DESC], dir1=[ASC], fetch=[100])
           HiveProject($f0=[$0])
             HiveFilter(condition=[>($1, 3E2)])
               HiveAggregate(group=[{0}], agg#0=[sum($4)])
-                HiveFilter(condition=[IS NOT NULL($0)])
-                  HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[lineitem])
+                HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[lineitem])
 
 PREHOOK: query: select 'with extended costmodel'
 PREHOOK: type: QUERY
@@ -338,15 +348,13 @@ HiveSortLimit(sort0=[$4], sort1=[$3], dir0=[DESC], dir1=[ASC], fetch=[100])
               HiveProject(l_orderkey=[$0], $f1=[$1])
                 HiveAggregate(group=[{0}], agg#0=[sum($1)])
                   HiveProject(l_orderkey=[$0], l_quantity=[$4])
-                    HiveFilter(condition=[IS NOT NULL($0)])
-                      HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[l])
+                    HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[l])
               HiveProject(o_orderkey=[$0], o_custkey=[$1], o_totalprice=[$3], o_orderdate=[$4])
                 HiveTableScan(table=[[tpch_0_001, orders]], table:alias=[orders])
           HiveProject($f0=[$0])
             HiveFilter(condition=[>($1, 3E2)])
               HiveAggregate(group=[{0}], agg#0=[sum($4)])
-                HiveFilter(condition=[IS NOT NULL($0)])
-                  HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[lineitem])
+                HiveTableScan(table=[[tpch_0_001, lineitem]], table:alias=[lineitem])
       HiveProject(c_custkey=[$0], c_name=[$1])
         HiveTableScan(table=[[tpch_0_001, customer]], table:alias=[customer])
 
