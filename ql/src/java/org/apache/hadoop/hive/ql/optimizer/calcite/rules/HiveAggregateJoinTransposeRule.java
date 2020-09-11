@@ -118,6 +118,14 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         return;
       }
 
+      boolean groupingUnique = isGroupingUnique(join, aggregate.getGroupSet());
+
+      if (!groupingUnique && !costBased) {
+        // groupingUnique is not satisfied ; and cost based decision is disabled.
+        // there is no need to check further - the transformation may not happen
+        return;
+      }
+
       // Do the columns used by the join appear in the output of the aggregate?
       final ImmutableBitSet aggregateColumns = aggregate.getGroupSet();
       final RelMetadataQuery mq = call.getMetadataQuery();
@@ -302,7 +310,7 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
       RelNode r = relBuilder.build();
       boolean transform = false;
       if (uniqueBased && aggConvertedToProjects) {
-        transform = isGroupingUnique(join, aggregate.getGroupSet());
+        transform = groupingUnique;
       }
       if (!transform && costBased) {
         RelOptCost afterCost = mq.getCumulativeCost(r);
