@@ -88,6 +88,7 @@ public class ImpalaOperatorTable {
     map.put("DATE", SqlStdOperatorTable.CAST);
     map.put("DECIMAL", SqlStdOperatorTable.CAST);
     map.put("FLOAT", SqlStdOperatorTable.CAST);
+    map.put("DOUBLE", SqlStdOperatorTable.CAST);
     map.put("INT", SqlStdOperatorTable.CAST);
     map.put("INTEGER", SqlStdOperatorTable.CAST);
     map.put("SMALLINT", SqlStdOperatorTable.CAST);

@@ -77,7 +77,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
     // op can be null for FunctionResolvers that are special and don't map to
     // anything in Calcite.  One example is the InternalIntervalFunctionResolver
     // where it maps the function "internal_interval" into a RexLiteral.
-    this.func = func;
+    this.func = func.toLowerCase();
     this.argTypes = ImmutableList.copyOf(RexUtil.types(inputNodes));
     this.op = op;
   }
@@ -395,7 +395,7 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
       case CASE:
         // case statements can come in as "when" or "case", see cthe Case*Resolver comment
         // for more information.
-        if (func.equals("when")) {
+        if (func.toLowerCase().equals("when")) {
           return new CaseWhenFunctionResolver(helper, op, inputs);
         }
         return new CaseFunctionResolver(helper, op, inputs);
