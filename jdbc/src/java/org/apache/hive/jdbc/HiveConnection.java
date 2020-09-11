@@ -18,6 +18,7 @@
 
 package org.apache.hive.jdbc;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -121,6 +122,7 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
 /**
  * HiveConnection.
@@ -240,6 +242,13 @@ public class HiveConnection implements java.sql.Connection {
       }
     }
     return url.toString();
+  }
+
+  @VisibleForTesting
+  public HiveConnection() {
+    sessConfMap = null;
+    isEmbeddedMode = true;
+    initFetchSize = 0;
   }
 
   public HiveConnection(String uri, Properties info) throws SQLException {
@@ -866,6 +875,13 @@ public class HiveConnection implements java.sql.Connection {
     try {
       TOpenSessionResp openResp = client.OpenSession(openReq);
 
+      // Populate a given configuration from HS2 server HiveConf, only if that configuration
+      // is not already present in Connection parameter HiveConf i.e., client side configuration
+      // takes precedence over the server side configuration.
+      Map<String, String> serverHiveConf = openResp.getConfiguration();
+
+      updateServerHiveConf(serverHiveConf, connParams);
+
       // validate connection
       Utils.verifySuccess(openResp.getStatus());
       if (!supportedProtocols.contains(openResp.getServerProtocolVersion())) {
@@ -889,6 +905,20 @@ public class HiveConnection implements java.sql.Connection {
       throw new SQLException("Could not establish connection to " + jdbcUriString + ": " + e.getMessage(), " 08S01", e);
     }
     isClosed = false;
+  }
+
+  @VisibleForTesting
+  public void updateServerHiveConf(Map<String, String> serverHiveConf, JdbcConnectionParams connParams) {
+    if (serverHiveConf != null) {
+      // Iterate over all Server configurations.
+      Stream.of(ConfVars.values()).forEach(conf -> {
+        String key = JdbcConnectionParams.HIVE_CONF_PREFIX + conf.varname;
+        // Update Server HiveConf, only if a given configuration is not already set from the client.
+        if (serverHiveConf.containsKey(conf.varname) && !connParams.getHiveConfs().containsKey(key)) {
+          connParams.getHiveConfs().put(key, serverHiveConf.get(conf.varname));
+        }
+      });
+    }
   }
 
   /**
@@ -1712,6 +1742,14 @@ public class HiveConnection implements java.sql.Connection {
 
   public TProtocolVersion getProtocol() {
     return protocol;
+  }
+
+  public JdbcConnectionParams getConnParams() {
+    return connParams;
+  }
+
+  public JdbcConnectionParams setConnParams(JdbcConnectionParams jdbcConnectionParams) {
+    return connParams = jdbcConnectionParams;
   }
 
   public static TCLIService.Iface newSynchronizedClient(
