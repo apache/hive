@@ -100,7 +100,7 @@ public class ImpalaTableLoader {
         tableMap.put(basicTable.getMetaStoreTable(), new ImpalaHdfsTable(basicTable, db.getMSC(),
               validWriteIdList));
       } catch (ImpalaException|MetaException e) {
-        timeline.markEvent("Metadata load failed or table " + basicTable.getName() + ". Completed" +
+        timeline.markEvent("Metadata load failed for table " + basicTable.getName() + ". Completed" +
             " for " + tableMap.entrySet().size() + " tables.");
         throw new HiveException(e);
       }

@@ -62,6 +62,7 @@ public class ImpalaQueryContext {
   private final List<TNetworkAddress> hostLocations = Lists.newArrayList();
   private final TQueryCtx queryCtx;
   private final Map<String, ImpalaBasicHdfsTable> cachedTables = Maps.newHashMap();
+  private final Map<String, Database> cachedDbs = Maps.newHashMap();
   private final AuthorizationFactory authFactory;
 
   public ImpalaQueryContext(HiveConf conf, String dbname, String username,
@@ -147,7 +148,12 @@ public class ImpalaQueryContext {
   public ImpalaBasicHdfsTable getBasicTableInstance(IMetaStoreClient client, RelOptHiveTable table)
       throws HiveException {
     Table msTbl = table.getHiveTableMD().getTTable();
-    Database msDb = table.getDatabase();
+    Database msDb = cachedDbs.get(msTbl.getDbName());
+    if (msDb == null) {
+      // cache the Database object to avoid rpc to the metastore for future requests
+      msDb = table.getDatabase();
+      cachedDbs.put(msTbl.getDbName(), msDb);
+    }
     String tableName = msTbl.getDbName() + "." + msTbl.getTableName();
     // Only store one copy for the query, so check the cache if it exists.
     ImpalaBasicHdfsTable cachedTable = cachedTables.get(tableName);
