@@ -65,7 +65,8 @@ class AsyncTaskCopyLocalJars implements Callable<Void> {
         io.netty.util.NetUtil.class, // netty4
         org.jboss.netty.util.NetUtil.class, //netty3
         org.apache.arrow.vector.types.pojo.ArrowType.class, //arrow-vector
-        org.apache.arrow.memory.BaseAllocator.class, //arrow-memory
+        org.apache.arrow.memory.BufferAllocator.class, //arrow-memory-core
+        org.apache.arrow.memory.NettyAllocationManager.class, //arrow-memory-netty
         org.apache.arrow.flatbuf.Schema.class, //arrow-format
         com.google.flatbuffers.Table.class, //flatbuffers
         com.carrotsearch.hppc.ByteArrayDeque.class, //hppc
