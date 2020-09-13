@@ -56,8 +56,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
@@ -680,15 +678,14 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     }
 
     @Override public RexNode visitCall(RexCall call) {
-      RexNode node;
+      final RexNode node;
       final List<RexNode> operands;
       final List<RexNode> newOperands;
-      Map<String,RexNode> stringToExpr = Maps.newHashMap();
-      Multimap<String,String> inLHSExprToRHSExprs = LinkedHashMultimap.create();
+      final Multimap<RexNode,RexNode> inLHSExprToRHSExprs = LinkedHashMultimap.create();
       switch (call.getKind()) {
         case AND:
           // IN clauses need to be combined by keeping only common elements
-          operands = Lists.newArrayList(RexUtil.flattenAnd(call.getOperands()));
+          operands = new ArrayList<>(RexUtil.flattenAnd(call.getOperands()));
           for (int i = 0; i < operands.size(); i++) {
             RexNode operand = operands.get(i);
             if (operand.getKind() == SqlKind.IN) {
@@ -696,14 +693,11 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
               if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().get(0))) {
                 continue;
               }
-              String ref = inCall.getOperands().get(0).toString();
-              stringToExpr.put(ref, inCall.getOperands().get(0));
+              RexNode ref = inCall.getOperands().get(0);
               if (inLHSExprToRHSExprs.containsKey(ref)) {
-                Set<String> expressions = Sets.newHashSet();
+                Set<RexNode> expressions = Sets.newHashSet();
                 for (int j = 1; j < inCall.getOperands().size(); j++) {
-                  String expr = inCall.getOperands().get(j).toString();
-                  expressions.add(expr);
-                  stringToExpr.put(expr, inCall.getOperands().get(j));
+                  expressions.add(inCall.getOperands().get(j));
                 }
                 inLHSExprToRHSExprs.get(ref).retainAll(expressions);
                 if (!inLHSExprToRHSExprs.containsKey(ref)) {
@@ -714,9 +708,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
                 }
               } else {
                 for (int j = 1; j < inCall.getOperands().size(); j++) {
-                  String expr = inCall.getOperands().get(j).toString();
-                  inLHSExprToRHSExprs.put(ref, expr);
-                  stringToExpr.put(expr, inCall.getOperands().get(j));
+                  inLHSExprToRHSExprs.put(ref, inCall.getOperands().get(j));
                 }
               }
               operands.remove(i);
@@ -726,12 +718,9 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
               if (c == null || !HiveCalciteUtil.isDeterministic(c.exprNode)) {
                 continue;
               }
-              String ref = c.exprNode.toString();
-              stringToExpr.put(ref, c.exprNode);
+              RexNode ref = c.exprNode;
               if (inLHSExprToRHSExprs.containsKey(ref)) {
-                String expr = c.constNode.toString();
-                stringToExpr.put(expr, c.constNode);
-                inLHSExprToRHSExprs.get(ref).retainAll(Collections.singleton(expr));
+                inLHSExprToRHSExprs.get(ref).retainAll(Collections.singleton(c.constNode));
                 if (!inLHSExprToRHSExprs.containsKey(ref)) {
                   // Note that Multimap does not keep a key if all its values are removed.
                   // Hence, since there are no common expressions and it is within an AND,
@@ -739,23 +728,21 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
                   return rexBuilder.makeLiteral(false);
                 }
               } else {
-                String expr = c.constNode.toString();
-                inLHSExprToRHSExprs.put(ref, expr);
-                stringToExpr.put(expr, c.constNode);
+                inLHSExprToRHSExprs.put(ref, c.constNode);
               }
               operands.remove(i);
               --i;
             }
           }
           // Create IN clauses
-          newOperands = createInClauses(rexBuilder, stringToExpr, inLHSExprToRHSExprs);
+          newOperands = createInClauses(rexBuilder, inLHSExprToRHSExprs);
           newOperands.addAll(operands);
           // Return node
           node = RexUtil.composeConjunction(rexBuilder, newOperands, false);
           break;
         case OR:
           // IN clauses need to be combined by keeping all elements
-          operands = Lists.newArrayList(RexUtil.flattenOr(call.getOperands()));
+          operands = new ArrayList<>(RexUtil.flattenOr(call.getOperands()));
           for (int i = 0; i < operands.size(); i++) {
             RexNode operand = operands.get(i);
             if (operand.getKind() == SqlKind.IN) {
@@ -763,19 +750,16 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
               if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().get(0))) {
                 continue;
               }
-              String ref = inCall.getOperands().get(0).toString();
-              stringToExpr.put(ref, inCall.getOperands().get(0));
+              RexNode ref = inCall.getOperands().get(0);
               for (int j = 1; j < inCall.getOperands().size(); j++) {
-                String expr = inCall.getOperands().get(j).toString();
-                inLHSExprToRHSExprs.put(ref, expr);
-                stringToExpr.put(expr, inCall.getOperands().get(j));
+                inLHSExprToRHSExprs.put(ref, inCall.getOperands().get(j));
               }
               operands.remove(i);
               --i;
             }
           }
           // Create IN clauses
-          newOperands = createInClauses(rexBuilder, stringToExpr, inLHSExprToRHSExprs);
+          newOperands = createInClauses(rexBuilder, inLHSExprToRHSExprs);
           newOperands.addAll(operands);
           // Return node
           node = RexUtil.composeDisjunction(rexBuilder, newOperands, false);
@@ -786,25 +770,22 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return node;
     }
 
-    private static List<RexNode> createInClauses(RexBuilder rexBuilder, Map<String, RexNode> stringToExpr,
-            Multimap<String, String> inLHSExprToRHSExprs) {
-      List<RexNode> newExpressions = Lists.newArrayList();
-      for (Entry<String,Collection<String>> entry : inLHSExprToRHSExprs.asMap().entrySet()) {
-        String ref = entry.getKey();
-        Collection<String> exprs = entry.getValue();
+    private static List<RexNode> createInClauses(RexBuilder rexBuilder,
+            Multimap<RexNode, RexNode> inLHSExprToRHSExprs) {
+      final List<RexNode> newExpressions = new ArrayList<>();
+      for (Entry<RexNode,Collection<RexNode>> entry : inLHSExprToRHSExprs.asMap().entrySet()) {
+        Collection<RexNode> exprs = entry.getValue();
         if (exprs.isEmpty()) {
           newExpressions.add(rexBuilder.makeLiteral(false));
         } else if (exprs.size() == 1) {
           List<RexNode> newOperands = new ArrayList<>(2);
-          newOperands.add(stringToExpr.get(ref));
-          newOperands.add(stringToExpr.get(exprs.iterator().next()));
+          newOperands.add(entry.getKey());
+          newOperands.add(exprs.iterator().next());
           newExpressions.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, newOperands));
         } else {
           List<RexNode> newOperands = new ArrayList<>(exprs.size() + 1);
-          newOperands.add(stringToExpr.get(ref));
-          for (String expr : exprs) {
-            newOperands.add(stringToExpr.get(expr));
-          }
+          newOperands.add(entry.getKey());
+          newOperands.addAll(exprs);
           newExpressions.add(rexBuilder.makeCall(HiveIn.INSTANCE, newOperands));
         }
       }
