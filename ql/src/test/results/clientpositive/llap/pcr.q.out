@@ -4292,7 +4292,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM (SELECT `key`, `value`, `hr`
 FROM `default`.`srcpart`
-WHERE `key` = 11 AND `hr` IN ('11', '12') AND `ds` = '2008-04-08'
+WHERE `key` = 11 AND `ds` = '2008-04-08' AND `hr` IN ('11', '12')
 ORDER BY `key`, `hr`) AS `t1`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -4310,7 +4310,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: ((UDFToDouble(key) = 11.0D) and (hr) IN ('11', '12') and (ds = '2008-04-08')) (type: boolean)
+                  filterExpr: ((UDFToDouble(key) = 11.0D) and (ds = '2008-04-08') and (hr) IN ('11', '12')) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
