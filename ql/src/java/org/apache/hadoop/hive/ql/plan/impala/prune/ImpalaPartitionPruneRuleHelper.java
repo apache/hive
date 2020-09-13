@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.plan.impala.prune;
 
 import org.apache.calcite.rex.RexBuilder;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
@@ -38,10 +39,13 @@ public class ImpalaPartitionPruneRuleHelper implements PartitionPruneRuleHelper 
 
   private final ImpalaQueryContext queryContext;
   private final RexBuilder rexBuilder;
+  private final ValidTxnWriteIdList validTxnWriteIdList;
 
-  public ImpalaPartitionPruneRuleHelper(ImpalaQueryContext queryContext, RexBuilder rexBuilder) {
+  public ImpalaPartitionPruneRuleHelper(ImpalaQueryContext queryContext, RexBuilder rexBuilder,
+      ValidTxnWriteIdList validTxnWriteIdList) {
     this.queryContext = queryContext;
     this.rexBuilder = rexBuilder;
+    this.validTxnWriteIdList = validTxnWriteIdList;
   }
 
   /**
@@ -56,13 +60,9 @@ public class ImpalaPartitionPruneRuleHelper implements PartitionPruneRuleHelper 
   @Override
   public RulePartitionPruner createRulePartitionPruner(HiveTableScan scan,
       RelOptHiveTable table, HiveFilter filter) throws HiveException {
-    // special case when there is no table (e.g. 'select 1')
-    if (table.getName().equals(
-        SemanticAnalyzer.DUMMY_DATABASE + "." + SemanticAnalyzer.DUMMY_TABLE)) {
-      return new ImpalaRulePartitionPruner();
-    }
     try {
-      return new ImpalaRulePartitionPruner(scan, table, filter, queryContext, rexBuilder);
+      return new ImpalaRulePartitionPruner(scan, table, filter, queryContext, rexBuilder,
+          validTxnWriteIdList);
     } catch (ImpalaException|MetaException e) {
       throw new HiveException(e);
     }

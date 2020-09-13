@@ -21,6 +21,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -145,8 +147,8 @@ public class ImpalaQueryContext {
    * Get the HdfsTable. This HdfsTable differs slightly from the main HdfsTable class
    * as existing in Impala, see ImpalaBasicHdfsTable class for details.
    */
-  public ImpalaBasicHdfsTable getBasicTableInstance(IMetaStoreClient client, RelOptHiveTable table)
-      throws HiveException {
+  public ImpalaBasicHdfsTable getBasicTableInstance(IMetaStoreClient client, RelOptHiveTable table,
+      ValidTxnWriteIdList validTxnWriteIdList) throws HiveException {
     Table msTbl = table.getHiveTableMD().getTTable();
     Database msDb = cachedDbs.get(msTbl.getDbName());
     if (msDb == null) {
@@ -158,18 +160,25 @@ public class ImpalaQueryContext {
     // Only store one copy for the query, so check the cache if it exists.
     ImpalaBasicHdfsTable cachedTable = cachedTables.get(tableName);
     if (cachedTable == null) {
-      cachedTable = createBasicHdfsTable(client, msTbl, msDb);
+      cachedTable = createBasicHdfsTable(client, msTbl, msDb, validTxnWriteIdList);
       cachedTables.put(tableName, cachedTable);
     }
     return cachedTable;
   }
 
   private ImpalaBasicHdfsTable createBasicHdfsTable(IMetaStoreClient client, Table msTbl,
-      Database msDb) throws HiveException {
+      Database msDb, ValidTxnWriteIdList validTxnWriteIdList) throws HiveException {
     String tableName = msTbl.getDbName() + "." + msTbl.getTableName();
 
+    ValidWriteIdList validWriteIdList = null;
+    if (validTxnWriteIdList != null) {
+      // Lets get this specific table's write id list
+      validWriteIdList =
+          validTxnWriteIdList.getTableValidWriteIdList(tableName);
+    }
+
     ImpalaBasicHdfsTable cachedTable =
-        new ImpalaBasicHdfsTable(conf, client, msTbl, msDb);
+        new ImpalaBasicHdfsTable(conf, client, msTbl, msDb, validWriteIdList);
 
     cachedTables.put(tableName, cachedTable);
     // The :Prune" HdfsTable holds an HdfsTable that contains all the metadata information

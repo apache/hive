@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.plan.impala.prune;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.calcite.rex.RexNode;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -45,9 +47,9 @@ public class ImpalaPrunedPartitionList extends PrunedPartitionList {
   private final ImpalaConjuncts impalaConjuncts;
 
   public ImpalaPrunedPartitionList(Table source, String key, Set<Partition> partitions,
-      List<String> referred, boolean hasUnknowns, List<ImpalaBasicPartition> impalaBasicPartitions,
+      boolean hasUnknowns, List<ImpalaBasicPartition> impalaBasicPartitions,
       ImpalaBasicHdfsTable table, ImpalaConjuncts impalaConjuncts) {
-    super(source, createKey(impalaConjuncts), partitions, referred, hasUnknowns);
+    super(source, key, partitions, Lists.newArrayList(), hasUnknowns);
     this.impalaBasicPartitions = impalaBasicPartitions;
     this.table = table;
     this.impalaConjuncts = impalaConjuncts;
@@ -63,13 +65,5 @@ public class ImpalaPrunedPartitionList extends PrunedPartitionList {
 
   public List<RexNode> getPartitionConjuncts() {
     return impalaConjuncts.getPartitionConjuncts();
-  }
-
-  private static String createKey(ImpalaConjuncts conjuncts) {
-    String key = "";
-    for (RexNode r : conjuncts.getPartitionConjuncts()) {
-      key += r.toString() + ":";
-    }
-    return key;
   }
 }

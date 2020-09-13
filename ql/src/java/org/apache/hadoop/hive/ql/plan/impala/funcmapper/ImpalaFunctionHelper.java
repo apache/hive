@@ -25,6 +25,7 @@ import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.type.SqlTypeName;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -56,12 +57,14 @@ public class ImpalaFunctionHelper implements FunctionHelper {
 
   private final RexNodeExprFactory factory;
   private final RexExecutor rexExecutor;
-  private final PartitionPruneRuleHelper partitionPruneRuleHelper;
+  private final ImpalaQueryContext queryContext;
+  private final RexBuilder rexBuilder;
 
   public ImpalaFunctionHelper(ImpalaQueryContext queryContext, RexBuilder builder) {
     this.factory = new RexNodeExprFactory(builder, this);
     this.rexExecutor = new ImpalaRexExecutorImpl(queryContext);
-    this.partitionPruneRuleHelper = new ImpalaPartitionPruneRuleHelper(queryContext, builder);
+    this.queryContext = queryContext;
+    this.rexBuilder = builder;
   }
 
   /**
@@ -92,8 +95,9 @@ public class ImpalaFunctionHelper implements FunctionHelper {
    * {@inheritDoc}
    */
   @Override
-  public PartitionPruneRuleHelper getPartitionPruneRuleHelper() {
-    return partitionPruneRuleHelper;
+  public PartitionPruneRuleHelper getPartitionPruneRuleHelper(
+      ValidTxnWriteIdList validTxnWriteIdList) {
+    return new ImpalaPartitionPruneRuleHelper(queryContext, rexBuilder, validTxnWriteIdList);
   }
 
   /**

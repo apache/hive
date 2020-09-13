@@ -135,6 +135,7 @@ import org.apache.calcite.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -507,7 +508,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   private static RelOptPlanner createPlanner(
-      HiveConf conf, EventSequence timeline, FunctionHelper functionHelper, Set<RelNode> corrScalarRexSQWithAgg) {
+      HiveConf conf, EventSequence timeline, FunctionHelper functionHelper,
+      Set<RelNode> corrScalarRexSQWithAgg) {
     final Double maxSplitSize = (double) HiveConf.getLongVar(
             conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
     final Double maxMemory = (double) HiveConf.getLongVar(
@@ -2030,6 +2032,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
       setInvalidAutomaticRewritingMaterializationReason(
           materializationValidator.getAutomaticRewritingInvalidReason());
 
+      // XXX: CDPD-17313: TODO: THIS CODE NEEDS TO BE REMOVED BEFORE PHASE 5!!!!!
+      if (getTxnMgr() != null && getTxnMgr().isTxnOpen()) {
+        try {
+          List<String> tablesUsed = getTablesUsed(calciteGenPlan);
+          HivePlannerContext plannerContext =
+              (HivePlannerContext) calciteGenPlan.getCluster().getPlanner().getContext();
+          plannerContext.addResource(getQueryValidTxnWriteIdList(tablesUsed));
+        } catch (SemanticException e) {
+          throw new RuntimeException(e);
+        }
+      }
+
       // 2. Apply pre-join order optimizations
       calcitePreCboPlan = applyPreJoinOrderingTransforms(calciteGenPlan,
           mdProvider.getMetadataProvider(), executorProvider);
@@ -2226,10 +2240,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
           new MarkEventRule("Calcite - Pre-join ordering optimization"));
 
       // 6. Apply Partition Pruning
-      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-          new HivePartitionPruneRule(conf));
-      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-          new MarkEventRule("Calcite - Partition pruning executed"));
+      if (!ctx.isLoadingMaterializedView()) {
+        generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+            new HivePartitionPruneRule(conf));
+        generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+            new MarkEventRule("Calcite - Partition pruning executed"));
+      }
 
       // 7. Projection Pruning (this introduces select above TS & hence needs to be run last due to PP).
       // The pruner retrieves the column statistics at this stage (only for those columns

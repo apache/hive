@@ -23,11 +23,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsTable;
 import org.apache.impala.catalog.CatalogException;
 import org.apache.impala.catalog.Db;
 import org.apache.impala.catalog.FeFsPartition;
@@ -68,11 +75,17 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
 
   private final String nullPartitionKeyValue;
 
-  public ImpalaBasicHdfsTable(HiveConf conf, IMetaStoreClient client, Table msTbl, Database msDb
-      ) throws HiveException {
+  private final Map<String, Partition> cachedPartitions = Maps.newHashMap();
+
+  private final ValidWriteIdList validWriteIdList;
+
+  public ImpalaBasicHdfsTable(HiveConf conf, IMetaStoreClient client,
+      org.apache.hadoop.hive.metastore.api.Table msTbl, Database msDb,
+      ValidWriteIdList validWriteIdList) throws HiveException {
     super(msTbl, new Db(msTbl.getDbName(), msDb), msTbl.getTableName(), msTbl.getOwner());
     try {
       this.conf = conf;
+      this.validWriteIdList = validWriteIdList;
       // some hdfs table initialization needed since we are using partitions.
       loadSchema(msTable_);
       this.nullPartitionKeyValue = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
@@ -129,6 +142,48 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
       partitionsToLoad.add((HdfsPartition) partition);
     }
     return partitions;
+  }
+
+  public Set<Partition> fetchPartitions(IMetaStoreClient client, Table tableMD,
+      List<? extends FeFsPartition> partitions) throws HiveException {
+    Set<Partition> msPartitions = Sets.newHashSet();
+    Set<String> namesToFetch = Sets.newHashSet();
+    for (FeFsPartition partition : partitions) {
+      String partitionName = partition.getPartitionName();
+      if (cachedPartitions.containsKey(partitionName)) {
+        msPartitions.add(cachedPartitions.get(partitionName));
+      } else {
+        namesToFetch.add(partitionName);
+      }
+    }
+    if (!namesToFetch.isEmpty()) {
+      List<Partition> newPartitions = fetchPartitionsFromHMS(client, tableMD, namesToFetch);
+      for (Partition p : newPartitions) {
+        cachedPartitions.put(p.getName(), p);
+        msPartitions.add(p);
+      }
+    }
+    return msPartitions;
+  }
+
+  public List<Partition> fetchPartitionsFromHMS(IMetaStoreClient client,
+      Table table, Set<String> partitionNames) throws HiveException {
+    try {
+      GetPartitionsByNamesRequest request = ImpalaHdfsTable.getPartitionsByNamesRequest(
+          partitionNames, msTable_, conf, false, validWriteIdList);
+      // CDPD-16617: HIVE_IN_TEST mode, we avoid the call to HMS and return
+      // an empty partition list.
+      GetPartitionsByNamesResult result = conf.getBoolVar(ConfVars.HIVE_IN_TEST)
+        ? new GetPartitionsByNamesResult()
+        : client.getPartitionsByNames(request);
+      List<Partition> partitions = Lists.newArrayList();
+      for (org.apache.hadoop.hive.metastore.api.Partition p : result.getPartitions()) {
+        partitions.add(new Partition(table, p));
+      }
+      return partitions;
+    } catch (TException e) {
+      throw new HiveException(e);
+    }
   }
 
   public Set<HdfsPartition> getPartitionsNotToLoad() {

@@ -22,6 +22,7 @@ import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rex.RexExecutor;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.sql.SqlKind;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
@@ -123,7 +124,7 @@ public interface FunctionHelper {
   /**
    * Returns the helper needed to do partition pruning.
    */
-  PartitionPruneRuleHelper getPartitionPruneRuleHelper();
+  PartitionPruneRuleHelper getPartitionPruneRuleHelper(ValidTxnWriteIdList validTxnWriteIdList);
 
   /**
    * Folds expression according to function semantics.

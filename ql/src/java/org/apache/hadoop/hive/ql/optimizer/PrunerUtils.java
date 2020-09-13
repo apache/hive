@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleExactMatch;
 import org.apache.hadoop.hive.ql.lib.TypeRule;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -120,4 +121,7 @@ public final class PrunerUtils {
     return outputMap;
   }
 
+  public static String getTableKey(Table tab) {
+    return tab.getFullyQualifiedName() + ";";
+  }
 }

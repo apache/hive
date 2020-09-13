@@ -164,8 +164,8 @@ public class ImpalaHdfsTable extends HdfsTable {
       ) throws HiveException {
     Preconditions.checkState(getNumClusteringCols() > 0);
     try {
-      GetPartitionsByNamesRequest request =
-          getPartitionsByNamesRequest(basicHdfsTable.getNamesToLoad());
+      GetPartitionsByNamesRequest request = getPartitionsByNamesRequest(
+          basicHdfsTable.getNamesToLoad(), msTable_, conf, true, compileTimeWriteIdList);
       // CDPD-16617: HIVE_IN_TEST mode, we avoid the call to HMS and return
       // an empty partition list.
       GetPartitionsByNamesResult result = conf.getBoolVar(ConfVars.HIVE_IN_TEST)
@@ -217,17 +217,20 @@ public class ImpalaHdfsTable extends HdfsTable {
     }
   }
 
-  private GetPartitionsByNamesRequest getPartitionsByNamesRequest(Set<String> names) {
+  public static GetPartitionsByNamesRequest getPartitionsByNamesRequest(Set<String> names,
+      Table msTbl, HiveConf conf, boolean fetchFileMetadata, ValidWriteIdList writeIdList) {
     GetPartitionsByNamesRequest request = new GetPartitionsByNamesRequest();
-    request.setDb_name(MetaStoreUtils.prependCatalogToDbName(msTable_.getDbName(), conf));
-    request.setTbl_name(msTable_.getTableName());
+    request.setDb_name(MetaStoreUtils.prependCatalogToDbName(msTbl.getDbName(), conf));
+    request.setTbl_name(msTbl.getTableName());
     request.setNames(Lists.newArrayList(names));
-    request.setGetFileMetadata(true);
     Preconditions.checkState(
-        !AcidUtils.isTransactionalTable(msTable_) || compileTimeWriteIdList != null,
+        !AcidUtils.isTransactionalTable(msTbl) || writeIdList != null,
         "Transaction tables must provide a ValidWriteIdList");
-    if (compileTimeWriteIdList != null) {
-      request.setValidWriteIdList(compileTimeWriteIdList.toString());
+    if (writeIdList != null) {
+      request.setValidWriteIdList(writeIdList.toString());
+    }
+    if (fetchFileMetadata) {
+      request.setGetFileMetadata(true);
     }
     return request;
   }

@@ -42,6 +42,7 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.Util;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Evolving;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -157,7 +158,8 @@ public class HiveFunctionHelper implements FunctionHelper {
    * {@inheritDoc}
    */
   @Override
-  public PartitionPruneRuleHelper getPartitionPruneRuleHelper() {
+  public PartitionPruneRuleHelper getPartitionPruneRuleHelper(
+      ValidTxnWriteIdList validTxnWriteIdList) {
     return partitionPruneRuleHelper;
   }
 

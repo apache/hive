@@ -21,11 +21,13 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 
 import java.util.Collections;
@@ -41,8 +43,8 @@ public class HivePartitionPruneRule extends RelOptRule {
 
   @Override
   public void onMatch(RelOptRuleCall call) {
-    RelNode relNode= call.rel(0);
-    HiveTableScan tScan = call.rel(1);
+    final RelNode relNode = call.rel(0);
+    final HiveTableScan tScan = call.rel(1);
     perform(call, relNode, tScan);
   }
 
@@ -50,7 +52,10 @@ public class HivePartitionPruneRule extends RelOptRule {
       HiveTableScan tScan) {
     try {
       FunctionHelper functionHelper = call.getPlanner().getContext().unwrap(FunctionHelper.class);
-      PartitionPruneRuleHelper ruleHelper = functionHelper.getPartitionPruneRuleHelper();
+      ValidTxnWriteIdList validTxnWriteIdList =
+          call.getPlanner().getContext().unwrap(ValidTxnWriteIdList.class);
+      PartitionPruneRuleHelper ruleHelper =
+          functionHelper.getPartitionPruneRuleHelper(validTxnWriteIdList);
 
       HiveFilter filter = (relNode instanceof HiveFilter) ? (HiveFilter) relNode : null;
       // For Hive, there is no need to compute partition list if no filter is used.
@@ -64,6 +69,10 @@ public class HivePartitionPruneRule extends RelOptRule {
       // Copy original table scan and table
       HiveTableScan tScanCopy = tScan.copyIncludingTable(tScan.getRowType());
       RelOptHiveTable hiveTableCopy = (RelOptHiveTable) tScanCopy.getTable();
+      if (hiveTable.getName().equals(
+          SemanticAnalyzer.DUMMY_DATABASE + "." + SemanticAnalyzer.DUMMY_TABLE)) {
+        return;
+      }
 
       RulePartitionPruner pruner = ruleHelper.createRulePartitionPruner(tScanCopy, hiveTableCopy,
           filter);
@@ -75,8 +84,9 @@ public class HivePartitionPruneRule extends RelOptRule {
         return;
       }
 
-      call.transformTo(relNode.copy(
-          relNode.getTraitSet(), Collections.singletonList(tScanCopy)));
+      RelNode newRelNode =
+          relNode.copy(relNode.getTraitSet(), Collections.singletonList(tScanCopy));
+      call.transformTo(newRelNode);
     } catch (HiveException e) {
       throw new RuntimeException(e);
     }

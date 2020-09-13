@@ -15516,19 +15516,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             .filter(table -> AcidUtils.isTransactionalTable(table))
             .map(table -> table.getFullyQualifiedName())
             .collect(Collectors.toList());
-    if (transactionalTables.size() > 0) {
-      try {
-        String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
-        return getTxnMgr().getValidWriteIds(transactionalTables, txnString);
-      } catch (Exception err) {
-        String msg = "Error while getting the txnWriteIdList for tables " + transactionalTables
-                + " and validTxnList " + conf.get(ValidTxnList.VALID_TXNS_KEY);
-        throw new SemanticException(msg, err);
-      }
-    }
+    return (transactionalTables.size() > 0)
+      ? getQueryValidTxnWriteIdList(transactionalTables)
+      : null;
+  }
 
-    // No transactional tables.
-    return null;
+  protected ValidTxnWriteIdList getQueryValidTxnWriteIdList(List<String> transactionalTables)
+      throws SemanticException {
+    try {
+      String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+      return getTxnMgr().getValidWriteIds(transactionalTables, txnString);
+    } catch (Exception err) {
+      String msg = "Error while getting the txnWriteIdList for tables " + transactionalTables
+              + " and validTxnList " + conf.get(ValidTxnList.VALID_TXNS_KEY);
+      throw new SemanticException(msg, err);
+    }
   }
 
   private QueryResultsCache.LookupInfo createLookupInfoForQuery(ASTNode astNode) throws SemanticException {

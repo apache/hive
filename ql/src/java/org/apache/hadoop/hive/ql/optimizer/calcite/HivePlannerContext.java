@@ -17,14 +17,17 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite;
 
+import com.google.common.collect.Lists;
 import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.plan.Context;
 import org.apache.calcite.rel.RelNode;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.apache.impala.util.EventSequence;
 
+import java.util.List;
 import java.util.Set;
 
 
@@ -36,6 +39,7 @@ public class HivePlannerContext implements Context {
   private final HiveConfPlannerContext isCorrelatedColumns;
   private final FunctionHelper functionHelper;
   private final EventSequence timeline;
+  private final List<Object> resources = Lists.newArrayList();
 
   public HivePlannerContext(HiveAlgorithmsConf algoConfig, HiveRulesRegistry registry,
       CalciteConnectionConfig calciteConfig, Set<RelNode> corrScalarRexSQWithAgg,
@@ -51,6 +55,10 @@ public class HivePlannerContext implements Context {
     this.isCorrelatedColumns = isCorrelatedColumns;
     this.functionHelper = functionHelper;
     this.timeline = timeline;
+  }
+
+  public void addResource(Object resource) {
+    resources.add(resource);
   }
 
   public <T> T unwrap(Class<T> clazz) {
@@ -74,6 +82,11 @@ public class HivePlannerContext implements Context {
     }
     if (clazz.isInstance(timeline)) {
       return clazz.cast(timeline);
+    }
+    for (Object resource : resources) {
+      if (clazz.isInstance(resource)) {
+        return clazz.cast((T) resource);
+      }
     }
     return null;
   }

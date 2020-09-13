@@ -196,6 +196,14 @@ public class ImpalaConjuncts {
     return rexCallConjuncts.getOperands();
   }
 
+  public String createPartitionKey() {
+    String key = "";
+    for (RexNode r : getPartitionConjuncts()) {
+      key += r.toString() + ":";
+    }
+    return key;
+  }
+
   public static String toString(List<Expr> conjuncts) {
     String exprString = "";
     for (Expr e : conjuncts) {
