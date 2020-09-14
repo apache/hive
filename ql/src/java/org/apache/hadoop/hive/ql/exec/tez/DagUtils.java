@@ -285,6 +285,9 @@ public class DagUtils {
   }
 
   private void getKafkaCredentials(MapWork work, DAG dag, JobConf conf) {
+    if (!UserGroupInformation.isSecurityEnabled()){
+      return;
+    }
     Token<?> tokenCheck = dag.getCredentials().getToken(KAFKA_DELEGATION_TOKEN_KEY);
     if (tokenCheck != null) {
       LOG.debug("Kafka credentials already added, skipping...");
