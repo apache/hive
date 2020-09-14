@@ -124,12 +124,17 @@ public class CompactorOnTezTest {
 
     void createFullAcidTable(String tblName, boolean isPartitioned, boolean isBucketed)
         throws Exception {
-      createFullAcidTable(null, tblName, isPartitioned, isBucketed);
+      createFullAcidTable(null, tblName, isPartitioned, isBucketed, false);
     }
 
     void createFullAcidTable(String dbName, String tblName, boolean isPartitioned, boolean isBucketed)
         throws Exception {
-      createTable(dbName, tblName, isPartitioned, isBucketed, false, "orc");
+      createFullAcidTable(dbName, tblName, isPartitioned, isBucketed, false);
+    }
+
+    void createFullAcidTable(String dbName, String tblName, boolean isPartitioned, boolean isBucketed,
+        boolean addBloomFilter) throws Exception {
+      createTable(dbName, tblName, isPartitioned, isBucketed, false, "orc", addBloomFilter);
     }
 
     void createMmTable(String tblName, boolean isPartitioned, boolean isBucketed)
@@ -144,11 +149,11 @@ public class CompactorOnTezTest {
 
     void createMmTable(String dbName, String tblName, boolean isPartitioned, boolean isBucketed, String fileFormat)
         throws Exception {
-      createTable(dbName, tblName, isPartitioned, isBucketed, true, fileFormat);
+      createTable(dbName, tblName, isPartitioned, isBucketed, true, fileFormat, false);
     }
 
     private void createTable(String dbName, String tblName, boolean isPartitioned, boolean isBucketed,
-        boolean insertOnly, String fileFormat) throws Exception {
+        boolean insertOnly, String fileFormat, boolean addBloomFilter) throws Exception {
       if (dbName != null) {
         tblName = dbName + "." + tblName;
       }
@@ -163,6 +168,9 @@ public class CompactorOnTezTest {
       }
       query.append(" stored as ").append(fileFormat);
       query.append(" TBLPROPERTIES('transactional'='true',");
+      if (addBloomFilter) {
+        query.append("'orc.bloom.filter.columns'='b', 'orc.bloom.filter.fpp'='0.02',");
+      }
       if (insertOnly) {
         query.append(" 'transactional_properties'='insert_only')");
       } else {
