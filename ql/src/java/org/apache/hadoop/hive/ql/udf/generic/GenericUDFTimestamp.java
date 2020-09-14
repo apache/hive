@@ -84,12 +84,12 @@ public class GenericUDFTimestamp extends GenericUDF {
           "The function TIMESTAMP takes only primitive types");
     }
 
-    //FIXME
     if (ss != null && ss.getConf().getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION)) {
       PrimitiveCategory category = argumentOI.getPrimitiveCategory();
       PrimitiveGrouping group = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(category);
       if (group == PrimitiveGrouping.NUMERIC_GROUP) {
-        throw new UDFArgumentException("Casting NUMERIC types to TIMESTAMP is prohibited (hive.");
+        throw new UDFArgumentException(
+            "Casting NUMERIC types to TIMESTAMP is prohibited (" + ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION + ")");
       }
     }
 
