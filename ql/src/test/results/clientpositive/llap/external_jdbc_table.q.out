@@ -554,3 +554,28 @@ POSTHOOK: Input: default@simple_hive_table1
 20
 -16
 50
+PREHOOK: query: explain cbo
+select ext_simple_derby_table1.fkey, ext_simple_derby_table2.dkey from ext_simple_derby_table1 join ext_simple_derby_table2 on
+(ext_simple_derby_table1.ikey = ext_simple_derby_table2.ikey)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ext_simple_derby_table1
+PREHOOK: Input: default@ext_simple_derby_table2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+select ext_simple_derby_table1.fkey, ext_simple_derby_table2.dkey from ext_simple_derby_table1 join ext_simple_derby_table2 on
+(ext_simple_derby_table1.ikey = ext_simple_derby_table2.ikey)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ext_simple_derby_table1
+POSTHOOK: Input: default@ext_simple_derby_table2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveJdbcConverter(convention=[JDBC.DERBY])
+  JdbcProject(fkey=[$1], dkey=[$3])
+    JdbcJoin(condition=[=($0, $2)], joinType=[inner])
+      JdbcProject(ikey=[$0], fkey=[$2])
+        JdbcFilter(condition=[IS NOT NULL($0)])
+          JdbcHiveTableScan(table=[[default, ext_simple_derby_table1]], table:alias=[ext_simple_derby_table1])
+      JdbcProject(ikey=[$0], dkey=[$3])
+        JdbcFilter(condition=[IS NOT NULL($0)])
+          JdbcHiveTableScan(table=[[default, ext_simple_derby_table2]], table:alias=[ext_simple_derby_table2])
+

@@ -80,7 +80,7 @@ class CreateFunctionHandler extends AbstractEventHandler<CreateFunctionMessage> 
         Path destRoot = funcBinCopyPath.getTargetPath().getParent();
         FileSystem dstFs = destRoot.getFileSystem(hiveConf);
         CopyUtils copyUtils = new CopyUtils(distCpDoAsUser, hiveConf, dstFs);
-        copyUtils.copyAndVerify(destRoot, filePaths, funcBinCopyPath.getSrcPath(), false);
+        copyUtils.copyAndVerify(destRoot, filePaths, funcBinCopyPath.getSrcPath(), true, false);
         copyUtils.renameFileCopiedFromCmPath(destRoot, dstFs, filePaths);
       }
     }
