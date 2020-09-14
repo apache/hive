@@ -39,7 +39,6 @@ import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlCastFunction;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
 import org.apache.calcite.sql.parser.SqlParserPos;
-import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ConversionUtil;
@@ -330,12 +329,6 @@ public class RexNodeConverter {
       RexBuilder rexBuilder) {
     RexNode castExpr = null;
 
-    if (udf instanceof GenericUDFTimestamp) {
-      RexNode c = childRexNodeLst.get(0);
-      if (c.getType().getFamily() == SqlTypeFamily.NUMERIC) {
-
-      }
-    }
     if (childRexNodeLst != null && childRexNodeLst.size() == 1) {
       if ((udf instanceof GenericUDFToChar) || (udf instanceof GenericUDFToVarchar)
           || (udf instanceof GenericUDFToString)
