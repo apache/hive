@@ -453,7 +453,12 @@ public class AcidUtils {
   public static boolean isCompactionTable(Map<String, String> parameters) {
     return Boolean.valueOf(parameters.getOrDefault(COMPACTOR_TABLE_PROPERTY, "false"));
   }
-  
+
+  /**
+   * Determine if a table is used during query based compaction for MM insert-only tables.
+   * @param parameters table properties map
+   * @return true, if the parameters contains {@link AcidUtils#MM_COMPACTOR_TABLE_PROPERTY}
+   */
   public static boolean isMmCompactionTable(Map<String, String> parameters) {
     return Boolean.valueOf(parameters.getOrDefault(MM_COMPACTOR_TABLE_PROPERTY, "false"));
   }
