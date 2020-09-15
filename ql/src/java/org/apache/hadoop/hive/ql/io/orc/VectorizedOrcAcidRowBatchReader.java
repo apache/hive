@@ -208,6 +208,12 @@ public class VectorizedOrcAcidRowBatchReader
    * LLAP IO c'tor
    */
   public VectorizedOrcAcidRowBatchReader(OrcSplit inputSplit, JobConf conf, Reporter reporter,
+      org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> baseReader,
+      VectorizedRowBatchCtx rbCtx, boolean isFlatPayload) throws IOException {
+    this(inputSplit, conf, reporter, baseReader, rbCtx, isFlatPayload, null);
+  }
+
+  public VectorizedOrcAcidRowBatchReader(OrcSplit inputSplit, JobConf conf, Reporter reporter,
     org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> baseReader,
     VectorizedRowBatchCtx rbCtx, boolean isFlatPayload, MapWork mapWork) throws IOException {
     this(conf, inputSplit, reporter, rbCtx, isFlatPayload, mapWork);
