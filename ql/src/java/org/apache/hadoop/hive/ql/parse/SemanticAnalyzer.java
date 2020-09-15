@@ -2182,7 +2182,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         tab = newTab;
       }
       if (tab == null ||
-          tab.getDbName().equals(SessionState.get().getCurrentDatabase())) {
+          tab.getDbName().equals(SessionState.get().getCurrentDatabase().toLowerCase())) {
         Table materializedTab = ctx.getMaterializedTable(cteName);
         if (materializedTab == null) {
           // we first look for this alias from CTE, and then from catalog.
