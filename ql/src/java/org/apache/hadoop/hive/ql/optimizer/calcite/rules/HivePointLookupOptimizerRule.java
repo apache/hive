@@ -47,6 +47,7 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
@@ -678,100 +679,135 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     }
 
     @Override public RexNode visitCall(RexCall call) {
-      final RexNode node;
-      final List<RexNode> operands;
-      final List<RexNode> newOperands;
-      final Multimap<RexNode,RexNode> inLHSExprToRHSExprs = LinkedHashMultimap.create();
       switch (call.getKind()) {
         case AND:
-          // IN clauses need to be combined by keeping only common elements
-          operands = new ArrayList<>(RexUtil.flattenAnd(call.getOperands()));
-          for (int i = 0; i < operands.size(); i++) {
-            RexNode operand = operands.get(i);
-            if (operand.getKind() == SqlKind.IN) {
-              RexCall inCall = (RexCall) operand;
-              if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().get(0))) {
-                continue;
-              }
-              RexNode ref = inCall.getOperands().get(0);
-              if (inLHSExprToRHSExprs.containsKey(ref)) {
-                Set<RexNode> expressions = Sets.newHashSet();
-                for (int j = 1; j < inCall.getOperands().size(); j++) {
-                  expressions.add(inCall.getOperands().get(j));
-                }
-                inLHSExprToRHSExprs.get(ref).retainAll(expressions);
-                if (!inLHSExprToRHSExprs.containsKey(ref)) {
-                  // Note that Multimap does not keep a key if all its values are removed.
-                  // Hence, since there are no common expressions and it is within an AND,
-                  // we should return false
-                  return rexBuilder.makeLiteral(false);
-                }
-              } else {
-                for (int j = 1; j < inCall.getOperands().size(); j++) {
-                  inLHSExprToRHSExprs.put(ref, inCall.getOperands().get(j));
-                }
-              }
-              operands.remove(i);
-              --i;
-            } else if (operand.getKind() == SqlKind.EQUALS) {
-              Constraint c = Constraint.of(operand);
-              if (c == null || !HiveCalciteUtil.isDeterministic(c.exprNode)) {
-                continue;
-              }
-              RexNode ref = c.exprNode;
-              if (inLHSExprToRHSExprs.containsKey(ref)) {
-                inLHSExprToRHSExprs.get(ref).retainAll(Collections.singleton(c.constNode));
-                if (!inLHSExprToRHSExprs.containsKey(ref)) {
-                  // Note that Multimap does not keep a key if all its values are removed.
-                  // Hence, since there are no common expressions and it is within an AND,
-                  // we should return false
-                  return rexBuilder.makeLiteral(false);
-                }
-              } else {
-                inLHSExprToRHSExprs.put(ref, c.constNode);
-              }
-              operands.remove(i);
-              --i;
-            }
-          }
-          // Create IN clauses
-          newOperands = createInClauses(rexBuilder, inLHSExprToRHSExprs);
-          newOperands.addAll(operands);
-          // Return node
-          node = RexUtil.composeConjunction(rexBuilder, newOperands, false);
-          break;
+          return handleAND(rexBuilder, call);
         case OR:
-          // IN clauses need to be combined by keeping all elements
-          operands = new ArrayList<>(RexUtil.flattenOr(call.getOperands()));
-          for (int i = 0; i < operands.size(); i++) {
-            RexNode operand = operands.get(i);
-            if (operand.getKind() == SqlKind.IN) {
-              RexCall inCall = (RexCall) operand;
-              if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().get(0))) {
-                continue;
-              }
-              RexNode ref = inCall.getOperands().get(0);
-              for (int j = 1; j < inCall.getOperands().size(); j++) {
-                inLHSExprToRHSExprs.put(ref, inCall.getOperands().get(j));
-              }
-              operands.remove(i);
-              --i;
-            }
-          }
-          // Create IN clauses
-          newOperands = createInClauses(rexBuilder, inLHSExprToRHSExprs);
-          newOperands.addAll(operands);
-          // Return node
-          node = RexUtil.composeDisjunction(rexBuilder, newOperands, false);
-          break;
+          return handleOR(rexBuilder, call);
         default:
           return super.visitCall(call);
       }
-      return node;
+    }
+
+    private static RexNode handleAND(RexBuilder rexBuilder, RexCall call) {
+      // IN clauses need to be combined by keeping only common elements
+      final Multimap<RexNode,RexNode> inLHSExprToRHSExprs = LinkedHashMultimap.create();
+      // We will use this set to keep those expressions that may evaluate
+      // into a null value.
+      final Multimap<RexNode,RexNode> inLHSExprToRHSNullableExprs = LinkedHashMultimap.create();
+      final List<RexNode> operands = new ArrayList<>(RexUtil.flattenAnd(call.getOperands()));
+      for (int i = 0; i < operands.size(); i++) {
+        RexNode operand = operands.get(i);
+        if (operand.getKind() == SqlKind.IN) {
+          RexCall inCall = (RexCall) operand;
+          if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().get(0))) {
+            continue;
+          }
+          RexNode ref = inCall.getOperands().get(0);
+          if (ref.getType().isNullable()) {
+            inLHSExprToRHSNullableExprs.put(ref, ref);
+          }
+          if (inLHSExprToRHSExprs.containsKey(ref)) {
+            Set<RexNode> expressions = Sets.newHashSet();
+            for (int j = 1; j < inCall.getOperands().size(); j++) {
+              RexNode constNode = inCall.getOperands().get(j);
+              expressions.add(constNode);
+              if (constNode.getType().isNullable()) {
+                inLHSExprToRHSNullableExprs.put(ref, constNode);
+              }
+            }
+            inLHSExprToRHSExprs.get(ref).retainAll(expressions);
+            if (!inLHSExprToRHSExprs.containsKey(ref)) {
+              // Note that Multimap does not keep a key if all its values are removed.
+              return createResultFromEmptySet(rexBuilder, ref, inLHSExprToRHSNullableExprs);
+            }
+          } else {
+            for (int j = 1; j < inCall.getOperands().size(); j++) {
+              RexNode constNode = inCall.getOperands().get(j);
+              inLHSExprToRHSExprs.put(ref, constNode);
+              if (constNode.getType().isNullable()) {
+                inLHSExprToRHSNullableExprs.put(ref, constNode);
+              }
+            }
+          }
+          operands.remove(i);
+          --i;
+        } else if (operand.getKind() == SqlKind.EQUALS) {
+          Constraint c = Constraint.of(operand);
+          if (c == null || !HiveCalciteUtil.isDeterministic(c.exprNode)) {
+            continue;
+          }
+          if (c.exprNode.getType().isNullable()) {
+            inLHSExprToRHSNullableExprs.put(c.exprNode, c.exprNode);
+          }
+          if (c.constNode.getType().isNullable()) {
+            inLHSExprToRHSNullableExprs.put(c.exprNode, c.constNode);
+          }
+          if (inLHSExprToRHSExprs.containsKey(c.exprNode)) {
+            inLHSExprToRHSExprs.get(c.exprNode).retainAll(Collections.singleton(c.constNode));
+            if (!inLHSExprToRHSExprs.containsKey(c.exprNode)) {
+              // Note that Multimap does not keep a key if all its values are removed.
+              return createResultFromEmptySet(rexBuilder, c.exprNode, inLHSExprToRHSNullableExprs);
+            }
+          } else {
+            inLHSExprToRHSExprs.put(c.exprNode, c.constNode);
+          }
+          operands.remove(i);
+          --i;
+        }
+      }
+      // Create IN clauses
+      final List<RexNode> newOperands = createInClauses(rexBuilder, inLHSExprToRHSExprs);
+      newOperands.addAll(operands);
+      // Return node
+      return RexUtil.composeConjunction(rexBuilder, newOperands, false);
+    }
+
+    private static RexNode handleOR(RexBuilder rexBuilder, RexCall call) {
+      // IN clauses need to be combined by keeping all elements
+      final List<RexNode> operands = new ArrayList<>(RexUtil.flattenOr(call.getOperands()));
+      final Multimap<RexNode,RexNode> inLHSExprToRHSExprs = LinkedHashMultimap.create();
+      for (int i = 0; i < operands.size(); i++) {
+        RexNode operand = operands.get(i);
+        if (operand.getKind() == SqlKind.IN) {
+          RexCall inCall = (RexCall) operand;
+          if (!HiveCalciteUtil.isDeterministic(inCall.getOperands().get(0))) {
+            continue;
+          }
+          RexNode ref = inCall.getOperands().get(0);
+          for (int j = 1; j < inCall.getOperands().size(); j++) {
+            inLHSExprToRHSExprs.put(ref, inCall.getOperands().get(j));
+          }
+          operands.remove(i);
+          --i;
+        }
+      }
+      // Create IN clauses
+      final List<RexNode> newOperands = createInClauses(rexBuilder, inLHSExprToRHSExprs);
+      newOperands.addAll(operands);
+      // Return node
+      return RexUtil.composeDisjunction(rexBuilder, newOperands, false);
+    }
+
+    private static RexNode createResultFromEmptySet(RexBuilder rexBuilder,
+        RexNode ref, Multimap<RexNode, RexNode> inLHSExprToRHSNullableExprs) {
+      if (inLHSExprToRHSNullableExprs.containsKey(ref)) {
+        // We handle possible null values in the expressions.
+        List<RexNode> nullableExprs =
+            inLHSExprToRHSNullableExprs.get(ref)
+                .stream()
+                .map(n -> rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ImmutableList.of(n)))
+                .collect(Collectors.toList());
+        return rexBuilder.makeCall(SqlStdOperatorTable.CASE,
+            RexUtil.composeDisjunction(rexBuilder, nullableExprs, false),
+            rexBuilder.makeNullLiteral(rexBuilder.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN)),
+            rexBuilder.makeLiteral(false));
+      }
+      return rexBuilder.makeLiteral(false);
     }
 
     private static List<RexNode> createInClauses(RexBuilder rexBuilder,
-            Multimap<RexNode, RexNode> inLHSExprToRHSExprs) {
+        Multimap<RexNode, RexNode> inLHSExprToRHSExprs) {
       final List<RexNode> newExpressions = new ArrayList<>();
       for (Entry<RexNode,Collection<RexNode>> entry : inLHSExprToRHSExprs.asMap().entrySet()) {
         Collection<RexNode> exprs = entry.getValue();
