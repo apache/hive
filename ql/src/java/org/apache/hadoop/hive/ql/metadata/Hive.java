@@ -82,6 +82,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
@@ -4649,9 +4650,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     // if Encryption not enabled, no copy needed
-//    if (!DFSUtilClient.isHDFSEncryptionEnabled(conf)) { frogmethod!!
-//      return false;
-//    }
+    if (!DFSUtilClient.isHDFSEncryptionEnabled(conf)) {
+      return false;
+    }
     //Check if different encryption zones
     HadoopShims.HdfsEncryptionShim srcHdfsEncryptionShim =
         SessionState.get().getHdfsEncryptionShim(srcFs, conf, isCompactionTable || isMmCompactionTable);
