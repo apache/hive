@@ -347,6 +347,9 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
 
     RelMetadataQuery mq = input.getCluster().getMetadataQuery();
     Set<ImmutableBitSet> uKeys = mq.getUniqueKeys(input);
+    if (uKeys == null) {
+      return false;
+    }
     for (ImmutableBitSet u : uKeys) {
       if (groups.contains(u)) {
         return true;
