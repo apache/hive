@@ -4681,8 +4681,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param newFiles if this is non-null, a list of files that were created as a result of this
    *                 move will be returned.
    * @param isManaged if table is managed.
-   * @param isCompactionTable is table used in query-based compaction
-   * @param isMmCompactionTable
+   * @param isCompactionTable is table used in query-based compaction for full ACID tables
+   * @param isMmCompactionTable is table used in query-based compaction for insert-only tables
    * @throws HiveException
    */
   static protected void copyFiles(HiveConf conf, Path srcf, Path destf, FileSystem fs,
