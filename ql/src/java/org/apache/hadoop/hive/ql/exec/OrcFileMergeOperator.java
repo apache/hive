@@ -266,8 +266,8 @@ public class OrcFileMergeOperator extends
         for (Map.Entry<Integer, Writer> outWriterEntry : outWriters.entrySet()) {
           Writer outWriter = outWriterEntry.getValue();
           outWriter.close();
-          outWriter = null;
         }
+        outWriters.clear();
       }
     } catch (Exception e) {
       throw new HiveException("Unable to close OrcFileMergeOperator", e);
