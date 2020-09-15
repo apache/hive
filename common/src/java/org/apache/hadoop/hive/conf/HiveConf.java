@@ -540,6 +540,12 @@ public class HiveConf extends Configuration {
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata. \n"
           + "This config makes hive.repl.include.external.tables config ineffective."),
+    REPL_RETAIN_PREV_DUMP_DIR("hive.repl.retain.prev.dump.dir", false,
+            "If this is set to false, then all previously used dump-directories will be deleted after repl-dump. " +
+             "If true, a number of latest dump-directories specified by hive.repl.retain.prev.dump.dir.count will be retained"),
+    REPL_RETAIN_PREV_DUMP_DIR_COUNT("hive.repl.retain.prev.dump.dir.count", 3,
+            "Indicates maximium number of latest previously used dump-directories which would be retained when " +
+             "hive.repl.retain.prev.dump.dir is set to true"),
     REPL_INCLUDE_MATERIALIZED_VIEWS("hive.repl.include.materialized.views", false,
             "Indicates whether replication of materialized views is enabled."),
     REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY("hive.repl.dump.skip.immutable.data.copy", false,
@@ -5165,8 +5171,7 @@ public class HiveConf extends Configuration {
         "comma separated list of plugin can be used:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
             + "  reoptimize: collects operator statistics during execution and recompile the query after a failure\n"
-            + "  reexecute_lost_am: reexecutes query if it failed due to tez am node gets decommissioned\n"
-            + "  The retrylock strategy is always enabled: recompiles the query if snapshot becomes outdated before lock acquisition"),
+            + "  reexecute_lost_am: reexecutes query if it failed due to tez am node gets decommissioned"),
     HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "metastore",
         new StringSet("query", "hiveserver", "metastore"),
         "Sets the persistence scope of runtime statistics\n"
@@ -5174,13 +5179,11 @@ public class HiveConf extends Configuration {
             + "  hiveserver: runtime statistics are persisted in the hiveserver - all sessions share it\n"
             + "  metastore: runtime statistics are persisted in the metastore as well"),
 
+    HIVE_TXN_MAX_RETRYSNAPSHOT_COUNT("hive.txn.retrysnapshot.max.count", 5, new RangeValidator(1, 20),
+        "Maximum number of snapshot invalidate attempts per request."),
 
     HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.reexecution.max.count", 1,
-        "Maximum number of re-executions for a single query."
-            + " The maximum re-execution retry is limited at 10"),
-    HIVE_QUERY_MAX_REEXECUTION_RETRYLOCK_COUNT("hive.query.reexecution.retrylock.max.count", 5,
-        "Maximum number of re-executions with retrylock strategy for a single query."
-            + " The maximum re-execution retry is limited at 10"),
+        "Maximum number of re-executions for a single query."),
     HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS("hive.query.reexecution.always.collect.operator.stats", false,
         "If sessionstats are enabled; this option can be used to collect statistics all the time"),
     HIVE_QUERY_REEXECUTION_STATS_CACHE_BATCH_SIZE("hive.query.reexecution.stats.cache.batch.size", -1,

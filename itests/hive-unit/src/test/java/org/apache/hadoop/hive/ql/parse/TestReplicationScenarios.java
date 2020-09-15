@@ -26,12 +26,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
+import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
-import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
@@ -102,6 +98,7 @@ import java.util.Map;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.Warehouse.getFs;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.junit.Assert.assertEquals;
@@ -178,6 +175,7 @@ public class TestReplicationScenarios {
         "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
     hconf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
         "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
+    hconf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, "/tmp/warehouse/external");
     hconf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, true);
     hconf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, true);
     hconf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE, true);
@@ -189,9 +187,10 @@ public class TestReplicationScenarios {
       hconf.set(key, value);
     });
 
-    MetaStoreTestUtils.startMetaStoreWithRetry(hconf);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hconf, true);
     // re set the WAREHOUSE property to the test dir, as the previous command added a random port to it
-    hconf.set(MetastoreConf.ConfVars.WAREHOUSE.getVarname(), System.getProperty("test.warehouse.dir", "/tmp"));
+    hconf.set(MetastoreConf.ConfVars.WAREHOUSE.getVarname(), System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed"));
+    hconf.set(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname(), System.getProperty("test.warehouse.external.dir", "/tmp/warehouse/external"));
 
     Path testPath = new Path(TEST_PATH);
     FileSystem fs = FileSystem.get(testPath.toUri(),hconf);
@@ -203,7 +202,7 @@ public class TestReplicationScenarios {
     FileUtils.deleteDirectory(new File("metastore_db2"));
     HiveConf hconfMirrorServer = new HiveConf();
     hconfMirrorServer.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
-    MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer, true);
     hconfMirror = new HiveConf(hconf);
     String thriftUri = MetastoreConf.getVar(hconfMirrorServer, MetastoreConf.ConfVars.THRIFT_URIS);
     MetastoreConf.setVar(hconfMirror, MetastoreConf.ConfVars.THRIFT_URIS, thriftUri);
@@ -217,6 +216,19 @@ public class TestReplicationScenarios {
   @AfterClass
   public static void tearDownAfterClass(){
     // FIXME : should clean up TEST_PATH, but not doing it now, for debugging's sake
+    //Clean up the warehouse after test run as we are restoring the warehouse path for other metastore creation
+    Path warehousePath = new Path(MetastoreConf.getVar(hconf, MetastoreConf.ConfVars.WAREHOUSE));
+    try {
+      warehousePath.getFileSystem(hconf).delete(warehousePath, true);
+    } catch (IOException e) {
+
+    }
+    Path warehousePathReplica = new Path(MetastoreConf.getVar(hconfMirror, MetastoreConf.ConfVars.WAREHOUSE));
+    try {
+      warehousePathReplica.getFileSystem(hconfMirror).delete(warehousePathReplica, true);
+    } catch (IOException e) {
+
+    }
   }
 
   @Before
@@ -2019,6 +2031,129 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testConfiguredDeleteOfPrevDumpDir() throws IOException {
+    boolean verifySetupOriginal = verifySetupSteps;
+    verifySetupSteps = true;
+    String nameOfTest = testName.getMethodName();
+    String dbName = createDB(nameOfTest, driver);
+    String replDbName = dbName + "_dupe";
+    List<String> withConfigDeletePrevDump = Arrays.asList(
+            "'" + HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR + "'= 'false' ");
+    List<String> withConfigRetainPrevDump = Arrays.asList(
+            "'" + HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR + "'= 'true' ",
+            "'" + HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR_COUNT + "'= '2' ");
+
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    String[] unptnData = new String[] {"eleven", "twelve"};
+    String[] ptnData1 = new String[] {"thirteen", "fourteen", "fifteen"};
+    String[] ptnData2 = new String[] {"fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[] {};
+
+    String unptnLocn = new Path(TEST_PATH, nameOfTest + "_unptn").toUri().getPath();
+    String ptnLocn1 = new Path(TEST_PATH, nameOfTest + "_ptn1").toUri().getPath();
+    String ptnLocn2 = new Path(TEST_PATH, nameOfTest + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptnLocn, unptnData);
+    createTestDataFile(ptnLocn1, ptnData1);
+    createTestDataFile(ptnLocn2, ptnData2);
+
+    run("LOAD DATA LOCAL INPATH '" + unptnLocn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptnData, driver);
+    run("CREATE TABLE " + dbName + ".unptned_late LIKE " + dbName + ".unptned", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned_late SELECT * FROM " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned_late", unptnData, driver);
+
+    //perform first incremental with default option and check that bootstrap-dump-dir gets deleted
+    Path bootstrapDumpDir = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    FileSystem fs = FileSystem.get(bootstrapDumpDir.toUri(), hconf);
+    assertTrue(fs.exists(bootstrapDumpDir));
+    Tuple incrDump = replDumpDb(dbName);
+    assertFalse(fs.exists(bootstrapDumpDir));
+
+
+    loadAndVerify(replDbName, dbName, incrDump.lastReplId);
+    verifyRun("SELECT * from " + replDbName + ".unptned", unptnData, driverMirror);
+    verifyRun("SELECT * from " + replDbName + ".unptned_late", unptnData, driverMirror);
+
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptnLocn1 + "' OVERWRITE INTO TABLE " + dbName
+            + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptnData1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptnLocn2 + "' OVERWRITE INTO TABLE " + dbName
+            + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptnData2, driver);
+
+
+    //Perform 2nd incremental with retain option.
+    //Check 1st incremental dump-dir is present even after 2nd incr dump.
+    Path incrDumpDir1 = new Path(incrDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    incrDump = replDumpDb(dbName, withConfigRetainPrevDump);
+    assertTrue(fs.exists(incrDumpDir1));
+
+    loadAndVerify(replDbName, dbName, incrDump.lastReplId);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", ptnData1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=2", ptnData2, driverMirror);
+
+    run("CREATE TABLE " + dbName
+            + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=1) SELECT a FROM " + dbName
+            + ".ptned WHERE b=1", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=1", ptnData1, driver);
+
+
+    //Perform 3rd incremental with retain option, retaining last 2 consumed dump-dirs.
+    //Verify 1st and 2nd incr-dump-dirs are present after 3rd incr-dump
+    Path incrDumpDir2 = new Path(incrDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    incrDump = replDumpDb(dbName, withConfigRetainPrevDump);
+    assertTrue(fs.exists(incrDumpDir1));
+    assertTrue(fs.exists(incrDumpDir2));
+
+    loadAndVerify(replDbName, dbName, incrDump.lastReplId);
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=1", ptnData1, driverMirror);
+
+
+    run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=2) SELECT a FROM " + dbName
+            + ".ptned WHERE b=2", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptnData2, driver);
+
+
+    //perform 4'th incr-dump with retain option in policy, retaining only last 2 dump-dirs
+    //verify incr-1 dumpdir gets deleted, incr-2 and incr-3 remain
+    Path incrDumpDir3 = new Path(incrDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    incrDump = replDumpDb(dbName, withConfigRetainPrevDump);
+    assertFalse(fs.exists(incrDumpDir1));
+    assertTrue(fs.exists(incrDumpDir2));
+    assertTrue(fs.exists(incrDumpDir3));
+
+    loadAndVerify(replDbName, dbName, incrDump.lastReplId);
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=2", ptnData2, driverMirror);
+
+    run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=3) SELECT a FROM " + dbName
+            + ".ptned WHERE b=2", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=3", ptnData2, driver);
+
+
+    //ensure 4'th incr-dump dir is present
+    //perform 5'th incr-dump with retain option to be false
+    //verify all prev dump-dirs get deleted
+    Path incrDumpDir4 = new Path(incrDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(incrDumpDir4));
+    incrDump = replDumpDb(dbName, withConfigDeletePrevDump);
+    assertFalse(fs.exists(incrDumpDir2));
+    assertFalse(fs.exists(incrDumpDir3));
+    assertFalse(fs.exists(incrDumpDir4));
+
+    loadAndVerify(replDbName, dbName, incrDump.lastReplId);
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=3", ptnData2, driverMirror);
+
+    verifySetupSteps = verifySetupOriginal;
+  }
+
+  @Test
   public void testIncrementalInsertToPartition() throws IOException {
     String testName = "incrementalInsertToPartition";
     String dbName = createDB(testName, driver);
@@ -3691,8 +3826,16 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".normal(a int)", driver);
     run("INSERT INTO " + dbName + ".normal values (1)", driver);
 
-    Path path = new Path(System.getProperty("test.warehouse.dir", "/tmp"));
-    path = new Path(path, dbName.toLowerCase() + ".db");
+    Database db = null;
+    Path path = null;
+
+    try {
+      metaStoreClient.getDatabase(dbName);
+      path = new Path(db.getManagedLocationUri());
+    } catch (Exception e) {
+      path = new Path(System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed"));
+      path = new Path(path, dbName.toLowerCase()+".db");
+    }
     path = new Path(path, "normal");
     FileSystem fs = path.getFileSystem(hconf);
     fs.delete(path);
@@ -3715,8 +3858,16 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".normal(a int) PARTITIONED BY (part int)", driver);
     run("INSERT INTO " + dbName + ".normal partition (part= 124) values (1)", driver);
 
-    Path path = new Path(System.getProperty("test.warehouse.dir", "/tmp"));
-    path = new Path(path, dbName.toLowerCase()+".db");
+    Database db = null;
+    Path path = null;
+
+    try {
+      metaStoreClient.getDatabase(dbName);
+      path = new Path(db.getManagedLocationUri());
+    } catch (Exception e) {
+      path = new Path(System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed"));
+      path = new Path(path, dbName.toLowerCase()+".db");
+    }
     path = new Path(path, "normal");
     path = new Path(path, "part=124");
     FileSystem fs = path.getFileSystem(hconf);
@@ -3876,7 +4027,9 @@ public class TestReplicationScenarios {
 
   private static String createDB(String name, IDriver myDriver) {
     LOG.info("Testing " + name);
-    run("CREATE DATABASE " + name + " WITH DBPROPERTIES ( '" +
+    String mgdLocation = System.getProperty("test.warehouse.dir", "file:/tmp/warehouse/managed");
+    String extLocation = System.getProperty("test.warehouse.external.dir", "/tmp/warehouse/external");
+    run("CREATE DATABASE " + name + " LOCATION '" + extLocation + "/" + name.toLowerCase() + ".db' MANAGEDLOCATION '" + mgdLocation + "/" + name.toLowerCase() + ".db' WITH DBPROPERTIES ( '" +
             SOURCE_OF_REPLICATION + "' = '1,2,3')", myDriver);
     return name;
   }

@@ -41,8 +41,10 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.AndFilter;
+import org.apache.hadoop.hive.metastore.messaging.event.filters.CatalogFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.EventBoundaryFilter;
 import org.apache.hadoop.hive.metastore.messaging.event.filters.ReplEventFilter;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -103,6 +105,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.ArrayList;
@@ -305,8 +308,22 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       if (fs.exists(dumpRoot)) {
         FileStatus[] statuses = fs.listStatus(dumpRoot,
           path -> !path.equals(currentDumpPath) && !path.toUri().getPath().equals(currentDumpPath.toString()));
+
+        int retainPrevDumpDirCount = conf.getIntVar(HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR_COUNT);
+        int numDumpDirs = statuses.length;
+        if(shouldRetainPrevDumpDirs()) {
+          Arrays.sort(statuses, (Comparator.<FileStatus>
+                  comparingLong(fileStatus1 -> fileStatus1.getModificationTime())
+                  .thenComparingLong(fileStatus2 -> fileStatus2.getModificationTime())));
+        }
         for (FileStatus status : statuses) {
-          fs.delete(status.getPath(), true);
+          //based on config, either delete all previous dump-dirs
+          //or delete a minimum number of oldest dump-directories
+          if(!shouldRetainPrevDumpDirs() || numDumpDirs > retainPrevDumpDirCount){
+            fs.delete(status.getPath(), true);
+            numDumpDirs--;
+
+          }
         }
       }
     } catch (Exception ex) {
@@ -429,6 +446,13 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   }
 
   /**
+   * Decide whether to retain previous dump-directories after repl-dump
+   */
+  private boolean shouldRetainPrevDumpDirs() {
+    return conf.getBoolVar(HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR);
+  }
+
+  /**
    * Decide whether to dump ACID tables.
    * @param tableName - Name of ACID table to be replicated
    * @return true if need to bootstrap dump ACID table and false if not.
@@ -514,6 +538,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     work.overrideLastEventToDump(hiveDb, bootDumpBeginReplId);
     IMetaStoreClient.NotificationFilter evFilter = new AndFilter(
         new ReplEventFilter(work.replScope),
+        new CatalogFilter(MetaStoreUtils.getDefaultCatalog(conf)),
         new EventBoundaryFilter(work.eventFrom, work.eventTo));
     EventUtils.MSClientNotificationFetcher evFetcher
         = new EventUtils.MSClientNotificationFetcher(hiveDb);
