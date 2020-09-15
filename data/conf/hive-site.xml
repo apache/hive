@@ -383,7 +383,7 @@
 </property>
 
 <property>
-  <name>xhive.strict.timestamp.conversion</name>
+  <name>hive.strict.timestamp.conversion</name>
   <value>false</value>
 </property>
 
