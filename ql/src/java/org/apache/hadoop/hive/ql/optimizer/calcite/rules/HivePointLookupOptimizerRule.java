@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -682,6 +683,9 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       final List<RexNode> operands;
       final List<RexNode> newOperands;
       final Multimap<RexNode,RexNode> inLHSExprToRHSExprs = LinkedHashMultimap.create();
+      // We will use this set to keep those expressions that may evaluate
+      // into a null value.
+      final Set<RexNode> nullableExprs = new HashSet<>();
       switch (call.getKind()) {
         case AND:
           // IN clauses need to be combined by keeping only common elements
@@ -694,21 +698,32 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
                 continue;
               }
               RexNode ref = inCall.getOperands().get(0);
+              boolean nullable = ref.getType().isNullable();
               if (inLHSExprToRHSExprs.containsKey(ref)) {
                 Set<RexNode> expressions = Sets.newHashSet();
                 for (int j = 1; j < inCall.getOperands().size(); j++) {
-                  expressions.add(inCall.getOperands().get(j));
+                  RexNode constNode = inCall.getOperands().get(j);
+                  expressions.add(constNode);
+                  nullable |= constNode.getType().isNullable();
+                }
+                if (nullable) {
+                  nullableExprs.add(ref);
                 }
                 inLHSExprToRHSExprs.get(ref).retainAll(expressions);
                 if (!inLHSExprToRHSExprs.containsKey(ref)) {
                   // Note that Multimap does not keep a key if all its values are removed.
-                  // Hence, since there are no common expressions and it is within an AND,
-                  // we should return false
-                  return rexBuilder.makeLiteral(false);
+                  return nullableExprs.contains(ref)
+                      ? rexBuilder.makeNullLiteral(inCall.getType())
+                      : rexBuilder.makeLiteral(false);
                 }
               } else {
                 for (int j = 1; j < inCall.getOperands().size(); j++) {
-                  inLHSExprToRHSExprs.put(ref, inCall.getOperands().get(j));
+                  RexNode constNode = inCall.getOperands().get(j);
+                  inLHSExprToRHSExprs.put(ref, constNode);
+                  nullable |= constNode.getType().isNullable();
+                }
+                if (nullable) {
+                  nullableExprs.add(ref);
                 }
               }
               operands.remove(i);
@@ -718,17 +733,19 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
               if (c == null || !HiveCalciteUtil.isDeterministic(c.exprNode)) {
                 continue;
               }
-              RexNode ref = c.exprNode;
-              if (inLHSExprToRHSExprs.containsKey(ref)) {
-                inLHSExprToRHSExprs.get(ref).retainAll(Collections.singleton(c.constNode));
-                if (!inLHSExprToRHSExprs.containsKey(ref)) {
+              if (c.exprNode.getType().isNullable() || c.constNode.getType().isNullable()) {
+                nullableExprs.add(c.exprNode);
+              }
+              if (inLHSExprToRHSExprs.containsKey(c.exprNode)) {
+                inLHSExprToRHSExprs.get(c.exprNode).retainAll(Collections.singleton(c.constNode));
+                if (!inLHSExprToRHSExprs.containsKey(c.exprNode)) {
                   // Note that Multimap does not keep a key if all its values are removed.
-                  // Hence, since there are no common expressions and it is within an AND,
-                  // we should return false
-                  return rexBuilder.makeLiteral(false);
+                  return nullableExprs.contains(c.exprNode)
+                      ? rexBuilder.makeNullLiteral(operand.getType())
+                      : rexBuilder.makeLiteral(false);
                 }
               } else {
-                inLHSExprToRHSExprs.put(ref, c.constNode);
+                inLHSExprToRHSExprs.put(c.exprNode, c.constNode);
               }
               operands.remove(i);
               --i;
