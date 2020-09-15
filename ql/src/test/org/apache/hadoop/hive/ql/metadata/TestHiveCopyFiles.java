@@ -84,7 +84,7 @@ public class TestHiveCopyFiles {
 
     try {
       Hive.copyFiles(hiveConf, sourcePath, targetPath, targetFs, isSourceLocal, NO_ACID, false,
-          null, false, false, false, false);
+          null, false, false, false, false, false);
     } catch (HiveException e) {
       e.printStackTrace();
       assertTrue("Hive.copyFiles() threw an unexpected exception.", false);
@@ -109,7 +109,7 @@ public class TestHiveCopyFiles {
 
     try {
       Hive.copyFiles(hiveConf, sourcePath, targetPath, targetFs, isSourceLocal, NO_ACID, false, null,
-          false, false, false, false);
+          false, false, false, false, false);
     } catch (HiveException e) {
       e.printStackTrace();
       assertTrue("Hive.copyFiles() threw an unexpected exception.", false);
@@ -130,7 +130,7 @@ public class TestHiveCopyFiles {
 
     try {
       Hive.copyFiles(hiveConf, sourcePath, targetPath, targetFs, isSourceLocal, NO_ACID, false, null,
-          false, false, false, false);
+          false, false, false, false, false);
     } catch (HiveException e) {
       e.printStackTrace();
       assertTrue("Hive.copyFiles() threw an unexpected exception.", false);
@@ -161,8 +161,8 @@ public class TestHiveCopyFiles {
     Mockito.when(spyTargetFs.getUri()).thenReturn(URI.create("hdfs://" + targetPath.toUri().getPath()));
 
     try {
-      Hive.copyFiles(hiveConf, sourcePath, targetPath, spyTargetFs, isSourceLocal, NO_ACID, false, null, false, false, false,
-          false);
+      Hive.copyFiles(hiveConf, sourcePath, targetPath, spyTargetFs, isSourceLocal, NO_ACID,
+          false, null, false, false, false, false, false);
     } catch (HiveException e) {
       e.printStackTrace();
       assertTrue("Hive.copyFiles() threw an unexpected exception.", false);
@@ -190,7 +190,7 @@ public class TestHiveCopyFiles {
 
     try {
       Hive.copyFiles(hiveConf, sourcePath, targetPath, spyTargetFs, isSourceLocal, NO_ACID, false, null,
-          false, false, false, false);
+          false, false, false, false, false);
     } catch (HiveException e) {
       e.printStackTrace();
       assertTrue("Hive.copyFiles() threw an unexpected exception.", false);
@@ -211,7 +211,7 @@ public class TestHiveCopyFiles {
 
     try {
       Hive.copyFiles(hiveConf, sourcePath, targetPath, spyTargetFs, isSourceLocal, NO_ACID, false, null,
-          false, false, false, false);
+          false, false, false, false, false);
     } catch (HiveException e) {
       e.printStackTrace();
       assertTrue("Hive.copyFiles() threw an unexpected exception.", false);

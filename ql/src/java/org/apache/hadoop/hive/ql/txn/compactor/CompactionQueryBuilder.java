@@ -539,6 +539,8 @@ class CompactionQueryBuilder {
     tblProperties.put("transactional", "false");
     if (crud) {
       tblProperties.put(AcidUtils.COMPACTOR_TABLE_PROPERTY, "true");
+    } else {
+      tblProperties.put(AcidUtils.MM_COMPACTOR_TABLE_PROPERTY, "true");
     }
     if (crud && minor && isBucketed) {
       tblProperties.put("bucketing_version", String.valueOf(bucketingVersion));

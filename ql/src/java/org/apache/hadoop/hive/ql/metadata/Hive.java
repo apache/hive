@@ -82,7 +82,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.permission.FsAction;
-import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.HiveStatsUtils;
@@ -2289,6 +2288,8 @@ public class Hive {
         }
 
         boolean isManaged = tbl.getTableType() == TableType.MANAGED_TABLE;
+        boolean isCompactionTable = AcidUtils.isCompactionTable(tbl.getParameters());
+        boolean isMmCompactionTable = AcidUtils.isMmCompactionTable(tbl.getParameters());
         // TODO: why is "&& !isAcidIUDoperation" needed here?
         if (!isTxnTable && ((loadFileType == LoadFileType.REPLACE_ALL) || (oldPart == null && !isAcidIUDoperation))) {
           //for fullAcid tables we don't delete files for commands with OVERWRITE - we create a new
@@ -2297,12 +2298,13 @@ public class Hive {
           boolean needRecycle = !tbl.isTemporary()
                   && ReplChangeManager.shouldEnableCm(Hive.get().getDatabase(tbl.getDbName()), tbl.getTTable());
           replaceFiles(tbl.getPath(), loadPath, destPath, oldPartPath, getConf(), isSrcLocal,
-              isSkipTrash, newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged, isInsertOverwrite);
+              isSkipTrash, newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged, isInsertOverwrite,
+              isCompactionTable, isMmCompactionTable);
         } else {
           FileSystem fs = destPath.getFileSystem(conf);
           copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
               (loadFileType == LoadFileType.OVERWRITE_EXISTING), newFiles,
-              tbl.getNumBuckets() > 0, isFullAcidTable, isManaged, false);
+              tbl.getNumBuckets() > 0, isFullAcidTable, isManaged, isCompactionTable, isMmCompactionTable);
         }
       }
       perfLogger.perfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
@@ -3006,6 +3008,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     boolean isMmTable = AcidUtils.isInsertOnlyTable(tbl);
     boolean isFullAcidTable = AcidUtils.isFullAcidTable(tbl);
     boolean isCompactionTable = AcidUtils.isCompactionTable(tbl.getParameters());
+    boolean isMmCompactionTable = AcidUtils.isMmCompactionTable(tbl.getParameters());
 
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {
       newFiles = Collections.synchronizedList(new ArrayList<Path>());
@@ -3055,13 +3058,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
         boolean needRecycle = !tbl.isTemporary()
                 && ReplChangeManager.shouldEnableCm(Hive.get().getDatabase(tbl.getDbName()), tbl.getTTable());
         replaceFiles(tblPath, loadPath, destPath, tblPath, conf, isSrcLocal, isSkipTrash,
-            newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged, isInsertOverwrite);
+            newFiles, FileUtils.HIDDEN_FILES_PATH_FILTER, needRecycle, isManaged, isInsertOverwrite,
+            isCompactionTable, isMmCompactionTable);
       } else {
         try {
           FileSystem fs = tbl.getDataLocation().getFileSystem(conf);
           copyFiles(conf, loadPath, destPath, fs, isSrcLocal, isAcidIUDoperation,
               loadFileType == LoadFileType.OVERWRITE_EXISTING, newFiles,
-              tbl.getNumBuckets() > 0, isFullAcidTable, isManaged, isCompactionTable);
+              tbl.getNumBuckets() > 0, isFullAcidTable, isManaged, isCompactionTable, isMmCompactionTable);
         } catch (IOException e) {
           throw new HiveException("addFiles: filesystem error in check phase", e);
         }
@@ -4100,11 +4104,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  private static void copyFiles(final HiveConf conf, final FileSystem destFs,
+  private static void copyFilesInternal(final HiveConf conf, final FileSystem destFs,
             FileStatus[] srcs, final FileSystem srcFs, final Path destf,
             final boolean isSrcLocal, boolean isOverwrite,
             final List<Path> newFiles, boolean acidRename, boolean isManaged,
-            boolean isCompactionTable) throws HiveException {
+            boolean isCompactionTable, boolean isMmCompactionTable) throws HiveException {
 
     final HdfsUtils.HadoopFileStatus fullDestStatus;
     try {
@@ -4158,7 +4162,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Arrays.sort(files);
       for (final FileStatus srcFile : files) {
         final Path srcP = srcFile.getPath();
-        final boolean needToCopy = needToCopy(conf, srcP, destf, srcFs, destFs, configuredOwner, isManaged);
+        final boolean needToCopy = needToCopy(conf, srcP, destf, srcFs, destFs, configuredOwner, isManaged,
+            isCompactionTable, isMmCompactionTable);
 
         final boolean isRenameAllowed = !needToCopy && !isSrcLocal;
 
@@ -4428,7 +4433,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   //from mv command if the destf is a directory, it replaces the destf instead of moving under
   //the destf. in this case, the replaced destf still preserves the original destf's permission
   public static boolean moveFile(final HiveConf conf, Path srcf, final Path destf, boolean replace,
-                                 boolean isSrcLocal, boolean isManaged) throws HiveException {
+      boolean isSrcLocal, boolean isManaged, boolean isCompactionTable, boolean isMmCompactionTable) throws HiveException {
     final FileSystem srcFs, destFs;
     try {
       destFs = destf.getFileSystem(conf);
@@ -4475,7 +4480,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
         destFs.copyFromLocalFile(srcf, destf);
         return true;
       } else {
-        if (needToCopy(conf, srcf, destf, srcFs, destFs, configuredOwner, isManaged)) {
+        if (needToCopy(conf, srcf, destf, srcFs, destFs, configuredOwner, isManaged, isCompactionTable,
+            isMmCompactionTable)) {
           //copy if across file system or encryption zones.
           LOG.debug("Copying source " + srcf + " to " + destf + " because HDFS encryption zones are different.");
           return FileUtils.copy(srcf.getFileSystem(conf), srcf, destf.getFileSystem(conf), destf,
@@ -4601,7 +4607,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws HiveException
    */
   static private boolean needToCopy(final HiveConf conf, Path srcf, Path destf, FileSystem srcFs,
-                                      FileSystem destFs, String configuredOwner, boolean isManaged) throws HiveException {
+      FileSystem destFs, String configuredOwner, boolean isManaged, boolean isCompactionTable,
+      boolean isMmCompactionTable) throws HiveException {
     //Check if different FileSystems
     if (!FileUtils.equalsFileSystem(srcFs, destFs)) {
       return true;
@@ -4642,12 +4649,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     // if Encryption not enabled, no copy needed
-    if (!DFSUtilClient.isHDFSEncryptionEnabled(conf)) {
-      return false;
-    }
+//    if (!DFSUtilClient.isHDFSEncryptionEnabled(conf)) { frogmethod!!
+//      return false;
+//    }
     //Check if different encryption zones
-    HadoopShims.HdfsEncryptionShim srcHdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(srcFs);
-    HadoopShims.HdfsEncryptionShim destHdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(destFs);
+    HadoopShims.HdfsEncryptionShim srcHdfsEncryptionShim =
+        SessionState.get().getHdfsEncryptionShim(srcFs, conf, isCompactionTable || isMmCompactionTable);
+    HadoopShims.HdfsEncryptionShim destHdfsEncryptionShim =
+        SessionState.get().getHdfsEncryptionShim(destFs, conf, isCompactionTable || isMmCompactionTable);
     try {
       return srcHdfsEncryptionShim != null
           && destHdfsEncryptionShim != null
@@ -4672,11 +4681,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *                 move will be returned.
    * @param isManaged if table is managed.
    * @param isCompactionTable is table used in query-based compaction
+   * @param isMmCompactionTable
    * @throws HiveException
    */
   static protected void copyFiles(HiveConf conf, Path srcf, Path destf, FileSystem fs,
       boolean isSrcLocal, boolean isAcidIUD, boolean isOverwrite, List<Path> newFiles, boolean isBucketed,
-      boolean isFullAcidTable, boolean isManaged, boolean isCompactionTable) throws HiveException {
+      boolean isFullAcidTable, boolean isManaged, boolean isCompactionTable, boolean isMmCompactionTable)
+      throws HiveException {
     try {
       // create the destination if it does not exist
       if (!fs.exists(destf)) {
@@ -4711,8 +4722,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // For ACID non-bucketed case, the filenames have to be in the format consistent with INSERT/UPDATE/DELETE Ops,
       // i.e, like 000000_0, 000001_0_copy_1, 000002_0.gz etc.
       // The extension is only maintained for files which are compressed.
-      copyFiles(conf, fs, srcs, srcFs, destf, isSrcLocal, isOverwrite,
-              newFiles, isFullAcidTable && !isBucketed, isManaged, isCompactionTable);
+      copyFilesInternal(conf, fs, srcs, srcFs, destf, isSrcLocal, isOverwrite,
+              newFiles, isFullAcidTable && !isBucketed, isManaged, isCompactionTable, isMmCompactionTable);
     }
   }
 
@@ -4876,8 +4887,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
    *          If the table is managed.
    */
   private void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
-          boolean isSrcLocal, boolean purge, List<Path> newFiles, PathFilter deletePathFilter,
-      boolean isNeedRecycle, boolean isManaged, boolean isInsertOverwrite) throws HiveException {
+      boolean isSrcLocal, boolean purge, List<Path> newFiles, PathFilter deletePathFilter,
+      boolean isNeedRecycle, boolean isManaged, boolean isInsertOverwrite, boolean isCompactionTable,
+      boolean isMmCompactionTable) throws HiveException {
     try {
 
       FileSystem destFs = destf.getFileSystem(conf);
@@ -4916,7 +4928,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // 2. srcs must be a list of files -- ensured by LoadSemanticAnalyzer
       // in both cases, we move the file under destf
       if (srcs.length == 1 && srcs[0].isDirectory()) {
-        if (!moveFile(conf, srcs[0].getPath(), destf, true, isSrcLocal, isManaged)) {
+        if (!moveFile(conf, srcs[0].getPath(), destf, true, isSrcLocal, isManaged, isCompactionTable, isMmCompactionTable)) {
           throw new IOException("Error moving: " + srcf + " into: " + destf);
         }
 
@@ -4943,7 +4955,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
                     public Boolean call() throws Exception {
                       SessionState.setCurrentSessionState(parentSession);
                       return moveFile(
-                          conf, src.getPath(), destFile, true, isSrcLocal, isManaged);
+                          conf, src.getPath(), destFile, true, isSrcLocal, isManaged, isCompactionTable, isMmCompactionTable);
                     }
                   }),
               destFile);

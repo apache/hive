@@ -551,6 +551,21 @@ public class SessionState implements ISessionAuthState{
       throw new HiveException(exception);
     }
   }
+  
+  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim(FileSystem fs, HiveConf conf, boolean isCompactionTable)
+      throws HiveException {
+    if (isCompactionTable
+        && conf.getBoolVar(ConfVars.HIVE_COMPACTOR_HDFS_ENCRYPTION_SHIM_CACHE_OFF)) {
+      try {
+        return ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, sessionConf);
+      } catch (IOException e) {
+        throw new HiveException(e);
+      }
+    } else {
+      // get from cache
+      return getHdfsEncryptionShim(fs);
+    }
+  }
 
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim(FileSystem fs) throws HiveException {
     if (!hdfsEncryptionShims.containsKey(fs.getUri())) {

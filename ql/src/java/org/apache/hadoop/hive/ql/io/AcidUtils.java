@@ -116,6 +116,7 @@ public class AcidUtils {
   public static final String CONF_ACID_KEY = "hive.doing.acid";
   public static final String BASE_PREFIX = "base_";
   public static final String COMPACTOR_TABLE_PROPERTY = "compactiontable";
+  public static final String MM_COMPACTOR_TABLE_PROPERTY = "mmcompactiontable";
   public static final PathFilter baseFileFilter = new PathFilter() {
     @Override
     public boolean accept(Path path) {
@@ -445,12 +446,16 @@ public class AcidUtils {
   }
 
   /**
-   * Determine if a table is used during query based compaction.
+   * Determine if a table is used during query based compaction for CRUD tables.
    * @param parameters table properties map
    * @return true, if the parameters contains {@link AcidUtils#COMPACTOR_TABLE_PROPERTY}
    */
   public static boolean isCompactionTable(Map<String, String> parameters) {
     return Boolean.valueOf(parameters.getOrDefault(COMPACTOR_TABLE_PROPERTY, "false"));
+  }
+  
+  public static boolean isMmCompactionTable(Map<String, String> parameters) {
+    return Boolean.valueOf(parameters.getOrDefault(MM_COMPACTOR_TABLE_PROPERTY, "false"));
   }
 
   /**
