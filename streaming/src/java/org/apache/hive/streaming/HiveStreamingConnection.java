@@ -653,6 +653,12 @@ public class HiveStreamingConnection implements StreamingConnection {
       if (manageTransactions) {
         getMSC().close();
         getHeatbeatMSC().close();
+        try {
+          // Close the HMS that is used for addWriteNotificationLog
+          Hive.get(conf).getSynchronizedMSC().close();
+        } catch (Exception e) {
+          LOG.warn("Error while closing HMS connection", e);
+        }
       }
     }
     //remove shutdown hook entry added while creating this connection via HiveStreamingConnection.Builder#connect()
