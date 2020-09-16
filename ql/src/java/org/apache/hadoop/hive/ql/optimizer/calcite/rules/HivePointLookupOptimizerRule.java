@@ -159,7 +159,6 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       Project newProject = project.copy(project.getTraitSet(), project.getInput(), newProjects,
           project.getRowType());
       call.transformTo(newProject);
-
     }
 
   }
@@ -690,6 +689,8 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
     }
 
     private static RexNode handleAND(RexBuilder rexBuilder, RexCall call) {
+      // Visited nodes
+      final Set<RexNode> visitedRefs = new LinkedHashSet<>();
       // IN clauses need to be combined by keeping only common elements
       final Multimap<RexNode,RexNode> inLHSExprToRHSExprs = LinkedHashMultimap.create();
       // We will use this set to keep those expressions that may evaluate
@@ -704,6 +705,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
             continue;
           }
           RexNode ref = inCall.getOperands().get(0);
+          visitedRefs.add(ref);
           if (ref.getType().isNullable()) {
             inLHSExprToRHSNullableExprs.put(ref, ref);
           }
@@ -717,10 +719,6 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
               }
             }
             inLHSExprToRHSExprs.get(ref).retainAll(expressions);
-            if (!inLHSExprToRHSExprs.containsKey(ref)) {
-              // Note that Multimap does not keep a key if all its values are removed.
-              return createResultFromEmptySet(rexBuilder, ref, inLHSExprToRHSNullableExprs);
-            }
           } else {
             for (int j = 1; j < inCall.getOperands().size(); j++) {
               RexNode constNode = inCall.getOperands().get(j);
@@ -737,6 +735,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           if (c == null || !HiveCalciteUtil.isDeterministic(c.exprNode)) {
             continue;
           }
+          visitedRefs.add(c.exprNode);
           if (c.exprNode.getType().isNullable()) {
             inLHSExprToRHSNullableExprs.put(c.exprNode, c.exprNode);
           }
@@ -745,10 +744,6 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           }
           if (inLHSExprToRHSExprs.containsKey(c.exprNode)) {
             inLHSExprToRHSExprs.get(c.exprNode).retainAll(Collections.singleton(c.constNode));
-            if (!inLHSExprToRHSExprs.containsKey(c.exprNode)) {
-              // Note that Multimap does not keep a key if all its values are removed.
-              return createResultFromEmptySet(rexBuilder, c.exprNode, inLHSExprToRHSNullableExprs);
-            }
           } else {
             inLHSExprToRHSExprs.put(c.exprNode, c.constNode);
           }
@@ -757,10 +752,15 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         }
       }
       // Create IN clauses
-      final List<RexNode> newOperands = createInClauses(rexBuilder, inLHSExprToRHSExprs);
+      final List<RexNode> newOperands = createInClauses(rexBuilder,
+          visitedRefs, inLHSExprToRHSExprs, inLHSExprToRHSNullableExprs);
       newOperands.addAll(operands);
       // Return node
-      return RexUtil.composeConjunction(rexBuilder, newOperands, false);
+      RexNode result = RexUtil.composeConjunction(rexBuilder, newOperands, false);
+      if (!result.getType().equals(call.getType())) {
+        return rexBuilder.makeCast(call.getType(), result, true);
+      }
+      return result;
     }
 
     private static RexNode handleOR(RexBuilder rexBuilder, RexCall call) {
@@ -782,11 +782,16 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           --i;
         }
       }
-      // Create IN clauses
-      final List<RexNode> newOperands = createInClauses(rexBuilder, inLHSExprToRHSExprs);
+      // Create IN clauses (fourth parameter is not needed since no expressions were removed)
+      final List<RexNode> newOperands = createInClauses(rexBuilder,
+          inLHSExprToRHSExprs.keySet(), inLHSExprToRHSExprs, null);
       newOperands.addAll(operands);
       // Return node
-      return RexUtil.composeDisjunction(rexBuilder, newOperands, false);
+      RexNode result = RexUtil.composeDisjunction(rexBuilder, newOperands, false);
+      if (!result.getType().equals(call.getType())) {
+        return rexBuilder.makeCast(call.getType(), result, true);
+      }
+      return result;
     }
 
     private static RexNode createResultFromEmptySet(RexBuilder rexBuilder,
@@ -798,29 +803,31 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
                 .stream()
                 .map(n -> rexBuilder.makeCall(SqlStdOperatorTable.IS_NULL, ImmutableList.of(n)))
                 .collect(Collectors.toList());
-        return rexBuilder.makeCall(SqlStdOperatorTable.CASE,
-            RexUtil.composeDisjunction(rexBuilder, nullableExprs, false),
-            rexBuilder.makeNullLiteral(rexBuilder.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN)),
-            rexBuilder.makeLiteral(false));
+        return RexUtil.composeConjunction(rexBuilder,
+            ImmutableList.of(
+                RexUtil.composeDisjunction(rexBuilder, nullableExprs, false),
+                rexBuilder.makeNullLiteral(rexBuilder.getTypeFactory().createSqlType(SqlTypeName.BOOLEAN))),
+            false);
       }
       return rexBuilder.makeLiteral(false);
     }
 
-    private static List<RexNode> createInClauses(RexBuilder rexBuilder,
-        Multimap<RexNode, RexNode> inLHSExprToRHSExprs) {
+    private static List<RexNode> createInClauses(RexBuilder rexBuilder, Set<RexNode> visitedRefs,
+        Multimap<RexNode, RexNode> inLHSExprToRHSExprs, Multimap<RexNode,RexNode> inLHSExprToRHSNullableExprs) {
       final List<RexNode> newExpressions = new ArrayList<>();
-      for (Entry<RexNode,Collection<RexNode>> entry : inLHSExprToRHSExprs.asMap().entrySet()) {
-        Collection<RexNode> exprs = entry.getValue();
+      for (RexNode ref : visitedRefs) {
+        Collection<RexNode> exprs = inLHSExprToRHSExprs.get(ref);
         if (exprs.isEmpty()) {
-          newExpressions.add(rexBuilder.makeLiteral(false));
+          // Note that Multimap does not keep a key if all its values are removed.
+          newExpressions.add(createResultFromEmptySet(rexBuilder, ref, inLHSExprToRHSNullableExprs));
         } else if (exprs.size() == 1) {
           List<RexNode> newOperands = new ArrayList<>(2);
-          newOperands.add(entry.getKey());
+          newOperands.add(ref);
           newOperands.add(exprs.iterator().next());
           newExpressions.add(rexBuilder.makeCall(SqlStdOperatorTable.EQUALS, newOperands));
         } else {
           List<RexNode> newOperands = new ArrayList<>(exprs.size() + 1);
-          newOperands.add(entry.getKey());
+          newOperands.add(ref);
           newOperands.addAll(exprs);
           newExpressions.add(rexBuilder.makeCall(HiveIn.INSTANCE, newOperands));
         }
