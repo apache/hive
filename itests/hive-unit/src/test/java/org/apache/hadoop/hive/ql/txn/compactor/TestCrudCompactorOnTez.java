@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -147,7 +149,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     String dbName = "default";
     String tblName = "testMajorCompaction";
     TestDataProvider testDataProvider = new TestDataProvider();
-    testDataProvider.createFullAcidTable(dbName, tblName, false, false, true);
+    Map<String, String> additionalTblProperties = new HashMap<>();
+    additionalTblProperties.put("orc.bloom.filter.columns", "b");
+    additionalTblProperties.put("orc.bloom.filter.fpp", "0.02");
+    testDataProvider.createFullAcidTable(dbName, tblName, false, false, additionalTblProperties);
     testDataProvider.insertTestData(tblName);
     // Find the location of the table
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);

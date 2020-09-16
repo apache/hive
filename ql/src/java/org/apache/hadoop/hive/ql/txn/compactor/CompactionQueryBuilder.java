@@ -557,7 +557,7 @@ class CompactionQueryBuilder {
           }
           tblProperties.put(e.getKey(), HiveStringUtils.escapeHiveCommand(e.getValue()));
         }
-      } else if (crud) {
+      } else {
         for (Map.Entry<String, String> e : sourceTab.getParameters().entrySet()) {
           if (e.getKey().startsWith("orc.")) {
             tblProperties.put(e.getKey(), HiveStringUtils.escapeHiveCommand(e.getValue()));
