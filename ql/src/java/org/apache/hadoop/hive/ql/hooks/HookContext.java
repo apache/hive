@@ -60,12 +60,12 @@ public class HookContext {
       "Hooks that invoked before/after Hive performs its own semantic analysis on a statement"),
     DRIVER_RUN_HOOKS(HiveConf.ConfVars.HIVE_DRIVER_RUN_HOOKS, HiveDriverRunHook.class,
       "Hooks that Will be run at the beginning and end of Driver.run"),
-    REDACTOR(HiveConf.ConfVars.QUERYREDACTORHOOKS, Redactor.class,
+    QUERYREDACTORHOOKS(HiveConf.ConfVars.QUERYREDACTORHOOKS, Redactor.class,
       "Hooks to be invoked for each query which can tranform the query before it's placed in the job.xml file"),
     // The HiveSessionHook.class cannot access, use Hook.class instead
     HIVE_SERVER2_SESSION_HOOK(HiveConf.ConfVars.HIVE_SERVER2_SESSION_HOOK, Hook.class,
       "Hooks to be executed when session manager starts a new session"),
-    OOM(HiveConf.ConfVars.HIVE_SERVER2_OOM_HOOKS, Runnable.class,
+    HIVE_SERVER2_OOM_HOOKS(HiveConf.ConfVars.HIVE_SERVER2_OOM_HOOKS, Runnable.class,
       "Hooks that will be run when HiveServer2 stops due to OutOfMemoryError");
 
     private final HiveConf.ConfVars confVar;

@@ -28,7 +28,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *  Loads and stores different kinds of hooks, provides {@link HooksLoader#addHook(HookContext.HookType, Object)}} to
@@ -38,15 +40,12 @@ import java.util.List;
 public class HooksLoader {
   private static final Logger LOG = LoggerFactory.getLogger(HooksLoader.class);
   private final HiveConf conf;
-  private final Hooks[] hooks;
+  private final Map<HookContext.HookType, Hooks> typeHooks;
   private SessionState.LogHelper console;
 
   public HooksLoader(HiveConf conf) {
     this.conf = conf;
-    this.hooks = new Hooks[HookContext.HookType.values().length];
-    for (int i = 0; i < hooks.length; i++) {
-      hooks[i] = new Hooks();
-    }
+    this.typeHooks = new HashMap<>();
   }
 
   public HooksLoader(HiveConf conf, SessionState.LogHelper console) {
@@ -60,18 +59,18 @@ public class HooksLoader {
    */
   @VisibleForTesting
   void loadHooksFromConf(HookContext.HookType type) {
-    Hooks container = hooks[type.ordinal()];
-    if (!container.loadedFromConf) {
-      container.loadedFromConf = true;
-      List hooks = container.getHooks();
-      HiveConf.ConfVars confVars = type.getConfVar();
-      Collection<String> csHooks = conf.getStringCollection(confVars.varname);
+    Hooks hooks = typeHooks.get(type);
+    if (hooks == null) {
+      typeHooks.put(type, hooks = new Hooks());
+      List hookList = hooks.getHooks();
+      HiveConf.ConfVars confVar = type.getConfVar();
+      Collection<String> csHooks = conf.getStringCollection(confVar.varname);
       try {
         for (String clzName : csHooks) {
           Class hookCls = Class.forName(clzName.trim(), true, Utilities.getSessionSpecifiedClassLoader());
           if (type.getHookClass().isAssignableFrom(hookCls)) {
             Object hookObj = hookCls.newInstance();
-            hooks.add(hookObj);
+            hookList.add(hookObj);
           } else {
             String message = "The class: " + clzName + " should be the subclass of " + type.getHookClass().getName()
                 + ", as the type: " + type + " defined";
@@ -80,7 +79,7 @@ public class HooksLoader {
           }
         }
       } catch(Exception e) {
-        String message = "Error loading hooks(" + confVars + "): " + HiveStringUtils.stringifyException(e);
+        String message = "Error loading hooks(" + confVar + "): " + HiveStringUtils.stringifyException(e);
         throw new RuntimeException(message, e);
       }
     }
@@ -102,7 +101,7 @@ public class HooksLoader {
   public void addHook(HookContext.HookType type, Object hook) {
     if (type.getHookClass().isAssignableFrom(hook.getClass())) {
       loadHooksFromConf(type);
-      hooks[type.ordinal()].addHook(hook);
+      typeHooks.get(type).addHook(hook);
     } else {
       String message = "Error adding hook: " + hook.getClass().getName() + " into type: " + type +
           ", as the hook doesn't implement or extend: " + type.getHookClass().getName();
@@ -127,7 +126,7 @@ public class HooksLoader {
       throw new IllegalArgumentException(message);
     }
     loadHooksFromConf(type);
-    return hooks[type.ordinal()].getHooks();
+    return typeHooks.get(type).getHooks();
   }
 
   @VisibleForTesting
@@ -135,7 +134,7 @@ public class HooksLoader {
     if (loadFromConf) {
       return getHooks(type);
     }
-    return hooks[type.ordinal()].getHooks();
+    return typeHooks.getOrDefault(type, new Hooks()).getHooks();
   }
 
   public List getHooks(HookContext.HookType type) {
@@ -148,7 +147,6 @@ public class HooksLoader {
    * @param <T> the generic type of hooks
    */
   private class Hooks<T> {
-    private boolean loadedFromConf = false;
     private List<T> hooks = new ArrayList<T>();
     void addHook(T hook) {
       this.hooks.add(hook);
