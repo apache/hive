@@ -24,13 +24,20 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
+import com.google.common.base.Stopwatch;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.util.StopWatch;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,11 +46,20 @@ public class ResourceDownloader {
   private final DependencyResolver dependencyResolver;
   private final Configuration conf;
   private final File resourceDir;
+  //URI to UUID mapping
+  private final Map<String, String> udfCacheMap;
+  private final File udfCacheDir;
 
   public ResourceDownloader(Configuration conf, String resourceDirPath) {
+    this(conf, resourceDirPath, null, null);
+  }
+
+  public ResourceDownloader(Configuration conf, String resourceDirPath, Map<String, String> udfCacheMap, File udfCacheDir) {
     this.dependencyResolver = new DependencyResolver();
     this.conf = conf;
     this.resourceDir = new File(resourceDirPath);
+    this.udfCacheMap = udfCacheMap;
+    this.udfCacheDir = udfCacheDir;
     ensureDirectory(resourceDir);
   }
 
@@ -71,42 +87,61 @@ public class ResourceDownloader {
     }
   }
 
-  public List<URI> resolveAndDownload(String source, boolean convertToUnix)
+  public List<URI> resolveAndDownload(String source, boolean convertToUnix, boolean useCache)
       throws URISyntaxException, IOException {
-    return resolveAndDownloadInternal(createURI(source), null, convertToUnix, true);
+    return resolveAndDownloadInternal(createURI(source), null, convertToUnix, true, useCache);
   }
 
   public List<URI> downloadExternal(URI source, String subDir, boolean convertToUnix)
       throws URISyntaxException, IOException {
-    return resolveAndDownloadInternal(source, subDir, convertToUnix, false);
+    return resolveAndDownloadInternal(source, subDir, convertToUnix, false, false);
+  }
+  public List<URI> downloadExternal(URI source, String subDir, boolean convertToUnix, boolean useCache)
+      throws URISyntaxException, IOException {
+    return resolveAndDownloadInternal(source, subDir, convertToUnix, false, useCache);
   }
 
   private List<URI> resolveAndDownloadInternal(URI source, String subDir,
-      boolean convertToUnix, boolean isLocalAllowed) throws URISyntaxException, IOException {
+      boolean convertToUnix, boolean isLocalAllowed, boolean useCache) throws URISyntaxException, IOException {
     switch (getURLType(source)) {
     case FILE: return isLocalAllowed ? Collections.singletonList(source) : null;
     case IVY: return dependencyResolver.downloadDependencies(source);
     case HDFS:
     case OTHER:
-      return Collections.singletonList(createURI(downloadResource(source, subDir, convertToUnix)));
+      return Collections.singletonList(createURI(downloadResource(source, subDir, convertToUnix, useCache)));
     default: throw new AssertionError(getURLType(source));
     }
   }
 
-  private String downloadResource(URI srcUri, String subDir, boolean convertToUnix)
+  private String downloadResource(URI srcUri, String subDir, boolean convertToUnix, boolean useCache)
       throws IOException, URISyntaxException {
     LOG.debug("Converting to local {}", srcUri);
-    File destinationDir = (subDir == null) ? resourceDir : new File(resourceDir, subDir);
+
+    String uriString = srcUri.toString();
+    File destinationDir = null;
+
+    if(useCache && udfCacheMap != null && udfCacheDir != null){
+      udfCacheMap.computeIfAbsent(uriString, k -> UUID.randomUUID().toString());
+      String subFolder = udfCacheMap.get(uriString);
+      destinationDir =  new File(udfCacheDir.getPath(), subFolder);
+    } else{
+      destinationDir = (subDir == null) ? resourceDir : new File(resourceDir, subDir);
+    }
+
     ensureDirectory(destinationDir);
     File destinationFile = new File(destinationDir, new Path(srcUri).getName());
     String dest = destinationFile.getCanonicalPath();
+    LOG.info(String.format("UDF download of resource %s to %s ", srcUri, dest));
     if (destinationFile.exists()) {
+      LOG.info("UDF found in local cache");
       return dest;
     }
+    Stopwatch sw = Stopwatch.createStarted();
     FileSystem fs = FileSystem.get(srcUri, conf);
     fs.copyToLocalFile(new Path(srcUri), new Path(dest));
     // add "execute" permission to downloaded resource file (needed when loading dll file)
     FileUtil.chmod(dest, "ugo+rx", true);
+    LOG.info("Time taken to download UDF : {} msec", sw.stop().elapsed(TimeUnit.MILLISECONDS));
     return dest;
   }
 

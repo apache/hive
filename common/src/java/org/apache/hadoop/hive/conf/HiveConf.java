@@ -3552,6 +3552,8 @@ public class HiveConf extends Configuration {
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
     HIVE_SERVER2_ZOOKEEPER_PUBLISH_CONFIGS("hive.server2.zookeeper.publish.configs", true,
         "Whether we should publish HiveServer2's configs to ZooKeeper."),
+    HIVE_SERVER2_UDF_CACHE_ENABLED("hive.server2.udf.cache.enabled", false,
+        "Whether HiveServer2 UDF cache is enabled. Disabled by default."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",

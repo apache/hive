@@ -48,6 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.google.common.io.Files;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -132,7 +133,8 @@ public class SessionState implements ISessionAuthState{
   private static final String TMP_TABLE_SPACE_KEY = "_hive.tmp_table_space";
   static final String LOCK_FILE_NAME = "inuse.lck";
   static final String INFO_FILE_NAME = "inuse.info";
-
+  private static File udfFileDir;
+  private static final ConcurrentHashMap<String, String> udfLocalResource = new ConcurrentHashMap<>();//<md5sum or etag, local path>
   /**
    * Concurrent since SessionState is often propagated to workers in thread pools
    */
@@ -448,8 +450,10 @@ public class SessionState implements ISessionAuthState{
         parentLoader, Collections.emptyList(), true);
     final ClassLoader currentLoader = AccessController.doPrivileged(addAction);
     this.sessionConf.setClassLoader(currentLoader);
+    Map<String, String> udfCacheMap = getUDFCacheMap();
+    File udfCacheDir = getUdfFileDir();
     resourceDownloader = new ResourceDownloader(conf,
-        HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR));
+        HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR), udfCacheMap, udfCacheDir);
     killQuery = new NullKillQuery();
 
     ShimLoader.getHadoopShims().setHadoopSessionContext(getSessionId());
@@ -490,6 +494,16 @@ public class SessionState implements ISessionAuthState{
       LOG.debug("Resetting thread name to {}", names[names.length - 1]);
       Thread.currentThread().setName(names[names.length - 1].trim());
     }
+  }
+  public static Map<String, String> getUDFCacheMap(){
+    return udfLocalResource;
+  }
+
+  public synchronized static File getUdfFileDir(){
+    if(udfFileDir == null){
+          udfFileDir = Files.createTempDir();
+      }
+      return udfFileDir;
   }
 
   /**
@@ -1501,7 +1515,7 @@ public class SessionState implements ISessionAuthState{
 
   public String add_resource(ResourceType t, String value, boolean convertToUnix)
       throws RuntimeException {
-    List<String> added = add_resources(t, Arrays.asList(value), convertToUnix);
+    List<String> added = add_resources(t, Arrays.asList(value), convertToUnix, false);
     if (added == null || added.isEmpty()) {
       return null;
     }
@@ -1511,21 +1525,28 @@ public class SessionState implements ISessionAuthState{
   public List<String> add_resources(ResourceType t, Collection<String> values)
       throws RuntimeException {
     // By default don't convert to unix
-    return add_resources(t, values, false);
+    return add_resources(t, values, false, false);
   }
 
-  public List<String> add_resources(ResourceType t, Collection<String> values, boolean convertToUnix)
+  public List<String> add_resources(ResourceType t, Collection<String> values, boolean useCache)
+      throws RuntimeException {
+    // By default don't convert to unix
+    return add_resources(t, values, false, useCache);
+  }
+
+  public List<String> add_resources(ResourceType t, Collection<String> values, boolean convertToUnix, boolean useCache)
       throws RuntimeException {
     Set<String> resourceSet = resourceMaps.getResourceSet(t);
     Map<String, Set<String>> resourcePathMap = resourceMaps.getResourcePathMap(t);
     Map<String, Set<String>> reverseResourcePathMap = resourceMaps.getReverseResourcePathMap(t);
     List<String> localized = new ArrayList<String>();
+
     try {
       for (String value : values) {
         String key;
 
         //get the local path of downloaded jars.
-        List<URI> downloadedURLs = resolveAndDownload(t, value, convertToUnix);
+        List<URI> downloadedURLs = resolveAndDownload(t, value, convertToUnix, useCache);
 
         if (ResourceDownloader.isIvyUri(value)) {
           // get the key to store in map
@@ -1569,11 +1590,16 @@ public class SessionState implements ISessionAuthState{
     resourceSet.addAll(localized);
     return localized;
   }
-
   @VisibleForTesting
   protected List<URI> resolveAndDownload(ResourceType resourceType, String value, boolean convertToUnix)
       throws URISyntaxException, IOException {
-    List<URI> uris = resourceDownloader.resolveAndDownload(value, convertToUnix);
+    return resolveAndDownload(resourceType, value, convertToUnix, false);
+  }
+
+
+  protected List<URI> resolveAndDownload(ResourceType resourceType, String value, boolean convertToUnix, boolean useCache)
+      throws URISyntaxException, IOException {
+    List<URI> uris = resourceDownloader.resolveAndDownload(value, convertToUnix, useCache);
     if (ResourceDownloader.isHdfsUri(value)) {
       assert uris.size() == 1 : "There should only be one URI localized-resource.";
       resourceMaps.getLocalHdfsLocationMap(resourceType).put(uris.get(0).toString(), value);
@@ -2198,5 +2224,4 @@ class ResourceMaps {
     }
     return result;
   }
-
 }
