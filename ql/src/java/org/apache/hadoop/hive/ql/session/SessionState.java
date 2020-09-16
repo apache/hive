@@ -57,6 +57,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -132,6 +133,11 @@ public class SessionState implements ISessionAuthState{
   private static final String TMP_TABLE_SPACE_KEY = "_hive.tmp_table_space";
   static final String LOCK_FILE_NAME = "inuse.lck";
   static final String INFO_FILE_NAME = "inuse.info";
+
+  /**
+   *
+   */
+  private final ConcurrentHashMap<String, Map<Object, Object>> cache = new ConcurrentHashMap<>();
 
   /**
    * Concurrent since SessionState is often propagated to workers in thread pools
@@ -2135,6 +2141,33 @@ public class SessionState implements ISessionAuthState{
 
   public String getNewSparkSessionId() {
     return getSessionId() + "_" + Long.toString(this.sparkSessionId.getAndIncrement());
+  }
+
+  /**
+   * Can be called when we start compilation of a query.
+   * @param queryId the unique identifier of the query
+   */
+  public void startScope(String queryId) {
+    Map<Object, Object> existingVal = cache.put(queryId, new HashMap<>());
+    Preconditions.checkState(existingVal == null);
+  }
+
+  /**
+   * Can be called when we end compilation of a query.
+   * @param queryId the unique identifier of the query
+   */
+  public void endScope(String queryId) {
+    Map<Object, Object> existingVal = cache.remove(queryId);
+    Preconditions.checkState(existingVal != null);
+  }
+
+  /**
+   * Retrieves the query cache for the given query.
+   * @param queryId the unique identifier of the query
+   * @return the cache for the query
+   */
+  public Map<Object, Object> getQueryCache(String queryId) {
+    return cache.get(queryId);
   }
 }
 

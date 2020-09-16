@@ -4087,4 +4087,5 @@ public interface IMetaStoreClient {
 
   ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
                                                 replicationMetricsRequest) throws MetaException, TException;
+
 }

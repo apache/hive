@@ -82,6 +82,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.ResultFileFormat;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -15272,5 +15273,29 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void executeUnparseTranlations() {
     unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
+  }
+
+  @Override
+  public void startAnalysis() {
+    String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
+    SessionState ss = SessionState.get();
+    if (ss == null) {
+      LOG.info("No current SessionState, skipping query caching for: {}", queryId);
+      return;
+    }
+    LOG.info("Starting caching scope for: {}", queryId);
+    ss.startScope(queryId);
+  }
+
+  @Override
+  public void endAnalysis() {
+    String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
+    SessionState ss = SessionState.get();
+    if (ss == null) {
+      LOG.info("No current SessionState, skipping query caching for: {}", queryId);
+      return;
+    }
+    LOG.info("Ending caching scope for: {}", queryId);
+    ss.endScope(queryId);
   }
 }
