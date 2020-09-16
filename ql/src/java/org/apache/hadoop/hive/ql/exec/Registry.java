@@ -586,9 +586,11 @@ public class Registry {
         FunctionResource[] resources = fi.getResources();
         if (fi.isPersistent()) {
           Map<String, String> udfCacheMap = SessionState.getUDFCacheMap();
-          for(FunctionResource fr : resources){
-            //remove from udf cache if it's saved.
-            udfCacheMap.remove(fr.getResourceURI());
+          if(resources != null) {
+            for (FunctionResource fr : resources) {
+              //remove from udf cache if it's saved.
+              udfCacheMap.remove(fr.getResourceURI());
+            }
           }
           removePersistentFunctionUnderLock(fi);
         }
