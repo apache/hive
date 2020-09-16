@@ -104,7 +104,7 @@ public class Table implements Serializable {
   private Class<? extends InputFormat> inputFormatClass;
   private Path path;
 
-  private HiveStorageHandler storageHandler;
+  private transient HiveStorageHandler storageHandler;
   private transient StorageHandlerInfo storageHandlerInfo;
 
   private TableSpec tableSpec;
