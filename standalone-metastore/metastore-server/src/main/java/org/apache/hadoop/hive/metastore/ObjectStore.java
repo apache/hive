@@ -13347,7 +13347,8 @@ public class ObjectStore implements RawStore, Configurable {
     case EXECUTING:
       return to == QueryState.FINISHED
           || to == QueryState.EXECUTING
-          || to == QueryState.FAILED;
+          || to == QueryState.FAILED
+          || to == QueryState.TIMED_OUT;
     default:
       return false;
     }
