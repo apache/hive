@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,11 +56,13 @@ import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
 import org.apache.hive.streaming.StrictDelimitedInputWriter;
 import org.apache.orc.OrcFile;
+import org.apache.orc.OrcProto;
 import org.apache.orc.Reader;
 import org.apache.orc.RecordReader;
+import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.RecordReaderImpl;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
@@ -133,6 +137,53 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     CompactorTestUtilities.checkAcidVersion(fs.listFiles(new Path(table.getSd().getLocation()), true), fs, true,
         new String[] { AcidUtils.BASE_PREFIX});
     conf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, originalEnableVersionFile);
+  }
+
+  /**
+   * Query based compaction should respect the orc.bloom.filter properties
+   * @throws Exception
+   */
+  @Test
+  public void testMajorCompactionWithBloomFilter() throws Exception {
+
+    String dbName = "default";
+    String tblName = "testMajorCompaction";
+    TestDataProvider testDataProvider = new TestDataProvider();
+    Map<String, String> additionalTblProperties = new HashMap<>();
+    additionalTblProperties.put("orc.bloom.filter.columns", "b");
+    additionalTblProperties.put("orc.bloom.filter.fpp", "0.02");
+    testDataProvider.createFullAcidTable(dbName, tblName, false, false, additionalTblProperties);
+    testDataProvider.insertTestData(tblName);
+    // Find the location of the table
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+    FileSystem fs = FileSystem.get(conf);
+    // Verify deltas are present
+    Assert.assertEquals("Delta directories does not match before compaction",
+        Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000",
+            "delta_0000004_0000004_0000"),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
+    // Check bucket file contains the bloomFilter
+    checkBloomFilterInAcidFile(fs, new Path(table.getSd().getLocation(), "delta_0000001_0000001_0000/bucket_00000_0"));
+
+    // Run major compaction and cleaner
+    CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true);
+    CompactorTestUtil.runCleaner(conf);
+    verifySuccessfulCompaction(1);
+    // Should contain only one base directory now
+    String expectedBase = "base_0000005_v0000008";
+    Assert.assertEquals("Base directory does not match after major compaction",
+        Collections.singletonList(expectedBase),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
+    // Check base dir contents
+    List<String> expectedBucketFiles = Arrays.asList("bucket_00000");
+    Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
+        CompactorTestUtil
+            .getBucketFileNames(fs, table, null, expectedBase));
+    // Check bucket file contents
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase), 0);
+
+    checkBloomFilterInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase + "/bucket_00000"));
   }
 
   /**
@@ -1725,6 +1776,18 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
           rowId = 0;
         }
       }
+    }
+  }
+
+  private void checkBloomFilterInAcidFile(FileSystem fs, Path bucketFilePath) throws IOException {
+    Reader orcReader = OrcFile.createReader(bucketFilePath,
+        OrcFile.readerOptions(fs.getConf()).filesystem(fs));
+    StripeInformation stripe = orcReader.getStripes().get(0);
+    try (RecordReaderImpl rows = (RecordReaderImpl)orcReader.rows()) {
+      boolean bloomFilter = rows.readStripeFooter(stripe).getStreamsList().stream().anyMatch(
+          s -> s.getKind() == OrcProto.Stream.Kind.BLOOM_FILTER_UTF8
+              || s.getKind() == OrcProto.Stream.Kind.BLOOM_FILTER);
+      Assert.assertTrue("Bloom filter is missing", bloomFilter);
     }
   }
 

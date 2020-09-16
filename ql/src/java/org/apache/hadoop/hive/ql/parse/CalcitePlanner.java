@@ -2280,6 +2280,15 @@ public class CalcitePlanner extends SemanticAnalyzer {
         return calcitePreMVRewritingPlan;
       }
 
+      try {
+        if (!HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(materializedViewsUsedAfterRewrite)) {
+          // if materialized views do not have appropriate privileges, we shouldn't be using them
+          return calcitePreMVRewritingPlan;
+        }
+      } catch (HiveException e) {
+        LOG.warn("Exception checking privileges for materialized views", e);
+        return calcitePreMVRewritingPlan;
+      }
       // A rewriting was produced, we will check whether it was part of an incremental rebuild
       // to try to replace INSERT OVERWRITE by INSERT or MERGE
       if (mvRebuildMode == MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD) {
@@ -2426,9 +2435,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // 2. Run aggregate-join transpose (cost based)
       //    If it failed because of missing stats, we continue with
       //    the rest of optimizations
-      if (conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE)) {
+      if (conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE) || conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE_UNIQUE)) {
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
-            new HiveAggregateJoinTransposeRule(noColsMissingStats));
+            new HiveAggregateJoinTransposeRule(noColsMissingStats,
+                conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE),
+                conf.getBoolVar(ConfVars.AGGR_JOIN_TRANSPOSE_UNIQUE)));
       }
 
       // 3. Convert Join + GBy to semijoin

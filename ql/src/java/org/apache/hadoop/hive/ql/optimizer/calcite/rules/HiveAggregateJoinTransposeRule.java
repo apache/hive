@@ -21,6 +21,7 @@ import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -31,11 +32,15 @@ import org.apache.calcite.linq4j.Ord;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
+import org.apache.calcite.plan.RelOptUtil.InputFinder;
+import org.apache.calcite.plan.hep.HepRelVertex;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Join;
+import org.apache.calcite.rel.core.JoinInfo;
 import org.apache.calcite.rel.core.JoinRelType;
+import org.apache.calcite.rel.core.Project;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.rules.AggregateJoinTransposeRule;
 import org.apache.calcite.rel.type.RelDataType;
@@ -71,10 +76,14 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
 
   private final boolean allowFunctions;
   private final AtomicInteger noColsMissingStats;
+  private boolean costBased;
+  private boolean uniqueBased;
 
-  /** Creates an AggregateJoinTransposeRule that may push down functions. */
-  public HiveAggregateJoinTransposeRule(AtomicInteger noColsMissingStats) {
+  /** Creates an AggregateJoinTransposeRule that may push down functions.  */
+  public HiveAggregateJoinTransposeRule(AtomicInteger noColsMissingStats, boolean costBased, boolean uniqueBased) {
     super(HiveAggregate.class, HiveJoin.class, HiveRelFactories.HIVE_BUILDER, true);
+    this.costBased = costBased;
+    this.uniqueBased = uniqueBased;
     this.allowFunctions = true;
     this.noColsMissingStats = noColsMissingStats;
   }
@@ -106,6 +115,14 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
       }
 
       if (!allowFunctions && !aggregate.getAggCallList().isEmpty()) {
+        return;
+      }
+
+      boolean groupingUnique = isGroupingUnique(join, aggregate.getGroupSet());
+
+      if (!groupingUnique && !costBased) {
+        // groupingUnique is not satisfied ; and cost based decision is disabled.
+        // there is no need to check further - the transformation may not happen
         return;
       }
 
@@ -290,11 +307,17 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
             newAggCalls);
       }
 
-      // Make a cost based decision to pick cheaper plan
       RelNode r = relBuilder.build();
-      RelOptCost afterCost = mq.getCumulativeCost(r);
-      RelOptCost beforeCost = mq.getCumulativeCost(aggregate);
-      if (afterCost.isLt(beforeCost)) {
+      boolean transform = false;
+      if (uniqueBased && aggConvertedToProjects) {
+        transform = groupingUnique;
+      }
+      if (!transform && costBased) {
+        RelOptCost afterCost = mq.getCumulativeCost(r);
+        RelOptCost beforeCost = mq.getCumulativeCost(aggregate);
+        transform = afterCost.isLt(beforeCost);
+      }
+      if (transform) {
         call.transformTo(r);
       }
     } catch (Exception e) {
@@ -305,6 +328,68 @@ public class HiveAggregateJoinTransposeRule extends AggregateJoinTransposeRule {
         throw e;
       }
     }
+  }
+
+  /**
+   * Determines weather the give grouping is unique.
+   *
+   * Consider a join which might produce non-unique rows; but later the results are aggregated again.
+   * This method determines if there are sufficient columns in the grouping which have been present previously as unique column(s).
+   */
+  private boolean isGroupingUnique(RelNode input, ImmutableBitSet groups) {
+    if (groups.isEmpty()) {
+      return false;
+    }
+    if(input instanceof HepRelVertex) {
+      HepRelVertex vertex = (HepRelVertex) input;
+      return isGroupingUnique(vertex.getCurrentRel(), groups);
+    }
+
+    RelMetadataQuery mq = input.getCluster().getMetadataQuery();
+    Set<ImmutableBitSet> uKeys = mq.getUniqueKeys(input);
+    if (uKeys == null) {
+      return false;
+    }
+    for (ImmutableBitSet u : uKeys) {
+      if (groups.contains(u)) {
+        return true;
+      }
+    }
+    if (input instanceof Join) {
+      Join join = (Join) input;
+      JoinInfo ji = JoinInfo.of(join.getLeft(), join.getRight(), join.getCondition());
+      if (ji.isEqui()) {
+        ImmutableBitSet newGroup = groups.intersect(InputFinder.bits(join.getCondition()));
+        RelNode l = join.getLeft();
+        RelNode r = join.getRight();
+
+        int joinFieldCount = join.getRowType().getFieldCount();
+        int lFieldCount = l.getRowType().getFieldCount();
+
+        ImmutableBitSet groupL = newGroup.get(0, lFieldCount);
+        ImmutableBitSet groupR = newGroup.get(lFieldCount, joinFieldCount).shift(-lFieldCount);
+
+        if (isGroupingUnique(l, groupL)) {
+          return true;
+        }
+        if (isGroupingUnique(r, groupR)) {
+          return true;
+        }
+      }
+    }
+    if (input instanceof Project) {
+      Project project = (Project) input;
+      ImmutableBitSet.Builder newGroup = ImmutableBitSet.builder();
+      for (int g : groups.asList()) {
+        RexNode rex = project.getChildExps().get(g);
+        if (rex instanceof RexInputRef) {
+          RexInputRef rexInputRef = (RexInputRef) rex;
+          newGroup.set(rexInputRef.getIndex());
+        }
+      }
+      return isGroupingUnique(project.getInput(), newGroup.build());
+    }
+    return false;
   }
 
   /** Computes the closure of a set of columns according to a given list of

@@ -366,6 +366,10 @@ public class QTestUtil {
     // and any databases other than the default database.
     for (String dbName : db.getAllDatabases()) {
       SessionState.get().setCurrentDatabase(dbName);
+      // FIXME: HIVE-24130 should remove this
+      if (dbName.equalsIgnoreCase("tpch_0_001")) {
+        continue;
+      }
       for (String tblName : db.getAllTables()) {
         if (!DEFAULT_DATABASE_NAME.equals(dbName) || !QTestDatasetHandler.isSourceTable(tblName)) {
           try {
