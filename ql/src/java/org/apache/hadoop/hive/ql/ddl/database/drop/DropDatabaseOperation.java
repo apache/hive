@@ -29,6 +29,8 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 
+import java.io.IOException;
+
 /**
  * Operation process of creating a database.
  */
@@ -38,7 +40,7 @@ public class DropDatabaseOperation extends DDLOperation<DropDatabaseDesc> {
   }
 
   @Override
-  public int execute() throws HiveException {
+  public int execute() throws HiveException, IOException {
     try {
       String dbName = desc.getDatabaseName();
       ReplicationSpec replicationSpec = desc.getReplicationSpec();

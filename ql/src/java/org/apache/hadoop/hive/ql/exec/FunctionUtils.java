@@ -74,15 +74,18 @@ public final class FunctionUtils {
     }
     return converted;
   }
+  public static void addFunctionResources(FunctionResource[] resources) throws HiveException{
+    addFunctionResources(resources, false);
+  }
 
-  public static void addFunctionResources(FunctionResource[] resources) throws HiveException {
+  public static void addFunctionResources(FunctionResource[] resources, boolean useCache) throws HiveException {
     if (resources != null) {
       Multimap<SessionState.ResourceType, String> mappings = HashMultimap.create();
       for (FunctionResource res : resources) {
         mappings.put(res.getResourceType(), res.getResourceURI());
       }
       for (SessionState.ResourceType type : mappings.keys()) {
-        SessionState.get().add_resources(type, mappings.get(type));
+        SessionState.get().add_resources(type, mappings.get(type), false, useCache);
       }
     }
   }

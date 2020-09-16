@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFParameterInfo;
@@ -54,6 +55,9 @@ import org.apache.hive.plugin.api.HiveUDFPlugin;
 import org.apache.hive.plugin.api.HiveUDFPlugin.UDFDescriptor;
 
 import java.io.IOException;
+import java.io.File;
+import org.apache.hadoop.fs.Path;
+import org.apache.commons.lang3.tuple.Pair;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -572,7 +576,7 @@ public class Registry {
     return functionClass;
   }
 
-  public void unregisterFunction(String functionName) throws HiveException {
+  public void unregisterFunction(String functionName) throws HiveException, IOException {
     lock.lock();
     try {
       functionName = functionName.toLowerCase();
@@ -583,7 +587,27 @@ public class Registry {
         }
         mFunctions.remove(functionName);
         fi.discarded();
+        FunctionResource[] resources = fi.getResources();
         if (fi.isPersistent()) {
+          Map<String, Pair<String, Integer>> udfCacheMap = SessionState.getUDFCacheMap();
+          if(resources != null) {
+            for (FunctionResource fr : resources) {
+              String subFolder = udfCacheMap.get(fr.getResourceURI())!= null?udfCacheMap.get(fr.getResourceURI()).getKey():null;
+              //remove from udf cache if it's saved.
+              if(subFolder!= null) {
+                udfCacheMap.get(fr.getResourceURI()).setValue(udfCacheMap.get(fr.getResourceURI()).getValue()-1);
+                //Need to remove the file from temp directory
+                File udfCacheDir = SessionState.getUdfFileDir();
+                File destinationDir = new File(udfCacheDir.getPath(), subFolder);
+                ResourceDownloader.ensureDirectory(destinationDir);
+                File destinationFile = new File(destinationDir, new Path(fr.getResourceURI()).getName());
+                if (udfCacheMap.get(fr.getResourceURI()).getValue() == 0 && destinationFile.delete()) {
+                  udfCacheMap.remove(fr.getResourceURI());
+                  LOG.info("File " + destinationFile.getCanonicalPath() + " was deleted succesfully from temp folder");
+                }
+              }
+            }
+          }
           removePersistentFunctionUnderLock(fi);
         }
       }
@@ -609,7 +633,7 @@ public class Registry {
    * @param dbName database name
    * @throws HiveException
    */
-  public void unregisterFunctions(String dbName) throws HiveException {
+  public void unregisterFunctions(String dbName) throws HiveException, IOException {
     lock.lock();
     try {
       Set<String> funcNames = getFunctionNames(dbName.toLowerCase() + "\\..*");
@@ -666,7 +690,9 @@ public class Registry {
       // At this point we should add any relevant jars that would be needed for the UDf.
       FunctionResource[] resources = function.getResources();
       try {
-        FunctionUtils.addFunctionResources(resources);
+        boolean useCache = function.isPersistent() &&
+            HiveConf.getBoolVar(SessionState.getSessionConf(), ConfVars.HIVE_SERVER2_UDF_CACHE_ENABLED);
+        FunctionUtils.addFunctionResources(resources, useCache);
       } catch (Exception e) {
         LOG.error("Unable to load resources for " + qualifiedName + ":" + e, e);
         return null;

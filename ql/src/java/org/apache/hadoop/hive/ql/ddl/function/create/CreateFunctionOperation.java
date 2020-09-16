@@ -186,7 +186,7 @@ public class CreateFunctionOperation extends DDLOperation<CreateFunctionDesc> {
     return registered != null;
   }
 
-  private boolean addToMetastore(String dbName, String functionName, String registeredName) throws HiveException {
+  private boolean addToMetastore(String dbName, String functionName, String registeredName) throws HiveException, IOException {
     try {
       // TODO: should this use getUserFromAuthenticator instead of SessionState.get().getUserName()?
       Function function = new Function(functionName, dbName, desc.getClassName(), SessionState.get().getUserName(),

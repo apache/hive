@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 
 import java.util.Map;
+import java.io.IOException;
 
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
@@ -39,7 +40,7 @@ public class DropFunctionOperation extends DDLOperation<DropFunctionDesc> {
   }
 
   @Override
-  public int execute() throws HiveException {
+  public int execute() throws HiveException, IOException {
     if (desc.isTemporary()) {
       return dropTemporaryFunction();
     } else {
@@ -53,7 +54,7 @@ public class DropFunctionOperation extends DDLOperation<DropFunctionDesc> {
     }
   }
 
-  private int dropTemporaryFunction() {
+  private int dropTemporaryFunction() throws IOException {
     try {
       FunctionRegistry.unregisterTemporaryUDF(desc.getName());
       return 0;

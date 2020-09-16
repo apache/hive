@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.exec.FunctionInfo.FunctionResource;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -1437,7 +1438,7 @@ public final class FunctionRegistry {
         functionName, udfClass, resources);
   }
 
-  public static void unregisterTemporaryUDF(String functionName) throws HiveException {
+  public static void unregisterTemporaryUDF(String functionName) throws HiveException, IOException {
     if (SessionState.getRegistry() != null) {
       SessionState.getRegistry().unregisterFunction(functionName);
     }
@@ -1481,7 +1482,7 @@ public final class FunctionRegistry {
     return false;
   }
 
-  public static void unregisterPermanentFunction(String functionName) throws HiveException {
+  public static void unregisterPermanentFunction(String functionName) throws HiveException, IOException {
     system.unregisterFunction(functionName);
     unregisterTemporaryUDF(functionName);
   }
@@ -1491,7 +1492,7 @@ public final class FunctionRegistry {
    * @param dbName specified database name
    * @throws HiveException
    */
-  public static void unregisterPermanentFunctions(String dbName) throws HiveException {
+  public static void unregisterPermanentFunctions(String dbName) throws HiveException, IOException {
     system.unregisterFunctions(dbName);
   }
 

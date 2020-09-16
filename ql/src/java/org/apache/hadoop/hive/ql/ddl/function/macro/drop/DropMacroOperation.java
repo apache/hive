@@ -23,6 +23,8 @@ import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
+import java.io.IOException;
+
 /**
  * Operation process of dropping a macro.
  */
@@ -32,7 +34,7 @@ public class DropMacroOperation extends DDLOperation<DropMacroDesc> {
   }
 
   @Override
-  public int execute() throws HiveException {
+  public int execute() throws HiveException, IOException {
     try {
       FunctionRegistry.unregisterTemporaryUDF(desc.getName());
       return 0;
