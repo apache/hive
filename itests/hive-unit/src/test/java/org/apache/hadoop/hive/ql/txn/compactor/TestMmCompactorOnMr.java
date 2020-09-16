@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Before;
 
+@org.junit.Ignore("HIVE-24172")
 public class TestMmCompactorOnMr extends TestMmCompactorOnTez {
   @Before
   public void setMr() {
