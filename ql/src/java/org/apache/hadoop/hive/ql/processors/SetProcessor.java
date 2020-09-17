@@ -225,6 +225,12 @@ public class SetProcessor implements CommandProcessor {
    */
   static String setConf(SessionState ss, String varname, String key, String varvalue, boolean register)
         throws IllegalArgumentException {
+    // Prepend "hive." to 'key' if 'key' is "execution.engine" since internally
+    // "hive.execution.engine" is used to represent the execution engine.
+    if (key.equalsIgnoreCase(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE.altName)) {
+      key = "hive.".concat(key);
+    }
+
     String result = null;
     HiveConf conf = ss.getConf();
     String value = new VariableSubstitution(new HiveVariableSource() {

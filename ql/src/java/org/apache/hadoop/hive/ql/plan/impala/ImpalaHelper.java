@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaPlanRel;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.QB;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.impala.catalog.BuiltinsDb;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.common.InternalException;
@@ -62,8 +63,11 @@ import org.apache.impala.util.EventSequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class ImpalaHelper {
@@ -205,15 +209,44 @@ public class ImpalaHelper {
   }
 
   private TQueryOptions createTestQueryOptions(HiveConf conf) {
-    // Note: For the FENG test suite, we currently create the options from HiveConf
-    // since we do not establish a session with Impala's coordinator.
-    Map<String, String> queryOptions = conf.subtree("impala").entrySet().stream()
+    // Note: Currently in the non-testing environment, i.e.,
+    // conf.getBoolVar(ConfVars.HIVE_IN_TEST) evaluates to false, we use 'conf' to
+    // initialize those fields in an ImpalaSession that can be set up via Hive-related
+    // configurations, e.g., 'HiveConf.ConfVars.HIVE_IMPALA_ADDRESS'. Since we do not
+    // establish a session with Impala's coordinator in the testing environment, 'conf'
+    // is not really used in this method.
+
+    // If there is a change to an Impala-related query option not prefixed by Impala's
+    // namespace, we also need to update the value corresponding to the option prefixed
+    // by Impala's namespace. Therefore, we need to modify the corresponding property
+    // in SessionState.get().getConf() so that a subsequent SET statement for the updated
+    // query option would reflect the change. Refer to SetProcessor#getVariable() for
+    // further details. Simply updating the corresponding property in 'conf' cannot make
+    // the change to an option prefixed by Impala's namespace persistent after a query
+    // is executed. Similarly, to remove an unsupported query option prefixed by Impala's
+    // namespace, we need to update the corresponding property in
+    // SessionState.get().getConf().
+    HiveConf sessionConf = SessionState.get().getConf();
+    filterUnsupportedImpalaQueryOptions(sessionConf);
+    updateImpalaQueryOptions(sessionConf);
+    Map<String, String> queryOptions = sessionConf.subtree("impala").entrySet().stream()
         .collect(Collectors.toMap(Map.Entry::getKey,Map.Entry::getValue));
     BackendConfig.create(getBackendConfig(queryOptions), false);
     return parseQueryOptions(queryOptions);
   }
 
   private TQueryOptions createDefaultQueryOptions(HiveConf conf) throws HiveException {
+    // Update Impala's query options if applicable. Both 'conf' and 'sessionConf' contain
+    // the same set of Impala's query options without Impala's namespace. We choose to
+    // update 'sessionConf' because 1) currently to prepare a TOpenSessionReq for the
+    // Impala backend, we retrieve the query options in 'sessionConf', and 2) the query
+    // option prefixed by Impala's namespace would be updated accordingly. Refer to
+    // ImpalaSession#open() for the first reason and SetProcessor#getVariable() for the
+    // second reason.
+    HiveConf sessionConf = SessionState.get().getConf();
+    filterUnsupportedImpalaQueryOptions(sessionConf);
+    updateImpalaQueryOptions(sessionConf);
+
     ImpalaSession session = ImpalaSessionManager.getInstance().getSession(conf);
 
     // Collect the option settings that are returned in the HS2 session
@@ -234,6 +267,64 @@ public class ImpalaHelper {
     }
     return options;
   }
+
+  private void filterUnsupportedImpalaQueryOptions(HiveConf conf) {
+    Properties props = conf.getAllProperties();
+
+    for (Map.Entry<Object, Object> e : props.entrySet()) {
+      String key = (String) e.getKey();
+      if (key.startsWith("impala")) {
+        if (key.length() > "impala.".length()) {
+          String keyWithoutNameSpace = key.substring("impala.".length()).toLowerCase();
+          TQueryOptions._Fields field = TQueryOptions._Fields.findByName(
+              keyWithoutNameSpace);
+          if (field == null) {
+            conf.unset(key);
+            // Recall that in HiveConf#verifyAndSet() we called HiveConf#set() on a key
+            // prefixed by "impala." so we have to call unset() here if the key is
+            // actually unsupported by Impala.
+            conf.unset(keyWithoutNameSpace);
+          }
+        } else {
+          conf.unset(key);
+        }
+      }
+    }
+  }
+
+  private void updateImpalaQueryOptions(HiveConf conf) {
+    Properties origProps = conf.getAllProperties();
+    Properties impalaProps = new Properties();
+    List<String> origImpalaProps = new ArrayList<>();
+
+    for (Map.Entry<Object, Object> e : origProps.entrySet()) {
+      String key = (String) e.getKey();
+      TQueryOptions._Fields field = TQueryOptions._Fields.findByName(
+              key.toLowerCase());
+      if (field != null) {
+        impalaProps.put("impala.".concat((String) e.getKey()), e.getValue());
+        origImpalaProps.add((String) e.getKey());
+      }
+    }
+
+    // We need to update 'isImpalaConfigUpdated' since we were not able to determine this
+    // in HiveConf#verifyAndSet(). Specifically, if there is an existing ImpalaSession
+    // and we do not call setImpalaConfigUpdated(true) when an Impala-related query
+    // option is updated, the change will not be reflected in the TOpenSessionReq we send
+    // to the Impala backend in the next query. Refer to
+    // ImpalaSessionManager#getSession() for further details.
+    if (!origImpalaProps.isEmpty()) conf.setImpalaConfigUpdated(true);
+
+    for (Map.Entry<Object, Object> e : impalaProps.entrySet()) {
+      conf.set((String) e.getKey(), (String) e.getValue());
+    }
+
+    // We do not call unset() for each query option 'name' in 'origImpalaProps' so that a
+    // user is able to get the value for the query option via "SET 'name'" instead of
+    // "SET impala.'name'";
+  }
+
+
 
   /**
    * This method is only used for test purposes.

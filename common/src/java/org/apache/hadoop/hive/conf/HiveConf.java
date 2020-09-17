@@ -4162,7 +4162,7 @@ public class HiveConf extends Configuration {
                 Runtime.SPARK.toString(), Runtime.IMPALA.toString()),
         "Chooses execution engine. Options are: mr (Map reduce, default), tez, spark, and impala. While MR\n" +
         "remains the default engine for historical reasons, it is itself a historical engine\n" +
-        "and is deprecated in Hive 2 line. It may be removed without further warning."),
+        "and is deprecated in Hive 2 line. It may be removed without further warning.", "execution.engine"),
 
     HIVE_EXECUTION_MODE("hive.execution.mode", "container", new StringSet("container", "llap"),
         "Chooses whether query fragments will run in container or in llap"),
@@ -5639,9 +5639,33 @@ public class HiveConf extends Configuration {
       if (isSparkRelatedConfig(name)) {
         isSparkConfigUpdated = true;
       }
+      // After CDPD-13549, we allow a user to set up Impala's query options without
+      // having to prepend Impala's namespace, and since the class of TQueryOptions is
+      // not available here, we are not able to tell whether 'name' corresponds to an
+      // Impala query option here. Instead, we will determine this in
+      // ImpalaHelper#updateImpalaQueryOptions() where the class of TQueryOptions is
+      // available.
       if (isImpalaRelatedConfig(name)) {
+        // If 'name' starts with "impala", we also add the corresponding query option
+        // without Impala's namespace when appropriate.
+        if (name.length() > "impala.".length()) {
+          set(name.substring("impala.".length()), value);
+        }
         isImpalaConfigUpdated = true;
       }
+    }
+
+    // We also need to update the value associated with 'execution.engine' when
+    // 'hive.execution.engine' is updated so that the SET statement would return the same
+    // value for both 'hive.execution.engine' and 'execution.engine'.
+    // Recall that for a SET statement, we prepend "hive" to the key of the updated
+    // configuration if the key is "execution.engine" in SetProcessor#setConf().
+    // Therefore, for a "SET execution.engine=<value>" statement, this method can only be
+    // invoked with 'name' equal to "hive.execution.engine". In this case, the body of
+    // the if-statement above will not be executed, and thus set() will not be called to
+    // update the value associated with 'execution.engine'.
+    if (name.equalsIgnoreCase(ConfVars.HIVE_EXECUTION_ENGINE.varname)) {
+      set(ConfVars.HIVE_EXECUTION_ENGINE.altName, value);
     }
   }
 
@@ -6243,6 +6267,10 @@ public class HiveConf extends Configuration {
     if("mr".equals(getVar(ConfVars.HIVE_EXECUTION_ENGINE)) && !getBoolVar(ConfVars.HIVE_IN_TEST)) {
       throw new IllegalArgumentException("mr execution engine is not supported!");
     }
+    // After CDPD-13549, 'execution.engine' is an alternate name for
+    // 'hive.execution.engine'. We add this configuration to make these two
+    // configurations consistent.
+    set(ConfVars.HIVE_EXECUTION_ENGINE.altName, getVar(ConfVars.HIVE_EXECUTION_ENGINE));
   }
 
   /**

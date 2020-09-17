@@ -144,6 +144,11 @@ public class ImpalaSessionManager {
       return existingSession;
     }
 
+    // We use 'conf' to initialize those fields in an ImpalaSession that can be set up
+    // via Hive-related configurations, e.g., 'HiveConf.ConfVars.HIVE_IMPALA_ADDRESS',
+    // whereas we use SessionState.get().getConf() in impalaSession.open() to set up
+    // Impala's query options that will be stored in a TOpenSessionReq, which in turn
+    // will be sent to the Impala backend.
     ImpalaSession impalaSession = new ImpalaSession(conf);
     impalaSession.open();
 

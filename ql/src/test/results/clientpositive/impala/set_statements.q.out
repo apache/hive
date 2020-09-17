@@ -1,0 +1,184 @@
+execution.engine=impala
+hive.execution.engine=impala
+execution.engine=tez
+hive.execution.engine=tez
+hive.execution.engine=impala
+execution.engine=impala
+num_nodes=1
+impala.num_nodes=2
+PREHOOK: query: explain select count(*) from impala_tpch_lineitem
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_lineitem
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select count(*) from impala_tpch_lineitem
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_lineitem
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F00:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: _impala_builtins.count()
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  01:AGGREGATE [FINALIZE]
+  |  output: count()
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=2 row-size=8B cardinality=1
+  |  in pipelines: 01(GETNEXT), 00(OPEN)
+  |
+  00:SCAN HDFS [default.impala_tpch_lineitem]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       columns: all
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+impala.num_nodes=1
+impala.num_nodes=3
+num_nodes=3
+impala.num_nodes=1
+num_nodes=3
+PREHOOK: query: explain select count(*) from impala_tpch_lineitem
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_lineitem
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select count(*) from impala_tpch_lineitem
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_lineitem
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: _impala_builtins.count()
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  03:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.count:merge()
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=2 row-size=8B cardinality=1
+  |  in pipelines: 03(GETNEXT), 01(OPEN)
+  |
+  02:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=8B cardinality=1
+     in pipelines: 01(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=02, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  01:AGGREGATE
+  |  output: count()
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=2 row-size=8B cardinality=1
+  |  in pipelines: 01(GETNEXT), 00(OPEN)
+  |
+  00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       columns: all
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+impala.num_nodes=3
+num_nodes=3
+impala.dummy_option=aaa
+dummy_option=aaa
+PREHOOK: query: explain select count(*) from impala_tpch_lineitem
+PREHOOK: type: QUERY
+PREHOOK: Input: default@impala_tpch_lineitem
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain select count(*) from impala_tpch_lineitem
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@impala_tpch_lineitem
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
+  PLAN-ROOT SINK
+  |  output exprs: _impala_builtins.count()
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |
+  03:AGGREGATE [FINALIZE]
+  |  output: _impala_builtins.count:merge()
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=2 row-size=8B cardinality=1
+  |  in pipelines: 03(GETNEXT), 01(OPEN)
+  |
+  02:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=8B cardinality=1
+     in pipelines: 01(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=02, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  01:AGGREGATE
+  |  output: count()
+  |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
+  |  tuple-ids=2 row-size=8B cardinality=1
+  |  in pipelines: 01(GETNEXT), 00(OPEN)
+  |
+  00:SCAN HDFS [default.impala_tpch_lineitem, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       columns: all
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=0B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+impala.dummy_option is undefined
+dummy_option is undefined
