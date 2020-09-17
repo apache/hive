@@ -234,22 +234,24 @@ public class ImpalaPlanner {
       }
 
       HdfsTable hdfsTable = null;
-      org.apache.hadoop.hive.metastore.api.Table msTbl = tab.getTTable();
 
-      if (qb_.isCTAS()) {
-        // Create a dummy target for a CTAS table (the HMS object is created after execution)
-        try {
-          org.apache.hadoop.hive.metastore.api.Database msDb = db_.getDatabase(tab.getDbName());
-          if (msTbl.getSd().getLocation() == null || msTbl.getSd().getLocation().isEmpty()) {
-            msTbl.getSd().setLocation(MetastoreShim.getPathForNewTable(msDb, msTbl));
+      if (tab != null ) {
+        org.apache.hadoop.hive.metastore.api.Table msTbl = tab.getTTable();
+        if (qb_.isCTAS()) {
+          // Create a dummy target for a CTAS table (the HMS object is created after execution)
+          try {
+            org.apache.hadoop.hive.metastore.api.Database msDb = db_.getDatabase(tab.getDbName());
+            if (msTbl.getSd().getLocation() == null || msTbl.getSd().getLocation().isEmpty()) {
+              msTbl.getSd().setLocation(MetastoreShim.getPathForNewTable(msDb, msTbl));
+            }
+            hdfsTable = HdfsTable.createCtasTarget(new org.apache.impala.catalog.Db(msTbl.getDbName(), msDb),  msTbl);
+          } catch (Exception e) {
+            throw new HiveException("Failed to create CTAS target", e);
           }
-          hdfsTable = HdfsTable.createCtasTarget(new org.apache.impala.catalog.Db(msTbl.getDbName(), msDb),  msTbl);
-        } catch (Exception e) {
-          throw new HiveException("Failed to create CTAS target", e);
+        } else {
+          // Load the target table
+          hdfsTable = ctx_.getTableLoader().loadHdfsTable(db_, ctx_.getQueryContext().getConf(), msTbl);
         }
-      } else {
-        // Load the target table
-        hdfsTable = ctx_.getTableLoader().loadHdfsTable(db_, ctx_.getQueryContext().getConf(), msTbl);
       }
 
       if (hdfsTable != null) {
@@ -259,6 +261,13 @@ public class ImpalaPlanner {
         ctx_.setTargetPartition(part);
       }
     }
+  }
+
+  boolean isInsertDirectory() {
+    String dest = getQB().getParseInfo().getClauseNames().iterator().next();
+    return (resultStmtType_ == TStmtType.DML &&
+           (getQB().getMetaData().getDestTypeForAlias(dest) == QBMetaData.DEST_DFS_FILE ||
+            getQB().getMetaData().getDestTypeForAlias(dest) == QBMetaData.DEST_LOCAL_FILE));
   }
 
   /**
@@ -366,8 +375,8 @@ public class ImpalaPlanner {
       rootFragment.setSink(sink);
     } else {
       // create the data sink
-      boolean isFileBased = SessionState.get().getConf().getImpalaResultMethod() == ImpalaResultMethod.FILE;
-      if (isFileBased) { // File based query results
+      boolean isFileBased = ctx_.getQueryContext().getConf().getImpalaResultMethod() == ImpalaResultMethod.FILE;
+      if (isFileBased || isInsertDirectory()) { // File based query results
         // This is the location Hive expects to find QUERY results.
         // This is typically a staging directory on a DFS, sometimes it is within a table directory.
         // The location is determined based on various factors, such as if encryption zones are enabled.
