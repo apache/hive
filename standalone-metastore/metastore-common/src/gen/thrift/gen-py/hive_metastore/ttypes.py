@@ -11869,19 +11869,19 @@ class CommitTxnRequest(object):
      - replPolicy
      - writeEventInfos
      - replLastIdInfo
-     - exclWriteEnabled
      - keyValue
+     - exclWriteEnabled
 
     """
 
 
-    def __init__(self, txnid=None, replPolicy=None, writeEventInfos=None, replLastIdInfo=None, exclWriteEnabled=True, keyValue=None,):
+    def __init__(self, txnid=None, replPolicy=None, writeEventInfos=None, replLastIdInfo=None, keyValue=None, exclWriteEnabled=True,):
         self.txnid = txnid
         self.replPolicy = replPolicy
         self.writeEventInfos = writeEventInfos
         self.replLastIdInfo = replLastIdInfo
-        self.exclWriteEnabled = exclWriteEnabled
         self.keyValue = keyValue
+        self.exclWriteEnabled = exclWriteEnabled
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -11920,14 +11920,14 @@ class CommitTxnRequest(object):
                 else:
                     iprot.skip(ftype)
             elif fid == 5:
-                if ftype == TType.BOOL:
-                    self.exclWriteEnabled = iprot.readBool()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 6:
                 if ftype == TType.STRUCT:
                     self.keyValue = CommitTxnKeyValue()
                     self.keyValue.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 6:
+                if ftype == TType.BOOL:
+                    self.exclWriteEnabled = iprot.readBool()
                 else:
                     iprot.skip(ftype)
             else:
@@ -11959,13 +11959,13 @@ class CommitTxnRequest(object):
             oprot.writeFieldBegin('replLastIdInfo', TType.STRUCT, 4)
             self.replLastIdInfo.write(oprot)
             oprot.writeFieldEnd()
-        if self.exclWriteEnabled is not None:
-            oprot.writeFieldBegin('exclWriteEnabled', TType.BOOL, 5)
-            oprot.writeBool(self.exclWriteEnabled)
-            oprot.writeFieldEnd()
         if self.keyValue is not None:
-            oprot.writeFieldBegin('keyValue', TType.STRUCT, 6)
+            oprot.writeFieldBegin('keyValue', TType.STRUCT, 5)
             self.keyValue.write(oprot)
+            oprot.writeFieldEnd()
+        if self.exclWriteEnabled is not None:
+            oprot.writeFieldBegin('exclWriteEnabled', TType.BOOL, 6)
+            oprot.writeBool(self.exclWriteEnabled)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -27180,8 +27180,8 @@ CommitTxnRequest.thrift_spec = (
     (2, TType.STRING, 'replPolicy', 'UTF8', None, ),  # 2
     (3, TType.LIST, 'writeEventInfos', (TType.STRUCT, [WriteEventInfo, None], False), None, ),  # 3
     (4, TType.STRUCT, 'replLastIdInfo', [ReplLastIdInfo, None], None, ),  # 4
-    (5, TType.BOOL, 'exclWriteEnabled', None, True, ),  # 5
-    (6, TType.STRUCT, 'keyValue', [CommitTxnKeyValue, None], None, ),  # 6
+    (5, TType.STRUCT, 'keyValue', [CommitTxnKeyValue, None], None, ),  # 5
+    (6, TType.BOOL, 'exclWriteEnabled', None, True, ),  # 6
 )
 all_structs.append(ReplTblWriteIdStateRequest)
 ReplTblWriteIdStateRequest.thrift_spec = (
