@@ -117,7 +117,7 @@ public class OrcFileMergeOperator extends
       // store the orc configuration from the first file. All other files should
       // match this configuration before merging else will not be merged
       int bucketId = 0;
-      if (conf.getIsCompactionTable()) {
+      if (conf.getIsFullAcidCompactionTable()) {
         bucketId = AcidUtils.parseBucketId(new Path(filePath));
       }
       if (outWriters.get(bucketId) == null) {
@@ -141,7 +141,7 @@ public class OrcFileMergeOperator extends
         }
 
         Path outPath = getOutPath();
-        if (conf.getIsCompactionTable()) {
+        if (conf.getIsFullAcidCompactionTable()) {
           outPath = getOutPath(bucketId);
         }
         outWriters.put(bucketId, OrcFile.createWriter(outPath, options));

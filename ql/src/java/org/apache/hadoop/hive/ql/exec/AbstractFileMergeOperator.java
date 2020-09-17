@@ -117,7 +117,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
       taskTmpPath = null;
       // Make sure we don't collide with the source.
       outPath = finalPath = new Path(tmpPath, taskId + ".merged");
-    } else if (conf.getIsCompactionTable()) {
+    } else if (conf.getIsFullAcidCompactionTable()) {
       taskTmpPath = ttp; // _task_tmp
       finalPath = tp; // _tmp
       outPath = ttp; // also _task_tmp
