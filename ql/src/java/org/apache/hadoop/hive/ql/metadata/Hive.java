@@ -2289,7 +2289,7 @@ public class Hive {
         }
 
         boolean isManaged = tbl.getTableType() == TableType.MANAGED_TABLE;
-        boolean isCompactionTable = AcidUtils.isCompactionTable(tbl.getParameters());
+        boolean isCompactionTable = AcidUtils.isFullAcidCompactionTable(tbl.getParameters());
         boolean isMmCompactionTable = AcidUtils.isMmCompactionTable(tbl.getParameters());
         // TODO: why is "&& !isAcidIUDoperation" needed here?
         if (!isTxnTable && ((loadFileType == LoadFileType.REPLACE_ALL) || (oldPart == null && !isAcidIUDoperation))) {
@@ -3008,7 +3008,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     boolean isTxnTable = AcidUtils.isTransactionalTable(tbl);
     boolean isMmTable = AcidUtils.isInsertOnlyTable(tbl);
     boolean isFullAcidTable = AcidUtils.isFullAcidTable(tbl);
-    boolean isCompactionTable = AcidUtils.isCompactionTable(tbl.getParameters());
+    boolean isCompactionTable = AcidUtils.isFullAcidCompactionTable(tbl.getParameters());
     boolean isMmCompactionTable = AcidUtils.isMmCompactionTable(tbl.getParameters());
 
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML) && !tbl.isTemporary()) {

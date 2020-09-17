@@ -1672,7 +1672,7 @@ public final class GenMapRedUtils {
       fmd = new OrcFileMergeDesc();
     }
     fmd.setIsMmTable(fsInputDesc.isMmTable());
-    boolean isCompactionTable = AcidUtils.isCompactionTable(tblDesc.getProperties());
+    boolean isCompactionTable = AcidUtils.isFullAcidCompactionTable(tblDesc.getProperties());
     fmd.setIsCompactionTable(isCompactionTable);
     fmd.setWriteId(fsInputDesc.getTableWriteId());
     int stmtId = fsInputDesc.getStatementId();
