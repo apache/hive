@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHook;
 import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hive.common.util.HiveStringUtils;
 
 import static org.apache.hadoop.hive.ql.hooks.HookContext.HookType.*;
@@ -49,14 +48,12 @@ public class HookRunner {
   private static final String CLASS_NAME = Driver.class.getName();
   private final HiveConf conf;
   private final HooksLoader loader;
-  private LogHelper console;
 
   /**
    * Constructs a {@link HookRunner} that loads all hooks to be run via a {@link HooksLoader}.
    */
   HookRunner(HiveConf conf, SessionState.LogHelper console) {
     this.conf = conf;
-    this.console = console;
     this.loader = new HooksLoader(conf, console);
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
       addLifeTimeHook(new MetricsQueryLifeTimeHook());
@@ -71,13 +68,12 @@ public class HookRunner {
    * @param command the Hive command that is being run
    */
   void runBeforeParseHook(String command) {
-    List<QueryLifeTimeHook> queryLifeTimeHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
-    if (!queryLifeTimeHooks.isEmpty()) {
-      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder()
-          .withHiveConf(conf)
-          .withCommand(command)
-          .build();
-      for (QueryLifeTimeHook hook : queryLifeTimeHooks) {
+    List<QueryLifeTimeHook> queryHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
+    if (!queryHooks.isEmpty()) {
+      QueryLifeTimeHookContext qhc =
+          new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
+
+      for (QueryLifeTimeHook hook : queryHooks) {
         if (hook instanceof QueryLifeTimeHookWithParseHooks) {
           ((QueryLifeTimeHookWithParseHooks) hook).beforeParse(qhc);
         }
@@ -94,13 +90,12 @@ public class HookRunner {
    * @param parseError true if there was an error while parsing the command, false otherwise
    */
   void runAfterParseHook(String command, boolean parseError) {
-    List<QueryLifeTimeHook> queryLifeTimeHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
-    if (!queryLifeTimeHooks.isEmpty()) {
-      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder()
-          .withHiveConf(conf)
-          .withCommand(command)
-          .build();
-      for (QueryLifeTimeHook hook : queryLifeTimeHooks) {
+    List<QueryLifeTimeHook> queryHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
+    if (!queryHooks.isEmpty()) {
+      QueryLifeTimeHookContext qhc =
+          new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
+
+      for (QueryLifeTimeHook hook : queryHooks) {
         if (hook instanceof QueryLifeTimeHookWithParseHooks) {
           ((QueryLifeTimeHookWithParseHooks) hook).afterParse(qhc, parseError);
         }
@@ -114,13 +109,12 @@ public class HookRunner {
    * @param command the Hive command that is being run
    */
   void runBeforeCompileHook(String command) {
-    List<QueryLifeTimeHook> queryLifeTimeHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
-    if (!queryLifeTimeHooks.isEmpty()) {
-      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder()
-          .withHiveConf(conf)
-          .withCommand(command)
-          .build();
-      for (QueryLifeTimeHook hook : queryLifeTimeHooks) {
+    List<QueryLifeTimeHook> queryHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
+    if (!queryHooks.isEmpty()) {
+      QueryLifeTimeHookContext qhc =
+          new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
+
+      for (QueryLifeTimeHook hook : queryHooks) {
         hook.beforeCompile(qhc);
       }
     }
@@ -133,13 +127,12 @@ public class HookRunner {
   * @param compileError true if there was an error while compiling the command, false otherwise
   */
   void runAfterCompilationHook(String command, boolean compileError) {
-    List<QueryLifeTimeHook> queryLifeTimeHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
-    if (!queryLifeTimeHooks.isEmpty()) {
-      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder()
-          .withHiveConf(conf)
-          .withCommand(command)
-          .build();
-      for (QueryLifeTimeHook hook : queryLifeTimeHooks) {
+    List<QueryLifeTimeHook> queryHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
+    if (!queryHooks.isEmpty()) {
+      QueryLifeTimeHookContext qhc =
+          new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
+
+      for (QueryLifeTimeHook hook : queryHooks) {
         hook.afterCompile(qhc, compileError);
       }
     }
@@ -152,14 +145,12 @@ public class HookRunner {
    * @param hookContext the {@link HookContext} of the command being run
    */
   void runBeforeExecutionHook(String command, HookContext hookContext) {
-    List<QueryLifeTimeHook> queryLifeTimeHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
-    if (!queryLifeTimeHooks.isEmpty()) {
-      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder()
-          .withHiveConf(conf)
-          .withCommand(command)
-          .withHookContext(hookContext)
-          .build();
-      for (QueryLifeTimeHook hook : queryLifeTimeHooks) {
+    List<QueryLifeTimeHook> queryHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
+    if (!queryHooks.isEmpty()) {
+      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command)
+          .withHookContext(hookContext).build();
+
+      for (QueryLifeTimeHook hook : queryHooks) {
         hook.beforeExecution(qhc);
       }
     }
@@ -173,14 +164,12 @@ public class HookRunner {
    * @param executionError true if there was an error while executing the command, false otherwise
    */
   void runAfterExecutionHook(String command, HookContext hookContext, boolean executionError) {
-    List<QueryLifeTimeHook> queryLifeTimeHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
-    if (!queryLifeTimeHooks.isEmpty()) {
-      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder()
-          .withHiveConf(conf)
-          .withCommand(command)
-          .withHookContext(hookContext)
-          .build();
-      for (QueryLifeTimeHook hook : queryLifeTimeHooks) {
+    List<QueryLifeTimeHook> queryHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
+    if (!queryHooks.isEmpty()) {
+      QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command)
+          .withHookContext(hookContext).build();
+
+      for (QueryLifeTimeHook hook : queryHooks) {
         hook.afterExecution(qhc, executionError);
       }
     }
