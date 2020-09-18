@@ -4037,7 +4037,11 @@ public class HiveConf extends Configuration {
         "               are produced by this query and finish earlier will be available for querying\n" +
         "               much earlier.  Since the locks are only released once the query finishes, this\n" +
         "               does not apply if concurrency is enabled."),
-
+    HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON("hive.hdfs.encryption.shim.cache.on", true,
+        "Hive keeps a cache of hdfs encryption shims in SessionState. Each encryption shim in the cache stores a "
+            + "FileSystem object. If one of these FileSystems is closed anywhere in the system and HDFS config"
+            + "fs.hdfs.impl.disable.cache is false, its encryption shim in the cache will be unusable. "
+            + "If this is config set to false, then the encryption shim cache will be disabled."),
     HIVE_INFER_BUCKET_SORT("hive.exec.infer.bucket.sort", false,
         "If this is set, when writing partitions, the metadata will include the bucketing/sorting\n" +
         "properties with which the data was written if any (this will not overwrite the metadata\n" +

@@ -4646,8 +4646,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return false;
     }
     //Check if different encryption zones
-    HadoopShims.HdfsEncryptionShim srcHdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(srcFs);
-    HadoopShims.HdfsEncryptionShim destHdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(destFs);
+    HadoopShims.HdfsEncryptionShim srcHdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(srcFs, conf);
+    HadoopShims.HdfsEncryptionShim destHdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(destFs, conf);
     try {
       return srcHdfsEncryptionShim != null
           && destHdfsEncryptionShim != null

@@ -542,7 +542,7 @@ public class SessionState implements ISessionAuthState{
   }
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
     try {
-      return getHdfsEncryptionShim(FileSystem.get(sessionConf));
+      return getHdfsEncryptionShim(FileSystem.get(sessionConf), sessionConf);
     }
     catch(HiveException hiveException) {
       throw hiveException;
@@ -552,20 +552,30 @@ public class SessionState implements ISessionAuthState{
     }
   }
 
-  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim(FileSystem fs) throws HiveException {
-    if (!hdfsEncryptionShims.containsKey(fs.getUri())) {
-      try {
-        if ("hdfs".equals(fs.getUri().getScheme())) {
-          hdfsEncryptionShims.put(fs.getUri(), ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, sessionConf));
-        } else {
-          LOG.info("Could not get hdfsEncryptionShim, it is only applicable to hdfs filesystem.");
-        }
-      } catch (Exception e) {
-        throw new HiveException(e);
-      }
+  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim(FileSystem fs, HiveConf conf) throws HiveException {
+
+    if (!"hdfs".equals(fs.getUri().getScheme())) {
+      throw new HiveException("Unable to get hdfs encryption shim, because FileSystem URI schema is not hdfs. "
+          + "FileSystem URI: " + fs.getUri());
     }
 
-    return hdfsEncryptionShims.get(fs.getUri());
+    if (conf.getBoolVar(ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON)) {
+      if (!hdfsEncryptionShims.containsKey(fs.getUri())) {
+          hdfsEncryptionShims.put(fs.getUri(), getHdfsEncryptionShimInternal(fs));
+      }
+      return hdfsEncryptionShims.get(fs.getUri());
+
+    } else { // skip the cache
+      return getHdfsEncryptionShimInternal(fs);
+    }
+  }
+
+  private HadoopShims.HdfsEncryptionShim getHdfsEncryptionShimInternal(FileSystem fs) throws HiveException {
+    try {
+      return ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, sessionConf);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
 
   // SessionState is not available in runtime and Hive.get().getConf() is not safe to call
