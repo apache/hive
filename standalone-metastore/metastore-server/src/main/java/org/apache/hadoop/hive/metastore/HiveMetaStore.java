@@ -1784,6 +1784,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               SecurityUtils.getUser());
         }
 
+        path = wh.getDatabaseManagedPath(db).getParent();
+        if (!wh.isWritable(path)) {
+          throw new MetaException("Database not dropped since " + path + " is not writable by " +
+              SecurityUtils.getUser());
+        }
+
         Path databasePath = wh.getDnsPath(wh.getDatabasePath(db));
 
         // drop any functions before dropping db
@@ -1913,6 +1919,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           // Delete the data in the database's location only if it is a legacy db path?
           try {
             wh.deleteDir(new Path(db.getLocationUri()), true, db);
+          } catch (Exception e) {
+            LOG.error("Failed to delete database directory: " + db.getLocationUri() +
+                " " + e.getMessage());
+          }
+          try {
+            wh.deleteDir(wh.getDatabaseManagedPath(db), true, db);
           } catch (Exception e) {
             LOG.error("Failed to delete database directory: " + db.getLocationUri() +
                 " " + e.getMessage());
