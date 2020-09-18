@@ -60,6 +60,10 @@ public class ShowCreateDatabaseOperation extends DDLOperation<ShowCreateDatabase
     }
     createDbCommand.append("LOCATION\n  '");
     createDbCommand.append(database.getLocationUri()).append("'\n");
+    if (database.getManagedLocationUri() != null) {
+      createDbCommand.append("MANAGEDLOCATION\n  '");
+      createDbCommand.append(database.getManagedLocationUri()).append("'\n");
+    }
     String propertiesToString = DDLUtils.propertiesToString(database.getParameters(), null);
     if (!propertiesToString.isEmpty()) {
       createDbCommand.append("WITH DBPROPERTIES (\n");
