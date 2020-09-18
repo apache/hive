@@ -116,7 +116,6 @@ public class AcidUtils {
   public static final String CONF_ACID_KEY = "hive.doing.acid";
   public static final String BASE_PREFIX = "base_";
   public static final String COMPACTOR_TABLE_PROPERTY = "compactiontable";
-  public static final String MM_COMPACTOR_TABLE_PROPERTY = "mmcompactiontable";
   public static final PathFilter baseFileFilter = new PathFilter() {
     @Override
     public boolean accept(Path path) {
@@ -437,7 +436,7 @@ public class AcidUtils {
    * @param tblProperties table properties
    * @return true, if the tblProperties contains {@link AcidUtils#COMPACTOR_TABLE_PROPERTY}
    */
-  public static boolean isFullAcidCompactionTable(Properties tblProperties) {
+  public static boolean isCompactionTable(Properties tblProperties) {
     if (tblProperties != null && tblProperties.containsKey(COMPACTOR_TABLE_PROPERTY) && tblProperties
         .getProperty(COMPACTOR_TABLE_PROPERTY).equalsIgnoreCase("true")) {
       return true;
@@ -446,21 +445,12 @@ public class AcidUtils {
   }
 
   /**
-   * Determine if a table is used during query based compaction for CRUD tables.
+   * Determine if a table is used during query based compaction.
    * @param parameters table properties map
    * @return true, if the parameters contains {@link AcidUtils#COMPACTOR_TABLE_PROPERTY}
    */
-  public static boolean isFullAcidCompactionTable(Map<String, String> parameters) {
+  public static boolean isCompactionTable(Map<String, String> parameters) {
     return Boolean.valueOf(parameters.getOrDefault(COMPACTOR_TABLE_PROPERTY, "false"));
-  }
-
-  /**
-   * Determine if a table is used during query based compaction for MM insert-only tables.
-   * @param parameters table properties map
-   * @return true, if the parameters contains {@link AcidUtils#MM_COMPACTOR_TABLE_PROPERTY}
-   */
-  public static boolean isMmCompactionTable(Map<String, String> parameters) {
-    return Boolean.valueOf(parameters.getOrDefault(MM_COMPACTOR_TABLE_PROPERTY, "false"));
   }
 
   /**

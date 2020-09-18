@@ -163,7 +163,7 @@ public final class OrcFile extends org.apache.orc.OrcFile {
         LlapProxy.isDaemon()) {
         memory(getThreadLocalOrcLlapMemoryManager(conf));
       }
-      isCompaction = AcidUtils.isFullAcidCompactionTable(tableProperties);
+      isCompaction = AcidUtils.isCompactionTable(tableProperties);
     }
 
    /**

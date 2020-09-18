@@ -191,7 +191,7 @@ public class SplitGrouper {
           if ((op != null) && (op instanceof TableScanOperator)) {
             TableScanOperator tableScan = (TableScanOperator) op;
             PartitionDesc partitionDesc = mapWork.getAliasToPartnInfo().get(aliases.get(0));
-            isMinorCompaction &= AcidUtils.isFullAcidCompactionTable(partitionDesc.getTableDesc().getProperties());
+            isMinorCompaction &= AcidUtils.isCompactionTable(partitionDesc.getTableDesc().getProperties());
             if (!tableScan.getConf().isTranscationalTable() && !isMinorCompaction) {
               String splitPath = getFirstSplitPath(splits);
               String errorMessage =

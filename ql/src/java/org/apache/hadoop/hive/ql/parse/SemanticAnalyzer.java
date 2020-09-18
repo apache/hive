@@ -6912,7 +6912,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int totalFiles = 1;
     boolean isCompaction = false;
     if (dest_tab != null && dest_tab.getParameters() != null) {
-      isCompaction = AcidUtils.isFullAcidCompactionTable(dest_tab.getParameters());
+      isCompaction = AcidUtils.isCompactionTable(dest_tab.getParameters());
     }
 
     if (dest_tab.getNumBuckets() > 0 && !dest_tab.getBucketCols().isEmpty()) {
@@ -8861,7 +8861,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     boolean isCompaction = false;
     if (dest_tab != null && dest_tab.getParameters() != null) {
-      isCompaction = AcidUtils.isFullAcidCompactionTable(dest_tab.getParameters());
+      isCompaction = AcidUtils.isCompactionTable(dest_tab.getParameters());
     }
     Operator result = genReduceSinkPlan(
         input, partCols, sortCols, order.toString(), nullOrder.toString(),

@@ -3093,14 +3093,6 @@ public class HiveConf extends Configuration {
         "This is set to compactor from within the query based compactor. This enables the Tez SplitGrouper "
         + "to group splits based on their bucket number, so that all rows from different bucket files "
         + " for the same bucket number can end up in the same bucket file after the compaction."),
-    HIVE_COMPACTOR_HDFS_ENCRYPTION_SHIM_CACHE_OFF("hive.compactor.hdfs.encryption.shim.cache.off", true,
-        "Hive keeps a cache of encryption shims in SessionState. Each encryption shim in the cache stores a "
-            + "FileSystem object. After compaction where the session user is not the same user as the owner of the "
-            + "partition/table directory, we close all FileSystem objects associated with the user running the "
-            + "compaction, possibly closing an FS stored in the encryption shim cache. The next time query-based "
-            + "compaction is run on a table/partition owned by the same user, compaction will fail "
-            + "since the FileSystem stored in the cache was closed. "
-            + "If this is config set to true, then the encryption shim cache will not be used during compaction."),
     /**
      * @deprecated Use MetastoreConf.COMPACTOR_HISTORY_RETENTION_SUCCEEDED
      */

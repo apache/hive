@@ -31,7 +31,7 @@ public class FileMergeDesc extends AbstractOperatorDesc {
   private Long writeId;
   private int stmtId;
   private boolean isMmTable;
-  private boolean isFullAcidCompactionTable;
+  private boolean isCompactionTable;
 
   public FileMergeDesc(DynamicPartitionCtx dynPartCtx, Path outputDir) {
     this.dpCtx = dynPartCtx;
@@ -102,11 +102,11 @@ public class FileMergeDesc extends AbstractOperatorDesc {
     this.isMmTable = isMmTable;
   }
 
-  public boolean getIsFullAcidCompactionTable() {
-    return isFullAcidCompactionTable;
+  public boolean getIsCompactionTable() {
+    return isCompactionTable;
   }
 
-  public void setIsFullAcidCompactionTable(boolean isFullAcidCompactionTable) {
-    this.isFullAcidCompactionTable = isFullAcidCompactionTable;
+  public void setIsCompactionTable(boolean isCompactionTable) {
+    this.isCompactionTable = isCompactionTable;
   }
 }

@@ -353,11 +353,11 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   }
 
   /**
-   * @return true, if the table is used during compaction of full acid table
+   * @return true, if the table is used during compaction
    */
-  public boolean isFullAcidCompactionTable() {
-    return getTable() != null ? AcidUtils.isFullAcidCompactionTable(table.getParameters())
-        : AcidUtils.isFullAcidCompactionTable(getTableInfo().getProperties());
+  public boolean isCompactionTable() {
+    return getTable() != null ? AcidUtils.isCompactionTable(table.getParameters())
+        : AcidUtils.isCompactionTable(getTableInfo().getProperties());
   }
 
   public boolean isMaterialization() {
