@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.calcite.plan.RelOptCluster;
+import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.rel.RelNode;
@@ -39,7 +40,9 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable.TableType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
 import com.google.common.collect.ImmutableList;
@@ -278,4 +281,17 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
     return digest;
   }
 
+  @Override
+  public RelOptCost computeSelfCost(RelOptPlanner planner, RelMetadataQuery mq) {
+    RelOptHiveTable hiveTable = (RelOptHiveTable) table;
+    if (hiveTable.getTableType() == TableType.NATIVE) {
+      PrunedPartitionList ppList = hiveTable.getPrunedPartitionList();
+      if (ppList == null) {
+        // This is so plans that have not had ran HivePartitionPruneRule to be
+        // considered very expensive.
+        return planner.getCostFactory().makeInfiniteCost();
+      }
+    }
+    return super.computeSelfCost(planner, mq);
+  }
 }

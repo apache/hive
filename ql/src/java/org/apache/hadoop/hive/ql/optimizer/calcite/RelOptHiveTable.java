@@ -110,8 +110,10 @@ public class RelOptHiveTable implements RelOptTable {
   private final Map<String, PrunedPartitionList>  partitionCache;
   private final Map<String, ColumnStatsList>      colStatsCache;
   private final AtomicInteger                     noColsMissingStats;
+  private final TableType                         tableType;
 
   private double                                  rowCount        = -1;
+  // This is populated through HivePartitionPruneRule and HiveFilterPartitionPruneRule
   PrunedPartitionList                             partitionList;
 
   protected static final Logger LOG = LoggerFactory.getLogger(RelOptHiveTable.class.getName());
@@ -121,7 +123,7 @@ public class RelOptHiveTable implements RelOptTable {
       RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols, List<ColumnInfo> hivePartitionCols,
       List<VirtualColumn> hiveVirtualCols, HiveConf hconf, Hive db, Map<String, Table> tabNameToTabObject,
       Map<String, PrunedPartitionList> partitionCache, Map<String, ColumnStatsList> colStatsCache,
-      AtomicInteger noColsMissingStats) {
+      AtomicInteger noColsMissingStats, TableType tableType) {
     this.schema = calciteSchema;
     this.typeFactory = typeFactory;
     this.qualifiedTblName = ImmutableList.copyOf(qualifiedTblName);
@@ -145,6 +147,7 @@ public class RelOptHiveTable implements RelOptTable {
     this.keys = constraintKeys.left;
     this.nonNullablekeys = constraintKeys.right;
     this.referentialConstraints = generateReferentialConstraints();
+    this.tableType = tableType;
   }
 
   //~ Methods ----------------------------------------------------------------
@@ -225,7 +228,7 @@ public class RelOptHiveTable implements RelOptTable {
     return new RelOptHiveTable(this.schema, this.typeFactory, this.qualifiedTblName, newRowType,
         this.hiveTblMetadata, newHiveNonPartitionCols, newHivePartitionCols, newHiveVirtualCols,
         this.hiveConf, this.db, this.tablesCache, this.partitionCache, this.colStatsCache,
-        this.noColsMissingStats);
+        this.noColsMissingStats, this.tableType);
   }
 
   // Given a key this method returns true if all of the columns in the key are not nullable
@@ -429,19 +432,20 @@ public class RelOptHiveTable implements RelOptTable {
 
   @Override
   public double getRowCount() {
+    PrunedPartitionList ppList = partitionList;
     if (rowCount == -1) {
-      if (null == partitionList) {
+      if (null == ppList) {
         // we are here either unpartitioned table or partitioned table with no
         // predicates
         try {
           HiveRulePartitionPruner pruner = new HiveRulePartitionPruner(this);
-          partitionList = pruner.getNonPruneList(hiveConf, partitionCache);
+          ppList = pruner.getNonPruneList(hiveConf, partitionCache);
         } catch (HiveException e) {
           throw new RuntimeException(e);
         }
       }
       rowCount = StatsUtils.getNumRows(hiveConf, getNonPartColumns(), hiveTblMetadata,
-          partitionList, noColsMissingStats);
+          ppList, noColsMissingStats);
     }
 
     return rowCount;
@@ -467,6 +471,15 @@ public class RelOptHiveTable implements RelOptTable {
 
   public void computePartitionList(HiveConf conf, RulePartitionPruner pruner) {
     try {
+      // Reset rowCount when the stored partitionList is set - this is for the
+      // case where getRowCount is called before the table is pruned (usually
+      // through the VolcanoPlanner or estimateRowCount).
+      rowCount = -1;
+
+      // We purposefully replace the partitionList even if there is one prior.
+      // This allows the VolcanoPlanner to explore plans where HivePartitionPruneRule
+      // is applied first and then HiveFilterPartitionPruneRule is applied (which
+      // should hopefully reduce the cost of the plan since filtering is now applied)
       partitionList = hiveTblMetadata.isPartitioned()
           ? pruner.prune(conf, partitionCache)
           : pruner.getNonPruneList(conf, partitionCache);
@@ -502,21 +515,22 @@ public class RelOptHiveTable implements RelOptTable {
       }
     }
 
-    if (null == partitionList) {
+    PrunedPartitionList ppList = (partitionList == null ? null : partitionList);
+    if (null == ppList) {
       try {
         // We could be here either because its an unpartitioned table or because
         // there are no pruning predicates on a partitioned table.
         HiveRulePartitionPruner pruner = new HiveRulePartitionPruner(this);
-        partitionList = pruner.getNonPruneList(hiveConf, partitionCache);
+        ppList = pruner.getNonPruneList(hiveConf, partitionCache);
       } catch (HiveException e) {
         throw new RuntimeException(e);
       }
     }
 
-    ColumnStatsList colStatsCached = colStatsCache.get(partitionList.getKey());
+    ColumnStatsList colStatsCached = colStatsCache.get(ppList.getKey());
     if (colStatsCached == null) {
       colStatsCached = new ColumnStatsList();
-      colStatsCache.put(partitionList.getKey(), colStatsCached);
+      colStatsCache.put(ppList.getKey(), colStatsCached);
     }
 
     // 2. Obtain Col Stats for Non Partition Cols
@@ -578,7 +592,7 @@ public class RelOptHiveTable implements RelOptTable {
       } else {
         // 2.2 Obtain col stats for partitioned table.
         try {
-          if (partitionList.getNotDeniedPartns().isEmpty()) {
+          if (ppList.getNotDeniedPartns().isEmpty()) {
             // no need to make a metastore call
             rowCount = 0;
             hiveColStats = new ArrayList<ColStatistics>();
@@ -592,7 +606,7 @@ public class RelOptHiveTable implements RelOptTable {
             colNamesFailedStats.clear();
             colStatsCached.updateState(State.COMPLETE);
           } else {
-            Statistics stats = StatsUtils.collectStatistics(hiveConf, partitionList,
+            Statistics stats = StatsUtils.collectStatistics(hiveConf, ppList,
                 hiveTblMetadata, hiveNonPartitionCols, nonPartColNamesThatRqrStats, colStatsCached,
                 nonPartColNamesThatRqrStats, true);
             rowCount = stats.getNumRows();
@@ -637,7 +651,7 @@ public class RelOptHiveTable implements RelOptTable {
       ColStatistics cStats = null;
       for (int i = 0; i < partColNamesThatRqrStats.size(); i++) {
         cStats = StatsUtils.getColStatsForPartCol(hivePartitionColsMap.get(partColIndxsThatRqrStats.get(i)),
-            new PartitionIterable(partitionList.getNotDeniedPartns()), hiveConf);
+            new PartitionIterable(ppList.getNotDeniedPartns()), hiveConf);
         hiveColStatsMap.put(partColIndxsThatRqrStats.get(i), cStats);
         colStatsCached.put(cStats.getColumnName(), cStats);
         if (LOG.isDebugEnabled()) {
@@ -762,5 +776,15 @@ public class RelOptHiveTable implements RelOptTable {
 
   public Database getDatabase() throws HiveException {
     return db.getDatabase(getHiveTableMD().getDbName());
+  }
+
+  public TableType getTableType() {
+    return tableType;
+  }
+
+  public enum TableType {
+    DRUID,
+    NATIVE,
+    JDBC
   }
 }

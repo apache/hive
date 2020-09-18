@@ -59,7 +59,9 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable.TableType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
@@ -453,7 +455,8 @@ public final class HiveMaterializedViewsRegistry {
     RelNode tableRel;
 
     // 3. Build operator
-    if (obtainTableType(viewTable) == TableType.DRUID) {
+    final TableType tableType = HiveCalciteUtil.obtainTableType(viewTable);
+    if (tableType == TableType.DRUID) {
       // Build Druid query
       String address = HiveConf.getVar(conf,
           HiveConf.ConfVars.HIVE_DRUID_BROKER_DEFAULT_ADDRESS);
@@ -490,7 +493,8 @@ public final class HiveMaterializedViewsRegistry {
       // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          conf, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger(),
+          tableType);
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
           intervals, null, null);
@@ -505,35 +509,13 @@ public final class HiveMaterializedViewsRegistry {
       // for materialized views.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
-          conf, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger());
+          conf, null, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger(),
+          tableType);
       tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);
     }
 
     return tableRel;
-  }
-
-  private static TableType obtainTableType(Table tabMetaData) {
-    if (tabMetaData.getStorageHandler() != null) {
-      final String storageHandlerStr = tabMetaData.getStorageHandler().toString();
-      if (storageHandlerStr.equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID)) {
-        return TableType.DRUID;
-      }
-
-      if (storageHandlerStr.equals(Constants.JDBC_HIVE_STORAGE_HANDLER_ID)) {
-        return TableType.JDBC;
-      }
-
-    }
-
-    return TableType.NATIVE;
-  }
-
-  //@TODO this seems to be the same as org.apache.hadoop.hive.ql.parse.CalcitePlanner.TableType.DRUID do we really need both
-  private enum TableType {
-    DRUID,
-    NATIVE,
-    JDBC
   }
 
 }

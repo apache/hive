@@ -67,10 +67,13 @@ import org.apache.calcite.sql.validate.SqlValidatorUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Pair;
 import org.apache.calcite.util.Util;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable.TableType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSqlFunction;
@@ -1258,5 +1261,26 @@ public class HiveCalciteUtil {
       }
     }
     return refs.build();
+  }
+
+  /**
+   * Returns table type from metadata information.
+   */
+  public static TableType obtainTableType(Table tabMetaData) {
+    if (tabMetaData.getStorageHandler() != null) {
+      final String storageHandlerStr = tabMetaData.getStorageHandler().toString();
+      if (storageHandlerStr
+          .equals(Constants.DRUID_HIVE_STORAGE_HANDLER_ID)) {
+        return TableType.DRUID;
+      }
+
+      if (storageHandlerStr
+          .equals(Constants.JDBC_HIVE_STORAGE_HANDLER_ID)) {
+        return TableType.JDBC;
+      }
+
+    }
+
+    return TableType.NATIVE;
   }
 }

@@ -48,15 +48,6 @@ public class ImpalaPartitionPruneRuleHelper implements PartitionPruneRuleHelper 
     this.validTxnWriteIdList = validTxnWriteIdList;
   }
 
-  /**
-   * We always need to compute the partition list because the Impala request requires
-   * all partitions and file metadata to be present.
-   */
-  @Override
-  public boolean shouldComputeWithoutFilter() {
-    return true;
-  }
-
   @Override
   public RulePartitionPruner createRulePartitionPruner(HiveTableScan scan,
       RelOptHiveTable table, HiveFilter filter) throws HiveException {

@@ -14,7 +14,7 @@ POSTHOOK: query: insert into nonacid values(1, null, 'value')
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@nonacid
-POSTHOOK: Lineage: nonacid.a1 EXPRESSION []
+POSTHOOK: Lineage: nonacid.a1 SCRIPT []
 POSTHOOK: Lineage: nonacid.key SCRIPT []
 POSTHOOK: Lineage: nonacid.value SCRIPT []
 PREHOOK: query: create table testT (key int NOT NULL enable, a1 string NOT NULL enforced, value string)

@@ -30,12 +30,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 public interface PartitionPruneRuleHelper {
 
   /**
-   * Returns true if the engine should compute the partitions if there is a Filter
-   * RelNode above the TableScan RelNode.
-   */
-  public boolean shouldComputeWithoutFilter();
-
-  /**
    * Create the engine specific RulePartitionPruner
    */
   public RulePartitionPruner createRulePartitionPruner(HiveTableScan scan,

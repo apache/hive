@@ -33,15 +33,6 @@ public class HivePartitionPruneRuleHelper implements PartitionPruneRuleHelper {
 
   protected static final Logger LOG = LoggerFactory.getLogger(HivePartitionPruneRuleHelper.class.getName());
 
-  /**
-   * For Hive, when there is no filter above the TableScan, we return false
-   * because we do not want to compute without the filter.
-   */
-  @Override
-  public boolean shouldComputeWithoutFilter() {
-    return false;
-  }
-
   @Override
   public RulePartitionPruner createRulePartitionPruner(HiveTableScan scan,
       RelOptHiveTable table, HiveFilter filter) throws HiveException {

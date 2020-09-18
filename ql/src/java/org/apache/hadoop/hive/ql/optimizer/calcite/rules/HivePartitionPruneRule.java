@@ -17,8 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
+import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
+import org.apache.calcite.plan.RelOptRuleOperand;
 import org.apache.calcite.rel.RelNode;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
@@ -31,64 +33,102 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 
 import java.util.Collections;
+import java.util.List;
 
-public class HivePartitionPruneRule extends RelOptRule {
 
-  HiveConf conf;
-
-  public HivePartitionPruneRule(HiveConf conf) {
-    super(operand(RelNode.class, operand(HiveTableScan.class, none())));
+public abstract class HivePartitionPruneRule extends RelOptRule {
+  protected final HiveConf conf;
+  protected HivePartitionPruneRule(HiveConf conf, RelOptRuleOperand operand) {
+    super(operand);
     this.conf = conf;
   }
 
-  @Override
-  public void onMatch(RelOptRuleCall call) {
-    final RelNode relNode = call.rel(0);
-    final HiveTableScan tScan = call.rel(1);
-    perform(call, relNode, tScan);
+  private int getPartitionListSize(RelOptHiveTable hiveTable) {
+    if (hiveTable.getPrunedPartitionList() == null) {
+      return Integer.MAX_VALUE;
+    }
+    return hiveTable.getPrunedPartitionList().getPartitions().size();
   }
 
-  protected void perform(RelOptRuleCall call, RelNode relNode,
-      HiveTableScan tScan) {
+  protected void perform(RelOptRuleCall call, HiveFilter filter, HiveTableScan tScan) {
+    RelOptHiveTable hiveTable = (RelOptHiveTable) tScan.getTable();
+    if (hiveTable.getName().equals(
+        SemanticAnalyzer.DUMMY_DATABASE + "." + SemanticAnalyzer.DUMMY_TABLE)) {
+      return;
+    }
+
+    FunctionHelper functionHelper = call.getPlanner().getContext().unwrap(FunctionHelper.class);
+    ValidTxnWriteIdList validTxnWriteIdList =
+      call.getPlanner().getContext().unwrap(ValidTxnWriteIdList.class);
+    PartitionPruneRuleHelper ruleHelper =
+      functionHelper.getPartitionPruneRuleHelper(validTxnWriteIdList);
+    HiveTableScan tScanCopy = tScan.copyIncludingTable(tScan.getRowType());
+    RelOptHiveTable hiveTableCopy = (RelOptHiveTable) tScanCopy.getTable();
     try {
-      FunctionHelper functionHelper = call.getPlanner().getContext().unwrap(FunctionHelper.class);
-      ValidTxnWriteIdList validTxnWriteIdList =
-          call.getPlanner().getContext().unwrap(ValidTxnWriteIdList.class);
-      PartitionPruneRuleHelper ruleHelper =
-          functionHelper.getPartitionPruneRuleHelper(validTxnWriteIdList);
-
-      HiveFilter filter = (relNode instanceof HiveFilter) ? (HiveFilter) relNode : null;
-      // For Hive, there is no need to compute partition list if no filter is used.
-      if (filter == null && !ruleHelper.shouldComputeWithoutFilter()) {
-        return;
-      }
-
-      // Original table
-      RelOptHiveTable hiveTable = (RelOptHiveTable) tScan.getTable();
-
-      // Copy original table scan and table
-      HiveTableScan tScanCopy = tScan.copyIncludingTable(tScan.getRowType());
-      RelOptHiveTable hiveTableCopy = (RelOptHiveTable) tScanCopy.getTable();
-      if (hiveTable.getName().equals(
-          SemanticAnalyzer.DUMMY_DATABASE + "." + SemanticAnalyzer.DUMMY_TABLE)) {
-        return;
-      }
-
       RulePartitionPruner pruner = ruleHelper.createRulePartitionPruner(tScanCopy, hiveTableCopy,
           filter);
-
       hiveTableCopy.computePartitionList(conf, pruner);
-
-      if (StringUtils.equals(hiveTableCopy.getPartitionListKey(), hiveTable.getPartitionListKey())) {
-        // Nothing changed, we do not need to produce a new expression
-        return;
-      }
-
-      RelNode newRelNode =
-          relNode.copy(relNode.getTraitSet(), Collections.singletonList(tScanCopy));
-      call.transformTo(newRelNode);
     } catch (HiveException e) {
       throw new RuntimeException(e);
+    }
+
+    if (StringUtils.equals(hiveTableCopy.getPartitionListKey(), hiveTable.getPartitionListKey())) {
+      // Nothing changed, we do not need to produce a new expression
+      return;
+    }
+
+    int baseParts = getPartitionListSize(hiveTable);
+    int copyParts = getPartitionListSize(hiveTableCopy);
+    if (baseParts <= copyParts) {
+      // original table has better filtering on partitions
+      return;
+    }
+
+    if (filter == null) {
+      call.transformTo(tScanCopy);
+    } else {
+      call.transformTo(filter.copy(filter.getTraitSet(), Collections.singletonList(tScanCopy)));
+    }
+  }
+
+  private static class TableScan extends HivePartitionPruneRule {
+    private TableScan(HiveConf conf) {
+      super(conf, operand(HiveTableScan.class, any()));
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveTableScan tScan = call.rel(0);
+      if (((RelOptHiveTable) tScan.getTable()).getPrunedPartitionList() != null) {
+        // if there is a partition list at this point either this rule has already ran or
+        // the filter rule has ran.
+        return;
+      }
+      perform(call, null, tScan);
+    }
+  }
+
+  private static class FilterTableScan extends HivePartitionPruneRule {
+    private FilterTableScan(HiveConf conf) {
+      super(conf, operand(HiveFilter.class, operand(HiveTableScan.class, any())));
+    }
+
+    @Override
+    public void onMatch(RelOptRuleCall call) {
+      final HiveFilter filter = call.rel(0);
+      final HiveTableScan tScan = call.rel(1);
+      perform(call, filter, tScan);
+    }
+  }
+
+  public static HivePartitionPruneRule[] createRules(HiveConf hConf) {
+    // Creates a list of rules in the order they are designed to be applied in
+    return new HivePartitionPruneRule[] { new FilterTableScan(hConf), new TableScan(hConf) };
+  }
+
+  public static void addRules(RelOptPlanner planner, HiveConf conf) {
+    for (HivePartitionPruneRule rule : createRules(conf)) {
+      planner.addRule(rule);
     }
   }
 }
