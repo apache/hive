@@ -27,7 +27,7 @@ public class TestFunctionUtils {
   @Test
   public void testSplitQualifiedFunctionName() throws HiveException {
 
-    String function1 = "@_database1.function1";
+    String function1 = Registry.WINDOW_FUNC_PREFIX + "database1.function1";
     String function2 = "database2.function2";
 
     String[] output1 = FunctionUtils.splitQualifiedFunctionName(function1);
