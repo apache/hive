@@ -41,6 +41,8 @@ import java.util.List;
  * Function related utilities.
  */
 public final class FunctionUtils {
+  public static final String WINDOW_FUNC_PREFIX = "@_";
+
   private FunctionUtils() {
     throw new UnsupportedOperationException("FunctionUtils should not be instantiated");
   }
@@ -125,6 +127,10 @@ public final class FunctionUtils {
       return retval;
     } else if (names.length > 2) {
       throw new HiveException("Function name does not have correct format: " + functionName);
+    }
+    // This is to fix the ranger related issue : HIVE-24182
+    if (names[0].startsWith(WINDOW_FUNC_PREFIX)) {
+      names[0] = names[0].substring(2);
     }
     return names;
   }
