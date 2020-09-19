@@ -73,7 +73,7 @@ public class Registry {
   private static final Logger LOG = LoggerFactory.getLogger(FunctionRegistry.class);
 
   // prefix for window functions, to discern LEAD/LAG UDFs from window functions with the same name
-  private static final String WINDOW_FUNC_PREFIX = "@_";
+  public static final String WINDOW_FUNC_PREFIX = "@_";
 
   /**
    * The mapping from expression function names to expression classes.
