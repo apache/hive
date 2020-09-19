@@ -85,6 +85,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.llap.LlapItUtils;
 import org.apache.hadoop.hive.llap.daemon.MiniLlapCluster;
 import org.apache.hadoop.hive.llap.io.api.LlapProxy;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
@@ -1305,6 +1306,10 @@ public class QTestUtil {
     db.getConf().set("hive.server2.materializedviews.registry.impl", "DUMMY");
     HiveMaterializedViewsRegistry.get().init(db);
     db.getConf().set("hive.server2.materializedviews.registry.impl", registryImpl);
+    // setup metastore client cache
+    if (conf.getBoolVar(ConfVars.MSC_CACHE_ENABLED)) {
+      HiveMetaStoreClientWithLocalCache.init();
+    }
     drv = DriverFactory.newDriver(conf);
     pd = new ParseDriver();
     sem = new SemanticAnalyzer(queryState);

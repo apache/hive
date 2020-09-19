@@ -38,6 +38,23 @@ public class PerfLogger {
   static final private Logger LOG = LoggerFactory.getLogger(PerfLogger.class.getName());
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<>();
 
+  public static final String GET_AGGR_COL_STATS = "getAggrColStatsFor";
+  public static final String GET_AGGR_COL_STATS_2 = "getAggrColStatsFor_2";
+  public static final String LIST_PARTS_WITH_AUTH_INFO = "listPartitionsWithAuthInfo";
+  public static final String LIST_PARTS_WITH_AUTH_INFO_2 = "listPartitionsWithAuthInfo_2";
+  public static final String LIST_PARTS_BY_EXPR = "listPartitionsByExpr";
+  public static final String LIST_PARTS_SPECS_BY_EXPR = "listPartitionsSpecByExpr";
+  public static final String GET_DATABASE = "getDatabase";
+  public static final String GET_TABLE = "getTable";
+  public static final String GET_TABLE_2 = "getTable_2";
+  public static final String GET_PK = "getPrimaryKeys";
+  public static final String GET_FK = "getForeignKeys";
+  public static final String GET_UNIQ_CONSTRAINTS = "getUniqueConstraints";
+  public static final String GET_NOT_NULL_CONSTRAINTS = "getNotNullConstraints";
+  public static final String GET_TABLE_COL_STATS = "getTableColumnStatistics";
+  public static final String GET_TABLE_COL_STATS_2 = "getTableColumnStatistics_2";
+  public static final String GET_CONFIG_VAL = "getConfigValue";
+
 
   private PerfLogger() {
     // Use getPerfLogger to get an instance of PerfLogger

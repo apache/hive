@@ -60,6 +60,7 @@
     <antlr.version>3.5.2</antlr.version>
     <bonecp.version>0.8.0.RELEASE</bonecp.version>
     <apache-directory-server.version>1.5.7</apache-directory-server.version>
+    <caffeine.version>2.8.4</caffeine.version>
     <commons-dbcp.version>1.4</commons-dbcp.version>
     <commons-lang3.version>3.9</commons-lang3.version>
     <datanucleus-api-jdo.version>4.2.4</datanucleus-api-jdo.version>
@@ -393,11 +394,16 @@
       <artifactId>curator-framework</artifactId>
       <version>${curator.version}</version>
     </dependency>
-      <dependency>
-        <groupId>com.cronutils</groupId>
-        <artifactId>cron-utils</artifactId>
-        <version>${cron-utils.version}</version>
-      </dependency>
+    <dependency>
+      <groupId>com.cronutils</groupId>
+      <artifactId>cron-utils</artifactId>
+      <version>${cron-utils.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+      <version>${caffeine.version}</version>
+    </dependency>
 
     <!-- test scope dependencies -->
 
