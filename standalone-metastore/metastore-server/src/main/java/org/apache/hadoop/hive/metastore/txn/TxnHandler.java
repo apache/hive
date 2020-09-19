@@ -4163,7 +4163,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     try {
       String s = conn.getMetaData().getDatabaseProductName();
       dbProduct = DatabaseProduct.determineDatabaseProduct(s);
-      if (dbProduct.isOTHER()) {
+      if (dbProduct.isUNDEFINED()) {
         String msg = "Unrecognized database product name <" + s + ">";
         LOG.error(msg);
         throw new IllegalStateException(msg);

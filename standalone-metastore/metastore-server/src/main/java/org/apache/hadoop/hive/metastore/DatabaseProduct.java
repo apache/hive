@@ -36,6 +36,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Preconditions;
+
 /** Database product inferred via JDBC. Encapsulates all SQL logic associated with
  * the database product.
  * This class is a singleton, which is instantiated the first time
@@ -45,64 +47,87 @@ import org.slf4j.LoggerFactory;
 public class DatabaseProduct implements Configurable {
   static final private Logger LOG = LoggerFactory.getLogger(DatabaseProduct.class.getName());
 
-  private static enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, EXTERNAL, OTHER};
+  private static enum DbType {DERBY, MYSQL, POSTGRES, ORACLE, SQLSERVER, CUSTOM, UNDEFINED};
   public DbType dbType;
   
   // Singleton instance
   private static DatabaseProduct theDatabaseProduct;
-
-  static {
-    final Configuration conf = MetastoreConf.newMetastoreConf();
-    // Check if we are using an external database product
-    boolean isExternal = MetastoreConf.getBoolVar(conf, ConfVars.USE_CUSTOM_RDBMS);
-
-    if (isExternal) {
-      // The DatabaseProduct will be created by instantiating an external class via
-      // reflection. The external class can override any method in the current class
-      String className = MetastoreConf.getVar(conf, ConfVars.CUSTOM_RDBMS_CLASSNAME);
-      
-      if (className != null) {
-        try {
-          theDatabaseProduct = (DatabaseProduct)
-              ReflectionUtils.newInstance(Class.forName(className), conf);
-
-          theDatabaseProduct.dbType = DbType.EXTERNAL;
-        }catch (Exception e) {
-          LOG.warn("Unable to instantiate custom database product. Reverting to default", e);
-        }
-      }
-      else {
-        LOG.warn("metastore.use.custom.database.product was set, " +
-                 "but metastore.custom.database.product.classname was not. Reverting to default");
-      }
-    }
-  }
 
   /**
    * Private constructor for singleton class
    * @param id
    */
   private DatabaseProduct() {}
-  
+
   public static final String DERBY_NAME = "derby";
   public static final String SQL_SERVER_NAME = "microsoft sql server";
   public static final String MYSQL_NAME = "mysql";
   public static final String POSTGRESQL_NAME = "postgresql";
   public static final String ORACLE_NAME = "oracle";
-  public static final String OTHER_NAME = "other";
+  public static final String UNDEFINED_NAME = "other";
   
   /**
    * Determine the database product type
    * @param productName string to defer database connection
    * @return database product type
    */
-  public static DatabaseProduct determineDatabaseProduct(String productName) {
+  public static DatabaseProduct determineDatabaseProduct(String productName, Configuration c) {
     DbType dbt;
 
-    if (productName == null) {
-      productName = OTHER_NAME;
+    if (theDatabaseProduct != null) {
+      Preconditions.checkState(theDatabaseProduct.dbType == getDbType(productName));
+      return theDatabaseProduct;
     }
 
+    // This method may be invoked by concurrent connections
+    synchronized (DatabaseProduct.class) {
+
+      if (productName == null) {
+        productName = UNDEFINED_NAME;
+      }
+
+      dbt = getDbType(productName);
+
+      // Check for null again in case of race condition
+      if (theDatabaseProduct == null) {
+        final Configuration conf = c!= null ? c : MetastoreConf.newMetastoreConf();
+        // Check if we are using an external database product
+        boolean isExternal = MetastoreConf.getBoolVar(conf, ConfVars.USE_CUSTOM_RDBMS);
+
+        if (isExternal) {
+          // The DatabaseProduct will be created by instantiating an external class via
+          // reflection. The external class can override any method in the current class
+          String className = MetastoreConf.getVar(conf, ConfVars.CUSTOM_RDBMS_CLASSNAME);
+          
+          if (className != null) {
+            try {
+              theDatabaseProduct = (DatabaseProduct)
+                  ReflectionUtils.newInstance(Class.forName(className), conf);
+  
+              LOG.info(String.format("Using custom RDBMS %s. Overriding DbType: %s", className, dbt));
+              dbt = DbType.CUSTOM;
+            }catch (Exception e) {
+              LOG.warn("Caught exception instantiating custom database product. Reverting to " + dbt, e);
+            }
+          }
+          else {
+            LOG.warn("Unexpected: metastore.use.custom.database.product was set, " +
+                     "but metastore.custom.database.product.classname was not. Reverting to " + dbt);
+          }
+        }
+
+        if (theDatabaseProduct == null) {
+          theDatabaseProduct = new DatabaseProduct();
+        }
+      }
+  
+      theDatabaseProduct.dbType = dbt;
+    }
+    return theDatabaseProduct;
+  }
+
+  private static DbType getDbType(String productName) {
+    DbType dbt;
     productName = productName.toLowerCase();
 
     if (productName.contains(DERBY_NAME)) {
@@ -116,20 +141,15 @@ public class DatabaseProduct implements Configurable {
     } else if (productName.contains(POSTGRESQL_NAME)) {
       dbt = DbType.POSTGRES;
     } else {
-      dbt = DbType.OTHER;
+      dbt = DbType.UNDEFINED;
     }
-
-    // This method may be invoked by concurrent connections
-    synchronized (DatabaseProduct.class) {
-      if (theDatabaseProduct == null) {
-        theDatabaseProduct = new DatabaseProduct();
-      }
-  
-      theDatabaseProduct.dbType = dbt;
-    }
-    return theDatabaseProduct;
+    return dbt;
   }
 
+  public static DatabaseProduct determineDatabaseProduct(String productName) {
+    return determineDatabaseProduct(productName, null);
+  }
+  
   public final boolean isDERBY() {
     return dbType == DbType.DERBY;
   }
@@ -150,17 +170,17 @@ public class DatabaseProduct implements Configurable {
     return dbType == DbType.POSTGRES;
   }
 
-  public final boolean isEXTERNAL() {
-    return dbType == DbType.EXTERNAL;
+  public final boolean isCUSTOM() {
+    return dbType == DbType.CUSTOM;
   }
 
-  public final boolean isOTHER() {
-    return dbType == DbType.OTHER;
+  public final boolean isUNDEFINED() {
+    return dbType == DbType.UNDEFINED;
   }
 
   public boolean isDeadlock(SQLException e) {
     return e instanceof SQLTransactionRollbackException
-        || ((isMYSQL() || isPOSTGRES() || isSQLSERVER() || isEXTERNAL())
+        || ((isMYSQL() || isPOSTGRES() || isSQLSERVER() || isCUSTOM())
             && "40001".equals(e.getSQLState()))
         || (isPOSTGRES() && "40P01".equals(e.getSQLState()))
         || (isORACLE() && (e.getMessage() != null && (e.getMessage().contains("deadlock detected")
@@ -189,9 +209,9 @@ public class DatabaseProduct implements Configurable {
     case MYSQL:
     case POSTGRES:
     case ORACLE:
-    case EXTERNAL:
+    case CUSTOM:
       return dbType.name().toLowerCase();
-    case OTHER:
+    case UNDEFINED:
     default:
       return null;
     }
@@ -227,7 +247,7 @@ public class DatabaseProduct implements Configurable {
       new EnumMap<DatabaseProduct.DbType, String>(DatabaseProduct.DbType.class) {{
         put(DbType.DERBY, "{ fn timestampdiff(sql_tsi_frac_second, timestamp('" + new Timestamp(0) +
             "'), current_timestamp) } / 1000000");
-        put(DbType.EXTERNAL, "{ fn timestampdiff(sql_tsi_frac_second, timestamp('" + new Timestamp(0) +
+        put(DbType.CUSTOM, "{ fn timestampdiff(sql_tsi_frac_second, timestamp('" + new Timestamp(0) +
             "'), current_timestamp) } / 1000000");
         put(DbType.MYSQL, "round(unix_timestamp(now(3)) * 1000)");
         put(DbType.POSTGRES, "round(extract(epoch from current_timestamp) * 1000)");
@@ -239,7 +259,7 @@ public class DatabaseProduct implements Configurable {
   private static final EnumMap<DatabaseProduct.DbType, String> DB_SEED_FN =
       new EnumMap<DatabaseProduct.DbType, String>(DatabaseProduct.DbType.class) {{
         put(DbType.DERBY, "ALTER TABLE \"TXNS\" ALTER \"TXN_ID\" RESTART WITH %s");
-        put(DbType.EXTERNAL, "ALTER TABLE \"TXNS\" ALTER \"TXN_ID\" RESTART WITH %s");
+        put(DbType.CUSTOM, "ALTER TABLE \"TXNS\" ALTER \"TXN_ID\" RESTART WITH %s");
         put(DbType.MYSQL, "ALTER TABLE \"TXNS\" AUTO_INCREMENT = %s");
         put(DbType.POSTGRES, "ALTER SEQUENCE \"TXNS_TXN_ID_seq\" RESTART WITH %s");
         put(DbType.ORACLE, "ALTER TABLE \"TXNS\" MODIFY \"TXN_ID\" GENERATED BY DEFAULT AS IDENTITY (START WITH %s )");
@@ -275,7 +295,7 @@ public class DatabaseProduct implements Configurable {
     String s;
     switch (dbType) {
     case DERBY:
-    case EXTERNAL: // ANSI SQL
+    case CUSTOM: // ANSI SQL
       s = "values current_timestamp";
       break;
 
@@ -310,7 +330,7 @@ public class DatabaseProduct implements Configurable {
     String condition;
     switch (dbType) {
     case DERBY:
-    case EXTERNAL:
+    case CUSTOM:
       condition = " {fn TIMESTAMPDIFF(sql_tsi_second, " + expr + ", current_timestamp)} <= " + intervalInSeconds;
       break;
     case MYSQL:
@@ -343,7 +363,7 @@ public class DatabaseProduct implements Configurable {
       //https://docs.oracle.com/cd/E17952_01/refman-5.6-en/select.html
     case POSTGRES:
       //http://www.postgresql.org/docs/9.0/static/sql-select.html
-    case EXTERNAL: // ANSI SQL
+    case CUSTOM: // ANSI SQL
       return selectStatement + " for update";
     case SQLSERVER:
       //https://msdn.microsoft.com/en-us/library/ms189499.aspx
@@ -372,7 +392,7 @@ public class DatabaseProduct implements Configurable {
   public String addLimitClause(int numRows, String noSelectsqlQuery) throws MetaException {
     switch (dbType) {
     case DERBY:
-    case EXTERNAL: // ANSI SQL
+    case CUSTOM: // ANSI SQL
       //http://db.apache.org/derby/docs/10.7/ref/rrefsqljoffsetfetch.html
       return "select " + noSelectsqlQuery + " fetch first " + numRows + " rows only";
     case MYSQL:
@@ -415,7 +435,7 @@ public class DatabaseProduct implements Configurable {
       // https://db.apache.org/derby/docs/10.4/ref/rrefsqlj40506.html
     case ORACLE:
       // https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_9015.htm
-    case EXTERNAL: // ANSI SQL
+    case CUSTOM: // ANSI SQL
       return "LOCK TABLE \"" + txnLockTable + "\" IN " + (shared ? "SHARE" : "EXCLUSIVE") + " MODE";
     case SQLSERVER:
       // https://docs.microsoft.com/en-us/sql/t-sql/queries/hints-transact-sql-table?view=sql-server-ver15
@@ -432,7 +452,7 @@ public class DatabaseProduct implements Configurable {
     switch (dbType) {
 
     case DERBY:
-    case EXTERNAL: //ANSI SQL
+    case CUSTOM: //ANSI SQL
       stmts.add("ALTER TABLE \"TXNS\" ALTER \"TXN_ID\" RESTART WITH 1");
       stmts.add("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
           + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
@@ -464,7 +484,7 @@ public class DatabaseProduct implements Configurable {
           + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
           + "  VALUES(0, 'c', 0, 0, '', '')");
       break;
-    case OTHER:
+    case UNDEFINED:
     default:
       break;
     }
@@ -488,7 +508,7 @@ public class DatabaseProduct implements Configurable {
   public boolean supportsGetGeneratedKeys() throws MetaException {
     switch (dbType) {
     case DERBY:
-    case EXTERNAL:
+    case CUSTOM:
     case SQLSERVER:
       // The getGeneratedKeys is not supported for multi line insert
       return false;
@@ -496,7 +516,7 @@ public class DatabaseProduct implements Configurable {
     case MYSQL:
     case POSTGRES:
       return true;
-    case OTHER:
+    case UNDEFINED:
     default:
       String msg = "Unknown database product: " + dbType.toString();
       LOG.error(msg);
@@ -507,7 +527,7 @@ public class DatabaseProduct implements Configurable {
   public boolean isDuplicateKeyError(SQLException ex) {
     switch (dbType) {
     case DERBY:
-    case EXTERNAL: // ANSI SQL
+    case CUSTOM: // ANSI SQL
       if("23505".equals(ex.getSQLState())) {
         return true;
       }
@@ -593,7 +613,7 @@ public class DatabaseProduct implements Configurable {
     case MYSQL:
     case POSTGRES:
     case SQLSERVER:
-    case EXTERNAL:
+    case CUSTOM:
       for (int numRows = 0; numRows < rows.size(); numRows++) {
         if (numRows % MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_MAX_ELEMENTS_VALUES_CLAUSE) == 0) {
           if (numRows > 0) {
