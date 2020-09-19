@@ -53,11 +53,12 @@ public class DatabaseProduct implements Configurable {
   // Singleton instance
   private static DatabaseProduct theDatabaseProduct;
 
+  Configuration myConf;
   /**
-   * Private constructor for singleton class
+   * Protected constructor for singleton class
    * @param id
    */
-  private DatabaseProduct() {}
+  protected DatabaseProduct() {}
 
   public static final String DERBY_NAME = "derby";
   public static final String SQL_SERVER_NAME = "microsoft sql server";
@@ -234,7 +235,7 @@ public class DatabaseProduct implements Configurable {
    * Used in pooled connections.
    * @return
    */
-  public  String getPrepareTxnStmt() {
+  public String getPrepareTxnStmt() {
     if (isMYSQL()) {
       return "SET @@session.sql_mode=ANSI_QUOTES";
     }
@@ -674,12 +675,11 @@ public class DatabaseProduct implements Configurable {
   // ReflectionUtils.newInstance in method determineDatabaseProduct)
   @Override
   public Configuration getConf() {
-    // Nothing to do
-    return null;
+    return myConf;
   }
 
   @Override
   public void setConf(Configuration c) {
-    // Nothing to do
+    myConf = c;
   }
 }

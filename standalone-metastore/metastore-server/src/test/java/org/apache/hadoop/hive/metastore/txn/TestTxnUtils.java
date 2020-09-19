@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.metastore.DummyCustomRDBMS;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
@@ -227,6 +228,20 @@ public class TestTxnUtils {
     Assert.assertEquals("select nl_next from NEXT_LOCK_ID with (updlock)", modSql);
     modSql = sqlGenerator.addForUpdateClause("select MT_COMMENT from AUX_TABLE where MT_KEY1='CheckLock' and MT_KEY2=0");
     Assert.assertEquals("select MT_COMMENT from AUX_TABLE with (updlock) where MT_KEY1='CheckLock' and MT_KEY2=0", modSql);
+  }
+
+  @Test
+  public void testCustomRDBMS() throws Exception {
+    MetastoreConf.setBoolVar(conf, ConfVars.USE_CUSTOM_RDBMS, true);
+    MetastoreConf.setVar(conf, ConfVars.CUSTOM_RDBMS_CLASSNAME, DummyCustomRDBMS.class.getName());
+    DatabaseProduct.reset();
+    DatabaseProduct db = DatabaseProduct.determineDatabaseProduct(DatabaseProduct.UNDEFINED_NAME, conf);
+    
+    Assert.assertEquals(db.getHiveSchemaPostfix(), "DummyPostfix");
+    Assert.assertEquals(db.getDBTime(), "values current_timestamp");
+
+    Configuration c = db.getConf();
+    Assert.assertEquals(c.get("DummyKey"), "DummyValue");
   }
 
   @Before
