@@ -137,6 +137,11 @@ public class SessionState {
   private static File udfFileDir;
   private static final ConcurrentHashMap<String, String> udfLocalResource = new ConcurrentHashMap<>();//<md5sum or etag, local path>
   /**
+   * Cache for queries within this session.
+   */
+  private final ConcurrentHashMap<String, Map<Object, Object>> cache = new ConcurrentHashMap<>();
+
+  /**
    * Concurrent since SessionState is often propagated to workers in thread pools
    */
   private final Map<String, Map<String, Table>> tempTables = new ConcurrentHashMap<>();
@@ -2200,6 +2205,33 @@ public class SessionState {
 
   public long getWaitingTezSession() {
     return this.waitingTezSession;
+  }
+
+  /**
+   * Can be called when we start compilation of a query.
+   * @param queryId the unique identifier of the query
+   */
+  public void startScope(String queryId) {
+    Map<Object, Object> existingVal = cache.put(queryId, new HashMap<>());
+    Preconditions.checkState(existingVal == null);
+  }
+
+  /**
+   * Can be called when we end compilation of a query.
+   * @param queryId the unique identifier of the query
+   */
+  public void endScope(String queryId) {
+    Map<Object, Object> existingVal = cache.remove(queryId);
+    Preconditions.checkState(existingVal != null);
+  }
+
+  /**
+   * Retrieves the query cache for the given query.
+   * @param queryId the unique identifier of the query
+   * @return the cache for the query
+   */
+  public Map<Object, Object> getQueryCache(String queryId) {
+    return cache.get(queryId);
   }
 }
 
