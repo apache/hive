@@ -21,7 +21,7 @@ package org.apache.impala.catalog;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.impala.catalog.MetaStoreClientPool.MetaStoreClient;
 import org.apache.impala.catalog.GetPartialCatalogObjectRequestBuilder;
 import org.apache.impala.common.InternalException;
@@ -147,7 +147,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     invalidateTbl(testDbName, testTblName);
     long prevVersion =
       catalog_.getOrLoadTable(testDbName, testTblName, "test", null).getCatalogVersion();
-    ValidWriteIdList validWriteIdList = getValidWriteIdList(testDbName, testTblName);
+    ValidReaderWriteIdList validWriteIdList = getValidWriteIdList(testDbName, testTblName);
     TGetPartialCatalogObjectRequest req = new GetPartialCatalogObjectRequestBuilder()
       .db(testDbName)
       .tbl(testTblName)
@@ -178,7 +178,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     // do some hive operations to advance the writeIds in HMS
     executeHiveSql("insert into " + getTestTblName() + " values (2)");
     // get the latest validWriteIdList
-    ValidWriteIdList validWriteIdList = getValidWriteIdList(testDbName, testTblName);
+    ValidReaderWriteIdList validWriteIdList = getValidWriteIdList(testDbName, testTblName);
     TGetPartialCatalogObjectRequest req = new GetPartialCatalogObjectRequestBuilder()
       .db(testDbName)
       .tbl(testTblName)
@@ -205,7 +205,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     Table tbl = catalog_.getOrLoadTable(testDbName, testTblName, "test", null);
     Assert.assertFalse("Table must be loaded",
       tbl instanceof IncompleteTable);
-    ValidWriteIdList validWriteIdList = getValidWriteIdList(testDbName, testTblName);
+    ValidReaderWriteIdList validWriteIdList = getValidWriteIdList(testDbName, testTblName);
     // now insert into the table to advance the writeId
     executeHiveSql("insert into " + getTestTblName() + " values (2)");
     catalog_.invalidateTable(new TTableName(testDbName, testTblName), new Reference<>()
@@ -243,11 +243,11 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     long olderVersion = tbl.getCatalogVersion();
     Assert.assertFalse("Table must be loaded",
       tbl instanceof IncompleteTable);
-    ValidWriteIdList olderWriteIdList = getValidWriteIdList(testDbName,
+    ValidReaderWriteIdList olderWriteIdList = getValidWriteIdList(testDbName,
       testPartitionedTbl);
     executeHiveSql("insert into " + getPartitionedTblName() + " partition (part=2) "
       + "values (2)");
-    ValidWriteIdList currentWriteIdList = getValidWriteIdList(testDbName,
+    ValidReaderWriteIdList currentWriteIdList = getValidWriteIdList(testDbName,
       testPartitionedTbl);
     // client requests olderWriteIdList which is not loaded in Catalog, this is still a
     // cache hit scenario since catalog can satisfy what client requires without reloading
@@ -339,7 +339,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     // row 2
     executeHiveSql("insert into " + getPartitionedTblName() + " partition (part=1) "
         + "values (2)");
-    ValidWriteIdList olderWriteIdList = getValidWriteIdList(testDbName,
+    ValidReaderWriteIdList olderWriteIdList = getValidWriteIdList(testDbName,
         testPartitionedTbl);
     // row 3
     executeHiveSql("insert into " + getPartitionedTblName() + " partition (part=2) "
@@ -351,7 +351,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
         HdfsTable.FILEMETADATA_CACHE_MISS_METRIC);
     long numHits = getMetricCount(testDbName, testPartitionedTbl,
         HdfsTable.FILEMETADATA_CACHE_HIT_METRIC);
-    ValidWriteIdList currentWriteIdList = getValidWriteIdList(testDbName,
+    ValidReaderWriteIdList currentWriteIdList = getValidWriteIdList(testDbName,
         testPartitionedTbl);
     // issue a get request at latest writeIdList to trigger a load
     TGetPartialCatalogObjectRequest request = new GetPartialCatalogObjectRequestBuilder()
@@ -428,13 +428,13 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
         tbl instanceof IncompleteTable);
     // row 2, first row is in the setup method
     executeHiveSql("insert into " + getTestTblName() + " values (2)");
-    ValidWriteIdList olderWriteIdList = getValidWriteIdList(testDbName,
+    ValidReaderWriteIdList olderWriteIdList = getValidWriteIdList(testDbName,
         testTblName);
     // row 3
     executeHiveSql("insert into " + getTestTblName() + " values (3)");
     executeHiveSql(
         "alter table " + getTestTblName()+ " compact 'minor' and wait");
-    ValidWriteIdList currentWriteIdList = getValidWriteIdList(testDbName,
+    ValidReaderWriteIdList currentWriteIdList = getValidWriteIdList(testDbName,
         testTblName);
     long numMisses = getMetricCount(testDbName, testTblName,
         HdfsTable.FILEMETADATA_CACHE_MISS_METRIC);
@@ -496,7 +496,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     Table tbl = catalog_.getOrLoadTable(testDbName, testTblName, "test", null);
     Assert.assertFalse("Table must be loaded",
         tbl instanceof IncompleteTable);
-    ValidWriteIdList olderWriteIdList = getValidWriteIdList(testDbName,
+    ValidReaderWriteIdList olderWriteIdList = getValidWriteIdList(testDbName,
         testTblName);
     Assert.assertEquals(olderWriteIdList.toString(), tbl.getValidWriteIds().toString());
     TGetPartialCatalogObjectRequest request = new GetPartialCatalogObjectRequestBuilder()
@@ -518,7 +518,7 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     // as olderWriteIdList.
     executeHiveSql("insert into " + getTestTblName() + " values (1)");
     executeHiveSql("insert into " + getTestTblName() + " values (2)");
-    ValidWriteIdList newerWriteIdList = getValidWriteIdList(testDbName, testTblName);
+    ValidReaderWriteIdList newerWriteIdList = getValidWriteIdList(testDbName, testTblName);
     // the validWriteIdList itself is compatible
     Assert.assertTrue(AcidUtils.compare(newerWriteIdList, olderWriteIdList) == 0);
     // now a client with the newerValidWriteIdList must re-trigger a load
@@ -570,9 +570,9 @@ public class PartialCatalogInfoWriteIdTest extends CatalogMetastoreTestBase {
     }
   }
 
-  private ValidWriteIdList getValidWriteIdList(String db, String tbl) throws TException {
+  private ValidReaderWriteIdList getValidWriteIdList(String db, String tbl) throws TException {
     try (MetaStoreClient client = catalog_.getMetaStoreClient()) {
-      return client.getHiveClient().getValidWriteIds(db + "." + tbl);
+      return (ValidReaderWriteIdList) client.getHiveClient().getValidWriteIds(db + "." + tbl);
     }
   }
 

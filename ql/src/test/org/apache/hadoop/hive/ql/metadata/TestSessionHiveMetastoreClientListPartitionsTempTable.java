@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -45,7 +44,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -229,6 +227,12 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
   @Override
   public void testListPartitionsAllNoTable() throws Exception {
     super.testListPartitionsAllNoTable();
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  @Override
+  public void testListPartitionNamesNoTable() throws Exception {
+    super.testListPartitionNamesNoTable();
   }
 
   @Test
