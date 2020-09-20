@@ -1308,7 +1308,7 @@ public class QTestUtil {
     db.getConf().set("hive.server2.materializedviews.registry.impl", registryImpl);
     // setup metastore client cache
     if (conf.getBoolVar(ConfVars.MSC_CACHE_ENABLED)) {
-      HiveMetaStoreClientWithLocalCache.init();
+      HiveMetaStoreClientWithLocalCache.init(conf);
     }
     drv = DriverFactory.newDriver(conf);
     pd = new ParseDriver();

@@ -19,12 +19,14 @@ package org.apache.hadoop.hive.metastore;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -44,13 +46,13 @@ import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsResponse;
+import org.apache.hadoop.hive.metastore.api.ObjectDictionary;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysResponse;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableStatsResult;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
@@ -64,6 +66,8 @@ import org.apache.thrift.TException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 
@@ -74,25 +78,29 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
  * It helps to reduce the time spent in compilation by using HS2 memory more effectively, and it allows to
  * improve HMS throughput for multi-tenant workloads by reducing the number of calls it needs to serve.
  */
-public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
+public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient implements IMetaStoreClient {
+
+  private static final Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClientWithLocalCache.class);
+
+  private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
 
   private static Cache<CacheKey, Object> mscLocalCache = null;
-  private static boolean IS_CACHE_ENABLED;
-  private static long MAX_SIZE;
-  private static boolean RECORD_STATS;
+  private static long maxSize;
+  private static boolean recordStats;
   private static HashMap<Class<?>, ObjectEstimator> sizeEstimator = null;
   private static String cacheObjName = null;
 
-  public static synchronized void init() {
-    if (mscLocalCache != null) return; // init cache only once
-    Configuration metaConf = MetastoreConf.newMetastoreConf();
-    LOG.debug("Initializing local cache in HiveMetaStoreClient...");
-    MAX_SIZE = MetastoreConf.getSizeVar(metaConf, MetastoreConf.ConfVars.MSC_CACHE_MAX_SIZE);
-    IS_CACHE_ENABLED = MetastoreConf.getBoolVar(metaConf, MetastoreConf.ConfVars.MSC_CACHE_ENABLED);
-    RECORD_STATS = MetastoreConf.getBoolVar(metaConf, MetastoreConf.ConfVars.MSC_CACHE_RECORD_STATS);
-    initSizeEstimator();
-    initCache();
-    LOG.debug("Local cache initialized in HiveMetaStoreClient: " + mscLocalCache);
+  public static synchronized void init(Configuration conf) {
+    // init cache only once
+    if (!INITIALIZED.get()) {
+      LOG.info("Initializing local cache in HiveMetaStoreClient...");
+      maxSize = MetastoreConf.getSizeVar(conf, MetastoreConf.ConfVars.MSC_CACHE_MAX_SIZE);
+      recordStats = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.MSC_CACHE_RECORD_STATS);
+      initSizeEstimator();
+      initCache();
+      LOG.info("Local cache initialized in HiveMetaStoreClient: {}", mscLocalCache);
+      INITIALIZED.set(true);
+    }
   }
 
   public HiveMetaStoreClientWithLocalCache(Configuration conf) throws MetaException {
@@ -166,15 +174,15 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     LIST_PARTITIONS_AUTH_INFO_REQ(GetPartitionsPsWithAuthResponse.class, GetPartitionsPsWithAuthRequest.class),
     // GetPartitionsByNamesResult <-- getPartitionsByNamesInternal(GetPartitionsByNamesRequest gpbnr)
     // Stored individually as:
-    // Partition <-- String db_name, String tbl_name, List<String> partValues, boolean get_col_stats,
+    // Pair<Partition, ObjectDictionary> <-- String db_name, String tbl_name, List<String> partValues, boolean get_col_stats,
     //      List<string> processorCapabilities, String processorIdentifier, String engine,
     //      String validWriteIdList, (TableWatermark tw ?)
-    PARTITIONS_BY_NAMES(Partition.class, String.class, String.class, List.class, boolean.class,
+    PARTITIONS_BY_NAMES(Pair.class, String.class, String.class, List.class, boolean.class,
         List.class, String.class, String.class, String.class, TableWatermark.class),
     // GetValidWriteIdsResponse <-- getValidWriteIdsInternal(GetValidWriteIdsRequest rqst)
     // Stored individually as:
-    // TableValidWriteIds <-- String fullTableName, String validTxnList, long writeId, (long tableId ?)
-    VALID_WRITE_IDS(TableValidWriteIds.class, String.class, String.class, long.class, long.class);
+    // TableValidWriteIds <-- String fullTableName, String validTxnList, long writeId
+    VALID_WRITE_IDS(TableValidWriteIds.class, String.class, String.class, long.class);
 
     private final List<Class<?>> keyClass;
     private final Class<?> valueClass;
@@ -234,13 +242,13 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     int initSize = 100;
     Caffeine<CacheKey, Object> cacheBuilder = Caffeine.newBuilder()
         .initialCapacity(initSize)
-        .maximumWeight(MAX_SIZE)
+        .maximumWeight(maxSize)
         .weigher(HiveMetaStoreClientWithLocalCache::getWeight)
         .removalListener((key, val, cause) -> {
           if (LOG.isDebugEnabled()) {
             LOG.debug("Caffeine - ({}, {}) was removed ({})", key, val, cause);
           }});
-    if (RECORD_STATS) {
+    if (recordStats) {
       cacheBuilder.recordStats();
     }
     mscLocalCache = cacheBuilder.build();
@@ -249,37 +257,34 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
 
   @Override
   protected PartitionsByExprResult getPartitionsByExprInternal(PartitionsByExprRequest req) throws TException {
-    PartitionsByExprResult r;
+    if (isCacheEnabledAndInitialized()) {
+      // table should be transactional to get responses from the cache
+      TableWatermark watermark = new TableWatermark(
+          req.getValidWriteIdList(), getTable(req.getDbName(), req.getTblName()).getId());
+      if (watermark.isValid()) {
+        CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, watermark, req);
+        PartitionsByExprResult r = (PartitionsByExprResult) mscLocalCache.getIfPresent(cacheKey);
+        if (r == null) {
+          r = super.getPartitionsByExprInternal(req);
+          mscLocalCache.put(cacheKey, r);
+        }
 
-    // table should be transactional to get responses from the cache
-    TableWatermark watermark = new TableWatermark(
-        req.getValidWriteIdList(), req.getId());
-    if (isCacheEnabledAndInitialized() && watermark.isValid()) {
-      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, req);
-      r = (PartitionsByExprResult) mscLocalCache.getIfPresent(cacheKey);
-      if (r == null) {
-        r = super.getPartitionsByExprInternal(req);
-        mscLocalCache.put(cacheKey, r);
-      }
+        if (LOG.isDebugEnabled() && recordStats) {
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        }
 
-      if (LOG.isDebugEnabled() && RECORD_STATS) {
-        LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        return r;
       }
-    } else {
-      r = super.getPartitionsByExprInternal(req);
     }
 
-    return r;
+    return super.getPartitionsByExprInternal(req);
   }
 
   @Override
   protected TableStatsResult getTableColumnStatisticsInternal(TableStatsRequest req) throws TException {
     if (isCacheEnabledAndInitialized()) {
-      Table tbl = getTable(req.getDbName(), req.getTblName());
-      String validWriteIdList = getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName()));
-      long tableId = tbl.getId();
       TableWatermark watermark = new TableWatermark(
-          validWriteIdList, tableId);
+          req.getValidWriteIdList(), getTable(req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         // 1) Retrieve from the cache those ids present, gather the rest
@@ -301,7 +306,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
         // 5) Sort result (in case there is any assumption) and return
         TableStatsResult result = computeTableColumnStatisticsFinal(req, colStats, newColStats);
 
-        if (LOG.isDebugEnabled() && RECORD_STATS) {
+        if (LOG.isDebugEnabled() && recordStats) {
           LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
         }
         return result;
@@ -313,20 +318,17 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
   @Override
   protected AggrStats getAggrStatsForInternal(PartitionsStatsRequest req) throws TException {
     if (isCacheEnabledAndInitialized()) {
-      Table tbl = getTable(req.getDbName(), req.getTblName());
-      String validWriteIdList = getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName()));
-      long tableId = tbl.getId();
       TableWatermark watermark = new TableWatermark(
-          validWriteIdList, tableId);
+          req.getValidWriteIdList(), getTable(req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
-        CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, req, watermark);
+        CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, watermark, req);
         AggrStats r = (AggrStats) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
           r = super.getAggrStatsForInternal(req);
           mscLocalCache.put(cacheKey, r);
         }
 
-        if (LOG.isDebugEnabled() && RECORD_STATS) {
+        if (LOG.isDebugEnabled() && recordStats) {
           LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
         }
         return r;
@@ -340,33 +342,30 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
   protected GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest rqst) throws TException {
     if (isCacheEnabledAndInitialized()) {
       String dbName = parseDbName(rqst.getDb_name(), conf)[1];
-      Table tbl = getTable(dbName, rqst.getTbl_name());
-      String validWriteIdList = getValidWriteIdList(TableName.getDbTable(dbName, rqst.getTbl_name()));
-      long tableId = tbl.getId();
       TableWatermark watermark = new TableWatermark(
-          validWriteIdList, tableId);
+          rqst.getValidWriteIdList(), getTable(dbName, rqst.getTbl_name()).getId());
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         // 1) Retrieve from the cache those ids present, gather the rest
-        Pair<List<Partition>, List<String>> p = getPartitionsByNamesCache(
+        Pair<List<Pair<Partition, ObjectDictionary>>, List<String>> p = getPartitionsByNamesCache(
             cache, rqst, watermark);
         List<String> partitionsMissing = p.getRight();
-        List<Partition> partitions = p.getLeft();
+        List<Pair<Partition, ObjectDictionary>> partitions = p.getLeft();
         // 2) If they were all present in the cache, return
         if (partitionsMissing.isEmpty()) {
-          return new GetPartitionsByNamesResult(partitions);
+          return computePartitionsByNamesFinal(rqst, partitions, ImmutableList.of());
         }
         // 3) If they were not, gather the remaining
         GetPartitionsByNamesRequest newRqst = new GetPartitionsByNamesRequest(rqst);
         newRqst.setNames(partitionsMissing);
         GetPartitionsByNamesResult r = super.getPartitionsByNamesInternal(newRqst);
         // 4) Populate the cache
-        List<Partition> newPartitions = loadPartitionsByNamesCache(
+        List<Pair<Partition, ObjectDictionary>> newPartitions = loadPartitionsByNamesCache(
             cache, r, rqst, watermark);
         // 5) Sort result (in case there is any assumption) and return
         GetPartitionsByNamesResult result = computePartitionsByNamesFinal(rqst, partitions, newPartitions);
 
-        if (LOG.isDebugEnabled() && RECORD_STATS) {
+        if (LOG.isDebugEnabled() && recordStats) {
           LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
         }
 
@@ -383,7 +382,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
    * @return boolean
    */
   private boolean isCacheEnabledAndInitialized() {
-    return IS_CACHE_ENABLED && mscLocalCache != null;
+    return INITIALIZED.get();
   }
 
 
@@ -392,10 +391,10 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     List<String> colStatsMissing = new ArrayList<>();
     List<ColumnStatisticsObj> colStats = new ArrayList<>();
     for (String colName : rqst.getColNames()) {
-      CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS,
+      CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS, watermark,
           rqst.getDbName(), rqst.getTblName(), colName,
           rqst.getCatName(), rqst.getValidWriteIdList(),
-          rqst.getEngine(), rqst.getId(), watermark);
+          rqst.getEngine(), rqst.getId());
       ColumnStatisticsObj v = (ColumnStatisticsObj) cache.get(cacheKey);
       if (v == null) {
         colStatsMissing.add(colName);
@@ -415,10 +414,10 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
       TableStatsResult r, TableStatsRequest rqst, TableWatermark watermark) {
     List<ColumnStatisticsObj> newColStats = new ArrayList<>();
     for (ColumnStatisticsObj colStat : r.getTableStats()) {
-      CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS,
+      CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS, watermark,
           rqst.getDbName(), rqst.getTblName(), colStat.getColName(),
           rqst.getCatName(), rqst.getValidWriteIdList(),
-          rqst.getEngine(), rqst.getId(), watermark);
+          rqst.getEngine(), rqst.getId());
       cache.put(cacheKey, colStat);
       newColStats.add(colStat);
     }
@@ -453,16 +452,16 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
   }
 
 
-  protected final Pair<List<Partition>, List<String>> getPartitionsByNamesCache(CacheI cache,
+  protected final Pair<List<Pair<Partition, ObjectDictionary>>, List<String>> getPartitionsByNamesCache(CacheI cache,
       GetPartitionsByNamesRequest rqst, TableWatermark watermark) throws MetaException {
     List<String> partitionsMissing = new ArrayList<>();
-    List<Partition> partitions = new ArrayList<>();
+    List<Pair<Partition, ObjectDictionary>> partitions = new ArrayList<>();
     for (String partitionName : rqst.getNames()) {
-      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES,
+      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES, watermark,
           rqst.getDb_name(), rqst.getTbl_name(), Warehouse.getPartValuesFromPartName(partitionName),
           rqst.isGet_col_stats(), rqst.getProcessorCapabilities(), rqst.getProcessorIdentifier(),
-          rqst.getEngine(), rqst.getValidWriteIdList(), watermark);
-      Partition v = (Partition) cache.get(cacheKey);
+          rqst.getEngine(), rqst.getValidWriteIdList(), rqst.isGetFileMetadata());
+      Pair<Partition, ObjectDictionary> v = (Pair<Partition, ObjectDictionary>) cache.get(cacheKey);
       if (v == null) {
         partitionsMissing.add(partitionName);
       } else {
@@ -477,46 +476,59 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     return Pair.of(partitions, partitionsMissing);
   }
 
-  protected final List<Partition> loadPartitionsByNamesCache(CacheI cache,
+  protected final List<Pair<Partition, ObjectDictionary>> loadPartitionsByNamesCache(CacheI cache,
       GetPartitionsByNamesResult r, GetPartitionsByNamesRequest rqst, TableWatermark watermark) {
-    List<Partition> newPartitions = new ArrayList<>();
+    List<Pair<Partition, ObjectDictionary>> newPartitions = new ArrayList<>();
     for (Partition partition : r.getPartitions()) {
-      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES,
+      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES, watermark,
           rqst.getDb_name(), rqst.getTbl_name(), partition.getValues(),
           rqst.isGet_col_stats(), rqst.getProcessorCapabilities(), rqst.getProcessorIdentifier(),
-          rqst.getEngine(), rqst.getValidWriteIdList(), watermark);
-      cache.put(cacheKey, partition);
-      newPartitions.add(partition);
+          rqst.getEngine(), rqst.getValidWriteIdList(), rqst.isGetFileMetadata());
+      Pair<Partition, ObjectDictionary> p = Pair.of(partition, r.getDictionary());
+      cache.put(cacheKey, p);
+      newPartitions.add(p);
     }
     return newPartitions;
   }
 
   protected final GetPartitionsByNamesResult computePartitionsByNamesFinal(GetPartitionsByNamesRequest rqst,
-      List<Partition> partitions, List<Partition> newPartitions) throws MetaException {
-    List<Partition> result = new ArrayList<>();
+      List<Pair<Partition, ObjectDictionary>> partitions, List<Pair<Partition, ObjectDictionary>> newPartitions)
+      throws MetaException {
+    List<Partition> resultPartitions = new ArrayList<>();
     int i = 0, j = 0;
     for (String partitionName : rqst.getNames()) {
       if (i >= partitions.size() || j >= newPartitions.size()) {
         break;
       }
       List<String> pv = Warehouse.getPartValuesFromPartName(partitionName);
-      if (partitions.get(i).getValues().equals(pv)) {
-        result.add(partitions.get(i));
+      Pair<Partition, ObjectDictionary> pi = partitions.get(i);
+      Pair<Partition, ObjectDictionary> pj = newPartitions.get(j);
+      if (pi.getLeft().getValues().equals(pv)) {
+        resultPartitions.add(pi.getLeft());
         i++;
-      } else if (newPartitions.get(j).getValues().equals(pv)) {
-        result.add(newPartitions.get(j));
+      } else if (pj.getLeft().getValues().equals(pv)) {
+        resultPartitions.add(pj.getLeft());
         j++;
       }
     }
     while (i < partitions.size()) {
-      result.add(partitions.get(i));
+      resultPartitions.add(partitions.get(i).getLeft());
       i++;
     }
     while (j < newPartitions.size()) {
-      result.add(newPartitions.get(j));
+      resultPartitions.add(newPartitions.get(j).getLeft());
       j++;
     }
-    return new GetPartitionsByNamesResult(result);
+    GetPartitionsByNamesResult result = new GetPartitionsByNamesResult(resultPartitions);
+    if (rqst.isGetFileMetadata()) {
+      // TODO: This is just choosing randomly
+      if (newPartitions.size() > 0) {
+        result.setDictionary(newPartitions.get(0).getRight());
+      } else if (partitions.size() > 0) {
+        result.setDictionary(partitions.get(0).getRight());
+      }
+    }
+    return result;
   }
 
 
@@ -526,7 +538,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     List<TableValidWriteIds> tblValidWriteIds = new ArrayList<>();
     for (String fullTableName : rqst.getFullTableNames()) {
       CacheKey cacheKey = new CacheKey(KeyType.VALID_WRITE_IDS,
-          fullTableName, rqst.getValidTxnList(), rqst.getWriteId(), -1);
+          fullTableName, rqst.getValidTxnList(), rqst.getWriteId());
       TableValidWriteIds v = (TableValidWriteIds) cache.get(cacheKey);
       if (v == null) {
         fullTableNamesMissing.add(fullTableName);
@@ -546,7 +558,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
       newTblValidWriteIds.add(tableValidWriteIds);
       // Add to the cache
       CacheKey cacheKey = new CacheKey(KeyType.VALID_WRITE_IDS,
-          tableValidWriteIds.getFullTableName(), rqst.getValidTxnList(), rqst.getWriteId(), -1);
+          tableValidWriteIds.getFullTableName(), rqst.getValidTxnList(), rqst.getWriteId());
       cache.put(cacheKey, tableValidWriteIds);
     }
     return newTblValidWriteIds;

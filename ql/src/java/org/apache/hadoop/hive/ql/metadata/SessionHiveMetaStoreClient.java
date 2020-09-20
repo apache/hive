@@ -33,6 +33,8 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.ImmutableList;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -80,6 +82,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsResponse;
+import org.apache.hadoop.hive.metastore.api.ObjectDictionary;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -2251,20 +2254,20 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     if (queryCache != null) {
       MapWrapper cache = new MapWrapper(queryCache);
       // 1) Retrieve from the cache those ids present, gather the rest
-      Pair<List<Partition>, List<String>> p = getPartitionsByNamesCache(
+      Pair<List<Pair<Partition, ObjectDictionary>>, List<String>> p = getPartitionsByNamesCache(
           cache, rqst, null);
       List<String> partitionsMissing = p.getRight();
-      List<Partition> partitions = p.getLeft();
+      List<Pair<Partition, ObjectDictionary>> partitions = p.getLeft();
       // 2) If they were all present in the cache, return
       if (partitionsMissing.isEmpty()) {
-        return new GetPartitionsByNamesResult(partitions);
+        return computePartitionsByNamesFinal(rqst, partitions, ImmutableList.of());
       }
       // 3) If they were not, gather the remaining
       GetPartitionsByNamesRequest newRqst = new GetPartitionsByNamesRequest(rqst);
       newRqst.setNames(partitionsMissing);
       GetPartitionsByNamesResult r = super.getPartitionsByNamesInternal(newRqst);
       // 4) Populate the cache
-      List<Partition> newPartitions = loadPartitionsByNamesCache(
+      List<Pair<Partition, ObjectDictionary>> newPartitions = loadPartitionsByNamesCache(
           cache, r, rqst, null);
       // 5) Sort result (in case there is any assumption) and return
       return computePartitionsByNamesFinal(rqst, partitions, newPartitions);

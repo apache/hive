@@ -89,7 +89,7 @@ public abstract class TxnCommandsBaseForTests {
 
     // set up metastore client cache
     if (hiveConf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
-      HiveMetaStoreClientWithLocalCache.init();
+      HiveMetaStoreClientWithLocalCache.init(hiveConf);
     }
   }
   protected void initHiveConf() {
