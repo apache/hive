@@ -77,6 +77,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcrossInstances {
+  private static final String NS_REMOTE = "nsRemote";
   @BeforeClass
   public static void classLevelSetup() throws Exception {
     HashMap<String, String> overrides = new HashMap<>();
@@ -1605,6 +1606,104 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   }
 
   @Test
+  public void testHdfsNamespaceLazyCopy() throws Throwable {
+    List<String> clause = getHdfsNamespaceClause();
+    primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table1 (i String)")
+            .run("insert into table1 values (1)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName, clause);
+
+    try{
+      replica.load(replicatedDbName, primaryDbName, clause);
+      Assert.fail("Expected the UnknownHostException to be thrown.");
+    } catch (IllegalArgumentException ex) {
+      assertTrue(ex.getMessage().contains("java.net.UnknownHostException: nsRemote"));
+    }
+  }
+
+  @Test
+  public void testHdfsNamespaceLazyCopyIncr() throws Throwable {
+    List<String> clause = getHdfsNamespaceClause();
+    primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table1 (i String)")
+            .run("insert into table1 values (1)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"acid_table", "table1"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"1", "2"});
+
+    primary.run("use " + primaryDbName)
+            .run("insert into table1 values (3)")
+            .run("insert into table1 values (4)")
+            .dump(primaryDbName, clause);
+    try{
+      replica.load(replicatedDbName, primaryDbName, clause);
+      Assert.fail("Expected the UnknownHostException to be thrown.");
+    } catch (IllegalArgumentException ex) {
+      assertTrue(ex.getMessage().contains("java.net.UnknownHostException: nsRemote"));
+    }
+  }
+
+  @Test
+  public void testHdfsNamespaceWithDataCopy() throws Throwable {
+    List<String> clause = getHdfsNamespaceClause();
+    //NS replacement parameters has no effect when data is also copied to staging
+    clause.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET + "'='false'");
+    primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table1 (i String)")
+            .run("insert into table1 values (1)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName, clause);
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"acid_table", "table1"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"1", "2"});
+
+    primary.run("use " + primaryDbName)
+            .run("insert into table1 values (3)")
+            .run("insert into table1 values (4)")
+            .dump(primaryDbName, clause);
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"acid_table", "table1"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"1", "2", "3", "4"});
+  }
+
+  @Test
+  public void testCreateFunctionWithHdfsNamespace() throws Throwable {
+    Path identityUdfLocalPath = new Path("../../data/files/identity_udf.jar");
+    Path identityUdf1HdfsPath = new Path(primary.functionsRoot, "idFunc1" + File.separator + "identity_udf1.jar");
+    setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
+    List<String> clause = getHdfsNamespaceClause();
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".idFunc1 as 'IdentityStringUDF' "
+            + "using jar  '" + identityUdf1HdfsPath.toString() + "'");
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, clause);
+    try{
+      replica.load(replicatedDbName, primaryDbName, clause);
+      Assert.fail("Expected the UnknownHostException to be thrown.");
+    } catch (IllegalArgumentException ex) {
+      assertTrue(ex.getMessage().contains("java.net.UnknownHostException: nsRemote"));
+    }
+  }
+
+  @Test
   public void testRangerReplicationRetryExhausted() throws Throwable {
     List<String> clause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA + "'='true'",
       "'" + HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY + "'='1s'", "'" + HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION
@@ -1962,5 +2061,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   private void setupUDFJarOnHDFS(Path identityUdfLocalPath, Path identityUdfHdfsPath) throws IOException {
     FileSystem fs = primary.miniDFSCluster.getFileSystem();
     fs.copyFromLocalFile(identityUdfLocalPath, identityUdfHdfsPath);
+  }
+
+  private List<String> getHdfsNamespaceClause() {
+    List<String> withClause = new ArrayList<>();
+    withClause.add("'" + HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE.varname + "'='true'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE_NAME.varname + "'='"
+            + NS_REMOTE + "'");
+    return withClause;
   }
 }

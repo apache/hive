@@ -424,6 +424,20 @@ public class ReplChangeManager {
     return encodedUri;
   }
 
+  public static String encodeFileUri(String fileUriStr, String fileChecksum, String cmroot, String encodedSubDir) {
+    String encodedUri = fileUriStr;
+    if ((fileChecksum != null) && (cmroot != null)) {
+      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum + URI_FRAGMENT_SEPARATOR + cmroot;
+    } else {
+      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + URI_FRAGMENT_SEPARATOR;
+    }
+    encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + ((encodedSubDir != null) ? encodedSubDir : "");
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Encoded URI: " + encodedUri);
+    }
+    return encodedUri;
+  }
+
   /***
    * Split uri with fragment into file uri, subdirs, checksum and source cmroot uri.
    * Currently using fileuri#checksum#cmrooturi#subdirs as the format.
