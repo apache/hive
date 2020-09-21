@@ -194,14 +194,11 @@ public class ExecuteStatementAnalyzer extends SemanticAnalyzer{
       SemanticAnalyzer cachedPlan = ss.getPreparePlans().get(queryName);
 
       // make copy of the plan
-      //createTaskCopy(cachedPlan);
       createOperatorCopy(cachedPlan);
 
       // bind dynamic params
       Map<Integer, ASTNode> parameterMap = findParams(root);
       bindOperatorsWithDynamicParams(parameterMap);
-
-
 
       // reset prepare flag
       this.prepareQuery = false;
@@ -237,13 +234,11 @@ public class ExecuteStatementAnalyzer extends SemanticAnalyzer{
       Transform ppr = new PartitionPruner();
       ppr.transform(pctxt);
 
-      //pctxt.setQueryProperties(this.queryProperties);
       if (!ctx.getExplainLogical()) {
         TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf, pctxt);
         compiler.init(queryState, console, db);
         compiler.compile(pctxt, rootTasks, inputs, outputs);
         fetchTask = pctxt.getFetchTask();
-        //fetchTask = makeCopy(cachedPlan.getFetchTask(), cachedPlan.getFetchTask().getClass());
       }
     } else {
       throw new SemanticException("No existing plan found for the execute statement. "

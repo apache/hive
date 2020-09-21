@@ -387,9 +387,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected volatile boolean disableJoinMerge = false;
   protected final boolean defaultJoinMerge;
 
-  /*
-   * This is used by prepare/execute statement
-   * Prepare/Execute requires operators to be copied and cached
+  /**
+   * This is required by prepare/execute statement
+   * Original operator tree { @link topOps} shape is changed when going through transformations
+   * and task generation, as a result original operator tree can not be used later to
+   * e.g. regenerate tasks or re-running physical transformations.
+   * Therefore we need to make a copy and cache it after operator tree is generated.
    */
   protected Map<String, TableScanOperator> topOpsCopy = null;
 

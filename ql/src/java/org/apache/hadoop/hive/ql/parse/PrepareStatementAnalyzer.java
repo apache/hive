@@ -58,6 +58,9 @@ public class PrepareStatementAnalyzer extends CalcitePlanner{
     ss.getPreparePlans().put(queryName, this);
   }
 
+  /**
+   * This method makes a copy of the given object by serialization/de-serialization
+   */
   private <T> T makeCopy(final Object task, Class<T> objClass) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     SerializationUtilities.serializePlan(task, baos);
