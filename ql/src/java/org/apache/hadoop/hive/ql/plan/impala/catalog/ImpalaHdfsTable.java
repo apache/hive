@@ -219,6 +219,7 @@ public class ImpalaHdfsTable extends HdfsTable {
 
   public static GetPartitionsByNamesRequest getPartitionsByNamesRequest(Set<String> names,
       Table msTbl, HiveConf conf, boolean fetchFileMetadata, ValidWriteIdList writeIdList) {
+    //TODO: CDPD-17400: Need to populate tableId once it is a field in the request structure.
     GetPartitionsByNamesRequest request = new GetPartitionsByNamesRequest();
     request.setDb_name(MetaStoreUtils.prependCatalogToDbName(msTbl.getDbName(), conf));
     request.setTbl_name(msTbl.getTableName());
@@ -240,6 +241,7 @@ public class ImpalaHdfsTable extends HdfsTable {
     request.setDbName(msTable_.getDbName());
     request.setTblName(msTable_.getTableName());
     request.setGetFileMetadata(true);
+    request.setId(msTable_.getId());
     Preconditions.checkState(
         !AcidUtils.isTransactionalTable(msTable_) || compileTimeWriteIdList != null,
         "Transaction tables must provide a ValidWriteIdList");
