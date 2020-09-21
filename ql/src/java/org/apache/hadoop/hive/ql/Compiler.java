@@ -218,7 +218,12 @@ public class Compiler {
     }
 
     // Do semantic analysis and plan generation
-    sem.analyze(tree, context);
+    try {
+      sem.startAnalysis();
+      sem.analyze(tree, context);
+    } finally {
+      sem.endAnalysis();
+    }
 
     if (executeHooks) {
       hookCtx.update(sem);

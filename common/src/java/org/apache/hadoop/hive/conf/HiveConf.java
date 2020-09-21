@@ -488,7 +488,7 @@ public class HiveConf extends Configuration {
    */
   public static enum ConfVars {
     MSC_CACHE_ENABLED("hive.metastore.client.cache.enabled", true,
-            "This property enables a Caffeiene Cache for Metastore client"),
+            "This property enables a Caffeine Cache for Metastore client"),
     MSC_CACHE_MAX_SIZE("hive.metastore.client.cache.maxSize", "1Gb", new SizeValidator(),
             "Set the maximum size (number of bytes) of the metastore client cache (DEFAULT: 1GB). " +
                     "Only in effect when the cache is enabled"),
@@ -2604,6 +2604,9 @@ public class HiveConf extends Configuration {
             + "The probe side for the row-level filtering is generated either statically in the case of expressions or dynamically for joins"
             + "e.g., use the cached MapJoin hashtable created on the small table side to filter out row columns that are not going "
             + "to be used when reading the large table data. This will result less CPU cycles spent for decoding unused data."),
+
+    HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED("hive.optimize.metadata.query.cache.enabled", true,
+        "This property enables caching metadata for repetitive requests on a per-query basis"),
 
     // CTE
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", 3,
