@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable.TableType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 
@@ -134,8 +135,10 @@ public class HiveTableScan extends TableScan implements HiveRelNode {
    * be a subset of this TS schema. Copies underlying RelOptHiveTable object
    * too.
    */
-  public HiveTableScan copyIncludingTable(RelDataType newRowtype) {
-    return new HiveTableScan(getCluster(), getTraitSet(), ((RelOptHiveTable) table).copy(newRowtype, true), this.tblAlias, this.concatQbIDAlias,
+  public HiveTableScan copyIncludingTable(RelDataType newRowtype,
+      PartitionPruneRuleHelper ruleHelper) {
+    return new HiveTableScan(getCluster(), getTraitSet(),
+        ((RelOptHiveTable) table).copy(newRowtype, ruleHelper, true), this.tblAlias, this.concatQbIDAlias,
         newRowtype, this.useQBIdInDigest, this.insideView);
   }
 

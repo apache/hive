@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.plan.impala.prune;
 
+import com.google.common.base.Preconditions;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -24,6 +25,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RulePartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
@@ -39,21 +41,26 @@ public class ImpalaPartitionPruneRuleHelper implements PartitionPruneRuleHelper 
 
   private final ImpalaQueryContext queryContext;
   private final RexBuilder rexBuilder;
-  private final ValidTxnWriteIdList validTxnWriteIdList;
 
-  public ImpalaPartitionPruneRuleHelper(ImpalaQueryContext queryContext, RexBuilder rexBuilder,
-      ValidTxnWriteIdList validTxnWriteIdList) {
+  public ImpalaPartitionPruneRuleHelper(ImpalaQueryContext queryContext, RexBuilder rexBuilder) {
     this.queryContext = queryContext;
     this.rexBuilder = rexBuilder;
-    this.validTxnWriteIdList = validTxnWriteIdList;
   }
 
   @Override
   public RulePartitionPruner createRulePartitionPruner(HiveTableScan scan,
       RelOptHiveTable table, HiveFilter filter) throws HiveException {
     try {
-      return new ImpalaRulePartitionPruner(scan, table, filter, queryContext, rexBuilder,
-          validTxnWriteIdList);
+      if (queryContext.isLoadingMaterializedViews()) {
+        // When we are loading materialized views, we don't have a transaction manager.
+        // In this case, we use the default Hive pruner to load in the partitions which
+        // does not require the transaction manager. It's not really an issue with
+        // materialized views since the partitions aren't used to return any data (i.e.
+        // they are not stored in the partitionCache within RelOptHiveTable).
+        PartitionPruneRuleHelper defaultRuleHelper = new HivePartitionPruneRuleHelper();
+        return defaultRuleHelper.createRulePartitionPruner(scan, table, filter);
+      }
+      return new ImpalaRulePartitionPruner(table, filter, queryContext, rexBuilder);
     } catch (ImpalaException|MetaException e) {
       throw new HiveException(e);
     }

@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.Engine;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -91,6 +92,7 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.plan.impala.ImpalaHelper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
@@ -135,6 +137,7 @@ public abstract class BaseSemanticAnalyzer {
   protected Context ctx;
   protected Map<String, String> idToTableNameMap;
   protected QueryProperties queryProperties;
+  protected ImpalaHelper impalaHelper;
 
   /**
    * A set of FileSinkOperators being written to in an ACID compliant way.  We need to remember
@@ -283,6 +286,14 @@ public abstract class BaseSemanticAnalyzer {
 
   public void initCtx(Context ctx) {
     this.ctx = ctx;
+    try {
+      impalaHelper = isImpalaPlan(conf)
+          ? new ImpalaHelper(conf, SessionState.get().getCurrentDatabase(),
+             StringUtils.defaultString(SessionState.get().getUserName()), getTxnMgr(), ctx)
+          : null;
+    } catch (SemanticException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   public void analyze(ASTNode ast, Context ctx) throws SemanticException {
@@ -1842,4 +1853,7 @@ public abstract class BaseSemanticAnalyzer {
     // Nothing to do
   }
 
+  public static boolean isImpalaPlan(HiveConf conf) {
+    return conf.getEngine() == Engine.IMPALA;
+  }
 }

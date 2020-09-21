@@ -124,7 +124,7 @@ public interface FunctionHelper {
   /**
    * Returns the helper needed to do partition pruning.
    */
-  PartitionPruneRuleHelper getPartitionPruneRuleHelper(ValidTxnWriteIdList validTxnWriteIdList);
+  PartitionPruneRuleHelper getPartitionPruneRuleHelper();
 
   /**
    * Folds expression according to function semantics.

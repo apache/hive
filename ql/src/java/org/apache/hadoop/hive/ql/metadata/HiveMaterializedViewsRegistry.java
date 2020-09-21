@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable.TableType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
@@ -488,10 +489,22 @@ public final class HiveMaterializedViewsRegistry {
 
       List<Interval> intervals = Collections.singletonList(DruidTable.DEFAULT_INTERVAL);
       rowType = dtFactory.createStructType(druidColTypes, druidColNames);
+      // We can pass null for Hive object because it is only used to retrieve tables
+      // if constraints on a table object are existing, but constraints cannot be defined
+      // for materialized views.
+      // We use the HivePartitionPruneRuleHelper right now instead of an engine specific pruner.
+      // The Impala Pruner currently relies on a specific query being run, as it takes a
+      // "QueryContext" in its constructor. While it might be more aesthetic to use the correct
+      // pruner, it isn't really necessary. The key portion needed is the "rowCount" and this
+      // doesn't change based on the engine. Furthermore, the partitionCache is not saved when this
+      // RelOptHiveTable is copied out of the registry, so there is no meaningful reason to
+      // run an engine specific pruner. CDPD-17742 is filed to take care of this in the future, but
+      // when we do this, it is preferable to retrieve the code via a "Helper" method so we do not
+      // have any "engine" mentioned in this code.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
           conf, db, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger(),
-          tableType);
+          tableType, new HivePartitionPruneRuleHelper());
       DruidTable druidTable = new DruidTable(new DruidSchema(address, address, false),
           dataSource, RelDataTypeImpl.proto(rowType), metrics, DruidTable.DEFAULT_TIMESTAMP_COLUMN,
           intervals, null, null);
@@ -501,10 +514,15 @@ public final class HiveMaterializedViewsRegistry {
           optTable, druidTable, ImmutableList.<RelNode>of(scan), ImmutableMap.of());
     } else {
       // Build Hive Table Scan Rel.
+      // We can pass null for Hive object because it is only used to retrieve tables
+      // if constraints on a table object are existing, but constraints cannot be defined
+      // for materialized views.
+      // See comment in the "if" portion as to why we pass in the engine specific
+      // HivePartitionPruneRuleHelper.
       RelOptHiveTable optTable = new RelOptHiveTable(null, cluster.getTypeFactory(), fullyQualifiedTabName,
           rowType, viewTable, nonPartitionColumns, partitionColumns, new ArrayList<>(),
           conf, db, new HashMap<>(), new HashMap<>(), new HashMap<>(), new AtomicInteger(),
-          tableType);
+          tableType, new HivePartitionPruneRuleHelper());
       tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
           viewTable.getTableName(), null, false, false);
     }

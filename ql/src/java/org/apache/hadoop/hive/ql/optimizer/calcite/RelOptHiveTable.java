@@ -65,7 +65,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulePartitionPruner;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RulePartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
@@ -112,6 +112,7 @@ public class RelOptHiveTable implements RelOptTable {
   private final Map<String, ColumnStatsList>      colStatsCache;
   private final AtomicInteger                     noColsMissingStats;
   private final TableType                         tableType;
+  private final PartitionPruneRuleHelper          pruneRuleHelper;
 
   private double                                  rowCount        = -1;
   // This is populated through HivePartitionPruneRule and HiveFilterPartitionPruneRule
@@ -124,7 +125,7 @@ public class RelOptHiveTable implements RelOptTable {
       RelDataType rowType, Table hiveTblMetadata, List<ColumnInfo> hiveNonPartitionCols, List<ColumnInfo> hivePartitionCols,
       List<VirtualColumn> hiveVirtualCols, HiveConf hconf, Hive db, Map<String, Table> tabNameToTabObject,
       Map<String, PrunedPartitionList> partitionCache, Map<String, ColumnStatsList> colStatsCache,
-      AtomicInteger noColsMissingStats, TableType tableType) {
+      AtomicInteger noColsMissingStats, TableType tableType, PartitionPruneRuleHelper pruneRuleHelper) {
     this.schema = calciteSchema;
     this.typeFactory = typeFactory;
     this.qualifiedTblName = ImmutableList.copyOf(qualifiedTblName);
@@ -149,6 +150,7 @@ public class RelOptHiveTable implements RelOptTable {
     this.nonNullablekeys = constraintKeys.right;
     this.referentialConstraints = generateReferentialConstraints();
     this.tableType = tableType;
+    this.pruneRuleHelper = pruneRuleHelper;
   }
 
   //~ Methods ----------------------------------------------------------------
@@ -199,7 +201,8 @@ public class RelOptHiveTable implements RelOptTable {
     return RelOptTableImpl.columnStrategies(this);
   }
 
-  public RelOptHiveTable copy(RelDataType newRowType, boolean sharePartitionCache) {
+  public RelOptHiveTable copy(RelDataType newRowType, PartitionPruneRuleHelper ruleHelper,
+      boolean sharePartitionCache) {
     // 1. Build map of column name to col index of original schema
     // Assumption: Hive Table can not contain duplicate column names
     Map<String, Integer> nameToColIndxMap = new HashMap<String, Integer>();
@@ -234,7 +237,7 @@ public class RelOptHiveTable implements RelOptTable {
     return new RelOptHiveTable(this.schema, this.typeFactory, this.qualifiedTblName, newRowType,
         this.hiveTblMetadata, newHiveNonPartitionCols, newHivePartitionCols, newHiveVirtualCols,
         this.hiveConf, this.db, this.tablesCache, ppCache, this.colStatsCache,
-        this.noColsMissingStats, this.tableType);
+        this.noColsMissingStats, this.tableType, ruleHelper);
   }
 
   // Given a key this method returns true if all of the columns in the key are not nullable
@@ -444,8 +447,8 @@ public class RelOptHiveTable implements RelOptTable {
         // we are here either unpartitioned table or partitioned table with no
         // predicates
         try {
-          HiveRulePartitionPruner pruner = new HiveRulePartitionPruner(this);
-          ppList = pruner.getNonPruneList(hiveConf, partitionCache);
+          RulePartitionPruner pruner = pruneRuleHelper.createRulePartitionPruner(this);
+          ppList = pruner.getPartitionPruneList(hiveTblMetadata, hiveConf, partitionCache);
         } catch (HiveException e) {
           throw new RuntimeException(e);
         }
@@ -475,7 +478,7 @@ public class RelOptHiveTable implements RelOptTable {
     return sb.toString();
   }
 
-  public void computePartitionList(HiveConf conf, RulePartitionPruner pruner) {
+  public void computePartitionList(RulePartitionPruner pruner) {
     try {
       // Reset rowCount when the stored partitionList is set - this is for the
       // case where getRowCount is called before the table is pruned (usually
@@ -486,9 +489,7 @@ public class RelOptHiveTable implements RelOptTable {
       // This allows the VolcanoPlanner to explore plans where HivePartitionPruneRule
       // is applied first and then HiveFilterPartitionPruneRule is applied (which
       // should hopefully reduce the cost of the plan since filtering is now applied)
-      partitionList = hiveTblMetadata.isPartitioned()
-          ? pruner.prune(conf, partitionCache)
-          : pruner.getNonPruneList(conf, partitionCache);
+      partitionList = pruner.getPartitionPruneList(hiveTblMetadata, hiveConf, partitionCache);
     } catch (HiveException he) {
       throw new RuntimeException(he);
     }
@@ -526,8 +527,8 @@ public class RelOptHiveTable implements RelOptTable {
       try {
         // We could be here either because its an unpartitioned table or because
         // there are no pruning predicates on a partitioned table.
-        HiveRulePartitionPruner pruner = new HiveRulePartitionPruner(this);
-        ppList = pruner.getNonPruneList(hiveConf, partitionCache);
+        RulePartitionPruner pruner = pruneRuleHelper.createRulePartitionPruner(this);
+        ppList = pruner.getPartitionPruneList(hiveTblMetadata, hiveConf, partitionCache);
       } catch (HiveException e) {
         throw new RuntimeException(e);
       }

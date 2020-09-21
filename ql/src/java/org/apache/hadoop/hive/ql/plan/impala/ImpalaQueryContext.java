@@ -21,6 +21,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -28,9 +29,13 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsTable;
 import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -54,6 +59,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
 public class ImpalaQueryContext {
@@ -66,9 +72,11 @@ public class ImpalaQueryContext {
   private final Map<String, ImpalaBasicHdfsTable> cachedTables = Maps.newHashMap();
   private final Map<String, Database> cachedDbs = Maps.newHashMap();
   private final AuthorizationFactory authFactory;
+  private final HiveTxnManager txnMgr;
+  private final Context calcitePlannerCtx;
 
   public ImpalaQueryContext(HiveConf conf, String dbname, String username,
-      TQueryOptions options) {
+      TQueryOptions options, HiveTxnManager txnMgr, Context ctx) {
     this.conf = conf;
     // TODO: replace hostname and port with configured parameter settings
     hostLocations.add(new TNetworkAddress("127.0.0.1", 22000));
@@ -88,6 +96,8 @@ public class ImpalaQueryContext {
             Maps.newHashMap());
     pruneAnalyzer =
         new ImpalaBasicAnalyzer(pruneStmtTableCache, queryCtx, authFactory, hostLocations);
+    this.txnMgr = txnMgr;
+    this.calcitePlannerCtx = ctx;
   }
 
   public Analyzer getAnalyzer() {
@@ -144,12 +154,19 @@ public class ImpalaQueryContext {
     return queryCtx;
   }
 
-  /**
-   * Get the HdfsTable. This HdfsTable differs slightly from the main HdfsTable class
-   * as existing in Impala, see ImpalaBasicHdfsTable class for details.
-   */
-  public ImpalaBasicHdfsTable getBasicTableInstance(IMetaStoreClient client, RelOptHiveTable table,
-      ValidTxnWriteIdList validTxnWriteIdList) throws HiveException {
+  public ImpalaBasicHdfsTable getBasicTable(Table msTbl) {
+    return cachedTables.get(getTableName(msTbl));
+  }
+
+  public void cacheBasicTable(Table msTbl, ImpalaBasicHdfsTable basicTable) {
+    cachedTables.put(getTableName(msTbl),basicTable);
+  }
+
+  public List<ImpalaBasicHdfsTable> getBasicTables() {
+    return ImmutableList.copyOf(cachedTables.values());
+  }
+
+  public Database getDb(RelOptHiveTable table) throws HiveException {
     Table msTbl = table.getHiveTableMD().getTTable();
     Database msDb = cachedDbs.get(msTbl.getDbName());
     if (msDb == null) {
@@ -157,43 +174,30 @@ public class ImpalaQueryContext {
       msDb = table.getDatabase();
       cachedDbs.put(msTbl.getDbName(), msDb);
     }
-    String tableName = msTbl.getDbName() + "." + msTbl.getTableName();
-    // Only store one copy for the query, so check the cache if it exists.
-    ImpalaBasicHdfsTable cachedTable = cachedTables.get(tableName);
-    if (cachedTable == null) {
-      cachedTable = createBasicHdfsTable(client, msTbl, msDb, validTxnWriteIdList);
-      cachedTables.put(tableName, cachedTable);
-    }
-    return cachedTable;
+    return msDb;
   }
 
-  private ImpalaBasicHdfsTable createBasicHdfsTable(IMetaStoreClient client, Table msTbl,
-      Database msDb, ValidTxnWriteIdList validTxnWriteIdList) throws HiveException {
-    String tableName = msTbl.getDbName() + "." + msTbl.getTableName();
-
-    ValidWriteIdList validWriteIdList = null;
-    if (validTxnWriteIdList != null) {
-      // Lets get this specific table's write id list
-      validWriteIdList =
-          validTxnWriteIdList.getTableValidWriteIdList(tableName);
-    }
-
-    ImpalaBasicHdfsTable cachedTable =
-        new ImpalaBasicHdfsTable(conf, client, msTbl, msDb, validWriteIdList);
-
-    cachedTables.put(tableName, cachedTable);
-    // The :Prune" HdfsTable holds an HdfsTable that contains all the metadata information
-    // needed for the query. This is the table that needs to be set in the analyzer.
-    TableName impalaTableName = TableName.parse(tableName);
-
-    return cachedTable;
-  }
-
-  public List<ImpalaBasicHdfsTable> getBasicTables() {
-    return ImmutableList.copyOf(cachedTables.values());
+  public boolean isLoadingMaterializedViews() {
+    return calcitePlannerCtx.isLoadingMaterializedView();
   }
 
   public void initTxnId() {
-    queryCtx.setTransaction_id(SessionState.get().getTxnMgr().getCurrentTxnId());
+    txnMgr.getCurrentTxnId();
+  }
+
+  public ValidWriteIdList getValidWriteIdList(HiveConf conf, String tableName
+      ) throws HiveException {
+    String txnString = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    // This makes a call out to HMS.
+    ValidTxnWriteIdList validTxnWriteIdList = txnMgr != null
+        ? txnMgr.getValidWriteIds(Lists.newArrayList(tableName), txnString)
+        : null;
+    return (validTxnWriteIdList != null)
+        ? validTxnWriteIdList.getTableValidWriteIdList(tableName)
+        : null;
+  }
+
+  private String getTableName(Table msTbl) {
+    return msTbl.getDbName() + "." + msTbl.getTableName();
   }
 }

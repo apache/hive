@@ -179,12 +179,12 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptMaterializationVali
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable.TableType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
 import org.apache.hadoop.hive.ql.optimizer.calcite.ImpalaTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
-import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable.TableType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveExcept;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
@@ -262,6 +262,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MarkEventRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RuleStatisticsListener;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAbstractSplitFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregationPushDownRule;
@@ -2036,18 +2037,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       setInvalidAutomaticRewritingMaterializationReason(
           materializationValidator.getAutomaticRewritingInvalidReason());
 
-      // XXX: CDPD-17313: TODO: THIS CODE NEEDS TO BE REMOVED BEFORE PHASE 5!!!!!
-      if (getTxnMgr() != null && getTxnMgr().isTxnOpen()) {
-        try {
-          List<String> tablesUsed = getTablesUsed(calciteGenPlan);
-          HivePlannerContext plannerContext =
-              (HivePlannerContext) calciteGenPlan.getCluster().getPlanner().getContext();
-          plannerContext.addResource(getQueryValidTxnWriteIdList(tablesUsed));
-        } catch (SemanticException e) {
-          throw new RuntimeException(e);
-        }
-      }
-
       // 2. Apply pre-join order optimizations
       calcitePreCboPlan = applyPreJoinOrderingTransforms(calciteGenPlan,
           mdProvider.getMetadataProvider(), executorProvider);
@@ -2245,6 +2234,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 6. Apply Partition Pruning
       if (!ctx.isLoadingMaterializedView()) {
+        // this step primes the cache containing the validTxnWriteIdList.  It will fetch
+        // all the tables into the MetaStore Client cache with one HMS call. These are
+        // uses within the partition prune rule.
+        callAndCacheValidTxnWriteIdList(basePlan);
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
             HivePartitionPruneRule.createRules(conf));
         generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
@@ -2352,7 +2345,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               // otherwise the planner will throw an Exception (different planners)
               final RelNode viewScan = materialization.tableRel;
               final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
-                  optCluster, viewScan);
+                  optCluster, viewScan, functionHelper.getPartitionPruneRuleHelper());
               return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
                   materialization.qualifiedTableName);
             })
@@ -3336,7 +3329,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 intervals, null, null);
             optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
                 rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats, tableType);
+                db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats,
+                tableType, functionHelper.getPartitionPruneRuleHelper());
             final TableScan scan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
                 optTable, null == tableAlias ? tabMetaData.getTableName() : tableAlias,
                 getAliasId(tableAlias, qb), HiveConf.getBoolVar(conf,
@@ -3347,7 +3341,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           } else {
             optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
                   rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-                  db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats, tableType);
+                  db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats,
+                  tableType, functionHelper.getPartitionPruneRuleHelper());
             final HiveTableScan hts = new HiveTableScan(cluster,
                   cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
                   null == tableAlias ? tabMetaData.getTableName() : tableAlias,
@@ -3393,7 +3388,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
           fullyQualifiedTabName.add(tabMetaData.getTableName());
           optTable = new RelOptHiveTable(relOptSchema, relOptSchema.getTypeFactory(), fullyQualifiedTabName,
               rowType, tabMetaData, nonPartitionColumns, partitionColumns, virtualCols, conf,
-              db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats, tableType);
+              db, tabNameToTabObject, partitionCache, colStatsCache, noColsMissingStats,
+              tableType, functionHelper.getPartitionPruneRuleHelper());
           // Build Hive Table Scan Rel
           tableRel = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), optTable,
               null == tableAlias ? tabMetaData.getTableName() : tableAlias,
@@ -5508,6 +5504,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private QBParseInfo getQBParseInfo(QB qb) throws CalciteSemanticException {
       return qb.getParseInfo();
+    }
+
+    private void callAndCacheValidTxnWriteIdList(RelNode relNode) {
+      // No validTxnWriteIdList if there is no open transaction
+      if (getTxnMgr() == null || !getTxnMgr().isTxnOpen()) {
+        return;
+      }
+      try {
+        List<String> tablesUsed = getTablesUsed(relNode);
+        getQueryValidTxnWriteIdList(tablesUsed);
+      } catch (SemanticException e) {
+        LOG.info("Call to cache validTxnWriteIdList failed.");
+      }
     }
   }
 

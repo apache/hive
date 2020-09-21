@@ -34,4 +34,12 @@ public interface PartitionPruneRuleHelper {
    */
   public RulePartitionPruner createRulePartitionPruner(HiveTableScan scan,
       RelOptHiveTable table, HiveFilter filter) throws HiveException;
+
+  /**
+   * Create the engine specific RulePartitionPruner
+   */
+  default public RulePartitionPruner createRulePartitionPruner(
+      RelOptHiveTable table) throws HiveException {
+    return createRulePartitionPruner(null, table, null);
+  }
 }

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 
 import java.util.Map;
@@ -44,4 +45,11 @@ public interface RulePartitionPruner {
    */
   public PrunedPartitionList getNonPruneList(HiveConf conf,
       Map<String, PrunedPartitionList> partitionCache) throws HiveException;
+
+  public default PrunedPartitionList getPartitionPruneList(Table table, HiveConf conf,
+      Map<String, PrunedPartitionList> partitionCache) throws HiveException {
+    return table.isPartitioned()
+        ? prune(conf, partitionCache)
+        : getNonPruneList(conf, partitionCache);
+  }
 }

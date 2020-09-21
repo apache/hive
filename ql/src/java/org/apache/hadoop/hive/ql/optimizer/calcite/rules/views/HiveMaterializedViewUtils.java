@@ -58,6 +58,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveGroupingID;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.parse.DruidSqlOperatorConverter;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.TxnIdUtils;
@@ -339,21 +340,23 @@ public class HiveMaterializedViewUtils {
    * Method that will recreate the plan rooted at node using the cluster given
    * as a parameter.
    */
-  public static RelNode copyNodeNewCluster(RelOptCluster optCluster, RelNode node) {
+  public static RelNode copyNodeNewCluster(RelOptCluster optCluster, RelNode node,
+      PartitionPruneRuleHelper ruleHelper) {
     if (node instanceof Filter) {
       final Filter f = (Filter) node;
       return new HiveFilter(optCluster, f.getTraitSet(),
-          copyNodeNewCluster(optCluster, f.getInput()), f.getCondition());
+          copyNodeNewCluster(optCluster, f.getInput(), ruleHelper), f.getCondition());
     } else if (node instanceof Project) {
       final Project p = (Project) node;
-      return HiveProject.create(optCluster, copyNodeNewCluster(optCluster, p.getInput()),
-          p.getChildExps(), p.getRowType(), Collections.emptyList());
+      return HiveProject.create(optCluster, copyNodeNewCluster(optCluster, p.getInput(),
+          ruleHelper), p.getChildExps(), p.getRowType(), Collections.emptyList());
     } else {
-      return copyNodeScanNewCluster(optCluster, node);
+      return copyNodeScanNewCluster(optCluster, node, ruleHelper);
     }
   }
 
-  private static RelNode copyNodeScanNewCluster(RelOptCluster optCluster, RelNode scan) {
+  private static RelNode copyNodeScanNewCluster(RelOptCluster optCluster, RelNode scan,
+      PartitionPruneRuleHelper ruleHelper) {
     final RelNode newScan;
     if (scan instanceof DruidQuery) {
       final DruidQuery dq = (DruidQuery) scan;
@@ -368,7 +371,8 @@ public class HiveMaterializedViewUtils {
           DruidSqlOperatorConverter.getDefaultMap());
     } else {
       RelDataType rowType = scan.getTable().getRowType();
-      RelOptHiveTable newTable = ((RelOptHiveTable) scan.getTable()).copy(rowType, false);
+      RelOptHiveTable newTable =
+          ((RelOptHiveTable) scan.getTable()).copy(rowType, ruleHelper, false);
       newScan = new HiveTableScan(optCluster, optCluster.traitSetOf(HiveRelNode.CONVENTION),
         newTable, ((RelOptHiveTable) scan.getTable()).getName(), null, false, false);
     }

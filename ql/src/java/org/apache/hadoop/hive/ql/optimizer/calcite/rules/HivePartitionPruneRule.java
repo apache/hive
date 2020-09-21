@@ -58,16 +58,14 @@ public abstract class HivePartitionPruneRule extends RelOptRule {
     }
 
     FunctionHelper functionHelper = call.getPlanner().getContext().unwrap(FunctionHelper.class);
-    ValidTxnWriteIdList validTxnWriteIdList =
-      call.getPlanner().getContext().unwrap(ValidTxnWriteIdList.class);
     PartitionPruneRuleHelper ruleHelper =
-      functionHelper.getPartitionPruneRuleHelper(validTxnWriteIdList);
-    HiveTableScan tScanCopy = tScan.copyIncludingTable(tScan.getRowType());
+      functionHelper.getPartitionPruneRuleHelper();
+    HiveTableScan tScanCopy = tScan.copyIncludingTable(tScan.getRowType(), ruleHelper);
     RelOptHiveTable hiveTableCopy = (RelOptHiveTable) tScanCopy.getTable();
     try {
       RulePartitionPruner pruner = ruleHelper.createRulePartitionPruner(tScanCopy, hiveTableCopy,
           filter);
-      hiveTableCopy.computePartitionList(conf, pruner);
+      hiveTableCopy.computePartitionList(pruner);
     } catch (HiveException e) {
       throw new RuntimeException(e);
     }

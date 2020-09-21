@@ -59,12 +59,14 @@ public class ImpalaFunctionHelper implements FunctionHelper {
   private final RexExecutor rexExecutor;
   private final ImpalaQueryContext queryContext;
   private final RexBuilder rexBuilder;
+  private final PartitionPruneRuleHelper pruneRuleHelper;
 
   public ImpalaFunctionHelper(ImpalaQueryContext queryContext, RexBuilder builder) {
     this.factory = new RexNodeExprFactory(builder, this);
     this.rexExecutor = new ImpalaRexExecutorImpl(queryContext);
     this.queryContext = queryContext;
     this.rexBuilder = builder;
+    this.pruneRuleHelper = new ImpalaPartitionPruneRuleHelper(queryContext, rexBuilder);
   }
 
   /**
@@ -95,9 +97,8 @@ public class ImpalaFunctionHelper implements FunctionHelper {
    * {@inheritDoc}
    */
   @Override
-  public PartitionPruneRuleHelper getPartitionPruneRuleHelper(
-      ValidTxnWriteIdList validTxnWriteIdList) {
-    return new ImpalaPartitionPruneRuleHelper(queryContext, rexBuilder, validTxnWriteIdList);
+  public PartitionPruneRuleHelper getPartitionPruneRuleHelper() {
+    return pruneRuleHelper;
   }
 
   /**

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
@@ -251,7 +252,6 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
-import org.apache.hadoop.hive.ql.plan.impala.ImpalaHelper;
 import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
 import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
@@ -381,7 +381,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   protected volatile boolean disableJoinMerge = false;
   protected final boolean defaultJoinMerge;
-  protected final ImpalaHelper impalaHelper;
 
   /*
    * Capture the CTE definitions in a Query.
@@ -475,11 +474,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     tabNameToTabObject = new HashMap<>();
     defaultJoinMerge = false == HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MERGE_NWAY_JOINS);
     disableJoinMerge = defaultJoinMerge;
-    SessionState sessionState = SessionState.get();
-    impalaHelper = isImpalaPlan(conf)
-        ? new ImpalaHelper(conf, sessionState.getCurrentDatabase(),
-	    StringUtils.defaultString(sessionState.getUserName()))
-        : null;
   }
 
   protected void markEvent(String event) {
@@ -15872,9 +15866,5 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.info("Ending caching scope for: {}", queryId);
       ss.endScope(queryId);
     }
-  }
-
-  public static boolean isImpalaPlan(HiveConf conf) {
-    return conf.getEngine() == Engine.IMPALA;
   }
 }

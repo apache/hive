@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.optimizer.PrunerUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulePartitionPruner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RulePartitionPruner;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaBasicAnalyzer;
@@ -68,24 +69,23 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
   private static final Logger LOG = LoggerFactory.getLogger(ImpalaRulePartitionPruner.class);
 
   private final RelOptHiveTable table;
+  private final ImpalaQueryContext queryContext;
   private final ImpalaBasicHdfsTable impalaTable;
   private final BaseTableRef baseTblRef;
   private final TupleDescriptor tupleDesc;
   private final ImpalaBasicAnalyzer analyzer;
   private final ImpalaConjuncts impalaConjuncts;
-  private final ValidTxnWriteIdList validTxnWriteIdList;
 
-  public ImpalaRulePartitionPruner(HiveTableScan scan, RelOptHiveTable table, HiveFilter filter,
-      ImpalaQueryContext queryContext, RexBuilder rexBuilder,
-      ValidTxnWriteIdList validTxnWriteIdList)
+  public ImpalaRulePartitionPruner(RelOptHiveTable table, HiveFilter filter,
+      ImpalaQueryContext queryContext, RexBuilder rexBuilder)
       throws HiveException, ImpalaException, MetaException {
     this.table = table;
-    this.validTxnWriteIdList = validTxnWriteIdList;
+    this.queryContext = queryContext;
 
     RexNode pruneNode = (filter == null) ? null : filter.getCondition();
     Preconditions.checkNotNull(queryContext);
     this.impalaTable =
-        queryContext.getBasicTableInstance(table.getMSC(), table, validTxnWriteIdList);
+        ImpalaBasicTableCreator.createAndCache(table, queryContext, table.getMSC());
 
     // Need to use a temp analyzer. The Impala PrunedPartition class requires a tableRef
     // to be registered with the analyzer. However, we don't want to pollute the analyzer
@@ -122,10 +122,10 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
   @Override
   public PrunedPartitionList prune(HiveConf conf, Map<String, PrunedPartitionList> partitionCache)
       throws HiveException {
+
     List<Expr> partitionConjuncts =
         Lists.newArrayList(impalaConjuncts.getNormalizedPartitionConjuncts());
-    // Remove "impala:" as part of CDPD-17313
-    String partitionConjunctsKey = "impala:" + PrunerUtils.getTableKey(table.getHiveTableMD()) +
+    String partitionConjunctsKey = PrunerUtils.getTableKey(table.getHiveTableMD()) +
         impalaConjuncts.createPartitionKey();
     LOG.info("Partition pruned key is : " + partitionConjunctsKey);
     PrunedPartitionList cachedValue = partitionCache.get(partitionConjunctsKey);
@@ -174,8 +174,7 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
   public PrunedPartitionList getNonPruneList(HiveConf conf,
       Map<String, PrunedPartitionList> partitionCache) throws HiveException {
     Preconditions.checkNotNull(table);
-    // Remove "impala:" as part of CDPD-17313
-    String tableKey = "impala:" + PrunerUtils.getTableKey(table.getHiveTableMD());
+    String tableKey = PrunerUtils.getTableKey(table.getHiveTableMD());
     PrunedPartitionList cachedValue = partitionCache.get(tableKey);
     if (cachedValue != null) {
       return cachedValue;

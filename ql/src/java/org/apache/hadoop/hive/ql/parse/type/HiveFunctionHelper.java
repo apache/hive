@@ -158,8 +158,7 @@ public class HiveFunctionHelper implements FunctionHelper {
    * {@inheritDoc}
    */
   @Override
-  public PartitionPruneRuleHelper getPartitionPruneRuleHelper(
-      ValidTxnWriteIdList validTxnWriteIdList) {
+  public PartitionPruneRuleHelper getPartitionPruneRuleHelper() {
     return partitionPruneRuleHelper;
   }
 

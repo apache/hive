@@ -1,0 +1,57 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.apache.hadoop.hive.ql.plan.impala.prune;
+
+import com.google.common.collect.Lists;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
+import org.apache.hadoop.hive.ql.plan.impala.ImpalaQueryContext;
+import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable;
+
+import java.util.Set;
+
+/**
+ * Class used to create an ImpalaBasicTable object. The static factory
+ * method also caches the created basic table in the QueryContext.
+ */
+public class ImpalaBasicTableCreator {
+
+  public static ImpalaBasicHdfsTable createAndCache(RelOptHiveTable table,
+      ImpalaQueryContext context, IMetaStoreClient client) throws HiveException {
+    Table msTbl = table.getHiveTableMD().getTTable();
+    // check if in cache
+    ImpalaBasicHdfsTable basicTable = context.getBasicTable(msTbl);
+    if (basicTable != null) {
+      return basicTable;
+    }
+    Database msDb = context.getDb(table);
+    String tableName = msTbl.getDbName() + "." + msTbl.getTableName();
+    HiveConf conf = context.getConf();
+    ValidWriteIdList validWriteIdList = context.getValidWriteIdList(conf, tableName);
+    basicTable = new ImpalaBasicHdfsTable(conf, client, msTbl, msDb, validWriteIdList);
+    context.cacheBasicTable(msTbl, basicTable);
+    return basicTable;
+  }
+}
