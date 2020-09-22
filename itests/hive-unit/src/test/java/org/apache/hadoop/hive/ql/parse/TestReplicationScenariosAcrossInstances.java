@@ -1630,32 +1630,24 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   @Test
   public void testHdfsNameserviceLazyCopyIncr() throws Throwable {
-    ArrayList clause = new ArrayList();
-    clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='true'");
+    List<String> clause = getHdfsNameserviceClause();
     primary.run("use " + primaryDbName)
             .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
                     "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
             .run("create table table1 (i String)")
             .run("insert into table1 values (1)")
             .run("insert into table1 values (2)")
-            .run("create external table ext_table1 (id int)")
-            .run("insert into ext_table1 values (3)")
-            .run("insert into ext_table1 values (4)")
             .dump(primaryDbName);
 
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[] {"acid_table", "table1", "ext_table1"})
+            .verifyResults(new String[] {"acid_table", "table1"})
             .run("select * from table1")
-            .verifyResults(new String[] {"1", "2"})
-            .run("select * from ext_table1")
-            .verifyResults(new String[] {"3", "4"});
+            .verifyResults(new String[] {"1", "2"});
 
-    clause.addAll(getHdfsNameserviceClause());
     primary.run("use " + primaryDbName)
-            .run("insert into table1 values (5)")
-            .run("insert into ext_table1 values (6)")
+            .run("insert into table1 values (3)")
             .dump(primaryDbName, clause);
     try{
       replica.load(replicatedDbName, primaryDbName, clause);
@@ -1676,31 +1668,23 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("create table table1 (i String)")
             .run("insert into table1 values (1)")
             .run("insert into table1 values (2)")
-            .run("create external table ext_table1 (id int)")
-            .run("insert into ext_table1 values (3)")
-            .run("insert into ext_table1 values (4)")
             .dump(primaryDbName, clause);
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[] {"acid_table", "table1", "ext_table1"})
+            .verifyResults(new String[] {"acid_table", "table1"})
             .run("select * from table1")
-            .verifyResults(new String[] {"1", "2"})
-            .run("select * from ext_table1")
-            .verifyResults(new String[] {"3", "4"});
+            .verifyResults(new String[] {"1", "2"});
 
     primary.run("use " + primaryDbName)
-            .run("insert into table1 values (5)")
-            .run("insert into ext_table1 values (6)")
+            .run("insert into table1 values (3)")
             .dump(primaryDbName, clause);
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[] {"acid_table", "table1", "ext_table1"})
+            .verifyResults(new String[] {"acid_table", "table1"})
             .run("select * from table1")
-            .verifyResults(new String[] {"1", "2", "5"})
-            .run("select * from ext_table1")
-            .verifyResults(new String[] {"3", "4", "6"});
+            .verifyResults(new String[] {"1", "2", "3"});
   }
 
   @Test
