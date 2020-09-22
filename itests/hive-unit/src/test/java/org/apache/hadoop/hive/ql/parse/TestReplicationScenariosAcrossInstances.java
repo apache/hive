@@ -1606,7 +1606,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   }
 
   @Test
-  public void testHdfsNamespaceLazyCopy() throws Throwable {
+  public void testHdfsNameserviceLazyCopy() throws Throwable {
     List<String> clause = getHdfsNameserviceClause();
     clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='true'");
     primary.run("use " + primaryDbName)
@@ -1629,7 +1629,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   }
 
   @Test
-  public void testHdfsNamespaceLazyCopyIncr() throws Throwable {
+  public void testHdfsNameserviceLazyCopyIncr() throws Throwable {
     ArrayList clause = new ArrayList();
     clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='true'");
     primary.run("use " + primaryDbName)
@@ -1666,7 +1666,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   }
 
   @Test
-  public void testHdfsNamespaceWithDataCopy() throws Throwable {
+  public void testHdfsNameserviceWithDataCopy() throws Throwable {
     List<String> clause = getHdfsNameserviceClause();
     //NS replacement parameters has no effect when data is also copied to staging
     clause.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET + "'='false'");
@@ -1704,7 +1704,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   }
 
   @Test
-  public void testCreateFunctionWithHdfsNamespace() throws Throwable {
+  public void testCreateFunctionWithHdfsNameservice() throws Throwable {
     Path identityUdfLocalPath = new Path("../../data/files/identity_udf.jar");
     Path identityUdf1HdfsPath = new Path(primary.functionsRoot, "idFunc1" + File.separator + "identity_udf1.jar");
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
