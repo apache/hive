@@ -64,7 +64,7 @@ public abstract class MessageDeserializer {
       return getAddNotNullConstraintMessage(messageBody);
     case ADD_DEFAULTCONSTRAINT:
       return getAddDefaultConstraintMessage(messageBody);
-      case ADD_CHECKCONSTRAINT:
+    case ADD_CHECKCONSTRAINT:
       return getAddCheckConstraintMessage(messageBody);
     case DROP_CONSTRAINT:
       return getDropConstraintMessage(messageBody);

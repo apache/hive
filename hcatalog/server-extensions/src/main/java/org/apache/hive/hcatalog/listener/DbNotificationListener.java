@@ -717,11 +717,11 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   public void onAddDefaultConstraint(AddDefaultConstraintEvent addDefaultConstraintEvent) throws MetaException {
     List<SQLDefaultConstraint> cols = addDefaultConstraintEvent.getDefaultConstraintCols();
     if (cols.size() > 0) {
-      AddDefaultConstraintMessage msg = MessageBuilder.getInstance()
+      AddDefaultConstraintMessage colsInMsg = MessageBuilder.getInstance()
         .buildAddDefaultConstraintMessage(addDefaultConstraintEvent.getDefaultConstraintCols());
       NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ADD_DEFAULTCONSTRAINT.toString(),
-          msgEncoder.getSerializer().serialize(msg)
+          msgEncoder.getSerializer().serialize(colsInMsg)
         );
       event.setCatName(cols.get(0).isSetCatName() ? cols.get(0).getCatName() : DEFAULT_CATALOG_NAME);
       event.setDbName(cols.get(0).getTable_db());
@@ -739,11 +739,11 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     LOG.info("Inside DBNotification listener for check constraint.");
     List<SQLCheckConstraint> cols = addCheckConstraintEvent.getCheckConstraintCols();
     if (cols.size() > 0) {
-      AddCheckConstraintMessage msg = MessageBuilder.getInstance()
+      AddCheckConstraintMessage colsInMsg = MessageBuilder.getInstance()
         .buildAddCheckConstraintMessage(addCheckConstraintEvent.getCheckConstraintCols());
       NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ADD_CHECKCONSTRAINT.toString(),
-          msgEncoder.getSerializer().serialize(msg)
+          msgEncoder.getSerializer().serialize(colsInMsg)
         );
       event.setCatName(cols.get(0).isSetCatName() ? cols.get(0).getCatName() : DEFAULT_CATALOG_NAME);
       event.setDbName(cols.get(0).getTable_db());

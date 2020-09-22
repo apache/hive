@@ -61,9 +61,9 @@ public class AddCheckConstraintHandler extends AbstractMessageHandler {
     final String actualTblName = ccs.get(0).getTable_name();
     final TableName tName = TableName.fromString(actualTblName, null, actualDbName);
 
-    for (SQLCheckConstraint nn : ccs) {
-      nn.setTable_db(actualDbName);
-      nn.setTable_name(actualTblName);
+    for (SQLCheckConstraint ck : ccs) {
+      ck.setTable_db(actualDbName);
+      ck.setTable_name(actualTblName);
     }
 
     Constraints constraints = new Constraints(null, null, null, null, null, ccs);

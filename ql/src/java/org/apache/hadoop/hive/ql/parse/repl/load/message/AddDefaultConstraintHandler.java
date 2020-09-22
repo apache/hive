@@ -60,9 +60,9 @@ public class AddDefaultConstraintHandler extends AbstractMessageHandler {
     final String actualTblName = dcs.get(0).getTable_name();
     final TableName tName = TableName.fromString(actualTblName, null, actualDbName);
 
-    for (SQLDefaultConstraint nn : dcs) {
-      nn.setTable_db(actualDbName);
-      nn.setTable_name(actualTblName);
+    for (SQLDefaultConstraint dc : dcs) {
+      dc.setTable_db(actualDbName);
+      dc.setTable_name(actualTblName);
     }
 
     Constraints constraints = new Constraints(null, null, null, null, dcs, null);

@@ -28,15 +28,15 @@ import java.util.List;
 @InterfaceAudience.Public
 @InterfaceStability.Stable
 public class AddCheckConstraintEvent extends ListenerEvent {
-  private final List<SQLCheckConstraint> ds;
+  private final List<SQLCheckConstraint> cc;
 
-  public AddCheckConstraintEvent(List<SQLCheckConstraint> ds, boolean status,
+  public AddCheckConstraintEvent(List<SQLCheckConstraint> cc, boolean status,
                                    IHMSHandler handler) {
     super(status, handler);
-    this.ds = ds;
+    this.cc = cc;
   }
 
   public List<SQLCheckConstraint> getCheckConstraintCols() {
-    return ds;
+    return cc;
   }
 }

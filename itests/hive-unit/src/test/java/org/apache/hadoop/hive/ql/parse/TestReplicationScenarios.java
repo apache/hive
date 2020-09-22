@@ -3459,7 +3459,7 @@ public class TestReplicationScenarios {
     String ukName = null;
     String fkName = null;
     String nnName = null;
-    String dkName = null;
+    String dkName1 = null;
     String ckName1 = null;
     String ckName2 = null;
     try {
@@ -3475,13 +3475,29 @@ public class TestReplicationScenarios {
       List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl6"));
       assertEquals(nns.size(), 1);
       nnName = nns.get(0).getNn_name();
-      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl9"));
+      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl9"));
       assertEquals(cks.size(), 2);
       ckName1 = cks.get(0).getDc_name();
       ckName2 = cks.get(1).getDc_name();
-      List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl10"));
+      List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
       assertEquals(dks.size(), 1);
-      dkName = dks.get(0).getDc_name();
+      dkName1 = dks.get(0).getDc_name();
+    } catch (TException te) {
+      assertNull(te);
+    }
+
+    String dkName2 = "custom_dk_name";
+    String ckName3 = "customer_ck_name";
+    run("ALTER TABLE " + dbName+ ".tbl10 CHANGE COLUMN a a string CONSTRAINT " + ckName3 + " CHECK (a like 'a%')", driver);
+    run("ALTER TABLE " + dbName+ ".tbl10 CHANGE COLUMN b b int CONSTRAINT " + dkName2 + " DEFAULT 1 ENABLE", driver);
+    incrementalLoadAndVerify(dbName, replDbName);
+    try {
+      List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
+      assertEquals(dks.size(), 2);
+      assertEquals(dks.get(1).getDefault_value(), "1");
+      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
+      assertEquals(cks.size(), 1);
+      assertEquals(cks.get(0).getDc_name(), ckName3);
     } catch (TException te) {
       assertNull(te);
     }
@@ -3492,7 +3508,9 @@ public class TestReplicationScenarios {
     run("ALTER TABLE " + dbName + ".tbl6 DROP CONSTRAINT `" + nnName + "`", driver);
     run("ALTER TABLE " + dbName + ".tbl9 DROP CONSTRAINT `" + ckName1 + "`", driver);
     run("ALTER TABLE " + dbName + ".tbl9 DROP CONSTRAINT `" + ckName2 + "`", driver);
-    run("ALTER TABLE " + dbName + ".tbl10 DROP CONSTRAINT `" + dkName + "`", driver);
+    run("ALTER TABLE " + dbName + ".tbl10 DROP CONSTRAINT `" + ckName3 + "`", driver);
+    run("ALTER TABLE " + dbName + ".tbl10 DROP CONSTRAINT `" + dkName1 + "`", driver);
+    run("ALTER TABLE " + dbName + ".tbl10 DROP CONSTRAINT `" + dkName2 + "`", driver);
 
     incrementalLoadAndVerify(dbName, replDbName);
     try {
@@ -3504,13 +3522,15 @@ public class TestReplicationScenarios {
       assertTrue(fks.isEmpty());
       List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl6"));
       assertTrue(nns.isEmpty());
-      List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl10"));
+      List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
       assertTrue(dks.isEmpty());
-      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl9"));
+      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl9"));
       assertTrue(cks.isEmpty());
-      dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl12"));
+      cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
+      assertTrue(cks.isEmpty());
+      dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl12"));
       assertTrue(dks.isEmpty());
-      cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl12"));
+      cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl12"));
       assertTrue(cks.isEmpty());
 
     } catch (TException te) {

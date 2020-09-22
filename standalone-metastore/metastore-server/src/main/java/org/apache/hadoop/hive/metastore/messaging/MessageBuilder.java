@@ -253,8 +253,8 @@ public class MessageBuilder {
   }
 
   public AddCheckConstraintMessage buildAddCheckConstraintMessage(
-    List<SQLCheckConstraint> dcs) {
-    return new JSONAddCheckConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, dcs, now());
+    List<SQLCheckConstraint> ccs) {
+    return new JSONAddCheckConstraintMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, ccs, now());
   }
 
   public DropConstraintMessage buildDropConstraintMessage(String dbName, String tableName,
