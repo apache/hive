@@ -555,8 +555,9 @@ public class SessionState implements ISessionAuthState{
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim(FileSystem fs, HiveConf conf) throws HiveException {
 
     if (!"hdfs".equals(fs.getUri().getScheme())) {
-      throw new HiveException("Unable to get hdfs encryption shim, because FileSystem URI schema is not hdfs. "
+      LOG.warn("Unable to get hdfs encryption shim, because FileSystem URI schema is not hdfs. Returning null. "
           + "FileSystem URI: " + fs.getUri());
+      return null;
     }
 
     if (conf.getBoolVar(ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON)) {
