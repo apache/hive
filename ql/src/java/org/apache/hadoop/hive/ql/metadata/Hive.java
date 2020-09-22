@@ -2762,7 +2762,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     Set<Path> validPartitions = new HashSet<Path>();
     try {
       FileSystem fs = loadPath.getFileSystem(conf);
-      if (!isMmTable || !isDirectInsert) {
+      if (!isMmTable && !isDirectInsert) {
         List<FileStatus> leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP, fs);
         // Check for empty partitions
         for (FileStatus s : leafStatus) {

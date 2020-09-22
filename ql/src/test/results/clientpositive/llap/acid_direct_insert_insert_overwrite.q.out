@@ -654,13 +654,7 @@ PREHOOK: Output: default@io_test_acid_part
 POSTHOOK: query: insert overwrite table io_test_acid_part partition (c) select a, b, c from io_test_text_1 where c is null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_1
-POSTHOOK: Output: default@io_test_acid_part@c=1111
-POSTHOOK: Output: default@io_test_acid_part@c=2222
 POSTHOOK: Output: default@io_test_acid_part@c=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=1111).a SIMPLE [(io_test_text_1)io_test_text_1.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=1111).b SIMPLE [(io_test_text_1)io_test_text_1.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=2222).a SIMPLE [(io_test_text_1)io_test_text_1.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=2222).b SIMPLE [(io_test_text_1)io_test_text_1.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(io_test_text_1)io_test_text_1.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(io_test_text_1)io_test_text_1.FieldSchema(name:b, type:int, comment:null), ]
 PREHOOK: query: select * from io_test_acid_part order by a
@@ -690,17 +684,11 @@ POSTHOOK: query: insert overwrite table io_test_acid_part partition (c) select a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_2
 POSTHOOK: Output: default@io_test_acid_part@c=1111
-POSTHOOK: Output: default@io_test_acid_part@c=2222
 POSTHOOK: Output: default@io_test_acid_part@c=4444
-POSTHOOK: Output: default@io_test_acid_part@c=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=1111).a SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=1111).b SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=2222).a SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=2222).b SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=4444).a SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=4444).b SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:b, type:int, comment:null), ]
 PREHOOK: query: select * from io_test_acid_part order by a, c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@io_test_acid_part
@@ -729,18 +717,6 @@ PREHOOK: Output: default@io_test_acid_part
 POSTHOOK: query: insert overwrite table io_test_acid_part partition (c) select a, b, c from io_test_text_2 where b=99
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_2
-POSTHOOK: Output: default@io_test_acid_part@c=1111
-POSTHOOK: Output: default@io_test_acid_part@c=2222
-POSTHOOK: Output: default@io_test_acid_part@c=4444
-POSTHOOK: Output: default@io_test_acid_part@c=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=1111).a SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=1111).b SIMPLE []
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=2222).a SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=2222).b SIMPLE []
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=4444).a SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=4444).b SIMPLE []
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
 PREHOOK: query: select * from io_test_acid_part order by a, c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@io_test_acid_part
@@ -831,12 +807,9 @@ insert overwrite table io_test_acid_part partition (c) select a, b, c where b=44
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_1
 POSTHOOK: Output: default@io_test_acid_part@c=1111
-POSTHOOK: Output: default@io_test_acid_part@c=2222
 POSTHOOK: Output: default@io_test_acid_part@c=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=1111).a SIMPLE [(io_test_text_1)io_test_text_1.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=1111).b SIMPLE [(io_test_text_1)io_test_text_1.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=2222).a SIMPLE [(io_test_text_1)io_test_text_1.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=2222).b SIMPLE [(io_test_text_1)io_test_text_1.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(io_test_text_1)io_test_text_1.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(io_test_text_1)io_test_text_1.FieldSchema(name:b, type:int, comment:null), ]
 PREHOOK: query: select * from io_test_acid_part order by a
@@ -869,18 +842,9 @@ insert overwrite table io_test_acid_part partition (c) select a, b, c where b=44
 insert overwrite table io_test_acid_part partition (c) select a, b, c where b=9
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@io_test_text_2
-POSTHOOK: Output: default@io_test_acid_part@c=1111
-POSTHOOK: Output: default@io_test_acid_part@c=2222
 POSTHOOK: Output: default@io_test_acid_part@c=4444
-POSTHOOK: Output: default@io_test_acid_part@c=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=1111).a SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=1111).b SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=2222).a SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=2222).b SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=4444).a SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: io_test_acid_part PARTITION(c=4444).b SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:b, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:a, type:int, comment:null), ]
-POSTHOOK: Lineage: io_test_acid_part PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(io_test_text_2)io_test_text_2.FieldSchema(name:b, type:int, comment:null), ]
 PREHOOK: query: select * from io_test_acid_part order by a, c
 PREHOOK: type: QUERY
 PREHOOK: Input: default@io_test_acid_part
