@@ -411,18 +411,23 @@ public class ReplChangeManager {
     if (instance == null) {
       throw new IllegalStateException("Uninitialized ReplChangeManager instance.");
     }
+    Path cmRootPath = getCmRoot(new Path(fileUriStr));
+    String cmRoot = null;
+    if (cmRootPath != null) {
+      cmRoot = FileUtils.makeQualified(cmRootPath, conf).toString();
+    }
+    return ReplChangeManager.encodeFileUri(fileUriStr, fileChecksum, cmRoot, encodedSubDir);
+  }
+
+  public static String encodeFileUri(String fileUriStr, String fileChecksum, String cmRoot, String encodedSubDir) {
     String encodedUri = fileUriStr;
-    Path cmroot = getCmRoot(new Path(fileUriStr));
-    if ((fileChecksum != null) && (cmroot != null)) {
-      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum
-              + URI_FRAGMENT_SEPARATOR + FileUtils.makeQualified(cmroot, conf);
+    if ((fileChecksum != null) && (cmRoot != null)) {
+      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum + URI_FRAGMENT_SEPARATOR + cmRoot;
     } else {
       encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + URI_FRAGMENT_SEPARATOR;
     }
     encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + ((encodedSubDir != null) ? encodedSubDir : "");
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("Encoded URI: " + encodedUri);
-    }
+    LOG.debug("Encoded URI: " + encodedUri);
     return encodedUri;
   }
 
