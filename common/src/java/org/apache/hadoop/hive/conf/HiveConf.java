@@ -523,13 +523,13 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "Inteval for cmroot cleanup thread."),
     REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE("hive.repl.ha.datapath.replace.remote.nameservice", false,
-            "When HDFS is HA enabled and both source and target clusters are configured with same nameservice names," +
-                    "enable this flag and provide a "),
+            "When HDFS is HA enabled and both source and target clusters are configured with same nameservice name," +
+                    "enable this flag and provide a new unique logical name for representing the remote cluster " +
+                    "nameservice using config " + "'hive.repl.ha.datapath.replace.remote.nameservice.name'."),
     REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE_NAME("hive.repl.ha.datapath.replace.remote.nameservice.name", null,
-            "When HDFS is HA enabled and both source and target clusters are configured with same nameservice names, " +
-                    "enable the flag 'hive.repl.ha.datapath.replace.remote.nameservice' and provide a virtual name " +
-                    " representing nameservice on the remote cluster (should be different from nameservice on local" +
-                    " cluster)"),
+            "When HDFS is HA enabled and both source and target clusters are configured with same nameservice name, " +
+                    "use this config to provide a unique logical name for nameservice on the remote cluster (should " +
+                    "be different from nameservice name on the local cluster)"),
     REPL_FUNCTIONS_ROOT_DIR("hive.repl.replica.functions.root.dir","/user/${system:user.name}/repl/functions/",
         "Root directory on the replica warehouse where the repl sub-system will store jars from the primary warehouse"),
     REPL_APPROX_MAX_LOAD_TASKS("hive.repl.approx.max.load.tasks", 10000,

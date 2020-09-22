@@ -1607,13 +1607,17 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   @Test
   public void testHdfsNamespaceLazyCopy() throws Throwable {
-    List<String> clause = getHdfsNamespaceClause();
+    List<String> clause = getHdfsNameserviceClause();
+    clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='true'");
     primary.run("use " + primaryDbName)
             .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
                     "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
-            .run("create table table1 (i String)")
+            .run("create table table1 (i int)")
             .run("insert into table1 values (1)")
             .run("insert into table1 values (2)")
+            .run("create external table ext_table1 (id int)")
+            .run("insert into ext_table1 values (3)")
+            .run("insert into ext_table1 values (4)")
             .dump(primaryDbName, clause);
 
     try{
@@ -1626,25 +1630,32 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   @Test
   public void testHdfsNamespaceLazyCopyIncr() throws Throwable {
-    List<String> clause = getHdfsNamespaceClause();
+    ArrayList clause = new ArrayList();
+    clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='true'");
     primary.run("use " + primaryDbName)
             .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
                     "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
             .run("create table table1 (i String)")
             .run("insert into table1 values (1)")
             .run("insert into table1 values (2)")
+            .run("create external table ext_table1 (id int)")
+            .run("insert into ext_table1 values (3)")
+            .run("insert into ext_table1 values (4)")
             .dump(primaryDbName);
 
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[] {"acid_table", "table1"})
+            .verifyResults(new String[] {"acid_table", "table1", "ext_table1"})
             .run("select * from table1")
-            .verifyResults(new String[] {"1", "2"});
+            .verifyResults(new String[] {"1", "2"})
+            .run("select * from ext_table1")
+            .verifyResults(new String[] {"3", "4"});
 
+    clause.addAll(getHdfsNameserviceClause());
     primary.run("use " + primaryDbName)
-            .run("insert into table1 values (3)")
-            .run("insert into table1 values (4)")
+            .run("insert into table1 values (5)")
+            .run("insert into ext_table1 values (6)")
             .dump(primaryDbName, clause);
     try{
       replica.load(replicatedDbName, primaryDbName, clause);
@@ -1656,7 +1667,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   @Test
   public void testHdfsNamespaceWithDataCopy() throws Throwable {
-    List<String> clause = getHdfsNamespaceClause();
+    List<String> clause = getHdfsNameserviceClause();
     //NS replacement parameters has no effect when data is also copied to staging
     clause.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET + "'='false'");
     primary.run("use " + primaryDbName)
@@ -1665,24 +1676,31 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
             .run("create table table1 (i String)")
             .run("insert into table1 values (1)")
             .run("insert into table1 values (2)")
+            .run("create external table ext_table1 (id int)")
+            .run("insert into ext_table1 values (3)")
+            .run("insert into ext_table1 values (4)")
             .dump(primaryDbName, clause);
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[] {"acid_table", "table1"})
+            .verifyResults(new String[] {"acid_table", "table1", "ext_table1"})
             .run("select * from table1")
-            .verifyResults(new String[] {"1", "2"});
+            .verifyResults(new String[] {"1", "2"})
+            .run("select * from ext_table1")
+            .verifyResults(new String[] {"3", "4"});
 
     primary.run("use " + primaryDbName)
-            .run("insert into table1 values (3)")
-            .run("insert into table1 values (4)")
+            .run("insert into table1 values (5)")
+            .run("insert into ext_table1 values (6)")
             .dump(primaryDbName, clause);
     replica.load(replicatedDbName, primaryDbName, clause)
             .run("use " + replicatedDbName)
             .run("show tables")
-            .verifyResults(new String[] {"acid_table", "table1"})
+            .verifyResults(new String[] {"acid_table", "table1", "ext_table1"})
             .run("select * from table1")
-            .verifyResults(new String[] {"1", "2", "3", "4"});
+            .verifyResults(new String[] {"1", "2", "5"})
+            .run("select * from ext_table1")
+            .verifyResults(new String[] {"3", "4", "6"});
   }
 
   @Test
@@ -1690,7 +1708,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     Path identityUdfLocalPath = new Path("../../data/files/identity_udf.jar");
     Path identityUdf1HdfsPath = new Path(primary.functionsRoot, "idFunc1" + File.separator + "identity_udf1.jar");
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
-    List<String> clause = getHdfsNamespaceClause();
+    List<String> clause = getHdfsNameserviceClause();
     primary.run("CREATE FUNCTION " + primaryDbName
             + ".idFunc1 as 'IdentityStringUDF' "
             + "using jar  '" + identityUdf1HdfsPath.toString() + "'");
@@ -2063,7 +2081,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     fs.copyFromLocalFile(identityUdfLocalPath, identityUdfHdfsPath);
   }
 
-  private List<String> getHdfsNamespaceClause() {
+  private List<String> getHdfsNameserviceClause() {
     List<String> withClause = new ArrayList<>();
     withClause.add("'" + HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE.varname + "'='true'");
     withClause.add("'" + HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE_NAME.varname + "'='"

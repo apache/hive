@@ -104,7 +104,7 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
     // encoded filename/checksum of files, write into _files
     try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
       for (String file : files) {
-        String encodedFilePath = replaceNSInHACase ? Utils.replaceNameSpaceInEncodedURI(file, withinContext.hiveConf):
+        String encodedFilePath = replaceNSInHACase ? Utils.replaceNameserviceInEncodedURI(file, withinContext.hiveConf):
                 file;
         fileListWriter.write(encodedFilePath);
         fileListWriter.newLine();

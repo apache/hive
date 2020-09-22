@@ -77,9 +77,9 @@ public class Utils {
   }
 
   /**
-   * Given a ReplChangeManger's encoded uri, replaces the namespace and returns the modified encoded uri.
+   * Given a ReplChangeManger's encoded uri, it replaces the nameservice and returns the modified encoded uri.
    */
-  public static String replaceNameSpaceInEncodedURI(String cmEncodedURI, HiveConf hiveConf) throws SemanticException {
+  public static String replaceNameserviceInEncodedURI(String cmEncodedURI, HiveConf hiveConf) throws SemanticException {
     String newNS = hiveConf.get(HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE_NAME.varname);
     if (StringUtils.isEmpty(newNS)) {
       throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE

@@ -69,7 +69,7 @@ public class FunctionSerializer implements JsonWriter.Serializer {
                   .encodeFileUri(qualifiedUri.toString(), checkSum, null);
           if (copyAtLoad) {
             if (hiveConf.getBoolVar(HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE)) {
-              encodedSrcUri = Utils.replaceNameSpaceInEncodedURI(encodedSrcUri, hiveConf);
+              encodedSrcUri = Utils.replaceNameserviceInEncodedURI(encodedSrcUri, hiveConf);
             }
             resourceUris.add(new ResourceUri(uri.getResourceType(), encodedSrcUri));
           } else {
