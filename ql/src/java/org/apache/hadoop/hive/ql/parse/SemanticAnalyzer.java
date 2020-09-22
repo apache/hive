@@ -13590,7 +13590,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Table likeTable = getTable(likeTableName, false);
       if (likeTable != null) {
-        if (isTemporary) {
+        if (isTemporary || isExt) {
           updateDefaultTblProps(likeTable.getParameters(), tblProps,
               new ArrayList<>(Arrays.asList(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL,
                   hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES)));
