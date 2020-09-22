@@ -785,6 +785,10 @@
          <artifactId>jets3t</artifactId>
        </exclusion>
        <exclusion>
+         <groupId>org.xerial.snappy</groupId>
+         <artifactId>snappy-java</artifactId>
+       </exclusion>
+       <exclusion>
          <groupId>org.glassfish.jersey.containers</groupId>
          <artifactId>*</artifactId>
        </exclusion>
