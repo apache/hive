@@ -531,7 +531,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       TaskInformation ti, DynamicPartitionCtx dpCtx) throws HiveException,
       IOException, InvalidOperationException {
     DataContainer dc;
-    List<LinkedHashMap<String, String>> dps = Utilities.getFullDPSpecs(conf, dpCtx);
+    List<LinkedHashMap<String, String>> dps = Utilities.getFullDPSpecs(conf, dpCtx,
+        work.getLoadTableWork().getWriteId(), tbd.isMmTable(), tbd.isDirectInsert(), tbd.isInsertOverwrite());
 
     console.printInfo(System.getProperty("line.separator"));
     long startTime = System.currentTimeMillis();
