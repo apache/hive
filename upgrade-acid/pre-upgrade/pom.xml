@@ -63,22 +63,30 @@
             <version>${hdp.hive.version}</version>
             <scope>provided</scope>
             <exclusions>
-              <exclusion>
-                <groupId>tomcat</groupId>
-                <artifactId>jasper-compiler</artifactId>
-              </exclusion>
-              <exclusion>
-                <groupId>tomcat</groupId>
-                <artifactId>jasper-runtime</artifactId>
-              </exclusion>
-              <exclusion>
-                <groupId>org.apache.zookeeper</groupId>
-                <artifactId>zookeeper</artifactId>
-              </exclusion>
-              <exclusion>
-                <groupId>org.apache.curator</groupId>
-                <artifactId>curator-framework</artifactId>
-              </exclusion>
+                <exclusion>
+                    <groupId>tomcat</groupId>
+                    <artifactId>jasper-compiler</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>tomcat</groupId>
+                    <artifactId>jasper-runtime</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.curator</groupId>
+                    <artifactId>curator-framework</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.avro</groupId>
+                    <artifactId>avro</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.xerial.snappy</groupId>
+                    <artifactId>snappy-java</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -127,6 +135,14 @@
                 <groupId>org.apache.curator</groupId>
                 <artifactId>curator-framework</artifactId>
               </exclusion>
+              <exclusion>
+                 <groupId>org.apache.avro</groupId>
+                 <artifactId>avro</artifactId>
+              </exclusion>
+              <exclusion>
+                 <groupId>org.xerial.snappy</groupId>
+                 <artifactId>snappy-java</artifactId>
+              </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -156,10 +172,18 @@ java.io.IOException: Cannot initialize Cluster. Please check your configuration 
             <version>2.7.2</version>
             <scope>provided</scope>
             <exclusions>
-              <exclusion>
-                <groupId>org.apache.zookeeper</groupId>
-                <artifactId>zookeeper</artifactId>
-              </exclusion>
+                <exclusion>
+                    <groupId>org.apache.zookeeper</groupId>
+                    <artifactId>zookeeper</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.avro</groupId>
+                    <artifactId>avro</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.xerial.snappy</groupId>
+                    <artifactId>snappy-java</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

@@ -59,11 +59,11 @@
       <artifactId>hadoop-common</artifactId>
       <optional>true</optional>
       <version>${hadoop.version}</version>
-       <exclusions>
+      <exclusions>
         <exclusion>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils</artifactId>
-          </exclusion>
+        </exclusion>
         <exclusion>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-log4j12</artifactId>
@@ -71,6 +71,14 @@
         <exclusion>
           <groupId>commons-logging</groupId>
           <artifactId>commons-logging</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.xerial.snappy</groupId>
+          <artifactId>snappy-java</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -86,6 +94,14 @@
           <exclusion>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.xerial.snappy</groupId>
+            <artifactId>snappy-java</artifactId>
           </exclusion>
         </exclusions>
     </dependency>

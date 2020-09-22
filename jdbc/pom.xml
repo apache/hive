@@ -107,10 +107,18 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
       <version>${hadoop.version}</version>
-       <exclusions>
+      <exclusions>
         <exclusion>
           <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.xerial.snappy</groupId>
+          <artifactId>snappy-java</artifactId>
         </exclusion>
       </exclusions>
      <optional>true</optional>
