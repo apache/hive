@@ -134,6 +134,7 @@ public class ImpalaQueryContext {
     String requestPool = conf.getVar(HiveConf.ConfVars.HIVE_IMPALA_REQUEST_POOL);
     queryCtx.setRequest_pool(requestPool); // for admission control
     queryCtx.setCoord_address(hostLocation);
+    queryCtx.setStatus_report_interval_ms(5000);
 
     TNetworkAddress krpcCordAddr = new TNetworkAddress();
     krpcCordAddr.setHostname("127.0.0.1");
