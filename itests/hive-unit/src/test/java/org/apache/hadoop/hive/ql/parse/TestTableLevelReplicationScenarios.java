@@ -50,7 +50,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_R
 /**
  * Tests Table level replication scenarios.
  */
-@org.junit.Ignore("HIVE-23926")
+
 public class TestTableLevelReplicationScenarios extends BaseReplicationScenariosAcidTables {
 
   @BeforeClass
@@ -415,6 +415,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
         LOG.info("Got exception: {}", ex.getMessage());
         Assert.assertTrue(ex instanceof SemanticException);
         Assert.assertTrue(ex.getMessage().equals(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN.getMsg()));
+        Assert.assertEquals(ErrorMsg.REPL_INVALID_DB_OR_TABLE_PATTERN.getErrorCode(),
+          ErrorMsg.getErrorMsg(ex.getMessage()).getErrorCode());
         failed = true;
       }
       Assert.assertTrue(failed);

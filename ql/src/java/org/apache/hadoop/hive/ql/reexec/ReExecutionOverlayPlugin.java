@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
-import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.apache.tez.dag.api.TezConfiguration;
 
 /**
@@ -75,8 +74,7 @@ public class ReExecutionOverlayPlugin implements IReExecutionPlugin {
   }
 
   @Override
-  public boolean shouldReExecute(int executionNum, CommandProcessorException ex) {
-
+  public boolean shouldReExecute(int executionNum) {
     return executionNum == 1 && !subtree.isEmpty() && retryPossible;
   }
 

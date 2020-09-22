@@ -160,6 +160,7 @@ public class TestMapJoinOperator {
       return (smallTableValueSize > 0);
     case INNER_BIG_ONLY:
     case LEFT_SEMI:
+    case LEFT_ANTI:
       return (smallTableValueSize == 0);
     case OUTER:
       return true;
@@ -1590,6 +1591,7 @@ public class TestMapJoinOperator {
             break;
           case INNER_BIG_ONLY:
           case LEFT_SEMI:
+          case LEFT_ANTI:
             {
               Object[] outputObjects = new Object[testDesc.outputColumnNames.length];
 
@@ -1791,6 +1793,8 @@ public class TestMapJoinOperator {
       break;
     case FULL_OUTER:
       executeTestFullOuter(testDesc, testData, title);
+      break;
+    case LEFT_ANTI: //TODO
       break;
     default:
       throw new RuntimeException("Unexpected Vector MapJoin variation " +

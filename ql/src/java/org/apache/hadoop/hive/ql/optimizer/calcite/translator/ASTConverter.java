@@ -46,6 +46,7 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexCall;
+import org.apache.calcite.rex.RexDynamicParam;
 import org.apache.calcite.rex.RexFieldAccess;
 import org.apache.calcite.rex.RexFieldCollation;
 import org.apache.calcite.rex.RexInputRef;
@@ -408,7 +409,7 @@ public class ASTConverter {
       QueryBlockInfo right = convertSource(join.getRight());
       s = new Schema(left.schema, right.schema);
       ASTNode cond = join.getCondition().accept(new RexVisitor(s, false, r.getCluster().getRexBuilder()));
-      boolean semiJoin = join.isSemiJoin();
+      boolean semiJoin = join.isSemiJoin() || join.getJoinType() == JoinRelType.ANTI;
       if (join.getRight() instanceof Join && !semiJoin) {
           // should not be done for semijoin since it will change the semantics
         // Invert join inputs; this is done because otherwise the SemanticAnalyzer
@@ -835,6 +836,11 @@ public class ASTConverter {
       } else {
         return SqlFunctionConverter.buildAST(op, astNodeLst);
       }
+    }
+
+    @Override
+    public ASTNode visitDynamicParam(RexDynamicParam dynamicParam) {
+      return ASTBuilder.dynamicParam(dynamicParam);
     }
   }
 

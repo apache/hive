@@ -21,11 +21,14 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simple factory class, which returns an instance of {@link QueryCompactor}.
  */
 final class QueryCompactorFactory {
+  static final private Logger LOG = LoggerFactory.getLogger(QueryCompactorFactory.class.getName());
 
   /**
    * Factory class, no need to expose constructor.
@@ -51,13 +54,15 @@ final class QueryCompactorFactory {
    * @return {@link QueryCompactor} or null.
    */
   static QueryCompactor getQueryCompactor(Table table, HiveConf configuration, CompactionInfo compactionInfo) {
-    if (!AcidUtils.isInsertOnlyTable(table.getParameters()) && HiveConf
-        .getBoolVar(configuration, HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)) {
+    if (!AcidUtils.isInsertOnlyTable(table.getParameters())
+        && HiveConf.getBoolVar(configuration, HiveConf.ConfVars.COMPACTOR_CRUD_QUERY_BASED)) {
+      if (!"tez".equalsIgnoreCase(HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
+        LOG.info("Query-based compaction is only supported on tez. Falling back to MR compaction.");
+        return null;
+      }
       if (compactionInfo.isMajorCompaction()) {
         return new MajorQueryCompactor();
-      } else if (!compactionInfo.isMajorCompaction() && "tez"
-          .equalsIgnoreCase(HiveConf.getVar(configuration, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE))) {
-        // query based minor compactigenerateAddMmTaskson is only supported on tez
+      } else {
         return new MinorQueryCompactor();
       }
     }

@@ -34,7 +34,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import com.google.common.collect.Lists;
 import org.antlr.runtime.TokenRewriteStream;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
@@ -65,9 +64,7 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
-import org.apache.hadoop.hive.ql.ddl.table.partition.PartitionUtils;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -86,10 +83,8 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
@@ -97,7 +92,6 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
@@ -106,7 +100,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -184,10 +177,13 @@ public abstract class BaseSemanticAnalyzer {
    */
   private Boolean autoCommitValue;
 
+  protected Boolean prepareQuery = false;
+
   public Boolean getAutoCommitValue() {
     return autoCommitValue;
   }
-  void setAutoCommitValue(Boolean autoCommit) {
+
+  public void setAutoCommitValue(Boolean autoCommit) {
     autoCommitValue = autoCommit;
   }
 
@@ -197,6 +193,10 @@ public abstract class BaseSemanticAnalyzer {
 
   public String getCboInfo() {
     return ctx.getCboInfo();
+  }
+
+  public boolean isPrepareQuery() {
+    return prepareQuery;
   }
 
   class RowFormatParams {
@@ -289,6 +289,10 @@ public abstract class BaseSemanticAnalyzer {
 
   public void initCtx(Context ctx) {
     this.ctx = ctx;
+  }
+
+  public Context getCtx() {
+    return this.ctx;
   }
 
   public void analyze(ASTNode ast, Context ctx) throws SemanticException {
@@ -951,9 +955,18 @@ public abstract class BaseSemanticAnalyzer {
       throw new SemanticException("empty struct not allowed.");
     }
     StringBuilder buffer = new StringBuilder(typeStr);
+    Set<String> attributeIdentifiers = new HashSet<>(children);
     for (int i = 0; i < children; i++) {
       ASTNode child = (ASTNode) typeNode.getChild(i);
-      buffer.append(unescapeIdentifier(child.getChild(0).getText())).append(":");
+
+      String attributeIdentifier = unescapeIdentifier(child.getChild(0).getText());
+      if (attributeIdentifiers.contains(attributeIdentifier)) {
+        throw new SemanticException(ErrorMsg.AMBIGUOUS_STRUCT_ATTRIBUTE, attributeIdentifier);
+      } else {
+        attributeIdentifiers.add(attributeIdentifier);
+      }
+
+      buffer.append(attributeIdentifier).append(":");
       buffer.append(getTypeStringFromAST((ASTNode) child.getChild(1)));
       if (i < children - 1) {
         buffer.append(",");
@@ -1820,6 +1833,20 @@ public abstract class BaseSemanticAnalyzer {
   protected void executeUnparseTranlations() {
     UnparseTranslator unparseTranslator = new UnparseTranslator(conf);
     unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
+  }
+
+  /**
+   * Called when we start analysis of a query.
+   */
+  public void startAnalysis() {
+    // Nothing to do
+  }
+
+  /**
+   * Called when we end analysis of a query.
+   */
+  public void endAnalysis() {
+    // Nothing to do
   }
 
 }

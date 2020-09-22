@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.PartitionIterable;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -302,7 +303,7 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
             SessionState.get().getTxnMgr().getValidWriteIds(tablesUsed, validTxnsList);
         long defaultTimeWindow = HiveConf.getTimeVar(context.getDb().getConf(),
             HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW, TimeUnit.MILLISECONDS);
-        table.setOutdatedForRewriting(Hive.isOutdatedMaterializedView(table,
+        table.setOutdatedForRewriting(HiveMaterializedViewUtils.isOutdatedMaterializedView(table,
             currentTxnWriteIds, defaultTimeWindow, tablesUsed, false));
       }
     }

@@ -21,8 +21,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,11 +56,13 @@ import org.apache.hive.streaming.HiveStreamingConnection;
 import org.apache.hive.streaming.StreamingConnection;
 import org.apache.hive.streaming.StrictDelimitedInputWriter;
 import org.apache.orc.OrcFile;
+import org.apache.orc.OrcProto;
 import org.apache.orc.Reader;
 import org.apache.orc.RecordReader;
+import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
+import org.apache.orc.impl.RecordReaderImpl;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
 
 import static org.apache.hadoop.hive.ql.txn.compactor.TestCompactor.executeStatementOnDriver;
@@ -136,6 +140,53 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   /**
+   * Query based compaction should respect the orc.bloom.filter properties
+   * @throws Exception
+   */
+  @Test
+  public void testMajorCompactionWithBloomFilter() throws Exception {
+
+    String dbName = "default";
+    String tblName = "testMajorCompaction";
+    TestDataProvider testDataProvider = new TestDataProvider();
+    Map<String, String> additionalTblProperties = new HashMap<>();
+    additionalTblProperties.put("orc.bloom.filter.columns", "b");
+    additionalTblProperties.put("orc.bloom.filter.fpp", "0.02");
+    testDataProvider.createFullAcidTable(dbName, tblName, false, false, additionalTblProperties);
+    testDataProvider.insertTestData(tblName);
+    // Find the location of the table
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    Table table = msClient.getTable(dbName, tblName);
+    FileSystem fs = FileSystem.get(conf);
+    // Verify deltas are present
+    Assert.assertEquals("Delta directories does not match before compaction",
+        Arrays.asList("delta_0000001_0000001_0000", "delta_0000002_0000002_0000",
+            "delta_0000004_0000004_0000"),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.deltaFileFilter, table, null));
+    // Check bucket file contains the bloomFilter
+    checkBloomFilterInAcidFile(fs, new Path(table.getSd().getLocation(), "delta_0000001_0000001_0000/bucket_00000_0"));
+
+    // Run major compaction and cleaner
+    CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true);
+    CompactorTestUtil.runCleaner(conf);
+    verifySuccessfulCompaction(1);
+    // Should contain only one base directory now
+    String expectedBase = "base_0000005_v0000008";
+    Assert.assertEquals("Base directory does not match after major compaction",
+        Collections.singletonList(expectedBase),
+        CompactorTestUtil.getBaseOrDeltaNames(fs, AcidUtils.baseFileFilter, table, null));
+    // Check base dir contents
+    List<String> expectedBucketFiles = Arrays.asList("bucket_00000");
+    Assert.assertEquals("Bucket names are not matching after compaction", expectedBucketFiles,
+        CompactorTestUtil
+            .getBucketFileNames(fs, table, null, expectedBase));
+    // Check bucket file contents
+    checkBucketIdAndRowIdInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase), 0);
+
+    checkBloomFilterInAcidFile(fs, new Path(table.getSd().getLocation(), expectedBase + "/bucket_00000"));
+  }
+
+  /**
    * TestDataProvider uses 2 buckets, I want to test 4 buckets here.
    * @throws Exception
    */
@@ -185,17 +236,9 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> preCompactionRsBucket0 = testDataProvider.getBucketData(tblName, "536870912");
     List<String> preCompactionRsBucket1 = testDataProvider.getBucketData(tblName, "536936448");
     List<String> preCompactionRsBucket2 = testDataProvider.getBucketData(tblName, "537001984");
-    if (runsOnTez) { // Check bucket contents
-      Assert.assertEquals("pre-compaction bucket 0", expectedRsBucket0, preCompactionRsBucket0);
-      Assert.assertEquals("pre-compaction bucket 1", expectedRsBucket1, preCompactionRsBucket1);
-      Assert.assertEquals("pre-compaction bucket 2", expectedRsBucket2, preCompactionRsBucket2);
-    } else {
-      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we
-      // just check whether the bucket contents change during compaction.
-      expectedRsBucket0 = preCompactionRsBucket0;
-      expectedRsBucket1 = preCompactionRsBucket1;
-      expectedRsBucket2 = preCompactionRsBucket2;
-    }
+    Assert.assertEquals("pre-compaction bucket 0", expectedRsBucket0, preCompactionRsBucket0);
+    Assert.assertEquals("pre-compaction bucket 1", expectedRsBucket1, preCompactionRsBucket1);
+    Assert.assertEquals("pre-compaction bucket 2", expectedRsBucket2, preCompactionRsBucket2);
 
     // Run major compaction and cleaner
     CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true);
@@ -269,14 +312,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":1}\t6\t2\ttoday",
         "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":2}\t6\t3\ttoday",
         "{\"writeid\":4,\"bucketid\":536870912,\"rowid\":3}\t6\t4\ttoday"));
-    if (runsOnTez) { // Check bucket contents
-      Assert.assertEquals("pre-compaction bucket 0", expectedRsBucket0,
-          testDataProvider.getBucketData(tblName, "536870912"));
-    } else {
-      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we
-      // just check whether the bucket contents change during compaction.
-      expectedRsBucket0 = testDataProvider.getBucketData(tblName, "536870912");
-    }
+    Assert.assertEquals("pre-compaction bucket 0", expectedRsBucket0,
+        testDataProvider.getBucketData(tblName, "536870912"));
 
     // Run major compaction and cleaner for all 3 partitions
     CompactorTestUtil.runCompaction(conf, dbName, tblName, CompactionType.MAJOR, true,
@@ -361,15 +398,8 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
         "{\"writeid\":4,\"bucketid\":536936448,\"rowid\":2}\t6\t3\ttoday",
         "{\"writeid\":4,\"bucketid\":536936448,\"rowid\":3}\t6\t4\ttoday");
     List<String> rsBucket1 = dataProvider.getBucketData(tableName, "536936448");
-    if (runsOnTez) {
-      Assert.assertEquals(expectedRsBucket0, rsBucket0);
-      Assert.assertEquals(expectedRsBucket1, rsBucket1);
-    } else {
-      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we
-      // just check whether the bucket contents change during compaction.
-      expectedRsBucket0 = rsBucket0;
-      expectedRsBucket1 = rsBucket1;
-    }
+    Assert.assertEquals(expectedRsBucket0, rsBucket0);
+    Assert.assertEquals(expectedRsBucket1, rsBucket1);
 
     // Run a compaction
     CompactorTestUtil
@@ -429,7 +459,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionNotPartitionedWithoutBuckets() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction";
     // Create test table
@@ -503,7 +532,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionWithoutBuckets() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction_wobuckets_1";
     String tempTableName = "tmp_txt_table_1";
@@ -526,7 +554,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionWithoutBucketsInsertOverwrite() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction_wobuckets_2";
     String tempTableName = "tmp_txt_table_2";
@@ -571,7 +598,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
       boolean insertOverWrite, List<String> expectedDeltas, List<String> expectedDeleteDeltas,
       String expectedCompactedDeltaDirName, CompactionType compactionType) throws Exception {
 
-    Assume.assumeTrue(runsOnTez);
     TestDataProvider dataProvider = new TestDataProvider();
     dataProvider.createTableWithoutBucketWithMultipleSplits(dbName, tableName, tempTableName, true, true,
         insertOverWrite);
@@ -656,7 +682,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorAndMajorCompactionWithoutBuckets() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction_wobuckets_5";
     String tempTableName = "tmp_txt_table_5";
@@ -762,7 +787,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionNotPartitionedWithBuckets() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction";
     // Create test table
@@ -840,7 +864,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionPartitionedWithoutBuckets() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction";
     // Create test table
@@ -925,7 +948,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionPartitionedWithBuckets() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction";
     // Create test table
@@ -1011,7 +1033,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompaction10DeltaDirs() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction";
     // Create test table
@@ -1069,7 +1090,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMultipleMinorCompactions() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction";
     // Create test table
@@ -1121,7 +1141,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionWhileStreaming() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction";
     executeStatementOnDriver("drop table if exists " + tableName, driver);
@@ -1159,7 +1178,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionWhileStreamingAfterAbort() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction";
     executeStatementOnDriver("drop table if exists " + tableName, driver);
@@ -1189,7 +1207,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionWhileStreamingWithAbort() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction";
     executeStatementOnDriver("drop table if exists " + tableName, driver);
@@ -1216,7 +1233,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionWhileStreamingWithAbortInMiddle() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction";
     executeStatementOnDriver("drop table if exists " + tableName, driver);
@@ -1254,7 +1270,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMajorCompactionAfterMinor() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction";
     // Create test table
@@ -1306,7 +1321,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionAfterMajor() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompactionAfterMajor";
     // Create test table
@@ -1361,7 +1375,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
 
   @Test
   public void testMinorCompactionWhileStreamingWithSplitUpdate() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testMinorCompaction";
     executeStatementOnDriver("drop table if exists " + tableName, driver);
@@ -1430,17 +1443,10 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     List<String> rsBucket0PtnToday = executeStatementOnDriverAndReturnResults("select ROW__ID, * from  "
         + tblName + " where ROW__ID.bucketid = 536870912 and ds='today' order by a,b", driver);
     // Bucket 1, partition 'today'
-    List<String> rsBucket1PtnToday = executeStatementOnDriverAndReturnResults("select ROW__ID, * from  "
-        + tblName + " where ROW__ID.bucketid = 536936448 and ds='today' order by a,b", driver);
-    if (runsOnTez) {
-      Assert.assertEquals("pre-compaction read", expectedRsBucket0PtnToday, rsBucket0PtnToday);
-      Assert.assertEquals("pre-compaction read", expectedRsBucket1PtnToday, rsBucket1PtnToday);
-    } else {
-      // MR sometimes inserts rows in the opposite order from Tez, so rowids won't match. so we
-      // just check whether the bucket contents change during compaction.
-      expectedRsBucket0PtnToday = rsBucket0PtnToday;
-      expectedRsBucket1PtnToday = rsBucket1PtnToday;
-    }
+    List<String> rsBucket1PtnToday = executeStatementOnDriverAndReturnResults("select ROW__ID, * from  " + tblName
+        + " where ROW__ID.bucketid = 536936448 and ds='today' order by a,b", driver);
+    Assert.assertEquals("pre-compaction read", expectedRsBucket0PtnToday, rsBucket0PtnToday);
+    Assert.assertEquals("pre-compaction read", expectedRsBucket1PtnToday, rsBucket1PtnToday);
 
     //  Run major compaction and cleaner
     CompactorTestUtil
@@ -1512,7 +1518,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test public void testMinorCompactionDb() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     testCompactionDb(CompactionType.MINOR, "delta_0000001_0000005_v0000011");
   }
 
@@ -1520,7 +1525,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
    * Minor compaction on a table with no deletes shouldn't result in any delete deltas.
    */
   @Test public void testJustInserts() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testJustInserts";
     // Create test table
@@ -1558,7 +1562,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
    * Minor compaction on a table with no insert deltas should result in just a delete delta.
    */
   @Test public void testJustDeletes() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testJustDeletes";
     // Create test table
@@ -1601,7 +1604,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
    * compaction was resulting in deltas named delta_1_y.
    */
   @Test public void testIowMinorMajor() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     String dbName = "default";
     String tableName = "testIowMinorMajor";
     // Create test table
@@ -1715,7 +1717,6 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
   }
 
   @Test public void testVectorizationOff() throws Exception {
-    Assume.assumeTrue(runsOnTez);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     testMinorCompactionAfterMajor();
   }
@@ -1778,6 +1779,18 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     }
   }
 
+  private void checkBloomFilterInAcidFile(FileSystem fs, Path bucketFilePath) throws IOException {
+    Reader orcReader = OrcFile.createReader(bucketFilePath,
+        OrcFile.readerOptions(fs.getConf()).filesystem(fs));
+    StripeInformation stripe = orcReader.getStripes().get(0);
+    try (RecordReaderImpl rows = (RecordReaderImpl)orcReader.rows()) {
+      boolean bloomFilter = rows.readStripeFooter(stripe).getStreamsList().stream().anyMatch(
+          s -> s.getKind() == OrcProto.Stream.Kind.BLOOM_FILTER_UTF8
+              || s.getKind() == OrcProto.Stream.Kind.BLOOM_FILTER);
+      Assert.assertTrue("Bloom filter is missing", bloomFilter);
+    }
+  }
+
   /**
    * Couldn't find any way to get the bucket property from BucketCodec, so just reverse
    * engineered the encoding. The actual bucketId is represented by bits 2-11 of 29 bits
@@ -1809,17 +1822,19 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     doAnswer(invocationOnMock -> {
       return null;
     }).when(sdMock).getLocation();
+    CompactionInfo ciMock = mock(CompactionInfo.class);
+    ciMock.runAs = "hive";
     List<String> emptyQueries = new ArrayList<>();
     HiveConf hiveConf = new HiveConf();
     hiveConf.set(ValidTxnList.VALID_TXNS_KEY, "8:9223372036854775807::");
 
     // Check for default case.
-    qc.runCompactionQueries(hiveConf, null, sdMock, null, null, null, emptyQueries, emptyQueries, emptyQueries);
+    qc.runCompactionQueries(hiveConf, null, sdMock, null, ciMock, null, emptyQueries, emptyQueries, emptyQueries);
     Assert.assertEquals("all", hiveConf.getVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT));
 
     // Check for case where  hive.llap.io.etl.skip.format is explicitly set to none - as to always use cache.
     hiveConf.setVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT, "none");
-    qc.runCompactionQueries(hiveConf, null, sdMock, null, null, null, emptyQueries, emptyQueries, emptyQueries);
+    qc.runCompactionQueries(hiveConf, null, sdMock, null, ciMock, null, emptyQueries, emptyQueries, emptyQueries);
     Assert.assertEquals("none", hiveConf.getVar(HiveConf.ConfVars.LLAP_IO_ETL_SKIP_FORMAT));
   }
 }

@@ -331,8 +331,8 @@ public enum ErrorMsg {
   TABLE_NOT_PARTITIONED(10241, "Table {0} is not a partitioned table", true),
   DATABASE_ALREADY_EXISTS(10242, "Database {0} already exists", true),
   CANNOT_REPLACE_COLUMNS(10243, "Replace columns is not supported for table {0}. SerDe may be incompatible.", true),
-  BAD_LOCATION_VALUE(10244, "{0}  is not absolute.  Please specify a complete absolute uri."),
-  UNSUPPORTED_ALTER_TBL_OP(10245, "{0} alter table options is not supported"),
+  BAD_LOCATION_VALUE(10244, "{0}  is not absolute.  Please specify a complete absolute uri.", true),
+  UNSUPPORTED_ALTER_TBL_OP(10245, "{0} alter table options is not supported", true),
   INVALID_BIGTABLE_MAPJOIN(10246, "{0} table chosen for streaming is not valid", true),
   MISSING_OVER_CLAUSE(10247, "Missing over clause for function : "),
   PARTITION_SPEC_TYPE_MISMATCH(10248, "Cannot add partition column {0} of type {1} as it cannot be converted to type {2}", true),
@@ -471,6 +471,7 @@ public enum ErrorMsg {
           "Not an ordered-set aggregate function: {0}. WITHIN GROUP clause is not allowed.", true),
   WITHIN_GROUP_PARAMETER_MISMATCH(10422,
           "The number of hypothetical direct arguments ({0}) must match the number of ordering columns ({1})", true),
+  AMBIGUOUS_STRUCT_ATTRIBUTE(10423, "Attribute \"{0}\" specified more than once in structured type.", true),
 
   //========================== 20000 range starts here ========================//
 
@@ -505,18 +506,8 @@ public enum ErrorMsg {
           " queue: {1}. Please fix and try again.", true),
   SPARK_RUNTIME_OOM(20015, "Spark job failed because of out of memory."),
 
-  //if the error message is changed for REPL_EVENTS_MISSING_IN_METASTORE, then need modification in getNextNotification
-  //method in HiveMetaStoreClient
-  REPL_EVENTS_MISSING_IN_METASTORE(20016, "Notification events are missing in the meta store."),
-  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(20017, "Load path {0} not valid as target database is bootstrapped " +
-          "from some other path : {1}."),
-  REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH(20018, "File is missing from both source and cm path."),
-  REPL_LOAD_PATH_NOT_FOUND(20019, "Load path does not exist."),
-  REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(20020,
-          "Source of replication (repl.source.for) is not set in the database properties."),
-  REPL_INVALID_DB_OR_TABLE_PATTERN(20021,
-          "Invalid pattern for the DB or table name in the replication policy. "
-                  + "It should be a valid regex enclosed within single or double quotes."),
+  REPL_FILE_MISSING_FROM_SRC_AND_CM_PATH(20016, "File is missing from both source and cm path."),
+  REPL_EXTERNAL_SERVICE_CONNECTION_ERROR(20017, "Failed to connect to {0} service. Error code {1}.",true),
 
   // An exception from runtime that will show the full stack to client
   UNRESOLVED_RT_EXCEPTION(29999, "Runtime Error: {0}", "58004", true),
@@ -605,9 +596,10 @@ public enum ErrorMsg {
 
   SPARK_JOB_INTERRUPTED(30044, "Spark job was interrupted while executing"),
   SPARK_GET_JOB_INFO_INTERRUPTED(30045, "Spark job was interrupted while getting job info"),
-  SPARK_GET_JOB_INFO_EXECUTIONERROR(30046, "Spark job failed in execution while getting job info due to exception {0}"),
+  SPARK_GET_JOB_INFO_EXECUTIONERROR(30046, "Spark job failed in execution while getting job info due to exception {0}", true),
 
-  REPL_FILE_SYSTEM_OPERATION_RETRY(30047, "Replication file system operation retry expired."),
+  REPL_FILE_SYSTEM_OPERATION_RETRY(30047, "Replication file system operation retry expired. Error {0}",
+    true),
   SPARK_GET_STAGES_INFO_TIMEOUT(30048, "Spark job GetSparkStagesInfoJob timed out after {0} seconds.", true),
   SPARK_GET_STAGES_INFO_INTERRUPTED(30049, "Spark job GetSparkStagesInfoJob was interrupted."),
   SPARK_GET_STAGES_INFO_EXECUTIONERROR(30050, "Spark job GetSparkStagesInfoJob failed in execution while getting job info due to exception {0}", true),
@@ -616,7 +608,22 @@ public enum ErrorMsg {
 
   SPARK_JOB_RUNTIME_ERROR(40001, "Spark job failed due to: {0}", true),
   SPARK_TASK_RUNTIME_ERROR(40002, "Spark job failed due to task failures: {0}", true),
-  REPL_DATABASE_IS_TARGET_OF_REPLICATION(40003, "Cannot dump database as it is a Target of replication.")
+  REPL_DATABASE_IS_TARGET_OF_REPLICATION(40003, "Cannot dump database as it is a Target of replication."),
+  REPL_DATABASE_IS_NOT_SOURCE_OF_REPLICATION(40004,
+                                               "Source of replication (repl.source.for) is not set in the database properties."),
+  REPL_INVALID_DB_OR_TABLE_PATTERN(40005,
+                                     "Invalid pattern for the DB or table name in the replication policy. "
+                                     + "It should be a valid regex enclosed within single or double quotes."),
+  //if the error message is changed for REPL_EVENTS_MISSING_IN_METASTORE, then need modification in getNextNotification
+  //method in HiveMetaStoreClient
+  REPL_EVENTS_MISSING_IN_METASTORE(40006, "Notification events are missing in the meta store."),
+  REPL_BOOTSTRAP_LOAD_PATH_NOT_VALID(40007, "Load path {0} not valid as target database is bootstrapped " +
+    "from some other path : {1}.", true),
+  REPL_INVALID_CONFIG_FOR_SERVICE(40008, "Invalid config error : {0} for {1} service.", true),
+  REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE(40009, "Invalid internal config error : {0} for {1} service.", true),
+  REPL_RETRY_EXHAUSTED(40010, "Retry exhausted for retryable error code {0}.", true),
+  REPL_FAILED_WITH_NON_RECOVERABLE_ERROR(40011, "Replication failed with non recoverable error. Needs manual intervention"),
+  REPL_INVALID_ARGUMENTS(40012, "Invalid arguments error : {0}.", true)
   ;
 
   private int errorCode;

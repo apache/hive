@@ -1853,7 +1853,7 @@ POSTHOOK: Input: default@part
 6	46
 6	46
 7	46
-Warning: Shuffle Join MERGEJOIN[46][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[51][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain
 select *
 from src b
@@ -2001,7 +2001,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[46][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[51][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select *
 from src b
 where b.key in
@@ -4745,7 +4745,7 @@ POSTHOOK: Input: default@part
 46	1	19.692307692307693	512
 46	1	19.692307692307693	512
 46	1	19.692307692307693	512
-Warning: Shuffle Join MERGEJOIN[46][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[56][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select t1.p_size,
     (select count(*) from part p, part pp where p.p_size = pp.p_size and p.p_type = pp.p_type)
     from part t1
@@ -4881,7 +4881,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[46][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[56][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select t1.p_size,
     (select count(*) from part p, part pp where p.p_size = pp.p_size and p.p_type = pp.p_type)
     from part t1
@@ -4920,7 +4920,7 @@ POSTHOOK: Input: default@part
 6	28
 6	28
 7	28
-Warning: Shuffle Join MERGEJOIN[102][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[112][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain select t1.p_size,
     (select count(*) from part p, part pp where p.p_size = pp.p_size and p.p_type = pp.p_type
                                               and (select sum(p_size) from part a1 where a1.p_partkey = p.p_partkey
@@ -5177,7 +5177,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[102][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[112][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: select t1.p_size,
     (select count(*) from part p, part pp where p.p_size = pp.p_size and p.p_type = pp.p_type
                                               and (select sum(p_size) from part a1 where a1.p_partkey = p.p_partkey
@@ -5220,7 +5220,7 @@ POSTHOOK: Input: default@part
 6	28
 6	28
 7	28
-Warning: Shuffle Join MERGEJOIN[144][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[154][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select t1.p_size,
     (select count(*) from part t2 where t2.p_partkey = t1.p_partkey group by t2.p_partkey),
     (select count(*) from part p, part pp where p.p_size = pp.p_size and p.p_type = pp.p_type
@@ -5596,7 +5596,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[144][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+Warning: Shuffle Join MERGEJOIN[154][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select t1.p_size,
     (select count(*) from part t2 where t2.p_partkey = t1.p_partkey group by t2.p_partkey),
     (select count(*) from part p, part pp where p.p_size = pp.p_size and p.p_type = pp.p_type

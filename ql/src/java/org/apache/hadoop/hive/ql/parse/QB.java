@@ -47,6 +47,7 @@ public class QB {
   private int numSelDi = 0;
   private HashMap<String, String> aliasToTabs;
   private HashMap<String, QBExpr> aliasToSubq;
+  private HashMap<String, QBExpr> aliasToSubqExpr;
   private HashMap<String, Table> viewAliasToViewSchema;
   private HashMap<String, Map<String, String>> aliasToProps;
   private List<String> aliases;
@@ -96,6 +97,8 @@ public class QB {
    */
   private QBSubQuery havingClauseSubQueryPredicate;
 
+  private int subQueryExpressionAliasCounter = 0;
+
   // results
 
   public void print(String msg) {
@@ -115,6 +118,7 @@ public class QB {
     // Must be deterministic order maps - see HIVE-8707
     aliasToTabs = new LinkedHashMap<String, String>();
     aliasToSubq = new LinkedHashMap<String, QBExpr>();
+    aliasToSubqExpr = new LinkedHashMap<>();
     viewAliasToViewSchema = new LinkedHashMap<String, Table>();
     aliasToProps = new LinkedHashMap<String, Map<String, String>>();
     aliases = new ArrayList<String>();
@@ -218,6 +222,10 @@ public class QB {
     return aliasToSubq.keySet();
   }
 
+  public Set<String> getSubqExprAliases() {
+    return aliasToSubqExpr.keySet();
+  }
+
   public Set<String> getTabAliases() {
     return aliasToTabs.keySet();
   }
@@ -228,6 +236,10 @@ public class QB {
 
   public QBExpr getSubqForAlias(String alias) {
     return aliasToSubq.get(alias.toLowerCase());
+  }
+
+  public QBExpr getSubqExprForAlias(String alias) {
+    return aliasToSubqExpr.get(alias.toLowerCase());
   }
 
   public String getTabNameForAlias(String alias) {
@@ -457,4 +469,17 @@ public class QB {
     return !(aliases.size() == 1 && aliases.get(0).equals(SemanticAnalyzer.DUMMY_TABLE));
   }
 
+  public void addSubqExprAlias(ASTNode expressionTree, SemanticAnalyzer semanticAnalyzer) throws SemanticException {
+    String alias = "__subexpr" + subQueryExpressionAliasCounter++;
+
+    // Recursively do the first phase of semantic analysis for the subquery
+    QBExpr qbexpr = new QBExpr(alias);
+
+    ASTNode subqref = (ASTNode) expressionTree.getChild(1);
+    semanticAnalyzer.doPhase1QBExpr(subqref, qbexpr, getId(), alias, isInsideView());
+
+    // Insert this map into the stats
+    aliasToSubqExpr.put(alias, qbexpr);
+    addAlias(alias);
+  }
 }

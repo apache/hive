@@ -26,11 +26,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Select Operator
-            expressions: example_iden(key) (type: string)
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 1
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: example_iden(key) (type: string)
+              outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: SELECT example_iden(key)

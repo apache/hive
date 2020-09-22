@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
-import org.apache.hadoop.hive.ql.exec.DagUtils;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -85,7 +84,7 @@ public class Executor {
   }
 
   public void execute() throws CommandProcessorException {
-    SessionState.getPerfLogger().PerfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
+    SessionState.getPerfLogger().perfLogBegin(CLASS_NAME, PerfLogger.DRIVER_EXECUTE);
 
     boolean noName = Strings.isNullOrEmpty(driverContext.getConf().get(MRJobConfig.JOB_NAME));
 
@@ -236,7 +235,7 @@ public class Executor {
   }
 
   private void runTasks(boolean noName) throws Exception {
-    SessionState.getPerfLogger().PerfLogBegin(CLASS_NAME, PerfLogger.RUN_TASKS);
+    SessionState.getPerfLogger().perfLogBegin(CLASS_NAME, PerfLogger.RUN_TASKS);
 
     int jobCount = getJobCount();
     String jobName = getJobName();
@@ -247,7 +246,7 @@ public class Executor {
       handleFinished();
     }
 
-    SessionState.getPerfLogger().PerfLogEnd(CLASS_NAME, PerfLogger.RUN_TASKS);
+    SessionState.getPerfLogger().perfLogEnd(CLASS_NAME, PerfLogger.RUN_TASKS);
   }
 
   private void handleFinished() throws Exception {
@@ -440,7 +439,7 @@ public class Executor {
     } else if (driverContext.getCacheUsage().getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
         driverContext.getCacheUsage().getCacheEntry() != null && driverContext.getPlan().getFetchTask() != null) {
       // Save results to the cache for future queries to use.
-      SessionState.getPerfLogger().PerfLogBegin(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
+      SessionState.getPerfLogger().perfLogBegin(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
 
       CacheEntry cacheEntry = driverContext.getCacheUsage().getCacheEntry();
       boolean savedToCache = QueryResultsCache.getInstance().setEntryValid(cacheEntry,
@@ -452,7 +451,7 @@ public class Executor {
         driverContext.setUsedCacheEntry(driverContext.getCacheUsage().getCacheEntry());
       }
 
-      SessionState.getPerfLogger().PerfLogEnd(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
+      SessionState.getPerfLogger().perfLogEnd(CLASS_NAME, PerfLogger.SAVE_TO_RESULTS_CACHE);
     }
   }
 
@@ -539,7 +538,7 @@ public class Executor {
     if (noName) {
       driverContext.getConf().set(MRJobConfig.JOB_NAME, "");
     }
-    double duration = SessionState.getPerfLogger().PerfLogEnd(CLASS_NAME, PerfLogger.DRIVER_EXECUTE) / 1000.00;
+    double duration = SessionState.getPerfLogger().perfLogEnd(CLASS_NAME, PerfLogger.DRIVER_EXECUTE) / 1000.00;
 
     ImmutableMap<String, Long> executionHMSTimings = Hive.dumpMetaCallTimingWithoutEx("execution");
     driverContext.getQueryDisplay().setHmsTimings(QueryDisplay.Phase.EXECUTION, executionHMSTimings);

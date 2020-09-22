@@ -49,16 +49,28 @@ import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.ConfigValSecurityException;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
+import org.apache.hadoop.hive.metastore.api.ForeignKeysResponse;
+import org.apache.hadoop.hive.metastore.api.GetDatabaseRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
+import org.apache.hadoop.hive.metastore.api.GetTableRequest;
+import org.apache.hadoop.hive.metastore.api.GetTableResult;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -66,6 +78,8 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.NotNullConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionListComposingSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -73,9 +87,19 @@ import org.apache.hadoop.hive.metastore.api.PartitionValuesRequest;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
 import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
+import org.apache.hadoop.hive.metastore.api.PartitionsSpecByExprResult;
+import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
+import org.apache.hadoop.hive.metastore.api.PrimaryKeysResponse;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
+import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
+import org.apache.hadoop.hive.metastore.api.TableStatsResult;
+import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.UniqueConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
@@ -208,8 +232,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
   @Override
   public org.apache.hadoop.hive.metastore.api.Table getTable(String dbname, String name,
-  boolean getColStats, String engine) throws MetaException,
-  TException, NoSuchObjectException {
+      boolean getColStats, String engine) throws MetaException, TException, NoSuchObjectException {
     // First check temp tables
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbname, name);
     if (table != null) {
@@ -1285,7 +1308,8 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       String defaultPartitionName, int maxParts, List<Partition> result) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
     if (table == null) {
-      return super.listPartitionsByExpr(catName, dbName, tblName, expr, defaultPartitionName, maxParts, result);
+      return super.listPartitionsByExpr(catName, dbName, tblName, expr,
+          defaultPartitionName, maxParts, result);
     }
     assert result != null;
     result.addAll(getPartitionsForMaxParts(tblName, getPartitionedTempTable(table).listPartitionsByFilter(
@@ -1310,7 +1334,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
 
   @Override
   public List<Partition> getPartitionsByNames(String catName, String dbName, String tblName,
-                                              List<String> partNames, boolean getColStats, String engine) throws TException {
+      List<String> partNames, boolean getColStats, String engine) throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
     if (table == null) {
       //(assume) not a temp table - Try underlying client
@@ -2002,4 +2026,427 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     }
     return false;
   }
+
+  @Override
+  protected String getConfigValueInternal(String name, String defaultValue)
+      throws TException, ConfigValSecurityException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.CONFIG_VALUE, name, defaultValue);
+      String v = (String) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getConfigValueInternal(name, defaultValue);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=getConfigValueInternal");
+      }
+      return v;
+    }
+    return super.getConfigValueInternal(name, defaultValue);
+  }
+
+  @Override
+  protected Database getDatabaseInternal(GetDatabaseRequest request) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.DATABASE, request);
+      Database v = (Database) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getDatabaseInternal(request);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=getDatabaseInternal");
+      }
+      return v;
+    }
+    return super.getDatabaseInternal(request);
+  }
+
+  @Override
+  protected GetTableResult getTableInternal(GetTableRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.TABLE, req);
+      GetTableResult v = (GetTableResult) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getTableInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=getTableInternal");
+      }
+      return v;
+    }
+    return super.getTableInternal(req);
+  }
+
+  @Override
+  protected PrimaryKeysResponse getPrimaryKeysInternal(PrimaryKeysRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.PRIMARY_KEYS, req);
+      PrimaryKeysResponse v = (PrimaryKeysResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getPrimaryKeysInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=getPrimaryKeysInternal");
+      }
+      return v;
+    }
+    return super.getPrimaryKeysInternal(req);
+  }
+
+  @Override
+  protected ForeignKeysResponse getForeignKeysInternal(ForeignKeysRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.FOREIGN_KEYS, req);
+      ForeignKeysResponse v = (ForeignKeysResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getForeignKeysInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=getForeignKeysInternal");
+      }
+      return v;
+    }
+    return super.getForeignKeysInternal(req);
+  }
+
+  @Override
+  protected UniqueConstraintsResponse getUniqueConstraintsInternal(UniqueConstraintsRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.UNIQUE_CONSTRAINTS, req);
+      UniqueConstraintsResponse v = (UniqueConstraintsResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getUniqueConstraintsInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=getUniqueConstraintsInternal");
+      }
+      return v;
+    }
+    return super.getUniqueConstraintsInternal(req);
+  }
+
+  @Override
+  protected NotNullConstraintsResponse getNotNullConstraintsInternal(NotNullConstraintsRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.NOT_NULL_CONSTRAINTS, req);
+      NotNullConstraintsResponse v = (NotNullConstraintsResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getNotNullConstraintsInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=getNotNullConstraintsInternal");
+      }
+      return v;
+    }
+    return super.getNotNullConstraintsInternal(req);
+  }
+
+  @Override
+  protected TableStatsResult getTableColumnStatisticsInternal(TableStatsRequest rqst) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      MapWrapper cache = new MapWrapper(queryCache);
+      // 1) Retrieve from the cache those ids present, gather the rest
+      Pair<List<ColumnStatisticsObj>, List<String>> p = getTableColumnStatisticsCache(
+          cache, rqst, null);
+      List<String> colStatsMissing = p.getRight();
+      List<ColumnStatisticsObj> colStats = p.getLeft();
+      // 2) If they were all present in the cache, return
+      if (colStatsMissing.isEmpty()) {
+        return new TableStatsResult(colStats);
+      }
+      // 3) If they were not, gather the remaining
+      TableStatsRequest newRqst = new TableStatsRequest(rqst);
+      newRqst.setColNames(colStatsMissing);
+      TableStatsResult r = super.getTableColumnStatisticsInternal(newRqst);
+      // 4) Populate the cache
+      List<ColumnStatisticsObj> newColStats = loadTableColumnStatisticsCache(
+          cache, r, rqst, null);
+      // 5) Sort result (in case there is any assumption) and return
+      return computeTableColumnStatisticsFinal(rqst, colStats, newColStats);
+    }
+    return super.getTableColumnStatisticsInternal(rqst);
+  }
+
+  @Override
+  protected AggrStats getAggrStatsForInternal(PartitionsStatsRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, req);
+      AggrStats v = (AggrStats) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getAggrStatsForInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=getAggrStatsForInternal");
+      }
+      return v;
+    }
+    return super.getAggrStatsForInternal(req);
+  }
+
+  @Override
+  protected PartitionsByExprResult getPartitionsByExprInternal(PartitionsByExprRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, req);
+      PartitionsByExprResult v = (PartitionsByExprResult) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getPartitionsByExprInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=getPartitionsByExprInternal");
+      }
+      return v;
+    }
+    return super.getPartitionsByExprInternal(req);
+  }
+
+  @Override
+  protected PartitionsSpecByExprResult getPartitionsSpecByExprInternal(PartitionsByExprRequest req) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, req);
+      PartitionsSpecByExprResult v = (PartitionsSpecByExprResult) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.getPartitionsSpecByExprInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=getPartitionsSpecByExprInternal");
+      }
+      return v;
+    }
+    return super.getPartitionsSpecByExprInternal(req);
+  }
+
+  @Override
+  protected List<String> listPartitionNamesInternal(String catName, String dbName, String tableName,
+       int maxParts) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_ALL,
+          catName, dbName, tableName, maxParts);
+      List<String> v = (List<String>) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.listPartitionNamesInternal(catName, dbName, tableName, maxParts);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=listPartitionNamesInternalAll");
+      }
+      return v;
+    }
+    return super.listPartitionNamesInternal(catName, dbName, tableName, maxParts);
+  }
+
+  protected List<String> listPartitionNamesInternal(String catName, String dbName, String tableName,
+       List<String> partVals, int maxParts) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS,
+          catName, dbName, tableName, partVals, maxParts);
+      List<String> v = (List<String>) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.listPartitionNamesInternal(catName, dbName, tableName, partVals, maxParts);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=listPartitionNamesInternal");
+      }
+      return v;
+    }
+    return super.listPartitionNamesInternal(catName, dbName, tableName, partVals, maxParts);
+  }
+
+  @Override
+  protected GetPartitionNamesPsResponse listPartitionNamesRequestInternal(GetPartitionNamesPsRequest req)
+      throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_REQ, req);
+      GetPartitionNamesPsResponse v = (GetPartitionNamesPsResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.listPartitionNamesRequestInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=listPartitionNamesRequestInternal");
+      }
+      return v;
+    }
+    return super.listPartitionNamesRequestInternal(req);
+  }
+
+  @Override
+  protected List<Partition> listPartitionsWithAuthInfoInternal(String catName, String dbName, String tableName,
+      int maxParts, String userName, List<String> groupNames) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO_ALL,
+          catName, dbName, tableName, maxParts, userName, groupNames);
+      List<Partition> v = (List<Partition>) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.listPartitionsWithAuthInfoInternal(catName, dbName, tableName, maxParts, userName, groupNames);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=listPartitionsWithAuthInfoInternalAll");
+      }
+      return v;
+    }
+    return super.listPartitionsWithAuthInfoInternal(catName, dbName, tableName, maxParts, userName, groupNames);
+  }
+
+  @Override
+  protected List<Partition> listPartitionsWithAuthInfoInternal(String catName, String dbName, String tableName,
+      List<String> partialPvals, int maxParts, String userName, List<String> groupNames)
+      throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO,
+          catName, dbName, tableName, partialPvals, maxParts, userName, groupNames);
+      List<Partition> v = (List<Partition>) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.listPartitionsWithAuthInfoInternal(catName, dbName, tableName, partialPvals, maxParts, userName, groupNames);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=listPartitionsWithAuthInfoInternal");
+      }
+      return v;
+    }
+    return super.listPartitionsWithAuthInfoInternal(catName, dbName, tableName, partialPvals, maxParts, userName, groupNames);
+  }
+
+  @Override
+  protected GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequestInternal(GetPartitionsPsWithAuthRequest req)
+      throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      // Retrieve or populate cache
+      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO_REQ, req);
+      GetPartitionsPsWithAuthResponse v = (GetPartitionsPsWithAuthResponse) queryCache.get(cacheKey);
+      if (v == null) {
+        v = super.listPartitionsWithAuthInfoRequestInternal(req);
+        queryCache.put(cacheKey, v);
+      } else {
+        LOG.debug("Query level HMS cache: method=listPartitionsWithAuthInfoRequestInternal");
+      }
+      return v;
+    }
+    return super.listPartitionsWithAuthInfoRequestInternal(req);
+  }
+
+  @Override
+  protected GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest rqst) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      MapWrapper cache = new MapWrapper(queryCache);
+      // 1) Retrieve from the cache those ids present, gather the rest
+      Pair<List<Partition>, List<String>> p = getPartitionsByNamesCache(
+          cache, rqst, null);
+      List<String> partitionsMissing = p.getRight();
+      List<Partition> partitions = p.getLeft();
+      // 2) If they were all present in the cache, return
+      if (partitionsMissing.isEmpty()) {
+        return new GetPartitionsByNamesResult(partitions);
+      }
+      // 3) If they were not, gather the remaining
+      GetPartitionsByNamesRequest newRqst = new GetPartitionsByNamesRequest(rqst);
+      newRqst.setNames(partitionsMissing);
+      GetPartitionsByNamesResult r = super.getPartitionsByNamesInternal(newRqst);
+      // 4) Populate the cache
+      List<Partition> newPartitions = loadPartitionsByNamesCache(
+          cache, r, rqst, null);
+      // 5) Sort result (in case there is any assumption) and return
+      return computePartitionsByNamesFinal(rqst, partitions, newPartitions);
+    }
+    return super.getPartitionsByNamesInternal(rqst);
+  }
+
+  @Override
+  protected GetValidWriteIdsResponse getValidWriteIdsInternal(GetValidWriteIdsRequest rqst) throws TException {
+    Map<Object, Object> queryCache = getQueryCache();
+    if (queryCache != null) {
+      MapWrapper cache = new MapWrapper(queryCache);
+      // 1) Retrieve from the cache those ids present, gather the rest
+      Pair<List<TableValidWriteIds>, List<String>> p = getValidWriteIdsCache(
+          cache, rqst);
+      List<String> fullTableNamesMissing = p.getRight();
+      List<TableValidWriteIds> tblValidWriteIds = p.getLeft();
+      // 2) If they were all present in the cache, return
+      if (fullTableNamesMissing.isEmpty()) {
+        return new GetValidWriteIdsResponse(tblValidWriteIds);
+      }
+      // 3) If they were not, gather the remaining
+      GetValidWriteIdsRequest newRqst = new GetValidWriteIdsRequest(rqst);
+      newRqst.setFullTableNames(fullTableNamesMissing);
+      GetValidWriteIdsResponse r = super.getValidWriteIdsInternal(newRqst);
+      // 4) Populate the cache
+      List<TableValidWriteIds> newTblValidWriteIds = loadValidWriteIdsCache(
+          cache, r, rqst);
+      // 5) Sort result (in case there is any assumption) and return
+      return computeValidWriteIdsFinal(rqst, tblValidWriteIds, newTblValidWriteIds);
+    }
+    return super.getValidWriteIdsInternal(rqst);
+  }
+
+  /**
+   * Wrapper to create a cache around a Map.
+   */
+  protected static class MapWrapper implements CacheI {
+
+    final Map<Object, Object> m;
+
+    protected MapWrapper(Map<Object, Object> m) {
+      this.m = m;
+    }
+
+    @Override
+    public void put(Object k, Object v) {
+      m.put(k, v);
+    }
+
+    @Override
+    public Object get(Object k) {
+      return m.get(k);
+    }
+  }
+
+  private Map<Object, Object> getQueryCache() {
+    String queryId = getQueryId();
+    if (queryId != null) {
+      SessionState ss = SessionState.get();
+      if (ss != null) {
+        return ss.getQueryCache(queryId);
+      }
+    }
+    return null;
+  }
+
+  private String getQueryId() {
+    try {
+      return Hive.get().getConf().get(HiveConf.ConfVars.HIVEQUERYID.varname);
+    } catch (HiveException e) {
+      LOG.error("Error getting query id. Query level HMS caching will be disabled", e);
+      return null;
+    }
+  }
+
 }

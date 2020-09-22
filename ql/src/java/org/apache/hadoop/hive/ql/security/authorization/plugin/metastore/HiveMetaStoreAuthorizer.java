@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.PreAlterTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreCreateTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
@@ -60,6 +61,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * HiveMetaStoreAuthorizer :  Do authorization checks on MetaStore Events in MetaStorePreEventListener
@@ -69,9 +71,10 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
   private static final Log LOG = LogFactory.getLog(HiveMetaStoreAuthorizer.class);
 
   private static final ThreadLocal<Configuration> tConfig = new ThreadLocal<Configuration>() {
+
     @Override
     protected Configuration initialValue() {
-      return new HiveConf(HiveMetaStoreAuthorizer.class);
+      return null;
     }
   };
 
@@ -96,9 +99,10 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     LOG.debug("==> HiveMetaStoreAuthorizer.onEvent(): EventType=" + preEventContext.getEventType());
 
     try {
-      HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
-      if (!skipAuthorization()) {
-        HiveMetaStoreAuthzInfo authzContext = buildAuthzContext(preEventContext);
+      HiveMetaStoreAuthzInfo authzContext = buildAuthzContext(preEventContext);
+
+      if (!skipAuthorization(authzContext)) {
+        HiveAuthorizer hiveAuthorizer = createHiveMetaStoreAuthorizer();
         checkPrivileges(authzContext, hiveAuthorizer);
       }
     } catch (Exception e) {
@@ -380,19 +384,25 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
         case CREATE_TABLE:
           authzEvent = new CreateTableEvent(preEventContext);
           if (isViewOperation(preEventContext) && (!isSuperUser(getCurrentUser(authzEvent)))) {
-            throw new MetaException(getErrorMessage("CREATE_VIEW", getCurrentUser(authzEvent)));
+            //we allow view to be created, but mark it as having not been authorized
+            PreCreateTableEvent pcte = (PreCreateTableEvent)preEventContext;
+            Map<String, String> params = pcte.getTable().getParameters();
+            params.put("Authorized", "false");
           }
           break;
         case ALTER_TABLE:
           authzEvent = new AlterTableEvent(preEventContext);
           if (isViewOperation(preEventContext) && (!isSuperUser(getCurrentUser(authzEvent)))) {
-            throw new MetaException(getErrorMessage("ALTER_VIEW", getCurrentUser(authzEvent)));
+            //we allow view to be altered, but mark it as having not been authorized
+            PreAlterTableEvent pcte = (PreAlterTableEvent)preEventContext;
+            Map<String, String> params = pcte.getNewTable().getParameters();
+            params.put("Authorized", "false");
           }
           break;
         case DROP_TABLE:
           authzEvent = new DropTableEvent(preEventContext);
           if (isViewOperation(preEventContext) && (!isSuperUser(getCurrentUser(authzEvent)))) {
-            throw new MetaException(getErrorMessage("DROP_VIEW", getCurrentUser(authzEvent)));
+            //TODO: do we need to check Authorized flag?
           }
           break;
         case ADD_PARTITION:
@@ -443,7 +453,12 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
 
   HiveAuthorizer createHiveMetaStoreAuthorizer() throws Exception {
     HiveAuthorizer ret = null;
-    HiveConf hiveConf = new HiveConf(super.getConf(), HiveConf.class);
+    HiveConf hiveConf = (HiveConf)tConfig.get();
+    if(hiveConf == null){
+      HiveConf hiveConf1 = new HiveConf(super.getConf(), HiveConf.class);
+      tConfig.set(hiveConf1);
+      hiveConf = hiveConf1;
+    }
     HiveAuthorizerFactory authorizerFactory =
         HiveUtils.getAuthorizerFactory(hiveConf, HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER);
 
@@ -516,11 +531,14 @@ public class HiveMetaStoreAuthorizer extends MetaStorePreEventListener implement
     LOG.debug("<== HiveMetaStoreAuthorizer.checkPrivileges(): authzContext=" + authzContext + ", authorizer=" + authorizer);
   }
 
-  private boolean skipAuthorization() {
+  private boolean skipAuthorization(HiveMetaStoreAuthzInfo authzContext) {
     LOG.debug("==> HiveMetaStoreAuthorizer.skipAuthorization()");
 
+    //If HMS does not check the event type, it will leave it as null. We don't try to authorize null pointer. 
+    if(authzContext == null){
+      return true;
+    }
     boolean ret = false;
-
     UserGroupInformation ugi = null;
     try {
       ugi = getUGI();

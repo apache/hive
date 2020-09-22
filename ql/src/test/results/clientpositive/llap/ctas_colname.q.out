@@ -31,12 +31,12 @@ STAGE PLANS:
                 TableScan
                   alias: src
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: key (type: string), value (type: string), (UDFToDouble(key) + 1.0D) (type: double), concat(value, value) (type: string)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 500 Data size: 185000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 20
+                  Limit
+                    Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 3560 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: key (type: string), value (type: string), (UDFToDouble(key) + 1.0D) (type: double), concat(value, value) (type: string)
+                      outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 20 Data size: 7400 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
@@ -49,12 +49,12 @@ STAGE PLANS:
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: double), VALUE._col3 (type: string)
-                outputColumnNames: _col0, _col1, _col2, _col3
+              Limit
+                Number of rows: 20
                 Statistics: Num rows: 20 Data size: 7400 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 20
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: double), VALUE._col3 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics: Num rows: 20 Data size: 7400 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -496,12 +496,12 @@ STAGE PLANS:
                               window frame: ROWS PRECEDING(MAX)~FOLLOWING(MAX)
                               isPivotResult: true
                   Statistics: Num rows: 500 Data size: 223000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: string), lead_window_0 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 20
+                  Limit
+                    Number of rows: 20
+                    Statistics: Num rows: 20 Data size: 8920 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string), lead_window_0 (type: string)
+                      outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 20 Data size: 7240 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         null sort order: 
@@ -512,12 +512,12 @@ STAGE PLANS:
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string)
-                outputColumnNames: _col0, _col1, _col2
+              Limit
+                Number of rows: 20
                 Statistics: Num rows: 20 Data size: 7240 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 20
+                Select Operator
+                  expressions: VALUE._col0 (type: string), VALUE._col1 (type: string), VALUE._col2 (type: string)
+                  outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 20 Data size: 7240 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false

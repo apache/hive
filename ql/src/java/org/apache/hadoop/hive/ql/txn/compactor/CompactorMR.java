@@ -222,14 +222,12 @@ public class CompactorMR {
     if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
       throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
     }
-    
-    /**
-     * Run major compaction in a HiveQL query (compaction for MM tables handled in {@link MmMajorQueryCompactor}
-     * class).
-     * Find a better way:
-     * 1. A good way to run minor compaction (currently disabled when this config is enabled)
-     * 2. More generic approach to collecting files in the same logical bucket to compact within the same task
-     * (currently we're using Tez split grouping).
+
+    /*
+     Try to run compaction via HiveQL queries.
+     Compaction for MM tables happens here, or run compaction for Crud tables if query-based compaction is enabled.
+     todo Find a more generic approach to collecting files in the same logical bucket to compact within the same task
+     (currently we're using Tez split grouping).
      */
     QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
     if (queryCompactor != null) {
@@ -243,7 +241,7 @@ public class CompactorMR {
     List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
     int maxDeltasToHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);
     if (parsedDeltas.size() > maxDeltasToHandle) {
-      /**
+      /*
        * if here, that means we have very high number of delta files.  This may be sign of a temporary
        * glitch or a real issue.  For example, if transaction batch size or transaction size is set too
        * low for the event flow rate in Streaming API, it may generate lots of delta files very
@@ -1013,7 +1011,7 @@ public class CompactorMR {
       LOG.debug("Moving contents of " + tmpLocation.toString() + " to " +
           finalLocation.toString());
       if(!fs.exists(tmpLocation)) {
-        /**
+        /*
          * No 'tmpLocation' may happen if job generated created 0 splits, which happens if all
          * input delta and/or base files were empty or had
          * only {@link org.apache.orc.impl.OrcAcidUtils#getSideFile(Path)} files.

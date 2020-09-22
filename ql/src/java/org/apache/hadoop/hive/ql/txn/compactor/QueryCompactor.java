@@ -94,7 +94,8 @@ abstract class QueryCompactor {
       List<String> createQueries, List<String> compactionQueries, List<String> dropQueries)
       throws IOException {
     Util.disableLlapCaching(conf);
-    String user = UserGroupInformation.getCurrentUser().getShortUserName();
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS, true);
+    String user = compactionInfo.runAs;
     SessionState sessionState = DriverUtils.setUpSessionState(conf, user, true);
     long compactorTxnId = CompactorMR.CompactorMap.getCompactorTxnId(conf);
     try {

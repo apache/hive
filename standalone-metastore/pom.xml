@@ -81,13 +81,13 @@
     <guava.version>19.0</guava.version>
     <hadoop.version>3.1.0</hadoop.version>
     <hikaricp.version>2.6.1</hikaricp.version>
-    <jackson.version>2.10.0</jackson.version>
+    <jackson.version>2.10.5</jackson.version>
     <javolution.version>5.5.1</javolution.version>
     <junit.version>4.13</junit.version>
     <junit.jupiter.version>5.6.2</junit.jupiter.version>
     <junit.vintage.version>5.6.2</junit.vintage.version>
     <libfb303.version>0.9.3</libfb303.version>
-    <libthrift.version>0.9.3-1</libthrift.version>
+    <libthrift.version>0.13.0</libthrift.version>
     <log4j2.version>2.12.1</log4j2.version>
     <mockito-core.version>3.3.3</mockito-core.version>
     <orc.version>1.5.1</orc.version>
@@ -110,8 +110,7 @@
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
-    <thrift.args>-I ${thrift.home} --gen java:beans,hashcode,generated_annotations=undated --gen cpp
-      --gen php --gen py --gen rb
+    <thrift.args>-I ${thrift.home} --gen java:beans,generated_annotations=undated --gen cpp --gen php --gen py --gen rb
     </thrift.args>
 
   </properties>

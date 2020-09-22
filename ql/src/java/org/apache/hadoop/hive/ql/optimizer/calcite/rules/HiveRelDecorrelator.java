@@ -98,6 +98,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIntersect;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
@@ -1239,12 +1240,16 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       valueGenerator = false;
     }
 
-    if(oldInput instanceof LogicalCorrelate
-        && ((LogicalCorrelate) oldInput).getJoinType() == JoinRelType.SEMI
-        &&  !cm.mapRefRelToCorRef.containsKey(rel)) {
+    boolean isSemiJoin = false;
+    if (oldInput instanceof LogicalCorrelate) {
+      isSemiJoin = ((LogicalCorrelate) oldInput).getJoinType() == JoinRelType.SEMI ||
+              ((LogicalCorrelate) oldInput).getJoinType() == JoinRelType.ANTI;
+    }
+
+    if(isSemiJoin && !cm.mapRefRelToCorRef.containsKey(rel)) {
       // this conditions need to be pushed into semi-join since this condition
       // corresponds to IN
-      HiveSemiJoin join = ((HiveSemiJoin)frame.r);
+      Join join = ((Join)frame.r);
       final List<RexNode> conditions = new ArrayList<>();
       RexNode joinCond = join.getCondition();
       conditions.add(joinCond);
@@ -1252,8 +1257,14 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       final RexNode condition =
           RexUtil.composeConjunction(rexBuilder, conditions, false);
 
-      RelNode newRel = HiveSemiJoin.getSemiJoin(frame.r.getCluster(), frame.r.getTraitSet(),
-          join.getLeft(), join.getRight(), condition);
+      RelNode newRel;
+      if (((LogicalCorrelate) oldInput).getJoinType() == JoinRelType.SEMI) {
+        newRel = HiveSemiJoin.getSemiJoin(frame.r.getCluster(), frame.r.getTraitSet(),
+                join.getLeft(), join.getRight(), condition);
+      } else {
+        newRel = HiveAntiJoin.getAntiJoin(frame.r.getCluster(), frame.r.getTraitSet(),
+                join.getLeft(), join.getRight(), condition);
+      }
 
       return register(rel, newRel, frame.oldToNewOutputs, frame.corDefOutputs);
     }
@@ -1311,9 +1322,13 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       valueGenerator = false;
     }
 
-    if(oldInput instanceof LogicalCorrelate
-        && ((LogicalCorrelate) oldInput).getJoinType() == JoinRelType.SEMI
-        &&  !cm.mapRefRelToCorRef.containsKey(rel)) {
+    boolean isSemiJoin = false;
+    if (oldInput instanceof LogicalCorrelate) {
+      isSemiJoin = ((LogicalCorrelate) oldInput).getJoinType() == JoinRelType.SEMI ||
+              ((LogicalCorrelate) oldInput).getJoinType() == JoinRelType.ANTI;
+    }
+
+    if(isSemiJoin && !cm.mapRefRelToCorRef.containsKey(rel)) {
       // this conditions need to be pushed into semi-join since this condition
       // corresponds to IN
       HiveSemiJoin join = ((HiveSemiJoin)frame.r);
@@ -1323,8 +1338,15 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
       conditions.add(decorrelateExpr(rel.getCondition(), valueGenerator));
       final RexNode condition =
           RexUtil.composeConjunction(rexBuilder, conditions, false);
-      RelNode newRel = HiveSemiJoin.getSemiJoin(frame.r.getCluster(), frame.r.getTraitSet(),
-          join.getLeft(), join.getRight(), condition);
+
+      RelNode newRel;
+      if (((LogicalCorrelate) oldInput).getJoinType() == JoinRelType.SEMI) {
+        newRel = HiveSemiJoin.getSemiJoin(frame.r.getCluster(), frame.r.getTraitSet(),
+                join.getLeft(), join.getRight(), condition);
+      } else {
+        newRel = HiveAntiJoin.getAntiJoin(frame.r.getCluster(), frame.r.getTraitSet(),
+                join.getLeft(), join.getRight(), condition);
+      }
       return register(rel, newRel, frame.oldToNewOutputs, frame.corDefOutputs);
     }
 
@@ -1447,14 +1469,18 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     RelNode newJoin = null;
 
     // this indicates original query was either correlated EXISTS or IN
-    if(rel.getJoinType() == JoinRelType.SEMI) {
+    if(rel.getJoinType() == JoinRelType.SEMI || rel.getJoinType() == JoinRelType.ANTI) {
       final List<Integer> leftKeys = new ArrayList<Integer>();
       final List<Integer> rightKeys = new ArrayList<Integer>();
 
       RelNode[] inputRels = new RelNode[] {leftFrame.r, rightFrame.r};
-      newJoin = HiveSemiJoin.getSemiJoin(rel.getCluster(),
-          rel.getCluster().traitSetOf(HiveRelNode.CONVENTION), leftFrame.r, rightFrame.r, condition);
-
+      if (rel.getJoinType() == JoinRelType.ANTI) {
+        newJoin = HiveAntiJoin.getAntiJoin(rel.getCluster(),
+                rel.getCluster().traitSetOf(HiveRelNode.CONVENTION), leftFrame.r, rightFrame.r, condition);
+      } else {
+        newJoin = HiveSemiJoin.getSemiJoin(rel.getCluster(),
+                rel.getCluster().traitSetOf(HiveRelNode.CONVENTION), leftFrame.r, rightFrame.r, condition);
+      }
     } else {
       // Right input positions are shifted by newLeftFieldCount.
       for (int i = 0; i < oldRightFieldCount; i++) {
@@ -1610,7 +1636,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
     if(oldInput == null) {
       if(currentRel.getInputs().size() == 1 && currentRel.getInput(0) instanceof LogicalCorrelate) {
         final Frame newFrame = map.get(currentRel.getInput(0));
-        if(newFrame.r instanceof HiveSemiJoin) {
+        if(newFrame.r instanceof HiveSemiJoin || newFrame.r instanceof HiveAntiJoin) {
           int oldFieldSize = currentRel.getInput(0).getRowType().getFieldCount();
           int newOrd = newFrame.r.getRowType().getFieldCount() + oldOrdinalNo - oldFieldSize;
           return new RexInputRef(newOrd, oldInputRef.getType());

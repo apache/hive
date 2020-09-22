@@ -60,6 +60,8 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   @Test
   public void testRenameTable() throws Exception {
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
+    hiveConf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
+
     runStatementOnDriver("drop database if exists mydb1 cascade");
     runStatementOnDriver("drop database if exists mydb2 cascade");
     runStatementOnDriver("create database mydb1");

@@ -1014,6 +1014,7 @@ struct CommitTxnRequest {
     4: optional ReplLastIdInfo replLastIdInfo,
     // An optional key/value to store atomically with the transaction
     5: optional CommitTxnKeyValue keyValue,
+    6: optional bool exclWriteEnabled = true
 }
 
 struct ReplTblWriteIdStateRequest {

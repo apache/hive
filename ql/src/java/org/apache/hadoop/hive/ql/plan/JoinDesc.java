@@ -48,6 +48,7 @@ public class JoinDesc extends AbstractOperatorDesc {
   public static final int FULL_OUTER_JOIN = 3;
   public static final int UNIQUE_JOIN = 4;
   public static final int LEFT_SEMI_JOIN = 5;
+  public static final int ANTI_JOIN = 6;
 
   // used to handle skew join
   private boolean handleSkewJoin = false;

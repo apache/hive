@@ -266,7 +266,8 @@ public class CorrelationOptimizer extends Transform {
         if (pos == joinCond.getLeft()) {
           if (type == JoinDesc.INNER_JOIN ||
               type == JoinDesc.LEFT_OUTER_JOIN ||
-              type == JoinDesc.LEFT_SEMI_JOIN) {
+              type == JoinDesc.LEFT_SEMI_JOIN ||
+              type == JoinDesc.ANTI_JOIN) {
             Operator<? extends OperatorDesc> newCurrentRsOps = rsOps.get(joinCond.getRight());
             analyzeReduceSinkOperatorsOfJoinOperator(joinConds, rsOps, newCurrentRsOps,
                 correlatedRsOps);

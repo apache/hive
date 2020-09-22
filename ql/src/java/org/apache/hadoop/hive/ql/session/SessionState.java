@@ -57,6 +57,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -94,6 +95,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.TempTable;
+import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook;
@@ -133,6 +135,11 @@ public class SessionState implements ISessionAuthState{
   static final String INFO_FILE_NAME = "inuse.info";
 
   /**
+   *
+   */
+  private final ConcurrentHashMap<String, Map<Object, Object>> cache = new ConcurrentHashMap<>();
+
+  /**
    * Concurrent since SessionState is often propagated to workers in thread pools
    */
   private final Map<String, Map<String, Table>> tempTables = new ConcurrentHashMap<>();
@@ -140,6 +147,9 @@ public class SessionState implements ISessionAuthState{
       new ConcurrentHashMap<>();
   private final Map<String, TempTable> tempPartitions =
       new ConcurrentHashMap<>();
+
+  // Prepared statement plans
+  private final Map<String, BaseSemanticAnalyzer> preparePlanMap = new ConcurrentHashMap<>();
 
   protected ClassLoader parentLoader;
 
@@ -155,6 +165,11 @@ public class SessionState implements ISessionAuthState{
    * silent mode.
    */
   protected boolean isSilent;
+
+  /**
+   * silent mode.
+   */
+  protected boolean isQtestLogging;
 
   /**
    * verbose mode
@@ -368,6 +383,10 @@ public class SessionState implements ISessionAuthState{
     }
   }
 
+  public boolean getIsQtestLogging() {
+    return isQtestLogging;
+  }
+
   public boolean isHiveServerQuery() {
     return this.isHiveServerQuery;
   }
@@ -377,6 +396,10 @@ public class SessionState implements ISessionAuthState{
       sessionConf.setBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT, isSilent);
     }
     this.isSilent = isSilent;
+  }
+
+  public void setIsQtestLogging(boolean isQtestLogging) {
+    this.isQtestLogging = isQtestLogging;
   }
 
   public ReentrantLock getCompileLock() {
@@ -1175,6 +1198,17 @@ public class SessionState implements ISessionAuthState{
       return (ss != null) ? ss.getIsSilent() : isSilent;
     }
 
+
+    /**
+     * Is the logging to the info stream is enabled, or not.
+     * @return True if the logging is disabled to the HiveServer2 or HiveCli info stream
+     */
+    public boolean getIsQtestLogging() {
+      SessionState ss = SessionState.get();
+      // use the session or the one supplied in constructor
+      return (ss != null) ? ss.getIsQtestLogging() : false;
+    }
+
     /**
      * Logs into the log file.
      * BeeLine uses the operation log file to show the logs to the user, so depending on the
@@ -1266,7 +1300,9 @@ public class SessionState implements ISessionAuthState{
      * @param detail Extra detail to log which will be not printed if null
      */
     public void printError(String error, String detail) {
-      getErrStream().println(error);
+      if(!getIsSilent() || getIsQtestLogging()) {
+        getErrStream().println(error);
+      }
       LOG.error(error + StringUtils.defaultString(detail));
     }
   }
@@ -1947,6 +1983,11 @@ public class SessionState implements ISessionAuthState{
   public Map<String, Map<String, Table>> getTempTables() {
     return tempTables;
   }
+
+  public Map<String, BaseSemanticAnalyzer> getPreparePlans() {
+    return preparePlanMap;
+  }
+
   public Map<String, TempTable> getTempPartitions() {
     return tempPartitions;
   }
@@ -2100,6 +2141,33 @@ public class SessionState implements ISessionAuthState{
 
   public String getNewSparkSessionId() {
     return getSessionId() + "_" + Long.toString(this.sparkSessionId.getAndIncrement());
+  }
+
+  /**
+   * Can be called when we start compilation of a query.
+   * @param queryId the unique identifier of the query
+   */
+  public void startScope(String queryId) {
+    Map<Object, Object> existingVal = cache.put(queryId, new HashMap<>());
+    Preconditions.checkState(existingVal == null);
+  }
+
+  /**
+   * Can be called when we end compilation of a query.
+   * @param queryId the unique identifier of the query
+   */
+  public void endScope(String queryId) {
+    Map<Object, Object> existingVal = cache.remove(queryId);
+    Preconditions.checkState(existingVal != null);
+  }
+
+  /**
+   * Retrieves the query cache for the given query.
+   * @param queryId the unique identifier of the query
+   * @return the cache for the query
+   */
+  public Map<Object, Object> getQueryCache(String queryId) {
+    return cache.get(queryId);
   }
 }
 

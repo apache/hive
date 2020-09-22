@@ -128,6 +128,9 @@ class CompactionTxnHandler extends TxnHandler {
             info.partName = rs.getString(3);
             info.tooManyAborts = numAbortedTxns > abortedThreshold;
             info.hasOldAbort = pastTimeThreshold;
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Found potential compaction: " + info.toString());
+            }
             response.add(info);
           }
         }
@@ -301,6 +304,9 @@ class CompactionTxnHandler extends TxnHandler {
           }
           info.runAs = rs.getString(6);
           info.highestWriteId = rs.getLong(7);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Found ready to clean: " + info.toString());
+          }
           rc.add(info);
         }
         LOG.debug("Going to rollback");
@@ -330,6 +336,9 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.CannotRetry
   public void markCleaned(CompactionInfo info) throws MetaException {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Running markCleaned with CompactionInfo: " + info.toString());
+    }
     try {
       Connection dbConn = null;
       PreparedStatement pStmt = null;
@@ -360,13 +369,16 @@ class CompactionTxnHandler extends TxnHandler {
           LOG.debug("Going to rollback");
           dbConn.rollback();
         }
-        pStmt = dbConn.prepareStatement("INSERT INTO \"COMPLETED_COMPACTIONS\"(\"CC_ID\", \"CC_DATABASE\", "
+        s = "INSERT INTO \"COMPLETED_COMPACTIONS\"(\"CC_ID\", \"CC_DATABASE\", "
             + "\"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", "
             + "\"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", "
             + "\"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", \"CC_ENQUEUE_TIME\")"
-            + " VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?)");
+            + " VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?)";
+        pStmt = dbConn.prepareStatement(s);
         info.state = SUCCEEDED_STATE;
-        CompactionInfo.insertIntoCompletedCompactions(pStmt, info, getDbTime(dbConn));
+        long enqueueTime = getDbTime(dbConn);
+        CompactionInfo.insertIntoCompletedCompactions(pStmt, info, enqueueTime);
+        LOG.debug("Going to execute update <" + s + "> with parameter enqueue time: " + enqueueTime);
         updCount = pStmt.executeUpdate();
 
         // Remove entries from completed_txn_components as well, so we don't start looking there
@@ -395,7 +407,8 @@ class CompactionTxnHandler extends TxnHandler {
           LOG.error("Expected to remove at least one row from completed_txn_components when " +
             "marking compaction entry as clean!");
         }
-        /**
+        LOG.debug("Removed " + updCount + " records from completed_txn_components");
+        /*
          * compaction may remove data from aborted txns above tc_writeid bit it only guarantees to
          * remove it up to (inclusive) tc_writeid, so it's critical to not remove metadata about
          * aborted TXN_COMPONENTS above tc_writeid (and consequently about aborted txns).
@@ -416,7 +429,6 @@ class CompactionTxnHandler extends TxnHandler {
         if (info.partName != null) {
           pStmt.setString(paramCount++, info.partName);
         }
-
         LOG.debug("Going to execute update <" + s + ">");
         rs = pStmt.executeQuery();
         List<Long> txnids = new ArrayList<>();
@@ -489,6 +501,7 @@ class CompactionTxnHandler extends TxnHandler {
       markCleaned(info);
     }
   }
+
   /**
    * Clean up entries from TXN_TO_WRITE_ID table less than min_uncommited_txnid as found by
    * min(max(TXNS.txn_id), min(WRITE_SET.WS_COMMIT_ID), min(Aborted TXNS.txn_id)).
@@ -569,7 +582,7 @@ class CompactionTxnHandler extends TxnHandler {
         //after that, so READ COMMITTED is sufficient.
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        /**
+        /*
          * Only delete aborted / committed transaction in a way that guarantees two things:
          * 1. never deletes anything that is inside the TXN_OPENTXN_TIMEOUT window
          * 2. never deletes the maximum txnId even if it is before the TXN_OPENTXN_TIMEOUT window
@@ -646,7 +659,9 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.debug("Going to execute update <" + s + ">");
         // It isn't an error if the following returns no rows, as the local workers could have died
         // with  nothing assigned to them.
-        stmt.executeUpdate(s);
+        int updated = stmt.executeUpdate(s);
+        LOG.debug("Set " + updated + " compaction queue entries to " + INITIATED_RESPONSE + " state for host "
+            + hostname);
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
@@ -691,7 +706,9 @@ class CompactionTxnHandler extends TxnHandler {
         LOG.debug("Going to execute update <" + s + ">");
         // It isn't an error if the following returns no rows, as the local workers could have died
         // with  nothing assigned to them.
-        stmt.executeUpdate(s);
+        int updated = stmt.executeUpdate(s);
+        LOG.info(updated + " compaction queue entries timed out, set back to " + INITIATED_RESPONSE + " state. Latest "
+            + "valid start: " + latestValidStart);
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
@@ -720,6 +737,9 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.ReadOnly
   public List<String> findColumnsWithStats(CompactionInfo ci) throws MetaException {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Finding columns with statistics info for CompactionInfo: " + ci.toString());
+    }
     Connection dbConn = null;
     PreparedStatement pStmt = null;
     ResultSet rs = null;
@@ -774,6 +794,7 @@ class CompactionTxnHandler extends TxnHandler {
       return findColumnsWithStats(ci);
     }
   }
+
   @Override
   public void updateCompactorState(CompactionInfo ci, long compactionTxnId) throws MetaException {
     Connection dbConn = null;
@@ -834,16 +855,19 @@ class CompactionTxnHandler extends TxnHandler {
       updateCompactorState(ci, compactionTxnId);
     }
   }
+
   private static class RetentionCounters {
     int attemptedRetention = 0;
     int failedRetention = 0;
     int succeededRetention = 0;
+
     RetentionCounters(int attemptedRetention, int failedRetention, int succeededRetention) {
       this.attemptedRetention = attemptedRetention;
       this.failedRetention = failedRetention;
       this.succeededRetention = succeededRetention;
     }
   }
+
   private void checkForDeletion(List<Long> deleteSet, CompactionInfo ci, RetentionCounters rc) {
     switch (ci.state) {
       case ATTEMPTED_STATE:
@@ -887,16 +911,18 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        /*cc_id is monotonically increasing so for any entity sorts in order of compaction history,
-        thus this query groups by entity and withing group sorts most recent first*/
+        /* cc_id is monotonically increasing so for any entity sorts in order of compaction history,
+        thus this query groups by entity and withing group sorts most recent first */
         rs = stmt.executeQuery("SELECT \"CC_ID\", \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\" "
             + "FROM \"COMPLETED_COMPACTIONS\" ORDER BY \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\", \"CC_ID\" DESC");
         String lastCompactedEntity = null;
-        /*In each group, walk from most recent and count occurences of each state type.  Once you
+        /* In each group, walk from most recent and count occurrences of each state type.  Once you
         * have counted enough (for each state) to satisfy retention policy, delete all other
-        * instances of this status.*/
+        * instances of this status. */
         while(rs.next()) {
-          CompactionInfo ci = new CompactionInfo(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5).charAt(0));
+          CompactionInfo ci = new CompactionInfo(
+              rs.getLong(1), rs.getString(2), rs.getString(3),
+              rs.getString(4), rs.getString(5).charAt(0));
           if(!ci.getFullPartitionName().equals(lastCompactedEntity)) {
             lastCompactedEntity = ci.getFullPartitionName();
             rc = new RetentionCounters(MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
@@ -917,7 +943,6 @@ class CompactionTxnHandler extends TxnHandler {
         StringBuilder suffix = new StringBuilder();
 
         prefix.append("DELETE FROM \"COMPLETED_COMPACTIONS\" WHERE ");
-        suffix.append("");
 
         List<String> questions = new ArrayList<>(deleteSet.size());
         for (int  i = 0; i < deleteSet.size(); i++) {
@@ -952,6 +977,7 @@ class CompactionTxnHandler extends TxnHandler {
       purgeCompactionHistory();
     }
   }
+
   /**
    * this ensures that the number of failed compaction entries retained is > than number of failed
    * compaction threshold which prevents new compactions from being scheduled.
@@ -968,6 +994,7 @@ class CompactionTxnHandler extends TxnHandler {
     }
     return failedRetention;
   }
+
   /**
    * Returns {@code true} if there already exists sufficient number of consecutive failures for
    * this table/partition so that no new automatic compactions will be scheduled.
@@ -1024,6 +1051,7 @@ class CompactionTxnHandler extends TxnHandler {
       return checkFailedCompactions(ci);
     }
   }
+
   /**
    * If there is an entry in compaction_queue with ci.id, remove it
    * Make entry in completed_compactions with status 'f'.
@@ -1033,7 +1061,9 @@ class CompactionTxnHandler extends TxnHandler {
   @Override
   @RetrySemantics.CannotRetry
   public void markFailed(CompactionInfo ci) throws MetaException {//todo: this should not throw
-    //todo: this should take "comment" as parameter to set in CC_META_INFO to provide some context for the failure
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("Marking as failed: CompactionInfo: " + ci.toString());
+    }
     try {
       Connection dbConn = null;
       Statement stmt = null;
@@ -1074,10 +1104,13 @@ class CompactionTxnHandler extends TxnHandler {
           //compactions are not happening.
           ci.state = ATTEMPTED_STATE;
           //this is not strictly accurate, but 'type' cannot be null.
-          if(ci.type == null) { ci.type = CompactionType.MINOR; }
+          if(ci.type == null) {
+            ci.type = CompactionType.MINOR;
+          }
           ci.start = getDbTime(dbConn);
-        }
-        else {
+          LOG.debug("The failure occurred before we even made an entry in COMPACTION_QUEUE. Generated ID so that we "
+              + "can make an entry in COMPLETED_COMPACTIONS. New Id: " + ci.id);
+        } else {
           ci.state = FAILED_STATE;
         }
         close(rs, stmt, null);
@@ -1094,6 +1127,7 @@ class CompactionTxnHandler extends TxnHandler {
         }
         CompactionInfo.insertIntoCompletedCompactions(pStmt, ci, getDbTime(dbConn));
         int updCount = pStmt.executeUpdate();
+        LOG.debug("Inserted " + updCount + " entries into COMPLETED_COMPACTIONS");
         LOG.debug("Going to commit");
         closeStmt(pStmt);
         dbConn.commit();
@@ -1122,7 +1156,7 @@ class CompactionTxnHandler extends TxnHandler {
         stmt = dbConn.createStatement();
         String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_HADOOP_JOB_ID\" = " + quoteString(hadoopJobId)
             + " WHERE \"CQ_ID\" = " + id;
-        LOG.debug("Going to execute <" + s + ">");
+        LOG.debug("Going to execute <" + s + ">  with jobId: " + hadoopJobId + " and CQ id: " + id);
         int updateCount = stmt.executeUpdate(s);
         LOG.debug("Going to commit");
         closeStmt(stmt);

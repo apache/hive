@@ -84,6 +84,7 @@ public class Cleaner extends MetaStoreCompactorThread {
 
   @Override
   public void run() {
+    LOG.info("Starting Cleaner thread");
     try {
       do {
         TxnStore.MutexAPI.LockHandle handle = null;
@@ -94,6 +95,7 @@ public class Cleaner extends MetaStoreCompactorThread {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
           startedAt = System.currentTimeMillis();
           long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
+          LOG.info("Cleaning based on min open txn id: " + minOpenTxnId);
           List<CompletableFuture> cleanerList = new ArrayList<>();
           for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
             cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
@@ -113,6 +115,7 @@ public class Cleaner extends MetaStoreCompactorThread {
         if (elapsedTime < cleanerCheckInterval && !stop.get()) {
           Thread.sleep(cleanerCheckInterval - elapsedTime);
         }
+        LOG.debug("Cleaner thread finished one loop.");
       } while (!stop.get());
     } catch (InterruptedException ie) {
       LOG.error("Compactor cleaner thread interrupted, exiting " +
@@ -194,6 +197,9 @@ public class Cleaner extends MetaStoreCompactorThread {
       //Creating 'reader' list since we are interested in the set of 'obsolete' files
       ValidReaderWriteIdList validWriteIdList =
           TxnCommonUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Cleaning based on writeIdList: " + validWriteIdList);
+      }
 
       if (runJobAsSelf(ci.runAs)) {
         removeFiles(location, validWriteIdList, ci);

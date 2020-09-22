@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse.repl;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
@@ -27,6 +28,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
@@ -55,7 +57,7 @@ public class CopyUtils {
   private final HiveConf hiveConf;
   private final long maxCopyFileSize;
   private final long maxNumberOfFiles;
-  private final boolean hiveInTest;
+  private final boolean hiveInReplTest;
   private final String copyAsUser;
   private FileSystem destinationFs;
 
@@ -63,7 +65,7 @@ public class CopyUtils {
     this.hiveConf = hiveConf;
     maxNumberOfFiles = hiveConf.getLongVar(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES);
     maxCopyFileSize = hiveConf.getLongVar(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE);
-    hiveInTest = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST);
+    hiveInReplTest = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL);
     this.copyAsUser = distCpDoAsUser;
     this.destinationFs = destinationFs;
   }
@@ -71,18 +73,18 @@ public class CopyUtils {
   // Used by replication, copy files from source to destination. It is possible source file is
   // changed/removed during copy, so double check the checksum after copy,
   // if not match, copy again from cm
-  public void copyAndVerify(Path destRoot, List<ReplChangeManager.FileInfo> srcFiles, Path origSrcPtah,
-                            boolean overwrite)
+  public void copyAndVerify(Path destRoot, List<ReplChangeManager.FileInfo> srcFiles, Path origSrcPath,
+                            boolean readSrcAsFilesList, boolean overwrite)
           throws IOException, LoginException, HiveFatalException {
     UserGroupInformation proxyUser = getProxyUser();
-    FileSystem sourceFs = origSrcPtah.getFileSystem(hiveConf);
+    if (CollectionUtils.isEmpty(srcFiles)) {
+      throw new IOException(ErrorMsg.REPL_INVALID_ARGUMENTS.format("SrcFiles can not be empty during copy operation."));
+    }
+    FileSystem sourceFs = srcFiles.get(0).getSrcFs();
     boolean useRegularCopy = regularCopy(sourceFs, srcFiles);
     try {
-      if (!useRegularCopy) {
-        srcFiles.clear();
-        srcFiles.add(new ReplChangeManager.FileInfo(sourceFs, origSrcPtah, null));
-        doCopyRetry(sourceFs, srcFiles, destRoot, proxyUser, useRegularCopy, overwrite);
-      } else {
+      if (useRegularCopy || readSrcAsFilesList) {
+        // Layout of data files may differ based on the type of tables.
         Map<FileSystem, Map< Path, List<ReplChangeManager.FileInfo>>> map = fsToFileMap(srcFiles, destRoot);
         for (Map.Entry<FileSystem, Map<Path, List<ReplChangeManager.FileInfo>>> entry : map.entrySet()) {
           Map<Path, List<ReplChangeManager.FileInfo>> destMap = entry.getValue();
@@ -99,9 +101,16 @@ public class CopyUtils {
             }
 
             // Copy files with retry logic on failure or source file is dropped or changed.
-            doCopyRetry(sourceFs, fileInfoList, destination, proxyUser, true, overwrite);
+            doCopyRetry(sourceFs, fileInfoList, destination, proxyUser, useRegularCopy, overwrite);
           }
         }
+      } else {
+        // When distCp is to be used and the srcFiles doesn't contain subDirs (readSrcAsFilesList=false),
+        // original from path should be used during distCp, as distCp copies dirItems of srcPath,
+        // not the srcPath folder itself.
+        srcFiles.clear();
+        srcFiles.add(new ReplChangeManager.FileInfo(sourceFs, origSrcPath, null));
+        doCopyRetry(sourceFs, srcFiles, destRoot, proxyUser, useRegularCopy, overwrite);
       }
     } finally {
       if (proxyUser != null) {
@@ -297,39 +306,27 @@ public class CopyUtils {
     return false;
   }
 
-  private UserGroupInformation getProxyUser() throws LoginException, IOException {
+  private UserGroupInformation getProxyUser() throws IOException {
     if (copyAsUser == null) {
       return null;
     }
-    UserGroupInformation proxyUser = null;
-    int currentRetry = 0;
-    while (currentRetry <= MAX_IO_RETRY) {
-      try {
+    Retryable retryable = Retryable.builder()
+      .withHiveConf(hiveConf)
+      .withRetryOnException(IOException.class).build();
+    try {
+      return retryable.executeCallable(() -> {
+        UserGroupInformation proxyUser = null;
         UserGroupInformation ugi = Utils.getUGI();
         String currentUser = ugi.getShortUserName();
         if (!currentUser.equals(copyAsUser)) {
           proxyUser = UserGroupInformation.createProxyUser(
-                  copyAsUser, UserGroupInformation.getLoginUser());
+            copyAsUser, UserGroupInformation.getLoginUser());
         }
         return proxyUser;
-      } catch (IOException e) {
-        currentRetry++;
-        if (currentRetry <= MAX_IO_RETRY) {
-          LOG.warn("Unable to get UGI info", e);
-        } else {
-          LOG.error("Unable to get UGI info", e);
-          throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg());
-        }
-        int sleepTime = FileUtils.getSleepTime(currentRetry);
-        LOG.info("Sleep for " + sleepTime + " milliseconds before retry " + (currentRetry));
-        try {
-          Thread.sleep(sleepTime);
-        } catch (InterruptedException timerEx) {
-          LOG.info("Sleep interrupted", timerEx.getMessage());
-        }
-      }
+      });
+    } catch (Exception e) {
+      throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }
-    return null;
   }
 
   // Copy without retry
@@ -438,7 +435,7 @@ public class CopyUtils {
   */
   boolean regularCopy(FileSystem sourceFs, List<ReplChangeManager.FileInfo> fileList)
       throws IOException {
-    if (hiveInTest) {
+    if (hiveInReplTest) {
       return true;
     }
     if (isLocal(sourceFs) || isLocal(destinationFs)) {

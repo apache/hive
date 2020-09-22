@@ -34,10 +34,9 @@ import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
-import org.apache.hadoop.hive.ql.DriverFactory;
-import org.apache.hadoop.hive.ql.IDriver;
+import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.TestTxnCommands2;
-import org.apache.hadoop.hive.ql.reexec.ReExecDriver;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -2007,8 +2006,8 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     catch (LockException e) {
       expectedException = e;
     }
-    if (causeConflict) {
-      Assert.assertNotNull("didn't get exception", expectedException);
+    if (causeConflict && sharedWrite) {
+      Assert.assertNotNull("Didn't get exception", expectedException);
       try {
         Assert.assertEquals("Transaction manager has aborted the transaction txnid:11.  Reason: " +
             "Aborting [txnid:11,11] due to a write conflict on default/target/p=1/q=2 " +
@@ -2041,7 +2040,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       Assert.assertEquals(
           "COMPLETED_TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnId2) + "): " +
           TxnDbUtil.queryToString(conf, "select * from \"COMPLETED_TXN_COMPONENTS\""),
-          4,
+        causeConflict ? 6 : 4,
           TxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" where \"CTC_TXNID\"=" + txnId2));
       Assert.assertEquals(
           "WRITE_SET mismatch(" + JavaUtils.txnIdToString(txnId2) + "): " +
@@ -2052,7 +2051,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       Assert.assertEquals(
           "WRITE_SET mismatch(" + JavaUtils.txnIdToString(txnId2) + "): " +
           TxnDbUtil.queryToString(conf, "select * from \"WRITE_SET\""),
-          0,
+        causeConflict ? 2 : 0,
           TxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\" where \"WS_TXNID\"=" + txnId2 +
               " and \"WS_OPERATION_TYPE\"='d'"));
     }
@@ -2167,7 +2166,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     catch (LockException e) {
       expectedException = e;
     }
-    if (causeConflict) {
+    if (causeConflict && sharedWrite) {
       Assert.assertNotNull("Didn't get exception", expectedException);
       Assert.assertEquals("Got wrong message code", ErrorMsg.TXN_ABORTED, expectedException.getCanonicalErrorMsg());
       Assert.assertEquals("Exception msg didn't match",
@@ -2258,7 +2257,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     swapTxnManager(txnMgr);
     driver.run(query);
-    driver.run("select * from target");
 
     swapTxnManager(txnMgr2);
     try {
@@ -2272,6 +2270,68 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     List res = new ArrayList();
     driver.getFetchTask().fetch(res);
     Assert.assertEquals("Duplicate records found", 4, res.size());
+    dropTable(new String[]{"target", "source"});
+  }
+
+  @Test
+  public void testUpdateMergeUpdateConcurrentSnapshotInvalidate() throws Exception {
+    dropTable(new String[]{"target", "source"});
+    driver2.getConf().setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+
+    driver.run("create table target (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into target values (1,2), (3,4)");
+    driver.run("create table source (a int, b int)");
+    driver.run("insert into source values (5,6), (7,8)");
+
+    driver.compileAndRespond("update target set a=5 where a=1");
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("merge into target t using source s on t.a = s.a " +
+      "when matched then update set b=8");
+
+    swapTxnManager(txnMgr);
+    driver.run();
+
+    swapTxnManager(txnMgr2);
+    driver2.run();
+
+    swapTxnManager(txnMgr);
+    driver.run("select * from target");
+    List res = new ArrayList();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals(2, res.size());
+    Assert.assertEquals("Lost Update", "5\t8", res.get(1));
+    dropTable(new String[]{"target", "source"});
+  }
+
+  @Test
+  public void testUpdateMergeUpdateConcurrentSnapshotInvalidateNewTxn() throws Exception {
+    dropTable(new String[]{"target", "source"});
+    driver2.getConf().setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+
+    driver.run("create table target (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into target values (1,2), (3,4)");
+    driver.run("create table source (a int, b int)");
+    driver.run("insert into source values (5,6), (7,8)");
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("merge into target t using source s on t.a = s.a " +
+      "when matched then update set b=8");
+
+    swapTxnManager(txnMgr);
+    driver.run("update target set a=5 where a=1");
+
+    swapTxnManager(txnMgr2);
+    driver2.run();
+
+    swapTxnManager(txnMgr);
+    driver.run("select * from target");
+    List res = new ArrayList();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals(2, res.size());
+    Assert.assertEquals("Lost Update", "5\t8", res.get(1));
     dropTable(new String[]{"target", "source"});
   }
 
@@ -2335,7 +2395,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
    */
   @Test
   public void testMergeInsertDynamicPartitioningSequential() throws Exception {
-
     dropTable(new String[]{"target", "source"});
     conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
 
@@ -2354,7 +2413,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     // txn3 merge
     driver.run("merge into target t using source s on t.a = s.a " +
-        "when not matched then insert values (s.a, s.b, s.c)");
+      "when not matched then insert values (s.a, s.b, s.c)");
     driver.run("select * from target");
     List res = new ArrayList();
     driver.getFetchTask().fetch(res);
@@ -2366,10 +2425,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
   @Test
   public void testMergeInsertDynamicPartitioningSnapshotInvalidatedWithOldCommit() throws Exception {
-
-    // By creating the driver with the factory, we should have a ReExecDriver
-    IDriver driver3 = DriverFactory.newDriver(conf);
-    Assert.assertTrue("ReExecDriver was expected", driver3 instanceof ReExecDriver);
+    Driver driver3 = new Driver(new QueryState.Builder().withHiveConf(conf).build());
 
     dropTable(new String[]{"target", "source"});
     conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
@@ -2395,7 +2451,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     // Compile txn 3 with only 1 known partition
     driver3.compileAndRespond("merge into target t using source s on t.a = s.a " +
-        "when not matched then insert values (s.a, s.b, s.c)");
+      "when not matched then insert values (s.a, s.b, s.c)");
 
     swapTxnManager(txnMgr);
     driver.run();
@@ -2414,15 +2470,13 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     // The merge should see all three partition and not create duplicates
     Assert.assertEquals("Duplicate records found", 6, res.size());
     Assert.assertTrue("Partition 3 was skipped", res.contains("6\t6\t3"));
+    driver3.close();
     dropTable(new String[]{"target", "source"});
   }
 
-
   @Test
   public void testMergeInsertDynamicPartitioningSnapshotInvalidatedWithNewCommit() throws Exception {
-    // By creating the driver with the factory, we should have a ReExecDriver
-    IDriver driver3 = DriverFactory.newDriver(conf);
-    Assert.assertTrue("ReExecDriver was expected", driver3 instanceof ReExecDriver);
+    Driver driver3 = new Driver(new QueryState.Builder().withHiveConf(conf).build());
 
     dropTable(new String[]{"target", "source"});
     conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
@@ -2438,7 +2492,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     swapTxnManager(txnMgr3);
     // Compile txn 1 merge with only 1 known partition
     driver3.compileAndRespond("merge into target t using source s on t.a = s.a " +
-        "when not matched then insert values (s.a, s.b, s.c)");
+      "when not matched then insert values (s.a, s.b, s.c)");
 
     swapTxnManager(txnMgr);
     // txn 2 insert data to an old and a new partition
@@ -2451,7 +2505,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     swapTxnManager(txnMgr3);
     driver3.run();
 
-
     swapTxnManager(txnMgr);
     driver.run("select * from target");
     List res = new ArrayList();
@@ -2459,6 +2512,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     // The merge should see all three partition and not create duplicates
     Assert.assertEquals("Duplicate records found", 6, res.size());
     Assert.assertTrue("Partition 3 was skipped", res.contains("6\t6\t3"));
+    driver3.close();
     dropTable(new String[]{"target", "source"});
   }
 
@@ -2691,7 +2745,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     catch (LockException e) {
       expectedException = e;
     }
-    if (causeConflict) {
+    if (causeConflict && sharedWrite) {
       Assert.assertNotNull("Didn't get exception", expectedException);
       Assert.assertEquals("Got wrong message code", ErrorMsg.TXN_ABORTED, expectedException.getCanonicalErrorMsg());
       Assert.assertEquals("Exception msg didn't match",
