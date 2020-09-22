@@ -126,7 +126,7 @@ public final class FunctionUtils {
     } else if (names.length > 2) {
       throw new HiveException("Function name does not have correct format: " + functionName);
     }
-    // This is to fix the ranger related issue : HIVE-24182
+    // Remove the WINDOW_FUNC_PREFIX prefix, as that is not part of the database name.
     if (names[0].startsWith(Registry.WINDOW_FUNC_PREFIX)) {
       names[0] = names[0].substring(Registry.WINDOW_FUNC_PREFIX.length());
     }
