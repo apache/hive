@@ -1080,13 +1080,14 @@ public class TestInitiator extends CompactorTest {
     
     String userFromConf = "randomUser123";
 
-    // user from config
-    conf.setVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
+    // user set in config
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
     initiator.setConf(conf);
     Assert.assertEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
 
-    // local user (is probably not "randomUser123")
-    conf.setVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    // table dir owner (is probably not "randomUser123")
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    // simulate restarting Initiator
     initiator.setConf(conf);
     Assert.assertNotEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
   }
@@ -1098,7 +1099,7 @@ public class TestInitiator extends CompactorTest {
    * @throws Exception
    */
   @Test
-  public void testResolveUserToRunAs() throws Exception {
+  public void resolveUserToRunAs() throws Exception {
     Table t = newTable("default", "tfutra", false);
 
     Map<String, String> tblNameOwners = new HashMap<>();
@@ -1106,21 +1107,18 @@ public class TestInitiator extends CompactorTest {
 
     String userFromConf = "randomUser123";
 
-    // local user 
-    conf.setVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
-    initiator.setConf(conf);
-    String localUser = initiator.resolveUserToRunAs(tblNameOwners, t, null);
-    Assert.assertNotEquals(userFromConf, localUser);
-
-    // user from config
-    conf.setVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
+    // user set in config
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
     initiator.setConf(conf);
     Assert.assertEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
 
-    // local user again, retrieved from cache
-    conf.setVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    // table dir owner (is probably not "randomUser123")
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    // simulate restarting Initiator
     initiator.setConf(conf);
-    Assert.assertEquals(localUser, initiator.resolveUserToRunAs(tblNameOwners, t, null));
+    Assert.assertNotEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
+    // table dir owner again, retrieved from cache
+    Assert.assertNotEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
   }
 
   @Override

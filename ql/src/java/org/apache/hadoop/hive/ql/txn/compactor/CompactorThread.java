@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -143,12 +144,13 @@ public abstract class CompactorThread extends Thread implements Configurable {
   }
 
   /**
-   * Determine which user to run an operation as, based on the owner of the directory to be
-   * compacted.  It is asserted that either the user running the hive metastore or the table
+   * Determine which user to run an operation as. If metastore.compactor.run.as.user is set, that user will be 
+   * returned; if not: the the owner of the directory to be compacted. 
+   * It is asserted that either the user running the hive metastore or the table
    * owner must be able to stat the directory and determine the owner.
    * @param location directory that will be read or written to.
    * @param t metastore table object
-   * @return username of the owner of the location.
+   * @return metastore.compactor.run.as.user value; or if that is not set: username of the owner of the location.
    * @throws java.io.IOException if neither the hive metastore user nor the table owner can stat
    * the location.
    */
@@ -156,8 +158,8 @@ public abstract class CompactorThread extends Thread implements Configurable {
       InterruptedException {
     LOG.debug("Determining who to run the job as.");
 
-    // check if this is set in config
-    String runUserAs = conf.getVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER);
+    // check if a specific user is set in config
+    String runUserAs = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER);
     if (runUserAs != null && !"".equals(runUserAs)) {
       return runUserAs;
     }

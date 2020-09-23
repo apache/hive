@@ -222,12 +222,6 @@ public class Initiator extends MetaStoreCompactorThread {
   @VisibleForTesting
   protected String resolveUserToRunAs(Map<String, String> cache, Table t, Partition p)
       throws IOException, InterruptedException {
-
-    String runAsUser = conf.getVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER);
-    if (!"".equals(runAsUser)) {
-      return runAsUser;
-    }
-
     //Figure out who we should run the file operations as
     String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
     StorageDescriptor sd = resolveStorageDescriptor(t, p);

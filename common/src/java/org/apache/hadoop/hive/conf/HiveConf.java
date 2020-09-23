@@ -3098,10 +3098,6 @@ public class HiveConf extends Configuration {
         "This is set to compactor from within the query based compactor. This enables the Tez SplitGrouper "
         + "to group splits based on their bucket number, so that all rows from different bucket files "
         + " for the same bucket number can end up in the same bucket file after the compaction."),
-    // MetastoreConf doesn't have a restricted list. Otherwise can be moved there.
-    COMPACTOR_RUN_AS_USER("hive.compactor.run.as.user", "",
-        "Specify the user to run compaction (Worker) and compaction-related file listing (Initiator, Cleaner) as. " +
-        "If empty string, defaults to table/partition directory owner. Restricted."),
     /**
      * @deprecated Use MetastoreConf.COMPACTOR_HISTORY_RETENTION_SUCCEEDED
      */
@@ -5130,8 +5126,7 @@ public class HiveConf extends Configuration {
             "hive.zookeeper.ssl.keystore.location," +
             "hive.zookeeper.ssl.keystore.password," +
             "hive.zookeeper.ssl.truststore.location," +
-            "hive.zookeeper.ssl.truststore.password," +
-            "hive.compactor.run.as.user",
+            "hive.zookeeper.ssl.truststore.password",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname
