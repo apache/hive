@@ -99,7 +99,7 @@ public class Table implements Serializable {
   /**
    * These fields are all cached fields.  The information comes from tTable.
    */
-  private Deserializer deserializer;
+  private transient Deserializer deserializer;
   private Class<? extends OutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
   private Path path;
@@ -107,31 +107,31 @@ public class Table implements Serializable {
   private transient HiveStorageHandler storageHandler;
   private transient StorageHandlerInfo storageHandlerInfo;
 
-  private transient TableSpec tableSpec;
+  private TableSpec tableSpec;
 
-  private transient boolean materializedTable;
+  private boolean materializedTable;
 
   /** Note: This is set only for describe table purposes, it cannot be used to verify whether
    * a materialization is up-to-date or not. */
-  private transient Boolean outdatedForRewritingMaterializedView;
+  private Boolean outdatedForRewritingMaterializedView;
 
   /** Constraint related objects */
-  private transient PrimaryKeyInfo pki;
-  private transient ForeignKeyInfo fki;
-  private transient UniqueConstraint uki;
-  private transient NotNullConstraint nnc;
-  private transient DefaultConstraint dc;
-  private transient CheckConstraint cc;
+  private PrimaryKeyInfo pki;
+  private ForeignKeyInfo fki;
+  private UniqueConstraint uki;
+  private NotNullConstraint nnc;
+  private DefaultConstraint dc;
+  private CheckConstraint cc;
 
   /** Constraint related flags
    *  This is to track if constraints are retrieved from metastore or not
    */
-  private transient boolean isPKFetched=false;
-  private transient boolean isFKFetched=false;
-  private transient boolean isUniqueFetched=false;
-  private transient boolean isNotNullFetched=false;
-  private transient boolean isDefaultFetched=false;
-  private transient boolean isCheckFetched=false;
+  private boolean isPKFetched=false;
+  private boolean isFKFetched=false;
+  private boolean isUniqueFetched=false;
+  private boolean isNotNullFetched=false;
+  private boolean isDefaultFetched=false;
+  private boolean isCheckFetched=false;
 
   /**
    * Used only for serialization.

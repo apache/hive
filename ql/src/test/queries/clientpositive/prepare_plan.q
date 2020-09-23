@@ -3,8 +3,6 @@
 --SORT_QUERY_RESULTS
 
 set hive.explain.user=false;
-set hive.vectorized.execution.enabled=false;
-
 
 -- single param
 explain extended prepare pcount from select count(*) from src where key > ?;

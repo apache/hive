@@ -91,7 +91,7 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
   private List<String> neededNestedColumnPaths;
 
   // all column names referenced including virtual columns. used in ColumnAccessAnalyzer
-  private transient List<String> referencedColumns;
+  private List<String> referencedColumns;
 
   public static final String FILTER_EXPR_CONF_STR =
       "hive.io.filter.expr.serialized";
@@ -118,9 +118,9 @@ public class TableScanDesc extends AbstractOperatorDesc implements IStatsGatherD
 
   private TableScanOperator.ProbeDecodeContext probeDecodeContext = null;
 
-  private transient TableSample tableSample;
+  private TableSample tableSample;
 
-  private transient Table tableMetadata;
+  private Table tableMetadata;
 
   private BitSet includedBuckets;
 
