@@ -20,10 +20,10 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.Before;
 
-@org.junit.Ignore("HIVE-24172")
 public class TestMmCompactorOnMr extends TestMmCompactorOnTez {
   @Before
   public void setMr() {
-    driver.getConf().setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
+    // NOTE: only compaction will run with MR as execution engine; setup and teardown queries will run with Tez.
+    conf.setVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE, "mr");
   }
 }
