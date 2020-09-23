@@ -227,7 +227,7 @@ public abstract class TaskCompiler {
       // to fetch the results.
       Collection<Operator<? extends OperatorDesc>> tableScanOps =
           Lists.<Operator<?>>newArrayList(pCtx.getTopOps().values());
-      Set<FileSinkOperator> fsOps = OperatorUtils.findOperators(tableScanOps, FileSinkOperator.class);
+      Set<FileSinkOperator> fsOps = OperatorUtils.findOperators((Collection<Operator<?>>)tableScanOps, FileSinkOperator.class);
       if(fsOps != null && fsOps.size() == 1) {
         FileSinkOperator op = fsOps.iterator().next();
         Set<FileStatus> filesToFetch =  new HashSet<>();

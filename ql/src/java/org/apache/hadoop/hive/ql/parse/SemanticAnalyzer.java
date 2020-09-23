@@ -12944,7 +12944,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       fetchTask = pCtx.getFetchTask();
     }
     //find all Acid FileSinkOperatorS
-    QueryPlanPostProcessor qp = new QueryPlanPostProcessor(rootTasks, acidFileSinks, ctx.getExecutionId());
+    QueryPlanPostProcessor qp = new QueryPlanPostProcessor((List<Task<?>>)rootTasks, acidFileSinks, ctx.getExecutionId());
 
     // 10. Attach CTAS/Insert-Commit-hooks for Storage Handlers
     final Optional<TezTask> optionalTezTask =
