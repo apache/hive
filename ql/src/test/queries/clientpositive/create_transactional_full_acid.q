@@ -2,6 +2,7 @@
 set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+set hive.acid.direct.insert.enabled=false;
 
 drop table if exists target;
 drop table if exists source;

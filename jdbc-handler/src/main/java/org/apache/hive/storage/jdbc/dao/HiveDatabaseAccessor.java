@@ -17,10 +17,25 @@
  */
 package org.apache.hive.storage.jdbc.dao;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hive.storage.jdbc.exception.HiveJdbcDatabaseAccessException;
+
 /**
  * Hive specific data accessor.
  */
 public class HiveDatabaseAccessor extends GenericJdbcDatabaseAccessor {
+
+  @Override
+  public List<String> getColumnNames(Configuration conf) throws HiveJdbcDatabaseAccessException {
+    List<String> columnNames = super.getColumnNames(conf);
+    return columnNames.stream()
+        .map(c -> {
+          int lastIndex = c.lastIndexOf(".");
+          return lastIndex == -1 ? c : c.substring(lastIndex + 1); })
+        .collect(Collectors.toList());
+  }
 
   @Override
   protected String addLimitAndOffsetToQuery(String sql, int limit, int offset) {

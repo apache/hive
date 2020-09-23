@@ -189,6 +189,7 @@ public class Compiler {
     // because at that point we need access to the objects.
     Hive.get().getMSC().flushCache();
 
+    driverContext.setBackupContext(new Context(context));
     boolean executeHooks = driverContext.getHookRunner().hasPreAnalyzeHooks();
 
     HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
@@ -217,7 +218,12 @@ public class Compiler {
     }
 
     // Do semantic analysis and plan generation
-    sem.analyze(tree, context);
+    try {
+      sem.startAnalysis();
+      sem.analyze(tree, context);
+    } finally {
+      sem.endAnalysis();
+    }
 
     if (executeHooks) {
       hookCtx.update(sem);

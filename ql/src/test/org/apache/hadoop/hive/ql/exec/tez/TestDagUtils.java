@@ -57,7 +57,7 @@ public class TestDagUtils {
     testUser.doAs(new PrivilegedExceptionAction<Void>() {
       @Override
       public Void run() throws Exception {
-        dagUtils.addCredentials(work, dag);
+        dagUtils.addCredentials(work, dag, null);
         return null;
       }
     });

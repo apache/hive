@@ -53,6 +53,7 @@ import javax.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -276,6 +277,58 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     tables.put("t2", 2L);
     verifyCompactionQueue(tables, replicatedDbName, replicaConf);
   }
+
+  @Test
+  public void testAcidTablesCreateTableIncremental() throws Throwable {
+    // Create 2 tables, one partitioned and other not.
+    primary.run("use " + primaryDbName)
+      .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+        "tblproperties (\"transactional\"=\"true\")")
+      .run("insert into t1 values(1)")
+      .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
+        "\"transactional_properties\"=\"insert_only\")")
+      .run("insert into t2 partition(name='Bob') values(11)")
+      .run("insert into t2 partition(name='Carl') values(10)");
+
+    WarehouseInstance.Tuple bootstrapDump = primary
+      .run("use " + primaryDbName)
+      .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName)
+      .run("use " + replicatedDbName)
+      .run("show tables")
+      .verifyResults(new String[] {"t1", "t2"})
+      .run("repl status " + replicatedDbName)
+      .verifyResult(bootstrapDump.lastReplicationId)
+      .run("select id from t1")
+      .verifyResults(new String[]{"1"})
+      .run("select rank from t2 order by rank")
+      .verifyResults(new String[] {"10", "11"});
+
+    WarehouseInstance.Tuple incrDump = primary.run("use "+ primaryDbName)
+      .run("create table t3 (id int)")
+      .run("insert into t3 values (99)")
+      .run("create table t4 (standard int) partitioned by (name string) stored as orc " +
+        "tblproperties (\"transactional\"=\"true\")")
+      .run("insert into t4 partition(name='Tom') values(11)")
+      .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName)
+      .run("use " + replicatedDbName)
+      .run("show tables")
+      .verifyResults(new String[] {"t1", "t2", "t3", "t4"})
+      .run("repl status " + replicatedDbName)
+      .verifyResult(incrDump.lastReplicationId)
+      .run("select id from t1")
+      .verifyResults(new String[]{"1"})
+      .run("select rank from t2 order by rank")
+      .verifyResults(new String[] {"10", "11"})
+      .run("select id from t3")
+      .verifyResults(new String[]{"99"})
+      .run("select standard from t4 order by standard")
+      .verifyResults(new String[] {"11"});
+  }
+
 
   @Test
   public void testAcidTablesBootstrapWithOpenTxnsDiffDb() throws Throwable {
@@ -1292,7 +1345,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   public void testCheckPointingDataDumpFailureBootstrapDuringIncremental() throws Throwable {
     List<String> dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
-            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
             "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
                     + UserGroupInformation.getCurrentUser().getUserName() + "'");
@@ -1309,7 +1362,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
-            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
             "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
                     + UserGroupInformation.getCurrentUser().getUserName() + "'",
@@ -1491,7 +1544,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     //To force distcp copy
     List<String> dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
-            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
             "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
                     + UserGroupInformation.getCurrentUser().getUserName() + "'");
@@ -1642,7 +1695,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     //Distcp copy
     List<String> dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
-            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
             "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
                     + UserGroupInformation.getCurrentUser().getUserName() + "'");
@@ -1695,7 +1748,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     //To force distcp copy
     List<String> dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
-            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
             "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
                     + UserGroupInformation.getCurrentUser().getUserName() + "'");
@@ -1748,7 +1801,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     //To force distcp copy
     List<String> dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
-            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
             "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
                     + UserGroupInformation.getCurrentUser().getUserName() + "'");
@@ -2022,5 +2075,263 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
             .run("use " + replicatedDbName)
             .run("show tables")
             .verifyResults(new String[]{"t1"});
+  }
+
+  @Test
+  public void testORCTableRegularCopyWithCopyOnTarget() throws Throwable {
+    ArrayList<String> withClause = new ArrayList<>();
+    withClause.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a int) stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE t2(a string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE t3(a string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE tpart1(a int) partitioned by (name string)" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE tpart2(a int) partitioned by (name string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE text1(a string) STORED AS TEXTFILE")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (11)")
+            .run("insert into t2 values (2)")
+            .run("insert into t2 values (22)")
+            .run("insert into t3 values (33)")
+            .run("insert into tpart1 partition(name='Tom') values(100)")
+            .run("insert into tpart1 partition(name='Jerry') values(101)")
+            .run("insert into tpart2 partition(name='Bob') values(200)")
+            .run("insert into tpart2 partition(name='Carl') values(201)")
+            .run("insert into text1 values ('ricky')")
+            .dump(primaryDbName, withClause);
+
+    replica.run("DROP TABLE t3");
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t1", "t2", "t3", "tpart1", "tpart2", "text1"})
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1", "11"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[]{"2", "22"})
+            .run("select a from " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"100", "101"})
+            .run("show partitions " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"name=Tom", "name=Jerry"})
+            .run("select a from " + replicatedDbName + ".tpart2")
+            .verifyResults(new String[]{"200", "201"})
+            .run("show partitions " + replicatedDbName + ".tpart2")
+            .verifyResults(new String[]{"name=Bob", "name=Carl"})
+            .run("select a from " + replicatedDbName + ".text1")
+            .verifyResults(new String[]{"ricky"});
+
+    WarehouseInstance.Tuple incrementalDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t4(a int) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE tpart3(a int) partitioned by (name string)" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE tpart4(a int) partitioned by (name string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("insert into t1 values (111)")
+            .run("insert into t2 values (222)")
+            .run("insert into t4 values (4)")
+            .run("insert into tpart1 partition(name='Tom') values(102)")
+            .run("insert into tpart1 partition(name='Jerry') values(103)")
+            .run("insert into tpart2 partition(name='Bob') values(202)")
+            .run("insert into tpart2 partition(name='Carl') values(203)")
+            .run("insert into tpart3 partition(name='Tom3') values(300)")
+            .run("insert into tpart3 partition(name='Jerry3') values(301)")
+            .run("insert into tpart4 partition(name='Bob4') values(400)")
+            .run("insert into tpart4 partition(name='Carl4') values(401)")
+            .run("insert into text1 values ('martin')")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("show tables ")
+            .verifyResults(new String[]{"t1", "t2", "t4", "tpart1", "tpart2", "tpart3", "tpart4", "text1"})
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1", "11", "111"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[]{"2", "22", "222"})
+            .run("select * from " + replicatedDbName + ".t4")
+            .verifyResults(new String[]{"4"})
+            .run("select a from " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"100", "101", "102", "103"})
+            .run("show partitions " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"name=Tom", "name=Jerry"})
+            .run("select a from " + replicatedDbName + ".tpart2")
+            .verifyResults(new String[]{"200", "201", "202", "203"})
+            .run("show partitions " + replicatedDbName + ".tpart2")
+            .verifyResults(new String[]{"name=Bob", "name=Carl"})
+            .run("select a from " + replicatedDbName + ".tpart3")
+            .verifyResults(new String[]{"300", "301"})
+            .run("show partitions " + replicatedDbName + ".tpart3")
+            .verifyResults(new String[]{"name=Tom3", "name=Jerry3"})
+            .run("select a from " + replicatedDbName + ".tpart4")
+            .verifyResults(new String[]{"400", "401"})
+            .run("show partitions " + replicatedDbName + ".tpart4")
+            .verifyResults(new String[]{"name=Bob4", "name=Carl4"})
+            .run("select a from " + replicatedDbName + ".text1")
+            .verifyResults(new String[]{"ricky", "martin"});
+
+    incrementalDump = primary.run("use " + primaryDbName)
+            .run("insert into t4 values (44)")
+            .run("insert into t1 values (1111)")
+            .run("DROP TABLE t1")
+            .run("insert into t2 values (2222)")
+            .run("insert into tpart1 partition(name='Tom') values(104)")
+            .run("insert into tpart1 partition(name='Tom_del') values(1000)")
+            .run("insert into tpart1 partition(name='Harry') values(10001)")
+            .run("insert into tpart1 partition(name='Jerry') values(105)")
+            .run("ALTER TABLE tpart1 DROP PARTITION(name='Tom')")
+            .run("DROP TABLE tpart2")
+            .dump(primaryDbName, withClause);
+
+    replica.run("DROP TABLE t4")
+            .run("ALTER TABLE tpart1 DROP PARTITION(name='Tom_del')");
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("show tables ")
+            .verifyResults(new String[]{"t2", "t4", "tpart1", "tpart3", "tpart4", "text1"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[]{"2", "22", "222", "2222"})
+            .run("select a from " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"101", "103", "105", "1000", "10001"})
+            .run("show partitions " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"name=Harry", "name=Jerry", "name=Tom_del"});
+  }
+
+  @Test
+  public void testORCTableDistcpCopyWithCopyOnTarget() throws Throwable {
+    //Distcp copy
+    List<String> withClause = Arrays.asList(
+            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'",
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
+            "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+                    + UserGroupInformation.getCurrentUser().getUserName() + "'");
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a int) stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE t2(a string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE t3(a string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE tpart1(a int) partitioned by (name string)" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE tpart2(a int) partitioned by (name string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE text1(a string) STORED AS TEXTFILE")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (11)")
+            .run("insert into t2 values (2)")
+            .run("insert into t2 values (22)")
+            .run("insert into t3 values (33)")
+            .run("insert into tpart1 partition(name='Tom') values(100)")
+            .run("insert into tpart1 partition(name='Jerry') values(101)")
+            .run("insert into tpart2 partition(name='Bob') values(200)")
+            .run("insert into tpart2 partition(name='Carl') values(201)")
+            .run("insert into text1 values ('ricky')")
+            .dump(primaryDbName, withClause);
+
+    replica.run("DROP TABLE t3");
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t1", "t2", "t3", "tpart1", "tpart2", "text1"})
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1", "11"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[]{"2", "22"})
+            .run("select a from " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"100", "101"})
+            .run("show partitions " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"name=Tom", "name=Jerry"})
+            .run("select a from " + replicatedDbName + ".tpart2")
+            .verifyResults(new String[]{"200", "201"})
+            .run("show partitions " + replicatedDbName + ".tpart2")
+            .verifyResults(new String[]{"name=Bob", "name=Carl"})
+            .run("select a from " + replicatedDbName + ".text1")
+            .verifyResults(new String[]{"ricky"});
+
+    WarehouseInstance.Tuple incrementalDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t4(a int) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE tpart3(a int) partitioned by (name string)" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE tpart4(a int) partitioned by (name string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("insert into t1 values (111)")
+            .run("insert into t2 values (222)")
+            .run("insert into t4 values (4)")
+            .run("insert into tpart1 partition(name='Tom') values(102)")
+            .run("insert into tpart1 partition(name='Jerry') values(103)")
+            .run("insert into tpart2 partition(name='Bob') values(202)")
+            .run("insert into tpart2 partition(name='Carl') values(203)")
+            .run("insert into tpart3 partition(name='Tom3') values(300)")
+            .run("insert into tpart3 partition(name='Jerry3') values(301)")
+            .run("insert into tpart4 partition(name='Bob4') values(400)")
+            .run("insert into tpart4 partition(name='Carl4') values(401)")
+            .run("insert into text1 values ('martin')")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("show tables ")
+            .verifyResults(new String[]{"t1", "t2", "t4", "tpart1", "tpart2", "tpart3", "tpart4", "text1"})
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1", "11", "111"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[]{"2", "22", "222"})
+            .run("select * from " + replicatedDbName + ".t4")
+            .verifyResults(new String[]{"4"})
+            .run("select a from " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"100", "101", "102", "103"})
+            .run("show partitions " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"name=Tom", "name=Jerry"})
+            .run("select a from " + replicatedDbName + ".tpart2")
+            .verifyResults(new String[]{"200", "201", "202", "203"})
+            .run("show partitions " + replicatedDbName + ".tpart2")
+            .verifyResults(new String[]{"name=Bob", "name=Carl"})
+            .run("select a from " + replicatedDbName + ".tpart3")
+            .verifyResults(new String[]{"300", "301"})
+            .run("show partitions " + replicatedDbName + ".tpart3")
+            .verifyResults(new String[]{"name=Tom3", "name=Jerry3"})
+            .run("select a from " + replicatedDbName + ".tpart4")
+            .verifyResults(new String[]{"400", "401"})
+            .run("show partitions " + replicatedDbName + ".tpart4")
+            .verifyResults(new String[]{"name=Bob4", "name=Carl4"})
+            .run("select a from " + replicatedDbName + ".text1")
+            .verifyResults(new String[]{"ricky", "martin"});
+
+    incrementalDump = primary.run("use " + primaryDbName)
+            .run("insert into t4 values (44)")
+            .run("insert into t1 values (1111)")
+            .run("DROP TABLE t1")
+            .run("insert into t2 values (2222)")
+            .run("insert into tpart1 partition(name='Tom') values(104)")
+            .run("insert into tpart1 partition(name='Tom_del') values(1000)")
+            .run("insert into tpart1 partition(name='Harry') values(10001)")
+            .run("insert into tpart1 partition(name='Jerry') values(105)")
+            .run("ALTER TABLE tpart1 DROP PARTITION(name='Tom')")
+            .run("DROP TABLE tpart2")
+            .dump(primaryDbName, withClause);
+
+    replica.run("DROP TABLE t4")
+            .run("ALTER TABLE tpart1 DROP PARTITION(name='Tom_del')");
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("show tables ")
+            .verifyResults(new String[]{"t2", "t4", "tpart1", "tpart3", "tpart4", "text1"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[]{"2", "22", "222", "2222"})
+            .run("select a from " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"101", "103", "105", "1000", "10001"})
+            .run("show partitions " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"name=Harry", "name=Jerry", "name=Tom_del"});
   }
 }

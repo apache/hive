@@ -68,8 +68,9 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   }
 
   @Test
-  public void externalTableReplicationWithRemoteStaging() throws Throwable {
-    List<String> withClauseOptions = getStagingLocationConfig(replica.repldDir);
+  public void testDistCpCopyWithRemoteStagingAndCopyTaskOnTarget() throws Throwable {
+    List<String> withClauseOptions = getStagingLocationConfig(replica.repldDir, true);
+    withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='" + false + "'");
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
         .run("create external table t1 (id int)")
@@ -123,8 +124,234 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
   }
 
   @Test
-  public void externalTableReplicationWithLocalStaging() throws Throwable {
-    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir);
+  public void testDistCpCopyWithLocalStagingAndCopyTaskOnTarget() throws Throwable {
+    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir, true);
+    withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='" + false + "'");
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (500)")
+            .run("create table t2 (id int)")
+            .run("insert into table t2 values (600)")
+            .dump(primaryDbName, withClauseOptions);
+
+    // verify that the external table info is written correctly for bootstrap
+    assertExternalFileInfo(Arrays.asList("t1"), tuple.dumpLocation, false, primary);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("select id from t1")
+            .verifyResult("500")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("select id from t2")
+            .verifyResult("600");
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("create external table t3 (id int)")
+            .run("insert into table t3 values (700)")
+            .run("create table t4 (id int)")
+            .run("insert into table t4 values (800)")
+            .dump(primaryDbName, withClauseOptions);
+
+    // verify that the external table info is written correctly for incremental
+    assertExternalFileInfo(Arrays.asList("t1", "t3"), tuple.dumpLocation, true, primary);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("show tables like 't3'")
+            .verifyResult("t3")
+            .run("show tables like 't4'")
+            .verifyResult("t4")
+            .run("select id from t1")
+            .verifyResult("500")
+            .run("select id from t2")
+            .verifyResult("600")
+            .run("select id from t3")
+            .verifyResult("700")
+            .run("select id from t4")
+            .verifyResult("800");
+  }
+
+  @Test
+  public void testDistCpCopyWithRemoteStagingAndCopyTaskOnSource() throws Throwable {
+    List<String> withClauseOptions = getStagingLocationConfig(replica.repldDir, true);
+    withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='" + false + "'");
+    withClauseOptions.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='" + false + "'");
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (100)")
+            .run("create table t2 (id int)")
+            .run("insert into table t2 values (200)")
+            .dump(primaryDbName, withClauseOptions);
+
+    // verify that the external table info is written correctly for bootstrap
+    assertExternalFileInfo(Arrays.asList("t1"), tuple.dumpLocation, false, replica);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("select id from t1")
+            .verifyResult("100")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("select id from t2")
+            .verifyResult("200");
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("create external table t3 (id int)")
+            .run("insert into table t3 values (300)")
+            .run("create table t4 (id int)")
+            .run("insert into table t4 values (400)")
+            .dump(primaryDbName, withClauseOptions);
+
+    // verify that the external table info is written correctly for incremental
+    assertExternalFileInfo(Arrays.asList("t1", "t3"), tuple.dumpLocation, true, replica);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("show tables like 't3'")
+            .verifyResult("t3")
+            .run("show tables like 't4'")
+            .verifyResult("t4")
+            .run("select id from t1")
+            .verifyResult("100")
+            .run("select id from t2")
+            .verifyResult("200")
+            .run("select id from t3")
+            .verifyResult("300")
+            .run("select id from t4")
+            .verifyResult("400");
+  }
+
+  @Test
+  public void testDistCpCopyWithLocalStagingAndCopyTaskOnSource() throws Throwable {
+    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir, true);
+    withClauseOptions.add("'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='" + false + "'");
+    withClauseOptions.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='" + false + "'");
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (500)")
+            .run("create table t2 (id int)")
+            .run("insert into table t2 values (600)")
+            .dump(primaryDbName, withClauseOptions);
+
+    // verify that the external table info is written correctly for bootstrap
+    assertExternalFileInfo(Arrays.asList("t1"), tuple.dumpLocation, false, primary);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("select id from t1")
+            .verifyResult("500")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("select id from t2")
+            .verifyResult("600");
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("create external table t3 (id int)")
+            .run("insert into table t3 values (700)")
+            .run("create table t4 (id int)")
+            .run("insert into table t4 values (800)")
+            .dump(primaryDbName, withClauseOptions);
+
+    // verify that the external table info is written correctly for incremental
+    assertExternalFileInfo(Arrays.asList("t1", "t3"), tuple.dumpLocation, true, primary);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("show tables like 't3'")
+            .verifyResult("t3")
+            .run("show tables like 't4'")
+            .verifyResult("t4")
+            .run("select id from t1")
+            .verifyResult("500")
+            .run("select id from t2")
+            .verifyResult("600")
+            .run("select id from t3")
+            .verifyResult("700")
+            .run("select id from t4")
+            .verifyResult("800");
+  }
+
+  @Test
+  public void testRegularCopyRemoteStagingAndCopyTaskOnSource() throws Throwable {
+    List<String> withClauseOptions = getStagingLocationConfig(replica.repldDir, false);
+    withClauseOptions.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='" + false + "'");
+    WarehouseInstance.Tuple tuple = primary
+            .run("use " + primaryDbName)
+            .run("create external table t1 (id int)")
+            .run("insert into table t1 values (500)")
+            .run("create table t2 (id int)")
+            .run("insert into table t2 values (600)")
+            .dump(primaryDbName, withClauseOptions);
+
+    // verify that the external table info is written correctly for bootstrap
+    assertExternalFileInfo(Arrays.asList("t1"), tuple.dumpLocation, false, replica);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("select id from t1")
+            .verifyResult("500")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("select id from t2")
+            .verifyResult("600");
+
+    tuple = primary.run("use " + primaryDbName)
+            .run("create external table t3 (id int)")
+            .run("insert into table t3 values (700)")
+            .run("create table t4 (id int)")
+            .run("insert into table t4 values (800)")
+            .dump(primaryDbName, withClauseOptions);
+
+    // verify that the external table info is written correctly for incremental
+    assertExternalFileInfo(Arrays.asList("t1", "t3"), tuple.dumpLocation, true, replica);
+
+    replica.load(replicatedDbName, primaryDbName, withClauseOptions)
+            .run("use " + replicatedDbName)
+            .run("show tables like 't1'")
+            .verifyResult("t1")
+            .run("show tables like 't2'")
+            .verifyResult("t2")
+            .run("show tables like 't3'")
+            .verifyResult("t3")
+            .run("show tables like 't4'")
+            .verifyResult("t4")
+            .run("select id from t1")
+            .verifyResult("500")
+            .run("select id from t2")
+            .verifyResult("600")
+            .run("select id from t3")
+            .verifyResult("700")
+            .run("select id from t4")
+            .verifyResult("800");
+  }
+
+  @Test
+  public void testRegularCopyWithLocalStagingAndCopyTaskOnTarget() throws Throwable {
+    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir, false);
     WarehouseInstance.Tuple tuple = primary
             .run("use " + primaryDbName)
             .run("create external table t1 (id int)")
@@ -182,7 +409,7 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
     String primaryDb = "primarydb1";
     String replicaDb = "repldb1";
     String tableName = "t1";
-    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir);
+    List<String> withClauseOptions = getStagingLocationConfig(primary.repldDir, false);
     WarehouseInstance.Tuple tuple = primary
             .run("create database " + primaryDb)
             .run("alter database "+ primaryDb + " set dbproperties('repl.source.for'='1,2,3')")
@@ -229,9 +456,15 @@ public class TestReplicationScenariosExclusiveReplica extends BaseReplicationAcr
     Assert.assertEquals(shouldExists, fileSystem.exists(dataFilePath));
   }
 
-  private List<String> getStagingLocationConfig(String stagingLoc) {
+  private List<String> getStagingLocationConfig(String stagingLoc, boolean addDistCpConfigs) throws IOException {
     List<String> confList = new ArrayList<>();
     confList.add("'" + HiveConf.ConfVars.REPLDIR.varname + "'='" + stagingLoc + "'");
+    if (addDistCpConfigs) {
+      confList.add("'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'");
+      confList.add("'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'");
+      confList.add("'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+              + UserGroupInformation.getCurrentUser().getUserName() + "'");
+    }
     return confList;
   }
 
