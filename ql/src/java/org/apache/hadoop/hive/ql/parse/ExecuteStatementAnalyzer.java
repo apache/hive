@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -204,7 +205,9 @@ public class ExecuteStatementAnalyzer extends SemanticAnalyzer{
       this.prepareQuery = false;
 
       // reset config
+      String queryId = this.conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
       this.conf.syncFromConf(cachedPlan.getQueryState().getConf());
+      this.conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
 
       // set rest of the params
       this.inputs = cachedPlan.getInputs();
