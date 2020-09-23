@@ -5379,7 +5379,7 @@ public class HiveConf extends Configuration {
     HIVE_SCHEDULED_QUERIES_CREATE_AS_ENABLED("hive.scheduled.queries.create.as.enabled", true,
         "This option sets the default behaviour of newly created scheduled queries."),
     HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SUPPORTED("hive.security.authorization.scheduled.queries.supported",
-        false,
+        true,
         "Enable this if the configured authorizer is able to handle scheduled query related calls."),
     HIVE_SECURITY_AUTHORIZATION_SCHEDULED_QUERIES_SERVICEADMIN_CHECK(
         "hive.security.authorization.scheduled.queries.serviceadmin.check", false,

@@ -388,4 +388,9 @@
   <value>false</value>
 </property>
 
+<property>
+  <name>hive.security.authorization.scheduled.queries.supported</name>
+  <value>false</value>
+</property>
+
 </configuration>
