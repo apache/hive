@@ -472,6 +472,7 @@ public enum ErrorMsg {
   WITHIN_GROUP_PARAMETER_MISMATCH(10422,
           "The number of hypothetical direct arguments ({0}) must match the number of ordering columns ({1})", true),
   AMBIGUOUS_STRUCT_ATTRIBUTE(10423, "Attribute \"{0}\" specified more than once in structured type.", true),
+  OFFSET_NOT_SUPPORTED_IN_SUBQUERY(10424, "OFFSET is not supported in subquery of exists", true),
 
   //========================== 20000 range starts here ========================//
 
