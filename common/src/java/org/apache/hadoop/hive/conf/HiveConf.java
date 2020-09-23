@@ -5126,7 +5126,8 @@ public class HiveConf extends Configuration {
             "hive.zookeeper.ssl.keystore.location," +
             "hive.zookeeper.ssl.keystore.password," +
             "hive.zookeeper.ssl.truststore.location," +
-            "hive.zookeeper.ssl.truststore.password",
+            "hive.zookeeper.ssl.truststore.password," +
+            "hive.compactor.run.as.user",
         "Comma separated list of configuration options which are immutable at runtime"),
     HIVE_CONF_HIDDEN_LIST("hive.conf.hidden.list",
         METASTOREPWD.varname + "," + HIVE_SERVER2_SSL_KEYSTORE_PASSWORD.varname

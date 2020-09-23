@@ -1064,6 +1064,64 @@ public class TestInitiator extends CompactorTest {
     Assert.assertEquals("ready for cleaning",response.getCompacts().get(0).getState());
   }
 
+  /**
+   * Tests org.apache.hadoop.hive.ql.txn.compactor.CompactorThread#findUserToRunAs(java.lang.String, org.apache.hadoop
+   * .hive.metastore.api.Table).
+   * Used by Worker and Initiator.
+   * Initiator caches this via Initiator#resolveUserToRunAs.
+   * @throws Exception
+   */
+  @Test
+  public void testFindUserToRunAs() throws Exception {
+    Table t = newTable("default", "tfutra", false);
+
+    CompactorThread initiator = new Initiator();
+    initiator.setConf(conf);
+    
+    String userFromConf = "randomUser123";
+
+    // user from config
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
+    initiator.setConf(conf);
+    Assert.assertEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
+
+    // local user (is probably not "randomUser123")
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    initiator.setConf(conf);
+    Assert.assertNotEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
+  }
+
+  /**
+   * Tests org.apache.hadoop.hive.ql.txn.compactor.Initiator#resolveUserToRunAs(java.util.Map, 
+   * org.apache.hadoop.hive.metastore.api.Table, org.apache.hadoop.hive.metastore.api.Partition)
+   * Used by Initiator only.
+   * @throws Exception
+   */
+  @Test
+  public void resolveUserToRunAs() throws Exception {
+    Table t = newTable("default", "tfutra", false);
+
+    Map<String, String> tblNameOwners = new HashMap<>();
+    Initiator initiator = new Initiator();
+
+    String userFromConf = "randomUser123";
+
+    // local user 
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    initiator.setConf(conf);
+    Assert.assertNotEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
+
+    // user from config
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
+    initiator.setConf(conf);
+    Assert.assertEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
+
+    // local user, retrieved from cache
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    initiator.setConf(conf);
+    Assert.assertNotEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
+  }
+
   @Override
   boolean useHive130DeltaDirName() {
     return false;

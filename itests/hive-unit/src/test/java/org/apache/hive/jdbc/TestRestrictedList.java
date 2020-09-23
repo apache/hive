@@ -115,6 +115,8 @@ public class TestRestrictedList {
     addToExpectedRestrictedMap("hive.zookeeper.ssl.keystore.password");
     addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.location");
     addToExpectedRestrictedMap("hive.zookeeper.ssl.truststore.password");
+    addToExpectedRestrictedMap("metastore.compactor.run.as.user");
+//    addToExpectedRestrictedMap("hive.compactor.run.as.user"); //frogmethod todo!!!!!!!!!!!!!!!
 
     checkRestrictedListMatch();
   }
