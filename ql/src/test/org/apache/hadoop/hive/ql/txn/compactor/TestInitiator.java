@@ -1081,12 +1081,12 @@ public class TestInitiator extends CompactorTest {
     String userFromConf = "randomUser123";
 
     // user from config
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
+    conf.setVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
     initiator.setConf(conf);
     Assert.assertEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
 
     // local user (is probably not "randomUser123")
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    conf.setVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
     initiator.setConf(conf);
     Assert.assertNotEquals(userFromConf, initiator.findUserToRunAs(t.getSd().getLocation(), t));
   }
@@ -1098,7 +1098,7 @@ public class TestInitiator extends CompactorTest {
    * @throws Exception
    */
   @Test
-  public void resolveUserToRunAs() throws Exception {
+  public void testResolveUserToRunAs() throws Exception {
     Table t = newTable("default", "tfutra", false);
 
     Map<String, String> tblNameOwners = new HashMap<>();
@@ -1107,19 +1107,20 @@ public class TestInitiator extends CompactorTest {
     String userFromConf = "randomUser123";
 
     // local user 
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    conf.setVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
     initiator.setConf(conf);
-    Assert.assertNotEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
+    String localUser = initiator.resolveUserToRunAs(tblNameOwners, t, null);
+    Assert.assertNotEquals(userFromConf, localUser);
 
     // user from config
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
+    conf.setVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER, userFromConf);
     initiator.setConf(conf);
     Assert.assertEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
 
-    // local user, retrieved from cache
-    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
+    // local user again, retrieved from cache
+    conf.setVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
     initiator.setConf(conf);
-    Assert.assertNotEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
+    Assert.assertEquals(localUser, initiator.resolveUserToRunAs(tblNameOwners, t, null));
   }
 
   @Override

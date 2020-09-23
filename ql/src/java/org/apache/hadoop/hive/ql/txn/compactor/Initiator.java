@@ -223,7 +223,7 @@ public class Initiator extends MetaStoreCompactorThread {
   protected String resolveUserToRunAs(Map<String, String> cache, Table t, Partition p)
       throws IOException, InterruptedException {
 
-    String runAsUser = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER);
+    String runAsUser = conf.getVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER);
     if (!"".equals(runAsUser)) {
       return runAsUser;
     }

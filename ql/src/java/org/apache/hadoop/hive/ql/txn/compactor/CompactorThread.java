@@ -28,7 +28,6 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -158,7 +157,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
     LOG.debug("Determining who to run the job as.");
 
     // check if this is set in config
-    String runUserAs = MetastoreConf.getVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER);
+    String runUserAs = conf.getVar(HiveConf.ConfVars.COMPACTOR_RUN_AS_USER);
     if (runUserAs != null && !"".equals(runUserAs)) {
       return runUserAs;
     }
@@ -208,7 +207,7 @@ public abstract class CompactorThread extends Thread implements Configurable {
    * Determine whether to run this job as the current user or whether we need a doAs to switch
    * users.
    * @param owner of the directory we will be working in, as determined by
-   * {@link #findUserToRunAs(String, org.apache.hadoop.hive.metastore.api.Table, HiveConf)}
+   * {@link #findUserToRunAs(String, org.apache.hadoop.hive.metastore.api.Table)}
    * @return true if the job should run as the current user, false if a doAs is needed.
    */
   protected boolean runJobAsSelf(String owner) {
