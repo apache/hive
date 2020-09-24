@@ -64,6 +64,8 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
 import org.apache.orc.TypeDescription;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -84,6 +86,8 @@ import org.apache.orc.TypeDescription;
  * 
  */
 public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer {
+
+  private static final Logger LOG = LoggerFactory.getLogger(WriterImpl.class);
 
   private final ObjectInspector inspector;
   private final VectorizedRowBatch internalBatch;
@@ -125,7 +129,7 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
    * @param inspector the object inspector to interpret the obj
    * @param obj the value to use
    */
-  static void setColumn(int rowId, ColumnVector column,
+  /*static*/ void setColumn(int rowId, ColumnVector column,
                         ObjectInspector inspector, Object obj) {
     if (obj == null) {
       column.noNulls = false;
@@ -255,10 +259,38 @@ public class WriterImpl extends org.apache.orc.impl.WriterImpl implements Writer
           ListColumnVector vector = (ListColumnVector) column;
           ListObjectInspector oi = (ListObjectInspector) inspector;
           int offset = vector.childCount;
+          /**
+           * Issue here is that, for every iteration, we keep requesting 5K entries (array<String>)
+           * and in ensureSize(), we keep growing the array. ArrayCopy becomes expensive here with
+           * data resizing. We almost do this 6 fields * 1024 times.
+           *
+           * Patch: Instead, we preallocate based on "1024 * fields.length * listSize".
+           * This way, we incur the penalty of allocating less frequently.
+           *
+           * Caveat 1: If I have too many columns in the table, this pre-allocation can lead to
+           * mem pressure. This should be sort of ok as well, because even without this code, we
+           * would have retained it in memory by allocating in smaller chunks.
+           *
+           * Caveat 2: Depending on the incoming data, we may be allocating more during initial
+           * allocation (i.e getListLength can keep differing depending on data). This is ok for
+           * now. i.e we may be expanding size, a little more than needed in some cases, but ok
+           * for now (e.g row 1: 5K, row 2: 5, row 3: 2K, row 4: 1K.....row 1024: 1K entries).
+           * In this case, we would have allocated array for 5K * 6 fields * 1024, where as
+           * good set  of rows have lesser requirement. This is ok compromise for now.
+           *
+           */
+
+          // 5K * 6 * 1024 = 30,720,000 per iteration.
+          int preAllocateLength = (oi.getListLength(obj) * fields.length * 1024);
           int length = oi.getListLength(obj);
           vector.offsets[rowId] = offset;
           vector.lengths[rowId] = length;
-          vector.child.ensureSize(offset + length, true);
+          int requestedSize = (offset + length);
+          if (requestedSize < preAllocateLength) {
+            requestedSize = preAllocateLength;
+          }
+          vector.child.ensureSize(requestedSize, true);
+          //vector.child.ensureSize(offset + length, true);
           vector.childCount += length;
           for (int c = 0; c < length; ++c) {
             setColumn(offset + c, vector.child,
