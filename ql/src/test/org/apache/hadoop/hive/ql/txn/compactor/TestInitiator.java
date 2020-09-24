@@ -1112,9 +1112,11 @@ public class TestInitiator extends CompactorTest {
     initiator.setConf(conf);
     Assert.assertEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
 
+    
     // table dir owner (is probably not "randomUser123")
+    // config changes can happen on Initiator restart; a restart would clear cache
+    tblNameOwners = new HashMap<>();
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.COMPACTOR_RUN_AS_USER, "");
-    // simulate restarting Initiator
     initiator.setConf(conf);
     Assert.assertNotEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
     // table dir owner again, retrieved from cache
