@@ -23,9 +23,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -49,6 +51,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -71,6 +75,40 @@ public class Utils {
       throws SemanticException {
     writeOutput(listValues, outputFile, hiveConf, false);
   }
+
+  /**
+   * Given a ReplChangeManger's encoded uri, it replaces the nameservice and returns the modified encoded uri.
+   */
+  public static String replaceNameserviceInEncodedURI(String cmEncodedURI, HiveConf hiveConf) throws SemanticException {
+    String newNS = hiveConf.get(HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE_NAME.varname);
+    if (StringUtils.isEmpty(newNS)) {
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE
+              .format("Configuration 'hive.repl.ha.datapath.replace.remote.nameservice.name' is not valid "
+                      + newNS == null ? "null" : newNS, ReplUtils.REPL_HIVE_SERVICE));
+    }
+    String[] decodedURISplits = ReplChangeManager.decodeFileUri(cmEncodedURI);
+    // replace both data path and repl cm root path and construct new URI. Checksum and subDir will be same as old.
+    String modifiedURI =  ReplChangeManager.encodeFileUri(replaceHost(decodedURISplits[0], newNS), decodedURISplits[1],
+                                                          replaceHost(decodedURISplits[2], newNS), decodedURISplits[3]);
+    LOG.debug("Modified encoded uri {}, to {} ", cmEncodedURI, modifiedURI);
+    return modifiedURI;
+  }
+
+  private static String replaceHost(String originalURIStr, String newHost) throws SemanticException {
+    if (StringUtils.isEmpty(originalURIStr)) {
+      return originalURIStr;
+    }
+    URI origUri = URI.create(originalURIStr);
+    try {
+      return new URI(origUri.getScheme(),
+              origUri.getUserInfo(), newHost, origUri.getPort(),
+              origUri.getPath(), origUri.getQuery(),
+              origUri.getFragment()).toString();
+    } catch (URISyntaxException ex) {
+      throw new SemanticException(ex);
+    }
+  }
+
 
   public static void writeOutput(List<List<String>> listValues, Path outputFile, HiveConf hiveConf, boolean update)
           throws SemanticException {

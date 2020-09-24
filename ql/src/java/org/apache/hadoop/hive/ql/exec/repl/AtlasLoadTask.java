@@ -102,7 +102,7 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
         } else {
           work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
         }
-      } catch (SemanticException ex) {
+      } catch (Exception ex) {
         LOG.error("Failed to collect Metrics ", ex);
       }
       return errorCode;
