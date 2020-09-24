@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.parse.repl.dump.io;
 
 import java.io.BufferedWriter;
-import java.io.DataOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -32,12 +31,9 @@ import javax.security.auth.login.LoginException;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.utils.Retry;
-import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -48,7 +44,6 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.apache.hadoop.hive.ql.plan.ExportWork.MmContext;
 import org.apache.hadoop.hive.shims.Utils;
-import org.apache.hadoop.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -186,7 +181,7 @@ public class FileOperations {
    * The data export here is a list of files either in table/partition that are written to the _files
    * in the exportRootDataDir provided.
    */
-   void exportFilesAsList() throws SemanticException, IOException, LoginException {
+   void exportFilesAsList() throws SemanticException {
     if (dataPathList.isEmpty()) {
       return;
     }
@@ -222,7 +217,7 @@ public class FileOperations {
   }
 
   private void writeFilesList(FileStatus[] fileStatuses, BufferedWriter writer, String encodedSubDirs)
-          throws IOException {
+          throws IOException, SemanticException {
     for (FileStatus fileStatus : fileStatuses) {
       if (fileStatus.isDirectory()) {
         // Write files inside the sub-directory.
@@ -252,10 +247,14 @@ public class FileOperations {
   }
 
   private String encodedUri(FileStatus fileStatus, String encodedSubDir)
-          throws IOException {
+          throws IOException, SemanticException {
     ReplChangeManager replChangeManager = ReplChangeManager.getInstance();
     Path currentDataFilePath = fileStatus.getPath();
     String checkSum = ReplChangeManager.checksumFor(currentDataFilePath, dataFileSystem);
-    return replChangeManager.encodeFileUri(currentDataFilePath.toString(), checkSum, encodedSubDir);
+    String cmEncodedURIL = replChangeManager.encodeFileUri(currentDataFilePath.toString(), checkSum, encodedSubDir);
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE)) {
+      return org.apache.hadoop.hive.ql.parse.repl.dump.Utils.replaceNameserviceInEncodedURI(cmEncodedURIL, hiveConf);
+    }
+    return cmEncodedURIL;
   }
 }
