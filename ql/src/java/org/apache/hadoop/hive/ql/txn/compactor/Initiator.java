@@ -219,7 +219,8 @@ public class Initiator extends MetaStoreCompactorThread {
         txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
   }
 
-  private String resolveUserToRunAs(Map<String, String> cache, Table t, Partition p)
+  @VisibleForTesting
+  protected String resolveUserToRunAs(Map<String, String> cache, Table t, Partition p)
       throws IOException, InterruptedException {
     //Figure out who we should run the file operations as
     String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
