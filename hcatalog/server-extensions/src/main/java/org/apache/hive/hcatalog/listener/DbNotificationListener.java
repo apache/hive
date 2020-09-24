@@ -718,7 +718,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     List<SQLDefaultConstraint> cols = addDefaultConstraintEvent.getDefaultConstraintCols();
     if (cols.size() > 0) {
       AddDefaultConstraintMessage colsInMsg = MessageBuilder.getInstance()
-        .buildAddDefaultConstraintMessage(addDefaultConstraintEvent.getDefaultConstraintCols());
+        .buildAddDefaultConstraintMessage(cols);
       NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ADD_DEFAULTCONSTRAINT.toString(),
           msgEncoder.getSerializer().serialize(colsInMsg)
@@ -740,7 +740,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     List<SQLCheckConstraint> cols = addCheckConstraintEvent.getCheckConstraintCols();
     if (cols.size() > 0) {
       AddCheckConstraintMessage colsInMsg = MessageBuilder.getInstance()
-        .buildAddCheckConstraintMessage(addCheckConstraintEvent.getCheckConstraintCols());
+        .buildAddCheckConstraintMessage(cols);
       NotificationEvent event =
         new NotificationEvent(0, now(), EventType.ADD_CHECKCONSTRAINT.toString(),
           msgEncoder.getSerializer().serialize(colsInMsg)

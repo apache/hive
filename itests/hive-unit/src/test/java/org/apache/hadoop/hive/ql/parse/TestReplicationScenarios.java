@@ -3432,16 +3432,18 @@ public class TestReplicationScenarios {
     String replDumpId = bootstrapDump.lastReplId;
 
     try {
-      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(replDbName , "tbl1"));
+      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(replDbName, "tbl1"));
       assertEquals(pks.size(), 2);
-      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl3"));
+      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl3"));
       assertEquals(uks.size(), 1);
-      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, replDbName , "tbl2"));
+      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, replDbName, "tbl2"));
       assertEquals(fks.size(), 2);
-      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl3"));
+      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl3"));
       assertEquals(nns.size(), 1);
-      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl7"));
+      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl7"));
       assertEquals(cks.size(), 2);
+      List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl8"));
+      assertEquals(dks.size(), 1);
     } catch (TException te) {
       assertNull(te);
     }
@@ -3463,16 +3465,16 @@ public class TestReplicationScenarios {
     String ckName1 = null;
     String ckName2 = null;
     try {
-      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(replDbName , "tbl4"));
+      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(replDbName, "tbl4"));
       assertEquals(pks.size(), 2);
       pkName = pks.get(0).getPk_name();
-      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl6"));
+      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl6"));
       assertEquals(uks.size(), 1);
       ukName = uks.get(0).getUk_name();
-      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, replDbName , "tbl5"));
+      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, replDbName, "tbl5"));
       assertEquals(fks.size(), 2);
       fkName = fks.get(0).getFk_name();
-      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl6"));
+      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl6"));
       assertEquals(nns.size(), 1);
       nnName = nns.get(0).getNn_name();
       List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl9"));
@@ -3488,8 +3490,8 @@ public class TestReplicationScenarios {
 
     String dkName2 = "custom_dk_name";
     String ckName3 = "customer_ck_name";
-    run("ALTER TABLE " + dbName+ ".tbl10 CHANGE COLUMN a a string CONSTRAINT " + ckName3 + " CHECK (a like 'a%')", driver);
-    run("ALTER TABLE " + dbName+ ".tbl10 CHANGE COLUMN b b int CONSTRAINT " + dkName2 + " DEFAULT 1 ENABLE", driver);
+    run("ALTER TABLE " + dbName + ".tbl10 CHANGE COLUMN a a string CONSTRAINT " + ckName3 + " CHECK (a like 'a%')", driver);
+    run("ALTER TABLE " + dbName + ".tbl10 CHANGE COLUMN b b int CONSTRAINT " + dkName2 + " DEFAULT 1 ENABLE", driver);
     incrementalLoadAndVerify(dbName, replDbName);
     try {
       List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
@@ -3514,13 +3516,13 @@ public class TestReplicationScenarios {
 
     incrementalLoadAndVerify(dbName, replDbName);
     try {
-      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(replDbName , "tbl4"));
+      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(replDbName, "tbl4"));
       assertTrue(pks.isEmpty());
-      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl4"));
+      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl4"));
       assertTrue(uks.isEmpty());
-      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, replDbName , "tbl5"));
+      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, replDbName, "tbl5"));
       assertTrue(fks.isEmpty());
-      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl6"));
+      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl6"));
       assertTrue(nns.isEmpty());
       List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
       assertTrue(dks.isEmpty());
