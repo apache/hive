@@ -23,9 +23,11 @@ import static org.apache.hadoop.hive.ql.parse.CalcitePlanner.ASTSearcher;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InvalidObjectException;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,8 +35,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
@@ -45,8 +49,10 @@ import com.google.common.base.Strings;
 import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
@@ -55,6 +61,7 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.*;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -65,6 +72,9 @@ import org.apache.hadoop.hive.metastore.api.LockComponent;
 import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.metastore.api.GetFileListResponse;
+import org.apache.hadoop.hive.metastore.fb.FbFileBlock;
+import org.apache.hadoop.hive.metastore.fb.FbFileStatus;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -81,6 +91,8 @@ import org.apache.hadoop.hive.ql.io.orc.Reader;
 import org.apache.hadoop.hive.ql.io.orc.Writer;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -96,6 +108,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.Ref;
 import org.apache.orc.FileFormatException;
 import org.apache.orc.impl.OrcAcidUtils;
+import org.apache.thrift.TException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -385,6 +398,175 @@ public class AcidUtils {
     }
     return baseOrDeltaDir + VISIBILITY_PREFIX
         + String.format(DELTA_DIGITS, visibilityTxnId);
+  }
+
+  private static class AcidFileStatus extends LocatedFileStatus {
+
+    private FbFileStatus status;
+
+    public AcidFileStatus (FbFileStatus status) {
+      this.status = status;
+    }
+
+    @Override
+    public BlockLocation[] getBlockLocations() {
+      if(super.getBlockLocations() == null) {
+        BlockLocation[] locations = new BlockLocation[status.fileBlocksLength()];
+        for (int i = 0; i < locations.length; i++) {
+          BlockLocation loc = new BlockLocation();
+          FbFileBlock fbFileBlock = status.fileBlocks(i);
+          String[] hosts = new String[fbFileBlock.hostsLength()];
+          for (int j = 0; j < hosts.length; j++) {
+            hosts[j] = fbFileBlock.hosts(j);
+          }
+          try {
+            loc.setHosts(hosts);
+          } catch (IOException e) {
+            e.printStackTrace();
+          }
+          loc.setLength(fbFileBlock.length());
+          loc.setOffset(fbFileBlock.offset());
+          locations[i] = loc;
+        }
+        super.setBlockLocations(locations);
+      }
+      return super.getBlockLocations();
+    }
+
+    @Override
+    public Path getPath() {
+      return new Path(status.relativePath());
+    }
+
+    @Override
+    public long getLen() {
+      return status.length();
+    }
+
+    @Override
+    public long getModificationTime() {
+      return status.lastModificationTime();
+    }
+
+    @Override
+    public boolean isErasureCoded() {
+      return status.erasureCoded();
+    }
+
+    @Override
+    public long getBlockSize() {
+      return status.blockSize();
+    }
+
+    @Override
+    public boolean isFile() {
+      //AcidFileStatus can only be file
+      return true;
+    }
+
+    @Override
+    public boolean isDirectory() {
+      return false;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder();
+      sb.append(this.getClass().getSimpleName());
+      sb.append("{");
+      sb.append("path=" + this.getPath());
+
+      sb.append("; modification_time=" + this.getModificationTime());
+      sb.append("; isErasureCoded=" + this.isErasureCoded());
+      sb.append("; block_size=" + this.getBlockSize());
+      sb.append("; block_locations=");
+      for (BlockLocation bl: this.getBlockLocations()) {
+        sb.append(bl.toString() + "; ");
+      }
+      sb.append("}");
+      return sb.toString();
+    }
+
+    @Override
+    public boolean isSymlink() {
+      throw new NotImplementedException("isSymlink not implemented in AcidFileStatus");
+    }
+
+    @Override
+    public short getReplication() {
+      throw new NotImplementedException("getReplication not implemented in AcidFileStatus");
+    }
+
+    @Override
+    public long getAccessTime() {
+      throw new NotImplementedException("getAccessTime not implemented in AcidFileStatus");
+    }
+
+    @Override
+    public FsPermission getPermission() {
+      throw new NotImplementedException("getPermission not implemented in AcidFileStatus");
+    }
+
+    @Override
+    public boolean hasAcl() {
+      throw new NotImplementedException("hasAcl not implemented in AcidFileStatus");
+    }
+
+    @Override
+    public boolean isEncrypted() {
+      throw new NotImplementedException("isEncrypted not implemented in AcidFileStatus");
+    }
+
+    @Override
+    public boolean isSnapshotEnabled() {
+      throw new NotImplementedException("isSnapshotEnabled not implemented in AcidFileStatus");
+    }
+
+    @Override
+    public String getOwner() {
+      throw new NotImplementedException("getOwner not implemented in AcidFileStatus");
+    }
+
+    @Override
+    public String getGroup() {
+      throw new NotImplementedException("getGroup not implemented in AcidFileStatus");
+    }
+
+    @Override
+    public void setPath(Path p) {
+      throw new NotImplementedException("setPath not implemented in AcidFileStatus");
+    }
+
+    @Override
+    protected void setPermission(FsPermission permission) {
+      throw new NotImplementedException("setPermission not implemented in AcidFileStatus");
+    }
+
+    @Override
+    protected void setOwner(String owner) {
+      throw new NotImplementedException("setOwner not implemented in AcidFileStatus");
+    }
+
+    @Override
+    protected void setGroup(String group) {
+      throw new NotImplementedException("setGroup not implemented in AcidFileStatus");
+    }
+
+    @Override
+    public Path getSymlink() throws IOException {
+      throw new NotImplementedException("getSymlink not implemented in AcidFileStatus");
+    }
+
+    @Override
+    public void setSymlink(Path p) {
+      throw new NotImplementedException("setSymlink not implemented in AcidFileStatus");
+    }
+
+
+    @Override
+    public void validateObject() throws InvalidObjectException {
+      throw new NotImplementedException("validateObject not implemented in AcidFileStatus");
+    }
   }
 
   /**
@@ -1294,7 +1476,28 @@ public class AcidUtils {
    */
   public static Directory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
       ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles) throws IOException {
-    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, useFileIds, ignoreEmptyFiles, null);
+    boolean useAcidStateCache = conf.getBoolean(ConfVars.HIVE_FILEMETADATA_CACHE_ENABLED.toString(), true);
+    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, useFileIds, ignoreEmptyFiles, null, useAcidStateCache);
+  }
+
+  /**
+   * Get the ACID state of the given directory. It finds the minimal set of
+   * base and diff directories. Note that because major compactions don't
+   * preserve the history, we can't use a base directory that includes a
+   * write id that we must exclude.
+   * @param fileSystem optional, it it is not provided, it will be derived from the candidateDirectory
+   * @param candidateDirectory the partition directory to analyze
+   * @param conf the configuration
+   * @param writeIdList the list of write ids that we are reading
+   * @param useFileIds It will be set to true, if the FileSystem supports listing with fileIds
+   * @param ignoreEmptyFiles Ignore files with 0 length
+   * @param useCache Whether to use metadata cache or not
+   * @return the state of the directory
+   * @throws IOException on filesystem errors
+   */
+  public static Directory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
+                                       ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles, boolean useCache) throws IOException {
+    return getAcidState(fileSystem, candidateDirectory, conf, writeIdList, useFileIds, ignoreEmptyFiles, null, useCache);
   }
 
   /**
@@ -1307,12 +1510,13 @@ public class AcidUtils {
    * @param useFileIds It will be set to true, if the FileSystem supports listing with fileIds
    * @param ignoreEmptyFiles Ignore files with 0 length
    * @param dirSnapshots The listed directory snapshot, if null new will be generated
+   * @param useCache Whether to use metadata cache or not
    * @return the state of the directory
    * @throws IOException on filesystem errors
    */
   private static Directory getAcidState(FileSystem fileSystem, Path candidateDirectory, Configuration conf,
       ValidWriteIdList writeIdList, Ref<Boolean> useFileIds, boolean ignoreEmptyFiles, Map<Path,
-      HdfsDirSnapshot> dirSnapshots) throws IOException {
+      HdfsDirSnapshot> dirSnapshots, boolean useCache) throws IOException {
     ValidTxnList validTxnList = null;
     String s = conf.get(ValidTxnList.VALID_TXNS_KEY);
     if(!Strings.isNullOrEmpty(s)) {
@@ -1349,7 +1553,16 @@ public class AcidUtils {
       }
     } else {
       if (dirSnapshots == null) {
-        dirSnapshots = getHdfsDirSnapshots(fs, candidateDirectory);
+        String tableName = writeIdList.getTableName();
+        if(useCache && tableName != null) {
+          // If cache is enabled, we need to extract DB and Table name, since HMS endpoint needs these values
+          // First element is the DB name, second is the Table name
+          String[] tableNameParts = tableName.split("\\.");
+          dirSnapshots = getHdfsDirSnapshots(fs, candidateDirectory, useCache, tableNameParts[0], tableNameParts[1]);
+        }
+        else {
+          dirSnapshots = getHdfsDirSnapshots(fs, candidateDirectory, false, null, null);
+        }
       }
       getChildState(candidateDirectory, dirSnapshots, writeIdList, working, originalDirectories, original, obsolete,
           bestBase, ignoreEmptyFiles, abortedDirectories, fs, validTxnList);
@@ -1367,7 +1580,7 @@ public class AcidUtils {
       original.clear();
       originalDirectories.clear();
     } else {
-      // Okay, we're going to need these originals.  
+      // Okay, we're going to need these originals.
       // Recurse through them and figure out what we really need.
       // If we already have the original list, do nothing
       // If childrenWithId != null, we would have already populated "original"
@@ -1465,10 +1678,44 @@ public class AcidUtils {
     return new DirectoryImpl(abortedDirectories, isBaseInRawFormat, original, obsolete, deltas, base);
   }
 
-  public static Map<Path, HdfsDirSnapshot> getHdfsDirSnapshots(final FileSystem fs, final Path path)
+
+  public static Map<Path, HdfsDirSnapshot> getHdfsDirSnapshots(final FileSystem fs, final Path path, boolean cacheEnabled,
+                                                               String DbName, String tableName)
       throws IOException {
     Map<Path, HdfsDirSnapshot> dirToSnapshots = new HashMap<>();
-    RemoteIterator<LocatedFileStatus> itr = fs.listFiles(path, true);
+
+    RemoteIterator<LocatedFileStatus> itr;
+    if (cacheEnabled) {
+      // TODO: What to do here? How to get partition value names without string splitting? Store in jobconf from FetchOperator?!
+      String[] parts = path.toString().split("/");
+      int idx = parts.length-1;
+      String lastDir = parts[idx];
+      List<String> partitionValues =  new ArrayList<>();
+      while (lastDir.contains("=")) {
+        partitionValues.add(0, lastDir.split("=")[1]);
+        idx--;
+        lastDir = parts[idx];
+      }
+      List<AcidFileStatus> fileStatusList = new ArrayList<>();
+      try {
+        GetFileListResponse response = Hive.get().getMSC().getFileList(null, DbName, tableName, partitionValues, null);
+        List<ByteBuffer> fileListBuffer = response.getFileListData();
+        if(fileListBuffer != null) {
+          for (ByteBuffer buffer : fileListBuffer) {
+            FbFileStatus fileStatus = FbFileStatus.getRootAsFbFileStatus(buffer);
+            fileStatusList.add(new AcidFileStatus(fileStatus));
+          }
+        }
+      } catch (TException e) {
+        e.printStackTrace();
+      } catch (HiveException e) {
+        e.printStackTrace();
+      }
+      itr = new AcidFileIterator(fileStatusList);
+    }
+    else {
+      itr = fs.listFiles(path, true);
+    }
     while (itr.hasNext()) {
       FileStatus fStatus = itr.next();
       Path fPath = fStatus.getPath();
@@ -1511,6 +1758,32 @@ public class AcidUtils {
     return dirToSnapshots;
   }
 
+  static class AcidFileIterator implements RemoteIterator<LocatedFileStatus> {
+    private Stack<LocatedFileStatus> stack = new Stack();
+
+    public AcidFileIterator (List<AcidFileStatus> fileStatusList) {
+      stack.addAll(fileStatusList);
+    }
+
+    @Override
+    public boolean hasNext() {
+      return !stack.isEmpty();
+    }
+
+    @Override
+    public LocatedFileStatus next() throws IOException {
+      if (this.hasNext()) {
+        return stack.pop();
+      } else {
+        throw new NoSuchElementException("AcidFileIterator: No more entry in the stack" );
+      }
+    }
+  }
+
+  private void createDirToSnapshots (Path path, Path fPath, Map<Path, HdfsDirSnapshot> dirToSnapshots) {
+
+  }
+
   private static boolean isChildOfDelta(Path childDir, Path rootPath) {
     if (childDir.toUri().toString().length() <= rootPath.toUri().toString().length()) {
       return false;
@@ -1524,7 +1797,7 @@ public class AcidUtils {
   }
 
   /**
-   * DFS dir listing. 
+   * DFS dir listing.
    * Captures a dir and the corresponding list of files it contains,
    * with additional properties about the dir (like isBase etc)
    *
@@ -2647,8 +2920,8 @@ public class AcidUtils {
       fs = dir.getFileSystem(jc);
     }
     // Collect the all of the files/dirs
-    Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, dir);
-    Directory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots);
+    Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, dir, false, table.getDbName(), table.getTableName());
+    Directory acidInfo = AcidUtils.getAcidState(fs, dir, jc, idList, null, false, hdfsDirSnapshots, false);
     // Assume that for an MM table, or if there's only the base directory, we are good.
     if (!acidInfo.getCurrentDirectories().isEmpty() && AcidUtils.isFullAcidTable(table)) {
       Utilities.FILE_OP_LOGGER.warn(
@@ -2678,7 +2951,7 @@ public class AcidUtils {
     // If ACID/MM tables, then need to find the valid state wrt to given ValidWriteIdList.
     ValidWriteIdList validWriteIdList = new ValidReaderWriteIdList(validWriteIdStr);
     Directory acidInfo = AcidUtils.getAcidState(dataPath.getFileSystem(conf), dataPath, conf, validWriteIdList, null,
-        false);
+        false, false);
 
     for (HdfsFileStatusWithId hfs : acidInfo.getOriginalFiles()) {
       pathList.add(hfs.getFileStatus().getPath());

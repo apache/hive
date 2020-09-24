@@ -831,6 +831,9 @@ public class HiveConf extends Configuration {
       "Whether each proto event has to be written to separate file. " +
         "(Use this for FS that does not hflush immediately like S3A)"),
 
+    HIVE_FILEMETADATA_CACHE_ENABLED("hive.filemetadata.cache.enabled", true,
+            "Whether to use HMS file metadata cache in AcidUtils or not. "),
+
     // Hadoop Configuration Properties
     // Properties with null values are ignored and exist only for the purpose of giving us
     // a symbolic name to reference in the Hive source code. Properties with non-null

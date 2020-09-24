@@ -80,11 +80,6 @@
       <version>${hppc.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.davidmoten</groupId>
-      <artifactId>flatbuffers-java</artifactId>
-      <version>${flatbuffers.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.avro</groupId>
       <artifactId>avro</artifactId>
     </dependency>

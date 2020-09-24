@@ -81,6 +81,7 @@ import com.google.flatbuffers.FlatBufferBuilder;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -165,6 +166,7 @@ import org.apache.hadoop.hive.metastore.events.PreReadhSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.DeletePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeleteTableColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
+import org.apache.hadoop.hive.metastore.fb.FbFileBlock;
 import org.apache.hadoop.hive.metastore.fb.FbFileStatus;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.JvmPauseMonitor;
@@ -5931,8 +5933,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           } catch (FileFormatException ffe) {
             // It is not an ORC file
           }
+          BlockLocation[] locations = fs.getFileBlockLocations(fStatus, 0, fStatus.getLen());
 
-          response.addToFileListData(createFileStatus(fStatus, path.toString(), fileFormat.ordinal()));
+          response.addToFileListData(createFileStatus(fStatus, path.toString(), fileFormat.ordinal(), locations));
           response.setVersionNumber(1);
           response.setType(FileMetadataType.HIVE);
         }
@@ -5954,9 +5957,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
      * @param fileFormat
      * @return
      */
-    private ByteBuffer createFileStatus(FileStatus fileStatus, String basePath, int fileFormat) {
-      FlatBufferBuilder fbb = new FlatBufferBuilder(1);
-      String relativePath = fileStatus.getPath().toString().replace(basePath, "");
+    private ByteBuffer createFileStatus(FileStatus fileStatus, String basePath, int fileFormat, BlockLocation[] locations)
+            throws IOException {
+      FlatBufferBuilder fbb = new FlatBufferBuilder();
+      int[] fbFileBlocks = new int[locations.length];
+      for (int i = 0; i < locations.length; i++) {
+        BlockLocation location = locations[i];
+        String [] hosts = location.getHosts();
+        int[] hostOffsets = new int[hosts.length];
+        for (int j = 0; j < hosts.length; j++) {
+          hostOffsets[j] = fbb.createString(hosts[j]);
+        }
+        int hostsOffset = FbFileBlock.createHostsVector(fbb, hostOffsets);
+        FbFileBlock.startFbFileBlock(fbb);
+        FbFileBlock.addHosts(fbb, hostsOffset);
+        FbFileBlock.addLength(fbb, location.getLength());
+        FbFileBlock.addOffset(fbb, location.getOffset());
+        fbFileBlocks[i] = FbFileBlock.endFbFileBlock(fbb);
+      }
+
+      int fileBlocksOffset = FbFileStatus.createFileBlocksVector(fbb, fbFileBlocks);
+      String relativePath = fileStatus.getPath().toString();
       int relPathOffset = fbb.createString(relativePath);
       FbFileStatus.startFbFileStatus(fbb);
 
@@ -5964,6 +5985,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       FbFileStatus.addLength(fbb, fileStatus.getLen());
       FbFileStatus.addLastModificationTime(fbb, fileStatus.getModificationTime());
       FbFileStatus.addFileFormat(fbb, fileFormat);
+      FbFileStatus.addErasureCoded(fbb, fileStatus.isErasureCoded());
+      FbFileStatus.addBlockSize(fbb, fileStatus.getBlockSize());
+      FbFileStatus.addFileBlocks(fbb, fileBlocksOffset);
 
       fbb.finish(FbFileStatus.endFbFileStatus(fbb));
       // To eliminate memory fragmentation, copy the contents of the FlatBuffer to the

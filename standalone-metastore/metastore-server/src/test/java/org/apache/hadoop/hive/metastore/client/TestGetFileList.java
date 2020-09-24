@@ -130,7 +130,8 @@ public class TestGetFileList extends MetaStoreClientTest {
     GetFileListResponse resp = getClient().getFileList(null, DB_NAME, TABLE_NAME, partVals,  "");
     List<String> expectedPaths = new ArrayList<>();
     for (int i = 0; i < NUM_FILES_IN_PARTITION; i++) {
-      expectedPaths.add("/" + FILE_NAME + i);
+      expectedPaths.add(metaStore.getWarehouseRoot().toString() + "/"
+              + DB_NAME + ".db/" + TABLE_NAME + "/" + PARTITION1 + "=a1" + "/" + FILE_NAME + i);
     }
 
     List<String> actualPaths = new ArrayList<>();
@@ -151,7 +152,8 @@ public class TestGetFileList extends MetaStoreClientTest {
     GetFileListResponse resp = getClient().getFileList(null, DB_NAME, TABLE_NAME, partVals,  "");
     List<String> expectedPaths = new ArrayList<>();
     for (int i = 0; i < NUM_FILES_IN_PARTITION; i++) {
-      expectedPaths.add("/" + FILE_NAME + i);
+      expectedPaths.add(metaStore.getWarehouseRoot().toString() + "/"
+              + DB_NAME + ".db/" + TABLE_NAME + "/" + PARTITION1 + "=a1" + "/" + PARTITION2 + "=1" + "/" + FILE_NAME + i);
     }
 
     List<String> actualPaths = new ArrayList<>();

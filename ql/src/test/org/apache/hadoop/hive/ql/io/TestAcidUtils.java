@@ -43,14 +43,23 @@ import org.apache.hadoop.hive.ql.io.orc.TestInputOutputFormat.MockFileSystem;
 import org.apache.hadoop.hive.ql.io.orc.TestInputOutputFormat.MockPath;
 import org.apache.hadoop.hive.ql.io.orc.TestOrcRawRecordMerger;
 import org.apache.hadoop.hive.shims.HadoopShims.HdfsFileStatusWithId;
+import org.junit.Before;
 import org.junit.Test;
 
 public class TestAcidUtils {
 
+  private  Configuration conf;
+
+  @Before
+  public void before(){
+    conf =  new Configuration();
+    // Turn off HMS cache for file metadata
+    conf.setBoolean(HiveConf.ConfVars.HIVE_FILEMETADATA_CACHE_ENABLED.toString(), false);
+  }
+
   @Test
   public void testCreateFilename() throws Exception {
     Path p = new Path("/tmp");
-    Configuration conf = new Configuration();
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
         .setOldStyle(true).bucket(1);
     assertEquals("/tmp/000001_0",
@@ -89,7 +98,6 @@ public class TestAcidUtils {
   @Test
   public void testCreateFilenameLargeIds() throws Exception {
     Path p = new Path("/tmp");
-    Configuration conf = new Configuration();
     AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf)
       .setOldStyle(true).bucket(123456789);
     assertEquals("/tmp/123456789_0",
@@ -108,7 +116,6 @@ public class TestAcidUtils {
 
   @Test
   public void testParsing() throws Exception {
-    Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
         //new MockFile("mock:/tmp/base_000123/bucket_00001", 500, new byte[0]),
         new MockFile("mock:/tmp/delta_000005_000006/bucket_00001", 500, new byte[0]),
@@ -159,7 +166,6 @@ public class TestAcidUtils {
 
   @Test
   public void testOriginal() throws Exception {
-    Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/tbl/part1/000000_0", 500, new byte[0]),
         new MockFile("mock:/tbl/part1/000000_0" + Utilities.COPY_KEYWORD + "1",
@@ -192,7 +198,6 @@ public class TestAcidUtils {
 
   @Test
   public void testOriginalDeltas() throws Exception {
-    Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/tbl/part1/000000_0", 500, new byte[0]),
         new MockFile("mock:/tbl/part1/000001_1", 500, new byte[0]),
@@ -238,7 +243,6 @@ public class TestAcidUtils {
 
   @Test
   public void testBaseDeltas() throws Exception {
-    Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/tbl/part1/base_5/bucket_0", 500, new byte[0]),
         new MockFile("mock:/tbl/part1/base_10/bucket_0", 500, new byte[0]),
@@ -275,7 +279,6 @@ public class TestAcidUtils {
 
   @Test
   public void testRecursiveDirListingIsReusedWhenSnapshotTrue() throws IOException {
-    Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/tbl/part1/base_0/bucket_0", 500, new byte[0]),
         new MockFile("mock:/tbl/part1/base_0/_orc_acid_version", 10, new byte[0]));
@@ -292,7 +295,6 @@ public class TestAcidUtils {
 
   @Test
   public void testObsoleteOriginals() throws Exception {
-    Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/tbl/part1/base_10/bucket_0", 500, new byte[0]),
         new MockFile("mock:/tbl/part1/base_5/bucket_0", 500, new byte[0]),
@@ -312,7 +314,6 @@ public class TestAcidUtils {
 
   @Test
   public void testOverlapingDelta() throws Exception {
-    Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/tbl/part1/delta_0000063_63/bucket_0", 500, new byte[0]),
         new MockFile("mock:/tbl/part1/delta_000062_62/bucket_0", 500, new byte[0]),
@@ -345,7 +346,6 @@ public class TestAcidUtils {
    */
   @Test
   public void testOverlapingDelta2() throws Exception {
-    Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
       new MockFile("mock:/tbl/part1/delta_0000063_63_0/bucket_0", 500, new byte[0]),
       new MockFile("mock:/tbl/part1/delta_000062_62_0/bucket_0", 500, new byte[0]),
@@ -382,7 +382,6 @@ public class TestAcidUtils {
 
   @Test
   public void deltasWithOpenTxnInRead() throws Exception {
-    Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/tbl/part1/delta_1_1/bucket_0", 500, new byte[0]),
         new MockFile("mock:/tbl/part1/delta_2_5/bucket_0", 500, new byte[0]));
@@ -404,7 +403,6 @@ public class TestAcidUtils {
    */
   @Test
   public void deltasWithOpenTxnInRead2() throws Exception {
-    Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
       new MockFile("mock:/tbl/part1/delta_1_1/bucket_0", 500, new byte[0]),
       new MockFile("mock:/tbl/part1/delta_2_5/bucket_0", 500, new byte[0]),
@@ -425,7 +423,6 @@ public class TestAcidUtils {
 
   @Test
   public void deltasWithOpenTxnsNotInCompact() throws Exception {
-    Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/tbl/part1/delta_1_1/bucket_0", 500, new byte[0]),
         new MockFile("mock:/tbl/part1/delta_2_5/bucket_0", 500, new byte[0]));
@@ -441,7 +438,6 @@ public class TestAcidUtils {
 
   @Test
   public void deltasWithOpenTxnsNotInCompact2() throws Exception {
-    Configuration conf = new Configuration();
     MockFileSystem fs = new MockFileSystem(conf,
         new MockFile("mock:/tbl/part1/delta_1_1/bucket_0", 500, new byte[0]),
         new MockFile("mock:/tbl/part1/delta_2_5/bucket_0", 500, new byte[0]),
@@ -460,7 +456,6 @@ public class TestAcidUtils {
 
   @Test
   public void testBaseWithDeleteDeltas() throws Exception {
-    Configuration conf = new Configuration();
     conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
         AcidOperationalProperties.getDefault().toInt());
     MockFileSystem fs = new MockFileSystem(conf,
@@ -503,7 +498,6 @@ public class TestAcidUtils {
 
   @Test
   public void testOverlapingDeltaAndDeleteDelta() throws Exception {
-    Configuration conf = new Configuration();
     conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
         AcidOperationalProperties.getDefault().toInt());
     MockFileSystem fs = new MockFileSystem(conf,
@@ -542,7 +536,6 @@ public class TestAcidUtils {
   public void testMinorCompactedDeltaMakesInBetweenDelteDeltaObsolete() throws Exception {
     // This test checks that if we have a minor compacted delta for the txn range [40,60]
     // then it will make any delete delta in that range as obsolete.
-    Configuration conf = new Configuration();
     conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
         AcidUtils.AcidOperationalProperties.getDefault().toInt());
     MockFileSystem fs = new MockFileSystem(conf,
@@ -565,7 +558,6 @@ public class TestAcidUtils {
   public void deltasAndDeleteDeltasWithOpenTxnsNotInCompact() throws Exception {
     // This tests checks that appropriate delta and delete_deltas are included when minor
     // compactions specifies a valid open txn range.
-    Configuration conf = new Configuration();
     conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
         AcidUtils.AcidOperationalProperties.getDefault().toInt());
     MockFileSystem fs = new MockFileSystem(conf,
@@ -590,7 +582,6 @@ public class TestAcidUtils {
 
   @Test
   public void deleteDeltasWithOpenTxnInRead() throws Exception {
-    Configuration conf = new Configuration();
     conf.setInt(HiveConf.ConfVars.HIVE_TXN_OPERATIONAL_PROPERTIES.varname,
         AcidUtils.AcidOperationalProperties.getDefault().toInt());
     MockFileSystem fs = new MockFileSystem(conf,

@@ -92,13 +92,13 @@ class GetPartitionsProjectionSpec
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->fieldList = array();
-                        $_size1071 = 0;
-                        $_etype1074 = 0;
-                        $xfer += $input->readListBegin($_etype1074, $_size1071);
-                        for ($_i1075 = 0; $_i1075 < $_size1071; ++$_i1075) {
-                            $elem1076 = null;
-                            $xfer += $input->readString($elem1076);
-                            $this->fieldList []= $elem1076;
+                        $_size1085 = 0;
+                        $_etype1088 = 0;
+                        $xfer += $input->readListBegin($_etype1088, $_size1085);
+                        for ($_i1089 = 0; $_i1089 < $_size1085; ++$_i1089) {
+                            $elem1090 = null;
+                            $xfer += $input->readString($elem1090);
+                            $this->fieldList []= $elem1090;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -139,8 +139,8 @@ class GetPartitionsProjectionSpec
             }
             $xfer += $output->writeFieldBegin('fieldList', TType::LST, 1);
             $output->writeListBegin(TType::STRING, count($this->fieldList));
-            foreach ($this->fieldList as $iter1077) {
-                $xfer += $output->writeString($iter1077);
+            foreach ($this->fieldList as $iter1091) {
+                $xfer += $output->writeString($iter1091);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

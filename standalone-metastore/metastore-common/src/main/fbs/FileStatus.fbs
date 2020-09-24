@@ -30,4 +30,23 @@ table FbFileStatus {
 
   // Stores if the file is raw or ACID: 0 - raw, 2 - acid v2
   file_format: int (id: 3);
+
+  // Stores if the file erasure coded or not
+  erasure_coded: bool (id: 4);
+
+  block_size: long (id: 5);
+
+  // List of FbFileBlocks that make up this file.
+  file_blocks: [FbFileBlock] (id: 6);
+}
+
+table FbFileBlock {
+  // Offset of this block within the file
+  offset: long = 0 (id: 0);
+
+  // Total length of the block
+  length: long = -1 (id: 1);
+
+  // Hosts that contain replicas of this block.
+  hosts: [string] (id: 2);
 }

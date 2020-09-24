@@ -19,25 +19,41 @@ public final class FbFileStatus extends Table {
   public long length() { int o = __offset(6); return o != 0 ? bb.getLong(o + bb_pos) : 0L; }
   public long lastModificationTime() { int o = __offset(8); return o != 0 ? bb.getLong(o + bb_pos) : 0L; }
   public int fileFormat() { int o = __offset(10); return o != 0 ? bb.getInt(o + bb_pos) : 0; }
+  public boolean erasureCoded() { int o = __offset(12); return o != 0 ? 0!=bb.get(o + bb_pos) : false; }
+  public long blockSize() { int o = __offset(14); return o != 0 ? bb.getLong(o + bb_pos) : 0L; }
+  public FbFileBlock fileBlocks(int j) { return fileBlocks(new FbFileBlock(), j); }
+  public FbFileBlock fileBlocks(FbFileBlock obj, int j) { int o = __offset(16); return o != 0 ? obj.__assign(__indirect(__vector(o) + j * 4), bb) : null; }
+  public int fileBlocksLength() { int o = __offset(16); return o != 0 ? __vector_len(o) : 0; }
 
   public static int createFbFileStatus(FlatBufferBuilder builder,
       int relative_pathOffset,
       long length,
       long last_modification_time,
-      int file_format) {
-    builder.startObject(4);
+      int file_format,
+      boolean erasure_coded,
+      long block_size,
+      int file_blocksOffset) {
+    builder.startObject(7);
+    FbFileStatus.addBlockSize(builder, block_size);
     FbFileStatus.addLastModificationTime(builder, last_modification_time);
     FbFileStatus.addLength(builder, length);
+    FbFileStatus.addFileBlocks(builder, file_blocksOffset);
     FbFileStatus.addFileFormat(builder, file_format);
     FbFileStatus.addRelativePath(builder, relative_pathOffset);
+    FbFileStatus.addErasureCoded(builder, erasure_coded);
     return FbFileStatus.endFbFileStatus(builder);
   }
 
-  public static void startFbFileStatus(FlatBufferBuilder builder) { builder.startObject(4); }
+  public static void startFbFileStatus(FlatBufferBuilder builder) { builder.startObject(7); }
   public static void addRelativePath(FlatBufferBuilder builder, int relativePathOffset) { builder.addOffset(0, relativePathOffset, 0); }
   public static void addLength(FlatBufferBuilder builder, long length) { builder.addLong(1, length, 0L); }
   public static void addLastModificationTime(FlatBufferBuilder builder, long lastModificationTime) { builder.addLong(2, lastModificationTime, 0L); }
   public static void addFileFormat(FlatBufferBuilder builder, int fileFormat) { builder.addInt(3, fileFormat, 0); }
+  public static void addErasureCoded(FlatBufferBuilder builder, boolean erasureCoded) { builder.addBoolean(4, erasureCoded, false); }
+  public static void addBlockSize(FlatBufferBuilder builder, long blockSize) { builder.addLong(5, blockSize, 0L); }
+  public static void addFileBlocks(FlatBufferBuilder builder, int fileBlocksOffset) { builder.addOffset(6, fileBlocksOffset, 0); }
+  public static int createFileBlocksVector(FlatBufferBuilder builder, int[] data) { builder.startVector(4, data.length, 4); for (int i = data.length - 1; i >= 0; i--) builder.addOffset(data[i]); return builder.endVector(); }
+  public static void startFileBlocksVector(FlatBufferBuilder builder, int numElems) { builder.startVector(4, numElems, 4); }
   public static int endFbFileStatus(FlatBufferBuilder builder) {
     int o = builder.endObject();
     return o;

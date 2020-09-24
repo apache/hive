@@ -106,13 +106,13 @@ class GetFileListResponse
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->fileListData = array();
-                        $_size1015 = 0;
-                        $_etype1018 = 0;
-                        $xfer += $input->readListBegin($_etype1018, $_size1015);
-                        for ($_i1019 = 0; $_i1019 < $_size1015; ++$_i1019) {
-                            $elem1020 = null;
-                            $xfer += $input->readString($elem1020);
-                            $this->fileListData []= $elem1020;
+                        $_size1057 = 0;
+                        $_etype1060 = 0;
+                        $xfer += $input->readListBegin($_etype1060, $_size1057);
+                        for ($_i1061 = 0; $_i1061 < $_size1057; ++$_i1061) {
+                            $elem1062 = null;
+                            $xfer += $input->readString($elem1062);
+                            $this->fileListData []= $elem1062;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -144,8 +144,8 @@ class GetFileListResponse
             }
             $xfer += $output->writeFieldBegin('fileListData', TType::LST, 2);
             $output->writeListBegin(TType::STRING, count($this->fileListData));
-            foreach ($this->fileListData as $iter1021) {
-                $xfer += $output->writeString($iter1021);
+            foreach ($this->fileListData as $iter1063) {
+                $xfer += $output->writeString($iter1063);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
