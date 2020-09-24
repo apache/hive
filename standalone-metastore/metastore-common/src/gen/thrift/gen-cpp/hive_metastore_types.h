@@ -8953,11 +8953,12 @@ void swap(UnlockRequest &a, UnlockRequest &b);
 std::ostream& operator<<(std::ostream& out, const UnlockRequest& obj);
 
 typedef struct _ShowLocksRequest__isset {
-  _ShowLocksRequest__isset() : dbname(false), tablename(false), partname(false), isExtended(true) {}
+  _ShowLocksRequest__isset() : dbname(false), tablename(false), partname(false), isExtended(true), txnid(false) {}
   bool dbname :1;
   bool tablename :1;
   bool partname :1;
   bool isExtended :1;
+  bool txnid :1;
 } _ShowLocksRequest__isset;
 
 class ShowLocksRequest : public virtual ::apache::thrift::TBase {
@@ -8965,7 +8966,7 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
 
   ShowLocksRequest(const ShowLocksRequest&);
   ShowLocksRequest& operator=(const ShowLocksRequest&);
-  ShowLocksRequest() : dbname(), tablename(), partname(), isExtended(false) {
+  ShowLocksRequest() : dbname(), tablename(), partname(), isExtended(false), txnid(0) {
   }
 
   virtual ~ShowLocksRequest() noexcept;
@@ -8973,6 +8974,7 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
   std::string tablename;
   std::string partname;
   bool isExtended;
+  int64_t txnid;
 
   _ShowLocksRequest__isset __isset;
 
@@ -8983,6 +8985,8 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
   void __set_partname(const std::string& val);
 
   void __set_isExtended(const bool val);
+
+  void __set_txnid(const int64_t val);
 
   bool operator == (const ShowLocksRequest & rhs) const
   {
@@ -9001,6 +9005,10 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
     if (__isset.isExtended != rhs.__isset.isExtended)
       return false;
     else if (__isset.isExtended && !(isExtended == rhs.isExtended))
+      return false;
+    if (__isset.txnid != rhs.__isset.txnid)
+      return false;
+    else if (__isset.txnid && !(txnid == rhs.txnid))
       return false;
     return true;
   }

@@ -1144,6 +1144,7 @@ struct ShowLocksRequest {
     2: optional string tablename,
     3: optional string partname,
     4: optional bool isExtended=false,
+    5: optional i64 txnid,
 }
 
 struct ShowLocksResponseElement {
