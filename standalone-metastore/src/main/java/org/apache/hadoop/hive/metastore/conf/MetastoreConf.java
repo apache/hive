@@ -388,6 +388,9 @@ public class MetastoreConf {
             + "and retry with compaction again. This will try to auto heal tables with previous failed compaction "
             + "without manual intervention. Setting it to 0 or negative value will disable this feature."),
 
+    COMPACTOR_RUN_AS_USER("metastore.compactor.run.as.user", "hive.compactor.run.as.user", "",
+        "Specify the user to run compactor Initiator and Worker as. If empty string, defaults to table/partition " +
+            "directory owner."),
     METASTORE_HOUSEKEEPING_LEADER_HOSTNAME("metastore.housekeeping.leader.hostname",
             "hive.metastore.housekeeping.leader.hostname", "",
 "If there are multiple Thrift metastore services running, the hostname of Thrift metastore " +
