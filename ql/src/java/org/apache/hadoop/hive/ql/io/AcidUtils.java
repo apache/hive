@@ -1031,8 +1031,12 @@ public class AcidUtils {
       return path;
     }
 
+    public boolean hasStatementId() {
+      return statementId >= 0;
+    }
+
     public int getStatementId() {
-      return statementId == -1 ? 0 : statementId;
+      return hasStatementId() ? statementId : 0;
     }
 
     public boolean isDeleteDelta() {
