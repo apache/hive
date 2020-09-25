@@ -2038,8 +2038,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
       assert r != null;
       r.setPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, r.getPartitions()));
-      // TODO: in these methods, do we really need to deepcopy?
-      //deepCopyPartitions(r.getPartitions(), result);
       result.addAll(r.getPartitions());
 
       return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
@@ -2211,7 +2209,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (processorIdentifier != null)
       gpbnr.setProcessorIdentifier(processorIdentifier);
     List<Partition> parts = getPartitionsByNamesInternal(gpbnr).getPartitions();
-    return deepCopyPartitions(FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts));
+    return FilterUtils.filterPartitionsIfEnabled(isClientFilterEnabled, filterHook, parts);
   }
 
   protected GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest gpbnr)
