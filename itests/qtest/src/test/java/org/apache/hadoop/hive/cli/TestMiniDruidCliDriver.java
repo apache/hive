@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.cli;
 import org.apache.hadoop.hive.cli.control.CliAdapter;
 import org.apache.hadoop.hive.cli.control.CliConfigs;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -30,6 +31,7 @@ import org.junit.runners.Parameterized.Parameters;
 import java.io.File;
 import java.util.List;
 
+@Ignore("CDPD-2153: TestMiniDruidCliDriver time out")
 @RunWith(Parameterized.class)
 public class TestMiniDruidCliDriver {
 
