@@ -122,6 +122,15 @@ struct SQLCheckConstraint {
   9: bool rely_cstr      // Rely/No Rely
 }
 
+struct SQLAllTableConstraints {
+  1: optional list<SQLPrimaryKey> primaryKeys,
+  2: optional list<SQLForeignKey> foreignKeys,
+  3: optional list<SQLUniqueConstraint> uniqueConstraints,
+  4: optional list<SQLNotNullConstraint> notNullConstraints,
+  5: optional list<SQLDefaultConstraint> defaultConstraints,
+  6: optional list<SQLCheckConstraint> checkConstraints
+}
+
 struct Type {
   1: string          name,             // one of the types in PrimitiveTypes or CollectionTypes or User defined types
   2: optional string type1,            // object type if the name is 'list' (LIST_TYPE), key type if the name is 'map' (MAP_TYPE)
@@ -720,6 +729,15 @@ struct CheckConstraintsResponse {
   1: required list<SQLCheckConstraint> checkConstraints
 }
 
+struct AllTableConstraintsRequest {
+  1: required string dbName,
+  2: required string tblName,
+  3: required string catName
+}
+
+struct AllTableConstraintsResponse {
+  1: required SQLAllTableConstraints allTableConstraints
+}
 
 struct DropConstraintRequest {
   1: required string dbname, 
@@ -2501,6 +2519,9 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   DefaultConstraintsResponse get_default_constraints(1:DefaultConstraintsRequest request)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
   CheckConstraintsResponse get_check_constraints(1:CheckConstraintsRequest request)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  // All table constrains
+  AllTableConstraintsResponse get_all_table_constraints(1:AllTableConstraintsRequest request)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // column statistics interfaces

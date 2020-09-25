@@ -489,13 +489,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // FULL_TABLE_NAMES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list682 = iprot.readListBegin();
-                struct.fullTableNames = new java.util.ArrayList<java.lang.String>(_list682.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem683;
-                for (int _i684 = 0; _i684 < _list682.size; ++_i684)
+                org.apache.thrift.protocol.TList _list730 = iprot.readListBegin();
+                struct.fullTableNames = new java.util.ArrayList<java.lang.String>(_list730.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem731;
+                for (int _i732 = 0; _i732 < _list730.size; ++_i732)
                 {
-                  _elem683 = iprot.readString();
-                  struct.fullTableNames.add(_elem683);
+                  _elem731 = iprot.readString();
+                  struct.fullTableNames.add(_elem731);
                 }
                 iprot.readListEnd();
               }
@@ -537,9 +537,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(FULL_TABLE_NAMES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.fullTableNames.size()));
-          for (java.lang.String _iter685 : struct.fullTableNames)
+          for (java.lang.String _iter733 : struct.fullTableNames)
           {
-            oprot.writeString(_iter685);
+            oprot.writeString(_iter733);
           }
           oprot.writeListEnd();
         }
@@ -576,9 +576,9 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.fullTableNames.size());
-        for (java.lang.String _iter686 : struct.fullTableNames)
+        for (java.lang.String _iter734 : struct.fullTableNames)
         {
-          oprot.writeString(_iter686);
+          oprot.writeString(_iter734);
         }
       }
       java.util.BitSet optionals = new java.util.BitSet();
@@ -601,13 +601,13 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, GetValidWriteIdsRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list687 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.fullTableNames = new java.util.ArrayList<java.lang.String>(_list687.size);
-        @org.apache.thrift.annotation.Nullable java.lang.String _elem688;
-        for (int _i689 = 0; _i689 < _list687.size; ++_i689)
+        org.apache.thrift.protocol.TList _list735 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.fullTableNames = new java.util.ArrayList<java.lang.String>(_list735.size);
+        @org.apache.thrift.annotation.Nullable java.lang.String _elem736;
+        for (int _i737 = 0; _i737 < _list735.size; ++_i737)
         {
-          _elem688 = iprot.readString();
-          struct.fullTableNames.add(_elem688);
+          _elem736 = iprot.readString();
+          struct.fullTableNames.add(_elem736);
         }
       }
       struct.setFullTableNamesIsSet(true);

@@ -138,6 +138,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_not_null_constraints(NotNullConstraintsResponse& _return, const NotNullConstraintsRequest& request) = 0;
   virtual void get_default_constraints(DefaultConstraintsResponse& _return, const DefaultConstraintsRequest& request) = 0;
   virtual void get_check_constraints(CheckConstraintsResponse& _return, const CheckConstraintsRequest& request) = 0;
+  virtual void get_all_table_constraints(AllTableConstraintsResponse& _return, const AllTableConstraintsRequest& request) = 0;
   virtual bool update_table_column_statistics(const ColumnStatistics& stats_obj) = 0;
   virtual bool update_partition_column_statistics(const ColumnStatistics& stats_obj) = 0;
   virtual void update_table_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req) = 0;
@@ -651,6 +652,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_check_constraints(CheckConstraintsResponse& /* _return */, const CheckConstraintsRequest& /* request */) {
+    return;
+  }
+  void get_all_table_constraints(AllTableConstraintsResponse& /* _return */, const AllTableConstraintsRequest& /* request */) {
     return;
   }
   bool update_table_column_statistics(const ColumnStatistics& /* stats_obj */) {
@@ -15731,6 +15735,126 @@ class ThriftHiveMetastore_get_check_constraints_presult {
   NoSuchObjectException o2;
 
   _ThriftHiveMetastore_get_check_constraints_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_table_constraints_args__isset {
+  _ThriftHiveMetastore_get_all_table_constraints_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_get_all_table_constraints_args__isset;
+
+class ThriftHiveMetastore_get_all_table_constraints_args {
+ public:
+
+  ThriftHiveMetastore_get_all_table_constraints_args(const ThriftHiveMetastore_get_all_table_constraints_args&);
+  ThriftHiveMetastore_get_all_table_constraints_args& operator=(const ThriftHiveMetastore_get_all_table_constraints_args&);
+  ThriftHiveMetastore_get_all_table_constraints_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_all_table_constraints_args() noexcept;
+  AllTableConstraintsRequest request;
+
+  _ThriftHiveMetastore_get_all_table_constraints_args__isset __isset;
+
+  void __set_request(const AllTableConstraintsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_all_table_constraints_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_all_table_constraints_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_all_table_constraints_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_all_table_constraints_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_all_table_constraints_pargs() noexcept;
+  const AllTableConstraintsRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_table_constraints_result__isset {
+  _ThriftHiveMetastore_get_all_table_constraints_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_all_table_constraints_result__isset;
+
+class ThriftHiveMetastore_get_all_table_constraints_result {
+ public:
+
+  ThriftHiveMetastore_get_all_table_constraints_result(const ThriftHiveMetastore_get_all_table_constraints_result&);
+  ThriftHiveMetastore_get_all_table_constraints_result& operator=(const ThriftHiveMetastore_get_all_table_constraints_result&);
+  ThriftHiveMetastore_get_all_table_constraints_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_all_table_constraints_result() noexcept;
+  AllTableConstraintsResponse success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_all_table_constraints_result__isset __isset;
+
+  void __set_success(const AllTableConstraintsResponse& val);
+
+  void __set_o1(const MetaException& val);
+
+  void __set_o2(const NoSuchObjectException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_all_table_constraints_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_all_table_constraints_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_all_table_constraints_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_table_constraints_presult__isset {
+  _ThriftHiveMetastore_get_all_table_constraints_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_all_table_constraints_presult__isset;
+
+class ThriftHiveMetastore_get_all_table_constraints_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_all_table_constraints_presult() noexcept;
+  AllTableConstraintsResponse* success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_all_table_constraints_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -31077,6 +31201,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_check_constraints(CheckConstraintsResponse& _return, const CheckConstraintsRequest& request);
   void send_get_check_constraints(const CheckConstraintsRequest& request);
   void recv_get_check_constraints(CheckConstraintsResponse& _return);
+  void get_all_table_constraints(AllTableConstraintsResponse& _return, const AllTableConstraintsRequest& request);
+  void send_get_all_table_constraints(const AllTableConstraintsRequest& request);
+  void recv_get_all_table_constraints(AllTableConstraintsResponse& _return);
   bool update_table_column_statistics(const ColumnStatistics& stats_obj);
   void send_update_table_column_statistics(const ColumnStatistics& stats_obj);
   bool recv_update_table_column_statistics();
@@ -31592,6 +31719,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_not_null_constraints(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_default_constraints(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_check_constraints(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_all_table_constraints(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_table_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_partition_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_table_column_statistics_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -31841,6 +31969,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_not_null_constraints"] = &ThriftHiveMetastoreProcessor::process_get_not_null_constraints;
     processMap_["get_default_constraints"] = &ThriftHiveMetastoreProcessor::process_get_default_constraints;
     processMap_["get_check_constraints"] = &ThriftHiveMetastoreProcessor::process_get_check_constraints;
+    processMap_["get_all_table_constraints"] = &ThriftHiveMetastoreProcessor::process_get_all_table_constraints;
     processMap_["update_table_column_statistics"] = &ThriftHiveMetastoreProcessor::process_update_table_column_statistics;
     processMap_["update_partition_column_statistics"] = &ThriftHiveMetastoreProcessor::process_update_partition_column_statistics;
     processMap_["update_table_column_statistics_req"] = &ThriftHiveMetastoreProcessor::process_update_table_column_statistics_req;
@@ -33109,6 +33238,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->get_check_constraints(_return, request);
     }
     ifaces_[i]->get_check_constraints(_return, request);
+    return;
+  }
+
+  void get_all_table_constraints(AllTableConstraintsResponse& _return, const AllTableConstraintsRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_all_table_constraints(_return, request);
+    }
+    ifaces_[i]->get_all_table_constraints(_return, request);
     return;
   }
 
@@ -34723,6 +34862,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_check_constraints(CheckConstraintsResponse& _return, const CheckConstraintsRequest& request);
   int32_t send_get_check_constraints(const CheckConstraintsRequest& request);
   void recv_get_check_constraints(CheckConstraintsResponse& _return, const int32_t seqid);
+  void get_all_table_constraints(AllTableConstraintsResponse& _return, const AllTableConstraintsRequest& request);
+  int32_t send_get_all_table_constraints(const AllTableConstraintsRequest& request);
+  void recv_get_all_table_constraints(AllTableConstraintsResponse& _return, const int32_t seqid);
   bool update_table_column_statistics(const ColumnStatistics& stats_obj);
   int32_t send_update_table_column_statistics(const ColumnStatistics& stats_obj);
   bool recv_update_table_column_statistics(const int32_t seqid);

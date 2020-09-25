@@ -420,6 +420,8 @@ class SQLDefaultConstraint;
 
 class SQLCheckConstraint;
 
+class SQLAllTableConstraints;
+
 class Type;
 
 class HiveObjectRef;
@@ -557,6 +559,10 @@ class DefaultConstraintsResponse;
 class CheckConstraintsRequest;
 
 class CheckConstraintsResponse;
+
+class AllTableConstraintsRequest;
+
+class AllTableConstraintsResponse;
 
 class DropConstraintRequest;
 
@@ -1647,6 +1653,90 @@ class SQLCheckConstraint : public virtual ::apache::thrift::TBase {
 void swap(SQLCheckConstraint &a, SQLCheckConstraint &b);
 
 std::ostream& operator<<(std::ostream& out, const SQLCheckConstraint& obj);
+
+typedef struct _SQLAllTableConstraints__isset {
+  _SQLAllTableConstraints__isset() : primaryKeys(false), foreignKeys(false), uniqueConstraints(false), notNullConstraints(false), defaultConstraints(false), checkConstraints(false) {}
+  bool primaryKeys :1;
+  bool foreignKeys :1;
+  bool uniqueConstraints :1;
+  bool notNullConstraints :1;
+  bool defaultConstraints :1;
+  bool checkConstraints :1;
+} _SQLAllTableConstraints__isset;
+
+class SQLAllTableConstraints : public virtual ::apache::thrift::TBase {
+ public:
+
+  SQLAllTableConstraints(const SQLAllTableConstraints&);
+  SQLAllTableConstraints& operator=(const SQLAllTableConstraints&);
+  SQLAllTableConstraints() {
+  }
+
+  virtual ~SQLAllTableConstraints() noexcept;
+  std::vector<SQLPrimaryKey>  primaryKeys;
+  std::vector<SQLForeignKey>  foreignKeys;
+  std::vector<SQLUniqueConstraint>  uniqueConstraints;
+  std::vector<SQLNotNullConstraint>  notNullConstraints;
+  std::vector<SQLDefaultConstraint>  defaultConstraints;
+  std::vector<SQLCheckConstraint>  checkConstraints;
+
+  _SQLAllTableConstraints__isset __isset;
+
+  void __set_primaryKeys(const std::vector<SQLPrimaryKey> & val);
+
+  void __set_foreignKeys(const std::vector<SQLForeignKey> & val);
+
+  void __set_uniqueConstraints(const std::vector<SQLUniqueConstraint> & val);
+
+  void __set_notNullConstraints(const std::vector<SQLNotNullConstraint> & val);
+
+  void __set_defaultConstraints(const std::vector<SQLDefaultConstraint> & val);
+
+  void __set_checkConstraints(const std::vector<SQLCheckConstraint> & val);
+
+  bool operator == (const SQLAllTableConstraints & rhs) const
+  {
+    if (__isset.primaryKeys != rhs.__isset.primaryKeys)
+      return false;
+    else if (__isset.primaryKeys && !(primaryKeys == rhs.primaryKeys))
+      return false;
+    if (__isset.foreignKeys != rhs.__isset.foreignKeys)
+      return false;
+    else if (__isset.foreignKeys && !(foreignKeys == rhs.foreignKeys))
+      return false;
+    if (__isset.uniqueConstraints != rhs.__isset.uniqueConstraints)
+      return false;
+    else if (__isset.uniqueConstraints && !(uniqueConstraints == rhs.uniqueConstraints))
+      return false;
+    if (__isset.notNullConstraints != rhs.__isset.notNullConstraints)
+      return false;
+    else if (__isset.notNullConstraints && !(notNullConstraints == rhs.notNullConstraints))
+      return false;
+    if (__isset.defaultConstraints != rhs.__isset.defaultConstraints)
+      return false;
+    else if (__isset.defaultConstraints && !(defaultConstraints == rhs.defaultConstraints))
+      return false;
+    if (__isset.checkConstraints != rhs.__isset.checkConstraints)
+      return false;
+    else if (__isset.checkConstraints && !(checkConstraints == rhs.checkConstraints))
+      return false;
+    return true;
+  }
+  bool operator != (const SQLAllTableConstraints &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SQLAllTableConstraints & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SQLAllTableConstraints &a, SQLAllTableConstraints &b);
+
+std::ostream& operator<<(std::ostream& out, const SQLAllTableConstraints& obj);
 
 typedef struct _Type__isset {
   _Type__isset() : name(false), type1(false), type2(false), fields(false) {}
@@ -5717,6 +5807,88 @@ class CheckConstraintsResponse : public virtual ::apache::thrift::TBase {
 void swap(CheckConstraintsResponse &a, CheckConstraintsResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const CheckConstraintsResponse& obj);
+
+
+class AllTableConstraintsRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  AllTableConstraintsRequest(const AllTableConstraintsRequest&);
+  AllTableConstraintsRequest& operator=(const AllTableConstraintsRequest&);
+  AllTableConstraintsRequest() : dbName(), tblName(), catName() {
+  }
+
+  virtual ~AllTableConstraintsRequest() noexcept;
+  std::string dbName;
+  std::string tblName;
+  std::string catName;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblName(const std::string& val);
+
+  void __set_catName(const std::string& val);
+
+  bool operator == (const AllTableConstraintsRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(catName == rhs.catName))
+      return false;
+    return true;
+  }
+  bool operator != (const AllTableConstraintsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AllTableConstraintsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AllTableConstraintsRequest &a, AllTableConstraintsRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const AllTableConstraintsRequest& obj);
+
+
+class AllTableConstraintsResponse : public virtual ::apache::thrift::TBase {
+ public:
+
+  AllTableConstraintsResponse(const AllTableConstraintsResponse&);
+  AllTableConstraintsResponse& operator=(const AllTableConstraintsResponse&);
+  AllTableConstraintsResponse() {
+  }
+
+  virtual ~AllTableConstraintsResponse() noexcept;
+  SQLAllTableConstraints allTableConstraints;
+
+  void __set_allTableConstraints(const SQLAllTableConstraints& val);
+
+  bool operator == (const AllTableConstraintsResponse & rhs) const
+  {
+    if (!(allTableConstraints == rhs.allTableConstraints))
+      return false;
+    return true;
+  }
+  bool operator != (const AllTableConstraintsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AllTableConstraintsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AllTableConstraintsResponse &a, AllTableConstraintsResponse &b);
+
+std::ostream& operator<<(std::ostream& out, const AllTableConstraintsResponse& obj);
 
 typedef struct _DropConstraintRequest__isset {
   _DropConstraintRequest__isset() : catName(false) {}
