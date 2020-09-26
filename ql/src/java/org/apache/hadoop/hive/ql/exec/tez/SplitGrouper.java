@@ -32,6 +32,8 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
+import org.apache.hadoop.mapred.InputFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -94,11 +96,17 @@ public class SplitGrouper {
     // use the tez grouper to combine splits once per bucket
     for (int bucketId : bucketSplitMultimap.keySet()) {
       Collection<InputSplit> inputSplitCollection = bucketSplitMultimap.get(bucketId);
-
+      Class inputFormatClass = conf.getClass("mapred.input.format.class",
+              HiveInputFormat.class);
+      if (inputFormatClass != BucketizedHiveInputFormat.class &&
+              inputFormatClass != HiveInputFormat.class) {
+        // As of now only these two formats are supported.
+        inputFormatClass = HiveInputFormat.class;
+      }
       InputSplit[] rawSplits = inputSplitCollection.toArray(new InputSplit[0]);
       InputSplit[] groupedSplits =
           tezGrouper.getGroupedSplits(conf, rawSplits, bucketTaskMap.get(bucketId),
-              HiveInputFormat.class.getName(), new ColumnarSplitSizeEstimator(), splitLocationProvider);
+                  inputFormatClass.getName(), new ColumnarSplitSizeEstimator(), splitLocationProvider);
 
       LOG.info("Original split count is " + rawSplits.length + " grouped split count is "
           + groupedSplits.length + ", for bucket: " + bucketId);
