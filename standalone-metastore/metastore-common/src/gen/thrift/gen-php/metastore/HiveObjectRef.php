@@ -149,13 +149,13 @@ class HiveObjectRef
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->partValues = array();
-                        $_size7 = 0;
-                        $_etype10 = 0;
-                        $xfer += $input->readListBegin($_etype10, $_size7);
-                        for ($_i11 = 0; $_i11 < $_size7; ++$_i11) {
-                            $elem12 = null;
-                            $xfer += $input->readString($elem12);
-                            $this->partValues []= $elem12;
+                        $_size49 = 0;
+                        $_etype52 = 0;
+                        $xfer += $input->readListBegin($_etype52, $_size49);
+                        for ($_i53 = 0; $_i53 < $_size49; ++$_i53) {
+                            $elem54 = null;
+                            $xfer += $input->readString($elem54);
+                            $this->partValues []= $elem54;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -211,8 +211,8 @@ class HiveObjectRef
             }
             $xfer += $output->writeFieldBegin('partValues', TType::LST, 4);
             $output->writeListBegin(TType::STRING, count($this->partValues));
-            foreach ($this->partValues as $iter13) {
-                $xfer += $output->writeString($iter13);
+            foreach ($this->partValues as $iter55) {
+                $xfer += $output->writeString($iter55);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

@@ -128,6 +128,7 @@ import org.apache.hadoop.hive.metastore.api.RuntimeStat;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
 import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
+import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -11323,6 +11324,29 @@ public class ObjectStore implements RawStore, Configurable {
       rollbackAndCleanup(commited, query);
     }
     return notNullConstraints;
+  }
+
+  /**
+   * Api to fetch all constraints at once
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @return list of all constraint for a given table
+   * @throws MetaException
+   */
+  @Override
+  public SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
+      throws MetaException,NoSuchObjectException {
+    debugLog("Get all table constraints for the table - " + catName + "." + dbName + "." + tblName
+        + " in class ObjectStore.java");
+    SQLAllTableConstraints sqlAllTableConstraints = new SQLAllTableConstraints();
+    sqlAllTableConstraints.setPrimaryKeys(getPrimaryKeys(catName, dbName, tblName));
+    sqlAllTableConstraints.setForeignKeys(getForeignKeys(catName, null, null, dbName, tblName));
+    sqlAllTableConstraints.setUniqueConstraints(getUniqueConstraints(catName, dbName, tblName));
+    sqlAllTableConstraints.setDefaultConstraints(getDefaultConstraints(catName, dbName, tblName));
+    sqlAllTableConstraints.setCheckConstraints(getCheckConstraints(catName, dbName, tblName));
+    sqlAllTableConstraints.setNotNullConstraints(getNotNullConstraints(catName, dbName, tblName));
+    return sqlAllTableConstraints;
   }
 
   @Override

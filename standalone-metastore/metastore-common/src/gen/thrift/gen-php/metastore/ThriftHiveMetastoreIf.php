@@ -955,6 +955,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function get_check_constraints(\metastore\CheckConstraintsRequest $request);
     /**
+     * @param \metastore\AllTableConstraintsRequest $request
+     * @return \metastore\AllTableConstraintsResponse
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function get_all_table_constraints(\metastore\AllTableConstraintsRequest $request);
+    /**
      * @param \metastore\ColumnStatistics $stats_obj
      * @return bool
      * @throws \metastore\NoSuchObjectException
