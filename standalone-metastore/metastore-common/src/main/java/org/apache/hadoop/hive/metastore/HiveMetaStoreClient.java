@@ -2874,6 +2874,32 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   /**
+   * Api to fetch all table constraints at once
+   * @param req request info
+   * @return all constraints attached to given table
+   * @throws MetaException
+   * @throws TException
+   */
+  @Override
+  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest req)
+      throws MetaException, TException {
+    long t1 = 0;
+
+    if (LOG.isDebugEnabled()) {
+      t1 = System.currentTimeMillis();
+    }
+
+    try {
+      return client.get_all_table_constraints(req).getAllTableConstraints();
+    } finally {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getAllTableConstraints",
+            System.currentTimeMillis() - t1, "HMS client");
+      }
+    }
+  }
+
+  /**
    * {@inheritDoc}
    */
   @Override

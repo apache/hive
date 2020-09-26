@@ -69,14 +69,14 @@ class GetRoleGrantsForPrincipalResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->principalGrants = array();
-                        $_size76 = 0;
-                        $_etype79 = 0;
-                        $xfer += $input->readListBegin($_etype79, $_size76);
-                        for ($_i80 = 0; $_i80 < $_size76; ++$_i80) {
-                            $elem81 = null;
-                            $elem81 = new \metastore\RolePrincipalGrant();
-                            $xfer += $elem81->read($input);
-                            $this->principalGrants []= $elem81;
+                        $_size118 = 0;
+                        $_etype121 = 0;
+                        $xfer += $input->readListBegin($_etype121, $_size118);
+                        for ($_i122 = 0; $_i122 < $_size118; ++$_i122) {
+                            $elem123 = null;
+                            $elem123 = new \metastore\RolePrincipalGrant();
+                            $xfer += $elem123->read($input);
+                            $this->principalGrants []= $elem123;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class GetRoleGrantsForPrincipalResponse
             }
             $xfer += $output->writeFieldBegin('principalGrants', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->principalGrants));
-            foreach ($this->principalGrants as $iter82) {
-                $xfer += $iter82->write($output);
+            foreach ($this->principalGrants as $iter124) {
+                $xfer += $iter124->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

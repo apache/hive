@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.repl.bootstrap.load;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -87,7 +88,7 @@ public class LoadConstraint {
       String nnsString = json.getString("nns");
       List<Task<?>> tasks = new ArrayList<Task<?>>();
 
-      if (pksString != null && !pksString.isEmpty() && !isPrimaryKeysAlreadyLoaded(pksString)) {
+      if (StringUtils.isNotEmpty(StringUtils.trim(pksString)) && !isPrimaryKeysAlreadyLoaded(pksString)) {
         AddPrimaryKeyHandler pkHandler = new AddPrimaryKeyHandler();
         DumpMetaData pkDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_PRIMARYKEY, Long.MAX_VALUE, Long.MAX_VALUE, null,
             context.hiveConf);
@@ -98,7 +99,7 @@ public class LoadConstraint {
                 context.hiveDb, context.nestedContext, LOG)));
       }
 
-      if (uksString != null && !uksString.isEmpty() && !isUniqueConstraintsAlreadyLoaded(uksString)) {
+      if (StringUtils.isNotEmpty(StringUtils.trim(uksString)) && !isUniqueConstraintsAlreadyLoaded(uksString)) {
         AddUniqueConstraintHandler ukHandler = new AddUniqueConstraintHandler();
         DumpMetaData ukDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_UNIQUECONSTRAINT, Long.MAX_VALUE, Long.MAX_VALUE, null,
             context.hiveConf);
@@ -109,7 +110,7 @@ public class LoadConstraint {
                 context.hiveDb, context.nestedContext, LOG)));
       }
 
-      if (nnsString != null && !nnsString.isEmpty() && !isNotNullConstraintsAlreadyLoaded(nnsString)) {
+      if (StringUtils.isNotEmpty(StringUtils.trim(nnsString)) && !isNotNullConstraintsAlreadyLoaded(nnsString)) {
         AddNotNullConstraintHandler nnHandler = new AddNotNullConstraintHandler();
         DumpMetaData nnDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_NOTNULLCONSTRAINT, Long.MAX_VALUE, Long.MAX_VALUE, null,
             context.hiveConf);
@@ -120,7 +121,7 @@ public class LoadConstraint {
                 context.hiveDb, context.nestedContext, LOG)));
       }
 
-      if (fksString != null && !fksString.isEmpty() && !isForeignKeysAlreadyLoaded(fksString)) {
+      if (StringUtils.isNotEmpty(StringUtils.trim(fksString)) && !isForeignKeysAlreadyLoaded(fksString)) {
         AddForeignKeyHandler fkHandler = new AddForeignKeyHandler();
         DumpMetaData fkDumpMetaData = new DumpMetaData(fromPath, DumpType.EVENT_ADD_FOREIGNKEY, Long.MAX_VALUE, Long.MAX_VALUE, null,
             context.hiveConf);
@@ -152,7 +153,7 @@ public class LoadConstraint {
     } catch (NoSuchObjectException e) {
       return false;
     }
-    return ((pks != null) && !pks.isEmpty());
+    return CollectionUtils.isNotEmpty(pks);
   }
 
   private boolean isForeignKeysAlreadyLoaded(String fksMsgString) throws Exception {
@@ -169,7 +170,7 @@ public class LoadConstraint {
     } catch (NoSuchObjectException e) {
       return false;
     }
-    return ((fks != null) && !fks.isEmpty());
+    return CollectionUtils.isNotEmpty(fks);
   }
 
   private boolean isUniqueConstraintsAlreadyLoaded(String uksMsgString) throws Exception {
@@ -186,7 +187,7 @@ public class LoadConstraint {
     } catch (NoSuchObjectException e) {
       return false;
     }
-    return ((uks != null) && !uks.isEmpty());
+    return CollectionUtils.isNotEmpty(uks);
   }
 
   private boolean isNotNullConstraintsAlreadyLoaded(String nnsMsgString) throws Exception {
@@ -203,7 +204,7 @@ public class LoadConstraint {
     } catch (NoSuchObjectException e) {
       return false;
     }
-    return ((nns != null) && !nns.isEmpty());
+    return CollectionUtils.isNotEmpty(nns);
   }
 
 }

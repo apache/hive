@@ -127,26 +127,26 @@ class PrincipalPrivilegeSet
                 case 1:
                     if ($ftype == TType::MAP) {
                         $this->userPrivileges = array();
-                        $_size21 = 0;
-                        $_ktype22 = 0;
-                        $_vtype23 = 0;
-                        $xfer += $input->readMapBegin($_ktype22, $_vtype23, $_size21);
-                        for ($_i25 = 0; $_i25 < $_size21; ++$_i25) {
-                            $key26 = '';
-                            $val27 = array();
-                            $xfer += $input->readString($key26);
-                            $val27 = array();
-                            $_size28 = 0;
-                            $_etype31 = 0;
-                            $xfer += $input->readListBegin($_etype31, $_size28);
-                            for ($_i32 = 0; $_i32 < $_size28; ++$_i32) {
-                                $elem33 = null;
-                                $elem33 = new \metastore\PrivilegeGrantInfo();
-                                $xfer += $elem33->read($input);
-                                $val27 []= $elem33;
+                        $_size63 = 0;
+                        $_ktype64 = 0;
+                        $_vtype65 = 0;
+                        $xfer += $input->readMapBegin($_ktype64, $_vtype65, $_size63);
+                        for ($_i67 = 0; $_i67 < $_size63; ++$_i67) {
+                            $key68 = '';
+                            $val69 = array();
+                            $xfer += $input->readString($key68);
+                            $val69 = array();
+                            $_size70 = 0;
+                            $_etype73 = 0;
+                            $xfer += $input->readListBegin($_etype73, $_size70);
+                            for ($_i74 = 0; $_i74 < $_size70; ++$_i74) {
+                                $elem75 = null;
+                                $elem75 = new \metastore\PrivilegeGrantInfo();
+                                $xfer += $elem75->read($input);
+                                $val69 []= $elem75;
                             }
                             $xfer += $input->readListEnd();
-                            $this->userPrivileges[$key26] = $val27;
+                            $this->userPrivileges[$key68] = $val69;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -156,26 +156,26 @@ class PrincipalPrivilegeSet
                 case 2:
                     if ($ftype == TType::MAP) {
                         $this->groupPrivileges = array();
-                        $_size34 = 0;
-                        $_ktype35 = 0;
-                        $_vtype36 = 0;
-                        $xfer += $input->readMapBegin($_ktype35, $_vtype36, $_size34);
-                        for ($_i38 = 0; $_i38 < $_size34; ++$_i38) {
-                            $key39 = '';
-                            $val40 = array();
-                            $xfer += $input->readString($key39);
-                            $val40 = array();
-                            $_size41 = 0;
-                            $_etype44 = 0;
-                            $xfer += $input->readListBegin($_etype44, $_size41);
-                            for ($_i45 = 0; $_i45 < $_size41; ++$_i45) {
-                                $elem46 = null;
-                                $elem46 = new \metastore\PrivilegeGrantInfo();
-                                $xfer += $elem46->read($input);
-                                $val40 []= $elem46;
+                        $_size76 = 0;
+                        $_ktype77 = 0;
+                        $_vtype78 = 0;
+                        $xfer += $input->readMapBegin($_ktype77, $_vtype78, $_size76);
+                        for ($_i80 = 0; $_i80 < $_size76; ++$_i80) {
+                            $key81 = '';
+                            $val82 = array();
+                            $xfer += $input->readString($key81);
+                            $val82 = array();
+                            $_size83 = 0;
+                            $_etype86 = 0;
+                            $xfer += $input->readListBegin($_etype86, $_size83);
+                            for ($_i87 = 0; $_i87 < $_size83; ++$_i87) {
+                                $elem88 = null;
+                                $elem88 = new \metastore\PrivilegeGrantInfo();
+                                $xfer += $elem88->read($input);
+                                $val82 []= $elem88;
                             }
                             $xfer += $input->readListEnd();
-                            $this->groupPrivileges[$key39] = $val40;
+                            $this->groupPrivileges[$key81] = $val82;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -185,26 +185,26 @@ class PrincipalPrivilegeSet
                 case 3:
                     if ($ftype == TType::MAP) {
                         $this->rolePrivileges = array();
-                        $_size47 = 0;
-                        $_ktype48 = 0;
-                        $_vtype49 = 0;
-                        $xfer += $input->readMapBegin($_ktype48, $_vtype49, $_size47);
-                        for ($_i51 = 0; $_i51 < $_size47; ++$_i51) {
-                            $key52 = '';
-                            $val53 = array();
-                            $xfer += $input->readString($key52);
-                            $val53 = array();
-                            $_size54 = 0;
-                            $_etype57 = 0;
-                            $xfer += $input->readListBegin($_etype57, $_size54);
-                            for ($_i58 = 0; $_i58 < $_size54; ++$_i58) {
-                                $elem59 = null;
-                                $elem59 = new \metastore\PrivilegeGrantInfo();
-                                $xfer += $elem59->read($input);
-                                $val53 []= $elem59;
+                        $_size89 = 0;
+                        $_ktype90 = 0;
+                        $_vtype91 = 0;
+                        $xfer += $input->readMapBegin($_ktype90, $_vtype91, $_size89);
+                        for ($_i93 = 0; $_i93 < $_size89; ++$_i93) {
+                            $key94 = '';
+                            $val95 = array();
+                            $xfer += $input->readString($key94);
+                            $val95 = array();
+                            $_size96 = 0;
+                            $_etype99 = 0;
+                            $xfer += $input->readListBegin($_etype99, $_size96);
+                            for ($_i100 = 0; $_i100 < $_size96; ++$_i100) {
+                                $elem101 = null;
+                                $elem101 = new \metastore\PrivilegeGrantInfo();
+                                $xfer += $elem101->read($input);
+                                $val95 []= $elem101;
                             }
                             $xfer += $input->readListEnd();
-                            $this->rolePrivileges[$key52] = $val53;
+                            $this->rolePrivileges[$key94] = $val95;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -231,11 +231,11 @@ class PrincipalPrivilegeSet
             }
             $xfer += $output->writeFieldBegin('userPrivileges', TType::MAP, 1);
             $output->writeMapBegin(TType::STRING, TType::LST, count($this->userPrivileges));
-            foreach ($this->userPrivileges as $kiter60 => $viter61) {
-                $xfer += $output->writeString($kiter60);
-                $output->writeListBegin(TType::STRUCT, count($viter61));
-                foreach ($viter61 as $iter62) {
-                    $xfer += $iter62->write($output);
+            foreach ($this->userPrivileges as $kiter102 => $viter103) {
+                $xfer += $output->writeString($kiter102);
+                $output->writeListBegin(TType::STRUCT, count($viter103));
+                foreach ($viter103 as $iter104) {
+                    $xfer += $iter104->write($output);
                 }
                 $output->writeListEnd();
             }
@@ -248,11 +248,11 @@ class PrincipalPrivilegeSet
             }
             $xfer += $output->writeFieldBegin('groupPrivileges', TType::MAP, 2);
             $output->writeMapBegin(TType::STRING, TType::LST, count($this->groupPrivileges));
-            foreach ($this->groupPrivileges as $kiter63 => $viter64) {
-                $xfer += $output->writeString($kiter63);
-                $output->writeListBegin(TType::STRUCT, count($viter64));
-                foreach ($viter64 as $iter65) {
-                    $xfer += $iter65->write($output);
+            foreach ($this->groupPrivileges as $kiter105 => $viter106) {
+                $xfer += $output->writeString($kiter105);
+                $output->writeListBegin(TType::STRUCT, count($viter106));
+                foreach ($viter106 as $iter107) {
+                    $xfer += $iter107->write($output);
                 }
                 $output->writeListEnd();
             }
@@ -265,11 +265,11 @@ class PrincipalPrivilegeSet
             }
             $xfer += $output->writeFieldBegin('rolePrivileges', TType::MAP, 3);
             $output->writeMapBegin(TType::STRING, TType::LST, count($this->rolePrivileges));
-            foreach ($this->rolePrivileges as $kiter66 => $viter67) {
-                $xfer += $output->writeString($kiter66);
-                $output->writeListBegin(TType::STRUCT, count($viter67));
-                foreach ($viter67 as $iter68) {
-                    $xfer += $iter68->write($output);
+            foreach ($this->rolePrivileges as $kiter108 => $viter109) {
+                $xfer += $output->writeString($kiter108);
+                $output->writeListBegin(TType::STRUCT, count($viter109));
+                foreach ($viter109 as $iter110) {
+                    $xfer += $iter110->write($output);
                 }
                 $output->writeListEnd();
             }

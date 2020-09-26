@@ -1486,6 +1486,17 @@ public interface RawStore extends Configurable {
                                                    String tbl_name) throws MetaException;
 
   /**
+   * Get all constraints of the table
+   * @param catName catalog name
+   * @param dbName database name
+   * @param tblName table name
+   * @return all constraints for this table
+   * @throws MetaException error accessing the RDBMS
+   */
+  SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
+      throws MetaException, NoSuchObjectException;
+
+  /**
    * Create a table with constraints
    * @param tbl table definition
    * @param primaryKeys primary key definition, or null

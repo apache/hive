@@ -139,6 +139,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  NotNullConstraintsResponse get_not_null_constraints(NotNullConstraintsRequest request)')
     print('  DefaultConstraintsResponse get_default_constraints(DefaultConstraintsRequest request)')
     print('  CheckConstraintsResponse get_check_constraints(CheckConstraintsRequest request)')
+    print('  AllTableConstraintsResponse get_all_table_constraints(AllTableConstraintsRequest request)')
     print('  bool update_table_column_statistics(ColumnStatistics stats_obj)')
     print('  bool update_partition_column_statistics(ColumnStatistics stats_obj)')
     print('  SetPartitionsStatsResponse update_table_column_statistics_req(SetPartitionsStatsRequest req)')
@@ -1050,6 +1051,12 @@ elif cmd == 'get_check_constraints':
         print('get_check_constraints requires 1 args')
         sys.exit(1)
     pp.pprint(client.get_check_constraints(eval(args[0]),))
+
+elif cmd == 'get_all_table_constraints':
+    if len(args) != 1:
+        print('get_all_table_constraints requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_all_table_constraints(eval(args[0]),))
 
 elif cmd == 'update_table_column_statistics':
     if len(args) != 1:

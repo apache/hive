@@ -106,6 +106,7 @@ public class PerfLogger {
   public static final String HIVE_GET_FK = "getForeignKeys";
   public static final String HIVE_GET_UNIQ_CONSTRAINT = "getUniqueConstraints";
   public static final String HIVE_GET_NOT_NULL_CONSTRAINT = "getNotNullConstraints";
+  public static final String HIVE_GET_TABLE_CONSTRAINTS = "getTableConstraints";
 
   protected final Map<String, Long> startTimes = new HashMap<String, Long>();
   protected final Map<String, Long> endTimes = new HashMap<String, Long>();
