@@ -58,6 +58,7 @@ import org.datanucleus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -177,7 +178,7 @@ public class LoadPartitions {
    *
    * @throws SemanticException
    */
-  private void addConsolidatedPartitionDesc() throws Exception {
+  private void addConsolidatedPartitionDesc(Task ptnRootTask) throws Exception {
     //Load partitions equal to batch size at one go for metadata only and for external tables.
     int maxTasks = context.hiveConf.getIntVar(HiveConf.ConfVars.REPL_LOAD_PARTITIONS_BATCH_SIZE);
     int currentPartitionCount = 0;
@@ -207,7 +208,7 @@ public class LoadPartitions {
         tableDesc.getTableName(), true, partitions);
 
       //don't need to add ckpt task separately. Added as part of add partition task
-      addPartition((toPartitionCount < totalPartitionCount), consolidatedPartitionDesc, null);
+      addPartition((toPartitionCount < totalPartitionCount), consolidatedPartitionDesc, ptnRootTask);
       if (partitions.size() > 0) {
         LOG.info("Added {} partitions", partitions.size());
       }
@@ -216,21 +217,8 @@ public class LoadPartitions {
   }
 
   private TaskTracker forNewTable() throws Exception {
-    if (isMetaDataOp() || TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
-      // Place all partitions in single task to reduce load on HMS.
-      addConsolidatedPartitionDesc();
-      return tracker;
-    }
-
-    Iterator<AlterTableAddPartitionDesc> iterator = event.partitionDescriptions(tableDesc).iterator();
-    while (iterator.hasNext() && tracker.canAddMoreTasks()) {
-      AlterTableAddPartitionDesc currentPartitionDesc = iterator.next();
-      /*
-       the currentPartitionDesc cannot be inlined as we need the hasNext() to be evaluated post the
-       current retrieved lastReplicatedPartition
-      */
-      addPartition(iterator.hasNext(), currentPartitionDesc, null);
-    }
+    // Place all partitions in single task to reduce load on HMS.
+    addConsolidatedPartitionDesc(null);
     return tracker;
   }
 
@@ -245,7 +233,7 @@ public class LoadPartitions {
   }
 
   /**
-   * returns the root task for adding a partition
+   * returns the root task for adding all partitions in a batch
    */
   private Task<?> tasksForAddPartition(Table table, AlterTableAddPartitionDesc addPartitionDesc, Task<?> ptnRootTask)
           throws MetaException, HiveException {
@@ -254,7 +242,7 @@ public class LoadPartitions {
               true, (new Path(context.dumpDirectory)).getParent().toString(), this.metricCollector),
       context.hiveConf
     );
-    //checkpointing task already added as part of add batch of partition in case for metadata only and external tables
+    //checkpointing task already added as part of add batch of partition
     if (isMetaDataOp() || TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
       if (ptnRootTask == null) {
         ptnRootTask = addPartTask;
@@ -264,68 +252,68 @@ public class LoadPartitions {
       return ptnRootTask;
     }
 
-    AlterTableAddPartitionDesc.PartitionDesc partSpec = addPartitionDesc.getPartitions().get(0);
-    Path sourceWarehousePartitionLocation = new Path(partSpec.getLocation());
-    Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, partSpec);
-    partSpec.setLocation(replicaWarehousePartitionLocation.toString());
-    LOG.debug("adding dependent CopyWork/AddPart/MoveWork for partition "
-      + partSpecToString(partSpec.getPartSpec()) + " with source location: "
-      + partSpec.getLocation());
-    Task<?> ckptTask = ReplUtils.getTableCheckpointTask(
-      tableDesc,
-      (HashMap<String, String>)partSpec.getPartSpec(),
-      context.dumpDirectory,
-      this.metricCollector,
-      context.hiveConf
-    );
+    //Add Copy task for all partitions
+    List<Task<?>> copyTaskList = new ArrayList<>();
+    List<Task<?>> moveTaskList = new ArrayList<>();
+    for (AlterTableAddPartitionDesc.PartitionDesc partSpec : addPartitionDesc.getPartitions()) {
+      Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, partSpec);
+      partSpec.setLocation(replicaWarehousePartitionLocation.toString());
+      LOG.debug("adding dependent CopyWork for partition "
+        + partSpecToString(partSpec.getPartSpec()) + " with source location: "
+        + partSpec.getLocation());
 
-    Path stagingDir = replicaWarehousePartitionLocation;
-    // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
-    LoadFileType loadFileType;
-    if (event.replicationSpec().isInReplicationScope() &&
-            context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
-      loadFileType = LoadFileType.IGNORE;
-    } else {
-      loadFileType = event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
-      stagingDir = PathUtils.getExternalTmpPath(replicaWarehousePartitionLocation, context.pathInfo);
-    }
-    boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
-    Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+      Path stagingDir = replicaWarehousePartitionLocation;
+      // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
+      LoadFileType loadFileType;
+      if (event.replicationSpec().isInReplicationScope() &&
+        context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
+        loadFileType = LoadFileType.IGNORE;
+      } else {
+        loadFileType = event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
+        stagingDir = PathUtils.getExternalTmpPath(replicaWarehousePartitionLocation, context.pathInfo);
+      }
+      boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
+      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
         event.replicationSpec(),
-        new Path(event.dataPath() + Path.SEPARATOR + getPartitionName(sourceWarehousePartitionLocation)),
+        new Path(event.dataPath() + Path.SEPARATOR + Warehouse.makePartPath(partSpec.getPartSpec())),
         stagingDir,
-        context.hiveConf, copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(),
-        this.metricCollector
-    );
+        context.hiveConf, copyAtLoad, false
+      );
+      copyTaskList.add(copyTask);
 
-    Task<?> movePartitionTask = null;
-    if (loadFileType != LoadFileType.IGNORE) {
-      // no need to create move task, if file is moved directly to target location.
-      movePartitionTask = movePartitionTask(table, partSpec, stagingDir, loadFileType);
+      Task<?> movePartitionTask = null;
+      if (loadFileType != LoadFileType.IGNORE) {
+        // no need to create move task, if file is moved directly to target location.
+        movePartitionTask = movePartitionTask(table, partSpec, stagingDir, loadFileType);
+        moveTaskList.add(movePartitionTask);
+      }
     }
-
+    Iterator<Task<?>> copyTaskIterator = copyTaskList.iterator();
+    Iterator<Task<?>> moveTaskIterator = moveTaskList.iterator();
+    //Add the copy tasks. once copy tasks are done, add partition metadata
+    while (copyTaskIterator.hasNext()) {
+      if (ptnRootTask == null) {
+        ptnRootTask = copyTaskIterator.next();
+      } else {
+        ptnRootTask.addDependentTask(copyTaskIterator.next());
+      }
+    }
     if (ptnRootTask == null) {
-      ptnRootTask = copyTask;
+      ptnRootTask = addPartTask;
     } else {
-      ptnRootTask.addDependentTask(copyTask);
+      ptnRootTask.addDependentTask(addPartTask);
     }
 
-    // Set Checkpoint task as dependant to the tail of add partition tasks. So, if same dump is
-    // retried for bootstrap, we skip current partition update.
-    copyTask.addDependentTask(addPartTask);
-    if (movePartitionTask != null) {
-      addPartTask.addDependentTask(movePartitionTask);
-      movePartitionTask.addDependentTask(ckptTask);
-    } else {
-      addPartTask.addDependentTask(ckptTask);
+    //Add the move tasks after add partition metadata is done
+    while (moveTaskIterator.hasNext()) {
+      if (ptnRootTask == null) {
+        ptnRootTask = moveTaskIterator.next();
+      } else {
+        ptnRootTask.addDependentTask(moveTaskIterator.next());
+      }
     }
+
     return ptnRootTask;
-  }
-
-  private String getPartitionName(Path partitionMetadataFullPath) {
-    //Get partition name by removing the metadata base path.
-    //Needed for getting the data path
-    return partitionMetadataFullPath.toString().substring(event.metadataPath().toString().length());
   }
 
   /**
@@ -415,25 +403,36 @@ public class LoadPartitions {
       Map<String, String> currentSpec = addPartitionDesc.getPartitions().get(0).getPartSpec();
       encounteredTheLastReplicatedPartition = lastReplicatedPartSpec.equals(currentSpec);
     }
-
+    Task<?> ptnRootTask = null;
     while (partitionIterator.hasNext() && tracker.canAddMoreTasks()) {
       AlterTableAddPartitionDesc addPartitionDesc = partitionIterator.next();
-      Map<String, String> partSpec = addPartitionDesc.getPartitions().get(0).getPartSpec();
-      Task<?> ptnRootTask = null;
+      AlterTableAddPartitionDesc.PartitionDesc src = addPartitionDesc.getPartitions().get(0);
+      //Add check point task as part of add partition
+      Map<String, String> partParams = new HashMap<>();
+      partParams.put(REPL_CHECKPOINT_KEY, context.dumpDirectory);
+      Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, src);
+      src.setLocation(replicaWarehousePartitionLocation.toString());
+      src.addPartParams(partParams);
+      Map<String, String> partSpec = src.getPartSpec();
+
       ReplLoadOpType loadPtnType = getLoadPartitionType(partSpec);
       switch (loadPtnType) {
         case LOAD_NEW:
           break;
         case LOAD_REPLACE:
-          ptnRootTask = dropPartitionTask(table, partSpec);
+          if (ptnRootTask == null) {
+            ptnRootTask = dropPartitionTask(table, partSpec);
+          } else {
+            ptnRootTask.addDependentTask(dropPartitionTask(table, partSpec));
+          }
           break;
         case LOAD_SKIP:
           continue;
         default:
           break;
       }
-      addPartition(partitionIterator.hasNext(), addPartitionDesc, ptnRootTask);
     }
+    addConsolidatedPartitionDesc(ptnRootTask);
     return tracker;
   }
 
