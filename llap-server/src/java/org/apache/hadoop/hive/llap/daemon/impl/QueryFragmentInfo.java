@@ -15,8 +15,10 @@
 package org.apache.hadoop.hive.llap.daemon.impl;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
@@ -24,6 +26,11 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.IOSpecProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.tezplugins.LlapTezUtils;
+import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.security.SecurityUtil;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
+import org.apache.tez.common.security.JobTokenIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +45,7 @@ public class QueryFragmentInfo {
   private final SignableVertexSpec vertexSpec;
   private final String fragmentIdString;
   private boolean canFinishForPriority;
+  private final AtomicReference<UserGroupInformation> umbilicalUgi;
 
   public QueryFragmentInfo(QueryInfo queryInfo, String vertexName, int fragmentNumber,
       int attemptNumber, SignableVertexSpec vertexSpec, String fragmentIdString) {
@@ -51,6 +59,7 @@ public class QueryFragmentInfo {
     this.vertexSpec = vertexSpec;
     this.fragmentIdString = fragmentIdString;
     this.canFinishForPriority = false; // Updated when we add this to the queue.
+    this.umbilicalUgi = new AtomicReference<>();
   }
 
   // Only meant for use by the QueryTracker
@@ -193,5 +202,25 @@ public class QueryFragmentInfo {
     result = 31 * result + fragmentNumber;
     result = 31 * result + attemptNumber;
     return result;
+  }
+
+  public void setupUmbilicalUgi(String umbilicalUser, Token<JobTokenIdentifier> appToken, String amHost, int amPort) {
+    synchronized (umbilicalUgi) {
+      if (umbilicalUgi.get() == null) {
+        UserGroupInformation taskOwner =
+                UserGroupInformation.createRemoteUser(umbilicalUser);
+        final InetSocketAddress address =
+                NetUtils.createSocketAddrForHost(amHost, amPort);
+        SecurityUtil.setTokenService(appToken, address);
+        taskOwner.addToken(appToken);
+        umbilicalUgi.set(taskOwner);
+      }
+    }
+  }
+
+  public UserGroupInformation getUmbilicalUgi() {
+    synchronized (umbilicalUgi) {
+      return umbilicalUgi.get();
+    }
   }
 }

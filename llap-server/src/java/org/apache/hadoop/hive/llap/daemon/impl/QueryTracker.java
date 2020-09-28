@@ -169,13 +169,12 @@ public class QueryTracker extends AbstractService {
             new QueryInfo(queryIdentifier, appIdString, dagIdString, dagName, hiveQueryIdString,
                 dagIdentifier, user,
                 getSourceCompletionMap(queryIdentifier), localDirsBase, localFs,
-                tokenInfo.userName, tokenInfo.appId, amNodeId);
+                tokenInfo.userName, tokenInfo.appId);
         QueryInfo old = queryInfoMap.putIfAbsent(queryIdentifier, queryInfo);
         if (old != null) {
           queryInfo = old;
         } else {
           // Ensure the UGI is setup once.
-          queryInfo.setupUmbilicalUgi(vertex.getTokenIdentifier(), appToken, amNodeId.getHostname(), amNodeId.getPort());
           isExistingQueryInfo = false;
         }
       }
@@ -195,7 +194,7 @@ public class QueryTracker extends AbstractService {
               user, queryInfo.getLocalDirs());
 
       return queryInfo.registerFragment(
-          vertexName, fragmentNumber, attemptNumber, vertex, fragmentIdString);
+          vertexName, fragmentNumber, attemptNumber, vertex, fragmentIdString, appToken, amNodeId);
     } finally {
       dagLock.readLock().unlock();
     }

@@ -219,7 +219,7 @@ public class TaskRunnerCallable extends CallableWithNdc<TaskRunner2Result> {
           TezCommonUtils.convertJobTokenToBytes(jobToken));
       Multimap<String, String> startedInputsMap = createStartedInputMap(vertex);
 
-      final UserGroupInformation taskOwner = fragmentInfo.getQueryInfo().getUmbilicalUgi();
+      final UserGroupInformation taskOwner = fragmentInfo.getUmbilicalUgi();
       if (LOG.isDebugEnabled()) {
         LOG.debug("taskOwner hashCode:" + taskOwner.hashCode());
       }

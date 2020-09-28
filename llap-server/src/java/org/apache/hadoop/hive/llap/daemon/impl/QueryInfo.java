@@ -16,7 +16,6 @@ package org.apache.hadoop.hive.llap.daemon.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,7 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 import com.google.common.base.Preconditions;
@@ -39,9 +37,6 @@ import org.apache.hadoop.hive.llap.LlapNodeId;
 import org.apache.hadoop.hive.llap.daemon.FinishableStateUpdateHandler;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SourceStateProto;
-import org.apache.hadoop.net.NetUtils;
-import org.apache.hadoop.security.SecurityUtil;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.tez.common.security.JobTokenIdentifier;
 
@@ -56,7 +51,6 @@ public class QueryInfo {
   private final String[] localDirsBase;
   private final FileSystem localFs;
   private String[] localDirs;
-  private final LlapNodeId amNodeId;
   // Map of states for different vertices.
 
   private final Set<QueryFragmentInfo> knownFragments =
@@ -66,14 +60,13 @@ public class QueryInfo {
 
   private final FinishableStateTracker finishableStateTracker = new FinishableStateTracker();
   private final String tokenUserName, appId;
-  private final AtomicReference<UserGroupInformation> umbilicalUgi;
 
   public QueryInfo(QueryIdentifier queryIdentifier, String appIdString, String dagIdString,
     String dagName, String hiveQueryIdString,
     int dagIdentifier, String user,
     ConcurrentMap<String, SourceStateProto> sourceStateMap,
     String[] localDirsBase, FileSystem localFs, String tokenUserName,
-    String tokenAppId, final LlapNodeId amNodeId) {
+    String tokenAppId) {
     this.queryIdentifier = queryIdentifier;
     this.appIdString = appIdString;
     this.dagIdString = dagIdString;
@@ -86,8 +79,6 @@ public class QueryInfo {
     this.localFs = localFs;
     this.tokenUserName = tokenUserName;
     this.appId = tokenAppId;
-    this.umbilicalUgi = new AtomicReference<>();
-    this.amNodeId = amNodeId;
   }
 
   public QueryIdentifier getQueryIdentifier() {
@@ -118,15 +109,14 @@ public class QueryInfo {
     return sourceStateMap;
   }
 
-  public LlapNodeId getAmNodeId() {
-    return amNodeId;
-  }
-
   public QueryFragmentInfo registerFragment(String vertexName, int fragmentNumber,
-      int attemptNumber, SignableVertexSpec vertexSpec, String fragmentIdString) {
+      int attemptNumber, SignableVertexSpec vertexSpec, String fragmentIdString,
+      Token<JobTokenIdentifier> appToken, LlapNodeId amNodeId) {
     QueryFragmentInfo fragmentInfo = new QueryFragmentInfo(
         this, vertexName, fragmentNumber, attemptNumber, vertexSpec, fragmentIdString);
     knownFragments.add(fragmentInfo);
+    fragmentInfo.setupUmbilicalUgi(vertexSpec.getTokenIdentifier(), appToken, amNodeId.getHostname(),
+        amNodeId.getPort());
     return fragmentInfo;
   }
 
@@ -313,25 +303,5 @@ public class QueryInfo {
 
   public String getTokenAppId() {
     return appId;
-  }
-
-  public void setupUmbilicalUgi(String umbilicalUser, Token<JobTokenIdentifier> appToken, String amHost, int amPort) {
-    synchronized (umbilicalUgi) {
-      if (umbilicalUgi.get() == null) {
-        UserGroupInformation taskOwner =
-            UserGroupInformation.createRemoteUser(umbilicalUser);
-        final InetSocketAddress address =
-            NetUtils.createSocketAddrForHost(amHost, amPort);
-        SecurityUtil.setTokenService(appToken, address);
-        taskOwner.addToken(appToken);
-        umbilicalUgi.set(taskOwner);
-      }
-    }
-  }
-
-  public UserGroupInformation getUmbilicalUgi() {
-    synchronized (umbilicalUgi) {
-      return umbilicalUgi.get();
-    }
   }
 }
