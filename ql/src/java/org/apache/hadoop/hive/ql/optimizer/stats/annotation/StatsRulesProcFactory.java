@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -1861,10 +1862,8 @@ public class StatsRulesProcFactory {
       HiveConf conf = aspCtx.getConf();
       boolean allSatisfyPreCondition = true;
 
-      for (Operator<? extends OperatorDesc> op : parents) {
-        if (op.getStatistics() == null) {
-          return null;
-        }
+      if (!isAllParentsContainStatistics(jop)) {
+        return null;
       }
 
       for (Operator<? extends OperatorDesc> op : parents) {
@@ -2922,6 +2921,97 @@ public class StatsRulesProcFactory {
   }
 
   /**
+   * LateralViewJoinOperator changes the data size and column level statistics.
+   *
+   * A diagram of LATERAL VIEW.
+   *
+   *   [Lateral View Forward]
+   *          /     \
+   *    [Select]  [Select]
+   *        |        |
+   *        |     [UDTF]
+   *        \       /
+   *   [Lateral View Join]
+   *
+   * For each row of the source, the left branch just picks columns and the right branch processes UDTF.
+   * And then LVJ joins a row from the left branch with rows from the right branch.
+   * The join has one-to-many relationship since UDTF can generate multiple rows.
+   *
+   * This rule multiplies the stats from the left branch by T(right) / T(left) and sums up the both sides.
+   */
+  public static class LateralViewJoinStatsRule extends DefaultStatsRule implements SemanticNodeProcessor {
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+                          Object... nodeOutputs) throws SemanticException {
+      final LateralViewJoinOperator lop = (LateralViewJoinOperator) nd;
+      final AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
+      final HiveConf conf = aspCtx.getConf();
+
+      if (!isAllParentsContainStatistics(lop)) {
+        return null;
+      }
+
+      final List<Operator<? extends OperatorDesc>> parents = lop.getParentOperators();
+      if (parents.size() != 2) {
+        LOG.warn("LateralViewJoinOperator should have just two parents but actually has "
+                + parents.size() + " parents.");
+        return null;
+      }
+
+      final Statistics selectStats = parents.get(LateralViewJoinOperator.SELECT_TAG).getStatistics().clone();
+      final Statistics udtfStats = parents.get(LateralViewJoinOperator.UDTF_TAG).getStatistics().clone();
+
+      final double factor = (double) udtfStats.getNumRows() / (double) selectStats.getNumRows();
+      final long selectDataSize = StatsUtils.safeMult(selectStats.getDataSize(), factor);
+      final long dataSize = StatsUtils.safeAdd(selectDataSize, udtfStats.getDataSize());
+      Statistics joinedStats = new Statistics(udtfStats.getNumRows(), dataSize, 0, 0);
+
+      if (satisfyPrecondition(selectStats) && satisfyPrecondition(udtfStats)) {
+        final Map<String, ExprNodeDesc> columnExprMap = lop.getColumnExprMap();
+        final RowSchema schema = lop.getSchema();
+
+        joinedStats.updateColumnStatsState(selectStats.getColumnStatsState());
+        final List<ColStatistics> selectColStats = StatsUtils
+                .getColStatisticsFromExprMap(conf, selectStats, columnExprMap, schema);
+        joinedStats.addToColumnStats(multiplyColStats(selectColStats, factor));
+
+        joinedStats.updateColumnStatsState(udtfStats.getColumnStatsState());
+        final List<ColStatistics> udtfColStats = StatsUtils
+                .getColStatisticsFromExprMap(conf, udtfStats, columnExprMap, schema);
+        joinedStats.addToColumnStats(udtfColStats);
+
+        joinedStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), joinedStats, lop);
+        lop.setStatistics(joinedStats);
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("[0] STATS-" + lop.toString() + ": " + joinedStats.extendedToString());
+        }
+      } else {
+        joinedStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), joinedStats, lop);
+        lop.setStatistics(joinedStats);
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("[1] STATS-" + lop.toString() + ": " + joinedStats.extendedToString());
+        }
+      }
+      return null;
+    }
+
+    private List<ColStatistics> multiplyColStats(List<ColStatistics> colStatistics, double factor) {
+      for (ColStatistics colStats : colStatistics) {
+        colStats.setNumFalses(StatsUtils.safeMult(colStats.getNumFalses(), factor));
+        colStats.setNumTrues(StatsUtils.safeMult(colStats.getNumTrues(), factor));
+        colStats.setNumNulls(StatsUtils.safeMult(colStats.getNumNulls(), factor));
+        // When factor > 1, the same records are duplicated and countDistinct never changes.
+        if (factor < 1.0) {
+          colStats.setCountDistint(StatsUtils.safeMult(colStats.getCountDistint(), factor));
+        }
+      }
+      return colStatistics;
+    }
+  }
+
+  /**
    * Default rule is to aggregate the statistics from all its parent operators.
    */
   public static class DefaultStatsRule implements SemanticNodeProcessor {
@@ -2968,16 +3058,6 @@ public class StatsRulesProcFactory {
       return null;
     }
 
-    // check if all parent statistics are available
-    private boolean isAllParentsContainStatistics(Operator<? extends OperatorDesc> op) {
-      for (Operator<? extends OperatorDesc> parent : op.getParentOperators()) {
-        if (parent.getStatistics() == null) {
-          return false;
-        }
-      }
-      return true;
-    }
-
   }
 
   public static SemanticNodeProcessor getTableScanRule() {
@@ -3012,6 +3092,10 @@ public class StatsRulesProcFactory {
     return new UDTFStatsRule();
   }
 
+  public static SemanticNodeProcessor getLateralViewJoinRule() {
+    return new LateralViewJoinStatsRule();
+  }
+
   public static SemanticNodeProcessor getDefaultRule() {
     return new DefaultStatsRule();
   }
@@ -3019,6 +3103,16 @@ public class StatsRulesProcFactory {
   static boolean satisfyPrecondition(Statistics stats) {
     return stats != null && stats.getBasicStatsState().equals(Statistics.State.COMPLETE)
         && !stats.getColumnStatsState().equals(Statistics.State.NONE);
+  }
+
+  // check if all parent statistics are available
+  private static boolean isAllParentsContainStatistics(Operator<? extends OperatorDesc> op) {
+    for (Operator<? extends OperatorDesc> parent : op.getParentOperators()) {
+      if (parent.getStatistics() == null) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static Statistics applyRuntimeStats(Context context, Statistics stats, Operator<?> op) {
