@@ -648,7 +648,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 66(GETNEXT)
   |
   66:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge()
+  |  output: _impala_builtins.count:merge(*)
   |  group by: default.impala_tpcds_date_dim_0.d_date, default.impala_tpcds_item.i_item_sk, substring(default.impala_tpcds_item.i_item_desc, 1, 30)
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=10 row-size=40B cardinality=0
@@ -664,7 +664,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F14, EXCHANGE=65, HASH(default.impala_tpcds_date_dim_0.d_date,default.impala_tpcds_item.i_item_sk,substring(default.impala_tpcds_item.i_item_desc, 1, 30))]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   10:AGGREGATE [STREAMING]
-  |  output: count()
+  |  output: count(*)
   |  group by: default.impala_tpcds_date_dim_0.d_date, default.impala_tpcds_item.i_item_sk, substring(default.impala_tpcds_item.i_item_desc, CAST(1 AS BIGINT), CAST(30 AS BIGINT))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=10 row-size=40B cardinality=0
@@ -1001,7 +1001,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 84(GETNEXT)
   |
   84:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge()
+  |  output: _impala_builtins.count:merge(*)
   |  group by: default.impala_tpcds_date_dim_3.d_date, default.impala_tpcds_item_0.i_item_sk, substring(default.impala_tpcds_item_0.i_item_desc, 1, 30)
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=32 row-size=40B cardinality=0
@@ -1017,7 +1017,7 @@ Per-Host Resources: mem-estimate=131.92MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F30, EXCHANGE=83, HASH(default.impala_tpcds_date_dim_3.d_date,default.impala_tpcds_item_0.i_item_sk,substring(default.impala_tpcds_item_0.i_item_desc, 1, 30))]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   35:AGGREGATE [STREAMING]
-  |  output: count()
+  |  output: count(*)
   |  group by: default.impala_tpcds_date_dim_3.d_date, default.impala_tpcds_item_0.i_item_sk, substring(default.impala_tpcds_item_0.i_item_desc, CAST(1 AS BIGINT), CAST(30 AS BIGINT))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=32 row-size=40B cardinality=0

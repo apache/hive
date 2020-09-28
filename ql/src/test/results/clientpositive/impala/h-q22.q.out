@@ -176,7 +176,7 @@ STAGE PLANS:
 F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: substring(default.impala_tpch_customer.c_phone, 1, 2), _impala_builtins.count(), _impala_builtins.sum(default.impala_tpch_customer.c_acctbal)
+  |  output exprs: substring(default.impala_tpch_customer.c_phone, 1, 2), _impala_builtins.count(*), _impala_builtins.sum(default.impala_tpch_customer.c_acctbal)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   08:SORT
@@ -186,7 +186,7 @@ Per-Host Resources: mem-estimate=140.00MB mem-reservation=46.00MB thread-reserva
   |  in pipelines: 08(GETNEXT), 07(OPEN)
   |
   07:AGGREGATE [FINALIZE]
-  |  output: count(), sum(default.impala_tpch_customer.c_acctbal)
+  |  output: count(*), sum(default.impala_tpch_customer.c_acctbal)
   |  group by: substring(default.impala_tpch_customer.c_phone, CAST(1 AS BIGINT), CAST(2 AS BIGINT))
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=36B cardinality=1

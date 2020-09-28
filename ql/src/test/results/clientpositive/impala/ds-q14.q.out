@@ -901,7 +901,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F81, EXCHANGE=152, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   151:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_list_price)), _impala_builtins.count:merge()
+  |  output: _impala_builtins.sum:merge(multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_list_price)), _impala_builtins.count:merge(*)
   |  group by: default.impala_tpcds_item.i_brand_id, default.impala_tpcds_item.i_class_id, default.impala_tpcds_item.i_category_id
   |  having: _impala_builtins.sum(multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_list_price)) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
@@ -918,7 +918,7 @@ Per-Host Resources: mem-estimate=133.90MB mem-reservation=39.81MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F26, EXCHANGE=150, HASH(default.impala_tpcds_item.i_brand_id,default.impala_tpcds_item.i_class_id,default.impala_tpcds_item.i_category_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   29:AGGREGATE [STREAMING]
-  |  output: sum(multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_list_price)), count()
+  |  output: sum(multiply(casttodecimal(default.impala_tpcds_store_sales.ss_quantity), default.impala_tpcds_store_sales.ss_list_price)), count(*)
   |  group by: default.impala_tpcds_item.i_brand_id, default.impala_tpcds_item.i_class_id, default.impala_tpcds_item.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=30 row-size=36B cardinality=0
@@ -1064,7 +1064,7 @@ Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reserva
   |  in pipelines: 137(GETNEXT), 141(GETNEXT), 145(GETNEXT)
   |
   |--145:AGGREGATE [FINALIZE]
-  |  |  output: _impala_builtins.count:merge()
+  |  |  output: _impala_builtins.count:merge(*)
   |  |  group by: iws.i_brand_id, iws.i_class_id, iws.i_category_id
   |  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=28 row-size=20B cardinality=0
@@ -1076,7 +1076,7 @@ Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reserva
   |     in pipelines: 20(GETNEXT)
   |
   |--141:AGGREGATE [FINALIZE]
-  |  |  output: _impala_builtins.count:merge()
+  |  |  output: _impala_builtins.count:merge(*)
   |  |  group by: ics.i_brand_id, ics.i_class_id, ics.i_category_id
   |  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=21 row-size=20B cardinality=0
@@ -1088,7 +1088,7 @@ Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reserva
   |     in pipelines: 14(GETNEXT)
   |
   137:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge()
+  |  output: _impala_builtins.count:merge(*)
   |  group by: iss.i_brand_id, iss.i_class_id, iss.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=14 row-size=20B cardinality=0
@@ -1104,7 +1104,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F24, EXCHANGE=136, HASH(iss.i_brand_id,iss.i_class_id,iss.i_category_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   13:AGGREGATE [STREAMING]
-  |  output: count()
+  |  output: count(*)
   |  group by: iss.i_brand_id, iss.i_class_id, iss.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=14 row-size=20B cardinality=0
@@ -1182,7 +1182,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F24, EXCHANGE=140, HASH(ics.i_brand_id,ics.i_class_id,ics.i_category_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   19:AGGREGATE [STREAMING]
-  |  output: count()
+  |  output: count(*)
   |  group by: ics.i_brand_id, ics.i_class_id, ics.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=21 row-size=20B cardinality=0
@@ -1258,7 +1258,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F24, EXCHANGE=144, HASH(iws.i_brand_id,iws.i_class_id,iws.i_category_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   25:AGGREGATE [STREAMING]
-  |  output: count()
+  |  output: count(*)
   |  group by: iws.i_brand_id, iws.i_class_id, iws.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=28 row-size=20B cardinality=0
@@ -1464,7 +1464,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F81, EXCHANGE=178, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   177:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(multiply(casttodecimal(default.impala_tpcds_catalog_sales_1.cs_quantity), default.impala_tpcds_catalog_sales_1.cs_list_price)), _impala_builtins.count:merge()
+  |  output: _impala_builtins.sum:merge(multiply(casttodecimal(default.impala_tpcds_catalog_sales_1.cs_quantity), default.impala_tpcds_catalog_sales_1.cs_list_price)), _impala_builtins.count:merge(*)
   |  group by: default.impala_tpcds_item_1.i_brand_id, default.impala_tpcds_item_1.i_class_id, default.impala_tpcds_item_1.i_category_id
   |  having: _impala_builtins.sum(multiply(casttodecimal(default.impala_tpcds_catalog_sales_1.cs_quantity), default.impala_tpcds_catalog_sales_1.cs_list_price)) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
@@ -1481,7 +1481,7 @@ Per-Host Resources: mem-estimate=133.90MB mem-reservation=39.81MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F53, EXCHANGE=176, HASH(default.impala_tpcds_item_1.i_brand_id,default.impala_tpcds_item_1.i_class_id,default.impala_tpcds_item_1.i_category_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   70:AGGREGATE [STREAMING]
-  |  output: sum(multiply(casttodecimal(default.impala_tpcds_catalog_sales_1.cs_quantity), default.impala_tpcds_catalog_sales_1.cs_list_price)), count()
+  |  output: sum(multiply(casttodecimal(default.impala_tpcds_catalog_sales_1.cs_quantity), default.impala_tpcds_catalog_sales_1.cs_list_price)), count(*)
   |  group by: default.impala_tpcds_item_1.i_brand_id, default.impala_tpcds_item_1.i_class_id, default.impala_tpcds_item_1.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=74 row-size=36B cardinality=0
@@ -1625,7 +1625,7 @@ Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reserva
   |  in pipelines: 163(GETNEXT), 167(GETNEXT), 171(GETNEXT)
   |
   |--171:AGGREGATE [FINALIZE]
-  |  |  output: _impala_builtins.count:merge()
+  |  |  output: _impala_builtins.count:merge(*)
   |  |  group by: iws_0.i_brand_id, iws_0.i_class_id, iws_0.i_category_id
   |  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=72 row-size=20B cardinality=0
@@ -1637,7 +1637,7 @@ Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reserva
   |     in pipelines: 61(GETNEXT)
   |
   |--167:AGGREGATE [FINALIZE]
-  |  |  output: _impala_builtins.count:merge()
+  |  |  output: _impala_builtins.count:merge(*)
   |  |  group by: ics_0.i_brand_id, ics_0.i_class_id, ics_0.i_category_id
   |  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=65 row-size=20B cardinality=0
@@ -1649,7 +1649,7 @@ Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reserva
   |     in pipelines: 55(GETNEXT)
   |
   163:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge()
+  |  output: _impala_builtins.count:merge(*)
   |  group by: iss_0.i_brand_id, iss_0.i_class_id, iss_0.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=58 row-size=20B cardinality=0
@@ -1665,7 +1665,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F51, EXCHANGE=162, HASH(iss_0.i_brand_id,iss_0.i_class_id,iss_0.i_category_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   54:AGGREGATE [STREAMING]
-  |  output: count()
+  |  output: count(*)
   |  group by: iss_0.i_brand_id, iss_0.i_class_id, iss_0.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=58 row-size=20B cardinality=0
@@ -1743,7 +1743,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F51, EXCHANGE=166, HASH(ics_0.i_brand_id,ics_0.i_class_id,ics_0.i_category_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   60:AGGREGATE [STREAMING]
-  |  output: count()
+  |  output: count(*)
   |  group by: ics_0.i_brand_id, ics_0.i_class_id, ics_0.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=65 row-size=20B cardinality=0
@@ -1819,7 +1819,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F51, EXCHANGE=170, HASH(iws_0.i_brand_id,iws_0.i_class_id,iws_0.i_category_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   66:AGGREGATE [STREAMING]
-  |  output: count()
+  |  output: count(*)
   |  group by: iws_0.i_brand_id, iws_0.i_class_id, iws_0.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=72 row-size=20B cardinality=0
@@ -2025,7 +2025,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F81, EXCHANGE=204, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   203:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(multiply(casttodecimal(default.impala_tpcds_web_sales_3.ws_quantity), default.impala_tpcds_web_sales_3.ws_list_price)), _impala_builtins.count:merge()
+  |  output: _impala_builtins.sum:merge(multiply(casttodecimal(default.impala_tpcds_web_sales_3.ws_quantity), default.impala_tpcds_web_sales_3.ws_list_price)), _impala_builtins.count:merge(*)
   |  group by: default.impala_tpcds_item_3.i_brand_id, default.impala_tpcds_item_3.i_class_id, default.impala_tpcds_item_3.i_category_id
   |  having: _impala_builtins.sum(multiply(casttodecimal(default.impala_tpcds_web_sales_3.ws_quantity), default.impala_tpcds_web_sales_3.ws_list_price)) IS NOT NULL
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
@@ -2042,7 +2042,7 @@ Per-Host Resources: mem-estimate=133.90MB mem-reservation=39.81MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F80, EXCHANGE=202, HASH(default.impala_tpcds_item_3.i_brand_id,default.impala_tpcds_item_3.i_class_id,default.impala_tpcds_item_3.i_category_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   111:AGGREGATE [STREAMING]
-  |  output: sum(multiply(casttodecimal(default.impala_tpcds_web_sales_3.ws_quantity), default.impala_tpcds_web_sales_3.ws_list_price)), count()
+  |  output: sum(multiply(casttodecimal(default.impala_tpcds_web_sales_3.ws_quantity), default.impala_tpcds_web_sales_3.ws_list_price)), count(*)
   |  group by: default.impala_tpcds_item_3.i_brand_id, default.impala_tpcds_item_3.i_class_id, default.impala_tpcds_item_3.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=118 row-size=36B cardinality=0
@@ -2186,7 +2186,7 @@ Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reserva
   |  in pipelines: 189(GETNEXT), 193(GETNEXT), 197(GETNEXT)
   |
   |--197:AGGREGATE [FINALIZE]
-  |  |  output: _impala_builtins.count:merge()
+  |  |  output: _impala_builtins.count:merge(*)
   |  |  group by: iws_1.i_brand_id, iws_1.i_class_id, iws_1.i_category_id
   |  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=116 row-size=20B cardinality=0
@@ -2198,7 +2198,7 @@ Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reserva
   |     in pipelines: 102(GETNEXT)
   |
   |--193:AGGREGATE [FINALIZE]
-  |  |  output: _impala_builtins.count:merge()
+  |  |  output: _impala_builtins.count:merge(*)
   |  |  group by: ics_1.i_brand_id, ics_1.i_class_id, ics_1.i_category_id
   |  |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  |  tuple-ids=109 row-size=20B cardinality=0
@@ -2210,7 +2210,7 @@ Per-Host Resources: mem-estimate=256.02MB mem-reservation=68.00MB thread-reserva
   |     in pipelines: 96(GETNEXT)
   |
   189:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge()
+  |  output: _impala_builtins.count:merge(*)
   |  group by: iss_1.i_brand_id, iss_1.i_class_id, iss_1.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=102 row-size=20B cardinality=0
@@ -2226,7 +2226,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F78, EXCHANGE=188, HASH(iss_1.i_brand_id,iss_1.i_class_id,iss_1.i_category_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   95:AGGREGATE [STREAMING]
-  |  output: count()
+  |  output: count(*)
   |  group by: iss_1.i_brand_id, iss_1.i_class_id, iss_1.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=102 row-size=20B cardinality=0
@@ -2304,7 +2304,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F78, EXCHANGE=192, HASH(ics_1.i_brand_id,ics_1.i_class_id,ics_1.i_category_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   101:AGGREGATE [STREAMING]
-  |  output: count()
+  |  output: count(*)
   |  group by: ics_1.i_brand_id, ics_1.i_class_id, ics_1.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=109 row-size=20B cardinality=0
@@ -2380,7 +2380,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F78, EXCHANGE=196, HASH(iws_1.i_brand_id,iws_1.i_class_id,iws_1.i_category_id)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   107:AGGREGATE [STREAMING]
-  |  output: count()
+  |  output: count(*)
   |  group by: iws_1.i_brand_id, iws_1.i_class_id, iws_1.i_category_id
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=116 row-size=20B cardinality=0

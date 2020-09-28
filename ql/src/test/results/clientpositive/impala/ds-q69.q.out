@@ -283,7 +283,7 @@ Per-Host Resources: mem-estimate=128.06MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 35(GETNEXT)
   |
   35:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge()
+  |  output: _impala_builtins.count:merge(*)
   |  group by: default.impala_tpcds_customer_demographics.cd_gender, default.impala_tpcds_customer_demographics.cd_marital_status, default.impala_tpcds_customer_demographics.cd_education_status, default.impala_tpcds_customer_demographics.cd_purchase_estimate, default.impala_tpcds_customer_demographics.cd_credit_rating
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=19 row-size=60B cardinality=0
@@ -299,7 +299,7 @@ Per-Host Resources: mem-estimate=137.82MB mem-reservation=43.69MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=34, HASH(default.impala_tpcds_customer_demographics.cd_gender,default.impala_tpcds_customer_demographics.cd_marital_status,default.impala_tpcds_customer_demographics.cd_education_status,default.impala_tpcds_customer_demographics.cd_purchase_estimate,default.impala_tpcds_customer_demographics.cd_credit_rating)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   20:AGGREGATE [STREAMING]
-  |  output: count()
+  |  output: count(*)
   |  group by: default.impala_tpcds_customer_demographics.cd_gender, default.impala_tpcds_customer_demographics.cd_marital_status, default.impala_tpcds_customer_demographics.cd_education_status, default.impala_tpcds_customer_demographics.cd_purchase_estimate, default.impala_tpcds_customer_demographics.cd_credit_rating
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=19 row-size=60B cardinality=0

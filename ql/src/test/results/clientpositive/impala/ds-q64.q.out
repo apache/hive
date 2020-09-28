@@ -718,7 +718,7 @@ Per-Host Resources: mem-estimate=142.34MB mem-reservation=47.94MB thread-reserva
   |  in pipelines: 106(GETNEXT)
   |
   106:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_wholesale_cost), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_list_price), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_coupon_amt)
+  |  output: _impala_builtins.count:merge(*), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_wholesale_cost), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_list_price), _impala_builtins.sum:merge(default.impala_tpcds_store_sales.ss_coupon_amt)
   |  group by: default.impala_tpcds_item.i_item_sk, default.impala_tpcds_item.i_product_name, default.impala_tpcds_store.s_store_name, default.impala_tpcds_store.s_zip, ad1.ca_street_number, ad1.ca_street_name, ad1.ca_city, ad1.ca_zip, d2.d_year, d3.d_year, ad2.ca_street_number, ad2.ca_street_name, ad2.ca_city, ad2.ca_zip
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=38 row-size=204B cardinality=0
@@ -734,7 +734,7 @@ Per-Host Resources: mem-estimate=147.78MB mem-reservation=53.38MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F44, EXCHANGE=105, HASH(default.impala_tpcds_item.i_item_sk,default.impala_tpcds_item.i_product_name,default.impala_tpcds_store.s_store_name,default.impala_tpcds_store.s_zip,ad1.ca_street_number,ad1.ca_street_name,ad1.ca_city,ad1.ca_zip,d2.d_year,d3.d_year,ad2.ca_street_number,ad2.ca_street_name,ad2.ca_city,ad2.ca_zip)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   40:AGGREGATE [STREAMING]
-  |  output: count(), sum(default.impala_tpcds_store_sales.ss_wholesale_cost), sum(default.impala_tpcds_store_sales.ss_list_price), sum(default.impala_tpcds_store_sales.ss_coupon_amt)
+  |  output: count(*), sum(default.impala_tpcds_store_sales.ss_wholesale_cost), sum(default.impala_tpcds_store_sales.ss_list_price), sum(default.impala_tpcds_store_sales.ss_coupon_amt)
   |  group by: default.impala_tpcds_item.i_item_sk, default.impala_tpcds_item.i_product_name, default.impala_tpcds_store.s_store_name, default.impala_tpcds_store.s_zip, ad1.ca_street_number, ad1.ca_street_name, ad1.ca_city, ad1.ca_zip, d2.d_year, d3.d_year, ad2.ca_street_number, ad2.ca_street_name, ad2.ca_city, ad2.ca_zip
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=38 row-size=204B cardinality=0
@@ -1282,7 +1282,7 @@ Per-Host Resources: mem-estimate=128.20MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 128(GETNEXT)
   |
   128:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(), _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_wholesale_cost), _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_list_price), _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_coupon_amt)
+  |  output: _impala_builtins.count:merge(*), _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_wholesale_cost), _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_list_price), _impala_builtins.sum:merge(default.impala_tpcds_store_sales_0.ss_coupon_amt)
   |  group by: default.impala_tpcds_item_0.i_item_sk, default.impala_tpcds_item_0.i_product_name, default.impala_tpcds_store_0.s_store_name, default.impala_tpcds_store_0.s_zip, ad1_0.ca_street_number, ad1_0.ca_street_name, ad1_0.ca_city, ad1_0.ca_zip, d2_0.d_year, d3_0.d_year, ad2_0.ca_street_number, ad2_0.ca_street_name, ad2_0.ca_city, ad2_0.ca_zip
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=78 row-size=204B cardinality=0
@@ -1298,7 +1298,7 @@ Per-Host Resources: mem-estimate=147.78MB mem-reservation=53.38MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F43, EXCHANGE=127, HASH(default.impala_tpcds_item_0.i_item_sk,default.impala_tpcds_item_0.i_product_name,default.impala_tpcds_store_0.s_store_name,default.impala_tpcds_store_0.s_zip,ad1_0.ca_street_number,ad1_0.ca_street_name,ad1_0.ca_city,ad1_0.ca_zip,d2_0.d_year,d3_0.d_year,ad2_0.ca_street_number,ad2_0.ca_street_name,ad2_0.ca_city,ad2_0.ca_zip)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   81:AGGREGATE [STREAMING]
-  |  output: count(), sum(default.impala_tpcds_store_sales_0.ss_wholesale_cost), sum(default.impala_tpcds_store_sales_0.ss_list_price), sum(default.impala_tpcds_store_sales_0.ss_coupon_amt)
+  |  output: count(*), sum(default.impala_tpcds_store_sales_0.ss_wholesale_cost), sum(default.impala_tpcds_store_sales_0.ss_list_price), sum(default.impala_tpcds_store_sales_0.ss_coupon_amt)
   |  group by: default.impala_tpcds_item_0.i_item_sk, default.impala_tpcds_item_0.i_product_name, default.impala_tpcds_store_0.s_store_name, default.impala_tpcds_store_0.s_zip, ad1_0.ca_street_number, ad1_0.ca_street_name, ad1_0.ca_city, ad1_0.ca_zip, d2_0.d_year, d3_0.d_year, ad2_0.ca_street_number, ad2_0.ca_street_name, ad2_0.ca_city, ad2_0.ca_zip
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=78 row-size=204B cardinality=0

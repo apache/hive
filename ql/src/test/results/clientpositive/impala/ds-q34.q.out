@@ -232,7 +232,7 @@ Per-Host Resources: mem-estimate=128.02MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 18(GETNEXT)
   |
   18:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge()
+  |  output: _impala_builtins.count:merge(*)
   |  group by: default.impala_tpcds_store_sales.ss_customer_sk, default.impala_tpcds_store_sales.ss_ticket_number
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=20B cardinality=0
@@ -248,7 +248,7 @@ Per-Host Resources: mem-estimate=133.88MB mem-reservation=39.81MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=17, HASH(default.impala_tpcds_store_sales.ss_customer_sk,default.impala_tpcds_store_sales.ss_ticket_number)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   10:AGGREGATE [STREAMING]
-  |  output: count()
+  |  output: count(*)
   |  group by: default.impala_tpcds_store_sales.ss_customer_sk, default.impala_tpcds_store_sales.ss_ticket_number
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=20B cardinality=0

@@ -278,7 +278,7 @@ STAGE PLANS:
 F31:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=352.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: CASE WHEN _impala_builtins.count() > CAST(98972190 AS BIGINT) THEN casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_ext_discount_amt), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_0.ss_ext_discount_amt)))) ELSE casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_1.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_1.ss_net_profit)))) END, CASE WHEN _impala_builtins.count() > CAST(160856845 AS BIGINT) THEN casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_3.ss_ext_discount_amt), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_3.ss_ext_discount_amt)))) ELSE casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_4.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_4.ss_net_profit)))) END, CASE WHEN _impala_builtins.count() > CAST(12733327 AS BIGINT) THEN casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_6.ss_ext_discount_amt), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_6.ss_ext_discount_amt)))) ELSE casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_7.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_7.ss_net_profit)))) END, CASE WHEN _impala_builtins.count() > CAST(96251173 AS BIGINT) THEN casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_9.ss_ext_discount_amt), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_9.ss_ext_discount_amt)))) ELSE casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_10.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_10.ss_net_profit)))) END, CASE WHEN _impala_builtins.count() > CAST(80049606 AS BIGINT) THEN casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_12.ss_ext_discount_amt), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_12.ss_ext_discount_amt)))) ELSE casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_13.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_13.ss_net_profit)))) END
+  |  output exprs: CASE WHEN _impala_builtins.count(*) > CAST(98972190 AS BIGINT) THEN casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_ext_discount_amt), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_0.ss_ext_discount_amt)))) ELSE casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_1.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_1.ss_net_profit)))) END, CASE WHEN _impala_builtins.count(*) > CAST(160856845 AS BIGINT) THEN casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_3.ss_ext_discount_amt), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_3.ss_ext_discount_amt)))) ELSE casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_4.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_4.ss_net_profit)))) END, CASE WHEN _impala_builtins.count(*) > CAST(12733327 AS BIGINT) THEN casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_6.ss_ext_discount_amt), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_6.ss_ext_discount_amt)))) ELSE casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_7.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_7.ss_net_profit)))) END, CASE WHEN _impala_builtins.count(*) > CAST(96251173 AS BIGINT) THEN casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_9.ss_ext_discount_amt), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_9.ss_ext_discount_amt)))) ELSE casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_10.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_10.ss_net_profit)))) END, CASE WHEN _impala_builtins.count(*) > CAST(80049606 AS BIGINT) THEN casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_12.ss_ext_discount_amt), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_12.ss_ext_discount_amt)))) ELSE casttodecimal(divide(_impala_builtins.sum(default.impala_tpcds_store_sales_13.ss_net_profit), casttodecimal(_impala_builtins.count(default.impala_tpcds_store_sales_13.ss_net_profit)))) END
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   91:EXCHANGE [UNPARTITIONED]
@@ -457,7 +457,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=48, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   47:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge()
+  |  output: _impala_builtins.count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=3 row-size=8B cardinality=1
   |  in pipelines: 47(GETNEXT), 02(OPEN)
@@ -472,7 +472,7 @@ Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=46, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   02:AGGREGATE
-  |  output: count()
+  |  output: count(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=3 row-size=8B cardinality=1
   |  in pipelines: 02(GETNEXT), 01(OPEN)
@@ -568,7 +568,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=57, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   56:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge()
+  |  output: _impala_builtins.count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=8B cardinality=1
   |  in pipelines: 56(GETNEXT), 11(OPEN)
@@ -583,7 +583,7 @@ Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=55, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   11:AGGREGATE
-  |  output: count()
+  |  output: count(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=9 row-size=8B cardinality=1
   |  in pipelines: 11(GETNEXT), 10(OPEN)
@@ -679,7 +679,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=66, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   65:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge()
+  |  output: _impala_builtins.count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=15 row-size=8B cardinality=1
   |  in pipelines: 65(GETNEXT), 20(OPEN)
@@ -694,7 +694,7 @@ Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F14, EXCHANGE=64, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   20:AGGREGATE
-  |  output: count()
+  |  output: count(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=15 row-size=8B cardinality=1
   |  in pipelines: 20(GETNEXT), 19(OPEN)
@@ -790,7 +790,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=75, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   74:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge()
+  |  output: _impala_builtins.count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=21 row-size=8B cardinality=1
   |  in pipelines: 74(GETNEXT), 29(OPEN)
@@ -805,7 +805,7 @@ Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F20, EXCHANGE=73, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   29:AGGREGATE
-  |  output: count()
+  |  output: count(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=21 row-size=8B cardinality=1
   |  in pipelines: 29(GETNEXT), 28(OPEN)
@@ -901,7 +901,7 @@ Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=84, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   83:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge()
+  |  output: _impala_builtins.count:merge(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=27 row-size=8B cardinality=1
   |  in pipelines: 83(GETNEXT), 38(OPEN)
@@ -916,7 +916,7 @@ Per-Host Resources: mem-estimate=10.00MB mem-reservation=0B thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F26, EXCHANGE=82, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   38:AGGREGATE
-  |  output: count()
+  |  output: count(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=27 row-size=8B cardinality=1
   |  in pipelines: 38(GETNEXT), 37(OPEN)

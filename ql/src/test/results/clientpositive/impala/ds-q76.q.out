@@ -153,7 +153,7 @@ STAGE PLANS:
 F11:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=72.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: channel, col_name, d_year, d_qoy, i_category, _impala_builtins.count(), _impala_builtins.sum(ext_sales_price)
+  |  output exprs: channel, col_name, d_year, d_qoy, i_category, _impala_builtins.count(*), _impala_builtins.sum(ext_sales_price)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   26:MERGING-EXCHANGE [UNPARTITIONED]
@@ -174,7 +174,7 @@ Per-Host Resources: mem-estimate=128.07MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 17(GETNEXT), 25(OPEN)
   |
   25:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge(), _impala_builtins.sum:merge(ext_sales_price)
+  |  output: _impala_builtins.count:merge(*), _impala_builtins.sum:merge(ext_sales_price)
   |  group by: channel, col_name, d_year, d_qoy, i_category
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=18 row-size=68B cardinality=0
@@ -190,7 +190,7 @@ Per-Host Resources: mem-estimate=131.91MB mem-reservation=37.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=24, HASH(channel,col_name,d_year,d_qoy,i_category)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   16:AGGREGATE [STREAMING]
-  |  output: count(), sum(ext_sales_price)
+  |  output: count(*), sum(ext_sales_price)
   |  group by: channel, col_name, d_year, d_qoy, i_category
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=18 row-size=68B cardinality=0

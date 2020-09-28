@@ -47,7 +47,7 @@ public class ImpalaFunctionCallExpr extends FunctionCallExpr {
     super(fn.getFunctionName(), funcParams);
     this.analyzer = analyzer;
     this.addedCost = getFunctionCallCost(rexCall);
-    init(analyzer, fn, rexCall, retType);
+    init(analyzer, fn, retType);
   }
 
   // c'tor that takes a list of Exprs that eventually get converted to FunctionParams
@@ -56,11 +56,10 @@ public class ImpalaFunctionCallExpr extends FunctionCallExpr {
     super(fn.getFunctionName(), params);
     this.addedCost = getFunctionCallCost(rexCall);
     this.analyzer = analyzer;
-    init(analyzer, fn, rexCall, retType);
+    init(analyzer, fn, retType);
   }
 
-  private void init(Analyzer analyzer, Function fn, RexCall rexCall,
-      Type retType) throws HiveException {
+  private void init(Analyzer analyzer, Function fn, Type retType) throws HiveException {
     try {
       this.fn_ = fn;
       this.type_ = retType;

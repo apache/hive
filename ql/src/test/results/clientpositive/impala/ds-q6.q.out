@@ -175,9 +175,9 @@ Per-Host Resources: mem-estimate=143.83MB mem-reservation=39.81MB thread-reserva
   |  in pipelines: 20(GETNEXT)
   |
   20:AGGREGATE [FINALIZE]
-  |  output: count()
+  |  output: count(*)
   |  group by: a.ca_state
-  |  having: _impala_builtins.count() >= CAST(10 AS BIGINT)
+  |  having: _impala_builtins.count(*) >= CAST(10 AS BIGINT)
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=19 row-size=20B cardinality=0
   |  in pipelines: 20(GETNEXT), 25(OPEN)
@@ -229,8 +229,8 @@ Per-Host Resources: mem-estimate=143.83MB mem-reservation=39.81MB thread-reserva
   |     in pipelines: 01(GETNEXT)
   |
   25:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.count:merge()
-  |  having: sq_count_check(_impala_builtins.count()) <= CAST(1 AS BIGINT)
+  |  output: _impala_builtins.count:merge(*)
+  |  having: sq_count_check(_impala_builtins.count(*)) <= CAST(1 AS BIGINT)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=8B cardinality=1
   |  in pipelines: 25(GETNEXT), 07(OPEN)
@@ -245,7 +245,7 @@ Per-Host Resources: mem-estimate=138.00MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=24, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   07:AGGREGATE
-  |  output: count()
+  |  output: count(*)
   |  mem-estimate=10.00MB mem-reservation=0B spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=8 row-size=8B cardinality=1
   |  in pipelines: 07(GETNEXT), 23(OPEN)

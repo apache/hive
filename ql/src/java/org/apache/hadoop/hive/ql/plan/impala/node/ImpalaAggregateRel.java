@@ -31,6 +31,7 @@ import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
+import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Util;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -73,6 +74,7 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
   public final HiveAggregate aggregate;
   public final HiveFilter filter;
   private boolean generateGroupingId;
+  private FunctionCallExpr countStarExpr;
 
   public ImpalaAggregateRel(HiveAggregate aggregate) {
     this(aggregate, null);
@@ -137,10 +139,20 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
     // takes care of that.
     multiAggInfo.materializeRequiredSlots(analyzer, new ExprSubstitutionMap());
 
-    aggNode = getTopLevelAggNode(input, multiAggInfo, ctx);
-
     AggregateInfo aggInfo = multiAggInfo.hasTransposePhase() ?
         multiAggInfo.getTransposeAggInfo() : multiAggInfo.getAggClasses().get(0);
+
+    if (input instanceof ImpalaHdfsScanNode && countStarExpr != null) {
+      List<FunctionCallExpr> newAggExprs =
+          ((ImpalaHdfsScanNode) input).checkAndApplyCountStarOptimization(multiAggInfo,
+            analyzer, countStarExpr);
+      if (newAggExprs != null) {
+        // Since the count(*) optimization was applied, use the new aggregate expr
+        aggExprs = newAggExprs;
+      }
+    }
+
+    aggNode = getTopLevelAggNode(input, multiAggInfo, ctx);
 
     this.outputExprs = createMappedOutputExprs(multiAggInfo, groupingExprs, aggExprs,
         aggInfo.getResultTupleDesc().getSlots());
@@ -269,9 +281,20 @@ public class ImpalaAggregateRel extends ImpalaPlanRel {
       Function fn = getFunction(aggCall);
 
       Type impalaRetType = ImpalaTypeConverter.createImpalaType(aggCall.getType());
-      FunctionParams params = new FunctionParams(aggCall.isDistinct(), operands);
+      FunctionParams params;
+      boolean isCountStar = false;
+      if (aggCall.getAggregation().getKind() == SqlKind.COUNT &&
+          aggCall.getArgList().size() == 0) {
+        params = FunctionParams.createStarParam();
+        isCountStar = true;
+      } else {
+        params = new FunctionParams(aggCall.isDistinct(), operands);
+      }
       FunctionCallExpr e =
           new ImpalaFunctionCallExpr(ctx.getRootAnalyzer(), fn, params, null, impalaRetType);
+      if (isCountStar && countStarExpr == null) {
+        countStarExpr = e;
+      }
       exprs.add(e);
     }
     return exprs;
