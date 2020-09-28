@@ -1318,6 +1318,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function commit_txn(\metastore\CommitTxnRequest $rqst);
     /**
+     * @param int $txnId
+     * @return int
+     * @throws \metastore\MetaException
+     */
+    public function get_latest_txn_in_conflict($txnId);
+    /**
      * @param \metastore\ReplTblWriteIdStateRequest $rqst
      */
     public function repl_tbl_writeid_state(\metastore\ReplTblWriteIdStateRequest $rqst);

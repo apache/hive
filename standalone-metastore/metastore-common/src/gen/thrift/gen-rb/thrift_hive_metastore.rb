@@ -2814,6 +2814,22 @@ module ThriftHiveMetastore
       return
     end
 
+    def get_latest_txn_in_conflict(txnId)
+      send_get_latest_txn_in_conflict(txnId)
+      return recv_get_latest_txn_in_conflict()
+    end
+
+    def send_get_latest_txn_in_conflict(txnId)
+      send_message('get_latest_txn_in_conflict', Get_latest_txn_in_conflict_args, :txnId => txnId)
+    end
+
+    def recv_get_latest_txn_in_conflict()
+      result = receive_message(Get_latest_txn_in_conflict_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_latest_txn_in_conflict failed: unknown result')
+    end
+
     def repl_tbl_writeid_state(rqst)
       send_repl_tbl_writeid_state(rqst)
       recv_repl_tbl_writeid_state()
@@ -6252,6 +6268,17 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'commit_txn', seqid)
+    end
+
+    def process_get_latest_txn_in_conflict(seqid, iprot, oprot)
+      args = read_args(iprot, Get_latest_txn_in_conflict_args)
+      result = Get_latest_txn_in_conflict_result.new()
+      begin
+        result.success = @handler.get_latest_txn_in_conflict(args.txnId)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_latest_txn_in_conflict', seqid)
     end
 
     def process_repl_tbl_writeid_state(seqid, iprot, oprot)
@@ -13449,6 +13476,40 @@ module ThriftHiveMetastore
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::TxnAbortedException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_latest_txn_in_conflict_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TXNID = 1
+
+    FIELDS = {
+      TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_latest_txn_in_conflict_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::I64, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

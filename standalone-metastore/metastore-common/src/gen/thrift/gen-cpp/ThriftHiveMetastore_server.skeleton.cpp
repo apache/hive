@@ -855,6 +855,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("commit_txn\n");
   }
 
+  int64_t get_latest_txn_in_conflict(const int64_t txnId) {
+    // Your implementation goes here
+    printf("get_latest_txn_in_conflict\n");
+  }
+
   void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst) {
     // Your implementation goes here
     printf("repl_tbl_writeid_state\n");

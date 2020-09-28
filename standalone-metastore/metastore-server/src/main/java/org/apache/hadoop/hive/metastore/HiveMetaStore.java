@@ -8348,6 +8348,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public long get_latest_txn_in_conflict(long txnId) throws MetaException {
+      return getTxnHandler().getLatestTxnInConflict(txnId);
+    }
+
+    @Override
     public void commit_txn(CommitTxnRequest rqst) throws TException {
       // in replication flow, the write notification log table will be updated here.
       if (rqst.isSetWriteEventInfos()) {

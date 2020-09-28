@@ -3016,18 +3016,20 @@ public class AcidUtils {
       case INSERT:
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
+          boolean isExclMergeInsert = conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge;
+
           if (sharedWrite) {
-            if (conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge) {
-              compBuilder.setExclWrite();
-            } else {
-              compBuilder.setSharedWrite();
-            }
+            compBuilder.setSharedWrite();
           } else {
-            if (conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge) {
-              compBuilder.setExclusive();
+            if (isExclMergeInsert) {
+              compBuilder.setExclWrite();
             } else {
               compBuilder.setSharedRead();
             }
+          }
+          if (isExclMergeInsert) {
+            compBuilder.setOperationType(DataOperationType.UPDATE);
+            break;
           }
         } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
           final HiveStorageHandler storageHandler = Preconditions.checkNotNull(t.getStorageHandler(),
