@@ -2507,7 +2507,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private boolean isPathEncrypted(Path path) throws HiveException {
 
     try {
-      HadoopShims.HdfsEncryptionShim hdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(path.getFileSystem(conf));
+      HadoopShims.HdfsEncryptionShim hdfsEncryptionShim =
+          SessionState.get().getHdfsEncryptionShim(path.getFileSystem(conf), conf);
       if (hdfsEncryptionShim != null) {
         if (hdfsEncryptionShim.isPathEncrypted(path)) {
           return true;
