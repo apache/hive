@@ -756,11 +756,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           visitedRefs, inLHSExprToRHSExprs, inLHSExprToRHSNullableExprs);
       newOperands.addAll(operands);
       // Return node
-      RexNode result = RexUtil.composeConjunction(rexBuilder, newOperands, false);
-      if (!result.getType().equals(call.getType())) {
-        return rexBuilder.makeCast(call.getType(), result, true);
-      }
-      return result;
+      return RexUtil.composeConjunction(rexBuilder, newOperands, false);
     }
 
     private static RexNode handleOR(RexBuilder rexBuilder, RexCall call) {
