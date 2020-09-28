@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,6 +29,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -584,5 +586,66 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
     } else {
       Assert.assertEquals("0 base directories expected", 0, sawBaseTimes);
     }
+  }
+
+  @Test
+  public void testTruncateWithBase() throws Exception{
+    runStatementOnDriver("insert into " + TableExtended.MMTBL + " values(1,2),(3,4)");
+    runStatementOnDriver("truncate table " + TableExtended.MMTBL);
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat =
+        fs.listStatus(new Path(getWarehouseDir(), TableExtended.MMTBL.toString()), AcidUtils.baseFileFilter);
+    if (1 != stat.length) {
+      Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    String name = stat[0].getPath().getName();
+    Assert.assertEquals("base_0000002", name);
+
+    List<String> r = runStatementOnDriver("select * from " + TableExtended.MMTBL);
+    Assert.assertEquals(0, r.size());
+  }
+
+  @Test
+  public void testTruncateWithBaseAllPartition() throws Exception{
+    runStatementOnDriver("insert into " + TableExtended.MMTBLPART + " partition(p='a') values(1,2),(3,4)");
+    runStatementOnDriver("insert into " + TableExtended.MMTBLPART + " partition(p='b') values(1,2),(3,4)");
+    runStatementOnDriver("truncate table " + TableExtended.MMTBLPART);
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat =
+        fs.listStatus(new Path(getWarehouseDir(), TableExtended.MMTBLPART.toString() + "/p=a"), AcidUtils.baseFileFilter);
+    if (1 != stat.length) {
+      Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    String name = stat[0].getPath().getName();
+    Assert.assertEquals("base_0000003", name);
+
+    List<String> r = runStatementOnDriver("select * from " + TableExtended.MMTBLPART);
+    Assert.assertEquals(0, r.size());
+  }
+
+  @Test
+  public void testTruncateWithBaseOnePartition() throws Exception{
+    runStatementOnDriver("insert into " + TableExtended.MMTBLPART + " partition(p='a') values(1,2),(3,4)");
+    runStatementOnDriver("insert into " + TableExtended.MMTBLPART+ " partition(p='b') values(5,5),(4,4)");
+    runStatementOnDriver("truncate table " + TableExtended.MMTBLPART + " partition(p='b')");
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat =
+        fs.listStatus(new Path(getWarehouseDir(), TableExtended.MMTBLPART.toString() + "/p=b"), AcidUtils.baseFileFilter);
+    if (1 != stat.length) {
+      Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    String name = stat[0].getPath().getName();
+    Assert.assertEquals("base_0000003", name);
+    stat =
+        fs.listStatus(new Path(getWarehouseDir(), TableExtended.MMTBLPART.toString() + "/p=a"), AcidUtils.deltaFileFilter);
+    if (1 != stat.length) {
+      Assert.fail("Expecting 1 delta and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+
+    List<String> r = runStatementOnDriver("select * from " + TableExtended.MMTBLPART);
+    Assert.assertEquals(2, r.size());
   }
 }

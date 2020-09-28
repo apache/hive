@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -112,23 +113,27 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
 
   private void addTruncateTableOutputs(ASTNode root, Table table, Map<String, String> partitionSpec)
       throws SemanticException {
+    boolean shared = AcidUtils.isTransactionalTable(table) &&
+        MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
+    WriteEntity.WriteType writeType =
+        shared ? WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
     if (partitionSpec == null) {
       if (!table.isPartitioned()) {
-        outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_EXCLUSIVE));
+        outputs.add(new WriteEntity(table, writeType));
       } else {
         for (Partition partition : PartitionUtils.getPartitions(db, table, null, false)) {
-          outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
+          outputs.add(new WriteEntity(partition, writeType));
         }
       }
     } else {
       if (AlterTableUtils.isFullPartitionSpec(table, partitionSpec)) {
         validatePartSpec(table, partitionSpec, (ASTNode) root.getChild(1), conf, true);
         Partition partition = PartitionUtils.getPartition(db, table, partitionSpec, true);
-        outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
+        outputs.add(new WriteEntity(partition, writeType));
       } else {
         validatePartSpec(table, partitionSpec, (ASTNode) root.getChild(1), conf, false);
         for (Partition partition : PartitionUtils.getPartitions(db, table, partitionSpec, false)) {
-          outputs.add(new WriteEntity(partition, WriteEntity.WriteType.DDL_EXCLUSIVE));
+          outputs.add(new WriteEntity(partition, writeType));
         }
       }
     }

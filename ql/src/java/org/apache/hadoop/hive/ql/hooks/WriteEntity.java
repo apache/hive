@@ -41,6 +41,7 @@ public class WriteEntity extends Entity implements Serializable {
   public static enum WriteType {
     DDL_EXCLUSIVE, // for use in DDL statements that require an exclusive lock,
                    // such as dropping a table or partition
+    DDL_EXCL_WRITE, // for use in DDL operations that can allow concurrent reads, like truncate in acid
     DDL_SHARED, // for use in DDL operations that only need a shared lock, such as creating a table
     DDL_NO_LOCK, // for use in DDL statements that do not require a lock
     INSERT,

@@ -31,6 +31,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependCatal
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.prependNotNullCatToDbName;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
@@ -78,9 +79,11 @@ import com.google.common.collect.Lists;
 
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.AcidConstants;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
@@ -196,6 +199,7 @@ import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -3322,26 +3326,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         boolean isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
         Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
 
+        boolean truncateFiles = !TxnUtils.isTransactionalTable(tbl) ||
+            !MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
         // This is not transactional
         for (Path location : getLocationsForTruncate(getMS(), parsedDbName[CAT_NAME],
             parsedDbName[DB_NAME], tableName, tbl, partNames)) {
           FileSystem fs = location.getFileSystem(getConf());
-          if (!org.apache.hadoop.hive.metastore.utils.HdfsUtils.isPathEncrypted(getConf(), fs.getUri(), location) &&
-              !FileUtils.pathHasSnapshotSubDir(location, fs)) {
-            HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getConf(), fs, location);
-            FileStatus targetStatus = fs.getFileStatus(location);
-            String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-            wh.deleteDir(location, true, isSkipTrash, ReplChangeManager.shouldEnableCm(db, tbl));
-            fs.mkdirs(location);
-            HdfsUtils.setFullFileStatus(getConf(), status, targetGroup, fs, location, false);
+          if (truncateFiles) {
+            truncateDataFiles(tbl, isSkipTrash, db, location, fs);
           } else {
-            FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
-            if (statuses == null || statuses.length == 0) {
-              continue;
-            }
-            for (final FileStatus status : statuses) {
-              wh.deleteDir(status.getPath(), true, isSkipTrash, ReplChangeManager.shouldEnableCm(db, tbl));
-            }
+            // For Acid tables we don't need to delete the old files, only write an empty baseDir.
+            // Compaction and cleaner will take care of the rest
+            addTruncateBaseFile(location, writeId, fs);
           }
         }
 
@@ -3354,6 +3350,52 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw e;
       } catch (Exception e) {
         throw newMetaException(e);
+      }
+    }
+
+    /**
+     * Add an empty baseDir with a truncate metadatafile
+     * @param location
+     * @param writeId
+     * @param fs
+     * @throws Exception
+     */
+    private void addTruncateBaseFile(Path location, long writeId, FileSystem fs) throws Exception {
+      Path basePath = new Path(location, AcidConstants.baseDir(writeId));
+      fs.mkdirs(basePath);
+      // We can not leave the folder empty, otherwise it will be skipped at some file listing in AcidUtils
+      // No need for a data file, a simple metadata is enough
+      Map<String, String> metadata = new HashMap<>();
+      metadata.put(AcidConstants.MetaDataFile.Field.VERSION.toString(), AcidConstants.MetaDataFile.CURRENT_VERSION);
+      metadata.put(AcidConstants.MetaDataFile.Field.DATA_FORMAT.toString(),
+          AcidConstants.MetaDataFile.DataFormat.TRUNCATED.toString());
+      String data = new ObjectMapper().writeValueAsString(metadata);
+      try (FSDataOutputStream out = fs.create(new Path(basePath,
+          AcidConstants.MetaDataFile.METADATA_FILE)); OutputStreamWriter writer = new OutputStreamWriter(out,
+          "UTF-8")) {
+        writer.write(data);
+        writer.flush();
+      }
+    }
+
+    private void truncateDataFiles(Table tbl, boolean isSkipTrash, Database db, Path location, FileSystem fs)
+        throws IOException, MetaException {
+      if (!HdfsUtils.isPathEncrypted(getConf(), fs.getUri(), location) &&
+          !FileUtils.pathHasSnapshotSubDir(location, fs)) {
+        HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getConf(), fs, location);
+        FileStatus targetStatus = fs.getFileStatus(location);
+        String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
+        wh.deleteDir(location, true, isSkipTrash, ReplChangeManager.shouldEnableCm(db, tbl));
+        fs.mkdirs(location);
+        HdfsUtils.setFullFileStatus(getConf(), status, targetGroup, fs, location, false);
+      } else {
+        FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
+        if (statuses == null || statuses.length == 0) {
+          return;
+        }
+        for (final FileStatus status : statuses) {
+          wh.deleteDir(status.getPath(), true, isSkipTrash, ReplChangeManager.shouldEnableCm(db, tbl));
+        }
       }
     }
 

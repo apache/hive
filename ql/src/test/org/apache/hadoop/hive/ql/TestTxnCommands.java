@@ -1328,4 +1328,65 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
 
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_WRITE_ACID_VERSION_FILE, originalEnableVersionFile);
   }
+
+  @Test
+  public void testTruncateWithBase() throws Exception{
+    runStatementOnDriver("insert into " + Table.ACIDTBL + " values(1,2),(3,4)");
+    runStatementOnDriver("truncate table " + Table.ACIDTBL);
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat =
+        fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBL.toString()), AcidUtils.baseFileFilter);
+    if (1 != stat.length) {
+      Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    String name = stat[0].getPath().getName();
+    Assert.assertEquals("base_0000002", name);
+
+    List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBL);
+    Assert.assertEquals(0, r.size());
+  }
+
+  @Test
+  public void testTruncateWithBaseAllPartition() throws Exception{
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='a') values(1,2),(3,4)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='b') values(1,2),(3,4)");
+    runStatementOnDriver("truncate table " + Table.ACIDTBLPART);
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat =
+        fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString() + "/p=a"), AcidUtils.baseFileFilter);
+    if (1 != stat.length) {
+      Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    String name = stat[0].getPath().getName();
+    Assert.assertEquals("base_0000003", name);
+
+    List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLPART);
+    Assert.assertEquals(0, r.size());
+  }
+
+  @Test
+  public void testTruncateWithBaseOnePartition() throws Exception{
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='a') values(1,2),(3,4)");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p='b') values(5,5),(4,4)");
+    runStatementOnDriver("truncate table " + Table.ACIDTBLPART + " partition(p='b')");
+
+    FileSystem fs = FileSystem.get(hiveConf);
+    FileStatus[] stat =
+        fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString() + "/p=b"), AcidUtils.baseFileFilter);
+    if (1 != stat.length) {
+      Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+    String name = stat[0].getPath().getName();
+    Assert.assertEquals("base_0000003", name);
+    stat =
+        fs.listStatus(new Path(getWarehouseDir(), Table.ACIDTBLPART.toString() + "/p=a"), AcidUtils.deltaFileFilter);
+    if (1 != stat.length) {
+      Assert.fail("Expecting 1 delta and found " + stat.length + " files " + Arrays.toString(stat));
+    }
+
+    List<String> r = runStatementOnDriver("select * from " + Table.ACIDTBLPART);
+    Assert.assertEquals(2, r.size());
+  }
 }
