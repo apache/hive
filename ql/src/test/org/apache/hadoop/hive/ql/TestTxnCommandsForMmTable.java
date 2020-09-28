@@ -595,7 +595,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
 
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] stat =
-        fs.listStatus(new Path(getWarehouseDir(), TableExtended.MMTBL.toString()), AcidUtils.baseFileFilter);
+        fs.listStatus(new Path(getWarehouseDir(), TableExtended.MMTBL.toString().toLowerCase()), AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
     }
@@ -614,7 +614,7 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
 
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] stat =
-        fs.listStatus(new Path(getWarehouseDir(), TableExtended.MMTBLPART.toString() + "/p=a"), AcidUtils.baseFileFilter);
+        fs.listStatus(new Path(getWarehouseDir(), TableExtended.MMTBLPART.toString().toLowerCase() + "/p=a"), AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
     }
@@ -633,14 +633,14 @@ public class TestTxnCommandsForMmTable extends TxnCommandsBaseForTests {
 
     FileSystem fs = FileSystem.get(hiveConf);
     FileStatus[] stat =
-        fs.listStatus(new Path(getWarehouseDir(), TableExtended.MMTBLPART.toString() + "/p=b"), AcidUtils.baseFileFilter);
+        fs.listStatus(new Path(getWarehouseDir(), TableExtended.MMTBLPART.toString().toLowerCase() + "/p=b"), AcidUtils.baseFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 base and found " + stat.length + " files " + Arrays.toString(stat));
     }
     String name = stat[0].getPath().getName();
     Assert.assertEquals("base_0000003", name);
     stat =
-        fs.listStatus(new Path(getWarehouseDir(), TableExtended.MMTBLPART.toString() + "/p=a"), AcidUtils.deltaFileFilter);
+        fs.listStatus(new Path(getWarehouseDir(), TableExtended.MMTBLPART.toString().toLowerCase() + "/p=a"), AcidUtils.deltaFileFilter);
     if (1 != stat.length) {
       Assert.fail("Expecting 1 delta and found " + stat.length + " files " + Arrays.toString(stat));
     }
