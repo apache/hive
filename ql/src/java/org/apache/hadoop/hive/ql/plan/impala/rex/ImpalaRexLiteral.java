@@ -25,20 +25,20 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.util.DateString;
 import org.apache.calcite.util.TimestampString;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaBoolLiteral;
-import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaDateLiteral;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaFunctionCallExpr;
 import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaNullLiteral;
-import org.apache.hadoop.hive.ql.plan.impala.expr.ImpalaStringLiteral;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaTypeConverter;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ScalarFunctionDetails;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionUtil;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
+import org.apache.impala.analysis.BoolLiteral;
+import org.apache.impala.analysis.DateLiteral;
 import org.apache.impala.analysis.NumericLiteral;
+import org.apache.impala.analysis.StringLiteral;
 import org.apache.impala.catalog.Function;
 import org.apache.impala.catalog.Type;
-import org.apache.impala.common.SqlCastException;
+import org.apache.impala.common.AnalysisException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -60,31 +60,40 @@ public class ImpalaRexLiteral {
       switch (rexLiteral.getTypeName()) {
         case NULL:
           Type type = ImpalaTypeConverter.createImpalaType(rexLiteral.getType());
-          return new ImpalaNullLiteral(analyzer, type);
+          return new ImpalaNullLiteral(null, type);
         case BOOLEAN:
-          return new ImpalaBoolLiteral(analyzer, rexLiteral.getValueAs(Boolean.class));
+          Expr boolExpr = new BoolLiteral(rexLiteral.getValueAs(Boolean.class));
+          boolExpr.analyze(null);
+          return boolExpr;
         case BIGINT:
         case DECIMAL:
         case DOUBLE:
-          return new NumericLiteral(rexLiteral.getValueAs(BigDecimal.class),
+          Expr numericExpr = new NumericLiteral(rexLiteral.getValueAs(BigDecimal.class),
               ImpalaTypeConverter.createImpalaType(rexLiteral.getType()));
+          numericExpr.analyze(null);
+          return numericExpr;
         case CHAR:
         case VARCHAR:
-          return new ImpalaStringLiteral(analyzer, getCharType(rexLiteral),
-              rexLiteral.getValueAs(String.class));
+          Expr charExpr = new StringLiteral(rexLiteral.getValueAs(String.class),
+              getCharType(rexLiteral), false);
+          charExpr.analyze(null);
+          return charExpr;
         case DATE:
           DateString dateStringClass = rexLiteral.getValueAs(DateString.class);
           String dateString = (dateStringClass == null) ? null : dateStringClass.toString();
-          return new ImpalaDateLiteral(analyzer, rexLiteral.getValueAs(Integer.class),
-              dateString);
+          Expr dateExpr = new DateLiteral(rexLiteral.getValueAs(Integer.class), dateString);
+          dateExpr.analyze(null);
+          return dateExpr;
         case SYMBOL:
-          return new ImpalaStringLiteral(analyzer, Type.STRING, rexLiteral.getValue().toString());
+          Expr symbolExpr = new StringLiteral(rexLiteral.getValue().toString(), Type.STRING, false);
+          symbolExpr.analyze(null);
+          return symbolExpr;
         case TIMESTAMP:
           return createCastTimestampExpr(analyzer, rexLiteral);
         default:
           throw new HiveException("Unsupported RexLiteral: " + rexLiteral.getTypeName());
       }
-    } catch (SqlCastException e) {
+    } catch (AnalysisException e) {
       throw new HiveException("Cast exception for type " + rexLiteral.getTypeName()
           + " for value " + rexLiteral + " :" + e);
     }
@@ -103,7 +112,7 @@ public class ImpalaRexLiteral {
  
     String timestamp = rexLiteral.getValueAs(TimestampString.class).toString();
     List<Expr> argList =
-        Lists.newArrayList(new ImpalaStringLiteral(analyzer, Type.STRING, timestamp));
+        Lists.newArrayList(new StringLiteral(timestamp, Type.STRING, false));
     ScalarFunctionDetails castFuncDetails = ScalarFunctionDetails.get("cast", typeNames,
         Type.TIMESTAMP);
     Function castFunc = ImpalaFunctionUtil.create(castFuncDetails);
