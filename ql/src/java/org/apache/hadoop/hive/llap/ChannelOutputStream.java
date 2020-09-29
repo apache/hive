@@ -23,6 +23,7 @@ import io.netty.channel.ChannelHandlerContext;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,13 +43,13 @@ public class ChannelOutputStream extends OutputStream {
   private boolean closed = false;
   private final Object writeMonitor = new Object();
   private final int maxPendingWrites;
-  private volatile int pendingWrites = 0;
+  private AtomicInteger pendingWrites = new AtomicInteger();
 
   private ChannelFutureListener writeListener = new ChannelFutureListener() {
     @Override
     public void operationComplete(ChannelFuture future) {
 
-      pendingWrites--;
+      pendingWrites.decrementAndGet();
 
       if (future.isCancelled()) {
         LOG.error("Write cancelled on ID " + id);
@@ -147,7 +148,7 @@ public class ChannelOutputStream extends OutputStream {
   private void waitForWritesToFinish(int desiredWriteCount) throws IOException {
     synchronized (writeMonitor) {
       // to prevent spurious wake up
-      while (pendingWrites > desiredWriteCount) {
+      while (pendingWrites.get() > desiredWriteCount) {
         try {
           writeMonitor.wait();
         } catch (InterruptedException ie) {
@@ -165,7 +166,7 @@ public class ChannelOutputStream extends OutputStream {
     // Wait if we have exceeded our max pending write count
     waitForWritesToFinish(maxPendingWrites - 1);
 
-    pendingWrites++;
+    pendingWrites.addAndGet(1);
     chc.writeAndFlush(buf.copy()).addListener(writeListener);
     buf.clear();
   }
