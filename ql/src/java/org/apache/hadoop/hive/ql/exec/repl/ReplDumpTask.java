@@ -1181,9 +1181,11 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
       Path commonConstraintsFile = new Path(constraintsRoot, ConstraintFileType.COMMON.getPrefix() + tblName);
       Path fkConstraintsFile = new Path(constraintsRoot, ConstraintFileType.FOREIGNKEY.getPrefix() + tblName);
       SQLAllTableConstraints tableConstraints = hiveDb.getTableConstraints(dbName, tblName);
-      if (CollectionUtils.isNotEmpty(tableConstraints.getPrimaryKeys()) || CollectionUtils
-          .isNotEmpty(tableConstraints.getUniqueConstraints()) || CollectionUtils
-          .isNotEmpty(tableConstraints.getNotNullConstraints())) {
+      if (CollectionUtils.isNotEmpty(tableConstraints.getPrimaryKeys())
+          || CollectionUtils.isNotEmpty(tableConstraints.getUniqueConstraints())
+          || CollectionUtils.isNotEmpty(tableConstraints.getNotNullConstraints())
+          || CollectionUtils.isNotEmpty(tableConstraints.getCheckConstraints())
+          || CollectionUtils.isNotEmpty(tableConstraints.getDefaultConstraints())) {
         try (JsonWriter jsonWriter = new JsonWriter(commonConstraintsFile.getFileSystem(conf), commonConstraintsFile)) {
           ConstraintsSerializer serializer = new ConstraintsSerializer(tableConstraints.getPrimaryKeys(), null,
               tableConstraints.getUniqueConstraints(), tableConstraints.getNotNullConstraints(),
