@@ -30,7 +30,6 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getPat
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.isPartitioned;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -131,7 +130,7 @@ public class HiveMetaStoreChecker {
    *           Most likely filesystem related
    */
   public CheckResult checkMetastore(String catName, String dbName, String tableName,
-                             byte[] filterExp, String strFilter, Table table)
+                             byte[] filterExp, Table table)
       throws MetastoreException, IOException {
     CheckResult result = new CheckResult();
     if (dbName == null || "".equalsIgnoreCase(dbName)) {
@@ -144,16 +143,16 @@ public class HiveMetaStoreChecker {
         // no table specified, check all tables and all partitions.
         List<String> tables = getMsc().getTables(catName, dbName, ".*");
         for (String currentTableName : tables) {
-          checkTable(catName, dbName, currentTableName, null, null, null, result);
+          checkTable(catName, dbName, currentTableName, null, null, result);
         }
 
         findUnknownTables(catName, dbName, tables, result);
       } else if (filterExp != null) {
         // check for specified partitions which matches filter expression
-        checkTable(catName, dbName, tableName, filterExp, strFilter, table, result);
+        checkTable(catName, dbName, tableName, filterExp, table, result);
       } else {
         // only one table, let's check all partitions
-        checkTable(catName, dbName, tableName, null, null, table, result);
+        checkTable(catName, dbName, tableName, null, table, result);
       }
 
       LOG.info("Number of partitionsNotInMs=" + result.getPartitionsNotInMs()
@@ -241,7 +240,7 @@ public class HiveMetaStoreChecker {
    * @throws MetaException
    *           Failed to get required information from the metastore.
    */
-  void checkTable(String catName, String dbName, String tableName, byte[] filterExp, String strFilter, Table table, CheckResult result)
+  void checkTable(String catName, String dbName, String tableName, byte[] filterExp, Table table, CheckResult result)
       throws MetaException, IOException, MetastoreException {
 
     if (table == null) {
@@ -258,7 +257,7 @@ public class HiveMetaStoreChecker {
     if (isPartitioned(table)) {
       if (filterExp != null) {
         List<Partition> results = new ArrayList<>();
-        getPartitionListByFilterExp(getMsc(), table, strFilter.getBytes(StandardCharsets.UTF_8),
+        getPartitionListByFilterExp(getMsc(), table, filterExp,
             MetastoreConf.getVar(conf, MetastoreConf.ConfVars.DEFAULTPARTITIONNAME), results);
         parts = new PartitionIterable(results);
       } else {

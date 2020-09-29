@@ -51,10 +51,19 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   @Override
   public String convertExprToFilter(byte[] exprBytes, String defaultPartitionName, boolean decodeFilterExpToStr)
       throws MetaException {
-    if (decodeFilterExpToStr) {
-      return new String(exprBytes, StandardCharsets.UTF_8);
+    ExprNodeGenericFuncDesc expr;
+    try {
+      expr = deserializeExpr(exprBytes);
+    } catch (MetaException e) {
+      // When deserializeExpr fails try to deserialize th exprBytes to string based on the
+      // flag decodeFilterExpToStr. This usually happens when MSCK command is run with partition
+      // filters. When MSCK command tries to drop the partitions, The string partition filter is serialized
+      // to byte array and during deserialization we need to construct the filter string back.
+      if (decodeFilterExpToStr) {
+        return new String(exprBytes, StandardCharsets.UTF_8);
+      }
+      throw new MetaException(e.getMessage());
     }
-    ExprNodeGenericFuncDesc expr = deserializeExpr(exprBytes);
     if ((defaultPartitionName != null) && (!defaultPartitionName.isEmpty())) {
       try {
         ExprNodeDescUtils.replaceNullFiltersWithDefaultPartition(expr, defaultPartitionName);

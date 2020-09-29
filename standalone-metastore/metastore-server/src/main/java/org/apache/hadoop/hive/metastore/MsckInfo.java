@@ -32,16 +32,14 @@ public class MsckInfo {
   private final boolean addPartitions;
   private final boolean dropPartitions;
   private final long partitionExpirySeconds;
-  private final String filterExpStr;
 
-  public MsckInfo(String catalogName, String dbName, String tableName, byte[] filterExp, String filterExpStr,
-                  String resFile, boolean repairPartitions, boolean addPartitions,
+  public MsckInfo(String catalogName, String dbName, String tableName, byte[] filterExp, String resFile,
+                  boolean repairPartitions, boolean addPartitions,
                   boolean dropPartitions, long partitionExpirySeconds) {
     this.catalogName = catalogName;
     this.dbName = dbName;
     this.tableName = tableName;
     this.filterExp = filterExp;
-    this.filterExpStr = filterExpStr;
     this.resFile = resFile;
     this.repairPartitions = repairPartitions;
     this.addPartitions = addPartitions;
@@ -63,10 +61,6 @@ public class MsckInfo {
 
   public byte[] getFilterExp() {
     return filterExp;
-  }
-
-  public String getFilterExpStr() {
-    return filterExpStr;
   }
 
   public String getResFile() {

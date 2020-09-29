@@ -131,7 +131,7 @@ public class Msck {
       // And partitions that are not present in filesystem and metadata exists in metastore -
       // accessed through getPartitionNotOnFS
       result = checker.checkMetastore(msckInfo.getCatalogName(), msckInfo.getDbName(), msckInfo.getTableName(),
-        msckInfo.getFilterExp(), msckInfo.getFilterExpStr(), table);
+        msckInfo.getFilterExp(), table);
       Set<CheckResult.PartitionResult> partsNotInMs = result.getPartitionsNotInMs();
       Set<CheckResult.PartitionResult> partsNotInFs = result.getPartitionsNotOnFs();
       Set<CheckResult.PartitionResult> expiredPartitions = result.getExpiredPartitions();

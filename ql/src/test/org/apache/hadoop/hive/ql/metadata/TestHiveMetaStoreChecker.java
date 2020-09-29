@@ -125,7 +125,7 @@ public class TestHiveMetaStoreChecker {
 
   @Test
   public void testTableCheck() throws HiveException, IOException, TException, MetastoreException {
-    CheckResult result = checker.checkMetastore(catName, dbName, null, null, null, null);
+    CheckResult result = checker.checkMetastore(catName, dbName, null, null, null);
     // we haven't added anything so should return an all ok
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
@@ -133,7 +133,7 @@ public class TestHiveMetaStoreChecker {
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotInMs());
 
     // check table only, should not exist in ms
-    result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(1, result.getTablesNotInMs().size());
     assertEquals(tableName, result.getTablesNotInMs().iterator().next());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
@@ -155,14 +155,14 @@ public class TestHiveMetaStoreChecker {
     table.getTTable().unsetId();
     // now we've got a table, check that it works
     // first check all (1) tables
-    result = checker.checkMetastore(catName, dbName, null, null, null, null);
+    result = checker.checkMetastore(catName, dbName, null, null, null);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotInMs());
 
     // then let's check the one we know about
-    result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
@@ -173,7 +173,7 @@ public class TestHiveMetaStoreChecker {
     fs.delete(table.getPath(), true);
 
     // now this shouldn't find the path on the fs
-    result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(1, result.getTablesNotOnFs().size());
     assertEquals(tableName, result.getTablesNotOnFs().iterator().next());
@@ -188,7 +188,7 @@ public class TestHiveMetaStoreChecker {
     fs.deleteOnExit(fakeTable);
 
     // find the extra table
-    result = checker.checkMetastore(catName, dbName, null, null, null, null);
+    result = checker.checkMetastore(catName, dbName, null, null, null);
     assertEquals(1, result.getTablesNotInMs().size());
     assertEquals(fakeTable.getName(), Lists.newArrayList(result.getTablesNotInMs()).get(0));
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
@@ -201,7 +201,7 @@ public class TestHiveMetaStoreChecker {
     hive.createTable(table);
 
     // should return all ok
-    result = checker.checkMetastore(catName, dbName, null, null, null, null);
+    result = checker.checkMetastore(catName, dbName, null, null, null);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
@@ -222,7 +222,7 @@ public class TestHiveMetaStoreChecker {
     fs = partitions.get(0).getDataLocation().getFileSystem(hive.getConf());
     addFolderToPath(fs, table.getDataLocation().toString(),
         partDateName + "=2017-01-01/" + partCityName + "=paloalto/fakePartCol=fakepartValue");
-    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
@@ -239,7 +239,7 @@ public class TestHiveMetaStoreChecker {
     // add a fake partition dir on fs
     fs = partitions.get(0).getDataLocation().getFileSystem(hive.getConf());
     addFolderToPath(fs, table.getDataLocation().toString(),"fakedate=2009-01-01/fakecity=sanjose");
-    checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    checker.checkMetastore(catName, dbName, tableName, null, null);
   }
 
   /*
@@ -258,7 +258,7 @@ public class TestHiveMetaStoreChecker {
     fs = partitions.get(0).getDataLocation().getFileSystem(hive.getConf());
     addFolderToPath(fs, table.getDataLocation().toString(),"fakedate=2009-01-01/fakecity=sanjose");
     createPartitionsDirectoriesOnFS(table, 2);
-    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
@@ -284,7 +284,7 @@ public class TestHiveMetaStoreChecker {
     addFolderToPath(fs, newPart.toString(), "delta_0000001_0000001_0000");
     addFolderToPath(fs, newPart.toString(), "delta_0000010_0000010_0000");
     addFolderToPath(fs, newPart.toString(), "delta_0000101_0000101_0000");
-    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
     assertEquals(1, result.getPartitionsNotInMs().size());
     // Found the highest writeId
@@ -309,7 +309,7 @@ public class TestHiveMetaStoreChecker {
     addFolderToPath(fs, newPart.toString(), "delta_0000001_0000001_0000");
     addFolderToPath(fs, newPart.toString(), "delta_0000010_0000015_v0000067");
     addFolderToPath(fs, newPart.toString(), "delta_0000101_0000120_v0000087");
-    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
     assertEquals(1, result.getPartitionsNotInMs().size());
     // Found the highest writeId
@@ -331,7 +331,7 @@ public class TestHiveMetaStoreChecker {
     addFolderToPath(fs, newPart.toString(), "delta_0000002_0000002_0000");
     addFolderToPath(fs, newPart.toString(), "delta_0000003_0000003_0000");
     addFolderToPath(fs, newPart.toString(), "base_0000003_v0000200");
-    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
     assertEquals(1, result.getPartitionsNotInMs().size());
     // Found the highest writeId
@@ -354,7 +354,7 @@ public class TestHiveMetaStoreChecker {
     addFolderToPath(fs, newPart.toString(), "delta_0000002_0000002_0000");
     addFolderToPath(fs, newPart.toString(), "delta_0000003_0000003_0000");
     addFolderToPath(fs, newPart.toString(), "base_0000004");
-    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
     assertEquals(1, result.getPartitionsNotInMs().size());
     // Found the highest writeId
@@ -375,7 +375,7 @@ public class TestHiveMetaStoreChecker {
     addFolderToPath(fs, tablePath.toString(), "delta_0000002_0000002_0000");
     addFolderToPath(fs, tablePath.toString(), "delta_0000003_0000003_0000");
     addFolderToPath(fs, tablePath.toString(), "base_0000003_v0000200");
-    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotInMs());
     // Found the highest writeId
@@ -388,7 +388,7 @@ public class TestHiveMetaStoreChecker {
     IOException, TException, MetastoreException {
     Table table = createTestTable(false);
 
-    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     // all is well
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
@@ -406,7 +406,7 @@ public class TestHiveMetaStoreChecker {
     fs = partToRemovePath.getFileSystem(hive.getConf());
     fs.delete(partToRemovePath, true);
 
-    result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    result = checker.checkMetastore(catName, dbName, tableName, null, null);
     // missing one partition on fs
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
@@ -421,7 +421,7 @@ public class TestHiveMetaStoreChecker {
     // cleanup
     hive.dropTable(dbName, tableName, true, true);
     hive.createTable(table);
-    result = checker.checkMetastore(catName, dbName, null, null, null, null);
+    result = checker.checkMetastore(catName, dbName, null, null, null);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
@@ -472,7 +472,7 @@ public class TestHiveMetaStoreChecker {
     Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
-    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String>emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String>emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult>emptySet(), result.getPartitionsNotOnFs());
@@ -490,7 +490,7 @@ public class TestHiveMetaStoreChecker {
     Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
-    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
@@ -511,7 +511,7 @@ public class TestHiveMetaStoreChecker {
     Table testTable = createPartitionedTestTable(dbName, tableName, poolSize + 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
-    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
@@ -531,7 +531,7 @@ public class TestHiveMetaStoreChecker {
     Table testTable = createPartitionedTestTable(dbName, tableName, poolSize + 2, 0);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 10);
-    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
@@ -556,7 +556,7 @@ public class TestHiveMetaStoreChecker {
     //check result now
     Exception exception = null;
     try {
-      checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+      checker.checkMetastore(catName, dbName, tableName, null, null);
     } catch (Exception e) {
       exception = e;
     }
@@ -564,7 +564,7 @@ public class TestHiveMetaStoreChecker {
     createFile(sb.toString(), "dummyFile");
     exception = null;
     try {
-      checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+      checker.checkMetastore(catName, dbName, tableName, null, null);
     } catch (Exception e) {
       exception = e;
     }
@@ -582,7 +582,7 @@ public class TestHiveMetaStoreChecker {
     Table testTable = createPartitionedTestTable(dbName, tableName, 2, 0);
     // add 10 partitions on the filesystem
     createInvalidPartitionDirsOnFS(testTable, 10);
-    checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    checker.checkMetastore(catName, dbName, tableName, null, null);
   }
 
   /**
@@ -598,7 +598,7 @@ public class TestHiveMetaStoreChecker {
     createInvalidPartitionDirsOnFS(testTable, 2);
     // add 10 partitions on the filesystem
     createPartitionsDirectoriesOnFS(testTable, 2);
-    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+    CheckResult result = checker.checkMetastore(catName, dbName, tableName, null, null);
     assertEquals(Collections.<String> emptySet(), result.getTablesNotInMs());
     assertEquals(Collections.<String> emptySet(), result.getTablesNotOnFs());
     assertEquals(Collections.<CheckResult.PartitionResult> emptySet(), result.getPartitionsNotOnFs());
@@ -626,7 +626,7 @@ public class TestHiveMetaStoreChecker {
     // check result now
     Exception exception = null;
     try {
-      checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+      checker.checkMetastore(catName, dbName, tableName, null, null);
     } catch (Exception e) {
       exception = e;
     }
@@ -634,7 +634,7 @@ public class TestHiveMetaStoreChecker {
     createFile(sb.toString(), "dummyFile");
     exception = null;
     try {
-      checker.checkMetastore(catName, dbName, tableName, null, null,  null);
+      checker.checkMetastore(catName, dbName, tableName, null, null);
     } catch (Exception e) {
       exception = e;
     }
