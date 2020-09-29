@@ -58,6 +58,7 @@ import org.apache.calcite.interpreter.BindableConvention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptCostImpl;
+import org.apache.calcite.plan.RelOptListener;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptRule;
@@ -261,6 +262,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionMergeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveUnionPullUpConstantsRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveWindowingFixRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.MarkEventRule;
+import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RuleStatisticsListener;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAbstractSplitFilterRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCAggregationPushDownRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.jdbc.JDBCExpandExpressionsRule;
@@ -2068,7 +2070,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // replaced in these rules are 1:1, so it should be ok here.
           calciteOptimizedPlan =
               executeProgram(calciteOptimizedPlan, hepProgram, mdProvider.getMetadataProvider(),
-                  executorProvider, null, true);
+                  executorProvider, null, true, null);
           perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Impala transformation rules");
         default:
           // Nothing to do for other engines for the time being
@@ -2255,11 +2257,22 @@ public class CalcitePlanner extends SemanticAnalyzer {
             HiveRemoveSqCountCheck.INSTANCE);
       }
 
+      RuleStatisticsListener listener = null;
+      if (LOG.isDebugEnabled()) {
+        listener = new RuleStatisticsListener();
+      }
+
       // Trigger program
       perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
-      basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider);
+      basePlan = executeProgram(basePlan, program.build(), mdProvider, executorProvider,
+          null, false, listener);
       perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
           "Calcite: Prejoin ordering transformation");
+
+      if (LOG.isDebugEnabled()) {
+        // Dump pre-join ordering information
+        LOG.debug(listener.dump("Prejoin ordering transformation"));
+      }
 
       return basePlan;
     }
@@ -2729,18 +2742,21 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
     private RelNode executeProgram(RelNode basePlan, HepProgram program,
         RelMetadataProvider mdProvider, RexExecutor executorProvider) {
-      return executeProgram(basePlan, program, mdProvider, executorProvider, null);
+      return executeProgram(basePlan, program, mdProvider, executorProvider,
+          null, false, null);
     }
 
     private RelNode executeProgram(RelNode basePlan, HepProgram program,
         RelMetadataProvider mdProvider, RexExecutor executorProvider,
         List<RelOptMaterialization> materializations) {
-      return executeProgram(basePlan, program, mdProvider, executorProvider, materializations, false);
+      return executeProgram(basePlan, program, mdProvider, executorProvider,
+          materializations, false, null);
     }
 
     private RelNode executeProgram(RelNode basePlan, HepProgram program,
         RelMetadataProvider mdProvider, RexExecutor executorProvider,
-        List<RelOptMaterialization> materializations, boolean noDag) {
+        List<RelOptMaterialization> materializations, boolean noDag,
+        RelOptListener listener) {
       // Create planner and copy context
       HepPlanner planner = new HepPlanner(program,
           basePlan.getCluster().getPlanner().getContext(),
@@ -2764,6 +2780,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
         for (RelOptMaterialization materialization : materializations) {
           planner.addMaterialization(materialization);
         }
+      }
+
+      if (listener != null) {
+        // Add listener to planner
+        planner.addListener(listener);
       }
 
       planner.setRoot(basePlan);

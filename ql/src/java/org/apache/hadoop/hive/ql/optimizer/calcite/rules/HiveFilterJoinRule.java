@@ -82,7 +82,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
   public static class HiveFilterJoinMergeRule extends HiveFilterJoinRule {
     public HiveFilterJoinMergeRule() {
       super(operand(Filter.class, operand(Join.class, any())),
-          null, true, HiveRelFactories.HIVE_BUILDER);
+          "filter-join", true, HiveRelFactories.HIVE_BUILDER);
     }
 
     @Override
@@ -104,7 +104,7 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
 
   public static class HiveFilterJoinTransposeRule extends HiveFilterJoinRule {
     public HiveFilterJoinTransposeRule() {
-      super(RelOptRule.operand(Join.class, RelOptRule.any()), "HiveFilterJoinRule:no-filter", true,
+      super(RelOptRule.operand(Join.class, RelOptRule.any()), "no-filter", true,
           HiveRelFactories.HIVE_BUILDER);
     }
 

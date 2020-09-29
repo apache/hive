@@ -38,8 +38,8 @@ import java.util.List;
 
 public abstract class HivePartitionPruneRule extends RelOptRule {
   protected final HiveConf conf;
-  protected HivePartitionPruneRule(HiveConf conf, RelOptRuleOperand operand) {
-    super(operand);
+  protected HivePartitionPruneRule(HiveConf conf, RelOptRuleOperand operand, String description) {
+    super(operand, description);
     this.conf = conf;
   }
 
@@ -93,7 +93,8 @@ public abstract class HivePartitionPruneRule extends RelOptRule {
 
   private static class TableScan extends HivePartitionPruneRule {
     private TableScan(HiveConf conf) {
-      super(conf, operand(HiveTableScan.class, any()));
+      super(conf, operand(HiveTableScan.class, any()),
+          "HivePartitionPruneRule(TableScan)");
     }
 
     @Override
@@ -110,7 +111,8 @@ public abstract class HivePartitionPruneRule extends RelOptRule {
 
   private static class FilterTableScan extends HivePartitionPruneRule {
     private FilterTableScan(HiveConf conf) {
-      super(conf, operand(HiveFilter.class, operand(HiveTableScan.class, any())));
+      super(conf, operand(HiveFilter.class, operand(HiveTableScan.class, any())),
+          "HivePartitionPruneRule(Filter)");
     }
 
     @Override
