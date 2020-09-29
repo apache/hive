@@ -338,6 +338,7 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
 
     info = new ScheduledQueryProgressInfo(
         pollResult.getExecutionId(), QueryState.FAILED, "executor-query-id");
+    info.setErrorMessage(generateLongErrorMessage());
     //    info.set
     client.scheduledQueryProgress(info);
 
@@ -348,12 +349,25 @@ public class TestMetastoreScheduledQueries extends MetaStoreClientTest {
       assertNull(q.getLastUpdateTime());
       assertTrue(q.getEndTime() <= getEpochSeconds());
       assertTrue(q.getEndTime() >= getEpochSeconds() - 1);
+      assertTrue(q.getErrorMessage().length() < 2000);
+      assertFalse(q.getErrorMessage().contains("x"));
     }
 
     // clustername is taken into account; this should be empty
     request.setClusterNamespace("polltestSomethingElse");
     pollResult = client.scheduledQueryPoll(request);
     assertFalse(pollResult.isSetQuery());
+  }
+
+  private String generateLongErrorMessage() {
+    StringBuffer sb=new StringBuffer();
+    for (int i = 0; i < 2500; i++) {
+      sb.append("e");
+    }
+    for (int j = 0; j < 10; j++) {
+      sb.append("\nx");
+    }
+    return sb.toString();
   }
 
   @Test
