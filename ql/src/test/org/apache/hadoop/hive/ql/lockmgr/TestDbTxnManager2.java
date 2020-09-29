@@ -3149,7 +3149,17 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   }
 
   @Test
-  public void testTruncate() throws Exception {
+  public void testTruncateWithBaseLockingExlWrite() throws Exception {
+    testTruncate(true);
+  }
+
+  @Test
+  public void testTruncateWithExl() throws Exception {
+    testTruncate(false);
+  }
+
+  private void testTruncate(boolean useBaseDir) throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE, useBaseDir);
     dropTable(new String[] {"T"});
     driver.run("create table T (a int, b int) stored as orc tblproperties('transactional'='true')");
     driver.run("insert into T values(0,2),(1,4)");
@@ -3158,7 +3168,10 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer"); //gets X lock on T
     List<ShowLocksResponseElement> locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
-    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T", null, locks);
+    checkLock(useBaseDir ? LockType.EXCL_WRITE : LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T", null, locks);
+
+    txnMgr.commitTxn();
+    dropTable(new String[] {"T"});
   }
 
   @Test
@@ -3210,33 +3223,5 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
-  }
-
-  @Test
-  public void testTruncateWithBaseLockingExlWrite() throws Exception {
-    testTruncateWithBaseLocking(true);
-  }
-
-  @Test
-  public void testTruncateWithBaseLockingExl() throws Exception {
-    testTruncateWithBaseLocking(false);
-  }
-
-  private void testTruncateWithBaseLocking(boolean useBaseDir) throws  Exception {
-    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE, useBaseDir);
-    dropTable(new String[] {"truncate_table"});
-    driver.run("create table if not exists truncate_table (a int, b int) " +
-        "stored as orc TBLPROPERTIES ('transactional'='true')");
-    driver.run("insert into truncate_table  values(1,2),(3,4)");
-    driver.compileAndRespond("truncate table truncate_table");
-
-    txnMgr.acquireLocks(driver.getPlan(), ctx, "truncate_table");
-    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
-    Assert.assertEquals("Unexpected lock count", 1, locks.size());
-
-    checkLock(useBaseDir ? LockType.EXCL_WRITE : LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "truncate_table",
-        null, locks);
-    txnMgr.commitTxn();
-    dropTable(new String[] {"truncate_table"});
   }
 }

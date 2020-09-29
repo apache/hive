@@ -448,16 +448,22 @@ public class MetaStoreServerUtils {
       return;
     }
 
-    // NOTE: wh.getFileStatusesForUnpartitionedTable() can be REALLY slow
-    List<FileStatus> fileStatus = wh.getFileStatusesForUnpartitionedTable(db, tbl);
     if (params == null) {
       params = new HashMap<>();
       tbl.setParameters(params);
     }
     // The table location already exists and may contain data.
     // Let's try to populate those stats that don't require full scan.
-    LOG.info("Updating table stats for {}", tbl.getTableName());
-    populateQuickStats(fileStatus, params);
+    boolean populateQuickStats  = !((environmentContext != null)
+        && environmentContext.isSetProperties()
+        && StatsSetupConst.TRUE.equals(environmentContext.getProperties()
+        .get(StatsSetupConst.DO_NOT_POPULATE_QUICK_STATS)));
+    if (populateQuickStats) {
+      // NOTE: wh.getFileStatusesForUnpartitionedTable() can be REALLY slow
+      List<FileStatus> fileStatus = wh.getFileStatusesForUnpartitionedTable(db, tbl);
+      LOG.info("Updating table stats for {}", tbl.getTableName());
+      populateQuickStats(fileStatus, params);
+    }
     LOG.info("Updated size of table {} to {}",
         tbl.getTableName(), params.get(StatsSetupConst.TOTAL_SIZE));
     if (environmentContext != null

@@ -39,6 +39,7 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -3199,6 +3200,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       //first set basic stats to true
       StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
       environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+      environmentContext.putToProperties(StatsSetupConst.DO_NOT_POPULATE_QUICK_STATS, StatsSetupConst.TRUE);
       //then invalidate column stats
       StatsSetupConst.clearColumnStatsState(props);
       return;

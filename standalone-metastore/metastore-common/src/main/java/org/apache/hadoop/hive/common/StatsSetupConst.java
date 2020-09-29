@@ -149,6 +149,10 @@ public class StatsSetupConst {
   // update should take place, such as with replication.
   public static final String DO_NOT_UPDATE_STATS = "DO_NOT_UPDATE_STATS";
 
+  // This string constant is used by AlterHandler to figure out that it should not attempt to
+  // populate quick stats based on the file listing
+  public static final String DO_NOT_POPULATE_QUICK_STATS = "DO_NOT_POPULATE_QUICK_STATS";
+
   //This string constant will be persisted in metastore to indicate whether corresponding
   //table or partition's statistics and table or partition's column statistics are accurate or not.
   public static final String COLUMN_STATS_ACCURATE = "COLUMN_STATS_ACCURATE";
