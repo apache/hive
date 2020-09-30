@@ -2224,7 +2224,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
               || tbl.getSd().getLocation().isEmpty()) {
             tblPath = wh.getDefaultTablePath(db, tbl);
           } else {
-            if (!isExternal(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
+            if (!MetaStoreUtils.isExternalTable(tbl) && !MetaStoreUtils.isNonNativeTable(tbl)) {
               LOG.warn("Location: " + tbl.getSd().getLocation()
                   + " specified for non-external table:" + tbl.getTableName());
             }
@@ -2988,9 +2988,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     private boolean checkTableDataShouldBeDeleted(Table tbl, boolean deleteData) {
-      if (deleteData && isExternal(tbl)) {
+      if (deleteData && MetaStoreUtils.isExternalTable(tbl)) {
         // External table data can be deleted if EXTERNAL_TABLE_PURGE is true
-        return isExternalTablePurge(tbl);
+        return MetaStoreUtils.isExternalTablePurge(tbl);
       }
       return deleteData;
     }
@@ -5032,7 +5032,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // We need Partition-s for firing events and for result; DN needs MPartition-s to drop.
         // Great... Maybe we could bypass fetching MPartitions by issuing direct SQL deletes.
         tbl = get_table_core(catName, dbName, tblName);
-        isExternal(tbl);
         mustPurge = isMustPurge(envContext, tbl);
         int minCount = 0;
         RequestPartsSpec spec = request.getParts();

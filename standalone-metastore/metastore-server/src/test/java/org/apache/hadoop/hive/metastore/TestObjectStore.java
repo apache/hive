@@ -67,6 +67,7 @@ import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.model.MNotificationLog;
 import org.apache.hadoop.hive.metastore.model.MNotificationNextId;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -84,15 +85,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
@@ -932,6 +925,64 @@ public class TestObjectStore {
   }
 
   /**
+   * Verify that table type is set correctly based on input table properties.
+   * Two things are verified:
+   * <ol>
+   *   <li>When <em>EXTERNAL</em> property is set to <em>true</em>, table type should be external</li>
+   *   <li>When table type is set to external it should remain external</em>
+   * </ol>
+   * @throws Exception
+   */
+  @Test
+  public void testExternalTable() throws Exception {
+    Database db1 = new DatabaseBuilder()
+        .setName(DB1)
+        .setDescription("description")
+        .setLocation("locationurl")
+        .build(conf);
+    objectStore.createDatabase(db1);
+
+    List<Table> tables = new ArrayList<>(4);
+    Map<String, Boolean> expectedValues = new HashMap<>();
+
+    int i = 1;
+    // Case 1: EXTERNAL = true, tableType == MANAGED_TABLE
+    // The result should be external table
+    Table tbl1 = buildTable(conf, db1, "t" + i++, true, null);
+    tables.add(tbl1);
+    expectedValues.put(tbl1.getTableName(), true);
+    // Case 2: EXTERNAL = false, tableType == EXTERNAL_TABLE
+    // The result should be external table
+    Table tbl2 = buildTable(conf, db1, "t" + i++, false, TableType.EXTERNAL_TABLE.name());
+    tables.add(tbl2);
+    expectedValues.put(tbl2.getTableName(), true);
+    // Case 3: EXTERNAL = false, tableType == EXTERNAL_TABLE
+    // The result should be external table
+    Table tbl3 = buildTable(conf, db1, "t" + i++, true, TableType.EXTERNAL_TABLE.name());
+    tables.add(tbl3);
+    expectedValues.put(tbl3.getTableName(), true);
+    // Case 4: EXTERNAL = false, tableType == MANAGED_TABLE
+    // The result should be managed table
+    Table tbl4 = buildTable(conf, db1, "t" + i++, false, null);
+    tables.add(tbl4);
+    expectedValues.put(tbl4.getTableName(), false);
+
+    for (Table t: tables) {
+      objectStore.createTable(t);
+
+      Table tOut = objectStore.getTable(db1.getCatalogName(), DB1, t.getTableName());
+      Assert.assertEquals("Table " + t.getTableName() + "has invalid external state",
+          expectedValues.get(t.getTableName()), MetaStoreUtils.isExternalTable(tOut));
+    }
+
+    for (Table t: tables) {
+      objectStore.dropTable(db1.getCatalogName(), DB1, t.getTableName());
+    }
+
+    objectStore.dropDatabase(db1.getCatalogName(), DB1);
+  }
+
+  /**
    * Test metastore configuration property METASTORE_MAX_EVENT_RESPONSE
    */
   @Test
@@ -1176,6 +1227,20 @@ public class TestObjectStore {
         Deadline.stopTimer();
       }
     };
+  }
+
+  private Table buildTable(Configuration conf, Database db, String name, boolean external_prop,
+                           String tableType) throws MetaException {
+    Table tbl = new TableBuilder()
+        .inDb(db)
+        .setTableName(name)
+        .addCol("col1", ColumnType.STRING_TYPE_NAME)
+        .addTableParam(MetaStoreUtils.EXTERNAL_TABLE_PROP, String.valueOf(external_prop))
+        .build(conf);
+    if (tableType != null) {
+      tbl.setTableType(tableType);
+    }
+    return tbl;
   }
 }
 

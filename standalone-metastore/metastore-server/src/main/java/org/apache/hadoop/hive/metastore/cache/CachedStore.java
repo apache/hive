@@ -1245,18 +1245,9 @@ public class CachedStore implements RawStore, Configurable {
     // If the table has property EXTERNAL set, update table type
     // accordingly
     String tableType = tbl.getTableType();
-    boolean isExternal = Boolean.parseBoolean(tbl.getParameters().get("EXTERNAL"));
-    if (TableType.MANAGED_TABLE.toString().equals(tableType)) {
-      if (isExternal) {
-        tableType = TableType.EXTERNAL_TABLE.toString();
-      }
+    if (MetaStoreUtils.isExternalTable(tbl) && !TableType.EXTERNAL_TABLE.name().equals(tableType)) {
+      tbl.setTableType(TableType.EXTERNAL_TABLE.name());
     }
-    if (TableType.EXTERNAL_TABLE.toString().equals(tableType)) {
-      if (!isExternal) {
-        tableType = TableType.MANAGED_TABLE.toString();
-      }
-    }
-    tbl.setTableType(tableType);
   }
 
   @Override public void createTable(Table tbl) throws InvalidObjectException, MetaException {

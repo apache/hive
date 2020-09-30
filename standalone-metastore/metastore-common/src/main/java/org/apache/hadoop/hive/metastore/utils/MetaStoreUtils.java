@@ -108,6 +108,9 @@ public class MetaStoreUtils {
 
   public static final String EXTERNAL_TABLE_PURGE = "external.table.purge";
 
+  /** Table property marking table as external. */
+  public static final String EXTERNAL_TABLE_PROP = "EXTERNAL";
+
   // Right now we only support one special character '/'.
   // More special characters can be added accordingly in the future.
   // NOTE:
@@ -215,6 +218,20 @@ public class MetaStoreUtils {
 
   /**
    * Determines whether a table is an external table.
+   * A table is external if
+   * <ol>
+   *   <li>Its table type is <em>EXTERNAL_TABLE</em></li>
+   *   <li>It has <em>EXTERNAL</em> parameter set to <em>true</em></li>
+   * </ol>
+   *<p>
+   * Ideally we would like to use just the tableType, but this breaks the behavior of existing
+   * tables which use property to specify that the table is external. To preserve
+   * backwards-compatible behavior we check the property as well. The thinking is that by
+   * setting tableType as external or setting <em>EXTERNAL</em> property someone expressly desired to have
+   * an external table.<p>
+   *
+   * There is a potentially weird case when tableType is set to <em><EXTERNAL_TABLE/em> and the
+   * <em>EXTERNAL</em> property is set to <em>false</em>, but we can only <em>(shrug)</em> in this case.
    *
    * @param table table of interest
    *
@@ -224,12 +241,16 @@ public class MetaStoreUtils {
     if (table == null) {
       return false;
     }
+    String tableType = table.getTableType();
+    if (tableType != null && tableType.equals(TableType.EXTERNAL_TABLE.name())) {
+      return true;
+    }
     Map<String, String> params = table.getParameters();
     if (params == null) {
       return false;
     }
 
-    return isExternal(params);
+    return Boolean.parseBoolean(params.get(EXTERNAL_TABLE_PROP));
   }
 
   /**
@@ -248,15 +269,11 @@ public class MetaStoreUtils {
       return false;
     }
 
-    return isPropertyTrue(params, EXTERNAL_TABLE_PURGE);
-  }
-
-  public static boolean isExternal(Map<String, String> tableParams){
-    return isPropertyTrue(tableParams, "EXTERNAL");
+    return Boolean.parseBoolean(params.get(EXTERNAL_TABLE_PURGE));
   }
 
   public static boolean isPropertyTrue(Map<String, String> tableParams, String prop) {
-    return "TRUE".equalsIgnoreCase(tableParams.get(prop));
+    return Boolean.parseBoolean(tableParams.get(prop));
   }
 
   /**

@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -137,7 +138,7 @@ public class HCatTable {
     tableName = hiveTable.getTableName();
     dbName = hiveTable.getDbName();
     tableType = hiveTable.getTableType();
-    isExternal = hiveTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString());
+    isExternal = MetaStoreUtils.isExternalTable(hiveTable);
     sd = hiveTable.getSd();
     for (FieldSchema colFS : sd.getCols()) {
       cols.add(HCatSchemaUtils.getHCatFieldSchema(colFS));

@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.FileUtils.RemoteIteratorWithFilter;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -516,6 +517,10 @@ public class UpgradeTool {
       return;
     }
     if(!TableType.MANAGED_TABLE.name().equalsIgnoreCase(t.getTableType())) {
+      return;
+    }
+
+    if (MetaStoreUtils.isExternalTable(t)) {
       return;
     }
     //todo: are HBase, Druid talbes managed in 2.x? 3.0?

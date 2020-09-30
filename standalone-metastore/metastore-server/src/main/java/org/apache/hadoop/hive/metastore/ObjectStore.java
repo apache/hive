@@ -1919,7 +1919,7 @@ public class ObjectStore implements RawStore, Configurable {
       // for backwards compatibility with old metastore persistence
       if (mtbl.getViewOriginalText() != null) {
         tableType = TableType.VIRTUAL_VIEW.toString();
-      } else if (Boolean.parseBoolean(mtbl.getParameters().get("EXTERNAL"))) {
+      } else if (Boolean.parseBoolean(mtbl.getParameters().get(MetaStoreUtils.EXTERNAL_TABLE_PROP))) {
         tableType = TableType.EXTERNAL_TABLE.toString();
       } else {
         tableType = TableType.MANAGED_TABLE.toString();
@@ -1965,19 +1965,14 @@ public class ObjectStore implements RawStore, Configurable {
           DatabaseName.getQualified(catName, tbl.getDbName()) + " doesn't exist.");
     }
 
-    // If the table has property EXTERNAL set, update table type
-    // accordingly
+    // If the table type is set as MANAGED, but the table has property
+    // EXTERNAL, change the table type to EXTERNAL as well.
     String tableType = tbl.getTableType();
-    boolean isExternal = Boolean.parseBoolean(tbl.getParameters().get("EXTERNAL"));
-    if (TableType.MANAGED_TABLE.toString().equals(tableType)) {
-      if (isExternal) {
-        tableType = TableType.EXTERNAL_TABLE.toString();
-      }
+    if (tableType == null) {
+      tableType = TableType.MANAGED_TABLE.name();
     }
-    if (TableType.EXTERNAL_TABLE.toString().equals(tableType)) {
-      if (!isExternal) {
-        tableType = TableType.MANAGED_TABLE.toString();
-      }
+    if (TableType.MANAGED_TABLE.name().equalsIgnoreCase(tableType) && MetaStoreUtils.isExternalTable(tbl)) {
+      tableType = TableType.EXTERNAL_TABLE.name();
     }
 
     PrincipalType ownerPrincipalType = tbl.getOwnerType();

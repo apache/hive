@@ -172,7 +172,7 @@ public final class TransactionalValidationListener extends MetaStorePreEventList
             + "format (such as ORC): " + Warehouse.getQualifiedName(newTable));
       }
 
-      if (newTable.getTableType().equals(TableType.EXTERNAL_TABLE.toString())) {
+      if (MetaStoreUtils.isExternalTable(newTable)) {
         throw new MetaException(Warehouse.getQualifiedName(newTable) +
             " cannot be declared transactional because it's an external table");
       }
