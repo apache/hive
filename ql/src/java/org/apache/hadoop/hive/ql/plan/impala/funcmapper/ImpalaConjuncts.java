@@ -90,11 +90,11 @@ public class ImpalaConjuncts {
       // it to the list of partition conjuncts
       if (partitionColsIndexes != null && visitor.hasPartitionColsOnly()) {
         tmpImpalaPartitionConjuncts.add(impalaConjunct);
-        tmpPartitionConjuncts.add(andOperand);
         // normalize the operand. If the expression contains a binary expression,
         // the SlotRef portion needs to be the first parameter
         // (e.g. 'where 1 <= my_col' --> 'where my_col >= 1')
         RexNode normalizedAndOperand = normalizeOperand(rexBuilder, andOperand);
+        tmpPartitionConjuncts.add(normalizedAndOperand);
         Expr normalizedImpalaConjunct = normalizedAndOperand.accept(visitor);
         tmpNormalizedPartitionConjuncts.add(normalizedImpalaConjunct);
       } else {
@@ -157,7 +157,10 @@ public class ImpalaConjuncts {
     if (existingPartitionConjuncts.isEmpty()) {
       return;
     }
-    Set<RexNode> allConjunctsSet = Sets.newHashSet(allConjuncts);
+    Set<RexNode> allConjunctsSet = Sets.newHashSet();
+    for (RexNode conjunct : allConjuncts) {
+      allConjunctsSet.add(normalizeOperand(rexBuilder, conjunct));
+    }
     for (RexNode conjunct : existingPartitionConjuncts) {
       if (!allConjunctsSet.contains(conjunct)) {
         throw new HiveException("Error: The following pruned partition conjunct"
@@ -166,15 +169,15 @@ public class ImpalaConjuncts {
     }
   }
 
-  private static List<RexNode> removePartitionConjuncts(List<RexNode> allConjuncts,
-      List<RexNode> existingPartitionConjuncts) {
+  private static List<RexNode> removePartitionConjuncts(RexBuilder rexBuilder,
+      List<RexNode> allConjuncts, List<RexNode> existingPartitionConjuncts) {
     if (existingPartitionConjuncts.isEmpty()) {
       return allConjuncts;
     }
     Set<RexNode> nodesToRemove = Sets.newHashSet(existingPartitionConjuncts);
     List<RexNode> result = Lists.newArrayList();
     for (RexNode conjunct : allConjuncts) {
-      if (!nodesToRemove.contains(conjunct)) {
+      if (!nodesToRemove.contains(normalizeOperand(rexBuilder, conjunct))) {
         result.add(conjunct);
       }
     }
@@ -253,7 +256,7 @@ public class ImpalaConjuncts {
     List<RexNode> andOperands =
         (filterCondition == null) ? Lists.newArrayList() : getConjuncts(filterCondition);
     validatePartitionConjuncts(rexBuilder, andOperands, existingPartitionConjuncts);
-    andOperands = removePartitionConjuncts(andOperands, existingPartitionConjuncts);
+    andOperands = removePartitionConjuncts(rexBuilder, andOperands, existingPartitionConjuncts);
     return new ImpalaConjuncts(andOperands, existingPartitionConjuncts, analyzer, relNode,
         rexBuilder, partitionColsIndexes);
   }
