@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFMethodResolver;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -31,6 +32,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
+/**
+ * Restricts casting timestamp/date types to numeric values.
+ *
+ * This Resolver is used in {@link UDF} implementations to enforce strict conversion rules.
+ */
 public class TimestampCastRestrictorResolver implements UDFMethodResolver {
 
   private UDFMethodResolver parentResolver;
