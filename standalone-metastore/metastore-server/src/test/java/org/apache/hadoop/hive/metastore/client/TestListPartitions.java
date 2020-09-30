@@ -1215,13 +1215,23 @@ public class TestListPartitions extends MetaStoreClientTest {
   @Test(expected = MetaException.class)
   public void testListPartitionNamesNoDbName() throws Exception {
     createTable4PartColsParts(client);
-    client.listPartitionNames("", TABLE_NAME, (short)-1);
+    try {
+      client.listPartitionNames("", TABLE_NAME, (short) -1);
+    } catch (NoSuchObjectException e) {
+      //TODO: should not throw different exceptions for different HMS deployment types
+      throw new MetaException(e.getMessage());
+    }
   }
 
   @Test(expected = MetaException.class)
   public void testListPartitionNamesNoTblName() throws Exception {
     createTable4PartColsParts(client);
-    client.listPartitionNames(DB_NAME, "", (short)-1);
+    try {
+      client.listPartitionNames(DB_NAME, "", (short) -1);
+    } catch (NoSuchObjectException e) {
+      //TODO: should not throw different exceptions for different HMS deployment types
+      throw new MetaException(e.getMessage());
+    }
   }
 
   @Test

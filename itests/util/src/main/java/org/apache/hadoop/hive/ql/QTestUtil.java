@@ -579,7 +579,7 @@ public class QTestUtil {
 
     // setup metastore client cache
     if (conf.getBoolVar(ConfVars.MSC_CACHE_ENABLED)) {
-      HiveMetaStoreClientWithLocalCache.init();
+      HiveMetaStoreClientWithLocalCache.init(conf);
     }
   }
 

@@ -289,7 +289,7 @@ public class HiveServer2 extends CompositeService {
 
     // setup metastore client cache
     if (hiveConf.getBoolVar(ConfVars.MSC_CACHE_ENABLED)) {
-      HiveMetaStoreClientWithLocalCache.init();
+      HiveMetaStoreClientWithLocalCache.init(hiveConf);
     }
 
     try {

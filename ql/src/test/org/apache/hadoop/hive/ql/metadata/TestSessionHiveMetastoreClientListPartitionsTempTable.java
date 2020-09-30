@@ -79,7 +79,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     SessionState.start(conf);
     // setup metastore client cache
     if (conf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
-      HiveMetaStoreClientWithLocalCache.init();
+      HiveMetaStoreClientWithLocalCache.init(conf);
     }
     setClient(Hive.get(conf).getMSC());
     getClient().dropDatabase(DB_NAME, true, true, true);
@@ -462,5 +462,11 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
       partSpecSize = partSpec.iterator().next().getSharedSDPartitionSpec().getPartitionsSize();
     }
     assertEquals("Partition Spec check failed: " + expr.getExprString(), numParts, partSpecSize);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  @Override
+  public void testListPartitionNamesNoTable() throws Exception {
+    super.testListPartitionNamesNoTable();
   }
 }

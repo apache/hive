@@ -797,8 +797,8 @@ public class CliDriver {
     HiveMaterializedViewsRegistry.get().init();
 
     // init metastore client cache
-    if (conf.getBoolVar(ConfVars.MSC_CACHE_ENABLED)) {
-      HiveMetaStoreClientWithLocalCache.init();
+    if (HiveConf.getBoolVar(conf, ConfVars.MSC_CACHE_ENABLED)) {
+      HiveMetaStoreClientWithLocalCache.init(conf);
     }
 
     // execute cli driver work
