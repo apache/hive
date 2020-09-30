@@ -859,7 +859,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
                   " with first incremental dump pending : " + dbName);
         }
         int estimatedNumTables = Utils.getAllTables(hiveDb, dbName, work.replScope).size();
-        int estimatedNumFunctions = hiveDb.getAllFunctions().size();
+        int estimatedNumFunctions = hiveDb.getFunctions(dbName, "*").size();
         replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
                 estimatedNumTables,
                 estimatedNumFunctions);
