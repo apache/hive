@@ -3354,6 +3354,8 @@ public class HiveConf extends Configuration {
         "Whether we should publish HiveServer2's configs to ZooKeeper."),
     HIVE_SERVER2_LEADER_ZOOKEEPER_NAMESPACE("hive.server2.leader.zookeeper.namespace", "hiveserver2-leader",
         "Zookeeper znode for HiveServer2 leader selection."),
+    HIVE_SERVER2_UDF_CACHE_ENABLED("hive.server2.udf.cache.enabled", false,
+            "Whether HiveServer2 UDF cache is enabled. Disabled by default."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
