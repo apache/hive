@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulePartitionPruner
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RulePartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
 import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.Statistics.State;
@@ -154,6 +155,10 @@ public class RelOptHiveTable implements RelOptTable {
 
   public String getName() {
     return name;
+  }
+
+  public boolean isDummyTable() {
+    return this.hiveTblMetadata.isDummyTable();
   }
 
   @Override

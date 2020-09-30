@@ -24,6 +24,7 @@ import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
@@ -33,7 +34,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableFunctionScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveUnion;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaAggregateRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaHdfsScanRel;
 import org.apache.hadoop.hive.ql.plan.impala.node.ImpalaJoinRel;
@@ -68,11 +68,9 @@ public class HiveImpalaRules {
     public void onMatch(RelOptRuleCall call) {
       final HiveFilter filter = call.rel(0);
       final HiveTableScan scan = call.rel(1);
-
-      String tableName = scan.getTable().getQualifiedName().get(1);
       RelNode newRelNode = null;
       // Impala uses the Union node for tables with no "from" clause.
-      if (SemanticAnalyzer.DUMMY_TABLE.equals(tableName)) {
+      if (((RelOptHiveTable) scan.getTable()).isDummyTable()) {
         newRelNode = new ImpalaUnionRel(scan, filter);
       } else {
         // Only support HDFS for now.
@@ -97,10 +95,9 @@ public class HiveImpalaRules {
     public void onMatch(RelOptRuleCall call) {
       final HiveTableScan scan = call.rel(0);
 
-      String tableName = scan.getTable().getQualifiedName().get(1);
       RelNode newRelNode = null;
       // Impala uses the Union node for tables with no "from" clause.
-      if (SemanticAnalyzer.DUMMY_TABLE.equals(tableName)) {
+      if (((RelOptHiveTable) scan.getTable()).isDummyTable()) {
         newRelNode = new ImpalaUnionRel(scan);
       } else {
         // Only support HDFS for now.

@@ -2307,6 +2307,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final List<String> tablesUsedQuery = getTablesUsed(basePlan);
       final boolean mvRebuild = mvRebuildMode != MaterializationRebuildMode.NONE;
 
+      if (tablesUsedQuery.isEmpty()) {
+        // There are no tables used in the plan (DUMMY_TABLEs such as INSERT INTO VALUES())
+        return calcitePreMVRewritingPlan;
+      }
+
       // Add views to planner
       List<RelOptMaterialization> materializations = new ArrayList<>();
       try {
@@ -2680,6 +2685,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return basePlan;
     }
 
+    // Get all non-dummy tables used in plan
     private List<String> getTablesUsed(RelNode plan) {
       List<String> tablesUsed = new ArrayList<>();
       new RelVisitor() {
@@ -2687,7 +2693,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
         public void visit(RelNode node, int ordinal, RelNode parent) {
           if (node instanceof TableScan) {
             TableScan ts = (TableScan) node;
-            tablesUsed.add(((RelOptHiveTable) ts.getTable()).getHiveTableMD().getFullyQualifiedName());
+            RelOptHiveTable table = (RelOptHiveTable) ts.getTable();
+            if (!table.isDummyTable()) {
+              tablesUsed.add(table.getHiveTableMD().getFullyQualifiedName());
+            }
           }
           super.visit(node, ordinal, parent);
         }
