@@ -27,6 +27,8 @@ import java.io.PrintStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -98,6 +100,9 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.orc.impl.OrcAcidUtils;
 import org.apache.orc.tools.FileDump;
 import org.apache.thrift.TException;
+
+import com.google.common.collect.Lists;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -877,10 +882,14 @@ public class TestStreaming {
     testTransactionBatchCommit_Delimited(Utils.getUGI());
   }
   private void testTransactionBatchCommit_Delimited(UserGroupInformation ugi) throws Exception {
-    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName,
-      partitionVals);
+    HiveEndPoint endPt = new HiveEndPoint(metaStoreURI, dbName, tblName, partitionVals);
     StreamingConnection connection = endPt.newConnection(true, conf, ugi, "UT_" + Thread.currentThread().getName());
     DelimitedInputWriter writer = new DelimitedInputWriter(fieldNames,",", endPt, conf, connection);
+
+    // 2nd (parallel) connection opened for a different partition (likely case with Storm)
+    HiveEndPoint endPt2 = new HiveEndPoint(metaStoreURI, dbName, tblName,
+        Lists.newArrayList("Europe", "Hungary"));
+    StreamingConnection connection2 = endPt2.newConnection(true, conf, ugi, "UT_" + Thread.currentThread().getName());
 
     // 1st Txn
     TransactionBatch txnBatch =  connection.fetchTransactionBatch(10, writer);
@@ -894,6 +903,16 @@ public class TestStreaming {
 
     Assert.assertEquals(TransactionBatch.TxnState.COMMITTED
       , txnBatch.getCurrentTransactionState());
+
+    // 2nd connection close - test here is to make sure closing this does not affect the other connection - i.e. FS
+    // should not be closed yet
+    if (ugi != null) {
+      FileSystem fs = getFs(ugi, conf);
+      connection2.close();
+      Assert.assertFalse("FS should not be closed yet", isFsClosedForUgi(fs, ugi));
+    } else {
+      connection2.close();
+    }
 
     // 2nd Txn
     txnBatch.beginNextTransaction();
@@ -913,9 +932,14 @@ public class TestStreaming {
     Assert.assertEquals(TransactionBatch.TxnState.INACTIVE
       , txnBatch.getCurrentTransactionState());
 
-
-    connection.close();
-
+    // Last connection for this UGI in the 'process', should run FS.closeAllForUGI
+    if (ugi != null) {
+      FileSystem fs = getFs(ugi, conf);
+      connection.close();
+      Assert.assertTrue("FS should be closed", isFsClosedForUgi(fs, ugi));
+    } else {
+      connection.close();
+    }
 
     // To Unpartitioned table
     endPt = new HiveEndPoint(metaStoreURI, dbName2, tblName2, null);
@@ -933,6 +957,22 @@ public class TestStreaming {
     Assert.assertEquals(TransactionBatch.TxnState.COMMITTED
       , txnBatch.getCurrentTransactionState());
     connection.close();
+  }
+
+  private static FileSystem getFs(UserGroupInformation ugi, Configuration conf) throws Exception {
+    return ugi.doAs(
+        new PrivilegedExceptionAction<FileSystem>() {
+          @Override
+          public FileSystem run() throws Exception {
+            return FileSystem.get(conf);
+          }
+        });
+  }
+
+  private static boolean isFsClosedForUgi(FileSystem fs, UserGroupInformation ugi) throws Exception {
+    FileSystem newFS = getFs(ugi, fs.getConf());
+    // With FS cache being turned on, if we got a new FS, it means the older fs instance was closed
+    return newFS != fs;
   }
 
   @Test
