@@ -5664,6 +5664,26 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
+  public List<SQLDefaultConstraint> getDefaultConstraintList(String dbName, String tblName) throws HiveException, NoSuchObjectException {
+    try {
+      return getMSC().getDefaultConstraints(new DefaultConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
+    } catch (NoSuchObjectException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public List<SQLCheckConstraint> getCheckConstraintList(String dbName, String tblName) throws HiveException, NoSuchObjectException {
+    try {
+      return getMSC().getCheckConstraints(new CheckConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
+    } catch (NoSuchObjectException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
   public SQLAllTableConstraints getTableConstraints(String dbName, String tblName)
       throws HiveException, NoSuchObjectException {
     try {

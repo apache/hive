@@ -22,6 +22,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AcidWriteMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddCheckConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddDefaultConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPartitionMessage;
@@ -167,8 +169,18 @@ public class DeSerializer extends JSONMessageDeserializer {
   }
 
   @Override
+  public AddDefaultConstraintMessage getAddDefaultConstraintMessage(String messageBody) {
+    return super.getAddDefaultConstraintMessage(deCompress(messageBody));
+  }
+
+  @Override
   public AddNotNullConstraintMessage getAddNotNullConstraintMessage(String messageBody) {
     return super.getAddNotNullConstraintMessage(deCompress(messageBody));
+  }
+
+  @Override
+  public AddCheckConstraintMessage getAddCheckConstraintMessage(String messageBody) {
+    return super.getAddCheckConstraintMessage(deCompress(messageBody));
   }
 
   @Override
