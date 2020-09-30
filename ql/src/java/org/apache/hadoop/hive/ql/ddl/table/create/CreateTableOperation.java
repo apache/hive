@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.table.create;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.repl.ReplConst;
@@ -162,8 +163,8 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
         org.apache.hadoop.hive.metastore.api.Table tTable = createdTable.getTTable();
         Path tabLocation = new Path(tTable.getSd().getLocation());
         List<Path> newFilesList = new ArrayList<>();
-        try {
-          Hive.listFilesInsideAcidDirectory(tabLocation, tabLocation.getFileSystem(context.getConf()), newFilesList);
+        try (FileSystem fs = tabLocation.getFileSystem(context.getConf())) {
+          Hive.listFilesInsideAcidDirectory(tabLocation, fs, newFilesList);
         } catch (IOException e) {
           LOG.error("Error listing files", e);
           throw new HiveException(e);

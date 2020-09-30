@@ -84,8 +84,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileChecksum;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hdfs.DFSUtilClient;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
@@ -2572,31 +2574,41 @@ public class Hive {
     return destPath;
   }
 
+  /**
+   * Recursively get paths in a directory.
+   * In certain filesystem implementations, this would reduce drastically the number of calls to
+   * FS, since tree walking is avoided.
+   *
+   * @param fs
+   * @param path
+   * @param recursive
+   * @param filter
+   * @param pathList
+   * @throws IOException
+   */
+  static void listFilesRecursively(FileSystem fs, Path path, boolean recursive,
+      PathFilter filter, List<Path> pathList)
+    throws IOException {
+    RemoteIterator<LocatedFileStatus> it = fs.listFiles(path, recursive);
+    while (it.hasNext()) {
+      LocatedFileStatus status = it.next();
+      if (filter != null && !filter.accept(status.getPath())) {
+        continue;
+      }
+      pathList.add(status.getPath());
+    }
+    //TODO: Add logging for IOStatistics when available (ref:HADOOP-16830)
+  }
+
   public static void listFilesInsideAcidDirectory(Path acidDir, FileSystem srcFs, List<Path> newFiles)
           throws IOException {
-    // list out all the files/directory in the path
-    FileStatus[] acidFiles;
-    acidFiles = srcFs.listStatus(acidDir);
-    if (acidFiles == null) {
-      LOG.debug("No files added by this query in: " + acidDir);
-      return;
-    }
-    LOG.debug("Listing files under " + acidDir);
-    for (FileStatus acidFile : acidFiles) {
-      // need to list out only files, ignore folders.
-      if (!acidFile.isDirectory()) {
-        newFiles.add(acidFile.getPath());
-      } else {
-        listFilesInsideAcidDirectory(acidFile.getPath(), srcFs, newFiles);
-      }
-    }
+    listFilesRecursively(srcFs, acidDir, true, null, newFiles);
   }
 
   private void listFilesCreatedByQuery(Path loadPath, long writeId, int stmtId,
                                              boolean isInsertOverwrite, List<Path> newFiles) throws HiveException {
     Path acidDir = new Path(loadPath, AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
-    try {
-      FileSystem srcFs = loadPath.getFileSystem(conf);
+    try (FileSystem srcFs = loadPath.getFileSystem(conf)) {
       listFilesInsideAcidDirectory(acidDir, srcFs, newFiles);
     } catch (FileNotFoundException e) {
       LOG.info("directory does not exist: " + acidDir);
@@ -4326,23 +4338,29 @@ private void constructOneLBLocationMap(FileStatus fSta,
   // Clears the dest dir when src is sub-dir of dest.
   public static void clearDestForSubDirSrc(final HiveConf conf, Path dest,
       Path src, boolean isSrcLocal) throws IOException {
-    FileSystem destFS = dest.getFileSystem(conf);
-    FileSystem srcFS = src.getFileSystem(conf);
-    if (isSubDir(src, dest, srcFS, destFS, isSrcLocal)) {
-      final Path fullSrcPath = getQualifiedPathWithoutSchemeAndAuthority(src, srcFS);
-      final Path fullDestPath = getQualifiedPathWithoutSchemeAndAuthority(dest, destFS);
-      if (fullSrcPath.equals(fullDestPath)) {
-        return;
-      }
-      Path parent = fullSrcPath;
-      while (!parent.getParent().equals(fullDestPath)) {
-        parent = parent.getParent();
-      }
-      FileStatus[] existingFiles = destFS.listStatus(
-          dest, FileUtils.HIDDEN_FILES_PATH_FILTER);
-      for (FileStatus fileStatus : existingFiles) {
-        if (!fileStatus.getPath().getName().equals(parent.getName())) {
-          destFS.delete(fileStatus.getPath(), true);
+    try (FileSystem destFS = dest.getFileSystem(conf);
+          FileSystem srcFS = src.getFileSystem(conf);) {
+      if (isSubDir(src, dest, srcFS, destFS, isSrcLocal)) {
+        final Path fullSrcPath = getQualifiedPathWithoutSchemeAndAuthority(src, srcFS);
+        final Path fullDestPath = getQualifiedPathWithoutSchemeAndAuthority(dest, destFS);
+        if (fullSrcPath.equals(fullDestPath)) {
+          return;
+        }
+        Path parent = fullSrcPath;
+        while (!parent.getParent().equals(fullDestPath)) {
+          parent = parent.getParent();
+        }
+
+        //TODO: Once HADOOP-17281 is committed, this should be asynchronous call in FS impls like S3.
+        RemoteIterator<FileStatus> it = destFS.listStatusIterator(dest);
+        while (it.hasNext()) {
+          FileStatus status = it.next();
+          if (!FileUtils.HIDDEN_FILES_PATH_FILTER.accept(status.getPath())) {
+            continue;
+          }
+          if (!status.getPath().getName().equals(parent.getName())) {
+            destFS.delete(status.getPath(), true);
+          }
         }
       }
     }
@@ -4352,14 +4370,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   public static void listNewFilesRecursively(final FileSystem destFs, Path dest,
                                              List<Path> newFiles) throws HiveException {
     try {
-      for (FileStatus fileStatus : destFs.listStatus(dest, FileUtils.HIDDEN_FILES_PATH_FILTER)) {
-        if (fileStatus.isDirectory()) {
-          // If it is a sub-directory, then recursively list the files.
-          listNewFilesRecursively(destFs, fileStatus.getPath(), newFiles);
-        } else {
-          newFiles.add(fileStatus.getPath());
-        }
-      }
+      listFilesRecursively(destFs, dest, true, FileUtils.HIDDEN_FILES_PATH_FILTER, newFiles);
     } catch (IOException e) {
       LOG.error("Failed to get source file statuses", e);
       throw new HiveException(e.getMessage(), e);
@@ -4458,7 +4469,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
               conf);
         } else {
           if (srcIsSubDirOfDest || destIsSubDirOfSrc) {
-            FileStatus[] srcs = destFs.listStatus(srcf, FileUtils.HIDDEN_FILES_PATH_FILTER);
+            //TODO: wait for HADOOP-17281 to be committed
+            RemoteIterator<FileStatus> it = destFs.listStatusIterator(srcf);
 
             List<Future<Void>> futures = new LinkedList<>();
             final ExecutorService pool = conf.getInt(ConfVars.HIVE_MOVE_FILES_THREAD_COUNT.varname, 25) > 0 ?
@@ -4471,7 +4483,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
               destFs.mkdirs(destf);
             }
             /* Move files one by one because source is a subdirectory of destination */
-            for (final FileStatus srcStatus : srcs) {
+            while (it.hasNext()) {
+              final FileStatus srcStatus = it.next();
+              if (!FileUtils.HIDDEN_FILES_PATH_FILTER.accept(srcStatus.getPath())) {
+                continue;
+              }
 
               final Path destFile = new Path(destf, srcStatus.getPath().getName());
 
@@ -4516,6 +4532,19 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     } catch (Exception e) {
       throw getHiveException(e, msg);
+    } finally {
+      closeFSQuitely(destFs);
+      closeFSQuitely(srcFs);
+    }
+  }
+
+  static void closeFSQuitely(FileSystem fs) {
+    try {
+      if (fs != null) {
+        fs.close();
+      }
+    } catch(IOException e) {
+      LOG.error("Error closing fs", e);
     }
   }
 
@@ -4848,9 +4877,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
           boolean isSrcLocal, boolean purge, List<Path> newFiles, PathFilter deletePathFilter,
       boolean isNeedRecycle, boolean isManaged, boolean isInsertOverwrite) throws HiveException {
-    try {
-
-      FileSystem destFs = destf.getFileSystem(conf);
+    try (FileSystem destFs = destf.getFileSystem(conf)) {
       // check if srcf contains nested sub-directories
       FileStatus[] srcs;
       FileSystem srcFs;
@@ -4978,24 +5005,36 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
 
+  static List<FileStatus> listStatus(FileSystem fs, Path path, PathFilter pathFilter) throws IOException {
+    List<FileStatus> statusList = new LinkedList<>();
+    RemoteIterator<FileStatus> it = fs.listStatusIterator(path);
+    while(it.hasNext()) {
+      FileStatus fileStatus = it.next();
+      if (pathFilter != null && pathFilter.accept(fileStatus.getPath())) {
+        statusList.add(fileStatus);
+      }
+    }
+    return statusList;
+  }
+
   public void cleanUpOneDirectoryForReplace(Path path, FileSystem fs,
       PathFilter pathFilter, HiveConf conf, boolean purge, boolean isNeedRecycle) throws IOException, HiveException {
     if (isNeedRecycle && conf.getBoolVar(HiveConf.ConfVars.REPLCMENABLED)) {
       recycleDirToCmPath(path, purge);
     }
-    FileStatus[] statuses = fs.listStatus(path, pathFilter);
-    if (statuses == null || statuses.length == 0) {
+    List<FileStatus> statusList = listStatus(fs, path, pathFilter);
+    if (statusList.isEmpty()) {
       return;
     }
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       String s = "Deleting files under " + path + " for replace: ";
-      for (FileStatus file : statuses) {
+      for (FileStatus file : statusList) {
         s += file.getPath().getName() + ", ";
       }
       Utilities.FILE_OP_LOGGER.trace(s);
     }
 
-    if (!trashFiles(fs, statuses, conf, purge)) {
+    if (!trashFiles(fs, statusList.toArray(new FileStatus[statusList.size()]), conf, purge)) {
       throw new HiveException("Old path " + path + " has not been cleaned up.");
     }
   }
