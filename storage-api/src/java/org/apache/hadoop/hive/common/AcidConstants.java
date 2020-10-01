@@ -44,38 +44,4 @@ public class AcidConstants {
     return BASE_PREFIX + String.format(DELTA_DIGITS, writeId);
   }
 
-  /**
-   * General facility to place a metadata file into a dir created by acid/compactor write.
-   */
-  public static class MetaDataFile {
-    //export command uses _metadata....
-    public static final String METADATA_FILE = "_metadata_acid";
-    public static final String CURRENT_VERSION = "0";
-
-    public enum Field {
-      VERSION("thisFileVersion"), DATA_FORMAT("dataFormat");
-
-      private final String fieldName;
-
-      Field(String fieldName) {
-        this.fieldName = fieldName;
-      }
-
-      @Override
-      public String toString() {
-        return fieldName;
-      }
-    }
-
-    public enum DataFormat {
-      // written by Major compaction
-      COMPACTED, TRUNCATED;
-
-      @Override
-      public String toString() {
-        return name().toLowerCase();
-      }
-    }
-
-  }
 }

@@ -2459,7 +2459,7 @@ public class AcidUtils {
    * small JSON file in this directory that indicates that these files don't have Acid metadata
    * columns and so the values for these columns need to be assigned at read time/compaction.
    */
-  public static class MetaDataFile extends AcidConstants.MetaDataFile {
+  public static class MetaDataFile extends AcidMetaDataFile {
 
     static boolean isCompacted(Path baseOrDeltaDir, FileSystem fs, HdfsDirSnapshot dirSnapshot) throws IOException {
       /**

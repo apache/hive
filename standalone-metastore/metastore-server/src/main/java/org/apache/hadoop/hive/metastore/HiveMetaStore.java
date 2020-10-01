@@ -39,7 +39,6 @@ import java.lang.reflect.UndeclaredThrowableException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedExceptionAction;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -85,6 +84,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.AcidConstants;
+import org.apache.hadoop.hive.common.AcidMetaDataFile;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
@@ -3325,8 +3325,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         String[] parsedDbName = parseDbName(dbName, conf);
         Table tbl = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
-        boolean isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
-        Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
 
         boolean truncateFiles = !TxnUtils.isTransactionalTable(tbl) ||
             !MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
@@ -3335,7 +3333,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             parsedDbName[DB_NAME], tableName, tbl, partNames)) {
           FileSystem fs = location.getFileSystem(getConf());
           if (truncateFiles) {
-            truncateDataFiles(tbl, isSkipTrash, db, location, fs);
+            truncateDataFiles(tbl, parsedDbName, location, fs);
           } else {
             // For Acid tables we don't need to delete the old files, only write an empty baseDir.
             // Compaction and cleaner will take care of the rest
@@ -3357,9 +3355,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
     /**
      * Add an empty baseDir with a truncate metadatafile
-     * @param location
-     * @param writeId
-     * @param fs
+     * @param location partition or table directory
+     * @param writeId allocated writeId
+     * @param fs FileSystem
      * @throws Exception
      */
     private void addTruncateBaseFile(Path location, long writeId, FileSystem fs) throws Exception {
@@ -3367,21 +3365,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       fs.mkdirs(basePath);
       // We can not leave the folder empty, otherwise it will be skipped at some file listing in AcidUtils
       // No need for a data file, a simple metadata is enough
-      Map<String, String> metadata = new HashMap<>();
-      metadata.put(AcidConstants.MetaDataFile.Field.VERSION.toString(), AcidConstants.MetaDataFile.CURRENT_VERSION);
-      metadata.put(AcidConstants.MetaDataFile.Field.DATA_FORMAT.toString(),
-          AcidConstants.MetaDataFile.DataFormat.TRUNCATED.toString());
-      String data = new ObjectMapper().writeValueAsString(metadata);
-      try (FSDataOutputStream out = fs.create(new Path(basePath,
-          AcidConstants.MetaDataFile.METADATA_FILE)); OutputStreamWriter writer = new OutputStreamWriter(out,
-          "UTF-8")) {
-        writer.write(data);
-        writer.flush();
-      }
+      AcidMetaDataFile.writeToFile(fs, basePath, AcidMetaDataFile.DataFormat.TRUNCATED);
     }
 
-    private void truncateDataFiles(Table tbl, boolean isSkipTrash, Database db, Path location, FileSystem fs)
-        throws IOException, MetaException {
+    private void truncateDataFiles(Table tbl, String[] parsedDbName, Path location, FileSystem fs)
+        throws IOException, MetaException, NoSuchObjectException {
+      boolean isSkipTrash = MetaStoreUtils.isSkipTrash(tbl.getParameters());
+      Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
       if (!HdfsUtils.isPathEncrypted(getConf(), fs.getUri(), location) &&
           !FileUtils.pathHasSnapshotSubDir(location, fs)) {
         HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getConf(), fs, location);

@@ -113,10 +113,10 @@ public class TruncateTableAnalyzer extends AbstractBaseAlterTableAnalyzer {
 
   private void addTruncateTableOutputs(ASTNode root, Table table, Map<String, String> partitionSpec)
       throws SemanticException {
-    boolean shared = AcidUtils.isTransactionalTable(table) &&
+    boolean truncateKeepsDataFiles = AcidUtils.isTransactionalTable(table) &&
         MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
     WriteEntity.WriteType writeType =
-        shared ? WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
+        truncateKeepsDataFiles ? WriteEntity.WriteType.DDL_EXCL_WRITE : WriteEntity.WriteType.DDL_EXCLUSIVE;
     if (partitionSpec == null) {
       if (!table.isPartitioned()) {
         outputs.add(new WriteEntity(table, writeType));
