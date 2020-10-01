@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.plan.DynamicValue;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDynamicValueDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
@@ -57,7 +58,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMax;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFMin;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMurmurHash;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -242,8 +242,7 @@ public class SemiJoinReductionMerge extends Transform {
       hashArgs.add(targetColumn);
     }
 
-    ExprNodeDesc hashExp =
-        new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, new GenericUDFMurmurHash(), "hash", hashArgs);
+    ExprNodeDesc hashExp = ExprNodeDescUtils.murmurHash(hashArgs);
 
     assert dynamicIds.size() == 1 : "There should be one column left untreated the one with the bloom filter";
     DynamicValue bloomDynamic = new DynamicValue(dynamicIds.poll(), TypeInfoFactory.binaryTypeInfo);
@@ -302,8 +301,7 @@ public class SemiJoinReductionMerge extends Transform {
       colDescs.add(col);
       selectColumnExprMap.put(colName, col);
     }
-    ExprNodeDesc hashExp =
-        new ExprNodeGenericFuncDesc(TypeInfoFactory.intTypeInfo, new GenericUDFMurmurHash(), "hash", colDescs);
+    ExprNodeDesc hashExp = ExprNodeDescUtils.murmurHash(colDescs);
     String hashName = HiveConf.getColumnInternalName(colDescs.size() + 1);
     colNames.add(hashName);
     columnInfos.add(new ColumnInfo(hashName, hashExp.getTypeInfo(), "", false));
