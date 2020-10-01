@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.view.materialized.update;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.cache.view.materialized.MaterializedViewCache;
 import org.apache.hadoop.hive.ql.ddl.DDLOperation;
 import org.apache.hadoop.hive.ql.ddl.DDLOperationContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -47,6 +48,7 @@ public class MaterializedViewUpdateOperation extends DDLOperation<MaterializedVi
     try {
       if (desc.isRetrieveAndInclude()) {
         Table mvTable = context.getDb().getTable(desc.getName());
+        MaterializedViewCache.INSTANCE.add(mvTable.getViewOriginalText(), mvTable.getDbName(), mvTable.getTableName());
         HiveMaterializedViewsRegistry.get().createMaterializedView(context.getDb().getConf(), mvTable);
       } else if (desc.isDisableRewrite()) {
         // Disabling rewriting, removing from cache
@@ -61,6 +63,7 @@ public class MaterializedViewUpdateOperation extends DDLOperation<MaterializedVi
         cm.setValidTxnList(context.getConf().get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
         context.getDb().updateCreationMetadata(mvTable.getDbName(), mvTable.getTableName(), cm);
         mvTable.setCreationMetadata(cm);
+        MaterializedViewCache.INSTANCE.add(mvTable.getViewOriginalText(), mvTable.getDbName(), mvTable.getTableName());
         HiveMaterializedViewsRegistry.get().createMaterializedView(context.getDb().getConf(), mvTable);
       }
     } catch (HiveException e) {

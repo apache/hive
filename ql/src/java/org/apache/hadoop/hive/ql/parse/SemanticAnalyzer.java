@@ -14943,7 +14943,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Generate the query string for this query (with fully resolved table references).
    * @return The query string with resolved references. NULL if an error occurred.
    */
-  private String getQueryStringForCache(ASTNode ast) {
+  protected String getQueryStringForCache(ASTNode ast) {
     // Use the UnparseTranslator to resolve unqualified table names.
     String queryString = getQueryStringFromAst(ast);
 

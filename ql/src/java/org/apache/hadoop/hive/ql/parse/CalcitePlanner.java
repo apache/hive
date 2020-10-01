@@ -140,6 +140,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.cache.view.materialized.MaterializedViewCache;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -472,7 +473,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
     profilesCBO = obtainCBOProfiles(queryProperties);
     disableJoinMerge = true;
-    final RelNode resPlan = logicalPlan();
+    final RelNode resPlan = logicalPlan(ast);
     LOG.info("Finished generating logical plan");
     return resPlan;
   }
@@ -546,7 +547,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         try {
           // 0. Gen Optimized Plan
-          RelNode newPlan = logicalPlan();
+          RelNode newPlan = logicalPlan(ast);
 
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
             if (cboCtx.type == PreCboCtx.Type.VIEW && !materializedView) {
@@ -1554,7 +1555,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @return
    * @throws SemanticException
    */
-  RelNode logicalPlan() throws SemanticException {
+  RelNode logicalPlan(ASTNode ast) throws SemanticException {
     RelNode optimizedOptiqPlan = null;
 
     CalcitePlannerAction calcitePlannerAction = null;
@@ -1564,7 +1565,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
     calcitePlannerAction = new CalcitePlannerAction(
         prunedPartitions,
         ctx.getStatsSource(),
-        this.columnAccessInfo);
+        this.columnAccessInfo,
+        ast);
 
     try {
       optimizedOptiqPlan = Frameworks.withPlanner(calcitePlannerAction, Frameworks
@@ -1622,8 +1624,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @return Optimized operator tree translated in to Hive AST
    * @throws SemanticException
    */
-  ASTNode getOptimizedAST() throws SemanticException {
-    return getOptimizedAST(logicalPlan());
+  ASTNode getOptimizedAST(ASTNode ast) throws SemanticException {
+    return getOptimizedAST(logicalPlan(ast));
   }
 
   /**
@@ -1814,6 +1816,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final Map<String, ColumnStatsList>            colStatsCache;
     private final ColumnAccessInfo columnAccessInfo;
     private Map<HiveProject, Table> viewProjectToTableSchema;
+    private final ASTNode ast;
 
     // correlated vars across subqueries within same query needs to have different ID
     private int subqueryId;
@@ -1829,11 +1832,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final StatsSource statsSource;
 
     CalcitePlannerAction(
-        Map<String, PrunedPartitionList> partitionCache,
-        StatsSource statsSource,
-        ColumnAccessInfo columnAccessInfo) {
+            java.util.Map<String, org.apache.hadoop.hive.ql.parse.PrunedPartitionList> partitionCache,
+            org.apache.hadoop.hive.ql.plan.mapper.StatsSource statsSource,
+            org.apache.hadoop.hive.ql.parse.ColumnAccessInfo columnAccessInfo, org.apache.hadoop.hive.ql.parse.ASTNode ast) {
       this.partitionCache = partitionCache;
       this.statsSource = statsSource;
+      this.ast = ast;
       this.colStatsCache = ctx.getOpContext().getColStatsCache();
       this.columnAccessInfo = columnAccessInfo;
     }
@@ -1870,6 +1874,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
         throw new RuntimeException(e);
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
+
+      String queryString = ctx.getTokenRewriteStream().toString(ast.getTokenStartIndex(), ast.getTokenStopIndex());
+      RelOptMaterialization relOptMaterialization = MaterializedViewCache.INSTANCE.lookup(queryString);
+      if (relOptMaterialization != null) {
+        return relOptMaterialization.queryRel;
+      }
 
       // Create executor
       RexExecutor executorProvider = new HiveRexExecutorImpl();

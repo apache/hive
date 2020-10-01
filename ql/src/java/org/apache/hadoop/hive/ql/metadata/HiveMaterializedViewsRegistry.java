@@ -373,7 +373,7 @@ public final class HiveMaterializedViewsRegistry {
    *
    * @return the collection of materialized views, or the empty collection if none
    */
-  RelOptMaterialization getRewritingMaterializedView(String dbName, String viewName) {
+  public RelOptMaterialization getRewritingMaterializedView(String dbName, String viewName) {
     if (materializedViews.get(dbName) != null) {
       return materializedViews.get(dbName).get(viewName);
     }
