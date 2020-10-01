@@ -1,0 +1,18 @@
+PREHOOK: query: create table t(a timestamp)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t
+POSTHOOK: query: create table t(a timestamp)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t
+PREHOOK: query: select 1 from t where a=1000
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t
+PREHOOK: Output: file:/home/dev/hive/itests/qtest/target/tmp/localscratchdir/6b03bd74-2efb-429c-ae6c-d9f7bcf4a01c/hive_2020-10-01_01-52-07_632_5736441859501942818-1/-mr-10002
+POSTHOOK: query: select 1 from t where a=1000
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t
+POSTHOOK: Output: file:/home/dev/hive/itests/qtest/target/tmp/localscratchdir/6b03bd74-2efb-429c-ae6c-d9f7bcf4a01c/hive_2020-10-01_01-52-07_632_5736441859501942818-1/-mr-10002
+FAILED: AssertionError java.lang.AssertionError: Client Execution was expected to fail, but succeeded with error code 0 for fname=strict_timestamp_to_numeric4.q 
+See ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.
