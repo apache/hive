@@ -117,6 +117,7 @@ public class VectorMapJoinFastTableContainer implements VectorMapJoinTableContai
     case BYTE:
     case SHORT:
     case INT:
+    case DATE:
     case LONG:
       switch (hashTableKind) {
       case HASH_MAP:
