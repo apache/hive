@@ -23,7 +23,7 @@ import java.io.EOFException;
 
 import org.apache.hive.hplsql.*;
 
-public class FunctionOra extends Function {
+public class FunctionOra extends BuiltinFunctions {
   public FunctionOra(Exec e) {
     super(e);
   }
@@ -32,19 +32,13 @@ public class FunctionOra extends Function {
    * Register functions
    */
   @Override
-  public void register(Function f) {  
-    f.map.put("DBMS_OUTPUT.PUT_LINE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      dbmsOutputPutLine(ctx); }});
-    f.map.put("UTL_FILE.FOPEN", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      utlFileFopen(ctx); }});
-    f.map.put("UTL_FILE.GET_LINE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      utlFileGetLine(ctx); }});
-    f.map.put("UTL_FILE.PUT_LINE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      utlFilePutLine(ctx); }});
-    f.map.put("UTL_FILE.PUT", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      utlFilePut(ctx); }});
-    f.map.put("UTL_FILE.FCLOSE", new FuncCommand() { public void run(HplsqlParser.Expr_func_paramsContext ctx) { 
-      utlFileFclose(ctx); }});
+  public void register(BuiltinFunctions f) {
+    f.map.put("DBMS_OUTPUT.PUT_LINE", this::dbmsOutputPutLine);
+    f.map.put("UTL_FILE.FOPEN", this::utlFileFopen);
+    f.map.put("UTL_FILE.GET_LINE", this::utlFileGetLine);
+    f.map.put("UTL_FILE.PUT_LINE", this::utlFilePutLine);
+    f.map.put("UTL_FILE.PUT", this::utlFilePut);
+    f.map.put("UTL_FILE.FCLOSE", this::utlFileFclose);
   }
   
   /**

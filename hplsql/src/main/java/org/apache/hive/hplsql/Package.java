@@ -27,7 +27,8 @@ import org.apache.hive.hplsql.HplsqlParser.Package_spec_itemContext;
 import org.apache.hive.hplsql.HplsqlParser.Package_body_itemContext;
 import org.apache.hive.hplsql.HplsqlParser.Create_function_stmtContext;
 import org.apache.hive.hplsql.HplsqlParser.Create_procedure_stmtContext;
-import org.apache.hive.hplsql.functions.Function;
+import org.apache.hive.hplsql.functions.BuiltinFunctions;
+import org.apache.hive.hplsql.functions.InMemoryFunction;
 
 /**
  * Program package
@@ -46,13 +47,13 @@ public class Package {
   boolean allMembersPublic = false;
     
   Exec exec;
-  Function function;
+  InMemoryFunction function;
   boolean trace = false;
   
-  Package(String name, Exec exec) {
+  Package(String name, Exec exec, BuiltinFunctions builtinFunctions) {
     this.name = name;
     this.exec = exec;
-    this.function = new Function(exec);
+    this.function = new InMemoryFunction(exec, builtinFunctions);
     this.trace = exec.getTrace();
   }
   

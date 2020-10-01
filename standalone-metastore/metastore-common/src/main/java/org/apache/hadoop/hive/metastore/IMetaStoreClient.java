@@ -4101,4 +4101,11 @@ public interface IMetaStoreClient {
   ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
                                                 replicationMetricsRequest) throws MetaException, TException;
 
+  void createStoredProcedure(String catName, StoredProcedure proc) throws NoSuchObjectException, MetaException, TException;
+
+  StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException, TException;
+
+  void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException, TException;
+
+  List<StoredProcedure> getAllStoredProcedures(String catName) throws MetaException, TException;
 }

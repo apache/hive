@@ -4110,6 +4110,71 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_open_txns_req failed: unknown result')
     end
 
+    def create_stored_procedure(catName, proc)
+      send_create_stored_procedure(catName, proc)
+      recv_create_stored_procedure()
+    end
+
+    def send_create_stored_procedure(catName, proc)
+      send_message('create_stored_procedure', Create_stored_procedure_args, :catName => catName, :proc => proc)
+    end
+
+    def recv_create_stored_procedure()
+      result = receive_message(Create_stored_procedure_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def get_stored_procedure(catName, db, name)
+      send_get_stored_procedure(catName, db, name)
+      return recv_get_stored_procedure()
+    end
+
+    def send_get_stored_procedure(catName, db, name)
+      send_message('get_stored_procedure', Get_stored_procedure_args, :catName => catName, :db => db, :name => name)
+    end
+
+    def recv_get_stored_procedure()
+      result = receive_message(Get_stored_procedure_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_stored_procedure failed: unknown result')
+    end
+
+    def drop_stored_procedure(catName, dbName, funcName)
+      send_drop_stored_procedure(catName, dbName, funcName)
+      recv_drop_stored_procedure()
+    end
+
+    def send_drop_stored_procedure(catName, dbName, funcName)
+      send_message('drop_stored_procedure', Drop_stored_procedure_args, :catName => catName, :dbName => dbName, :funcName => funcName)
+    end
+
+    def recv_drop_stored_procedure()
+      result = receive_message(Drop_stored_procedure_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def get_all_stored_procedures(catName)
+      send_get_all_stored_procedures(catName)
+      return recv_get_all_stored_procedures()
+    end
+
+    def send_get_all_stored_procedures(catName)
+      send_message('get_all_stored_procedures', Get_all_stored_procedures_args, :catName => catName)
+    end
+
+    def recv_get_all_stored_procedures()
+      result = receive_message(Get_all_stored_procedures_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_stored_procedures failed: unknown result')
+    end
+
   end
 
   class Processor < ::FacebookService::Processor 
@@ -7184,6 +7249,56 @@ module ThriftHiveMetastore
       result = Get_open_txns_req_result.new()
       result.success = @handler.get_open_txns_req(args.getOpenTxnsRequest)
       write_result(result, oprot, 'get_open_txns_req', seqid)
+    end
+
+    def process_create_stored_procedure(seqid, iprot, oprot)
+      args = read_args(iprot, Create_stored_procedure_args)
+      result = Create_stored_procedure_result.new()
+      begin
+        @handler.create_stored_procedure(args.catName, args.proc)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'create_stored_procedure', seqid)
+    end
+
+    def process_get_stored_procedure(seqid, iprot, oprot)
+      args = read_args(iprot, Get_stored_procedure_args)
+      result = Get_stored_procedure_result.new()
+      begin
+        result.success = @handler.get_stored_procedure(args.catName, args.db, args.name)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_stored_procedure', seqid)
+    end
+
+    def process_drop_stored_procedure(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_stored_procedure_args)
+      result = Drop_stored_procedure_result.new()
+      begin
+        @handler.drop_stored_procedure(args.catName, args.dbName, args.funcName)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'drop_stored_procedure', seqid)
+    end
+
+    def process_get_all_stored_procedures(seqid, iprot, oprot)
+      args = read_args(iprot, Get_all_stored_procedures_args)
+      result = Get_all_stored_procedures_result.new()
+      begin
+        result.success = @handler.get_all_stored_procedures(args.catName)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_all_stored_procedures', seqid)
     end
 
   end
@@ -16242,6 +16357,154 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetOpenTxnsResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_stored_procedure_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    CATNAME = 1
+    PROC = 2
+
+    FIELDS = {
+      CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+      PROC => {:type => ::Thrift::Types::STRUCT, :name => 'proc', :class => ::StoredProcedure}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_stored_procedure_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_stored_procedure_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    CATNAME = 1
+    DB = 2
+    NAME = 3
+
+    FIELDS = {
+      CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+      DB => {:type => ::Thrift::Types::STRING, :name => 'db'},
+      NAME => {:type => ::Thrift::Types::STRING, :name => 'name'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_stored_procedure_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::StoredProcedure},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_stored_procedure_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    CATNAME = 1
+    DBNAME = 2
+    FUNCNAME = 3
+
+    FIELDS = {
+      CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+      FUNCNAME => {:type => ::Thrift::Types::STRING, :name => 'funcName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_stored_procedure_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_stored_procedures_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    CATNAME = 1
+
+    FIELDS = {
+      CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_stored_procedures_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRUCT, :class => ::StoredProcedure}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

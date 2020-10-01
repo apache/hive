@@ -52,6 +52,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
@@ -115,6 +116,7 @@ import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
+import org.apache.hadoop.hive.metastore.api.PosParam;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -151,6 +153,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SerdeType;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -203,6 +206,7 @@ import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
 import org.apache.hadoop.hive.metastore.model.MSchemaVersion;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
+import org.apache.hadoop.hive.metastore.model.MStoredProc;
 import org.apache.hadoop.hive.metastore.model.MStringList;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
@@ -10403,6 +10407,134 @@ public class ObjectStore implements RawStore, Configurable {
       rollbackAndCleanup(commited, query);
     }
     return funcs;
+  }
+
+  @Override
+  public void createOrUpdateStoredProcedure(String catName, StoredProcedure proc) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    MStoredProc mProc;
+    Query query = null;
+    catName = normalizeIdentifier(catName);
+    String dbName = normalizeIdentifier(proc.getDbName());
+    MDatabase db = getMDatabase(catName, dbName);
+    try {
+      openTransaction();
+      query = storedProcQuery();
+      mProc = (MStoredProc) query.execute(proc.getName(), dbName, catName);
+      pm.retrieve(mProc);
+      if (mProc == null) { // create new
+        mProc = new MStoredProc();
+        populate(proc, db, mProc);
+        pm.makePersistent(mProc);
+      } else { // update existing
+        populate(proc, db, mProc);
+      }
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  private static void populate(StoredProcedure proc, MDatabase mDatabase, MStoredProc result) throws MetaException {
+    result.setName(proc.getName());
+    result.setOwner(proc.getOwnerName());
+    result.setSource(proc.getSource());
+    result.setLanguage(proc.getLanguage());
+    result.setReturnType(result.getReturnType());
+    result.setDatabase(mDatabase);
+    if (proc.isSetPosParams()) {
+      result.parametrize(proc.getPosParams());
+    }
+  }
+
+  @Override
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
+    MStoredProc proc = getMStoredProcedure(catName, db, name);
+    return proc == null ? null : convertToStoredProc(proc);
+  }
+
+  private MStoredProc getMStoredProcedure(String catName, String db, String procName) {
+    MStoredProc proc;
+    catName = normalizeIdentifier(catName);
+    db = normalizeIdentifier(db);
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = storedProcQuery();
+      proc = (MStoredProc) query.execute(procName, db, catName);
+      pm.retrieve(proc);
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return proc;
+  }
+
+  private Query storedProcQuery() {
+    Query query = pm.newQuery(MStoredProc.class,
+            "name == procName && database.name == db && database.catalogName == catName");
+    query.declareParameters("java.lang.String procName, java.lang.String db, java.lang.String catName");
+    query.setUnique(true);
+    return query;
+  }
+
+  private StoredProcedure convertToStoredProc(MStoredProc proc) {
+    return new StoredProcedure(
+            proc.getName(),
+            proc.getDatabase().getName(),
+            proc.getOwner(),
+            proc.getSource(),
+            proc.getLanguage(),
+            proc.getReturnType(),
+            proc.getParameters().stream().map(this::convertParam).collect(Collectors.toList()));
+  }
+
+  private PosParam convertParam(org.apache.hadoop.hive.metastore.model.MPosParam mParam) {
+    PosParam result = new PosParam(mParam.getName(), mParam.getType(), mParam.isOut());
+    if (mParam.getLength() != null) {
+      result.setLength(mParam.getLength());
+    }
+    if (mParam.getScale() != null) {
+      result.setScale(mParam.getScale());
+    }
+    return result;
+  }
+
+  @Override
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException {
+    boolean success = false;
+    try {
+      openTransaction();
+      MStoredProc proc = getMStoredProcedure(catName, dbName, funcName);
+      pm.retrieve(proc);
+      if (proc != null) {
+        pm.deletePersistentAll(proc);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public List<StoredProcedure> getAllStoredProcedures(String catName) {
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      catName = normalizeIdentifier(catName);
+      query = pm.newQuery(MStoredProc.class, "database.catalogName == catName");
+      query.declareParameters("java.lang.String catName");
+      List<MStoredProc> allProcedures = (List<MStoredProc>) query.execute(catName);
+      pm.retrieveAll(allProcedures);
+      committed = commitTransaction();
+      return allProcedures.stream().map(this::convertToStoredProc).collect(Collectors.toList());
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
   }
 
   @Override

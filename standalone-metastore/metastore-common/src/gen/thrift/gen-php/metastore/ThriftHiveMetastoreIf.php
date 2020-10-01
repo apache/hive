@@ -1816,4 +1816,34 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @return \metastore\GetOpenTxnsResponse
      */
     public function get_open_txns_req(\metastore\GetOpenTxnsRequest $getOpenTxnsRequest);
+    /**
+     * @param string $catName
+     * @param \metastore\StoredProcedure $proc
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function create_stored_procedure($catName, \metastore\StoredProcedure $proc);
+    /**
+     * @param string $catName
+     * @param string $db
+     * @param string $name
+     * @return \metastore\StoredProcedure
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function get_stored_procedure($catName, $db, $name);
+    /**
+     * @param string $catName
+     * @param string $dbName
+     * @param string $funcName
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function drop_stored_procedure($catName, $dbName, $funcName);
+    /**
+     * @param string $catName
+     * @return \metastore\StoredProcedure[]
+     * @throws \metastore\MetaException
+     */
+    public function get_all_stored_procedures($catName);
 }

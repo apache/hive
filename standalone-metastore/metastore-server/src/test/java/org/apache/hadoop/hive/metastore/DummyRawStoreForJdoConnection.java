@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.metastore.api.ISchemaName;
 import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 
 import java.nio.ByteBuffer;
@@ -1346,6 +1347,26 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   @Override
   public void deleteAllPartitionColumnStatistics(TableName tableName, String w) {
     throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public void createOrUpdateStoredProcedure(String catName, StoredProcedure proc) throws NoSuchObjectException, MetaException {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
+    return null;
+  }
+
+  @Override
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException {
+
+  }
+
+  @Override
+  public List<StoredProcedure> getAllStoredProcedures(String catName) {
+    return Collections.emptyList();
   }
 
 }

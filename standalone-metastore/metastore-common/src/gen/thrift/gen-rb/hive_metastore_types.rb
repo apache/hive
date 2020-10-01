@@ -772,6 +772,10 @@ class GetReplicationMetricsRequest; end
 
 class GetOpenTxnsRequest; end
 
+class StoredProcedure; end
+
+class PosParam; end
+
 class MetaException < ::Thrift::Exception; end
 
 class UnknownTableException < ::Thrift::Exception; end
@@ -7045,6 +7049,58 @@ class GetOpenTxnsRequest
 
   FIELDS = {
     EXCLUDETXNTYPES => {:type => ::Thrift::Types::LIST, :name => 'excludeTxnTypes', :element => {:type => ::Thrift::Types::I32, :enum_class => ::TxnType}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class StoredProcedure
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NAME = 1
+  DBNAME = 2
+  OWNERNAME = 3
+  SOURCE = 4
+  LANGUAGE = 5
+  RETURNTYPE = 6
+  POSPARAMS = 7
+
+  FIELDS = {
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
+    SOURCE => {:type => ::Thrift::Types::STRING, :name => 'source'},
+    LANGUAGE => {:type => ::Thrift::Types::STRING, :name => 'language'},
+    RETURNTYPE => {:type => ::Thrift::Types::STRING, :name => 'returnType'},
+    POSPARAMS => {:type => ::Thrift::Types::LIST, :name => 'posParams', :element => {:type => ::Thrift::Types::STRUCT, :class => ::PosParam}}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PosParam
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NAME = 1
+  TYPE = 2
+  ISOUT = 3
+  LENGTH = 4
+  SCALE = 5
+
+  FIELDS = {
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+    TYPE => {:type => ::Thrift::Types::STRING, :name => 'type'},
+    ISOUT => {:type => ::Thrift::Types::BOOL, :name => 'isOut'},
+    LENGTH => {:type => ::Thrift::Types::I32, :name => 'length', :optional => true},
+    SCALE => {:type => ::Thrift::Types::I32, :name => 'scale', :optional => true}
   }
 
   def struct_fields; FIELDS; end

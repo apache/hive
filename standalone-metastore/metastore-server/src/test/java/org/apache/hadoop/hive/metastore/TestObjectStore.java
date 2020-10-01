@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PosParam;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
@@ -51,6 +52,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
@@ -86,6 +88,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -102,11 +105,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @Category(MetastoreUnitTest.class)
 public class TestObjectStore {
@@ -1142,6 +1145,118 @@ public class TestObjectStore {
     checkSSLProperty(useSSL, ObjectStore.TRUSTSTORE_PATH_KEY, trustStorePath);
     checkSSLProperty(useSSL, ObjectStore.TRUSTSTORE_PASSWORD_KEY, trustStorePassword);
     checkSSLProperty(useSSL, ObjectStore.TRUSTSTORE_TYPE_KEY, trustStoreType);
+  }
+
+  @Test
+  public void testUpdateStoredProc() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+
+    StoredProcedure input = new StoredProcedure();
+    input.setSource("print 'Hello world'");
+    input.setOwnerName("user1");
+    input.setName("toBeUpdated");
+    input.setDbName(DB1);
+    input.setLanguage("HPL/SQL");
+    input.setPosParams(Arrays.asList(
+            new PosParam("a", "String", false),
+            new PosParam("b", "CURSOR", true)
+    ));
+    objectStore.createOrUpdateStoredProcedure("hive", input);
+    input.setSource("print 'Hello world2'");
+    objectStore.createOrUpdateStoredProcedure("hive", input);
+
+    StoredProcedure retrieved = objectStore.getStoredProcedure("hive", DB1, "toBeUpdated");
+    Assert.assertEquals(input, retrieved);
+    List<PosParam> parameters = retrieved.getPosParams();
+    Assert.assertEquals(2, parameters.size());
+    Assert.assertEquals(new PosParam("a", "String", false), parameters.get(0));
+    Assert.assertEquals(new PosParam("b", "CURSOR", true), parameters.get(1));
+  }
+
+  @Test
+  public void testStoredProcSaveAndRetrieve() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+
+    StoredProcedure input = new StoredProcedure();
+    input.setSource("print 'Hello world'");
+    input.setOwnerName("user1");
+    input.setName("greetings");
+    input.setDbName(DB1);
+    input.setLanguage("HPL/SQL");
+    PosParam p1 = new PosParam("a", "String", false);
+    PosParam p2 = new PosParam("b", "Number", false);
+    PosParam p3 = new PosParam("c", "CURSOR", true);
+    p3.setScale(3);
+    input.setPosParams(Arrays.asList(p1, p2, p3));
+
+    objectStore.createOrUpdateStoredProcedure("hive", input);
+    StoredProcedure retrieved = objectStore.getStoredProcedure("hive", DB1, "greetings");
+
+    Assert.assertEquals(input, retrieved);
+    List<PosParam> parameters = retrieved.getPosParams();
+    Assert.assertEquals(3, parameters.size());
+    Assert.assertEquals(p1, parameters.get(0));
+    Assert.assertEquals(p2, parameters.get(1));
+    Assert.assertEquals(p3, parameters.get(2));
+  }
+
+  @Test
+  public void testDropStoredProc() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+
+    StoredProcedure toBeDeleted = new StoredProcedure();
+    toBeDeleted.setSource("print 'Hello world'");
+    toBeDeleted.setOwnerName("user1");
+    toBeDeleted.setName("greetings");
+    toBeDeleted.setDbName(DB1);
+    toBeDeleted.setLanguage("HPL/SQL");
+    objectStore.createOrUpdateStoredProcedure("hive", toBeDeleted);
+    Assert.assertNotNull(objectStore.getStoredProcedure("hive", DB1, "greetings"));
+    objectStore.dropStoredProcedure("hive", DB1, "greetings");
+    Assert.assertNull(objectStore.getStoredProcedure("hive", DB1, "greetings"));
+  }
+
+  @Test
+  public void testListStoredProc() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+
+    StoredProcedure proc1 = new StoredProcedure();
+    proc1.setSource("print 'Hello world'");
+    proc1.setOwnerName("user1");
+    proc1.setName("proc1");
+    proc1.setDbName(DB1);
+    proc1.setLanguage("HPL/SQL");
+    proc1.setPosParams(Collections.emptyList());
+    objectStore.createOrUpdateStoredProcedure("hive", proc1);
+
+    StoredProcedure proc2 = new StoredProcedure();
+    proc2.setSource("print 'Hello world'");
+    proc2.setOwnerName("user2");
+    proc2.setName("proc2");
+    proc2.setDbName(DB1);
+    proc2.setLanguage("HPL/SQL");
+    proc2.setPosParams(Arrays.asList(new PosParam("p1", "String", false)));
+    objectStore.createOrUpdateStoredProcedure("hive", proc2);
+
+    List<StoredProcedure> result = objectStore.getAllStoredProcedures("hive");
+    Assert.assertEquals(2, result.size());
+    assertThat(result, hasItems(proc1, proc2));
   }
 
   /**

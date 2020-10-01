@@ -1255,6 +1255,26 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_open_txns_req\n");
   }
 
+  void create_stored_procedure(const std::string& catName, const StoredProcedure& proc) {
+    // Your implementation goes here
+    printf("create_stored_procedure\n");
+  }
+
+  void get_stored_procedure(StoredProcedure& _return, const std::string& catName, const std::string& db, const std::string& name) {
+    // Your implementation goes here
+    printf("get_stored_procedure\n");
+  }
+
+  void drop_stored_procedure(const std::string& catName, const std::string& dbName, const std::string& funcName) {
+    // Your implementation goes here
+    printf("drop_stored_procedure\n");
+  }
+
+  void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const std::string& catName) {
+    // Your implementation goes here
+    printf("get_all_stored_procedures\n");
+  }
+
 };
 
 int main(int argc, char **argv) {

@@ -948,6 +948,10 @@ class GetReplicationMetricsRequest;
 
 class GetOpenTxnsRequest;
 
+class StoredProcedure;
+
+class PosParam;
+
 class MetaException;
 
 class UnknownTableException;
@@ -16696,6 +16700,154 @@ class GetOpenTxnsRequest : public virtual ::apache::thrift::TBase {
 void swap(GetOpenTxnsRequest &a, GetOpenTxnsRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const GetOpenTxnsRequest& obj);
+
+typedef struct _StoredProcedure__isset {
+  _StoredProcedure__isset() : name(false), dbName(false), ownerName(false), source(false), language(false), returnType(false), posParams(false) {}
+  bool name :1;
+  bool dbName :1;
+  bool ownerName :1;
+  bool source :1;
+  bool language :1;
+  bool returnType :1;
+  bool posParams :1;
+} _StoredProcedure__isset;
+
+class StoredProcedure : public virtual ::apache::thrift::TBase {
+ public:
+
+  StoredProcedure(const StoredProcedure&);
+  StoredProcedure& operator=(const StoredProcedure&);
+  StoredProcedure() : name(), dbName(), ownerName(), source(), language(), returnType() {
+  }
+
+  virtual ~StoredProcedure() noexcept;
+  std::string name;
+  std::string dbName;
+  std::string ownerName;
+  std::string source;
+  std::string language;
+  std::string returnType;
+  std::vector<PosParam>  posParams;
+
+  _StoredProcedure__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_ownerName(const std::string& val);
+
+  void __set_source(const std::string& val);
+
+  void __set_language(const std::string& val);
+
+  void __set_returnType(const std::string& val);
+
+  void __set_posParams(const std::vector<PosParam> & val);
+
+  bool operator == (const StoredProcedure & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(ownerName == rhs.ownerName))
+      return false;
+    if (!(source == rhs.source))
+      return false;
+    if (!(language == rhs.language))
+      return false;
+    if (!(returnType == rhs.returnType))
+      return false;
+    if (!(posParams == rhs.posParams))
+      return false;
+    return true;
+  }
+  bool operator != (const StoredProcedure &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const StoredProcedure & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(StoredProcedure &a, StoredProcedure &b);
+
+std::ostream& operator<<(std::ostream& out, const StoredProcedure& obj);
+
+typedef struct _PosParam__isset {
+  _PosParam__isset() : name(false), type(false), isOut(false), length(false), scale(false) {}
+  bool name :1;
+  bool type :1;
+  bool isOut :1;
+  bool length :1;
+  bool scale :1;
+} _PosParam__isset;
+
+class PosParam : public virtual ::apache::thrift::TBase {
+ public:
+
+  PosParam(const PosParam&);
+  PosParam& operator=(const PosParam&);
+  PosParam() : name(), type(), isOut(0), length(0), scale(0) {
+  }
+
+  virtual ~PosParam() noexcept;
+  std::string name;
+  std::string type;
+  bool isOut;
+  int32_t length;
+  int32_t scale;
+
+  _PosParam__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_type(const std::string& val);
+
+  void __set_isOut(const bool val);
+
+  void __set_length(const int32_t val);
+
+  void __set_scale(const int32_t val);
+
+  bool operator == (const PosParam & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(type == rhs.type))
+      return false;
+    if (!(isOut == rhs.isOut))
+      return false;
+    if (__isset.length != rhs.__isset.length)
+      return false;
+    else if (__isset.length && !(length == rhs.length))
+      return false;
+    if (__isset.scale != rhs.__isset.scale)
+      return false;
+    else if (__isset.scale && !(scale == rhs.scale))
+      return false;
+    return true;
+  }
+  bool operator != (const PosParam &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PosParam & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(PosParam &a, PosParam &b);
+
+std::ostream& operator<<(std::ostream& out, const PosParam& obj);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

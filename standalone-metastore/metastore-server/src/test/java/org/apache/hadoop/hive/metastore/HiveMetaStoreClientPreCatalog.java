@@ -3820,6 +3820,26 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public void createStoredProcedure(String catName, StoredProcedure proc) throws NoSuchObjectException, MetaException, TException {
+    client.create_stored_procedure(catName, proc);
+  }
+
+  @Override
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException, TException {
+    return client.get_stored_procedure(catName, db, name);
+  }
+
+  @Override
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException, TException {
+    client.drop_stored_procedure(catName, dbName, funcName);
+  }
+
+  @Override
+  public List<StoredProcedure> getAllStoredProcedures(String catName) throws MetaException, TException {
+    return client.get_all_stored_procedures(catName);
+  }
+
+  @Override
   public ScheduledQueryPollResponse scheduledQueryPoll(ScheduledQueryPollRequest request)
       throws MetaException, TException {
     return client.scheduled_query_poll(request);

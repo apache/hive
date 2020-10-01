@@ -139,18 +139,22 @@ public class Var {
     this.type = type;
   }
 
-	public Var(String name, String type, String len, String scale, Var def) {
+  public Var(String name, String type, Integer len, Integer scale, Var def) {
 	  this.name = name;
-	  setType(type);	  
-	  if (len != null) {
-	    this.len = Integer.parseInt(len);
-	  }
+	  setType(type);
+    if (len != null) {
+      this.len = len;
+    }
     if (scale != null) {
-	    this.scale = Integer.parseInt(scale);
+      this.scale = scale;
     }
     if (def != null) {
       cast(def);
     }
+  }
+
+	public Var(String name, String type, String len, String scale, Var def) {
+	  this(name, type, len != null ? Integer.parseInt(len) : null, scale != null ? Integer.parseInt(scale) : null, def);
 	}
 	
 	/**
@@ -283,7 +287,7 @@ public class Var {
     Row row = (Row)this.value;
     int idx = 1;
     for (Column column : row.getColumns()) {
-      Var var = new Var(column.getName(), column.getType(), null, null, null);
+      Var var = new Var(column.getName(), column.getType(), (Integer) null, null, null);
       var.setValue(rs, rsm, idx);
       column.setValue(var);
       idx++;

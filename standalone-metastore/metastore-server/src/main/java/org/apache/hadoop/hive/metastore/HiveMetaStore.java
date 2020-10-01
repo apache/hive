@@ -10159,6 +10159,69 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         endFunction("get_replication_metrics", ex == null, ex);
       }
     }
+
+    @Override
+    public void create_stored_procedure(String catName, StoredProcedure proc) throws NoSuchObjectException, MetaException {
+      startFunction("create_stored_procedure");
+      Exception ex = null;
+      try {
+        getMS().createOrUpdateStoredProcedure(catName, proc);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("create_stored_procedure", ex == null, ex);
+      }
+    }
+
+    public StoredProcedure get_stored_procedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
+      startFunction("get_stored_procedure");
+      Exception ex = null;
+      try {
+        StoredProcedure result = getMS().getStoredProcedure(catName, db, name);
+        if (result == null) {
+          throw new NoSuchObjectException("StoredProcedure " + db + "." + name + " does not exist");
+        }
+        return result;
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_stored_procedure", ex == null, ex);
+      }
+    }
+
+    @Override
+    public void drop_stored_procedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException {
+      startFunction("drop_stored_procedure");
+      Exception ex = null;
+      try {
+        getMS().dropStoredProcedure(catName, dbName, funcName);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("drop_stored_procedure", ex == null, ex);
+      }
+    }
+
+    @Override
+    public List<StoredProcedure> get_all_stored_procedures(String catName) throws MetaException {
+      startFunction("get_all_stored_procedures");
+      Exception ex = null;
+      try {
+        return getMS().getAllStoredProcedures(catName);
+      } catch (Exception e) {
+        LOG.error("Caught exception", e);
+        ex = e;
+        throw e;
+      } finally {
+        endFunction("get_all_stored_procedures", ex == null, ex);
+      }
+    }
   }
 
   private static IHMSHandler newRetryingHMSHandler(IHMSHandler baseHandler, Configuration conf)
@@ -10899,5 +10962,4 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     try {return "" + InetAddress.getLocalHost();}
     catch(UnknownHostException uhe) {return "" + uhe;}
   }
-
 }
