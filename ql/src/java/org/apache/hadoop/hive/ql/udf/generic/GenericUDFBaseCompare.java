@@ -169,7 +169,7 @@ public abstract class GenericUDFBaseCompare extends GenericUDFBaseBinary {
     if (ss != null && ss.getConf().getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION)) {
       if (primitiveGroupOf(compareOI) == PrimitiveGrouping.NUMERIC_GROUP) {
         throw new UDFArgumentException(
-            "Casting TIMESTAMP is prohibited (" + ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION + ")");
+            "Casting DATE/TIMESTAMP to NUMERIC is prohibited (" + ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION + ")");
       }
     }
   }
