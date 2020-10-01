@@ -1945,6 +1945,18 @@ public class Hive {
     }
   }
 
+  public List<RelOptMaterialization> getMaterialization(
+          String queryString, List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
+
+    List<RelOptMaterialization> materializedViews =
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(queryString);
+    if (materializedViews.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    return filterAugmentMaterializedViews(materializedViews, tablesUsed, txnMgr);
+  }
+
   /**
    * Get all existing database names.
    *

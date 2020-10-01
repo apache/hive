@@ -1,4 +1,5 @@
 WARNING: Comparing a bigint and a string may result in a loss of precision.
+WARNING: Comparing a bigint and a string may result in a loss of precision.
 PREHOOK: query: SELECT COUNT(*) FROM src a JOIN src b ON a.key = b.key AND a.key = 0L
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

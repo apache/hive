@@ -57,7 +57,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
 
     ASTNode tableTree = (ASTNode) root.getChild(0);
     TableName tableName = getQualifiedTableName(tableTree);
-    if (ctx.enableUnparse()) {
+    if (ctx.isScheduledQuery()) {
       unparseTranslator.addTableNameTranslation(tableTree, SessionState.get().getCurrentDatabase());
       return;
     }

@@ -2,8 +2,7 @@ set hive.vectorized.execution.enabled=false;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
-set hive.materializedview.rewriting=true;
-set hive.materializedview.rewriting.query.text=false;
+set hive.materializedview.rewriting.query.text=true;
 set hive.stats.column.autogather=true;
 
 create database db1;
