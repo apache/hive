@@ -111,7 +111,7 @@ POSTHOOK: Input: default@table_19
 POSTHOOK: Input: default@table_6
 #### A masked pattern was here ####
 418.9
-Warning: Shuffle Join MERGEJOIN[49][tables = [$hdt$_0]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[59][tables = [$hdt$_0]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT
   t1.t_id,
   null
@@ -800,7 +800,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[46][tables = [$hdt$_0]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[56][tables = [$hdt$_0]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
   t1.t_id,

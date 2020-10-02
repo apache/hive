@@ -3119,7 +3119,7 @@ public interface IMetaStoreClient {
    * aborted.  This can result from the transaction timing out.
    * @throws TException
    */
-  void replCommitTxn(CommitTxnRequest rqst)
+  void commitTxn(CommitTxnRequest rqst)
           throws NoSuchTxnException, TxnAbortedException, TException;
 
   /**
@@ -3631,6 +3631,17 @@ public interface IMetaStoreClient {
   List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException,
       NoSuchObjectException, TException;
 
+  /**
+   * Get all constraints of given table
+   * @param request Request info
+   * @return all constraints of this table
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   * @throws TException
+   */
+  SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
+      throws MetaException, NoSuchObjectException, TException;
+
   void createTableWithConstraints(
     org.apache.hadoop.hive.metastore.api.Table tTbl,
     List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
@@ -4087,4 +4098,5 @@ public interface IMetaStoreClient {
 
   ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
                                                 replicationMetricsRequest) throws MetaException, TException;
+
 }

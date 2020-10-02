@@ -31,6 +31,7 @@
     <hive.path.to.root>..</hive.path.to.root>
     <powermock.version>2.0.2</powermock.version>
     <reflections.version>0.9.10</reflections.version>
+    <atlas.version>2.1.0</atlas.version>
   </properties>
 
   <dependencies>
@@ -40,7 +41,7 @@
     <dependency>
       <groupId>org.apache.atlas</groupId>
       <artifactId>atlas-client-v2</artifactId>
-      <version>${atlas.client.version}</version>
+      <version>${atlas.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -55,7 +56,7 @@
     <dependency>
       <groupId>org.apache.atlas</groupId>
       <artifactId>atlas-client-common</artifactId>
-      <version>${atlas.client.version}</version>
+      <version>${atlas.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -70,7 +71,7 @@
     <dependency>
       <groupId>org.apache.atlas</groupId>
       <artifactId>atlas-intg</artifactId>
-      <version>${atlas.client.version}</version>
+      <version>${atlas.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -855,6 +856,17 @@
       <groupId>com.sun.jersey.contribs</groupId>
       <artifactId>jersey-multipart</artifactId>
       <version>${jersey.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>kafka-clients</artifactId>
+      <version>${kafka.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.shiro</groupId>
+          <artifactId>shiro-crypto-cipher</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
   <profiles>

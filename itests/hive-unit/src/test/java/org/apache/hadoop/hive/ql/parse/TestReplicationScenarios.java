@@ -26,13 +26,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
+import org.apache.hadoop.hive.metastore.*;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.PersistenceManagerProvider;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -102,6 +104,7 @@ import java.util.Map;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.apache.hadoop.hive.metastore.Warehouse.getFs;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.junit.Assert.assertEquals;
@@ -130,14 +133,13 @@ public class TestReplicationScenarios {
   private static HiveConf hconfMirror;
   private static IDriver driverMirror;
   private static HiveMetaStoreClient metaStoreClientMirror;
-  private static boolean isMigrationTest;
 
   // Make sure we skip backward-compat checking for those tests that don't generate events
 
   protected static final Logger LOG = LoggerFactory.getLogger(TestReplicationScenarios.class);
   private ArrayList<String> lastResults;
 
-  private final boolean VERIFY_SETUP_STEPS = false;
+  private boolean verifySetupSteps = false;
   // if verifySetup is set to true, all the test setup we do will perform additional
   // verifications as well, which is useful to verify that our setup occurred
   // correctly when developing and debugging tests. These verifications, however
@@ -149,10 +151,10 @@ public class TestReplicationScenarios {
     HashMap<String, String> overrideProperties = new HashMap<>();
     overrideProperties.put(MetastoreConf.ConfVars.EVENT_MESSAGE_FACTORY.getHiveName(),
         GzipJSONMessageEncoder.class.getCanonicalName());
-    internalBeforeClassSetup(overrideProperties, false);
+    internalBeforeClassSetup(overrideProperties);
   }
 
-  static void internalBeforeClassSetup(Map<String, String> additionalProperties, boolean forMigration)
+  static void internalBeforeClassSetup(Map<String, String> additionalProperties)
       throws Exception {
     hconf = new HiveConf(TestReplicationScenarios.class);
     String metastoreUri = System.getProperty("test."+MetastoreConf.ConfVars.THRIFT_URIS.getHiveName());
@@ -160,7 +162,6 @@ public class TestReplicationScenarios {
       hconf.set(MetastoreConf.ConfVars.THRIFT_URIS.getHiveName(), metastoreUri);
       return;
     }
-    isMigrationTest = forMigration;
 
     hconf.set(MetastoreConf.ConfVars.TRANSACTIONAL_EVENT_LISTENERS.getHiveName(),
         DBNOTIF_LISTENER_CLASSNAME); // turn on db notification listener on metastore
@@ -180,9 +181,11 @@ public class TestReplicationScenarios {
         "org.apache.hadoop.hive.ql.lockmgr.DummyTxnManager");
     hconf.set(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL.varname,
         "org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore");
+    hconf.set(HiveConf.ConfVars.HIVE_METASTORE_WAREHOUSE_EXTERNAL.varname, "/tmp/warehouse/external");
     hconf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, true);
     hconf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, true);
     hconf.setBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE, true);
+    hconf.setBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET, false);
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
 
@@ -190,9 +193,10 @@ public class TestReplicationScenarios {
       hconf.set(key, value);
     });
 
-    MetaStoreTestUtils.startMetaStoreWithRetry(hconf);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hconf, true);
     // re set the WAREHOUSE property to the test dir, as the previous command added a random port to it
-    hconf.set(MetastoreConf.ConfVars.WAREHOUSE.getVarname(), System.getProperty("test.warehouse.dir", "/tmp"));
+    hconf.set(MetastoreConf.ConfVars.WAREHOUSE.getVarname(), System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed"));
+    hconf.set(MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL.getVarname(), System.getProperty("test.warehouse.external.dir", "/tmp/warehouse/external"));
 
     Path testPath = new Path(TEST_PATH);
     FileSystem fs = FileSystem.get(testPath.toUri(),hconf);
@@ -204,17 +208,11 @@ public class TestReplicationScenarios {
     FileUtils.deleteDirectory(new File("metastore_db2"));
     HiveConf hconfMirrorServer = new HiveConf();
     hconfMirrorServer.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "jdbc:derby:;databaseName=metastore_db2;create=true");
-    MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer);
+    MetaStoreTestUtils.startMetaStoreWithRetry(hconfMirrorServer, true);
     hconfMirror = new HiveConf(hconf);
     String thriftUri = MetastoreConf.getVar(hconfMirrorServer, MetastoreConf.ConfVars.THRIFT_URIS);
     MetastoreConf.setVar(hconfMirror, MetastoreConf.ConfVars.THRIFT_URIS, thriftUri);
 
-    if (forMigration) {
-      hconfMirror.setBoolVar(HiveConf.ConfVars.HIVE_STRICT_MANAGED_TABLES, true);
-      hconfMirror.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
-      hconfMirror.set(HiveConf.ConfVars.HIVE_TXN_MANAGER.varname,
-              "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
-    }
     driverMirror = DriverFactory.newDriver(hconfMirror);
     metaStoreClientMirror = new HiveMetaStoreClient(hconfMirror);
 
@@ -224,6 +222,19 @@ public class TestReplicationScenarios {
   @AfterClass
   public static void tearDownAfterClass(){
     // FIXME : should clean up TEST_PATH, but not doing it now, for debugging's sake
+    //Clean up the warehouse after test run as we are restoring the warehouse path for other metastore creation
+    Path warehousePath = new Path(MetastoreConf.getVar(hconf, MetastoreConf.ConfVars.WAREHOUSE));
+    try {
+      warehousePath.getFileSystem(hconf).delete(warehousePath, true);
+    } catch (IOException e) {
+
+    }
+    Path warehousePathReplica = new Path(MetastoreConf.getVar(hconfMirror, MetastoreConf.ConfVars.WAREHOUSE));
+    try {
+      warehousePathReplica.getFileSystem(hconfMirror).delete(warehousePathReplica, true);
+    } catch (IOException e) {
+
+    }
   }
 
   @Before
@@ -609,7 +620,7 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + ".ptned_empty", empty, driver);
     verifySetup("SELECT * from " + dbName + ".unptned_empty", empty, driver);
 
-    String lazyCopyClause = " with ('" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname  + "'='true')";
+    String lazyCopyClause = " with ('" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname  + "'='true')";
 
     advanceDumpDir();
     run("REPL DUMP " + dbName + lazyCopyClause, driver);
@@ -1356,7 +1367,7 @@ public class TestReplicationScenarios {
     String testKey = "blah";
     String testVal = "foo";
     run("ALTER TABLE " + dbName + ".unptned2 SET TBLPROPERTIES ('" + testKey + "' = '" + testVal + "')", driver);
-    if (VERIFY_SETUP_STEPS){
+    if (verifySetupSteps){
       try {
         Table unptn2 = metaStoreClient.getTable(dbName,"unptned2");
         assertTrue(unptn2.getParameters().containsKey(testKey));
@@ -1373,7 +1384,7 @@ public class TestReplicationScenarios {
 
     // alter partitioned table set table property
     run("ALTER TABLE " + dbName + ".ptned SET TBLPROPERTIES ('" + testKey + "' = '" + testVal + "')", driver);
-    if (VERIFY_SETUP_STEPS){
+    if (verifySetupSteps){
       try {
         Table ptned = metaStoreClient.getTable(dbName,"ptned");
         assertTrue(ptned.getParameters().containsKey(testKey));
@@ -1657,7 +1668,7 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName
             + ".ptned_empty(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
 
-    List<String> lazyCopyClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'");
+    List<String> lazyCopyClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName, lazyCopyClause);
 
     String[] unptnData = new String[] {"eleven", "twelve"};
@@ -1858,15 +1869,7 @@ public class TestReplicationScenarios {
       InjectableBehaviourObjectStore.resetGetNextNotificationBehaviour(); // reset the behaviour
     }
 
-    if (isMigrationTest) {
-      // as the move is done using a different event, load will be done within a different transaction and thus
-      // we will get two records.
-      verifyRun("SELECT a from " + replDbName + ".unptned",
-              new String[]{unptn_data[0], unptn_data[0]}, driverMirror);
-
-    } else {
-      verifyRun("SELECT a from " + replDbName + ".unptned", unptn_data[0], driverMirror);
-    }
+    verifyRun("SELECT a from " + replDbName + ".unptned", unptn_data[0], driverMirror);
   }
 
   @Test
@@ -2031,6 +2034,129 @@ public class TestReplicationScenarios {
     verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=2", ptnData2, driverMirror);
     verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", ptnData1, driverMirror);
     verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=2", ptnData2, driverMirror);
+  }
+
+  @Test
+  public void testConfiguredDeleteOfPrevDumpDir() throws IOException {
+    boolean verifySetupOriginal = verifySetupSteps;
+    verifySetupSteps = true;
+    String nameOfTest = testName.getMethodName();
+    String dbName = createDB(nameOfTest, driver);
+    String replDbName = dbName + "_dupe";
+    List<String> withConfigDeletePrevDump = Arrays.asList(
+            "'" + HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR + "'= 'false' ");
+    List<String> withConfigRetainPrevDump = Arrays.asList(
+            "'" + HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR + "'= 'true' ",
+            "'" + HiveConf.ConfVars.REPL_RETAIN_PREV_DUMP_DIR_COUNT + "'= '2' ");
+
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    String[] unptnData = new String[] {"eleven", "twelve"};
+    String[] ptnData1 = new String[] {"thirteen", "fourteen", "fifteen"};
+    String[] ptnData2 = new String[] {"fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[] {};
+
+    String unptnLocn = new Path(TEST_PATH, nameOfTest + "_unptn").toUri().getPath();
+    String ptnLocn1 = new Path(TEST_PATH, nameOfTest + "_ptn1").toUri().getPath();
+    String ptnLocn2 = new Path(TEST_PATH, nameOfTest + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptnLocn, unptnData);
+    createTestDataFile(ptnLocn1, ptnData1);
+    createTestDataFile(ptnLocn2, ptnData2);
+
+    run("LOAD DATA LOCAL INPATH '" + unptnLocn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptnData, driver);
+    run("CREATE TABLE " + dbName + ".unptned_late LIKE " + dbName + ".unptned", driver);
+    run("INSERT INTO TABLE " + dbName + ".unptned_late SELECT * FROM " + dbName + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned_late", unptnData, driver);
+
+    //perform first incremental with default option and check that bootstrap-dump-dir gets deleted
+    Path bootstrapDumpDir = new Path(bootstrapDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    FileSystem fs = FileSystem.get(bootstrapDumpDir.toUri(), hconf);
+    assertTrue(fs.exists(bootstrapDumpDir));
+    Tuple incrDump = replDumpDb(dbName);
+    assertFalse(fs.exists(bootstrapDumpDir));
+
+
+    loadAndVerify(replDbName, dbName, incrDump.lastReplId);
+    verifyRun("SELECT * from " + replDbName + ".unptned", unptnData, driverMirror);
+    verifyRun("SELECT * from " + replDbName + ".unptned_late", unptnData, driverMirror);
+
+    run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)", driver);
+    run("LOAD DATA LOCAL INPATH '" + ptnLocn1 + "' OVERWRITE INTO TABLE " + dbName
+            + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptnData1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptnLocn2 + "' OVERWRITE INTO TABLE " + dbName
+            + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptnData2, driver);
+
+
+    //Perform 2nd incremental with retain option.
+    //Check 1st incremental dump-dir is present even after 2nd incr dump.
+    Path incrDumpDir1 = new Path(incrDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    incrDump = replDumpDb(dbName, withConfigRetainPrevDump);
+    assertTrue(fs.exists(incrDumpDir1));
+
+    loadAndVerify(replDbName, dbName, incrDump.lastReplId);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=1", ptnData1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned WHERE b=2", ptnData2, driverMirror);
+
+    run("CREATE TABLE " + dbName
+            + ".ptned_late(a string) PARTITIONED BY (b int) STORED AS TEXTFILE", driver);
+    run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=1) SELECT a FROM " + dbName
+            + ".ptned WHERE b=1", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=1", ptnData1, driver);
+
+
+    //Perform 3rd incremental with retain option, retaining last 2 consumed dump-dirs.
+    //Verify 1st and 2nd incr-dump-dirs are present after 3rd incr-dump
+    Path incrDumpDir2 = new Path(incrDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    incrDump = replDumpDb(dbName, withConfigRetainPrevDump);
+    assertTrue(fs.exists(incrDumpDir1));
+    assertTrue(fs.exists(incrDumpDir2));
+
+    loadAndVerify(replDbName, dbName, incrDump.lastReplId);
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=1", ptnData1, driverMirror);
+
+
+    run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=2) SELECT a FROM " + dbName
+            + ".ptned WHERE b=2", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=2", ptnData2, driver);
+
+
+    //perform 4'th incr-dump with retain option in policy, retaining only last 2 dump-dirs
+    //verify incr-1 dumpdir gets deleted, incr-2 and incr-3 remain
+    Path incrDumpDir3 = new Path(incrDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    incrDump = replDumpDb(dbName, withConfigRetainPrevDump);
+    assertFalse(fs.exists(incrDumpDir1));
+    assertTrue(fs.exists(incrDumpDir2));
+    assertTrue(fs.exists(incrDumpDir3));
+
+    loadAndVerify(replDbName, dbName, incrDump.lastReplId);
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=2", ptnData2, driverMirror);
+
+    run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=3) SELECT a FROM " + dbName
+            + ".ptned WHERE b=2", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned_late WHERE b=3", ptnData2, driver);
+
+
+    //ensure 4'th incr-dump dir is present
+    //perform 5'th incr-dump with retain option to be false
+    //verify all prev dump-dirs get deleted
+    Path incrDumpDir4 = new Path(incrDump.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
+    assertTrue(fs.exists(incrDumpDir4));
+    incrDump = replDumpDb(dbName, withConfigDeletePrevDump);
+    assertFalse(fs.exists(incrDumpDir2));
+    assertFalse(fs.exists(incrDumpDir3));
+    assertFalse(fs.exists(incrDumpDir4));
+
+    loadAndVerify(replDbName, dbName, incrDump.lastReplId);
+    verifyRun("SELECT a from " + replDbName + ".ptned_late WHERE b=3", ptnData2, driverMirror);
+
+    verifySetupSteps = verifySetupOriginal;
   }
 
   @Test
@@ -2625,6 +2751,108 @@ public class TestReplicationScenarios {
   }
 
   @Test
+  public void testMaterializedViewsReplication() throws Exception {
+    boolean verifySetupOriginal = verifySetupSteps;
+    verifySetupSteps = true;
+    String testName = "materializedviewsreplication";
+    String testName2 = testName + "2";
+    String dbName = createDB(testName, driver);
+    String dbName2 = createDB(testName2, driver); //for creating multi-db materialized view
+    String replDbName = dbName + "_dupe";
+
+    run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName2 + ".unptned(a string) STORED AS TEXTFILE", driver);
+    run("CREATE TABLE " + dbName + ".ptned(a string) partitioned by (b int) STORED AS TEXTFILE", driver);
+
+    String[] unptn_data = new String[]{ "eleven", "twelve" };
+    String[] ptn_data_1 = new String[]{ "thirteen", "fourteen", "fifteen"};
+    String[] ptn_data_2 = new String[]{ "fifteen", "sixteen", "seventeen"};
+    String[] empty = new String[]{};
+
+    String unptn_locn = new Path(TEST_PATH, testName + "_unptn").toUri().getPath();
+    String ptn_locn_1 = new Path(TEST_PATH, testName + "_ptn1").toUri().getPath();
+    String ptn_locn_2 = new Path(TEST_PATH, testName + "_ptn2").toUri().getPath();
+
+    createTestDataFile(unptn_locn, unptn_data);
+    createTestDataFile(ptn_locn_1, ptn_data_1);
+    createTestDataFile(ptn_locn_2, ptn_data_2);
+
+    verifySetup("SELECT a from " + dbName + ".ptned", empty, driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", empty, driver);
+    verifySetup("SELECT * from " + dbName2 + ".unptned", empty, driver);
+
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName + ".unptned", driver);
+    run("LOAD DATA LOCAL INPATH '" + unptn_locn + "' OVERWRITE INTO TABLE " + dbName2 + ".unptned", driver);
+    verifySetup("SELECT * from " + dbName + ".unptned", unptn_data, driver);
+    verifySetup("SELECT * from " + dbName2 + ".unptned", unptn_data, driver);
+
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_1 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=1)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=1", ptn_data_1, driver);
+    run("LOAD DATA LOCAL INPATH '" + ptn_locn_2 + "' OVERWRITE INTO TABLE " + dbName + ".ptned PARTITION(b=2)", driver);
+    verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptn_data_2, driver);
+
+
+    run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view_boot disable rewrite  stored as textfile AS SELECT a FROM " + dbName + ".ptned where b=1", driver);
+    verifySetup("SELECT a from " + dbName + ".mat_view_boot", ptn_data_1, driver);
+
+    run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view_boot2 disable rewrite  stored as textfile AS SELECT t1.a FROM " + dbName + ".unptned as t1 join " + dbName2 + ".unptned as t2 on t1.a = t2.a", driver);
+    verifySetup("SELECT a from " + dbName + ".mat_view_boot2", unptn_data, driver);
+
+    Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
+
+    verifyRun("SELECT * from " + replDbName + ".unptned", unptn_data, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned where b=1", ptn_data_1, driverMirror);
+
+    //verify source MVs are not on replica
+    verifyIfTableNotExist(replDbName, "mat_view_boot", metaStoreClientMirror);
+    verifyIfTableNotExist(replDbName, "mat_view_boot2", metaStoreClientMirror);
+
+    //test alter materialized view with rename
+    run("ALTER TABLE " + dbName + ".mat_view_boot RENAME TO " + dbName + ".mat_view_rename", driver);
+
+    //verify rename, i.e. new MV exists and old MV does not exist
+    verifyIfTableNotExist(dbName, "mat_view_boot", metaStoreClient);
+    verifyIfTableExist(dbName, "mat_view_rename", metaStoreClient);
+
+    // Perform REPL-DUMP/LOAD
+    Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+
+    //verify source MVs are not on replica
+    verifyIfTableNotExist(replDbName, "mat_view_rename", metaStoreClientMirror);
+    verifyIfTableNotExist(replDbName, "mat_view_boot2", metaStoreClientMirror);
+
+    //test alter materialized view rebuild
+    run("ALTER MATERIALIZED VIEW " + dbName + ".mat_view_boot2 REBUILD" , driver);
+    verifyRun("SELECT a from " + dbName + ".mat_view_boot2", unptn_data, driver);
+
+    // Perform REPL-DUMP/LOAD
+    incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+
+    //verify source MVs are not on replica
+    verifyIfTableNotExist(replDbName, "mat_view_rename", metaStoreClientMirror);
+    verifyIfTableNotExist(replDbName, "mat_view_boot2", metaStoreClientMirror);
+
+    run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view_inc disable rewrite  stored as textfile AS SELECT a FROM " + dbName + ".ptned where b=2", driver);
+    verifySetup("SELECT a from " + dbName + ".mat_view_inc", ptn_data_2, driver);
+
+    run("CREATE MATERIALIZED VIEW " + dbName + ".mat_view_inc2 disable rewrite  stored as textfile AS SELECT t1.a FROM " + dbName + ".unptned as t1 join " + dbName2 + ".unptned as t2 on t1.a = t2.a", driver);
+    verifySetup("SELECT a from " + dbName + ".mat_view_inc2", unptn_data, driver);
+
+    // Perform REPL-DUMP/LOAD
+    incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
+
+    //verify source MVs are not on replica
+    verifyIfTableNotExist(replDbName, "mat_view_rename", metaStoreClientMirror);
+    verifyIfTableNotExist(replDbName, "mat_view_boot2", metaStoreClientMirror);
+    verifyIfTableNotExist(replDbName, "mat_view_inc", metaStoreClientMirror);
+    verifyIfTableNotExist(replDbName, "mat_view_inc2", metaStoreClientMirror);
+
+    verifySetupSteps = verifySetupOriginal;
+  }
+
+
+
+  @Test
   public void testExchangePartition() throws IOException {
     String testName = "exchangePartition";
     String dbName = createDB(testName, driver);
@@ -3046,10 +3274,7 @@ public class TestReplicationScenarios {
     // Replicate all the events happened after bootstrap
     incrementalLoadAndVerify(dbName, replDbName);
 
-    // migration test is failing as CONCATENATE is not working. Its not creating the merged file.
-    if (!isMigrationTest) {
-      verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data, driverMirror);
-    }
+    verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data, driverMirror);
   }
 
   @Test
@@ -3079,11 +3304,8 @@ public class TestReplicationScenarios {
     // Replicate all the events happened so far
     incrementalLoadAndVerify(dbName, replDbName);
 
-    // migration test is failing as CONCATENATE is not working. Its not creating the merged file.
-    if (!isMigrationTest) {
-      verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
-      verifyRun("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
-    }
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=1) ORDER BY a", ptn_data_1, driverMirror);
+    verifyRun("SELECT a from " + replDbName + ".ptned where (b=2) ORDER BY a", ptn_data_2, driverMirror);
   }
 
   @Test
@@ -3203,19 +3425,25 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".tbl1(a string, b string, primary key (a, b) disable novalidate rely)", driver);
     run("CREATE TABLE " + dbName + ".tbl2(a string, b string, foreign key (a, b) references " + dbName + ".tbl1(a, b) disable novalidate)", driver);
     run("CREATE TABLE " + dbName + ".tbl3(a string, b string not null disable, unique (a) disable)", driver);
+    run("CREATE TABLE " + dbName + ".tbl7(a string CHECK (a like 'a%'), price double CHECK (price > 0 AND price <= 1000))", driver);
+    run("CREATE TABLE " + dbName + ".tbl8(a string, b int DEFAULT 0)", driver);
 
     Tuple bootstrapDump = bootstrapLoadAndVerify(dbName, replDbName);
     String replDumpId = bootstrapDump.lastReplId;
 
     try {
-      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(replDbName , "tbl1"));
+      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(replDbName, "tbl1"));
       assertEquals(pks.size(), 2);
-      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl3"));
+      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl3"));
       assertEquals(uks.size(), 1);
-      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, replDbName , "tbl2"));
+      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, replDbName, "tbl2"));
       assertEquals(fks.size(), 2);
-      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl3"));
+      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl3"));
       assertEquals(nns.size(), 1);
+      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl7"));
+      assertEquals(cks.size(), 2);
+      List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl8"));
+      assertEquals(dks.size(), 1);
     } catch (TException te) {
       assertNull(te);
     }
@@ -3223,6 +3451,8 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".tbl4(a string, b string, primary key (a, b) disable novalidate rely)", driver);
     run("CREATE TABLE " + dbName + ".tbl5(a string, b string, foreign key (a, b) references " + dbName + ".tbl4(a, b) disable novalidate)", driver);
     run("CREATE TABLE " + dbName + ".tbl6(a string, b string not null disable, unique (a) disable)", driver);
+    run("CREATE TABLE " + dbName + ".tbl9(a string CHECK (a like 'a%'), price double CHECK (price > 0 AND price <= 1000))", driver);
+    run("CREATE TABLE " + dbName + ".tbl10(a string, b int DEFAULT 0)", driver);
 
     Tuple incrementalDump = incrementalLoadAndVerify(dbName, replDbName);
     replDumpId = incrementalDump.lastReplId;
@@ -3231,20 +3461,45 @@ public class TestReplicationScenarios {
     String ukName = null;
     String fkName = null;
     String nnName = null;
+    String dkName1 = null;
+    String ckName1 = null;
+    String ckName2 = null;
     try {
-      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(replDbName , "tbl4"));
+      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(replDbName, "tbl4"));
       assertEquals(pks.size(), 2);
       pkName = pks.get(0).getPk_name();
-      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl6"));
+      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl6"));
       assertEquals(uks.size(), 1);
       ukName = uks.get(0).getUk_name();
-      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, replDbName , "tbl5"));
+      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, replDbName, "tbl5"));
       assertEquals(fks.size(), 2);
       fkName = fks.get(0).getFk_name();
-      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl6"));
+      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl6"));
       assertEquals(nns.size(), 1);
       nnName = nns.get(0).getNn_name();
+      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl9"));
+      assertEquals(cks.size(), 2);
+      ckName1 = cks.get(0).getDc_name();
+      ckName2 = cks.get(1).getDc_name();
+      List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
+      assertEquals(dks.size(), 1);
+      dkName1 = dks.get(0).getDc_name();
+    } catch (TException te) {
+      assertNull(te);
+    }
 
+    String dkName2 = "custom_dk_name";
+    String ckName3 = "customer_ck_name";
+    run("ALTER TABLE " + dbName + ".tbl10 CHANGE COLUMN a a string CONSTRAINT " + ckName3 + " CHECK (a like 'a%')", driver);
+    run("ALTER TABLE " + dbName + ".tbl10 CHANGE COLUMN b b int CONSTRAINT " + dkName2 + " DEFAULT 1 ENABLE", driver);
+    incrementalLoadAndVerify(dbName, replDbName);
+    try {
+      List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
+      assertEquals(dks.size(), 2);
+      assertEquals(dks.get(1).getDefault_value(), "1");
+      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
+      assertEquals(cks.size(), 1);
+      assertEquals(cks.get(0).getDc_name(), ckName3);
     } catch (TException te) {
       assertNull(te);
     }
@@ -3253,17 +3508,33 @@ public class TestReplicationScenarios {
     run("ALTER TABLE " + dbName + ".tbl4 DROP CONSTRAINT `" + ukName + "`", driver);
     run("ALTER TABLE " + dbName + ".tbl5 DROP CONSTRAINT `" + fkName + "`", driver);
     run("ALTER TABLE " + dbName + ".tbl6 DROP CONSTRAINT `" + nnName + "`", driver);
+    run("ALTER TABLE " + dbName + ".tbl9 DROP CONSTRAINT `" + ckName1 + "`", driver);
+    run("ALTER TABLE " + dbName + ".tbl9 DROP CONSTRAINT `" + ckName2 + "`", driver);
+    run("ALTER TABLE " + dbName + ".tbl10 DROP CONSTRAINT `" + ckName3 + "`", driver);
+    run("ALTER TABLE " + dbName + ".tbl10 DROP CONSTRAINT `" + dkName1 + "`", driver);
+    run("ALTER TABLE " + dbName + ".tbl10 DROP CONSTRAINT `" + dkName2 + "`", driver);
 
     incrementalLoadAndVerify(dbName, replDbName);
     try {
-      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(replDbName , "tbl4"));
+      List<SQLPrimaryKey> pks = metaStoreClientMirror.getPrimaryKeys(new PrimaryKeysRequest(replDbName, "tbl4"));
       assertTrue(pks.isEmpty());
-      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl4"));
+      List<SQLUniqueConstraint> uks = metaStoreClientMirror.getUniqueConstraints(new UniqueConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl4"));
       assertTrue(uks.isEmpty());
-      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, replDbName , "tbl5"));
+      List<SQLForeignKey> fks = metaStoreClientMirror.getForeignKeys(new ForeignKeysRequest(null, null, replDbName, "tbl5"));
       assertTrue(fks.isEmpty());
-      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName , "tbl6"));
+      List<SQLNotNullConstraint> nns = metaStoreClientMirror.getNotNullConstraints(new NotNullConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl6"));
       assertTrue(nns.isEmpty());
+      List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
+      assertTrue(dks.isEmpty());
+      List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl9"));
+      assertTrue(cks.isEmpty());
+      cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
+      assertTrue(cks.isEmpty());
+      dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl12"));
+      assertTrue(dks.isEmpty());
+      cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl12"));
+      assertTrue(cks.isEmpty());
+
     } catch (TException te) {
       assertNull(te);
     }
@@ -3610,8 +3881,16 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".normal(a int)", driver);
     run("INSERT INTO " + dbName + ".normal values (1)", driver);
 
-    Path path = new Path(System.getProperty("test.warehouse.dir", "/tmp"));
-    path = new Path(path, dbName.toLowerCase() + ".db");
+    Database db = null;
+    Path path = null;
+
+    try {
+      metaStoreClient.getDatabase(dbName);
+      path = new Path(db.getManagedLocationUri());
+    } catch (Exception e) {
+      path = new Path(System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed"));
+      path = new Path(path, dbName.toLowerCase()+".db");
+    }
     path = new Path(path, "normal");
     FileSystem fs = path.getFileSystem(hconf);
     fs.delete(path);
@@ -3634,8 +3913,16 @@ public class TestReplicationScenarios {
     run("CREATE TABLE " + dbName + ".normal(a int) PARTITIONED BY (part int)", driver);
     run("INSERT INTO " + dbName + ".normal partition (part= 124) values (1)", driver);
 
-    Path path = new Path(System.getProperty("test.warehouse.dir", "/tmp"));
-    path = new Path(path, dbName.toLowerCase()+".db");
+    Database db = null;
+    Path path = null;
+
+    try {
+      metaStoreClient.getDatabase(dbName);
+      path = new Path(db.getManagedLocationUri());
+    } catch (Exception e) {
+      path = new Path(System.getProperty("test.warehouse.dir", "/tmp/warehouse/managed"));
+      path = new Path(path, dbName.toLowerCase()+".db");
+    }
     path = new Path(path, "normal");
     path = new Path(path, "part=124");
     FileSystem fs = path.getFileSystem(hconf);
@@ -3795,7 +4082,9 @@ public class TestReplicationScenarios {
 
   private static String createDB(String name, IDriver myDriver) {
     LOG.info("Testing " + name);
-    run("CREATE DATABASE " + name + " WITH DBPROPERTIES ( '" +
+    String mgdLocation = System.getProperty("test.warehouse.dir", "file:/tmp/warehouse/managed");
+    String extLocation = System.getProperty("test.warehouse.external.dir", "/tmp/warehouse/external");
+    run("CREATE DATABASE " + name + " LOCATION '" + extLocation + "/" + name.toLowerCase() + ".db' MANAGEDLOCATION '" + mgdLocation + "/" + name.toLowerCase() + ".db' WITH DBPROPERTIES ( '" +
             SOURCE_OF_REPLICATION + "' = '1,2,3')", myDriver);
     return name;
   }
@@ -3942,7 +4231,7 @@ public class TestReplicationScenarios {
   }
 
   private void verifySetup(String cmd, String[] data, IDriver myDriver) throws  IOException {
-    if (VERIFY_SETUP_STEPS){
+    if (verifySetupSteps){
       run(cmd, myDriver);
       verifyResults(data, myDriver);
     }

@@ -39,6 +39,7 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.NumberUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveCost;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSemiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
@@ -76,6 +77,13 @@ public class HiveRelMdDistinctRowCount extends RelMdDistinctRowCount {
 
   public Double getDistinctRowCount(HiveSemiJoin rel, RelMetadataQuery mq, ImmutableBitSet groupKey,
       RexNode predicate) {
+    return super.getDistinctRowCount(rel, mq, groupKey, predicate);
+  }
+
+  public Double getDistinctRowCount(HiveAntiJoin rel, RelMetadataQuery mq, ImmutableBitSet groupKey,
+                                    RexNode predicate) {
+    //TODO : Currently calcite does not support this.
+    // https://issues.apache.org/jira/browse/HIVE-23933
     return super.getDistinctRowCount(rel, mq, groupKey, predicate);
   }
 

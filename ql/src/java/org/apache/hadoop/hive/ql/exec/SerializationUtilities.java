@@ -41,6 +41,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.llap.LlapOutputFormat;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
@@ -253,6 +254,7 @@ public class SerializationUtilities {
       kryo.register(SequenceFileInputFormat.class);
       kryo.register(RCFileInputFormat.class);
       kryo.register(HiveSequenceFileOutputFormat.class);
+      kryo.register(LlapOutputFormat.class);
       kryo.register(SparkEdgeProperty.class);
       kryo.register(SparkWork.class);
       kryo.register(Pair.class);
@@ -613,14 +615,14 @@ public class SerializationUtilities {
 
   private static void serializePlan(Kryo kryo, Object plan, OutputStream out, boolean cloningPlan) {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
     LOG.info("Serializing " + plan.getClass().getSimpleName() + " using kryo");
     if (cloningPlan) {
       serializeObjectByKryo(kryo, plan, out);
     } else {
       serializeObjectByKryo(kryo, plan, out);
     }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
   }
 
   /**
@@ -652,7 +654,7 @@ public class SerializationUtilities {
   private static <T> T deserializePlan(Kryo kryo, InputStream in, Class<T> planClass,
       boolean cloningPlan) {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
     T plan;
     LOG.info("Deserializing " + planClass.getSimpleName() + " using kryo");
     if (cloningPlan) {
@@ -660,7 +662,7 @@ public class SerializationUtilities {
     } else {
       plan = deserializeObjectByKryo(kryo, in, planClass);
     }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
     return plan;
   }
 
@@ -672,7 +674,7 @@ public class SerializationUtilities {
   public static MapredWork clonePlan(MapredWork plan) {
     // TODO: need proper clone. Meanwhile, let's at least keep this horror in one place
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
     Operator<?> op = plan.getAnyOperator();
     CompilationOpContext ctx = (op == null) ? null : op.getCompilationOpContext();
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
@@ -683,7 +685,7 @@ public class SerializationUtilities {
     for (Operator<?> newOp : newPlan.getAllOperators()) {
       newOp.setCompilationOpContext(ctx);
     }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
     return newPlan;
   }
 
@@ -723,7 +725,7 @@ public class SerializationUtilities {
    */
   public static BaseWork cloneBaseWork(BaseWork plan) {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
     Operator<?> op = plan.getAnyRootOperator();
     CompilationOpContext ctx = (op == null) ? null : op.getCompilationOpContext();
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
@@ -734,7 +736,7 @@ public class SerializationUtilities {
     for (Operator<?> newOp : newPlan.getAllOperators()) {
       newOp.setCompilationOpContext(ctx);
     }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
     return newPlan;
   }
 

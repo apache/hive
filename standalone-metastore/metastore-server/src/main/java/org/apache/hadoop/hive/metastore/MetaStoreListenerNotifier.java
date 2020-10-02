@@ -24,6 +24,8 @@ import com.google.common.collect.Maps;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.events.AddCheckConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AddDefaultConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
@@ -174,6 +176,18 @@ public class MetaStoreListenerNotifier {
             @Override
             public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
               listener.onAddNotNullConstraint((AddNotNullConstraintEvent)event);
+            }
+          })
+          .put(EventType.ADD_DEFAULTCONSTRAINT, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onAddDefaultConstraint((AddDefaultConstraintEvent) event);
+            }
+          })
+          .put(EventType.ADD_CHECKCONSTRAINT, new EventNotifier() {
+            @Override
+            public void notify(MetaStoreEventListener listener, ListenerEvent event) throws MetaException {
+              listener.onAddCheckConstraint((AddCheckConstraintEvent) event);
             }
           })
           .put(EventType.CREATE_ISCHEMA, new EventNotifier() {

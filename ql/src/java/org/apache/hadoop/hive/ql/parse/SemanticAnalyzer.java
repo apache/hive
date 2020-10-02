@@ -82,6 +82,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.ResultFileFormat;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -387,6 +388,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected volatile boolean disableJoinMerge = false;
   protected final boolean defaultJoinMerge;
 
+  /**
+   * This is required by prepare/execute statement
+   * Original operator tree { @link topOps} shape is changed when going through transformations
+   * and task generation, as a result original operator tree can not be used later to
+   * e.g. regenerate tasks or re-running physical transformations.
+   * Therefore we need to make a copy and cache it after operator tree is generated.
+   */
+  protected Map<String, TableScanOperator> topOpsCopy = null;
+
   /*
    * Capture the CTE definitions in a Query.
    */
@@ -437,6 +447,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
       hive_metastoreConstants.TABLE_BUCKETING_VERSION
   };
+
+  private int subQueryExpressionAliasCounter = 0;
 
   static class Phase1Ctx {
     String dest;
@@ -607,7 +619,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias, boolean insideView)
+  void doPhase1QBExpr(ASTNode ast, QBExpr qbexpr, String id, String alias, boolean insideView)
       throws SemanticException {
 
     assert (ast.getToken() != null);
@@ -671,7 +683,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           function.getType() == HiveParser.TOK_SUBQUERY_EXPR) {
         function = (ASTNode)function.getChild(0);
       }
-      doPhase1GetAllAggregations(function, aggregationTrees, wdwFns, null);
+      doPhase1GetAllAggregations(function, qb, aggregationTrees, wdwFns, null);
     }
 
     // window based aggregations are handled differently
@@ -697,6 +709,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return aggregationTrees;
+  }
+
+  private void doPhase1WhereClause(ASTNode expressionTree, QB qb) throws SemanticException {
+    int exprTokenType = expressionTree.getToken().getType();
+    if(exprTokenType == HiveParser.TOK_SUBQUERY_EXPR) {
+      qb.addSubqExprAlias(expressionTree, this);
+      return;
+    }
+
+    for (int i = 0; i < expressionTree.getChildCount(); i++) {
+      doPhase1WhereClause((ASTNode) expressionTree.getChild(i), qb);
+    }
   }
 
   /**
@@ -905,13 +929,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    *          the aggregation subtree.
    * @throws SemanticException
    */
-  private void doPhase1GetAllAggregations(ASTNode expressionTree,
+  private void doPhase1GetAllAggregations(ASTNode expressionTree, QB qb,
                                           Map<String, ASTNode> aggregations, List<ASTNode> wdwFns,
                                           ASTNode wndParent) throws SemanticException {
     int exprTokenType = expressionTree.getToken().getType();
     if(exprTokenType == HiveParser.TOK_SUBQUERY_EXPR) {
       //since now we have scalar subqueries we can get subquery expression in having
       // we don't want to include aggregate from within subquery
+      qb.addSubqExprAlias(expressionTree, this);
       return;
     }
 
@@ -928,7 +953,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // there are aggregation functions within
         wdwFns.add(expressionTree);
         for(Node child : expressionTree.getChildren()) {
-          doPhase1GetAllAggregations((ASTNode) child, aggregations, wdwFns, expressionTree);
+          doPhase1GetAllAggregations((ASTNode) child, qb, aggregations, wdwFns, expressionTree);
         }
         return;
       } else if (lastChild.getType() == HiveParser.TOK_WITHIN_GROUP) {
@@ -959,7 +984,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
     for (int i = 0; i < expressionTree.getChildCount(); i++) {
-      doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(i),
+      doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(i), qb,
           aggregations, wdwFns, wndParent);
     }
   }
@@ -1478,6 +1503,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         || (node.getToken().getType() == HiveParser.TOK_CROSSJOIN)
         || isOuterJoinToken(node)
         || (node.getToken().getType() == HiveParser.TOK_LEFTSEMIJOIN)
+        || (node.getToken().getType() == HiveParser.TOK_LEFTANTISEMIJOIN)
         || (node.getToken().getType() == HiveParser.TOK_UNIQUEJOIN);
   }
 
@@ -1634,6 +1660,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (!SubQueryUtils.findSubQueries((ASTNode) ast.getChild(0)).isEmpty()) {
           queryProperties.setFilterWithSubQuery(true);
         }
+        doPhase1WhereClause(ast, qb);
         break;
 
       case HiveParser.TOK_INSERT_INTO:
@@ -2037,12 +2064,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private void getMaterializationMetadata(QB qb) throws SemanticException {
+    if (qb.isCTAS()) {
+      return;
+    }
     try {
       gatherCTEReferences(qb, rootClause);
       int threshold = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_CTE_MATERIALIZE_THRESHOLD);
       for (CTEClause cte : Sets.newHashSet(aliasToCTEs.values())) {
         if (threshold >= 0 && cte.reference >= threshold) {
-          cte.materialize = true;
+          cte.materialize = !HiveConf.getBoolVar(conf, ConfVars.HIVE_CTE_MATERIALIZE_FULL_AGGREGATE_ONLY)
+              || cte.qbExpr.getQB().getParseInfo().isFullyAggregate();
         }
       }
     } catch (HiveException e) {
@@ -2093,6 +2124,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     for (String alias : qb.getSubqAliases()) {
       gatherCTEReferences(qb.getSubqForAlias(alias), current);
+    }
+    for (String alias : qb.getSubqExprAliases()) {
+      gatherCTEReferences(qb.getSubqExprForAlias(alias), current);
     }
   }
 
@@ -2473,7 +2507,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private boolean isPathEncrypted(Path path) throws HiveException {
 
     try {
-      HadoopShims.HdfsEncryptionShim hdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(path.getFileSystem(conf));
+      HadoopShims.HdfsEncryptionShim hdfsEncryptionShim =
+          SessionState.get().getHdfsEncryptionShim(path.getFileSystem(conf), conf);
       if (hdfsEncryptionShim != null) {
         if (hdfsEncryptionShim.isPathEncrypted(path)) {
           return true;
@@ -4947,6 +4982,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     switch (mode) {
     case COMPLETE:
       return GenericUDAFEvaluator.Mode.COMPLETE;
+    case HASH:
     case PARTIAL1:
       return GenericUDAFEvaluator.Mode.PARTIAL1;
     case PARTIAL2:
@@ -4956,8 +4992,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           : GenericUDAFEvaluator.Mode.PARTIAL2;
     case FINAL:
       return GenericUDAFEvaluator.Mode.FINAL;
-    case HASH:
-      return GenericUDAFEvaluator.Mode.PARTIAL1;
     case MERGEPARTIAL:
       return isDistinct ? GenericUDAFEvaluator.Mode.COMPLETE
           : GenericUDAFEvaluator.Mode.FINAL;
@@ -9777,6 +9811,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       joinTree.setNoSemiJoin(false);
       condn[0] = new JoinCond(0, 1, JoinType.LEFTSEMI);
       break;
+    case ANTI:
+      joinTree.setNoSemiJoin(false);
+      condn[0] = new JoinCond(0, 1, JoinType.ANTI);
+      break;
     default:
       condn[0] = new JoinCond(0, 1, JoinType.INNER);
       joinTree.setNoOuterJoin(true);
@@ -9878,6 +9916,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_LEFTSEMIJOIN:
       joinTree.setNoSemiJoin(false);
       condn[0] = new JoinCond(0, 1, JoinType.LEFTSEMI);
+      break;
+    case HiveParser.TOK_LEFTANTISEMIJOIN:
+      joinTree.setNoSemiJoin(false);
+      condn[0] = new JoinCond(0, 1, JoinType.ANTI);
       break;
     default:
       condn[0] = new JoinCond(0, 1, JoinType.INNER);
@@ -10092,7 +10134,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (ASTNode hintNode : hints) {
       for (Node node : hintNode.getChildren()) {
         ASTNode hint = (ASTNode) node;
-        if (hint.getChild(0).getType() != HintParser.TOK_LEFTSEMIJOIN) {
+        if (hint.getChild(0).getType() != HintParser.TOK_LEFTSEMIJOIN &&
+                hint.getChild(0).getType() != HintParser.TOK_LEFTANTISEMIJOIN) {
           continue;
         }
         if (result == null) {
@@ -12430,6 +12473,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         });
   }
 
+  protected void compilePlan(ParseContext pCtx) throws SemanticException{
+    if (!ctx.getExplainLogical()) {
+      TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf, pCtx);
+      compiler.init(queryState, console, db);
+      compiler.compile(pCtx, rootTasks, inputs, outputs);
+      fetchTask = pCtx.getFetchTask();
+    }
+  }
+
   @SuppressWarnings("checkstyle:methodlength")
   void analyzeInternal(ASTNode ast, Supplier<PlannerContext> pcf) throws SemanticException {
     LOG.info("Starting Semantic Analysis");
@@ -12628,12 +12680,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 9. Optimize Physical op tree & Translate to target execution engine (MR,
     // TEZ..)
-    if (!ctx.getExplainLogical()) {
-      TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf, pCtx);
-      compiler.init(queryState, console, db);
-      compiler.compile(pCtx, rootTasks, inputs, outputs);
-      fetchTask = pCtx.getFetchTask();
-    }
+    compilePlan(pCtx);
+
     //find all Acid FileSinkOperatorS
     new QueryPlanPostProcessor(rootTasks, acidFileSinks, ctx.getExecutionId());
 
@@ -13543,7 +13591,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Table likeTable = getTable(likeTableName, false);
       if (likeTable != null) {
-        if (isTemporary) {
+        if (isTemporary || isExt) {
           updateDefaultTblProps(likeTable.getParameters(), tblProps,
               new ArrayList<>(Arrays.asList(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL,
                   hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES)));
@@ -13968,7 +14016,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      ArrayList childrenList = next.getChildren();
+      List<Node> childrenList = next.getChildren();
       for (int i = childrenList.size() - 1; i >= 0; i--) {
         stack.push((ASTNode)childrenList.get(i));
       }
@@ -14822,6 +14870,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return loadFileWork;
   }
 
+  public List<LoadTableDesc> getLoadTableWork() {
+    return loadTableWork;
+  }
+
+  public void setLoadFileWork(List<LoadFileDesc> loadFileWork) {
+    this.loadFileWork = loadFileWork;
+  }
+
+  public void setLoadTableWork(List<LoadTableDesc> tblWork) {
+    this.loadTableWork = tblWork;
+  }
+
   private String getQueryStringFromAst(ASTNode ast) {
     StringBuilder sb = new StringBuilder();
     int startIdx = ast.getTokenStartIndex();
@@ -15240,5 +15300,32 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   @Override
   public void executeUnparseTranlations() {
     unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
+  }
+
+  @Override
+  public void startAnalysis() {
+    String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
+    SessionState ss = SessionState.get();
+    if (ss == null) {
+      LOG.info("No current SessionState, skipping metadata query-level caching for: {}", queryId);
+      return;
+    }
+    if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
+      LOG.info("Starting caching scope for: {}", queryId);
+      ss.startScope(queryId);
+    }
+  }
+
+  @Override
+  public void endAnalysis() {
+    SessionState ss = SessionState.get();
+    if (ss == null) {
+      return;
+    }
+    if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
+      String queryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
+      LOG.info("Ending caching scope for: {}", queryId);
+      ss.endScope(queryId);
+    }
   }
 }

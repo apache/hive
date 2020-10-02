@@ -59,8 +59,8 @@ class CommitTxnHandler extends AbstractEventHandler<CommitTxnMessage> {
 
   private void writeDumpFiles(Table qlMdTable, Partition ptn, Iterable<String> files, Context withinContext,
                               Path dataPath)
-          throws IOException, LoginException, MetaException, HiveFatalException {
-    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DATA_COPY_LAZY);
+          throws IOException, LoginException, MetaException, HiveFatalException, SemanticException {
+    boolean copyAtLoad = withinContext.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     if (copyAtLoad) {
       // encoded filename/checksum of files, write into _files
       writeEncodedDumpFiles(withinContext, files, dataPath);

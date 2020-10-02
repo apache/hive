@@ -46,6 +46,11 @@ public class LimitDesc extends AbstractOperatorDesc {
     this.limit = limit;
   }
 
+  public LimitDesc(LimitDesc conf) {
+    this(conf.getOffset() == null ? 0 : conf.getOffset() , conf.getLimit());
+    this.leastRows = conf.leastRows;
+  }
+
   /**
    * not to print the offset if it is 0 we need to turn null.
    * use Integer instead of int.

@@ -132,6 +132,7 @@ public class CreateTableLikeOperation extends DDLOperation<CreateTableLikeDesc> 
       setExternalProperties(table);
     } else {
       table.getParameters().remove("EXTERNAL");
+      table.setTableType(TableType.MANAGED_TABLE);
     }
 
     return table;

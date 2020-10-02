@@ -99,7 +99,7 @@ public class Table implements Serializable {
   /**
    * These fields are all cached fields.  The information comes from tTable.
    */
-  private Deserializer deserializer;
+  private transient Deserializer deserializer;
   private Class<? extends OutputFormat> outputFormatClass;
   private Class<? extends InputFormat> inputFormatClass;
   private Path path;
@@ -107,31 +107,21 @@ public class Table implements Serializable {
   private transient HiveStorageHandler storageHandler;
   private transient StorageHandlerInfo storageHandlerInfo;
 
-  private transient TableSpec tableSpec;
+  private TableSpec tableSpec;
 
-  private transient boolean materializedTable;
+  private boolean materializedTable;
 
   /** Note: This is set only for describe table purposes, it cannot be used to verify whether
    * a materialization is up-to-date or not. */
-  private transient Boolean outdatedForRewritingMaterializedView;
+  private Boolean outdatedForRewritingMaterializedView;
 
   /** Constraint related objects */
-  private transient PrimaryKeyInfo pki;
-  private transient ForeignKeyInfo fki;
-  private transient UniqueConstraint uki;
-  private transient NotNullConstraint nnc;
-  private transient DefaultConstraint dc;
-  private transient CheckConstraint cc;
+  private TableConstraintsInfo tableConstraintsInfo;
 
   /** Constraint related flags
    *  This is to track if constraints are retrieved from metastore or not
    */
-  private transient boolean isPKFetched=false;
-  private transient boolean isFKFetched=false;
-  private transient boolean isUniqueFetched=false;
-  private transient boolean isNotNullFetched=false;
-  private transient boolean isDefaultFetched=false;
-  private transient boolean isCheckFetched=false;
+  private boolean isTableConstraintsFetched=false;
 
   /**
    * Used only for serialization.
@@ -1177,144 +1167,80 @@ public class Table implements Serializable {
    *  constraints DESCRIBE could set all type of constraints
    * */
 
-  /* This only return PK which are created with RELY */
-  public PrimaryKeyInfo getPrimaryKeyInfo() {
-    if(!this.isPKFetched) {
+  public TableConstraintsInfo getTableConstraintsInfo() {
+
+    if (!isTableConstraintsFetched) {
       try {
-        pki = Hive.get().getReliablePrimaryKeys(this.getDbName(), this.getTableName());
-        this.isPKFetched = true;
+        tableConstraintsInfo = Hive.get().getTableConstraints(this.getDbName(), this.getTableName(), true, true);
+        this.isTableConstraintsFetched = true;
       } catch (HiveException e) {
-        LOG.warn("Cannot retrieve PK info for table : " + this.getTableName()
-            + " ignoring exception: " + e);
+        LOG.warn("Cannot retrieve Table Constraints info for table : " + this.getTableName() + " ignoring exception: " + e);
+        tableConstraintsInfo = new TableConstraintsInfo();
       }
     }
-    return pki;
+    return tableConstraintsInfo;
   }
 
-  public void setPrimaryKeyInfo(PrimaryKeyInfo pki) {
-    this.pki = pki;
-    this.isPKFetched = true;
+  public void setTableConstraintsInfo(TableConstraintsInfo tableConstraintsInfo) {
+    this.tableConstraintsInfo = tableConstraintsInfo;
+    this.isTableConstraintsFetched = true;
+  }
+
+  /* This only return PK which are created with RELY */
+  public PrimaryKeyInfo getPrimaryKeyInfo() {
+    if (!isTableConstraintsFetched) {
+      getTableConstraintsInfo();
+    }
+    return tableConstraintsInfo.getPrimaryKeyInfo();
   }
 
   /* This only return FK constraints which are created with RELY */
   public ForeignKeyInfo getForeignKeyInfo() {
-    if(!isFKFetched) {
-      try {
-        fki = Hive.get().getReliableForeignKeys(this.getDbName(), this.getTableName());
-        this.isFKFetched = true;
-      } catch (HiveException e) {
-        LOG.warn(
-            "Cannot retrieve FK info for table : " + this.getTableName()
-                + " ignoring exception: " + e);
-      }
+    if (!isTableConstraintsFetched) {
+      getTableConstraintsInfo();
     }
-    return fki;
-  }
-
-  public void setForeignKeyInfo(ForeignKeyInfo fki) {
-    this.fki = fki;
-    this.isFKFetched = true;
+    return tableConstraintsInfo.getForeignKeyInfo();
   }
 
   /* This only return UNIQUE constraint defined with RELY */
   public UniqueConstraint getUniqueKeyInfo() {
-    if(!isUniqueFetched) {
-      try {
-        uki = Hive.get().getReliableUniqueConstraints(this.getDbName(), this.getTableName());
-        this.isUniqueFetched = true;
-      } catch (HiveException e) {
-        LOG.warn(
-            "Cannot retrieve Unique Key info for table : " + this.getTableName()
-                + " ignoring exception: " + e);
-      }
+    if (!isTableConstraintsFetched) {
+      getTableConstraintsInfo();
     }
-    return uki;
-  }
-
-  public void setUniqueKeyInfo(UniqueConstraint uki) {
-    this.uki = uki;
-    this.isUniqueFetched = true;
+    return tableConstraintsInfo.getUniqueConstraint();
   }
 
   /* This only return NOT NULL constraint defined with RELY */
   public NotNullConstraint getNotNullConstraint() {
-    if(!isNotNullFetched) {
-      try {
-        nnc = Hive.get().getReliableNotNullConstraints(this.getDbName(), this.getTableName());
-        this.isNotNullFetched = true;
-      } catch (HiveException e) {
-        LOG.warn("Cannot retrieve Not Null constraint info for table : "
-            + this.getTableName() + " ignoring exception: " + e);
-      }
+    if (!isTableConstraintsFetched) {
+      getTableConstraintsInfo();
     }
-    return nnc;
-  }
-
-  public void setNotNullConstraint(NotNullConstraint nnc) {
-    this.nnc = nnc;
-    this.isNotNullFetched = true;
+    return tableConstraintsInfo.getNotNullConstraint();
   }
 
   /* This only return DEFAULT constraint defined with ENABLE */
   public DefaultConstraint getDefaultConstraint() {
-    if(!isDefaultFetched) {
-      try {
-        dc = Hive.get().getEnabledDefaultConstraints(this.getDbName(), this.getTableName());
-        this.isDefaultFetched = true;
-      } catch (HiveException e) {
-        LOG.warn("Cannot retrieve Default constraint info for table : "
-            + this.getTableName() + " ignoring exception: " + e);
-      }
+    if (!isTableConstraintsFetched) {
+      getTableConstraintsInfo();
     }
-    return dc;
-  }
-
-  public void setDefaultConstraint(DefaultConstraint dc) {
-    this.dc = dc;
-    this.isDefaultFetched = true;
+    return tableConstraintsInfo.getDefaultConstraint();
   }
 
   /* This only return CHECK constraint defined with ENABLE */
   public CheckConstraint getCheckConstraint() {
-    if(!isCheckFetched) {
-      try{
-        cc = Hive.get().getEnabledCheckConstraints(this.getDbName(), this.getTableName());
-        this.isCheckFetched = true;
-      } catch (HiveException e) {
-        LOG.warn("Cannot retrieve Check constraint info for table : "
-            + this.getTableName() + " ignoring exception: " + e);
-      }
+    if (!isTableConstraintsFetched) {
+      getTableConstraintsInfo();
     }
-    return cc;
-  }
-
-  public void setCheckConstraint(CheckConstraint cc) {
-    this.cc = cc;
-    this.isCheckFetched = true;
+    return tableConstraintsInfo.getCheckConstraint();
   }
 
   /** This shouldn't use get apis because those api call metastore
    * to fetch constraints.
-   * getMetaData only need to make a copy of existing constraints, even if those are not fetched
+   * getMetaData only need to make a reference copy of existing constraints, even if those are not fetched
    */
   public void copyConstraints(final Table tbl) {
-    this.pki = tbl.pki;
-    this.isPKFetched = tbl.isPKFetched;
-
-    this.fki = tbl.fki;
-    this.isFKFetched = tbl.isFKFetched;
-
-    this.uki = tbl.uki;
-    this.isUniqueFetched = tbl.isUniqueFetched;
-
-    this.nnc = tbl.nnc;
-    this.isNotNullFetched = tbl.isNotNullFetched;
-
-    this.dc = tbl.dc;
-    this.isDefaultFetched = tbl.isDefaultFetched;
-
-    this.cc = tbl.cc;
-    this.isCheckFetched = tbl.isCheckFetched;
+    this.tableConstraintsInfo = tbl.tableConstraintsInfo;
+    this.isTableConstraintsFetched = tbl.isTableConstraintsFetched;
   }
 
   /**

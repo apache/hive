@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
+import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.RangerDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -92,14 +93,22 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
       }
       URL url = work.getRangerConfigResource();
       if (url == null) {
-        throw new SemanticException("Ranger configuration is not valid "
-          + ReplUtils.RANGER_CONFIGURATION_RESOURCE_NAME);
+        throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE
+          .format("Ranger configuration is not valid "
+          + ReplUtils.RANGER_CONFIGURATION_RESOURCE_NAME, ReplUtils.REPL_RANGER_SERVICE));
       }
       conf.addResource(url);
       String rangerHiveServiceName = conf.get(ReplUtils.RANGER_HIVE_SERVICE_NAME);
       String rangerEndpoint = conf.get(ReplUtils.RANGER_REST_URL);
-      if (StringUtils.isEmpty(rangerEndpoint) || !rangerRestClient.checkConnection(rangerEndpoint, conf)) {
-        throw new SemanticException("Ranger endpoint is not valid " + rangerEndpoint);
+      if (StringUtils.isEmpty(rangerEndpoint)) {
+        throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE
+          .format("Ranger endpoint is not valid "
+            + rangerEndpoint, ReplUtils.REPL_RANGER_SERVICE));
+      }
+      if (!rangerRestClient.checkConnection(rangerEndpoint, conf)) {
+        throw new SemanticException(ErrorMsg.REPL_EXTERNAL_SERVICE_CONNECTION_ERROR.format(ReplUtils
+            .REPL_RANGER_SERVICE,
+          "Ranger endpoint is not reachable " + rangerEndpoint));
       }
       RangerExportPolicyList rangerExportPolicyList = rangerRestClient.exportRangerPolicies(rangerEndpoint,
               work.getDbName(), rangerHiveServiceName, conf);
@@ -128,12 +137,21 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
     } catch (Exception e) {
       LOG.error("failed", e);
       setException(e);
+      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
       try {
-        work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
-      } catch (SemanticException ex) {
+        if (errorCode > 40000) {
+          //Create non recoverable marker at top level
+          Path nonRecoverableMarker = new Path(work.getCurrentDumpPath().getParent(),
+            ReplAck.NON_RECOVERABLE_MARKER.toString());
+          Utils.writeStackTrace(e, nonRecoverableMarker, conf);
+          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED_ADMIN, nonRecoverableMarker.toString());
+        } else {
+          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
+        }
+      } catch (Exception ex) {
         LOG.error("Failed to collect Metrics ", ex);
       }
-      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      return errorCode;
     }
   }
 

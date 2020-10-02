@@ -31,6 +31,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.rpc.thrift.TStatus;
 import org.apache.hive.service.rpc.thrift.TStatusCode;
@@ -168,7 +170,7 @@ public class Utils {
     static final String SSL_TRUST_STORE_TYPE = "JKS";
 
     private static final String HIVE_VAR_PREFIX = "hivevar:";
-    private static final String HIVE_CONF_PREFIX = "hiveconf:";
+    public static final String HIVE_CONF_PREFIX = "hiveconf:";
     private String host = null;
     private int port = 0;
     private String jdbcUriString;
@@ -186,6 +188,10 @@ public class Utils {
     private String zookeeperTrustStorePassword = "";
     private String currentHostZnodePath;
     private final List<String> rejectedHostZnodePaths = new ArrayList<String>();
+
+    // HiveConf parameters
+    public static final String HIVE_DEFAULT_NULLS_LAST_KEY =
+        HIVE_CONF_PREFIX + HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.varname;
 
     public JdbcConnectionParams() {
     }

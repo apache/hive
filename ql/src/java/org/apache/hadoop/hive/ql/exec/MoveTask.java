@@ -42,7 +42,6 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
-import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -91,7 +90,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       throws HiveException {
     try {
       PerfLogger perfLogger = SessionState.getPerfLogger();
-      perfLogger.PerfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
+      perfLogger.perfLogBegin("MoveTask", PerfLogger.FILE_MOVES);
 
       String mesg = "Moving data to " + (isDfsDir ? "" : "local ") + "directory "
           + targetPath.toString();
@@ -107,7 +106,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         moveFileFromDfsToLocal(sourcePath, targetPath, fs, dstFs);
       }
 
-      perfLogger.PerfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
+      perfLogger.perfLogEnd("MoveTask", PerfLogger.FILE_MOVES);
     } catch (Exception e) {
       throw new HiveException("Unable to move source " + sourcePath + " to destination "
           + targetPath, e);
@@ -393,17 +392,6 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
         checkFileFormats(db, tbd, table);
 
-        // for transactional table if write id is not set during replication from a cluster with STRICT_MANAGED set
-        // to false then set it now.
-        if (tbd.getWriteId() <= 0 && AcidUtils.isTransactionalTable(table.getParameters())) {
-          Long writeId = ReplUtils.getMigrationCurrentTblWriteId(conf);
-          if (writeId == null) {
-            throw new HiveException("MoveTask : Write id is not set in the config by open txn task for migration");
-          }
-          tbd.setWriteId(writeId);
-          tbd.setStmtId(context.getHiveTxnManager().getStmtIdAndIncrement());
-        }
-
         boolean isFullAcidOp = work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID
             && !tbd.isMmTable(); //it seems that LoadTableDesc has Operation.INSERT only for CTAS...
 
@@ -543,7 +531,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       TaskInformation ti, DynamicPartitionCtx dpCtx) throws HiveException,
       IOException, InvalidOperationException {
     DataContainer dc;
-    List<LinkedHashMap<String, String>> dps = Utilities.getFullDPSpecs(conf, dpCtx);
+    List<LinkedHashMap<String, String>> dps = Utilities.getFullDPSpecs(conf, dpCtx,
+        work.getLoadTableWork().getWriteId(), tbd.isMmTable(), tbd.isDirectInsert(), tbd.isInsertOverwrite());
 
     console.printInfo(System.getProperty("line.separator"));
     long startTime = System.currentTimeMillis();

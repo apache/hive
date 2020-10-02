@@ -53,6 +53,35 @@ public class OperatorUtils {
 
   private static final Logger LOG = LoggerFactory.getLogger(OperatorUtils.class);
 
+  /**
+   * Return the ancestor of the specified operator at the provided path or null if the path is invalid.
+   *
+   * The method is equivalent to following code:
+   * <pre>{@code
+   *     op.getParentOperators().get(path[0])
+   *     .getParentOperators().get(path[1])
+   *     ...
+   *     .getParentOperators().get(path[n])
+   * }</pre>
+   * with additional checks about the validity of the provided path and the type of the ancestor.
+   *
+   * @param op the operator for which we
+   * @param clazz the class of the ancestor operator
+   * @param path the path leading to the desired ancestor
+   * @param <T> the type of the ancestor
+   * @return the ancestor of the specified operator at the provided path or null if the path is invalid.
+   */
+  public static <T> T ancestor(Operator<?> op, Class<T> clazz, int... path) {
+    Operator<?> target = op;
+    for (int i = 0; i < path.length; i++) {
+      if (target.getParentOperators() == null || path[i] > target.getParentOperators().size()) {
+        return null;
+      }
+      target = target.getParentOperators().get(path[i]);
+    }
+    return clazz.isInstance(target) ? clazz.cast(target) : null;
+  }
+
   public static <T> Set<T> findOperators(Operator<?> start, Class<T> clazz) {
     return findOperators(start, clazz, new HashSet<T>());
   }

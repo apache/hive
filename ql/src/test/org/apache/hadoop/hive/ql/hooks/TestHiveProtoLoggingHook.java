@@ -209,8 +209,8 @@ public class TestHiveProtoLoggingHook {
   @Test
   public void testPostEventLog() throws Exception {
     context.setHookType(HookType.POST_EXEC_HOOK);
-    context.getPerfLogger().PerfLogBegin("test", "LogTest");
-    context.getPerfLogger().PerfLogEnd("test", "LogTest");
+    context.getPerfLogger().perfLogBegin("test", "LogTest");
+    context.getPerfLogger().perfLogEnd("test", "LogTest");
 
     EventLogger evtLogger = new EventLogger(conf, SystemClock.getInstance());
     evtLogger.handle(context);

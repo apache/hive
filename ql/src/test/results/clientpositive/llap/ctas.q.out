@@ -66,19 +66,19 @@ STAGE PLANS:
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 10
+              Limit
+                Number of rows: 10
+                Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: ++
+                  keys: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                  null sort order: zz
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                  Top N Key Operator
-                    sort order: ++
-                    keys: _col0 (type: string), _col1 (type: string)
-                    null sort order: zz
+                  top n: 10
+                  Select Operator
+                    expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 10
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
                       null sort order: zz
@@ -87,12 +87,12 @@ STAGE PLANS:
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
-                outputColumnNames: _col0, _col1
+              Limit
+                Number of rows: 10
                 Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 10
+                Select Operator
+                  expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -279,19 +279,19 @@ STAGE PLANS:
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 10
+              Limit
+                Number of rows: 10
+                Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: ++
+                  keys: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                  null sort order: zz
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                  Top N Key Operator
-                    sort order: ++
-                    keys: _col0 (type: string), _col1 (type: string)
-                    null sort order: zz
+                  top n: 10
+                  Select Operator
+                    expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 10
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
                       null sort order: zz
@@ -300,12 +300,12 @@ STAGE PLANS:
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
-                outputColumnNames: _col0, _col1
+              Limit
+                Number of rows: 10
                 Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 10
+                Select Operator
+                  expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -492,19 +492,19 @@ STAGE PLANS:
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 96000 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 10
+              Limit
+                Number of rows: 10
+                Statistics: Num rows: 10 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: ++
+                  keys: KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: string)
+                  null sort order: zz
                   Statistics: Num rows: 10 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
-                  Top N Key Operator
-                    sort order: ++
-                    keys: _col0 (type: double), _col1 (type: string)
-                    null sort order: zz
+                  top n: 10
+                  Select Operator
+                    expressions: KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 10 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 10
                     Reduce Output Operator
                       key expressions: _col0 (type: double), _col1 (type: string)
                       null sort order: zz
@@ -513,12 +513,12 @@ STAGE PLANS:
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: string)
-                outputColumnNames: _col0, _col1
+              Limit
+                Number of rows: 10
                 Statistics: Num rows: 10 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 10
+                Select Operator
+                  expressions: KEY.reducesinkkey0 (type: double), KEY.reducesinkkey1 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 1920 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -769,19 +769,19 @@ STAGE PLANS:
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 10
+              Limit
+                Number of rows: 10
+                Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: ++
+                  keys: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                  null sort order: zz
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                  Top N Key Operator
-                    sort order: ++
-                    keys: _col0 (type: string), _col1 (type: string)
-                    null sort order: zz
+                  top n: 10
+                  Select Operator
+                    expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 10
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
                       null sort order: zz
@@ -790,12 +790,12 @@ STAGE PLANS:
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
-                outputColumnNames: _col0, _col1
+              Limit
+                Number of rows: 10
                 Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 10
+                Select Operator
+                  expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
@@ -984,19 +984,19 @@ STAGE PLANS:
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
-                outputColumnNames: _col0, _col1
-                Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 10
+              Limit
+                Number of rows: 10
+                Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
+                Top N Key Operator
+                  sort order: ++
+                  keys: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                  null sort order: zz
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                  Top N Key Operator
-                    sort order: ++
-                    keys: _col0 (type: string), _col1 (type: string)
-                    null sort order: zz
+                  top n: 10
+                  Select Operator
+                    expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                    outputColumnNames: _col0, _col1
                     Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                    top n: 10
                     Reduce Output Operator
                       key expressions: _col0 (type: string), _col1 (type: string)
                       null sort order: zz
@@ -1005,12 +1005,12 @@ STAGE PLANS:
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
-              Select Operator
-                expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
-                outputColumnNames: _col0, _col1
+              Limit
+                Number of rows: 10
                 Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
-                Limit
-                  Number of rows: 10
+                Select Operator
+                  expressions: KEY.reducesinkkey0 (type: string), KEY.reducesinkkey1 (type: string)
+                  outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false

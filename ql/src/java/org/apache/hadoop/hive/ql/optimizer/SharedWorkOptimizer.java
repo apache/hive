@@ -1503,6 +1503,7 @@ public class SharedWorkOptimizer extends Transform {
         StringUtils.equals(op1Conf.getParitionColsString(), op2Conf.getParitionColsString()) &&
         op1Conf.getTag() == op2Conf.getTag() &&
         StringUtils.equals(op1Conf.getOrder(), op2Conf.getOrder()) &&
+        StringUtils.equals(op1Conf.getNullOrder(), op2Conf.getNullOrder()) &&
         op1Conf.getTopN() == op2Conf.getTopN() &&
         canDeduplicateReduceTraits(op1Conf, op2Conf)) {
         return true;

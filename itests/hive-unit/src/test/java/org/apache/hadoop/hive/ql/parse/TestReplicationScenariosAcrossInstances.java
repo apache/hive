@@ -19,6 +19,8 @@ package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -32,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.incremental.IncrementalLoadTasksBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.repl.PathBuilder;
@@ -63,6 +66,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.TARGET_OF_REPLICATION;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -73,6 +77,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcrossInstances {
+  private static final String NS_REMOTE = "nsRemote";
   @BeforeClass
   public static void classLevelSetup() throws Exception {
     HashMap<String, String> overrides = new HashMap<>();
@@ -158,7 +163,7 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     Path identityUdf2HdfsPath = new Path(primary.functionsRoot, "idFunc2" + File.separator + "identity_udf2.jar");
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
     setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf2HdfsPath);
-    List<String> withClasuse = Arrays.asList("'" + HiveConf.ConfVars.REPL_DATA_COPY_LAZY.varname + "'='true'");
+    List<String> withClasuse = Arrays.asList("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
 
     primary.run("CREATE FUNCTION " + primaryDbName
             + ".idFunc1 as 'IdentityStringUDF' "
@@ -1600,6 +1605,144 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .verifyResults(new String[] {"1", "2"});
   }
 
+  @Test
+  public void testHdfsNameserviceLazyCopy() throws Throwable {
+    List<String> clause = getHdfsNameserviceClause();
+    clause.add("'" + HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE.varname + "'='true'");
+    primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table1 (i int)")
+            .run("insert into table1 values (1)")
+            .run("insert into table1 values (2)")
+            .run("create external table ext_table1 (id int)")
+            .run("insert into ext_table1 values (3)")
+            .run("insert into ext_table1 values (4)")
+            .dump(primaryDbName, clause);
+
+    try{
+      replica.load(replicatedDbName, primaryDbName, clause);
+      Assert.fail("Expected the UnknownHostException to be thrown.");
+    } catch (IllegalArgumentException ex) {
+      assertTrue(ex.getMessage().contains("java.net.UnknownHostException: nsRemote"));
+    }
+  }
+
+  @Test
+  public void testHdfsNameserviceLazyCopyIncr() throws Throwable {
+    List<String> clause = getHdfsNameserviceClause();
+    primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table1 (i String)")
+            .run("insert into table1 values (1)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"acid_table", "table1"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"1", "2"});
+
+    primary.run("use " + primaryDbName)
+            .run("insert into table1 values (3)")
+            .dump(primaryDbName, clause);
+    try{
+      replica.load(replicatedDbName, primaryDbName, clause);
+      Assert.fail("Expected the UnknownHostException to be thrown.");
+    } catch (IllegalArgumentException ex) {
+      assertTrue(ex.getMessage().contains("java.net.UnknownHostException: nsRemote"));
+    }
+  }
+
+  @Test
+  public void testHdfsNameserviceWithDataCopy() throws Throwable {
+    List<String> clause = getHdfsNameserviceClause();
+    //NS replacement parameters has no effect when data is also copied to staging
+    clause.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET + "'='false'");
+    primary.run("use " + primaryDbName)
+            .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+                    "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+            .run("create table table1 (i String)")
+            .run("insert into table1 values (1)")
+            .run("insert into table1 values (2)")
+            .dump(primaryDbName, clause);
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"acid_table", "table1"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"1", "2"});
+
+    primary.run("use " + primaryDbName)
+            .run("insert into table1 values (3)")
+            .dump(primaryDbName, clause);
+    replica.load(replicatedDbName, primaryDbName, clause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[] {"acid_table", "table1"})
+            .run("select * from table1")
+            .verifyResults(new String[] {"1", "2", "3"});
+  }
+
+  @Test
+  public void testCreateFunctionWithHdfsNameservice() throws Throwable {
+    Path identityUdfLocalPath = new Path("../../data/files/identity_udf.jar");
+    Path identityUdf1HdfsPath = new Path(primary.functionsRoot, "idFunc1" + File.separator + "identity_udf1.jar");
+    setupUDFJarOnHDFS(identityUdfLocalPath, identityUdf1HdfsPath);
+    List<String> clause = getHdfsNameserviceClause();
+    primary.run("CREATE FUNCTION " + primaryDbName
+            + ".idFunc1 as 'IdentityStringUDF' "
+            + "using jar  '" + identityUdf1HdfsPath.toString() + "'");
+    WarehouseInstance.Tuple bootStrapDump = primary.dump(primaryDbName, clause);
+    try{
+      replica.load(replicatedDbName, primaryDbName, clause);
+      Assert.fail("Expected the UnknownHostException to be thrown.");
+    } catch (IllegalArgumentException ex) {
+      assertTrue(ex.getMessage().contains("java.net.UnknownHostException: nsRemote"));
+    }
+  }
+
+  @Test
+  public void testRangerReplicationRetryExhausted() throws Throwable {
+    List<String> clause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA + "'='true'",
+      "'" + HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY + "'='1s'", "'" + HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION
+        + "'='30s'", "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL + "'='false'", "'" + HiveConf.ConfVars.HIVE_IN_TEST
+        + "'='false'");
+    List<String> testClause = Arrays.asList("'hive.repl.include.authorization.metadata'='true'",
+      "'hive.in.test'='true'");
+    try {
+      primary.run("use " + primaryDbName)
+        .run("create table  acid_table (key int, value int) partitioned by (load_date date) " +
+          "clustered by(key) into 2 buckets stored as orc tblproperties ('transactional'='true')")
+        .run("create table table1 (i String)")
+        .run("insert into table1 values (1)")
+        .run("insert into table1 values (2)")
+        .dump(primaryDbName, clause);
+      Assert.fail();
+    } catch (Exception e) {
+      Assert.assertEquals(ErrorMsg.REPL_RETRY_EXHAUSTED.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
+    //This is now non recoverable error
+    try {
+      primary.dump(primaryDbName, clause);
+      Assert.fail();
+    } catch (Exception e) {
+      assertEquals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
+    //Delete non recoverable marker to fix this
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
+    Assert.assertNotNull(nonRecoverablePath);
+    baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
+    //This should pass as non recoverable marker removed and valid configs present.
+    primary.dump(primaryDbName, testClause);
+  }
+
   /*
   Can't test complete replication as mini ranger is not supported
   Testing just the configs and no impact on existing replication
@@ -1616,9 +1759,110 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         .run("insert into table1 values (2)");
     try {
       primary.dump(primaryDbName, clause);
+      Assert.fail();
     } catch (SemanticException e) {
-      assertEquals("Authorizer sentry not supported for replication ", e.getMessage());
+      assertEquals("Invalid config error : Authorizer sentry not supported for replication  " +
+        "for ranger service.", e.getMessage());
+      assertEquals(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
     }
+    //This is now non recoverable error
+    try {
+      primary.dump(primaryDbName, clause);
+      Assert.fail();
+    } catch (Exception e) {
+      assertEquals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
+    try {
+      replica.load(replicatedDbName, primaryDbName, clause);
+      Assert.fail();
+    } catch (Exception e) {
+      assertEquals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
+    //Delete non recoverable marker to fix this
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
+    Assert.assertNotNull(nonRecoverablePath);
+    baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
+    Assert.assertFalse(baseDumpDir.getFileSystem(primary.hiveConf).exists(nonRecoverablePath));
+    //This should pass as non recoverable marker removed and valid configs present.
+    WarehouseInstance.Tuple dump = primary.dump(primaryDbName);
+    String stackTrace = null;
+    try {
+      replica.load(replicatedDbName, primaryDbName, clause);
+    } catch (Exception e) {
+      Assert.assertEquals(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+      stackTrace = ExceptionUtils.getStackTrace(e);
+    }
+    //This is now non recoverable error
+    try {
+      replica.load(replicatedDbName, primaryDbName, clause);
+      Assert.fail();
+    } catch (Exception e) {
+      assertEquals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
+    try {
+      replica.dump(primaryDbName, clause);
+      Assert.fail();
+    } catch (Exception e) {
+      assertEquals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
+    nonRecoverablePath = new Path(dump.dumpLocation, NON_RECOVERABLE_MARKER.toString());
+    Assert.assertNotNull(nonRecoverablePath);
+    //check non recoverable stack trace
+    String actualStackTrace = readStackTrace(nonRecoverablePath, primary.hiveConf);
+    Assert.assertEquals(stackTrace, actualStackTrace);
+    //Delete non recoverable marker to fix this
+    baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
+    //This should pass now
+    replica.load(replicatedDbName, primaryDbName)
+      .run("use " + replicatedDbName)
+      .run("show tables")
+      .verifyResults(new String[] {"acid_table", "table1"})
+      .run("select * from table1")
+      .verifyResults(new String[] {"1", "2"});
+  }
+
+  private String readStackTrace(Path nonRecoverablePath, HiveConf conf) {
+    try {
+      FileSystem fs = FileSystem.get(conf);
+      FSDataInputStream in = fs.open(nonRecoverablePath);
+      BufferedReader bufferedReader = new BufferedReader(
+                new InputStreamReader(in, StandardCharsets.UTF_8));
+      String line = null;
+      StringBuilder builder = new StringBuilder();
+      while ((line=bufferedReader.readLine())!=null){
+        builder.append(line);
+        builder.append("\n");
+      }
+      try {
+        in.close();
+      } catch (IOException e) {
+        //Ignore
+      }
+      return builder.toString();
+    } catch (IOException e) {
+      return null;
+    }
+  }
+
+  private Path getNonRecoverablePath(Path dumpDir, String dbName) throws IOException {
+    Path dumpPath = new Path(dumpDir,
+      Base64.getEncoder().encodeToString(dbName.toLowerCase()
+        .getBytes(StandardCharsets.UTF_8.name())));
+    FileSystem fs = dumpPath.getFileSystem(conf);
+    if (fs.exists(dumpPath)) {
+      FileStatus[] statuses = fs.listStatus(dumpPath);
+      if (statuses.length > 0) {
+        return new Path(statuses[0].getPath(), NON_RECOVERABLE_MARKER.toString());
+      }
+    }
+    return null;
   }
 
   //Testing just the configs and no impact on existing replication
@@ -1655,14 +1899,38 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     confMap.put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "true");
     confMap.put(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA.varname, "true");
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, true);
+    ensureFailedAdminRepl(getAtlasClause(confMap), true);
+    //Delete non recoverable marker to fix this
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
+    Assert.assertNotNull(nonRecoverablePath);
+    baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
     confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "InvalidURL:atlas");
     ensureInvalidUrl(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, true);
     confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "http://localhost:21000/atlas");
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname, true);
+    ensureFailedAdminRepl(getAtlasClause(confMap), true);
+    //Delete non recoverable marker to fix this
+    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
+    Assert.assertNotNull(nonRecoverablePath);
+    baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
     confMap.put(HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB.varname, replicatedDbName);
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, true);
+    ensureFailedAdminRepl(getAtlasClause(confMap), true);
+    //Delete non recoverable marker to fix this
+    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
+    Assert.assertNotNull(nonRecoverablePath);
+    baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
     confMap.put(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, "cluster0");
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, true);
+    ensureFailedAdminRepl(getAtlasClause(confMap), true);
+    //Delete non recoverable marker to fix this
+    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
+    Assert.assertNotNull(nonRecoverablePath);
+    baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
     confMap.put(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, "cluster1");
     primary.dump(primaryDbName, getAtlasClause(confMap));
     verifyAtlasMetadataPresent();
@@ -1671,14 +1939,46 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     confMap.put(HiveConf.ConfVars.HIVE_IN_TEST.varname, "true");
     confMap.put(HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA.varname, "true");
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, false);
+    ensureFailedAdminRepl(getAtlasClause(confMap), false);
+    //Delete non recoverable marker to fix this
+    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
+    Assert.assertNotNull(nonRecoverablePath);
+    baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
     confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "InvalidURL:atlas");
     ensureInvalidUrl(getAtlasClause(confMap), HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, false);
     confMap.put(HiveConf.ConfVars.REPL_ATLAS_ENDPOINT.varname, "http://localhost:21000/atlas");
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, false);
+    ensureFailedAdminRepl(getAtlasClause(confMap), false);
+    //Delete non recoverable marker to fix this
+    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
+    Assert.assertNotNull(nonRecoverablePath);
+    baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
     confMap.put(HiveConf.ConfVars.REPL_SOURCE_CLUSTER_NAME.varname, "cluster0");
     ensureFailedReplOperation(getAtlasClause(confMap), HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, false);
+    ensureFailedAdminRepl(getAtlasClause(confMap), false);
+    //Delete non recoverable marker to fix this
+    baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
+    Assert.assertNotNull(nonRecoverablePath);
+    baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
     confMap.put(HiveConf.ConfVars.REPL_TARGET_CLUSTER_NAME.varname, "cluster1");
     primary.load(replicatedDbName, primaryDbName, getAtlasClause(confMap));
+  }
+
+  private void ensureFailedAdminRepl(List<String> clause, boolean dump) throws Throwable {
+    try {
+      if (dump) {
+        primary.dump(primaryDbName, clause);
+      } else {
+        primary.load(replicatedDbName, primaryDbName, clause);
+      }
+      Assert.fail();
+    } catch (SemanticException e) {
+      assertEquals(ErrorMsg.REPL_FAILED_WITH_NON_RECOVERABLE_ERROR.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
   }
 
   private void ensureInvalidUrl(List<String> atlasClause, String endpoint, boolean dump) throws Throwable {
@@ -1732,7 +2032,8 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
       }
       Assert.fail(conf + " is mandatory config for Atlas metadata replication but it didn't fail.");
     } catch (SemanticException e) {
-      assertEquals(e.getMessage(), (conf + " is mandatory config for Atlas metadata replication"));
+      assertEquals(e.getMessage(), ("Invalid config error : " + conf
+        + " is mandatory config for Atlas metadata replication for atlas service."));
     }
   }
 
@@ -1762,5 +2063,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   private void setupUDFJarOnHDFS(Path identityUdfLocalPath, Path identityUdfHdfsPath) throws IOException {
     FileSystem fs = primary.miniDFSCluster.getFileSystem();
     fs.copyFromLocalFile(identityUdfLocalPath, identityUdfHdfsPath);
+  }
+
+  private List<String> getHdfsNameserviceClause() {
+    List<String> withClause = new ArrayList<>();
+    withClause.add("'" + HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE.varname + "'='true'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE_NAME.varname + "'='"
+            + NS_REMOTE + "'");
+    return withClause;
   }
 }

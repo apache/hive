@@ -27,8 +27,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -52,6 +56,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -67,6 +72,9 @@ final class KafkaUtils {
   private final static Logger log = LoggerFactory.getLogger(KafkaUtils.class);
   private static final String JAAS_TEMPLATE = "com.sun.security.auth.module.Krb5LoginModule required "
       + "useKeyTab=true storeKey=true keyTab=\"%s\" principal=\"%s\";";
+  private static final String JAAS_TEMPLATE_SCRAM =
+      "org.apache.kafka.common.security.scram.ScramLoginModule required "
+          + "username=\"%s\" password=\"%s\" serviceName=\"%s\" tokenauth=true;";
 
   private KafkaUtils() {
   }
@@ -370,10 +378,22 @@ final class KafkaUtils {
       log.error("Can not construct kerberos principal", e);
       throw new RuntimeException(e);
     }
-    final String jaasConf = String.format(JAAS_TEMPLATE, keyTab, principal);
+    String jaasConf = String.format(JAAS_TEMPLATE, keyTab, principal);
     props.setProperty("sasl.jaas.config", jaasConf);
+
+    if (configuration instanceof JobConf) {
+      Credentials creds = ((JobConf) configuration).getCredentials();
+      Token<?> token = creds.getToken(new Text("KAFKA_DELEGATION_TOKEN"));
+
+      if (token != null) {
+        log.info("Kafka delegation token has been found: {}", token);
+        props.setProperty("sasl.mechanism", "SCRAM-SHA-256");
+
+        jaasConf = String.format(JAAS_TEMPLATE_SCRAM, new String(token.getIdentifier()),
+            Base64.getEncoder().encodeToString(token.getPassword()), token.getService());
+        props.setProperty("sasl.jaas.config", jaasConf);
+      }
+    }
     log.info("Kafka client running with following JAAS = [{}]", jaasConf);
   }
-
-
 }

@@ -195,7 +195,7 @@ Stage-0
                                       Filter Operator [FIL_157] (rows=143966864 width=115)
                                         predicate:ws_sold_date_sk is not null
                                         TableScan [TS_147] (rows=144002668 width=115)
-                                          Output:["ws_sold_date_sk","ws_ext_sales_price"]
+                                          default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_sold_date_sk","ws_ext_sales_price"]
                                 <-Map 9 [CONTAINS] vectorized
                                   Reduce Output Operator [RS_176]
                                     PartitionCols:_col0
@@ -204,7 +204,7 @@ Stage-0
                                       Filter Operator [FIL_174] (rows=286549727 width=115)
                                         predicate:cs_sold_date_sk is not null
                                         TableScan [TS_152] (rows=287989836 width=115)
-                                          Output:["cs_sold_date_sk","cs_ext_sales_price"]
+                                          default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_sold_date_sk","cs_ext_sales_price"]
               <-Reducer 8 [SIMPLE_EDGE]
                 SHUFFLE [RS_54]
                   PartitionCols:_col0
