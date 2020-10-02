@@ -27,7 +27,7 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 
-@SuppressWarnings("rawtypes") class PassThruOffsetReader implements ReaderWithOffsets {
+class PassThruOffsetReader implements ReaderWithOffsets {
   protected final RecordReader sourceReader;
   protected final Object key;
   protected final Writable value;
@@ -58,7 +58,7 @@ import org.apache.hadoop.mapred.RecordReader;
        */
       if (!initialized) {
         // Skip header lines.
-        opNotEOF = Utilities.skipHeader(sourceReader, skipFooterCnt, key, value);
+        opNotEOF = Utilities.skipHeader(sourceReader, skipHeaderCnt, key, value);
 
         // Initialize footer buffer.
         if (opNotEOF && skipFooterCnt > 0) {
@@ -87,10 +87,9 @@ import org.apache.hadoop.mapred.RecordReader;
       if (opNotEOF) {
         // File reached the end
         return true;
-      } else {
-        // Done reading
-        return false;
       }
+      // Done reading
+      return false;
     } catch (Exception e) {
       throw new IOException(e);
     }
