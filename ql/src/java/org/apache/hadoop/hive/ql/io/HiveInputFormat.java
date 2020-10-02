@@ -386,7 +386,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   public RecordReader getRecordReader(InputSplit split, JobConf job,
       Reporter reporter) throws IOException {
     HiveInputSplit hsplit = (HiveInputSplit) split;
-    InputSplit inputSplit = hsplit.getInputSplit();
     String inputFormatClassName = null;
     Class inputFormatClass = null;
     try {
@@ -427,7 +426,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
     RecordReader innerReader = null;
     try {
-      innerReader = inputFormat.getRecordReader(inputSplit, job, reporter);
+      // Handle the special header/footer skipping cases here.
+      innerReader = RecordReaderWrapper.create(inputFormat, hsplit, part.getTableDesc(), job, reporter);
     } catch (Exception e) {
       innerReader = HiveIOExceptionHandlerUtil
           .handleRecordReaderCreationException(e, job);
@@ -519,12 +519,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     conf.setInputFormat(inputFormat.getClass());
-    int headerCount = 0;
-    int footerCount = 0;
     boolean isCompressedFormat = isCompressedInput(finalDirs);
     if (table != null) {
-      headerCount = Utilities.getHeaderCount(table);
-      footerCount = Utilities.getFooterCount(table, conf);
+      int headerCount = Utilities.getHeaderCount(table);
+      int footerCount = Utilities.getFooterCount(table, conf);
       if (headerCount != 0 || footerCount != 0) {
         if (TextInputFormat.class.isAssignableFrom(inputFormatClass) && !isCompressedFormat) {
           SkippingTextInputFormat skippingTextInputFormat = new SkippingTextInputFormat();
