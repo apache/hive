@@ -102,6 +102,8 @@ SELECT * from numericDataType_n1;
 
 -- add another constraint on same column
 ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE;
+-- we need to do an insert to refresh metadata (CDPD-17940)
+INSERT INTO numericDataType_n1(b) values(457);
 DESC FORMATTED numericDataType_n1;
 EXPLAIN INSERT INTO numericDataType_n1(b) values(56);
 INSERT INTO numericDataType_n1(b) values(456);
@@ -162,6 +164,8 @@ SELECT * from numericDataType_n1;
 
 -- add another constraint on same column
 ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE;
+-- we need to do an insert to refresh metadata (CDPD-17940)
+INSERT INTO numericDataType_n1(b) values(457);
 DESC FORMATTED numericDataType_n1;
 EXPLAIN INSERT INTO numericDataType_n1(b) values(56);
 INSERT INTO numericDataType_n1(b) values(456);

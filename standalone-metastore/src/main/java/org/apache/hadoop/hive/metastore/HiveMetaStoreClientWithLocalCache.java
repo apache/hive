@@ -356,6 +356,126 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   }
 
   @Override
+  protected PrimaryKeysResponse getPrimaryKeysInternal(PrimaryKeysRequest req) throws TException {
+    if (isCacheEnabledAndInitialized()) {
+      // TODO: There is no consistency guarantees around constraints right now since
+      // changing constraints does not change the snapshot nor the table id (CDPD-17940).
+      TableWatermark watermark = new TableWatermark(
+          getValidWriteIdList(req.getDb_name(), req.getTbl_name()),
+          getTable(req.getDb_name(), req.getTbl_name()).getId());
+      if (watermark.isValid()) {
+        CacheKey cacheKey = new CacheKey(KeyType.PRIMARY_KEYS, watermark, req);
+        PrimaryKeysResponse r = (PrimaryKeysResponse) mscLocalCache.getIfPresent(cacheKey);
+        if (r == null) {
+          r = super.getPrimaryKeysInternal(req);
+          mscLocalCache.put(cacheKey, r);
+        } else {
+          LOG.debug(
+              "HS2 level HMS cache: method=getPrimaryKeysInternal, dbName={}, tblName={}",
+              req.getDb_name(), req.getTbl_name());
+        }
+
+        if (LOG.isDebugEnabled() && recordStats) {
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        }
+
+        return r;
+      }
+    }
+    return super.getPrimaryKeysInternal(req);
+  }
+
+  @Override
+  protected ForeignKeysResponse getForeignKeysInternal(ForeignKeysRequest req) throws TException {
+    if (isCacheEnabledAndInitialized()) {
+      // TODO: There is no consistency guarantees around constraints right now since
+      // changing constraints does not change the snapshot nor the table id (CDPD-17940).
+      TableWatermark watermark = new TableWatermark(
+          getValidWriteIdList(req.getForeign_db_name(), req.getForeign_tbl_name()),
+          getTable(req.getForeign_db_name(), req.getForeign_tbl_name()).getId());
+      if (watermark.isValid()) {
+        CacheKey cacheKey = new CacheKey(KeyType.FOREIGN_KEYS, watermark, req);
+        ForeignKeysResponse r = (ForeignKeysResponse) mscLocalCache.getIfPresent(cacheKey);
+        if (r == null) {
+          r = super.getForeignKeysInternal(req);
+          mscLocalCache.put(cacheKey, r);
+        } else {
+          LOG.debug(
+              "HS2 level HMS cache: method=getForeignKeysInternal, dbName={}, tblName={}",
+              req.getForeign_db_name(), req.getForeign_tbl_name());
+        }
+
+        if (LOG.isDebugEnabled() && recordStats) {
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        }
+
+        return r;
+      }
+    }
+    return super.getForeignKeysInternal(req);
+  }
+
+  @Override
+  protected UniqueConstraintsResponse getUniqueConstraintsInternal(UniqueConstraintsRequest req) throws TException {
+    if (isCacheEnabledAndInitialized()) {
+      // TODO: There is no consistency guarantees around constraints right now since
+      // changing constraints does not change the snapshot nor the table id (CDPD-17940).
+      TableWatermark watermark = new TableWatermark(
+          getValidWriteIdList(req.getDb_name(), req.getTbl_name()),
+          getTable(req.getDb_name(), req.getTbl_name()).getId());
+      if (watermark.isValid()) {
+        CacheKey cacheKey = new CacheKey(KeyType.UNIQUE_CONSTRAINTS, watermark, req);
+        UniqueConstraintsResponse r = (UniqueConstraintsResponse) mscLocalCache.getIfPresent(cacheKey);
+        if (r == null) {
+          r = super.getUniqueConstraintsInternal(req);
+          mscLocalCache.put(cacheKey, r);
+        } else {
+          LOG.debug(
+              "HS2 level HMS cache: method=getUniqueConstraintsInternal, dbName={}, tblName={}",
+              req.getDb_name(), req.getTbl_name());
+        }
+
+        if (LOG.isDebugEnabled() && recordStats) {
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        }
+
+        return r;
+      }
+    }
+    return super.getUniqueConstraintsInternal(req);
+  }
+
+  @Override
+  protected NotNullConstraintsResponse getNotNullConstraintsInternal(NotNullConstraintsRequest req) throws TException {
+    if (isCacheEnabledAndInitialized()) {
+      // TODO: There is no consistency guarantees around constraints right now since
+      // changing constraints does not change the snapshot nor the table id (CDPD-17940).
+      TableWatermark watermark = new TableWatermark(
+          getValidWriteIdList(req.getDb_name(), req.getTbl_name()),
+          getTable(req.getDb_name(), req.getTbl_name()).getId());
+      if (watermark.isValid()) {
+        CacheKey cacheKey = new CacheKey(KeyType.NOT_NULL_CONSTRAINTS, watermark, req);
+        NotNullConstraintsResponse r = (NotNullConstraintsResponse) mscLocalCache.getIfPresent(cacheKey);
+        if (r == null) {
+          r = super.getNotNullConstraintsInternal(req);
+          mscLocalCache.put(cacheKey, r);
+        } else {
+          LOG.debug(
+              "HS2 level HMS cache: method=getNotNullConstraintsInternal, dbName={}, tblName={}",
+              req.getDb_name(), req.getTbl_name());
+        }
+
+        if (LOG.isDebugEnabled() && recordStats) {
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        }
+
+        return r;
+      }
+    }
+    return super.getNotNullConstraintsInternal(req);
+  }
+
+  @Override
   protected TableStatsResult getTableColumnStatisticsInternal(TableStatsRequest req) throws TException {
     if (isCacheEnabledAndInitialized()) {
       TableWatermark watermark = new TableWatermark(

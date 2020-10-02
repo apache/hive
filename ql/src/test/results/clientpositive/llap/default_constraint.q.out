@@ -1525,6 +1525,20 @@ PREHOOK: query: ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DI
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: INSERT INTO numericDataType_n1(b) values(457)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: INSERT INTO numericDataType_n1(b) values(457)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numericdatatype_n1
+POSTHOOK: Lineage: numericdatatype_n1.a SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.b SCRIPT []
+POSTHOOK: Lineage: numericdatatype_n1.c SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.d SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.e SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.f SIMPLE []
 PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@numericdatatype_n1
@@ -1547,8 +1561,8 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
-	numFiles            	1                   
-	totalSize           	1097                
+	numFiles            	2                   
+	totalSize           	2186                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1689,6 +1703,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
+NULL	457	2147483647	9223372036854775807	3.4E38	1234567.89
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
 PREHOOK: query: ALTER TABLE numericDataType_n1 CHANGE a a TINYINT CONSTRAINT second_null_constraint NOT NULL ENABLE
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -1721,8 +1736,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 #### A masked pattern was here ####
-	numFiles            	2                   
-	totalSize           	2195                
+	numFiles            	3                   
+	totalSize           	3283                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1799,8 +1814,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 #### A masked pattern was here ####
-	numFiles            	2                   
-	totalSize           	2195                
+	numFiles            	3                   
+	totalSize           	3283                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1955,6 +1970,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
+NULL	457	2147483647	9223372036854775807	3.4E38	1234567.89
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
 127	32767	2147483647	9223372036854775807	3.4E38	847.45
 PREHOOK: query: DESC FORMATTED numericDataType_n1
@@ -1980,8 +1996,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 #### A masked pattern was here ####
-	numFiles            	3                   
-	totalSize           	3281                
+	numFiles            	4                   
+	totalSize           	4370                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2057,8 +2073,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 #### A masked pattern was here ####
-	numFiles            	3                   
-	totalSize           	3281                
+	numFiles            	4                   
+	totalSize           	4370                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2135,8 +2151,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	bucketing_version   	2                   
 #### A masked pattern was here ####
-	numFiles            	3                   
-	totalSize           	3281                
+	numFiles            	4                   
+	totalSize           	4370                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2289,6 +2305,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
+NULL	457	2147483647	9223372036854775807	3.4E38	1234567.89
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
 127	32767	2147483647	9223372036854775807	3.4E38	847.45
 108	32767	2147483647	9223372036854775807	3.4E38	847.45
@@ -2705,6 +2722,20 @@ PREHOOK: query: ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DI
 PREHOOK: type: ALTERTABLE_ADDCONSTRAINT
 POSTHOOK: query: ALTER TABLE numericDataType_n1 ADD CONSTRAINT uk1 UNIQUE(a,b) DISABLE NOVALIDATE
 POSTHOOK: type: ALTERTABLE_ADDCONSTRAINT
+PREHOOK: query: INSERT INTO numericDataType_n1(b) values(457)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@numericdatatype_n1
+POSTHOOK: query: INSERT INTO numericDataType_n1(b) values(457)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@numericdatatype_n1
+POSTHOOK: Lineage: numericdatatype_n1.a SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.b SCRIPT []
+POSTHOOK: Lineage: numericdatatype_n1.c SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.d SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.e SIMPLE []
+POSTHOOK: Lineage: numericdatatype_n1.f SIMPLE []
 PREHOOK: query: DESC FORMATTED numericDataType_n1
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@numericdatatype_n1
@@ -2727,8 +2758,8 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	bucketing_version   	2                   
-	numFiles            	1                   
-	totalSize           	1097                
+	numFiles            	2                   
+	totalSize           	2186                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -2869,6 +2900,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@numericdatatype_n1
 #### A masked pattern was here ####
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
+NULL	457	2147483647	9223372036854775807	3.4E38	1234567.89
 NULL	456	2147483647	9223372036854775807	3.4E38	1234567.89
 PREHOOK: query: DROP TABLE numericDataType_n1
 PREHOOK: type: DROPTABLE
