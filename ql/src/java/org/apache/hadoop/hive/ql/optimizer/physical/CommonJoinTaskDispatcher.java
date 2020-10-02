@@ -60,6 +60,8 @@ import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * Convert tasks involving JOIN into MAPJOIN.
@@ -106,6 +108,8 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
  * make current task depends on this new generated task
  */
 public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher implements Dispatcher {
+
+  protected final Logger LOG = LoggerFactory.getLogger(CommonJoinTaskDispatcher.class);
 
   HashMap<String, Long> aliasToSize = null;
 
@@ -226,14 +230,19 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
           " operator as the work associated with alias " + mapJoinAlias +
           ". Found a " + mapJoinAliasToWork.get(mapJoinAlias).getName() + " operator.");
     }
-    FileSinkOperator mapJoinTaskFileSinkOperator =
-        OperatorUtils.findSingleOperator(
-            mapJoinTaskTableScanOperator, FileSinkOperator.class);
-    if (mapJoinTaskFileSinkOperator == null) {
+
+    Set<FileSinkOperator> mapJoinTaskFileSinkOperators = 
+        OperatorUtils.findOperators(mapJoinTaskTableScanOperator, FileSinkOperator.class);
+    if (mapJoinTaskFileSinkOperators.isEmpty()) {
       throw new SemanticException("Cannot find the " + FileSinkOperator.getOperatorName() +
           " operator at the last operator of the MapJoin Task.");
     }
+    if (mapJoinTaskFileSinkOperators.size() > 1) {
+      LOG.warn("Multiple " + FileSinkOperator.getOperatorName() + " operators found at the last operator of the MapJoin Task.");
+      return;
+    }
     // The mapJoinTaskFileSinkOperator writes to a different directory
+    FileSinkOperator mapJoinTaskFileSinkOperator = mapJoinTaskFileSinkOperators.iterator().next();
     Path childMRPath = mapJoinTaskFileSinkOperator.getConf().getDirName();
     List<String> childMRAliases = childMapWork.getPathToAliases().get(childMRPath);
     if (childMRAliases == null || childMRAliases.size() != 1) {
