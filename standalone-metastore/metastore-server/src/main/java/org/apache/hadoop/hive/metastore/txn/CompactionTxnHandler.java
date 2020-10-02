@@ -107,11 +107,12 @@ class CompactionTxnHandler extends TxnHandler {
         // Check for aborted txns: number of aborted txns past threshold and age of aborted txns
         // past time threshold
         boolean checkAbortedTimeThreshold = abortedTimeThreshold >= 0;
-        final String sCheckAborted = "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\","
-            + "MIN(\"TXN_STARTED\"), COUNT(*)"
+        String sCheckAborted = "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", "
+            + "MIN(\"TXN_STARTED\"), COUNT(*), "
+            + "MAX(CASE WHEN \"TC_OPERATION_TYPE\" = " + OperationType.DYNPART + " THEN 1 ELSE 0 END) AS \"IS_DP\" "
             + "FROM \"TXNS\", \"TXN_COMPONENTS\" "
             + "WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = " + TxnStatus.ABORTED + " "
-            + "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\""
+            + "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" "
             + (checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold);
 
         LOG.debug("Going to execute query <" + sCheckAborted + ">");
@@ -126,6 +127,9 @@ class CompactionTxnHandler extends TxnHandler {
             info.dbname = rs.getString(1);
             info.tableName = rs.getString(2);
             info.partName = rs.getString(3);
+            if (rs.getBoolean(6) ) {
+              info.type = dbCompactionType2ThriftType(OperationType.DYNPART.getSqlConst().charAt(0));
+            }
             info.tooManyAborts = numAbortedTxns > abortedThreshold;
             info.hasOldAbort = pastTimeThreshold;
             if (LOG.isDebugEnabled()) {
@@ -134,9 +138,6 @@ class CompactionTxnHandler extends TxnHandler {
             response.add(info);
           }
         }
-
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
       } catch (SQLException e) {
         LOG.error("Unable to connect to transaction database " + e.getMessage());
         checkRetryable(dbConn, e,
@@ -300,6 +301,7 @@ class CompactionTxnHandler extends TxnHandler {
           switch (rs.getString(5).charAt(0)) {
             case MAJOR_TYPE: info.type = CompactionType.MAJOR; break;
             case MINOR_TYPE: info.type = CompactionType.MINOR; break;
+            case CLEAN_ABORTED: info.type = CompactionType.CLEAN_ABORTED; break;
             default: throw new MetaException("Unexpected compaction type " + rs.getString(5));
           }
           info.runAs = rs.getString(6);
@@ -308,6 +310,22 @@ class CompactionTxnHandler extends TxnHandler {
             LOG.debug("Found ready to clean: " + info.toString());
           }
           rc.add(info);
+        }
+        for (CompactionInfo ci: rc) {
+          if (ci.type.equals(CompactionType.CLEAN_ABORTED)) {
+            String s2 = "SELECT \"TC_WRITEID\" FROM \"TXN_COMPONENTS\" " +
+              "WHERE \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ? AND \"TC_OPERATION_TYPE\" = ?";
+            PreparedStatement pStmt = dbConn.prepareStatement(s2);
+            LOG.debug("Going to execute query <" + s2 + ">");
+            pStmt.setString(1, ci.dbname);
+            pStmt.setString(2, ci.tableName);
+            pStmt.setString(3, String.valueOf(OperationType.DYNPART.getSqlConst()));
+            rs = pStmt.executeQuery();
+            ci.writeIds = new HashSet<>();
+            while(rs.next()) {
+              ci.writeIds.add(rs.getLong(1));
+            }
+          }
         }
         LOG.debug("Going to rollback");
         dbConn.rollback();
@@ -331,11 +349,12 @@ class CompactionTxnHandler extends TxnHandler {
    * This will remove an entry from the queue after
    * it has been compacted.
    *
-   * @param info info on the compaction entry to remove
+   * @param cinfo info on the compaction entry to remove
    */
   @Override
   @RetrySemantics.CannotRetry
-  public void markCleaned(CompactionInfo info) throws MetaException {
+  public void markCleaned(CompactionInfo cinfo) throws MetaException {
+    CompactionInfo info = cinfo;
     if (LOG.isDebugEnabled()) {
       LOG.debug("Running markCleaned with CompactionInfo: " + info.toString());
     }
@@ -352,8 +371,9 @@ class CompactionTxnHandler extends TxnHandler {
             + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
         pStmt.setLong(1, info.id);
         rs = pStmt.executeQuery();
-        if(rs.next()) {
+        if (rs.next()) {
           info = CompactionInfo.loadFullFromCompactionQueue(rs);
+          info.writeIds = cinfo.writeIds;
         }
         else {
           throw new IllegalStateException("No record with CQ_ID=" + info.id + " found in COMPACTION_QUEUE");
@@ -404,8 +424,11 @@ class CompactionTxnHandler extends TxnHandler {
         }
         LOG.debug("Going to execute update <" + s + ">");
         if ((updCount = pStmt.executeUpdate()) < 1) {
-          LOG.error("Expected to remove at least one row from completed_txn_components when " +
-            "marking compaction entry as clean!");
+          // In the case of clean abort commit hasn't happened so completed_txn_components hasn't been filled
+          if (!info.isCleanAbortedCompaction()) {
+            LOG.error("Expected to remove at least one row from completed_txn_components when " +
+              "marking compaction entry as clean!");
+          }
         }
         LOG.debug("Removed " + updCount + " records from completed_txn_components");
         /*
@@ -428,6 +451,10 @@ class CompactionTxnHandler extends TxnHandler {
         }
         if (info.partName != null) {
           pStmt.setString(paramCount++, info.partName);
+        }
+        if (info.writeIds != null && info.writeIds.size() > 0) {
+          String[] writeIds = info.writeIds.stream().map(String::valueOf).toArray(String[]::new);
+          s += " AND \"TC_WRITEID\" IN (" + String.join(",", writeIds) + ")";
         }
         LOG.debug("Going to execute update <" + s + ">");
         rs = pStmt.executeQuery();
@@ -455,6 +482,10 @@ class CompactionTxnHandler extends TxnHandler {
             suffix.append(" AND \"TC_PARTITION\" = ?");
           }
 
+          if (info.writeIds != null && info.writeIds.size() > 0) {
+            String[] writeIds = info.writeIds.stream().map(String::valueOf).toArray(String[]::new);
+            suffix.append(" AND \"TC_WRITEID\" IN (").append(String.join(",", writeIds)).append(")");
+          }
           // Populate the complete query with provided prefix and suffix
           List<Integer> counts = TxnUtils
               .buildQueryWithINClauseStrings(conf, queries, prefix, suffix, questions, "\"TC_TXNID\"",

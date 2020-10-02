@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.metastore.api.DataOperationType;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.function.Function.identity;
@@ -34,13 +35,15 @@ public enum OperationType {
   INSERT('i', DataOperationType.INSERT),
   UPDATE('u', DataOperationType.UPDATE),
   DELETE('d', DataOperationType.DELETE),
-  COMPACT('c', null);
+  COMPACT('c', null),
+  DYNPART('p', null);
 
   private final char sqlConst;
   private final DataOperationType dataOperationType;
 
   private static final Map<DataOperationType, OperationType> DOT_LOOKUP =
-      Arrays.stream(OperationType.values()).collect(toMap(OperationType::getDataOperationType, identity()));
+      Arrays.stream(OperationType.values()).filter(type -> type.dataOperationType != null).collect(
+          toMap(OperationType::getDataOperationType, identity()));
 
   OperationType(char sqlConst, DataOperationType dataOperationType) {
     this.sqlConst = sqlConst;

@@ -55,7 +55,12 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
-import org.apache.hadoop.hive.common.*;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -1367,7 +1372,7 @@ public class AcidUtils {
       original.clear();
       originalDirectories.clear();
     } else {
-      // Okay, we're going to need these originals.  
+      // Okay, we're going to need these originals.
       // Recurse through them and figure out what we really need.
       // If we already have the original list, do nothing
       // If childrenWithId != null, we would have already populated "original"
@@ -1524,7 +1529,7 @@ public class AcidUtils {
   }
 
   /**
-   * DFS dir listing. 
+   * DFS dir listing.
    * Captures a dir and the corresponding list of files it contains,
    * with additional properties about the dir (like isBase etc)
    *
@@ -1810,6 +1815,11 @@ public class AcidUtils {
       // keep track for error reporting
       bestBase.oldestBase = baseDir;
       bestBase.oldestBaseWriteId = writeId;
+    }
+    // Handle aborted IOW base.
+    if (writeIdList.isWriteIdAborted(writeId) && !isCompactedBase(parsedBase, fs, dirSnapshot)) {
+      aborted.add(baseDir);
+      return;
     }
     if (bestBase.basePath == null) {
       if (isValidBase(parsedBase, writeIdList, fs, dirSnapshot)) {
@@ -2791,7 +2801,6 @@ public class AcidUtils {
     }
   }
 
-
   public static Long extractWriteId(Path file) {
     String fileName = file.getName();
     if (!fileName.startsWith(DELTA_PREFIX) && !fileName.startsWith(BASE_PREFIX)) {
@@ -2818,6 +2827,87 @@ public class AcidUtils {
   public static void setNonTransactional(Map<String, String> tblProps) {
     tblProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false");
     tblProps.remove(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
+  }
+
+  /**
+   * Look for delta directories matching the list of writeIds and deletes them.
+   * @param rootPartition root partition to look for the delta directories
+   * @param conf configuration
+   * @param writeIds list of writeIds to look for in the delta directories
+   * @return list of deleted directories.
+   * @throws IOException
+   */
+  public static List<FileStatus> deleteDeltaDirectories(Path rootPartition, Configuration conf, Set<Long> writeIds)
+      throws IOException {
+    FileSystem fs = rootPartition.getFileSystem(conf);
+
+    PathFilter filter = (p) -> {
+      String name = p.getName();
+      for (Long wId : writeIds) {
+        if (name.startsWith(deltaSubdir(wId, wId)) && !name.contains("=")) {
+          return true;
+        } else if (name.startsWith(baseDir(wId)) && !name.contains("=")) {
+          return true;
+        }
+      }
+      return false;
+    };
+    List<FileStatus> deleted = new ArrayList<>();
+    deleteDeltaDirectoriesAux(rootPartition, fs, filter, deleted);
+    return deleted;
+  }
+
+  private static void deleteDeltaDirectoriesAux(Path root, FileSystem fs, PathFilter filter, List<FileStatus> deleted)
+      throws IOException {
+    RemoteIterator<FileStatus> it = listIterator(fs, root, null);
+
+    while (it.hasNext()) {
+      FileStatus fStatus = it.next();
+      if (fStatus.isDirectory()) {
+        if (filter.accept(fStatus.getPath())) {
+          fs.delete(fStatus.getPath(), true);
+          deleted.add(fStatus);
+        } else {
+          deleteDeltaDirectoriesAux(fStatus.getPath(), fs, filter, deleted);
+          if (isDirectoryEmpty(fs, fStatus.getPath())) {
+            fs.delete(fStatus.getPath(), false);
+            deleted.add(fStatus);
+          }
+        }
+      }
+    }
+  }
+
+  private static boolean isDirectoryEmpty(FileSystem fs, Path path) throws IOException {
+    RemoteIterator<FileStatus> it = listIterator(fs, path, null);
+    return !it.hasNext();
+  }
+
+  private static RemoteIterator<FileStatus> listIterator(FileSystem fs, Path path, PathFilter filter)
+      throws IOException {
+    try {
+      return new ToFileStatusIterator(SHIMS.listLocatedHdfsStatusIterator(fs, path, filter));
+    } catch (Throwable t) {
+      return HdfsUtils.listLocatedStatusIterator(fs, path, filter);
+    }
+  }
+
+  private static final class ToFileStatusIterator implements RemoteIterator<FileStatus> {
+    private final RemoteIterator<HdfsFileStatusWithId> it;
+
+    ToFileStatusIterator(RemoteIterator<HdfsFileStatusWithId> it) {
+      this.it = it;
+    }
+
+    @Override
+    public boolean hasNext() throws IOException {
+      return it.hasNext();
+    }
+
+    @Override
+    public FileStatus next() throws IOException {
+      return it.next().getFileStatus();
+    }
   }
 
   private static boolean needsLock(Entity entity) {

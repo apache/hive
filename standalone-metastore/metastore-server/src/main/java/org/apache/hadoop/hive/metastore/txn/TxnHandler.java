@@ -228,6 +228,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // Compactor types
   static final protected char MAJOR_TYPE = 'a';
   static final protected char MINOR_TYPE = 'i';
+  static final protected char CLEAN_ABORTED = 'p';
 
 
   private static final String TXN_TMP_STATE = "_";
@@ -251,20 +252,21 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "\"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", \"HL_USER\", \"HL_HOST\", \"HL_AGENT_INFO\") " +
       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, %s, ?, ?, ?)";
   private static final String TXN_COMPONENTS_INSERT_QUERY = "INSERT INTO \"TXN_COMPONENTS\" (" +
-          "\"TC_TXNID\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_OPERATION_TYPE\", \"TC_WRITEID\")" +
-          " VALUES (?, ?, ?, ?, ?, ?)";
+      "\"TC_TXNID\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_OPERATION_TYPE\", \"TC_WRITEID\")" +
+      " VALUES (?, ?, ?, ?, ?, ?)";
   private static final String TXN_COMPONENTS_DP_DELETE_QUERY = "DELETE FROM \"TXN_COMPONENTS\" " +
       "WHERE \"TC_TXNID\" = ? AND \"TC_PARTITION\" IS NULL";
   private static final String INCREMENT_NEXT_LOCK_ID_QUERY = "UPDATE \"NEXT_LOCK_ID\" SET \"NL_NEXT\" = %s";
-  private static final String UPDATE_HIVE_LOCKS_EXT_ID_QUERY = "UPDATE \"HIVE_LOCKS\" SET \"HL_LOCK_EXT_ID\" = %s WHERE \"HL_LOCK_EXT_ID\" = %s";
-  private static final String SELECT_WRITE_ID_QUERY = "SELECT \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" WHERE"
-          + " \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND \"T2W_TXNID\" = ?";
+  private static final String UPDATE_HIVE_LOCKS_EXT_ID_QUERY = "UPDATE \"HIVE_LOCKS\" SET \"HL_LOCK_EXT_ID\" = %s " +
+      "WHERE \"HL_LOCK_EXT_ID\" = %s";
+  private static final String SELECT_WRITE_ID_QUERY = "SELECT \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" WHERE" +
+      " \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND \"T2W_TXNID\" = ?";
   private static final String COMPL_TXN_COMPONENTS_INSERT_QUERY = "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" " +
-          "(\"CTC_TXNID\"," + " \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\")" +
-          " VALUES (%s, ?, ?, ?, ?, %s)";
+      "(\"CTC_TXNID\"," + " \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\")" +
+      " VALUES (%s, ?, ?, ?, ?, %s)";
   private static final String TXNS_INSERT_QRY = "INSERT INTO \"TXNS\" " +
-      "(\"TXN_STATE\", \"TXN_STARTED\", \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\", \"TXN_TYPE\") "
-      + "VALUES(?,%s,%s,?,?,?)";
+      "(\"TXN_STATE\", \"TXN_STARTED\", \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\", \"TXN_TYPE\") " +
+      "VALUES(?,%s,%s,?,?,?)";
   private static final String SELECT_LOCKS_FOR_LOCK_ID_QUERY = "SELECT \"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", " +
       "\"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_TXNID\" " +
       "FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = ?";
@@ -1265,8 +1267,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           raiseTxnUnexpectedState(actualTxnStatus, txnid);
         }
 
-        String conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN(" +
-                OperationType.UPDATE + "," + OperationType.DELETE + ")";
+        String conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN (" +
+                OperationType.UPDATE + ", " + OperationType.DELETE + ")";
 
         long tempCommitId = generateTemporaryId();
         if (txnType.get() != TxnType.READ_ONLY
@@ -1494,7 +1496,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         "' FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = " + txnid +
         //we only track compactor activity in TXN_COMPONENTS to handle the case where the
         //compactor txn aborts - so don't bother copying it to COMPLETED_TXN_COMPONENTS
-        " AND \"TC_OPERATION_TYPE\" <> " + OperationType.COMPACT;
+        " AND \"TC_OPERATION_TYPE\" NOT IN(" + OperationType.COMPACT + "," + OperationType.DYNPART + ")";
     LOG.debug("Going to execute insert <" + s + ">");
 
     if ((stmt.executeUpdate(s)) < 1) {
@@ -2685,12 +2687,13 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if (!shouldUpdateTxnComponent(txnid, rqst, lc)) {
             continue;
           }
-
           String dbName = normalizeCase(lc.getDbname());
           String tblName = normalizeCase(lc.getTablename());
           String partName = normalizeCase(lc.getPartitionname());
+          OperationType opType = OperationType.fromDataOperationType(lc.getOperationType());
 
           if (lc.isSetIsDynamicPartitionWrite() && lc.isIsDynamicPartitionWrite()) {
+            opType = OperationType.DYNPART;
             partName = null;
             if (writeIdCache.containsKey(Pair.of(dbName, tblName))) {
               continue;
@@ -2702,7 +2705,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           pstmt.setString(2, dbName);
           pstmt.setString(3, tblName);
           pstmt.setString(4, partName);
-          pstmt.setString(5, OperationType.fromDataOperationType(lc.getOperationType()).getSqlConst());
+          pstmt.setString(5, opType.getSqlConst());
           pstmt.setObject(6, writeId.orElse(null));
 
           pstmt.addBatch();
@@ -2762,15 +2765,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     else {
       switch (lc.getOperationType()) {
         case INSERT:
-            /**
-             * we know this is part of DP operation and so we'll get
-             * {@link #addDynamicPartitions(AddDynamicPartitions)} call with the list
-             * of partitions actually changed.
-             */
-            return !lc.isSetIsDynamicPartitionWrite() || !lc.isIsDynamicPartitionWrite();
         case UPDATE:
         case DELETE:
-            return true;
+          return true;
         case SELECT:
           return false;
         case NO_TXN:
@@ -3311,10 +3308,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         long id = generateCompactionQueueId(stmt);
 
         List<String> params = new ArrayList<>();
+        // There could a clean abort compaction for the same database, table and with null
+        // partition but in this case it would be in READY_FOR_CLEANING state.
         StringBuilder sb = new StringBuilder("SELECT \"CQ_ID\", \"CQ_STATE\" FROM \"COMPACTION_QUEUE\" WHERE").
           append(" \"CQ_STATE\" IN(").append(quoteChar(INITIATED_STATE)).
-            append(",").append(quoteChar(WORKING_STATE)).
-          append(") AND \"CQ_DATABASE\"=?").
+            append(",").append(quoteChar(WORKING_STATE));
+        if (rqst.getType().equals(CompactionType.CLEAN_ABORTED)) {
+          sb.append(",").append(quoteChar(READY_FOR_CLEANING));
+        }
+        sb.append(") AND \"CQ_DATABASE\"=?").
           append(" AND \"CQ_TABLE\"=?").append(" AND ");
         params.add(rqst.getDbname());
         params.add(rqst.getTablename());
@@ -3323,6 +3325,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         } else {
           sb.append("\"CQ_PARTITION\"=?");
           params.add(rqst.getPartitionname());
+        }
+
+        // This means even if we have several writeIds for the same table
+        // only one entry will be inserted in COMPACTION_QUEUE
+        if (rqst.getType().equals(CompactionType.CLEAN_ABORTED)) {
+          sb.append(" AND cq_type=").append(quoteChar(CLEAN_ABORTED));
         }
 
         pst = sqlGenerator.prepareStmtWithParameters(dbConn, sb.toString(), params);
@@ -3361,7 +3369,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         } else {
           buf.append("'");
         }
-        buf.append(INITIATED_STATE);
+        char state = INITIATED_STATE;
+        // We send the work directly to the cleaning stage because
+        // the worker doesn't have to do anything, we only have to delete
+        // files that may have been written.
+        if (rqst.getType().equals(CompactionType.CLEAN_ABORTED)) {
+          state = READY_FOR_CLEANING;
+        }
+        buf.append(state);
         buf.append("', '");
         switch (rqst.getType()) {
           case MAJOR:
@@ -3370,6 +3385,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
           case MINOR:
             buf.append(MINOR_TYPE);
+            break;
+
+          case CLEAN_ABORTED:
+            buf.append(CLEAN_ABORTED);
             break;
 
           default:
@@ -3460,6 +3479,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           switch (rs.getString(5).charAt(0)) {
             case MAJOR_TYPE: e.setType(CompactionType.MAJOR); break;
             case MINOR_TYPE: e.setType(CompactionType.MINOR); break;
+            case CLEAN_ABORTED: e.setType(CompactionType.CLEAN_ABORTED); break;
             default:
               //do nothing to handle RU/D if we add another status
           }
@@ -5224,6 +5244,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         return CompactionType.MAJOR;
       case MINOR_TYPE:
         return CompactionType.MINOR;
+      case CLEAN_ABORTED:
+        return CompactionType.CLEAN_ABORTED;
       default:
         LOG.warn("Unexpected compaction type " + dbValue);
         return null;
@@ -5235,6 +5257,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         return MAJOR_TYPE;
       case MINOR:
         return MINOR_TYPE;
+      case CLEAN_ABORTED:
+        return CLEAN_ABORTED;
       default:
         LOG.warn("Unexpected compaction type " + ct);
         return null;

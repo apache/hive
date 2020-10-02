@@ -47,7 +47,7 @@ final class MmMajorQueryCompactor extends QueryCompactor {
         .getTableName());
     AcidUtils.Directory dir = AcidUtils
         .getAcidState(null, new Path(storageDescriptor.getLocation()), hiveConf, writeIds, Ref.from(false), false);
-    QueryCompactor.Util.removeFilesForMmTable(hiveConf, dir);
+    QueryCompactor.Util.removeAbortedDirsForAcidTable(hiveConf, dir);
 
     // Set up the session for driver.
     HiveConf driverConf = new HiveConf(hiveConf);

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidTxnList;
@@ -28,6 +29,8 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -97,9 +100,9 @@ public class Cleaner extends MetaStoreCompactorThread {
           long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
           LOG.info("Cleaning based on min open txn id: " + minOpenTxnId);
           List<CompletableFuture> cleanerList = new ArrayList<>();
-          for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
+          for (CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
             cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
-                    clean(compactionInfo, minOpenTxnId)), cleanerExecutor));
+                  clean(compactionInfo, minOpenTxnId)), cleanerExecutor));
           }
           CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
         } catch (Throwable t) {
@@ -128,6 +131,14 @@ public class Cleaner extends MetaStoreCompactorThread {
   }
 
   private void clean(CompactionInfo ci, long minOpenTxnGLB) throws MetaException {
+    if (ci.isCleanAbortedCompaction()) {
+      cleanAborted(ci);
+    } else {
+      cleanRegular(ci, minOpenTxnGLB);
+    }
+  }
+
+  private void cleanRegular(CompactionInfo ci, long minOpenTxnGLB) throws MetaException {
     LOG.info("Starting cleaning for " + ci);
     try {
       Table t = resolveTable(ci);
@@ -232,6 +243,52 @@ public class Cleaner extends MetaStoreCompactorThread {
   private static String idWatermark(CompactionInfo ci) {
     return " id=" + ci.id;
   }
+
+  private void cleanAborted(CompactionInfo ci) throws MetaException {
+    if (ci.writeIds == null || ci.writeIds.size() == 0) {
+      LOG.warn("Attempted cleaning aborted transaction with empty writeId list");
+      return;
+    }
+    LOG.info("Starting abort cleaning for table " + ci.getFullTableName()
+        + ". This will scan all the partition directories.");
+    try {
+      Table t = resolveTable(ci);
+      if (t == null) {
+        // The table was dropped before we got around to cleaning it.
+        LOG.info("Unable to find table " + ci.getFullTableName() + ", assuming it was dropped." +
+            idWatermark(ci));
+        txnHandler.markCleaned(ci);
+        return;
+      }
+
+      StorageDescriptor sd = resolveStorageDescriptor(t, null);
+
+      if (runJobAsSelf(ci.runAs)) {
+        removeFilesClean(sd.getLocation(), ci);
+      } else {
+        LOG.info("Cleaning as user " + ci.runAs + " for " + ci.getFullPartitionName());
+        UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
+            UserGroupInformation.getLoginUser());
+        ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
+          removeFilesClean(sd.getLocation(), ci);
+          return null;
+        });
+        try {
+          FileSystem.closeAllForUGI(ugi);
+        } catch (IOException exception) {
+          LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " +
+              ci.getFullPartitionName() + idWatermark(ci), exception);
+        }
+      }
+      txnHandler.markCleaned(ci);
+      LOG.info("Finished abort cleaning for table " + ci.getFullTableName());
+    } catch (Exception e) {
+      LOG.error("Caught exception when cleaning, unable to complete cleaning of " + ci + " " +
+          StringUtils.stringifyException(e));
+      txnHandler.markFailed(ci);
+    }
+  }
+
   private void removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
       throws IOException, NoSuchObjectException, MetaException {
     Path locPath = new Path(location);
@@ -276,6 +333,24 @@ public class Cleaner extends MetaStoreCompactorThread {
         replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
       }
       fs.delete(dead, true);
+    }
+  }
+
+  private void removeFilesClean(String rootLocation, CompactionInfo ci) throws IOException, HiveException {
+    List<FileStatus> deleted = AcidUtils.deleteDeltaDirectories(new Path(rootLocation), conf, ci.writeIds);
+
+    if (deleted.size() == 0) {
+      LOG.info("No files were deleted in the clean abort compaction: " + idWatermark(ci));
+      return;
+    }
+    Database db = Hive.get().getDatabase(ci.dbname);
+
+    for (FileStatus dead : deleted) {
+      Path deadPath = dead.getPath();
+      LOG.info("Deleted path " + deadPath.toString());
+      if (ReplChangeManager.isSourceOfReplication(db)) {
+        replChangeManager.recycle(deadPath, ReplChangeManager.RecycleType.MOVE, true);
+      }
     }
   }
 }

@@ -236,13 +236,15 @@ std::string to_string(const LockType::type& val) {
 
 int _kCompactionTypeValues[] = {
   CompactionType::MINOR,
-  CompactionType::MAJOR
+  CompactionType::MAJOR,
+  CompactionType::CLEAN_ABORTED
 };
 const char* _kCompactionTypeNames[] = {
   "MINOR",
-  "MAJOR"
+  "MAJOR",
+  "CLEAN_ABORTED"
 };
-const std::map<int, const char*> _CompactionType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(2, _kCompactionTypeValues, _kCompactionTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _CompactionType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kCompactionTypeValues, _kCompactionTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 std::ostream& operator<<(std::ostream& out, const CompactionType::type& val) {
   std::map<int, const char*>::const_iterator it = _CompactionType_VALUES_TO_NAMES.find(val);
