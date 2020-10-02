@@ -381,4 +381,10 @@
   <name>hive.scheduled.queries.executor.enabled</name>
   <value>false</value>
 </property>
+
+<property>
+  <name>hive.strict.timestamp.conversion</name>
+  <value>false</value>
+</property>
+
 </configuration>
