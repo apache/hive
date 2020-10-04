@@ -28,6 +28,8 @@ CREATE DATABASE db3
 LOCATION '${hiveconf:hive.metastore.warehouse.dir}/db3_ext'
 MANAGEDLOCATION '${hiveconf:hive.metastore.warehouse.dir}/db3';
 
+SHOW CREATE DATABASE db3;
+
 DESCRIBE DATABASE db3;
 
 EXPLAIN
