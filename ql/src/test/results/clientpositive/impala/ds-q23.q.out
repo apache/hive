@@ -583,7 +583,7 @@ Per-Host Resources: mem-estimate=3.93MB mem-reservation=3.88MB thread-reservatio
   DATASTREAM SINK [FRAGMENT=F32, EXCHANGE=69, HASH(default.impala_tpcds_catalog_sales.cs_bill_customer_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   12:HASH JOIN [LEFT SEMI JOIN, BROADCAST]
-  |  hash predicates: default.impala_tpcds_catalog_sales.cs_item_sk = i_item_sk
+  |  hash predicates: default.impala_tpcds_catalog_sales.cs_item_sk = default.impala_tpcds_item.i_item_sk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=1,3 row-size=36B cardinality=0
   |  in pipelines: 01(GETNEXT), 66(OPEN)
@@ -637,7 +637,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=67, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   11:SELECT
-  |  predicates: $f3 > CAST(4 AS BIGINT)
+  |  predicates: _impala_builtins.count(*) > CAST(4 AS BIGINT)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=11 row-size=40B cardinality=0
   |  in pipelines: 66(GETNEXT)
@@ -936,7 +936,7 @@ Per-Host Resources: mem-estimate=3.93MB mem-reservation=3.88MB thread-reservatio
   DATASTREAM SINK [FRAGMENT=F32, EXCHANGE=87, HASH(default.impala_tpcds_web_sales.ws_bill_customer_sk)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   37:HASH JOIN [LEFT SEMI JOIN, BROADCAST]
-  |  hash predicates: default.impala_tpcds_web_sales.ws_item_sk = i_item_sk
+  |  hash predicates: default.impala_tpcds_web_sales.ws_item_sk = default.impala_tpcds_item_0.i_item_sk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
   |  tuple-ids=23,25 row-size=36B cardinality=0
   |  in pipelines: 26(GETNEXT), 84(OPEN)
@@ -990,7 +990,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F24, EXCHANGE=85, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   36:SELECT
-  |  predicates: $f3 > CAST(4 AS BIGINT)
+  |  predicates: _impala_builtins.count(*) > CAST(4 AS BIGINT)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=33 row-size=40B cardinality=0
   |  in pipelines: 84(GETNEXT)

@@ -112,11 +112,11 @@ STAGE PLANS:
 F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=124.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: $f0, $f1, $f2, $f3, $f4, $f5, $f6, $f7, $f8, $f9
+  |  output exprs: default.impala_tpch_lineitem.l_returnflag, default.impala_tpch_lineitem.l_linestatus, _impala_builtins.sum(default.impala_tpch_lineitem.l_quantity), _impala_builtins.sum(default.impala_tpch_lineitem.l_extendedprice), _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))), _impala_builtins.sum(multiply(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)), add(1, default.impala_tpch_lineitem.l_tax))), casttodecimal(divide(_impala_builtins.sum(default.impala_tpch_lineitem.l_quantity), casttodecimal(_impala_builtins.count(default.impala_tpch_lineitem.l_quantity)))), casttodecimal(divide(_impala_builtins.sum(default.impala_tpch_lineitem.l_extendedprice), casttodecimal(_impala_builtins.count(default.impala_tpch_lineitem.l_extendedprice)))), casttodecimal(divide(_impala_builtins.sum(default.impala_tpch_lineitem.l_discount), casttodecimal(_impala_builtins.count(default.impala_tpch_lineitem.l_discount)))), _impala_builtins.count(*)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   06:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: $f0 ASC NULLS LAST, $f1 ASC NULLS LAST
+     order by: default.impala_tpch_lineitem.l_returnflag ASC NULLS LAST, default.impala_tpch_lineitem.l_linestatus ASC NULLS LAST
      mem-estimate=124.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=4 row-size=120B cardinality=0
      in pipelines: 03(GETNEXT)
@@ -126,7 +126,7 @@ Per-Host Resources: mem-estimate=140.14MB mem-reservation=46.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F03, EXCHANGE=06, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   03:SORT
-  |  order by: $f0 ASC NULLS LAST, $f1 ASC NULLS LAST
+  |  order by: default.impala_tpch_lineitem.l_returnflag ASC NULLS LAST, default.impala_tpch_lineitem.l_linestatus ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=4 row-size=120B cardinality=0
   |  in pipelines: 03(GETNEXT), 05(OPEN)

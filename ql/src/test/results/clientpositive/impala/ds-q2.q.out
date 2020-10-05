@@ -288,11 +288,11 @@ STAGE PLANS:
 F13:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=120.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: d_week_seq1, _o__c1, _o__c2, _o__c3, _o__c4, _o__c5, _o__c6, _o__c7
+  |  output exprs: default.impala_tpcds_date_dim.d_week_seq, round(divide(_impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Sunday' THEN ws_ext_sales_price ELSE NULL END), _impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim_1.d_day_name = 'Sunday' THEN ws_ext_sales_price ELSE NULL END)), 2), round(divide(_impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Monday' THEN ws_ext_sales_price ELSE NULL END), _impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim_1.d_day_name = 'Monday' THEN ws_ext_sales_price ELSE NULL END)), 2), round(divide(_impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Tuesday' THEN ws_ext_sales_price ELSE NULL END), _impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim_1.d_day_name = 'Tuesday' THEN ws_ext_sales_price ELSE NULL END)), 2), round(divide(_impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Wednesday' THEN ws_ext_sales_price ELSE NULL END), _impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim_1.d_day_name = 'Wednesday' THEN ws_ext_sales_price ELSE NULL END)), 2), round(divide(_impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Thursday' THEN ws_ext_sales_price ELSE NULL END), _impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim_1.d_day_name = 'Thursday' THEN ws_ext_sales_price ELSE NULL END)), 2), round(divide(_impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Friday' THEN ws_ext_sales_price ELSE NULL END), _impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim_1.d_day_name = 'Friday' THEN ws_ext_sales_price ELSE NULL END)), 2), round(divide(_impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim.d_day_name = 'Saturday' THEN ws_ext_sales_price ELSE NULL END), _impala_builtins.sum(CASE WHEN default.impala_tpcds_date_dim_1.d_day_name = 'Saturday' THEN ws_ext_sales_price ELSE NULL END)), 2)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   28:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: d_week_seq1 ASC NULLS LAST
+     order by: default.impala_tpcds_date_dim.d_week_seq ASC NULLS LAST
      mem-estimate=120.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=21 row-size=116B cardinality=0
      in pipelines: 18(GETNEXT)
@@ -302,7 +302,7 @@ Per-Host Resources: mem-estimate=138.14MB mem-reservation=43.88MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F13, EXCHANGE=28, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   18:SORT
-  |  order by: d_week_seq1 ASC NULLS LAST
+  |  order by: default.impala_tpcds_date_dim.d_week_seq ASC NULLS LAST
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=21 row-size=116B cardinality=0
   |  in pipelines: 18(GETNEXT), 21(OPEN)

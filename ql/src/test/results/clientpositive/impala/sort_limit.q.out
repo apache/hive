@@ -34,7 +34,7 @@ STAGE PLANS:
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: l_quantity
+  |  output exprs: default.impala_tpch_lineitem.l_quantity
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   02:EXCHANGE [UNPARTITIONED]

@@ -75,11 +75,11 @@ STAGE PLANS:
 F09:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=10.02MB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: order count, total shipping cost, total net profit
+  |  output exprs: count(cs1.cs_order_number), _impala_builtins.sum(cs1.cs_ext_ship_cost), _impala_builtins.sum(cs1.cs_net_profit)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   15:TOP-N [LIMIT=100]
-  |  order by: (tok_functiondi count (tok_table_or_col cs_order_number)) ASC NULLS LAST
+  |  order by: count(cs1.cs_order_number) ASC NULLS LAST
   |  mem-estimate=48B mem-reservation=0B thread-reservation=0
   |  tuple-ids=16 row-size=48B cardinality=1
   |  in pipelines: 15(GETNEXT), 26(OPEN)
@@ -540,7 +540,7 @@ STAGE PLANS:
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: $f0
+  |  output exprs: 'c'
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   02:EXCHANGE [UNPARTITIONED]
@@ -597,7 +597,7 @@ STAGE PLANS:
 F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=94.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: c_custkey, c_name, c_address, c_nationkey, c_phone, c_acctbal, c_mktsegment, c_comment, _o__c1
+  |  output exprs: c.c_custkey, c.c_name, c.c_address, c.c_nationkey, c.c_phone, c.c_acctbal, c.c_mktsegment, c.c_comment, 'c'
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   02:EXCHANGE [UNPARTITIONED]

@@ -304,11 +304,11 @@ STAGE PLANS:
 F13:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=116.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: cd_gender, cd_marital_status, cd_education_status, cnt1, cd_purchase_estimate, cnt2, cd_credit_rating, cnt3, cd_dep_count, cnt4, cd_dep_employed_count, cnt5, cd_dep_college_count, cnt6
+  |  output exprs: default.impala_tpcds_customer_demographics.cd_gender, default.impala_tpcds_customer_demographics.cd_marital_status, default.impala_tpcds_customer_demographics.cd_education_status, _impala_builtins.count(*), default.impala_tpcds_customer_demographics.cd_purchase_estimate, _impala_builtins.count(*), default.impala_tpcds_customer_demographics.cd_credit_rating, _impala_builtins.count(*), default.impala_tpcds_customer_demographics.cd_dep_count, _impala_builtins.count(*), default.impala_tpcds_customer_demographics.cd_dep_employed_count, _impala_builtins.count(*), default.impala_tpcds_customer_demographics.cd_dep_college_count, _impala_builtins.count(*)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   36:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: cd_gender ASC NULLS LAST, cd_marital_status ASC NULLS LAST, cd_education_status ASC NULLS LAST, cd_purchase_estimate ASC NULLS LAST, cd_credit_rating ASC NULLS LAST, cd_dep_count ASC NULLS LAST, cd_dep_employed_count ASC NULLS LAST, cd_dep_college_count ASC NULLS LAST
+     order by: default.impala_tpcds_customer_demographics.cd_gender ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_marital_status ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_education_status ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_purchase_estimate ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_credit_rating ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_dep_count ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_dep_employed_count ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_dep_college_count ASC NULLS LAST
      limit: 100
      mem-estimate=116.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=21 row-size=112B cardinality=0
@@ -319,7 +319,7 @@ Per-Host Resources: mem-estimate=128.07MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F13, EXCHANGE=36, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   21:TOP-N [LIMIT=100]
-  |  order by: cd_gender ASC NULLS LAST, cd_marital_status ASC NULLS LAST, cd_education_status ASC NULLS LAST, cd_purchase_estimate ASC NULLS LAST, cd_credit_rating ASC NULLS LAST, cd_dep_count ASC NULLS LAST, cd_dep_employed_count ASC NULLS LAST, cd_dep_college_count ASC NULLS LAST
+  |  order by: default.impala_tpcds_customer_demographics.cd_gender ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_marital_status ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_education_status ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_purchase_estimate ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_credit_rating ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_dep_count ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_dep_employed_count ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_dep_college_count ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=21 row-size=112B cardinality=0
   |  in pipelines: 21(GETNEXT), 35(OPEN)

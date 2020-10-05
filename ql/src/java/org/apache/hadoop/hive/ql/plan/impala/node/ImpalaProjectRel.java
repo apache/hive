@@ -76,12 +76,12 @@ public class ImpalaProjectRel extends ImpalaProjectRelBase {
 
     Preconditions.checkArgument(getInputs().size() == 1);
     Preconditions.checkArgument(getInput(0) instanceof ImpalaPlanRel);
-    TupleDescriptor tupleDesc = createTupleDescriptor(ctx.getRootAnalyzer());
+    List<Expr> projectExprs = createProjectExprs(ctx).values().asList();
+    TupleDescriptor tupleDesc = createTupleDescriptor(ctx.getRootAnalyzer(), projectExprs);
     // The outputexprs are the SlotRef exprs passed to the parent node.
     this.outputExprs = createOutputExprs(tupleDesc.getSlots());
     // The project exprs are the Calcite RexNode exprs that are passed into the
     // Impala Union Node.
-    List<Expr> projectExprs = createProjectExprs(ctx).values().asList();
     Pair<PlanNode, List<Expr>> pair = Pair.of(planNode, projectExprs);
     planNode = new ImpalaUnionNode(nodeId, tupleDesc.getId(), getOutputExprs(),
         Lists.newArrayList(pair));
@@ -97,14 +97,15 @@ public class ImpalaProjectRel extends ImpalaProjectRelBase {
     return planNode;
   }
 
-  private TupleDescriptor createTupleDescriptor(Analyzer analyzer) throws HiveException {
+  private TupleDescriptor createTupleDescriptor(Analyzer analyzer, List<Expr> exprs) throws HiveException {
     TupleDescriptor tupleDesc = analyzer.getDescTbl().createTupleDescriptor("single input union");
     tupleDesc.setIsMaterialized(true);
 
-    for (RelDataTypeField relDataTypeField : project.getRowType().getFieldList()) {
+    for (int i = 0; i < project.getRowType().getFieldList().size(); i++) {
+      RelDataTypeField relDataTypeField = project.getRowType().getFieldList().get(i);
       SlotDescriptor slotDesc = analyzer.addSlotDescriptor(tupleDesc);
       slotDesc.setType(ImpalaTypeConverter.createImpalaType(relDataTypeField.getType()));
-      slotDesc.setLabel(relDataTypeField.getName());
+      slotDesc.setLabel(exprs.get(i).toSql());
       slotDesc.setIsMaterialized(true);
     }
     tupleDesc.computeMemLayout();

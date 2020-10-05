@@ -319,7 +319,7 @@ STAGE PLANS:
 F05:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=116.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: $func_2, $f0, $f1, $func_0, _impala_builtins.rank()
+  |  output exprs: divide(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_net_profit) WHEN 5 THEN sum(default.tab_sales_n0.ss_net_profit) WHEN 6 THEN sum(default.tab_sales_n0.ss_net_profit) END), aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 5 THEN sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 6 THEN sum(default.tab_sales_n0.ss_ext_sales_price) END)), CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END, CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END, bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1), _impala_builtins.rank()
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   12:EXCHANGE [UNPARTITIONED]
@@ -327,33 +327,33 @@ Per-Host Resources: mem-estimate=116.00KB mem-reservation=0B thread-reservation=
      tuple-ids=13,12 row-size=108B cardinality=0
      in pipelines: 06(GETNEXT)
 
-F04:PLAN FRAGMENT [HASH($func_0,$func_1)] hosts=1 instances=1
+F04:PLAN FRAGMENT [HASH(bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1),CASE WHEN bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END)] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.10MB mem-reservation=16.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=12, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   07:ANALYTIC
   |  functions: _impala_builtins.rank()
-  |  partition by: $func_0, $func_1
-  |  order by: $func_2 ASC
+  |  partition by: bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1), CASE WHEN bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END
+  |  order by: divide(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_net_profit) WHEN 5 THEN sum(default.tab_sales_n0.ss_net_profit) WHEN 6 THEN sum(default.tab_sales_n0.ss_net_profit) END), aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 5 THEN sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 6 THEN sum(default.tab_sales_n0.ss_ext_sales_price) END)) ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13,12 row-size=108B cardinality=0
   |  in pipelines: 06(GETNEXT)
   |
   06:SORT
-  |  order by: $func_0 ASC NULLS FIRST, $func_1 ASC NULLS FIRST, $func_2 ASC NULLS LAST
+  |  order by: bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1) ASC NULLS FIRST, CASE WHEN bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END ASC NULLS FIRST, divide(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_net_profit) WHEN 5 THEN sum(default.tab_sales_n0.ss_net_profit) WHEN 6 THEN sum(default.tab_sales_n0.ss_net_profit) END), aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 5 THEN sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 6 THEN sum(default.tab_sales_n0.ss_ext_sales_price) END)) ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13 row-size=100B cardinality=0
   |  in pipelines: 06(GETNEXT), 05(OPEN)
   |
-  11:EXCHANGE [HASH($func_0,$func_1)]
+  11:EXCHANGE [HASH(bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1),CASE WHEN bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END)]
      mem-estimate=104.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=8 row-size=100B cardinality=0
      in pipelines: 05(GETNEXT)
 
 F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=11, HASH($func_0,$func_1)]
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=11, HASH(bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1),CASE WHEN bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -498,7 +498,7 @@ STAGE PLANS:
 F05:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=108.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: $func_2, i_category, i_class, $func_0, _impala_builtins.rank()
+  |  output exprs: divide(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_net_profit) WHEN 5 THEN sum(default.tab_sales_n0.ss_net_profit) WHEN 6 THEN sum(default.tab_sales_n0.ss_net_profit) END), aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 5 THEN sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 6 THEN sum(default.tab_sales_n0.ss_ext_sales_price) END)), CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END, CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END, add(casttobigint(char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END)), casttobigint(char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END))), _impala_builtins.rank()
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   12:EXCHANGE [UNPARTITIONED]
@@ -506,33 +506,33 @@ Per-Host Resources: mem-estimate=108.00KB mem-reservation=0B thread-reservation=
      tuple-ids=13,12 row-size=100B cardinality=0
      in pipelines: 06(GETNEXT)
 
-F04:PLAN FRAGMENT [HASH($func_0,$func_1)] hosts=1 instances=1
+F04:PLAN FRAGMENT [HASH(add(casttobigint(char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END)), casttobigint(char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END))),CASE WHEN char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END)] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.09MB mem-reservation=16.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=12, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   07:ANALYTIC
   |  functions: _impala_builtins.rank()
-  |  partition by: $func_0, $func_1
-  |  order by: $func_2 ASC
+  |  partition by: add(casttobigint(char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END)), casttobigint(char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END))), CASE WHEN char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END
+  |  order by: divide(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_net_profit) WHEN 5 THEN sum(default.tab_sales_n0.ss_net_profit) WHEN 6 THEN sum(default.tab_sales_n0.ss_net_profit) END), aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 5 THEN sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 6 THEN sum(default.tab_sales_n0.ss_ext_sales_price) END)) ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13,12 row-size=100B cardinality=0
   |  in pipelines: 06(GETNEXT)
   |
   06:SORT
-  |  order by: $func_0 ASC NULLS FIRST, $func_1 ASC NULLS FIRST, $func_2 ASC NULLS LAST
+  |  order by: add(casttobigint(char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END)), casttobigint(char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END))) ASC NULLS FIRST, CASE WHEN char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END ASC NULLS FIRST, divide(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_net_profit) WHEN 5 THEN sum(default.tab_sales_n0.ss_net_profit) WHEN 6 THEN sum(default.tab_sales_n0.ss_net_profit) END), aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 5 THEN sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 6 THEN sum(default.tab_sales_n0.ss_ext_sales_price) END)) ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13 row-size=92B cardinality=0
   |  in pipelines: 06(GETNEXT), 05(OPEN)
   |
-  11:EXCHANGE [HASH($func_0,$func_1)]
+  11:EXCHANGE [HASH(add(casttobigint(char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END)), casttobigint(char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END))),CASE WHEN char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END)]
      mem-estimate=96.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=8 row-size=92B cardinality=0
      in pipelines: 05(GETNEXT)
 
 F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=11, HASH($func_0,$func_1)]
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=11, HASH(add(casttobigint(char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END)), casttobigint(char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END))),CASE WHEN char_length(CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -677,7 +677,7 @@ STAGE PLANS:
 F05:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=116.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: $func_2, $f0, $f1, $func_0, _impala_builtins.rank()
+  |  output exprs: divide(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_net_profit) WHEN 5 THEN sum(default.tab_sales_n0.ss_net_profit) WHEN 6 THEN sum(default.tab_sales_n0.ss_net_profit) END), aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 5 THEN sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 6 THEN sum(default.tab_sales_n0.ss_ext_sales_price) END)), CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END, CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_class WHEN 5 THEN NULL WHEN 6 THEN NULL END, add(bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1)), _impala_builtins.rank()
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   12:EXCHANGE [UNPARTITIONED]
@@ -685,33 +685,33 @@ Per-Host Resources: mem-estimate=116.00KB mem-reservation=0B thread-reservation=
      tuple-ids=13,12 row-size=108B cardinality=0
      in pipelines: 06(GETNEXT)
 
-F04:PLAN FRAGMENT [HASH($func_0,$func_1)] hosts=1 instances=1
+F04:PLAN FRAGMENT [HASH(add(bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1)),CASE WHEN bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END)] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.10MB mem-reservation=16.00MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=12, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   07:ANALYTIC
   |  functions: _impala_builtins.rank()
-  |  partition by: $func_0, $func_1
-  |  order by: $func_2 ASC
+  |  partition by: add(bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1)), CASE WHEN bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END
+  |  order by: divide(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_net_profit) WHEN 5 THEN sum(default.tab_sales_n0.ss_net_profit) WHEN 6 THEN sum(default.tab_sales_n0.ss_net_profit) END), aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 5 THEN sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 6 THEN sum(default.tab_sales_n0.ss_ext_sales_price) END)) ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13,12 row-size=108B cardinality=0
   |  in pipelines: 06(GETNEXT)
   |
   06:SORT
-  |  order by: $func_0 ASC NULLS FIRST, $func_1 ASC NULLS FIRST, $func_2 ASC NULLS LAST
+  |  order by: add(bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1)) ASC NULLS FIRST, CASE WHEN bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END ASC NULLS FIRST, divide(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_net_profit) WHEN 5 THEN sum(default.tab_sales_n0.ss_net_profit) WHEN 6 THEN sum(default.tab_sales_n0.ss_net_profit) END), aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN _impala_builtins.sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 5 THEN sum(default.tab_sales_n0.ss_ext_sales_price) WHEN 6 THEN sum(default.tab_sales_n0.ss_ext_sales_price) END)) ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=13 row-size=100B cardinality=0
   |  in pipelines: 06(GETNEXT), 05(OPEN)
   |
-  11:EXCHANGE [HASH($func_0,$func_1)]
+  11:EXCHANGE [HASH(add(bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1)),CASE WHEN bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END)]
      mem-estimate=104.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=8 row-size=100B cardinality=0
      in pipelines: 05(GETNEXT)
 
 F03:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=11, HASH($func_0,$func_1)]
+  DATASTREAM SINK [FRAGMENT=F04, EXCHANGE=11, HASH(add(bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1)),CASE WHEN bitand(shiftright(aggif(valid_tid(4,5,6) IN (4, 5, 6), CASE valid_tid(4,5,6) WHEN 4 THEN 0 WHEN 5 THEN 1 WHEN 6 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(4,5,6) WHEN 4 THEN default.tab_item_n0.i_category WHEN 5 THEN default.tab_item_n0.i_category WHEN 6 THEN NULL END ELSE NULL END)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0

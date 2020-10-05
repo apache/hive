@@ -269,128 +269,126 @@ ImpalaProjectPassthroughRel(product_name=[$0], store_name=[$1], store_zip=[$2], 
   ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$18], sort3=[$19], sort4=[$20], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC])
     ImpalaProjectRel(product_name=[$0], store_name=[$2], store_zip=[$3], b_street_number=[$4], b_street_name=[$5], b_city=[$6], b_zip=[$7], c_street_number=[$8], c_street_name=[$9], c_city=[$10], c_zip=[$11], cnt=[$12], s11=[$13], s21=[$14], s31=[$15], s12=[$20], s22=[$21], s32=[$22], cnt1=[$19], s1=[$13], s13=[$20])
       ImpalaJoinRel(condition=[AND(=($1, $16), <=($19, $12), =($2, $17), =($3, $18))], joinType=[inner])
-        ImpalaProjectPassthroughRel($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], $f8=[$8], $f9=[$9], $f10=[$10], $f11=[$11], $f15=[$14], $f16=[$15], $f17=[$16], $f18=[$17])
-          ImpalaProjectRel(i_product_name=[$1], i_item_sk=[$0], s_store_name=[$2], s_zip=[$3], ca_street_number=[$4], ca_street_name=[$5], ca_city=[$6], ca_zip=[$7], ca_street_number0=[$10], ca_street_name0=[$11], ca_city0=[$12], ca_zip0=[$13], d_year=[$8], d_year0=[$9], $f14=[$14], $f15=[$15], $f16=[$16], $f17=[$17], condition=[IS NOT NULL($14)])
-            ImpalaAggregateRel(group=[{17, 18, 23, 24, 26, 27, 28, 29, 39, 41, 46, 47, 48, 49}], agg#0=[count()], agg#1=[sum($8)], agg#2=[sum($9)], agg#3=[sum($10)])
-              ImpalaJoinRel(condition=[AND(<>($51, $37), =($2, $50))], joinType=[inner])
-                ImpalaJoinRel(condition=[=($1, $30)], joinType=[inner])
-                  ImpalaJoinRel(condition=[=($4, $25)], joinType=[inner])
-                    ImpalaJoinRel(condition=[=($5, $22)], joinType=[inner])
-                      ImpalaJoinRel(condition=[=($3, $19)], joinType=[inner])
-                        ImpalaJoinRel(condition=[=($0, $17)], joinType=[inner])
-                          ImpalaJoinRel(condition=[=($0, $16)], joinType=[inner])
-                            ImpalaJoinRel(condition=[AND(=($0, $14), =($7, $15))], joinType=[inner])
-                              ImpalaJoinRel(condition=[=($6, $13)], joinType=[inner])
-                                ImpalaJoinRel(condition=[=($11, $12)], joinType=[inner])
-                                  ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_customer_sk=[$2], ss_cdemo_sk=[$3], ss_hdemo_sk=[$4], ss_addr_sk=[$5], ss_store_sk=[$6], ss_promo_sk=[$7], ss_ticket_number=[$8], ss_wholesale_cost=[$10], ss_list_price=[$11], ss_coupon_amt=[$18], ss_sold_date_sk=[$22])
-                                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($8), IS NOT NULL($22), IS NOT NULL($6), IS NOT NULL($2), IS NOT NULL($3), IS NOT NULL($7), IS NOT NULL($4), IS NOT NULL($5))])
-                                  ImpalaProjectPassthroughRel(d_date_sk=[$0])
-                                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 1999), IS NOT NULL($0))])
-                                ImpalaProjectPassthroughRel(p_promo_sk=[$0])
-                                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_promotion]], condition=[IS NOT NULL($0)])
-                              ImpalaProjectPassthroughRel(sr_item_sk=[$2], sr_ticket_number=[$9])
-                                ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($9))])
-                            ImpalaProjectPassthroughRel($f0=[$0])
-                              ImpalaAggregateRel(group=[{0}], agg#0=[sum($2)], agg#1=[sum($5)], condition=[>($1, *(2:DECIMAL(3, 0), $2))])
-                                ImpalaJoinRel(condition=[AND(=($0, $3), =($1, $4))], joinType=[inner])
-                                  ImpalaProjectPassthroughRel(cs_item_sk=[$15], cs_order_number=[$17], cs_ext_list_price=[$25])
-                                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($17))])
-                                  ImpalaProjectPassthroughRel(cr_item_sk=[$2], cr_order_number=[$16], +=[+(+($23, $24), $25)])
-                                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($16))])
-                          ImpalaProjectPassthroughRel(i_item_sk=[$0], i_product_name=[$21])
-                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IN($17, _UTF-16LE'azure':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'gainsboro':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'misty':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'blush':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'hot':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'lemon':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), BETWEEN(false, $5, 80:DECIMAL(3, 0), CAST(+(80:SMALLINT, 10:SMALLINT)):DECIMAL(5, 0) NOT NULL), BETWEEN(false, $5, CAST(+(80:SMALLINT, 1:SMALLINT)):DECIMAL(5, 0) NOT NULL, CAST(+(80:SMALLINT, 15:SMALLINT)):DECIMAL(5, 0) NOT NULL), IS NOT NULL($0))])
-                        ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
-                          ImpalaProjectPassthroughRel(hd_demo_sk=[$0], hd_income_band_sk=[$1])
-                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
-                          ImpalaProjectPassthroughRel(ib_income_band_sk=[$0])
-                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_income_band]], condition=[IS NOT NULL($0)])
-                      ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_name=[$5], s_zip=[$25])
-                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($0), IS NOT NULL($5), IS NOT NULL($25))])
-                    ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
-                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[IS NOT NULL($0)])
-                  ImpalaJoinRel(condition=[=($3, $15)], joinType=[inner])
-                    ImpalaJoinRel(condition=[=($2, $12)], joinType=[inner])
-                      ImpalaJoinRel(condition=[=($4, $10)], joinType=[inner])
-                        ImpalaJoinRel(condition=[=($5, $8)], joinType=[inner])
-                          ImpalaJoinRel(condition=[=($1, $6)], joinType=[inner])
-                            ImpalaProjectPassthroughRel(c_customer_sk=[$0], c_current_cdemo_sk=[$2], c_current_hdemo_sk=[$3], c_current_addr_sk=[$4], c_first_shipto_date_sk=[$5], c_first_sales_date_sk=[$6])
-                              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer]], condition=[AND(IS NOT NULL($0), IS NOT NULL($6), IS NOT NULL($5), IS NOT NULL($2), IS NOT NULL($3), IS NOT NULL($4))])
-                            ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2])
-                              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[IS NOT NULL($0)])
-                          ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6])
-                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[IS NOT NULL($0)])
-                        ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6])
-                          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[IS NOT NULL($0)])
+        ImpalaProjectRel($f0=[$1], $f1=[$0], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[$6], $f7=[$7], $f8=[$10], $f9=[$11], $f10=[$12], $f11=[$13], $f15=[$14], $f16=[$15], $f17=[$16], $f18=[$17], condition=[IS NOT NULL($12)])
+          ImpalaAggregateRel(group=[{17, 18, 23, 24, 26, 27, 28, 29, 39, 41, 46, 47, 48, 49}], agg#0=[count()], agg#1=[sum($8)], agg#2=[sum($9)], agg#3=[sum($10)])
+            ImpalaJoinRel(condition=[AND(<>($51, $37), =($2, $50))], joinType=[inner])
+              ImpalaJoinRel(condition=[=($1, $30)], joinType=[inner])
+                ImpalaJoinRel(condition=[=($4, $25)], joinType=[inner])
+                  ImpalaJoinRel(condition=[=($5, $22)], joinType=[inner])
+                    ImpalaJoinRel(condition=[=($3, $19)], joinType=[inner])
+                      ImpalaJoinRel(condition=[=($0, $17)], joinType=[inner])
+                        ImpalaJoinRel(condition=[=($0, $16)], joinType=[inner])
+                          ImpalaJoinRel(condition=[AND(=($0, $14), =($7, $15))], joinType=[inner])
+                            ImpalaJoinRel(condition=[=($6, $13)], joinType=[inner])
+                              ImpalaJoinRel(condition=[=($11, $12)], joinType=[inner])
+                                ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_customer_sk=[$2], ss_cdemo_sk=[$3], ss_hdemo_sk=[$4], ss_addr_sk=[$5], ss_store_sk=[$6], ss_promo_sk=[$7], ss_ticket_number=[$8], ss_wholesale_cost=[$10], ss_list_price=[$11], ss_coupon_amt=[$18], ss_sold_date_sk=[$22])
+                                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($8), IS NOT NULL($22), IS NOT NULL($6), IS NOT NULL($2), IS NOT NULL($3), IS NOT NULL($7), IS NOT NULL($4), IS NOT NULL($5))])
+                                ImpalaProjectPassthroughRel(d_date_sk=[$0])
+                                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 1999), IS NOT NULL($0))])
+                              ImpalaProjectPassthroughRel(p_promo_sk=[$0])
+                                ImpalaHdfsScanRel(table=[[default, impala_tpcds_promotion]], condition=[IS NOT NULL($0)])
+                            ImpalaProjectPassthroughRel(sr_item_sk=[$2], sr_ticket_number=[$9])
+                              ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($9))])
+                          ImpalaProjectPassthroughRel($f0=[$0])
+                            ImpalaAggregateRel(group=[{0}], agg#0=[sum($2)], agg#1=[sum($5)], condition=[>($1, *(2:DECIMAL(3, 0), $2))])
+                              ImpalaJoinRel(condition=[AND(=($0, $3), =($1, $4))], joinType=[inner])
+                                ImpalaProjectPassthroughRel(cs_item_sk=[$15], cs_order_number=[$17], cs_ext_list_price=[$25])
+                                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($17))])
+                                ImpalaProjectPassthroughRel(cr_item_sk=[$2], cr_order_number=[$16], +=[+(+($23, $24), $25)])
+                                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($16))])
+                        ImpalaProjectPassthroughRel(i_item_sk=[$0], i_product_name=[$21])
+                          ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IN($17, _UTF-16LE'azure':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'gainsboro':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'misty':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'blush':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'hot':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'lemon':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), BETWEEN(false, $5, 80:DECIMAL(3, 0), CAST(+(80:SMALLINT, 10:SMALLINT)):DECIMAL(5, 0) NOT NULL), BETWEEN(false, $5, CAST(+(80:SMALLINT, 1:SMALLINT)):DECIMAL(5, 0) NOT NULL, CAST(+(80:SMALLINT, 15:SMALLINT)):DECIMAL(5, 0) NOT NULL), IS NOT NULL($0))])
                       ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
                         ImpalaProjectPassthroughRel(hd_demo_sk=[$0], hd_income_band_sk=[$1])
                           ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
                         ImpalaProjectPassthroughRel(ib_income_band_sk=[$0])
                           ImpalaHdfsScanRel(table=[[default, impala_tpcds_income_band]], condition=[IS NOT NULL($0)])
-                    ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
-                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[IS NOT NULL($0)])
-                ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[IS NOT NULL($0)])
-        ImpalaProjectPassthroughRel($f1=[$1], $f2=[$2], $f3=[$3], $f15=[$14], $f16=[$15], $f17=[$16], $f18=[$17])
-          ImpalaProjectRel(i_product_name=[$1], i_item_sk=[$0], s_store_name=[$2], s_zip=[$3], ca_street_number=[$4], ca_street_name=[$5], ca_city=[$6], ca_zip=[$7], ca_street_number0=[$10], ca_street_name0=[$11], ca_city0=[$12], ca_zip0=[$13], d_year=[$8], d_year0=[$9], $f14=[$14], $f15=[$15], $f16=[$16], $f17=[$17], condition=[IS NOT NULL($14)])
-            ImpalaAggregateRel(group=[{17, 18, 23, 24, 26, 27, 28, 29, 39, 41, 46, 47, 48, 49}], agg#0=[count()], agg#1=[sum($8)], agg#2=[sum($9)], agg#3=[sum($10)])
-              ImpalaJoinRel(condition=[AND(<>($51, $37), =($2, $50))], joinType=[inner])
-                ImpalaJoinRel(condition=[=($1, $30)], joinType=[inner])
-                  ImpalaJoinRel(condition=[=($4, $25)], joinType=[inner])
-                    ImpalaJoinRel(condition=[=($5, $22)], joinType=[inner])
-                      ImpalaJoinRel(condition=[=($3, $19)], joinType=[inner])
-                        ImpalaJoinRel(condition=[=($0, $17)], joinType=[inner])
-                          ImpalaJoinRel(condition=[=($0, $16)], joinType=[inner])
-                            ImpalaJoinRel(condition=[AND(=($0, $14), =($7, $15))], joinType=[inner])
-                              ImpalaJoinRel(condition=[=($6, $13)], joinType=[inner])
-                                ImpalaJoinRel(condition=[=($11, $12)], joinType=[inner])
-                                  ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_customer_sk=[$2], ss_cdemo_sk=[$3], ss_hdemo_sk=[$4], ss_addr_sk=[$5], ss_store_sk=[$6], ss_promo_sk=[$7], ss_ticket_number=[$8], ss_wholesale_cost=[$10], ss_list_price=[$11], ss_coupon_amt=[$18], ss_sold_date_sk=[$22])
-                                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($8), IS NOT NULL($22), IS NOT NULL($6), IS NOT NULL($2), IS NOT NULL($3), IS NOT NULL($7), IS NOT NULL($4), IS NOT NULL($5))])
-                                  ImpalaProjectPassthroughRel(d_date_sk=[$0])
-                                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, +(1999, 1)), IS NOT NULL($0))])
-                                ImpalaProjectPassthroughRel(p_promo_sk=[$0])
-                                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_promotion]], condition=[IS NOT NULL($0)])
-                              ImpalaProjectPassthroughRel(sr_item_sk=[$2], sr_ticket_number=[$9])
-                                ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($9))])
-                            ImpalaProjectPassthroughRel($f0=[$0])
-                              ImpalaAggregateRel(group=[{0}], agg#0=[sum($2)], agg#1=[sum($5)], condition=[>($1, *(2:DECIMAL(3, 0), $2))])
-                                ImpalaJoinRel(condition=[AND(=($0, $3), =($1, $4))], joinType=[inner])
-                                  ImpalaProjectPassthroughRel(cs_item_sk=[$15], cs_order_number=[$17], cs_ext_list_price=[$25])
-                                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($17))])
-                                  ImpalaProjectPassthroughRel(cr_item_sk=[$2], cr_order_number=[$16], +=[+(+($23, $24), $25)])
-                                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($16))])
-                          ImpalaProjectPassthroughRel(i_item_sk=[$0], i_product_name=[$21])
-                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IN($17, _UTF-16LE'azure':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'gainsboro':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'misty':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'blush':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'hot':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'lemon':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), BETWEEN(false, $5, 80:DECIMAL(3, 0), CAST(+(80:SMALLINT, 10:SMALLINT)):DECIMAL(5, 0) NOT NULL), BETWEEN(false, $5, CAST(+(80:SMALLINT, 1:SMALLINT)):DECIMAL(5, 0) NOT NULL, CAST(+(80:SMALLINT, 15:SMALLINT)):DECIMAL(5, 0) NOT NULL), IS NOT NULL($0))])
-                        ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
-                          ImpalaProjectPassthroughRel(hd_demo_sk=[$0], hd_income_band_sk=[$1])
-                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
-                          ImpalaProjectPassthroughRel(ib_income_band_sk=[$0])
-                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_income_band]], condition=[IS NOT NULL($0)])
-                      ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_name=[$5], s_zip=[$25])
-                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($0), IS NOT NULL($5), IS NOT NULL($25))])
-                    ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
-                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[IS NOT NULL($0)])
-                  ImpalaJoinRel(condition=[=($3, $15)], joinType=[inner])
-                    ImpalaJoinRel(condition=[=($2, $12)], joinType=[inner])
-                      ImpalaJoinRel(condition=[=($4, $10)], joinType=[inner])
-                        ImpalaJoinRel(condition=[=($5, $8)], joinType=[inner])
-                          ImpalaJoinRel(condition=[=($1, $6)], joinType=[inner])
-                            ImpalaProjectPassthroughRel(c_customer_sk=[$0], c_current_cdemo_sk=[$2], c_current_hdemo_sk=[$3], c_current_addr_sk=[$4], c_first_shipto_date_sk=[$5], c_first_sales_date_sk=[$6])
-                              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer]], condition=[AND(IS NOT NULL($0), IS NOT NULL($6), IS NOT NULL($5), IS NOT NULL($2), IS NOT NULL($3), IS NOT NULL($4))])
-                            ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2])
-                              ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[IS NOT NULL($0)])
-                          ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6])
-                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[IS NOT NULL($0)])
+                    ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_name=[$5], s_zip=[$25])
+                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($0), IS NOT NULL($5), IS NOT NULL($25))])
+                  ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[IS NOT NULL($0)])
+                ImpalaJoinRel(condition=[=($3, $15)], joinType=[inner])
+                  ImpalaJoinRel(condition=[=($2, $12)], joinType=[inner])
+                    ImpalaJoinRel(condition=[=($4, $10)], joinType=[inner])
+                      ImpalaJoinRel(condition=[=($5, $8)], joinType=[inner])
+                        ImpalaJoinRel(condition=[=($1, $6)], joinType=[inner])
+                          ImpalaProjectPassthroughRel(c_customer_sk=[$0], c_current_cdemo_sk=[$2], c_current_hdemo_sk=[$3], c_current_addr_sk=[$4], c_first_shipto_date_sk=[$5], c_first_sales_date_sk=[$6])
+                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer]], condition=[AND(IS NOT NULL($0), IS NOT NULL($6), IS NOT NULL($5), IS NOT NULL($2), IS NOT NULL($3), IS NOT NULL($4))])
+                          ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2])
+                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[IS NOT NULL($0)])
                         ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6])
                           ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[IS NOT NULL($0)])
+                      ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[IS NOT NULL($0)])
+                    ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
+                      ImpalaProjectPassthroughRel(hd_demo_sk=[$0], hd_income_band_sk=[$1])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                      ImpalaProjectPassthroughRel(ib_income_band_sk=[$0])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_income_band]], condition=[IS NOT NULL($0)])
+                  ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[IS NOT NULL($0)])
+              ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[IS NOT NULL($0)])
+        ImpalaProjectRel($f1=[$0], $f2=[$2], $f3=[$3], $f15=[$14], $f16=[$15], $f17=[$16], $f18=[$17], condition=[IS NOT NULL($3)])
+          ImpalaAggregateRel(group=[{17, 18, 23, 24, 26, 27, 28, 29, 39, 41, 46, 47, 48, 49}], agg#0=[count()], agg#1=[sum($8)], agg#2=[sum($9)], agg#3=[sum($10)])
+            ImpalaJoinRel(condition=[AND(<>($51, $37), =($2, $50))], joinType=[inner])
+              ImpalaJoinRel(condition=[=($1, $30)], joinType=[inner])
+                ImpalaJoinRel(condition=[=($4, $25)], joinType=[inner])
+                  ImpalaJoinRel(condition=[=($5, $22)], joinType=[inner])
+                    ImpalaJoinRel(condition=[=($3, $19)], joinType=[inner])
+                      ImpalaJoinRel(condition=[=($0, $17)], joinType=[inner])
+                        ImpalaJoinRel(condition=[=($0, $16)], joinType=[inner])
+                          ImpalaJoinRel(condition=[AND(=($0, $14), =($7, $15))], joinType=[inner])
+                            ImpalaJoinRel(condition=[=($6, $13)], joinType=[inner])
+                              ImpalaJoinRel(condition=[=($11, $12)], joinType=[inner])
+                                ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_customer_sk=[$2], ss_cdemo_sk=[$3], ss_hdemo_sk=[$4], ss_addr_sk=[$5], ss_store_sk=[$6], ss_promo_sk=[$7], ss_ticket_number=[$8], ss_wholesale_cost=[$10], ss_list_price=[$11], ss_coupon_amt=[$18], ss_sold_date_sk=[$22])
+                                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($8), IS NOT NULL($22), IS NOT NULL($6), IS NOT NULL($2), IS NOT NULL($3), IS NOT NULL($7), IS NOT NULL($4), IS NOT NULL($5))])
+                                ImpalaProjectPassthroughRel(d_date_sk=[$0])
+                                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, +(1999, 1)), IS NOT NULL($0))])
+                              ImpalaProjectPassthroughRel(p_promo_sk=[$0])
+                                ImpalaHdfsScanRel(table=[[default, impala_tpcds_promotion]], condition=[IS NOT NULL($0)])
+                            ImpalaProjectPassthroughRel(sr_item_sk=[$2], sr_ticket_number=[$9])
+                              ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($9))])
+                          ImpalaProjectPassthroughRel($f0=[$0])
+                            ImpalaAggregateRel(group=[{0}], agg#0=[sum($2)], agg#1=[sum($5)], condition=[>($1, *(2:DECIMAL(3, 0), $2))])
+                              ImpalaJoinRel(condition=[AND(=($0, $3), =($1, $4))], joinType=[inner])
+                                ImpalaProjectPassthroughRel(cs_item_sk=[$15], cs_order_number=[$17], cs_ext_list_price=[$25])
+                                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($17))])
+                                ImpalaProjectPassthroughRel(cr_item_sk=[$2], cr_order_number=[$16], +=[+(+($23, $24), $25)])
+                                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($16))])
+                        ImpalaProjectPassthroughRel(i_item_sk=[$0], i_product_name=[$21])
+                          ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IN($17, _UTF-16LE'azure':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'gainsboro':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'misty':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'blush':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'hot':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'lemon':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), BETWEEN(false, $5, 80:DECIMAL(3, 0), CAST(+(80:SMALLINT, 10:SMALLINT)):DECIMAL(5, 0) NOT NULL), BETWEEN(false, $5, CAST(+(80:SMALLINT, 1:SMALLINT)):DECIMAL(5, 0) NOT NULL, CAST(+(80:SMALLINT, 15:SMALLINT)):DECIMAL(5, 0) NOT NULL), IS NOT NULL($0))])
                       ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
                         ImpalaProjectPassthroughRel(hd_demo_sk=[$0], hd_income_band_sk=[$1])
                           ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
                         ImpalaProjectPassthroughRel(ib_income_band_sk=[$0])
                           ImpalaHdfsScanRel(table=[[default, impala_tpcds_income_band]], condition=[IS NOT NULL($0)])
-                    ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
-                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[IS NOT NULL($0)])
-                ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[IS NOT NULL($0)])
+                    ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_name=[$5], s_zip=[$25])
+                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($0), IS NOT NULL($5), IS NOT NULL($25))])
+                  ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[IS NOT NULL($0)])
+                ImpalaJoinRel(condition=[=($3, $15)], joinType=[inner])
+                  ImpalaJoinRel(condition=[=($2, $12)], joinType=[inner])
+                    ImpalaJoinRel(condition=[=($4, $10)], joinType=[inner])
+                      ImpalaJoinRel(condition=[=($5, $8)], joinType=[inner])
+                        ImpalaJoinRel(condition=[=($1, $6)], joinType=[inner])
+                          ImpalaProjectPassthroughRel(c_customer_sk=[$0], c_current_cdemo_sk=[$2], c_current_hdemo_sk=[$3], c_current_addr_sk=[$4], c_first_shipto_date_sk=[$5], c_first_sales_date_sk=[$6])
+                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer]], condition=[AND(IS NOT NULL($0), IS NOT NULL($6), IS NOT NULL($5), IS NOT NULL($2), IS NOT NULL($3), IS NOT NULL($4))])
+                          ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2])
+                            ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[IS NOT NULL($0)])
+                        ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6])
+                          ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[IS NOT NULL($0)])
+                      ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[IS NOT NULL($0)])
+                    ImpalaJoinRel(condition=[=($1, $2)], joinType=[inner])
+                      ImpalaProjectPassthroughRel(hd_demo_sk=[$0], hd_income_band_sk=[$1])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_household_demographics]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+                      ImpalaProjectPassthroughRel(ib_income_band_sk=[$0])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_income_band]], condition=[IS NOT NULL($0)])
+                  ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_street_number=[$2], ca_street_name=[$3], ca_city=[$6], ca_zip=[$9])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[IS NOT NULL($0)])
+              ImpalaProjectPassthroughRel(cd_demo_sk=[$0], cd_marital_status=[$2])
+                ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[IS NOT NULL($0)])
 
 PREHOOK: query: explain with cs_ui as
  (select cs_item_sk
@@ -669,21 +667,21 @@ STAGE PLANS:
 F45:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=280.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: product_name, store_name, store_zip, b_street_number, b_street_name, b_city, b_zip, c_street_number, c_street_name, c_city, c_zip, CAST(1999 AS INT), cnt, s11, s21, s31, s12, s22, s32, add(CAST(1999 AS INT), CAST(1 AS INT)), cnt1
+  |  output exprs: default.impala_tpcds_item.i_product_name, default.impala_tpcds_store.s_store_name, default.impala_tpcds_store.s_zip, ad1.ca_street_number, ad1.ca_street_name, ad1.ca_city, ad1.ca_zip, ad2.ca_street_number, ad2.ca_street_name, ad2.ca_city, ad2.ca_zip, CAST(1999 AS INT), _impala_builtins.count(*), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_wholesale_cost), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_list_price), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_coupon_amt), _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_wholesale_cost), _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_list_price), _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_coupon_amt), add(CAST(1999 AS INT), CAST(1 AS INT)), _impala_builtins.count(*)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   130:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: product_name ASC NULLS LAST, store_name ASC NULLS LAST, cnt1 ASC NULLS LAST, s1 ASC NULLS LAST, s13 ASC NULLS LAST
+     order by: default.impala_tpcds_item.i_product_name ASC NULLS LAST, default.impala_tpcds_store.s_store_name ASC NULLS LAST, _impala_builtins.count(*) ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_wholesale_cost) ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_wholesale_cost) ASC NULLS LAST
      mem-estimate=280.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=81 row-size=276B cardinality=0
      in pipelines: 84(GETNEXT)
 
 F44:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
-Per-Host Resources: mem-estimate=142.34MB mem-reservation=47.94MB thread-reservation=1
+Per-Host Resources: mem-estimate=142.23MB mem-reservation=47.94MB thread-reservation=1
   DATASTREAM SINK [FRAGMENT=F45, EXCHANGE=130, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   84:SORT
-  |  order by: product_name ASC NULLS LAST, store_name ASC NULLS LAST, cnt1 ASC NULLS LAST, s1 ASC NULLS LAST, s13 ASC NULLS LAST
+  |  order by: default.impala_tpcds_item.i_product_name ASC NULLS LAST, default.impala_tpcds_store.s_store_name ASC NULLS LAST, _impala_builtins.count(*) ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_wholesale_cost) ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_wholesale_cost) ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=81 row-size=276B cardinality=0
   |  in pipelines: 84(GETNEXT), 106(OPEN)
@@ -694,27 +692,27 @@ Per-Host Resources: mem-estimate=142.34MB mem-reservation=47.94MB thread-reserva
   |  in pipelines: 106(GETNEXT)
   |
   83:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: i_item_sk = i_item_sk, s_store_name = s_store_name, s_zip = s_zip
+  |  hash predicates: default.impala_tpcds_item.i_item_sk = default.impala_tpcds_item_0.i_item_sk, default.impala_tpcds_store.s_store_name = default.impala_tpcds_store_0.s_store_name, default.impala_tpcds_store.s_zip = default.impala_tpcds_store_0.s_zip
   |  fk/pk conjuncts: assumed fk/pk
-  |  other join predicates: $f14 <= $f14
+  |  other join predicates: _impala_builtins.count(*) <= _impala_builtins.count(*)
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=39,79 row-size=408B cardinality=0
+  |  tuple-ids=39,79 row-size=284B cardinality=0
   |  in pipelines: 106(GETNEXT), 128(OPEN)
   |
   |--129:EXCHANGE [BROADCAST]
-  |     mem-estimate=208.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=79 row-size=204B cardinality=0
+  |     mem-estimate=92.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=79 row-size=88B cardinality=0
   |     in pipelines: 128(GETNEXT)
   |
   41:SELECT
-  |  predicates: $f14 IS NOT NULL
+  |  predicates: _impala_builtins.count(*) IS NOT NULL
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=39 row-size=204B cardinality=0
+  |  tuple-ids=39 row-size=196B cardinality=0
   |  in pipelines: 106(GETNEXT)
   |
   01:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=39 row-size=204B cardinality=0
+  |  tuple-ids=39 row-size=196B cardinality=0
   |  in pipelines: 106(GETNEXT)
   |
   106:AGGREGATE [FINALIZE]
@@ -1271,14 +1269,14 @@ Per-Host Resources: mem-estimate=128.20MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F44, EXCHANGE=129, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   82:SELECT
-  |  predicates: $f14 IS NOT NULL
+  |  predicates: _impala_builtins.count(*) IS NOT NULL
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=79 row-size=204B cardinality=0
+  |  tuple-ids=79 row-size=88B cardinality=0
   |  in pipelines: 128(GETNEXT)
   |
   42:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=79 row-size=204B cardinality=0
+  |  tuple-ids=79 row-size=88B cardinality=0
   |  in pipelines: 128(GETNEXT)
   |
   128:AGGREGATE [FINALIZE]

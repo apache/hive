@@ -160,11 +160,11 @@ STAGE PLANS:
 F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=25.96MB mem-reservation=15.88MB thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: s_suppkey, s_name, s_address, s_phone, total_revenue
+  |  output exprs: default.impala_tpch_supplier.s_suppkey, default.impala_tpch_supplier.s_name, default.impala_tpch_supplier.s_address, default.impala_tpch_supplier.s_phone, _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   09:SORT
-  |  order by: s_suppkey ASC NULLS LAST
+  |  order by: default.impala_tpch_supplier.s_suppkey ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=10 row-size=60B cardinality=1
   |  in pipelines: 09(GETNEXT), 13(OPEN)

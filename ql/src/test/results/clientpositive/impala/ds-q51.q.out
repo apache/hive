@@ -221,11 +221,11 @@ STAGE PLANS:
 F12:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=88.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: item_sk, d_date, web_sales, store_sales, max_window_0, max_window_1
+  |  output exprs: CASE WHEN default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL THEN default.impala_tpcds_web_sales.ws_item_sk ELSE default.impala_tpcds_store_sales.ss_item_sk END, CASE WHEN default.impala_tpcds_date_dim.d_date IS NOT NULL THEN default.impala_tpcds_date_dim.d_date ELSE default.impala_tpcds_date_dim_0.d_date END, _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_sales_price)), _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)), _impala_builtins.max(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_sales_price))), _impala_builtins.max(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   30:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: item_sk ASC NULLS LAST, d_date ASC NULLS LAST
+     order by: CASE WHEN default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL THEN default.impala_tpcds_web_sales.ws_item_sk ELSE default.impala_tpcds_store_sales.ss_item_sk END ASC NULLS LAST, CASE WHEN default.impala_tpcds_date_dim.d_date IS NOT NULL THEN default.impala_tpcds_date_dim.d_date ELSE default.impala_tpcds_date_dim_0.d_date END ASC NULLS LAST
      limit: 100
      mem-estimate=88.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=23 row-size=84B cardinality=0
@@ -236,45 +236,45 @@ Per-Host Resources: mem-estimate=16.09MB mem-reservation=16.00MB thread-reservat
   DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=30, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   18:TOP-N [LIMIT=100]
-  |  order by: item_sk ASC NULLS LAST, d_date ASC NULLS LAST
+  |  order by: CASE WHEN default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL THEN default.impala_tpcds_web_sales.ws_item_sk ELSE default.impala_tpcds_store_sales.ss_item_sk END ASC NULLS LAST, CASE WHEN default.impala_tpcds_date_dim.d_date IS NOT NULL THEN default.impala_tpcds_date_dim.d_date ELSE default.impala_tpcds_date_dim_0.d_date END ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=23 row-size=84B cardinality=0
   |  in pipelines: 18(GETNEXT), 15(OPEN)
   |
   17:SELECT
-  |  predicates: max_window_0 > max_window_1
+  |  predicates: _impala_builtins.max(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_sales_price))) > _impala_builtins.max(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=18 row-size=84B cardinality=0
+  |  tuple-ids=22 row-size=84B cardinality=0
   |  in pipelines: 15(GETNEXT)
   |
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=18 row-size=84B cardinality=0
+  |  tuple-ids=22 row-size=84B cardinality=0
   |  in pipelines: 15(GETNEXT)
   |
   16:ANALYTIC
-  |  functions: _impala_builtins.max(sum_window_0), _impala_builtins.max(sum_window_00)
-  |  partition by: $func_0
-  |  order by: $func_1 ASC
+  |  functions: _impala_builtins.max(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_web_sales.ws_sales_price))), _impala_builtins.max(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)))
+  |  partition by: CASE WHEN default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL THEN default.impala_tpcds_web_sales.ws_item_sk ELSE default.impala_tpcds_store_sales.ss_item_sk END
+  |  order by: CASE WHEN default.impala_tpcds_date_dim.d_date IS NOT NULL THEN default.impala_tpcds_date_dim.d_date ELSE default.impala_tpcds_date_dim_0.d_date END ASC
   |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=21,20 row-size=124B cardinality=0
+  |  tuple-ids=20,19 row-size=124B cardinality=0
   |  in pipelines: 15(GETNEXT)
   |
   15:SORT
-  |  order by: $func_0 ASC NULLS FIRST, $func_1 ASC NULLS LAST
+  |  order by: CASE WHEN default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL THEN default.impala_tpcds_web_sales.ws_item_sk ELSE default.impala_tpcds_store_sales.ss_item_sk END ASC NULLS FIRST, CASE WHEN default.impala_tpcds_date_dim.d_date IS NOT NULL THEN default.impala_tpcds_date_dim.d_date ELSE default.impala_tpcds_date_dim_0.d_date END ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=21 row-size=92B cardinality=0
+  |  tuple-ids=20 row-size=92B cardinality=0
   |  in pipelines: 15(GETNEXT), 06(OPEN)
   |
-  29:EXCHANGE [HASH($func_0)]
+  29:EXCHANGE [HASH(CASE WHEN default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL THEN default.impala_tpcds_web_sales.ws_item_sk ELSE default.impala_tpcds_store_sales.ss_item_sk END)]
      mem-estimate=96.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=17 row-size=92B cardinality=0
      in pipelines: 06(GETNEXT)
 
 F09:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=2.05MB mem-reservation=1.94MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=29, HASH($func_0)]
+  DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=29, HASH(CASE WHEN default.impala_tpcds_web_sales.ws_item_sk IS NOT NULL THEN default.impala_tpcds_web_sales.ws_item_sk ELSE default.impala_tpcds_store_sales.ss_item_sk END)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   01:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0

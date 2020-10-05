@@ -137,11 +137,11 @@ STAGE PLANS:
 F07:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=68.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: i_item_id, s_state, g_state, agg1, agg2, agg3, agg4
+  |  output exprs: CASE valid_tid(9,10,11) WHEN 9 THEN default.impala_tpcds_item.i_item_id WHEN 10 THEN default.impala_tpcds_item.i_item_id WHEN 11 THEN NULL END, CASE valid_tid(9,10,11) WHEN 9 THEN default.impala_tpcds_store.s_state WHEN 10 THEN NULL WHEN 11 THEN NULL END, bitand(shiftright(aggif(valid_tid(9,10,11) IN (9, 10, 11), CASE valid_tid(9,10,11) WHEN 9 THEN 0 WHEN 10 THEN 1 WHEN 11 THEN 3 END), 0), 1), divide(casttodouble(aggif(valid_tid(9,10,11) IN (9, 10, 11), CASE valid_tid(9,10,11) WHEN 9 THEN _impala_builtins.sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity)) WHEN 10 THEN sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity)) WHEN 11 THEN sum(casttobigint(default.impala_tpcds_store_sales.ss_quantity)) END)), casttodouble(aggif(valid_tid(9,10,11) IN (9, 10, 11), CASE valid_tid(9,10,11) WHEN 9 THEN _impala_builtins.count(casttobigint(default.impala_tpcds_store_sales.ss_quantity)) WHEN 10 THEN count(casttobigint(default.impala_tpcds_store_sales.ss_quantity)) WHEN 11 THEN count(casttobigint(default.impala_tpcds_store_sales.ss_quantity)) END))), casttodecimal(divide(aggif(valid_tid(9,10,11) IN (9, 10, 11), CASE valid_tid(9,10,11) WHEN 9 THEN _impala_builtins.sum(default.impala_tpcds_store_sales.ss_list_price) WHEN 10 THEN sum(default.impala_tpcds_store_sales.ss_list_price) WHEN 11 THEN sum(default.impala_tpcds_store_sales.ss_list_price) END), casttodecimal(aggif(valid_tid(9,10,11) IN (9, 10, 11), CASE valid_tid(9,10,11) WHEN 9 THEN _impala_builtins.count(default.impala_tpcds_store_sales.ss_list_price) WHEN 10 THEN count(default.impala_tpcds_store_sales.ss_list_price) WHEN 11 THEN count(default.impala_tpcds_store_sales.ss_list_price) END)))), casttodecimal(divide(aggif(valid_tid(9,10,11) IN (9, 10, 11), CASE valid_tid(9,10,11) WHEN 9 THEN _impala_builtins.sum(default.impala_tpcds_store_sales.ss_coupon_amt) WHEN 10 THEN sum(default.impala_tpcds_store_sales.ss_coupon_amt) WHEN 11 THEN sum(default.impala_tpcds_store_sales.ss_coupon_amt) END), casttodecimal(aggif(valid_tid(9,10,11) IN (9, 10, 11), CASE valid_tid(9,10,11) WHEN 9 THEN _impala_builtins.count(default.impala_tpcds_store_sales.ss_coupon_amt) WHEN 10 THEN count(default.impala_tpcds_store_sales.ss_coupon_amt) WHEN 11 THEN count(default.impala_tpcds_store_sales.ss_coupon_amt) END)))), casttodecimal(divide(aggif(valid_tid(9,10,11) IN (9, 10, 11), CASE valid_tid(9,10,11) WHEN 9 THEN _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price) WHEN 10 THEN sum(default.impala_tpcds_store_sales.ss_sales_price) WHEN 11 THEN sum(default.impala_tpcds_store_sales.ss_sales_price) END), casttodecimal(aggif(valid_tid(9,10,11) IN (9, 10, 11), CASE valid_tid(9,10,11) WHEN 9 THEN _impala_builtins.count(default.impala_tpcds_store_sales.ss_sales_price) WHEN 10 THEN count(default.impala_tpcds_store_sales.ss_sales_price) WHEN 11 THEN count(default.impala_tpcds_store_sales.ss_sales_price) END))))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   19:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: i_item_id ASC NULLS LAST, s_state ASC NULLS LAST
+     order by: CASE valid_tid(9,10,11) WHEN 9 THEN default.impala_tpcds_item.i_item_id WHEN 10 THEN default.impala_tpcds_item.i_item_id WHEN 11 THEN NULL END ASC NULLS LAST, CASE valid_tid(9,10,11) WHEN 9 THEN default.impala_tpcds_store.s_state WHEN 10 THEN NULL WHEN 11 THEN NULL END ASC NULLS LAST
      limit: 100
      mem-estimate=68.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=14 row-size=64B cardinality=0
@@ -152,7 +152,7 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reserv
   DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=19, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   12:TOP-N [LIMIT=100]
-  |  order by: i_item_id ASC NULLS LAST, s_state ASC NULLS LAST
+  |  order by: CASE valid_tid(9,10,11) WHEN 9 THEN default.impala_tpcds_item.i_item_id WHEN 10 THEN default.impala_tpcds_item.i_item_id WHEN 11 THEN NULL END ASC NULLS LAST, CASE valid_tid(9,10,11) WHEN 9 THEN default.impala_tpcds_store.s_state WHEN 10 THEN NULL WHEN 11 THEN NULL END ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=14 row-size=64B cardinality=0
   |  in pipelines: 12(GETNEXT), 11(OPEN)

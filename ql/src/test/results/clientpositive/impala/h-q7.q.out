@@ -211,11 +211,11 @@ STAGE PLANS:
 F08:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=48.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: n_name, n_name0, YEAR, $f3
+  |  output exprs: n1.n_name, n2.n_name, year(casttodate(default.impala_tpch_lineitem.l_shipdate)), _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   21:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: n_name ASC NULLS LAST, n_name0 ASC NULLS LAST, YEAR ASC NULLS LAST
+     order by: n1.n_name ASC NULLS LAST, n2.n_name ASC NULLS LAST, year(casttodate(default.impala_tpch_lineitem.l_shipdate)) ASC NULLS LAST
      mem-estimate=48.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=14 row-size=44B cardinality=0
      in pipelines: 13(GETNEXT)
@@ -225,7 +225,7 @@ Per-Host Resources: mem-estimate=140.05MB mem-reservation=46.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F08, EXCHANGE=21, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   13:SORT
-  |  order by: n_name ASC NULLS LAST, n_name0 ASC NULLS LAST, YEAR ASC NULLS LAST
+  |  order by: n1.n_name ASC NULLS LAST, n2.n_name ASC NULLS LAST, year(casttodate(default.impala_tpch_lineitem.l_shipdate)) ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=14 row-size=44B cardinality=0
   |  in pipelines: 13(GETNEXT), 20(OPEN)

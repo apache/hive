@@ -132,11 +132,11 @@ STAGE PLANS:
 F12:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=44.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: ca_zip, ca_county, $f2
+  |  output exprs: default.impala_tpcds_customer_address.ca_zip, default.impala_tpcds_customer_address.ca_county, _impala_builtins.sum(default.impala_tpcds_web_sales.ws_sales_price)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   32:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: ca_zip ASC NULLS LAST, ca_county ASC NULLS LAST
+     order by: default.impala_tpcds_customer_address.ca_zip ASC NULLS LAST, default.impala_tpcds_customer_address.ca_county ASC NULLS LAST
      limit: 100
      mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=19 row-size=40B cardinality=0
@@ -147,7 +147,7 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=32, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   19:TOP-N [LIMIT=100]
-  |  order by: ca_zip ASC NULLS LAST, ca_county ASC NULLS LAST
+  |  order by: default.impala_tpcds_customer_address.ca_zip ASC NULLS LAST, default.impala_tpcds_customer_address.ca_county ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=19 row-size=40B cardinality=0
   |  in pipelines: 19(GETNEXT), 31(OPEN)
@@ -158,30 +158,30 @@ Per-Host Resources: mem-estimate=128.04MB mem-reservation=34.00MB thread-reserva
   |  in pipelines: 31(GETNEXT)
   |
   31:AGGREGATE [FINALIZE]
-  |  output: _impala_builtins.sum:merge(ws_sales_price)
-  |  group by: ca_county, ca_zip
+  |  output: _impala_builtins.sum:merge(default.impala_tpcds_web_sales.ws_sales_price)
+  |  group by: default.impala_tpcds_customer_address.ca_county, default.impala_tpcds_customer_address.ca_zip
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=17 row-size=40B cardinality=0
   |  in pipelines: 31(GETNEXT), 02(OPEN)
   |
-  30:EXCHANGE [HASH(ca_county,ca_zip)]
+  30:EXCHANGE [HASH(default.impala_tpcds_customer_address.ca_county,default.impala_tpcds_customer_address.ca_zip)]
      mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=17 row-size=40B cardinality=0
      in pipelines: 02(GETNEXT)
 
 F09:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=133.92MB mem-reservation=39.81MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=30, HASH(ca_county,ca_zip)]
+  DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=30, HASH(default.impala_tpcds_customer_address.ca_county,default.impala_tpcds_customer_address.ca_zip)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   18:AGGREGATE [STREAMING]
-  |  output: sum(ws_sales_price)
-  |  group by: ca_county, ca_zip
+  |  output: sum(default.impala_tpcds_web_sales.ws_sales_price)
+  |  group by: default.impala_tpcds_customer_address.ca_county, default.impala_tpcds_customer_address.ca_zip
   |  mem-estimate=128.00MB mem-reservation=34.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=17 row-size=40B cardinality=0
   |  in pipelines: 02(GETNEXT)
   |
   17:SELECT
-  |  predicates: c != CAST(0 AS BIGINT) AND literalTrue IS NOT NULL OR substring(ca_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792')
+  |  predicates: _impala_builtins.count(*) != CAST(0 AS BIGINT) AND _impala_builtins.if(TupleIsNull(15), NULL, TRUE) IS NOT NULL OR substring(default.impala_tpcds_customer_address.ca_zip, CAST(1 AS BIGINT), CAST(5 AS BIGINT)) IN ('85669', '86197', '88274', '83405', '86475', '85392', '85460', '80348', '81792')
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=16 row-size=109B cardinality=0
   |  in pipelines: 02(GETNEXT)

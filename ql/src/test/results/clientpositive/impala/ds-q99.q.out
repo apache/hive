@@ -185,11 +185,11 @@ STAGE PLANS:
 F07:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=92.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: _o__c0, sm_type, cc_name, 30 days, 31-60 days, 61-90 days, 91-120 days, >120 days
+  |  output exprs: substring(default.impala_tpcds_warehouse.w_warehouse_name, 1, 20), default.impala_tpcds_ship_mode.sm_type, default.impala_tpcds_call_center.cc_name, _impala_builtins.sum(casttobigint(CASE WHEN subtract(casttobigint(default.impala_tpcds_catalog_sales.cs_ship_date_sk), casttobigint(default.impala_tpcds_catalog_sales.cs_sold_date_sk)) <= 30 THEN 1 ELSE 0 END)), _impala_builtins.sum(casttobigint(CASE WHEN subtract(casttobigint(default.impala_tpcds_catalog_sales.cs_ship_date_sk), casttobigint(default.impala_tpcds_catalog_sales.cs_sold_date_sk)) > 30 AND subtract(casttobigint(default.impala_tpcds_catalog_sales.cs_ship_date_sk), casttobigint(default.impala_tpcds_catalog_sales.cs_sold_date_sk)) <= 60 THEN 1 ELSE 0 END)), _impala_builtins.sum(casttobigint(CASE WHEN subtract(casttobigint(default.impala_tpcds_catalog_sales.cs_ship_date_sk), casttobigint(default.impala_tpcds_catalog_sales.cs_sold_date_sk)) > 60 AND subtract(casttobigint(default.impala_tpcds_catalog_sales.cs_ship_date_sk), casttobigint(default.impala_tpcds_catalog_sales.cs_sold_date_sk)) <= 90 THEN 1 ELSE 0 END)), _impala_builtins.sum(casttobigint(CASE WHEN subtract(casttobigint(default.impala_tpcds_catalog_sales.cs_ship_date_sk), casttobigint(default.impala_tpcds_catalog_sales.cs_sold_date_sk)) > 90 AND subtract(casttobigint(default.impala_tpcds_catalog_sales.cs_ship_date_sk), casttobigint(default.impala_tpcds_catalog_sales.cs_sold_date_sk)) <= 120 THEN 1 ELSE 0 END)), _impala_builtins.sum(casttobigint(CASE WHEN subtract(casttobigint(default.impala_tpcds_catalog_sales.cs_ship_date_sk), casttobigint(default.impala_tpcds_catalog_sales.cs_sold_date_sk)) > 120 THEN 1 ELSE 0 END))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   18:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: (tok_function substr (tok_table_or_col w_warehouse_name) 1 20) ASC NULLS LAST, sm_type ASC NULLS LAST, cc_name ASC NULLS LAST
+     order by: substring(default.impala_tpcds_warehouse.w_warehouse_name, 1, 20) ASC NULLS LAST, default.impala_tpcds_ship_mode.sm_type ASC NULLS LAST, default.impala_tpcds_call_center.cc_name ASC NULLS LAST
      limit: 100
      mem-estimate=92.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=12 row-size=88B cardinality=0
@@ -200,7 +200,7 @@ Per-Host Resources: mem-estimate=128.08MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=18, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   11:TOP-N [LIMIT=100]
-  |  order by: (tok_function substr (tok_table_or_col w_warehouse_name) 1 20) ASC NULLS LAST, sm_type ASC NULLS LAST, cc_name ASC NULLS LAST
+  |  order by: substring(default.impala_tpcds_warehouse.w_warehouse_name, 1, 20) ASC NULLS LAST, default.impala_tpcds_ship_mode.sm_type ASC NULLS LAST, default.impala_tpcds_call_center.cc_name ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=12 row-size=88B cardinality=0
   |  in pipelines: 11(GETNEXT), 17(OPEN)

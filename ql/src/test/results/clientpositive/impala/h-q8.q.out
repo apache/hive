@@ -222,11 +222,11 @@ STAGE PLANS:
 F10:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=24.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: o_year, mkt_share
+  |  output exprs: year(casttodate(default.impala_tpch_orders.o_orderdate)), divide(_impala_builtins.sum(CASE WHEN n2.n_name = 'BRAZIL' THEN multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount)) ELSE 0 END), _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   27:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: o_year ASC NULLS LAST
+     order by: year(casttodate(default.impala_tpch_orders.o_orderdate)) ASC NULLS LAST
      mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=18 row-size=20B cardinality=0
      in pipelines: 17(GETNEXT)
@@ -236,7 +236,7 @@ Per-Host Resources: mem-estimate=134.04MB mem-reservation=40.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=27, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   17:SORT
-  |  order by: o_year ASC NULLS LAST
+  |  order by: year(casttodate(default.impala_tpch_orders.o_orderdate)) ASC NULLS LAST
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=18 row-size=20B cardinality=0
   |  in pipelines: 17(GETNEXT), 26(OPEN)

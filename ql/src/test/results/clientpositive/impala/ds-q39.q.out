@@ -62,8 +62,8 @@ CBO PLAN:
 ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], i_item_sk=[$1], d_moy=[CAST(2):INTEGER], mean=[$2], cov=[$3], w_warehouse_sk1=[$4], i_item_sk1=[$5], d_moy1=[CAST(+(2:SMALLINT, 1:SMALLINT)):INTEGER], mean1=[$6], cov1=[$7])
   ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$6], sort5=[$7], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC])
     ImpalaJoinRel(condition=[AND(=($1, $5), =($0, $4))], joinType=[inner])
-      ImpalaProjectPassthroughRel(w_warehouse_sk=[$1], i_item_sk=[$2], mean=[/(CAST($4):DOUBLE, CAST($5):DOUBLE)], cov=[CASE(=(/(CAST($4):DOUBLE, CAST($5):DOUBLE), 0), null:DOUBLE, /($3, /(CAST($4):DOUBLE, CAST($5):DOUBLE)))])
-        ImpalaProjectRel(w_warehouse_name=[$2], w_warehouse_sk=[$1], i_item_sk=[$0], $f3=[$3], $f4=[$4], $f5=[$5], condition=[CASE(=(/(CAST($4):DOUBLE, CAST($5):DOUBLE), 0), false, >(/($3, /(CAST($4):DOUBLE, CAST($5):DOUBLE)), 1))])
+      ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], i_item_sk=[$1], mean=[/(CAST($3):DOUBLE, CAST($4):DOUBLE)], cov=[CASE(=(/(CAST($3):DOUBLE, CAST($4):DOUBLE), 0), null:DOUBLE, /($2, /(CAST($3):DOUBLE, CAST($4):DOUBLE)))])
+        ImpalaProjectRel($f1=[$1], $f2=[$0], $f4=[$3], $f5=[$4], $f6=[$5], condition=[CASE(=(/(CAST($3):DOUBLE, CAST($4):DOUBLE), 0), false, >(/($2, /(CAST($3):DOUBLE, CAST($4):DOUBLE)), 1))])
           ImpalaAggregateRel(group=[{5, 7, 8}], agg#0=[stddev_samp($3)], agg#1=[sum($4)], agg#2=[count($4)])
             ImpalaJoinRel(condition=[=($2, $7)], joinType=[inner])
               ImpalaJoinRel(condition=[=($0, $6)], joinType=[inner])
@@ -76,8 +76,8 @@ ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], i_item_sk=[$1], d_moy=[CAST(2):
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2000), =($8, 2), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], w_warehouse_name=[$2])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_warehouse]], condition=[IS NOT NULL($0)])
-      ImpalaProjectPassthroughRel(w_warehouse_sk=[$1], i_item_sk=[$2], mean=[/(CAST($4):DOUBLE, CAST($5):DOUBLE)], cov=[CASE(=(/(CAST($4):DOUBLE, CAST($5):DOUBLE), 0), null:DOUBLE, /($3, /(CAST($4):DOUBLE, CAST($5):DOUBLE)))])
-        ImpalaProjectRel(w_warehouse_name=[$2], w_warehouse_sk=[$1], i_item_sk=[$0], $f3=[$3], $f4=[$4], $f5=[$5], condition=[CASE(=(/(CAST($4):DOUBLE, CAST($5):DOUBLE), 0), false, >(/($3, /(CAST($4):DOUBLE, CAST($5):DOUBLE)), 1))])
+      ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], i_item_sk=[$1], mean=[/(CAST($3):DOUBLE, CAST($4):DOUBLE)], cov=[CASE(=(/(CAST($3):DOUBLE, CAST($4):DOUBLE), 0), null:DOUBLE, /($2, /(CAST($3):DOUBLE, CAST($4):DOUBLE)))])
+        ImpalaProjectRel($f1=[$1], $f2=[$0], $f4=[$3], $f5=[$4], $f6=[$5], condition=[CASE(=(/(CAST($3):DOUBLE, CAST($4):DOUBLE), 0), false, >(/($2, /(CAST($3):DOUBLE, CAST($4):DOUBLE)), 1))])
           ImpalaAggregateRel(group=[{5, 7, 8}], agg#0=[stddev_samp($3)], agg#1=[sum($4)], agg#2=[count($4)])
             ImpalaJoinRel(condition=[=($2, $7)], joinType=[inner])
               ImpalaJoinRel(condition=[=($0, $6)], joinType=[inner])
@@ -164,11 +164,11 @@ STAGE PLANS:
 F12:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=60.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: w_warehouse_sk, i_item_sk, CAST(2 AS INT), divide(casttodouble($f4), casttodouble($f5)), CASE WHEN divide(casttodouble($f4), casttodouble($f5)) = 0 THEN NULL ELSE divide($f3, divide(casttodouble($f4), casttodouble($f5))) END, w_warehouse_sk, i_item_sk, casttoint(add(CAST(2 AS SMALLINT), CAST(1 AS SMALLINT))), divide(casttodouble($f4), casttodouble($f5)), CASE WHEN divide(casttodouble($f4), casttodouble($f5)) = 0 THEN NULL ELSE divide($f3, divide(casttodouble($f4), casttodouble($f5))) END
+  |  output exprs: default.impala_tpcds_warehouse.w_warehouse_sk, default.impala_tpcds_item.i_item_sk, CAST(2 AS INT), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand)))), CASE WHEN divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand)))) = 0 THEN NULL ELSE divide(_impala_builtins.stddev_samp(default.impala_tpcds_inventory.inv_quantity_on_hand), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))))) END, default.impala_tpcds_warehouse_0.w_warehouse_sk, default.impala_tpcds_item_0.i_item_sk, casttoint(add(CAST(2 AS SMALLINT), CAST(1 AS SMALLINT))), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand)))), CASE WHEN divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand)))) = 0 THEN NULL ELSE divide(_impala_builtins.stddev_samp(default.impala_tpcds_inventory_0.inv_quantity_on_hand), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))))) END
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   33:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: w_warehouse_sk ASC NULLS LAST, i_item_sk ASC NULLS LAST, divide(casttodouble($f4), casttodouble($f5)) ASC NULLS LAST, CASE WHEN divide(casttodouble($f4), casttodouble($f5)) = 0 THEN NULL ELSE divide($f3, divide(casttodouble($f4), casttodouble($f5))) END ASC NULLS LAST, divide(casttodouble($f4), casttodouble($f5)) ASC NULLS LAST, CASE WHEN divide(casttodouble($f4), casttodouble($f5)) = 0 THEN NULL ELSE divide($f3, divide(casttodouble($f4), casttodouble($f5))) END ASC NULLS LAST
+     order by: default.impala_tpcds_warehouse.w_warehouse_sk ASC NULLS LAST, default.impala_tpcds_item.i_item_sk ASC NULLS LAST, divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand)))) ASC NULLS LAST, CASE WHEN divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand)))) = 0 THEN NULL ELSE divide(_impala_builtins.stddev_samp(default.impala_tpcds_inventory.inv_quantity_on_hand), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))))) END ASC NULLS LAST, divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand)))) ASC NULLS LAST, CASE WHEN divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand)))) = 0 THEN NULL ELSE divide(_impala_builtins.stddev_samp(default.impala_tpcds_inventory_0.inv_quantity_on_hand), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))))) END ASC NULLS LAST
      mem-estimate=60.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=22 row-size=56B cardinality=0
      in pipelines: 21(GETNEXT)
@@ -178,33 +178,33 @@ Per-Host Resources: mem-estimate=135.99MB mem-reservation=41.94MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=33, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   21:SORT
-  |  order by: w_warehouse_sk ASC NULLS LAST, i_item_sk ASC NULLS LAST, divide(casttodouble($f4), casttodouble($f5)) ASC NULLS LAST, CASE WHEN divide(casttodouble($f4), casttodouble($f5)) = 0 THEN NULL ELSE divide($f3, divide(casttodouble($f4), casttodouble($f5))) END ASC NULLS LAST, divide(casttodouble($f4), casttodouble($f5)) ASC NULLS LAST, CASE WHEN divide(casttodouble($f4), casttodouble($f5)) = 0 THEN NULL ELSE divide($f3, divide(casttodouble($f4), casttodouble($f5))) END ASC NULLS LAST
-  |  materialized: divide(casttodouble($f4), casttodouble($f5)), CASE WHEN divide(casttodouble($f4), casttodouble($f5)) = 0 THEN NULL ELSE divide($f3, divide(casttodouble($f4), casttodouble($f5))) END, divide(casttodouble($f4), casttodouble($f5)), CASE WHEN divide(casttodouble($f4), casttodouble($f5)) = 0 THEN NULL ELSE divide($f3, divide(casttodouble($f4), casttodouble($f5))) END
+  |  order by: default.impala_tpcds_warehouse.w_warehouse_sk ASC NULLS LAST, default.impala_tpcds_item.i_item_sk ASC NULLS LAST, divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand)))) ASC NULLS LAST, CASE WHEN divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand)))) = 0 THEN NULL ELSE divide(_impala_builtins.stddev_samp(default.impala_tpcds_inventory.inv_quantity_on_hand), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))))) END ASC NULLS LAST, divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand)))) ASC NULLS LAST, CASE WHEN divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand)))) = 0 THEN NULL ELSE divide(_impala_builtins.stddev_samp(default.impala_tpcds_inventory_0.inv_quantity_on_hand), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))))) END ASC NULLS LAST
+  |  materialized: divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand)))), CASE WHEN divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand)))) = 0 THEN NULL ELSE divide(_impala_builtins.stddev_samp(default.impala_tpcds_inventory.inv_quantity_on_hand), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))))) END, divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand)))), CASE WHEN divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand)))) = 0 THEN NULL ELSE divide(_impala_builtins.stddev_samp(default.impala_tpcds_inventory_0.inv_quantity_on_hand), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))))) END
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=22 row-size=56B cardinality=0
   |  in pipelines: 21(GETNEXT), 26(OPEN)
   |
   20:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: i_item_sk = i_item_sk, w_warehouse_sk = w_warehouse_sk
+  |  hash predicates: default.impala_tpcds_item.i_item_sk = default.impala_tpcds_item_0.i_item_sk, default.impala_tpcds_warehouse.w_warehouse_sk = default.impala_tpcds_warehouse_0.w_warehouse_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=10,21 row-size=96B cardinality=0
+  |  tuple-ids=10,21 row-size=72B cardinality=0
   |  in pipelines: 26(GETNEXT), 31(OPEN)
   |
   |--32:EXCHANGE [BROADCAST]
-  |     mem-estimate=52.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=21 row-size=48B cardinality=0
+  |     mem-estimate=40.00KB mem-reservation=0B thread-reservation=0
+  |     tuple-ids=21 row-size=36B cardinality=0
   |     in pipelines: 31(GETNEXT)
   |
   09:SELECT
-  |  predicates: CASE WHEN divide(casttodouble($f4), casttodouble($f5)) = CAST(0 AS DOUBLE) THEN FALSE ELSE divide($f3, divide(casttodouble($f4), casttodouble($f5))) > CAST(1 AS DOUBLE) END, CASE WHEN divide(casttodouble($f4), casttodouble($f5)) = CAST(0 AS DOUBLE) THEN FALSE ELSE divide($f3, divide(casttodouble($f4), casttodouble($f5))) > CAST(1.5 AS DOUBLE) END
+  |  predicates: CASE WHEN divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand)))) = CAST(0 AS DOUBLE) THEN FALSE ELSE divide(_impala_builtins.stddev_samp(default.impala_tpcds_inventory.inv_quantity_on_hand), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))))) > CAST(1 AS DOUBLE) END, CASE WHEN divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand)))) = CAST(0 AS DOUBLE) THEN FALSE ELSE divide(_impala_builtins.stddev_samp(default.impala_tpcds_inventory.inv_quantity_on_hand), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory.inv_quantity_on_hand))))) > CAST(1.5 AS DOUBLE) END
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=10 row-size=48B cardinality=0
+  |  tuple-ids=10 row-size=36B cardinality=0
   |  in pipelines: 26(GETNEXT)
   |
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=10 row-size=48B cardinality=0
+  |  tuple-ids=10 row-size=36B cardinality=0
   |  in pipelines: 26(GETNEXT)
   |
   26:AGGREGATE [FINALIZE]
@@ -328,14 +328,14 @@ Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F05, EXCHANGE=32, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   19:SELECT
-  |  predicates: CASE WHEN divide(casttodouble($f4), casttodouble($f5)) = CAST(0 AS DOUBLE) THEN FALSE ELSE divide($f3, divide(casttodouble($f4), casttodouble($f5))) > CAST(1 AS DOUBLE) END
+  |  predicates: CASE WHEN divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand)))) = CAST(0 AS DOUBLE) THEN FALSE ELSE divide(_impala_builtins.stddev_samp(default.impala_tpcds_inventory_0.inv_quantity_on_hand), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_inventory_0.inv_quantity_on_hand))))) > CAST(1 AS DOUBLE) END
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=21 row-size=48B cardinality=0
+  |  tuple-ids=21 row-size=36B cardinality=0
   |  in pipelines: 31(GETNEXT)
   |
   10:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=21 row-size=48B cardinality=0
+  |  tuple-ids=21 row-size=36B cardinality=0
   |  in pipelines: 31(GETNEXT)
   |
   31:AGGREGATE [FINALIZE]

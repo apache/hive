@@ -149,11 +149,11 @@ STAGE PLANS:
 F07:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=40.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: (tok_table_or_col i_manufact_id), (tok_function sum (tok_table_or_col ss_sales_price)), avg_window_0
+  |  output exprs: default.impala_tpcds_item.i_manufact_id, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price), _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   19:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: avg_window_0 ASC NULLS LAST, (tok_function sum (tok_table_or_col ss_sales_price)) ASC NULLS LAST, (tok_table_or_col i_manufact_id) ASC NULLS LAST
+     order by: _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)) ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price) ASC NULLS LAST, default.impala_tpcds_item.i_manufact_id ASC NULLS LAST
      limit: 100
      mem-estimate=40.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=15 row-size=36B cardinality=0
@@ -164,20 +164,20 @@ Per-Host Resources: mem-estimate=10.03MB mem-reservation=10.00MB thread-reservat
   DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=19, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   12:TOP-N [LIMIT=100]
-  |  order by: avg_window_0 ASC NULLS LAST, (tok_function sum (tok_table_or_col ss_sales_price)) ASC NULLS LAST, (tok_table_or_col i_manufact_id) ASC NULLS LAST
+  |  order by: _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)) ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price) ASC NULLS LAST, default.impala_tpcds_item.i_manufact_id ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=15 row-size=36B cardinality=0
   |  in pipelines: 12(GETNEXT), 09(OPEN)
   |
   11:SELECT
-  |  predicates: CASE WHEN avg_window_0 > CAST(0 AS DECIMAL(38,6)) THEN divide(abs(subtract((tok_function sum (tok_table_or_col ss_sales_price)), avg_window_0)), avg_window_0) > CAST(0.1 AS DECIMAL(1,1)) ELSE FALSE END
+  |  predicates: CASE WHEN _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)) > CAST(0 AS DECIMAL(38,6)) THEN divide(abs(subtract(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price), _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)))), _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price))) > CAST(0.1 AS DECIMAL(1,1)) ELSE FALSE END
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=8 row-size=36B cardinality=0
+  |  tuple-ids=14 row-size=36B cardinality=0
   |  in pipelines: 09(GETNEXT)
   |
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=8 row-size=36B cardinality=0
+  |  tuple-ids=14 row-size=36B cardinality=0
   |  in pipelines: 09(GETNEXT)
   |
   10:ANALYTIC
@@ -186,13 +186,13 @@ Per-Host Resources: mem-estimate=10.03MB mem-reservation=10.00MB thread-reservat
   |  order by: default.impala_tpcds_item.i_manufact_id ASC NULLS FIRST
   |  window: ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=13,12 row-size=40B cardinality=0
+  |  tuple-ids=12,11 row-size=40B cardinality=0
   |  in pipelines: 09(GETNEXT)
   |
   09:SORT
   |  order by: default.impala_tpcds_item.i_manufact_id ASC NULLS FIRST
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=13 row-size=24B cardinality=0
+  |  tuple-ids=12 row-size=24B cardinality=0
   |  in pipelines: 09(GETNEXT), 17(OPEN)
   |
   18:EXCHANGE [HASH(default.impala_tpcds_item.i_manufact_id)]

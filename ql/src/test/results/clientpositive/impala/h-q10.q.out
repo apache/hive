@@ -181,11 +181,11 @@ STAGE PLANS:
 F06:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=96.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: c_custkey, c_name, revenue, c_acctbal, n_name, c_address, c_phone, c_comment
+  |  output exprs: default.impala_tpch_customer.c_custkey, default.impala_tpch_customer.c_name, _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))), default.impala_tpch_customer.c_acctbal, default.impala_tpch_nation.n_name, default.impala_tpch_customer.c_address, default.impala_tpch_customer.c_phone, default.impala_tpch_customer.c_comment
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   15:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: revenue DESC NULLS FIRST, c_custkey ASC NULLS LAST
+     order by: _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))) DESC NULLS FIRST, default.impala_tpch_customer.c_custkey ASC NULLS LAST
      limit: 20
      mem-estimate=96.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=10 row-size=92B cardinality=0
@@ -196,7 +196,7 @@ Per-Host Resources: mem-estimate=128.09MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F06, EXCHANGE=15, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   09:TOP-N [LIMIT=20]
-  |  order by: revenue DESC NULLS FIRST, c_custkey ASC NULLS LAST
+  |  order by: _impala_builtins.sum(multiply(default.impala_tpch_lineitem.l_extendedprice, subtract(1, default.impala_tpch_lineitem.l_discount))) DESC NULLS FIRST, default.impala_tpch_customer.c_custkey ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=10 row-size=92B cardinality=0
   |  in pipelines: 09(GETNEXT), 14(OPEN)

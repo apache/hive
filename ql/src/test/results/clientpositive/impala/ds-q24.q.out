@@ -290,11 +290,11 @@ STAGE PLANS:
 F17:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=22.07MB mem-reservation=12.00MB thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: $f0, $f1, $f2, $f3
+  |  output exprs: default.impala_tpcds_customer.c_last_name, default.impala_tpcds_customer.c_first_name, default.impala_tpcds_store.s_store_name, _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   30:SORT
-  |  order by: $f0 ASC NULLS LAST, $f1 ASC NULLS LAST, $f2 ASC NULLS LAST
+  |  order by: default.impala_tpcds_customer.c_last_name ASC NULLS LAST, default.impala_tpcds_customer.c_first_name ASC NULLS LAST, default.impala_tpcds_store.s_store_name ASC NULLS LAST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
   |  tuple-ids=28 row-size=52B cardinality=1
   |  in pipelines: 30(GETNEXT), 39(OPEN)
@@ -305,7 +305,7 @@ Per-Host Resources: mem-estimate=22.07MB mem-reservation=12.00MB thread-reservat
   |  in pipelines: 39(GETNEXT)
   |
   29:NESTED LOOP JOIN [INNER JOIN, BROADCAST]
-  |  join predicates: $f3 > multiply(CAST(0.05 AS DECIMAL(2,2)), divide(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price)), casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price)))))
+  |  join predicates: _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)) > multiply(CAST(0.05 AS DECIMAL(2,2)), divide(_impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price)), casttodecimal(_impala_builtins.count(_impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price)))))
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=26,13 row-size=76B cardinality=1
   |  in pipelines: 39(GETNEXT), 48(OPEN)
@@ -514,7 +514,7 @@ Per-Host Resources: mem-estimate=128.05MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F17, EXCHANGE=49, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   15:SELECT
-  |  predicates: $f3 IS NOT NULL
+  |  predicates: _impala_builtins.sum(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)) IS NOT NULL
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=13 row-size=52B cardinality=0
   |  in pipelines: 48(GETNEXT)

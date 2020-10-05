@@ -39,7 +39,6 @@ import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.Expr;
-import org.apache.impala.analysis.TupleId;
 
 import java.util.List;
 import java.util.Map;

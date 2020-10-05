@@ -314,11 +314,11 @@ STAGE PLANS:
 F21:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: segment, num_customers, segment_base
+  |  output exprs: casttoint(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 50)), _impala_builtins.count(*), multiply(casttobigint(casttoint(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 50))), 50)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   35:TOP-N [LIMIT=100]
-  |  order by: segment ASC NULLS LAST, num_customers ASC NULLS LAST
+  |  order by: casttoint(divide(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_ext_sales_price), 50)) ASC NULLS LAST, _impala_builtins.count(*) ASC NULLS LAST
   |  mem-estimate=20B mem-reservation=0B thread-reservation=0
   |  tuple-ids=36 row-size=20B cardinality=1
   |  in pipelines: 35(GETNEXT), 34(OPEN)

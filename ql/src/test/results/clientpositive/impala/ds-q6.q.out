@@ -160,11 +160,11 @@ STAGE PLANS:
 F12:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=143.83MB mem-reservation=39.81MB thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: state, cnt
+  |  output exprs: a.ca_state, _impala_builtins.count(*)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   21:TOP-N [LIMIT=100]
-  |  order by: cnt ASC NULLS LAST, _o__col2 ASC NULLS LAST
+  |  order by: _impala_builtins.count(*) ASC NULLS LAST, a.ca_state ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=21 row-size=32B cardinality=0
   |  in pipelines: 21(GETNEXT), 20(OPEN)

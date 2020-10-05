@@ -146,11 +146,11 @@ STAGE PLANS:
 F10:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: c_customer_id
+  |  output exprs: default.impala_tpcds_customer.c_customer_id
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   27:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: c_customer_id ASC NULLS LAST
+     order by: default.impala_tpcds_customer.c_customer_id ASC NULLS LAST
      limit: 100
      mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=16 row-size=12B cardinality=0
@@ -161,7 +161,7 @@ Per-Host Resources: mem-estimate=133.91MB mem-reservation=39.81MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F10, EXCHANGE=27, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   15:TOP-N [LIMIT=100]
-  |  order by: c_customer_id ASC NULLS LAST
+  |  order by: default.impala_tpcds_customer.c_customer_id ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=16 row-size=12B cardinality=0
   |  in pipelines: 15(GETNEXT), 18(OPEN)

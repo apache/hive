@@ -302,11 +302,11 @@ STAGE PLANS:
 F13:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=136.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: ca_state, cd_gender, cd_marital_status, cd_dep_count, cnt1, _o__c5, _o__c6, _o__c7, cd_dep_employed_count, cnt2, _o__c10, _o__c11, _o__c12, cd_dep_college_count, cnt3, _o__c15, _o__c16, _o__c17
+  |  output exprs: ca.ca_state, default.impala_tpcds_customer_demographics.cd_gender, default.impala_tpcds_customer_demographics.cd_marital_status, default.impala_tpcds_customer_demographics.cd_dep_count, _impala_builtins.count(*), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_customer_demographics.cd_dep_count))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_customer_demographics.cd_dep_count)))), _impala_builtins.min(default.impala_tpcds_customer_demographics.cd_dep_count), _impala_builtins.stddev_samp(default.impala_tpcds_customer_demographics.cd_dep_count), default.impala_tpcds_customer_demographics.cd_dep_employed_count, _impala_builtins.count(*), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_customer_demographics.cd_dep_employed_count))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_customer_demographics.cd_dep_employed_count)))), _impala_builtins.min(default.impala_tpcds_customer_demographics.cd_dep_employed_count), _impala_builtins.stddev_samp(default.impala_tpcds_customer_demographics.cd_dep_employed_count), default.impala_tpcds_customer_demographics.cd_dep_college_count, _impala_builtins.count(*), divide(casttodouble(_impala_builtins.sum(casttobigint(default.impala_tpcds_customer_demographics.cd_dep_college_count))), casttodouble(_impala_builtins.count(casttobigint(default.impala_tpcds_customer_demographics.cd_dep_college_count)))), _impala_builtins.min(default.impala_tpcds_customer_demographics.cd_dep_college_count), _impala_builtins.stddev_samp(default.impala_tpcds_customer_demographics.cd_dep_college_count)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   36:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: ca_state ASC NULLS LAST, cd_gender ASC NULLS LAST, cd_marital_status ASC NULLS LAST, cd_dep_count ASC NULLS LAST, cd_dep_employed_count ASC NULLS LAST, cd_dep_college_count ASC NULLS LAST
+     order by: ca.ca_state ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_gender ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_marital_status ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_dep_count ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_dep_employed_count ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_dep_college_count ASC NULLS LAST
      limit: 100
      mem-estimate=136.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=22 row-size=132B cardinality=0
@@ -317,7 +317,7 @@ Per-Host Resources: mem-estimate=128.14MB mem-reservation=34.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F13, EXCHANGE=36, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   21:TOP-N [LIMIT=100]
-  |  order by: ca_state ASC NULLS LAST, cd_gender ASC NULLS LAST, cd_marital_status ASC NULLS LAST, cd_dep_count ASC NULLS LAST, cd_dep_employed_count ASC NULLS LAST, cd_dep_college_count ASC NULLS LAST
+  |  order by: ca.ca_state ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_gender ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_marital_status ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_dep_count ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_dep_employed_count ASC NULLS LAST, default.impala_tpcds_customer_demographics.cd_dep_college_count ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=22 row-size=132B cardinality=0
   |  in pipelines: 21(GETNEXT), 35(OPEN)

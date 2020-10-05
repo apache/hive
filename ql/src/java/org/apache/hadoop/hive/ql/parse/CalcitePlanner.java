@@ -2194,13 +2194,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN);
       rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_JOIN);
       rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_SEMIJOIN);
-      rules.add(HiveSortMergeRule.INSTANCE);
-      rules.add(HiveSortPullUpConstantsRule.SORT_LIMIT_INSTANCE);
-      rules.add(HiveSortPullUpConstantsRule.SORT_EXCHANGE_INSTANCE);
-      rules.add(HiveUnionPullUpConstantsRule.INSTANCE);
-      rules.add(HiveAggregatePullUpConstantsRule.INSTANCE);
       generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
           rules.toArray(new RelOptRule[rules.size()]));
+
+      // Additional rules that merge operators and pull up constants
+      // through the plan
+      generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+          HiveSortMergeRule.INSTANCE,
+          HiveSortPullUpConstantsRule.SORT_LIMIT_INSTANCE,
+          HiveSortPullUpConstantsRule.SORT_EXCHANGE_INSTANCE,
+          HiveUnionPullUpConstantsRule.INSTANCE,
+          HiveAggregatePullUpConstantsRule.INSTANCE);
 
       // 4. Push down limit through outer join
       // NOTE: We run this after PPD to support old style join syntax.

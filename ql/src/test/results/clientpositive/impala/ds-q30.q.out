@@ -176,11 +176,11 @@ STAGE PLANS:
 F12:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=140.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: c_customer_id, c_salutation, c_first_name, c_last_name, c_preferred_cust_flag, c_birth_day, c_birth_month, c_birth_year, c_birth_country, c_login, c_email_address, c_last_review_date, ctr_total_return
+  |  output exprs: default.impala_tpcds_customer.c_customer_id, default.impala_tpcds_customer.c_salutation, default.impala_tpcds_customer.c_first_name, default.impala_tpcds_customer.c_last_name, default.impala_tpcds_customer.c_preferred_cust_flag, default.impala_tpcds_customer.c_birth_day, default.impala_tpcds_customer.c_birth_month, default.impala_tpcds_customer.c_birth_year, default.impala_tpcds_customer.c_birth_country, default.impala_tpcds_customer.c_login, default.impala_tpcds_customer.c_email_address, default.impala_tpcds_customer.c_last_review_date, _impala_builtins.sum(default.impala_tpcds_web_returns.wr_return_amt)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   33:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: c_customer_id ASC NULLS LAST, c_salutation ASC NULLS LAST, c_first_name ASC NULLS LAST, c_last_name ASC NULLS LAST, c_preferred_cust_flag ASC NULLS LAST, c_birth_day ASC NULLS LAST, c_birth_month ASC NULLS LAST, c_birth_year ASC NULLS LAST, c_birth_country ASC NULLS LAST, c_login ASC NULLS LAST, c_email_address ASC NULLS LAST, c_last_review_date ASC NULLS LAST, ctr_total_return ASC NULLS LAST
+     order by: default.impala_tpcds_customer.c_customer_id ASC NULLS LAST, default.impala_tpcds_customer.c_salutation ASC NULLS LAST, default.impala_tpcds_customer.c_first_name ASC NULLS LAST, default.impala_tpcds_customer.c_last_name ASC NULLS LAST, default.impala_tpcds_customer.c_preferred_cust_flag ASC NULLS LAST, default.impala_tpcds_customer.c_birth_day ASC NULLS LAST, default.impala_tpcds_customer.c_birth_month ASC NULLS LAST, default.impala_tpcds_customer.c_birth_year ASC NULLS LAST, default.impala_tpcds_customer.c_birth_country ASC NULLS LAST, default.impala_tpcds_customer.c_login ASC NULLS LAST, default.impala_tpcds_customer.c_email_address ASC NULLS LAST, default.impala_tpcds_customer.c_last_review_date ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_web_returns.wr_return_amt) ASC NULLS LAST
      limit: 100
      mem-estimate=140.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=20 row-size=136B cardinality=0
@@ -191,7 +191,7 @@ Per-Host Resources: mem-estimate=3.97MB mem-reservation=3.88MB thread-reservatio
   DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=33, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   19:TOP-N [LIMIT=100]
-  |  order by: c_customer_id ASC NULLS LAST, c_salutation ASC NULLS LAST, c_first_name ASC NULLS LAST, c_last_name ASC NULLS LAST, c_preferred_cust_flag ASC NULLS LAST, c_birth_day ASC NULLS LAST, c_birth_month ASC NULLS LAST, c_birth_year ASC NULLS LAST, c_birth_country ASC NULLS LAST, c_login ASC NULLS LAST, c_email_address ASC NULLS LAST, c_last_review_date ASC NULLS LAST, ctr_total_return ASC NULLS LAST
+  |  order by: default.impala_tpcds_customer.c_customer_id ASC NULLS LAST, default.impala_tpcds_customer.c_salutation ASC NULLS LAST, default.impala_tpcds_customer.c_first_name ASC NULLS LAST, default.impala_tpcds_customer.c_last_name ASC NULLS LAST, default.impala_tpcds_customer.c_preferred_cust_flag ASC NULLS LAST, default.impala_tpcds_customer.c_birth_day ASC NULLS LAST, default.impala_tpcds_customer.c_birth_month ASC NULLS LAST, default.impala_tpcds_customer.c_birth_year ASC NULLS LAST, default.impala_tpcds_customer.c_birth_country ASC NULLS LAST, default.impala_tpcds_customer.c_login ASC NULLS LAST, default.impala_tpcds_customer.c_email_address ASC NULLS LAST, default.impala_tpcds_customer.c_last_review_date ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_web_returns.wr_return_amt) ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=20 row-size=136B cardinality=0
   |  in pipelines: 19(GETNEXT), 01(OPEN)

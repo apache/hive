@@ -243,11 +243,11 @@ STAGE PLANS:
 F11:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=92.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: s_acctbal, s_name, n_name, p_partkey, p_mfgr, s_address, s_phone, s_comment
+  |  output exprs: default.impala_tpch_supplier.s_acctbal, default.impala_tpch_supplier.s_name, default.impala_tpch_nation.n_name, default.impala_tpch_part.p_partkey, default.impala_tpch_part.p_mfgr, default.impala_tpch_supplier.s_address, default.impala_tpch_supplier.s_phone, default.impala_tpch_supplier.s_comment
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   30:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: s_acctbal DESC NULLS FIRST, n_name ASC NULLS LAST, s_name ASC NULLS LAST, p_partkey ASC NULLS LAST
+     order by: default.impala_tpch_supplier.s_acctbal DESC NULLS FIRST, default.impala_tpch_nation.n_name ASC NULLS LAST, default.impala_tpch_supplier.s_name ASC NULLS LAST, default.impala_tpch_part.p_partkey ASC NULLS LAST
      limit: 100
      mem-estimate=92.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=20 row-size=88B cardinality=0
@@ -258,7 +258,7 @@ Per-Host Resources: mem-estimate=5.98MB mem-reservation=5.81MB thread-reservatio
   DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=30, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   19:TOP-N [LIMIT=100]
-  |  order by: s_acctbal DESC NULLS FIRST, n_name ASC NULLS LAST, s_name ASC NULLS LAST, p_partkey ASC NULLS LAST
+  |  order by: default.impala_tpch_supplier.s_acctbal DESC NULLS FIRST, default.impala_tpch_nation.n_name ASC NULLS LAST, default.impala_tpch_supplier.s_name ASC NULLS LAST, default.impala_tpch_part.p_partkey ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=20 row-size=88B cardinality=0
   |  in pipelines: 19(GETNEXT), 01(OPEN)

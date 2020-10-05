@@ -138,11 +138,11 @@ STAGE PLANS:
 F07:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=92.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: c_last_name, c_first_name, _o__c2, ss_ticket_number, amt, profit
+  |  output exprs: default.impala_tpcds_customer.c_last_name, default.impala_tpcds_customer.c_first_name, substring(default.impala_tpcds_store.s_city, 1, 30), default.impala_tpcds_store_sales.ss_ticket_number, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_coupon_amt), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_profit)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   18:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: c_last_name ASC NULLS LAST, c_first_name ASC NULLS LAST, (tok_function substr (tok_table_or_col s_city) 1 30) ASC NULLS LAST, profit ASC NULLS LAST
+     order by: default.impala_tpcds_customer.c_last_name ASC NULLS LAST, default.impala_tpcds_customer.c_first_name ASC NULLS LAST, substring(default.impala_tpcds_store.s_city, 1, 30) ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_profit) ASC NULLS LAST
      limit: 100
      mem-estimate=92.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=11 row-size=88B cardinality=0
@@ -153,7 +153,7 @@ Per-Host Resources: mem-estimate=130.03MB mem-reservation=35.94MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F07, EXCHANGE=18, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   11:TOP-N [LIMIT=100]
-  |  order by: c_last_name ASC NULLS LAST, c_first_name ASC NULLS LAST, (tok_function substr (tok_table_or_col s_city) 1 30) ASC NULLS LAST, profit ASC NULLS LAST
+  |  order by: default.impala_tpcds_customer.c_last_name ASC NULLS LAST, default.impala_tpcds_customer.c_first_name ASC NULLS LAST, substring(default.impala_tpcds_store.s_city, 1, 30) ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_profit) ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=11 row-size=88B cardinality=0
   |  in pipelines: 11(GETNEXT), 16(OPEN)

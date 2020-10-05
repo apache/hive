@@ -197,11 +197,11 @@ STAGE PLANS:
 F12:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=72.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: total_sum, s_state, s_county, lochierarchy, rank_within_parent
+  |  output exprs: aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN _impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_profit) WHEN 19 THEN sum(default.impala_tpcds_store_sales.ss_net_profit) WHEN 20 THEN sum(default.impala_tpcds_store_sales.ss_net_profit) END), CASE valid_tid(18,19,20) WHEN 18 THEN default.impala_tpcds_store.s_state WHEN 19 THEN default.impala_tpcds_store.s_state WHEN 20 THEN NULL END, CASE valid_tid(18,19,20) WHEN 18 THEN default.impala_tpcds_store.s_county WHEN 19 THEN NULL WHEN 20 THEN NULL END, add(bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 0), 1)), _impala_builtins.rank()
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   33:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: lochierarchy DESC NULLS FIRST, (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col s_state)) ASC NULLS LAST, rank_within_parent ASC NULLS LAST
+     order by: add(bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 0), 1)) DESC NULLS FIRST, CASE WHEN add(bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 0), 1)) = 0 THEN CASE valid_tid(18,19,20) WHEN 18 THEN default.impala_tpcds_store.s_state WHEN 19 THEN default.impala_tpcds_store.s_state WHEN 20 THEN NULL END ELSE NULL END ASC NULLS LAST, _impala_builtins.rank() ASC NULLS LAST
      limit: 100
      mem-estimate=72.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=30 row-size=68B cardinality=0
@@ -212,39 +212,39 @@ Per-Host Resources: mem-estimate=16.07MB mem-reservation=16.00MB thread-reservat
   DATASTREAM SINK [FRAGMENT=F12, EXCHANGE=33, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   22:TOP-N [LIMIT=100]
-  |  order by: lochierarchy DESC NULLS FIRST, (tok_function when (= (tok_table_or_col lochierarchy) 0) (tok_table_or_col s_state)) ASC NULLS LAST, rank_within_parent ASC NULLS LAST
+  |  order by: add(bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 0), 1)) DESC NULLS FIRST, CASE WHEN add(bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 0), 1)) = 0 THEN CASE valid_tid(18,19,20) WHEN 18 THEN default.impala_tpcds_store.s_state WHEN 19 THEN default.impala_tpcds_store.s_state WHEN 20 THEN NULL END ELSE NULL END ASC NULLS LAST, _impala_builtins.rank() ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=30 row-size=68B cardinality=0
   |  in pipelines: 22(GETNEXT), 20(OPEN)
   |
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=23 row-size=68B cardinality=0
+  |  tuple-ids=29 row-size=68B cardinality=0
   |  in pipelines: 20(GETNEXT)
   |
   21:ANALYTIC
   |  functions: _impala_builtins.rank()
-  |  partition by: $func_0, $func_1
-  |  order by: $f2 DESC
+  |  partition by: add(bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 0), 1)), CASE WHEN bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(18,19,20) WHEN 18 THEN default.impala_tpcds_store.s_state WHEN 19 THEN default.impala_tpcds_store.s_state WHEN 20 THEN NULL END ELSE NULL END
+  |  order by: aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN _impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_profit) WHEN 19 THEN sum(default.impala_tpcds_store_sales.ss_net_profit) WHEN 20 THEN sum(default.impala_tpcds_store_sales.ss_net_profit) END) DESC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=28,27 row-size=76B cardinality=0
+  |  tuple-ids=27,26 row-size=76B cardinality=0
   |  in pipelines: 20(GETNEXT)
   |
   20:SORT
-  |  order by: $func_0 ASC NULLS FIRST, $func_1 ASC NULLS FIRST, $f2 DESC NULLS FIRST
+  |  order by: add(bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 0), 1)) ASC NULLS FIRST, CASE WHEN bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(18,19,20) WHEN 18 THEN default.impala_tpcds_store.s_state WHEN 19 THEN default.impala_tpcds_store.s_state WHEN 20 THEN NULL END ELSE NULL END ASC NULLS FIRST, aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN _impala_builtins.sum(default.impala_tpcds_store_sales.ss_net_profit) WHEN 19 THEN sum(default.impala_tpcds_store_sales.ss_net_profit) WHEN 20 THEN sum(default.impala_tpcds_store_sales.ss_net_profit) END) DESC NULLS FIRST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=28 row-size=68B cardinality=0
+  |  tuple-ids=27 row-size=68B cardinality=0
   |  in pipelines: 20(GETNEXT), 19(OPEN)
   |
-  32:EXCHANGE [HASH($func_0,$func_1)]
+  32:EXCHANGE [HASH(add(bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 0), 1)),CASE WHEN bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(18,19,20) WHEN 18 THEN default.impala_tpcds_store.s_state WHEN 19 THEN default.impala_tpcds_store.s_state WHEN 20 THEN NULL END ELSE NULL END)]
      mem-estimate=72.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=22 row-size=68B cardinality=0
      in pipelines: 19(GETNEXT)
 
 F09:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=394.00MB mem-reservation=103.94MB thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=32, HASH($func_0,$func_1)]
+  DATASTREAM SINK [FRAGMENT=F11, EXCHANGE=32, HASH(add(bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 1), 1), bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 0), 1)),CASE WHEN bitand(shiftright(aggif(valid_tid(18,19,20) IN (18, 19, 20), CASE valid_tid(18,19,20) WHEN 18 THEN 0 WHEN 19 THEN 1 WHEN 20 THEN 3 END), 0), 1) = 0 THEN CASE valid_tid(18,19,20) WHEN 18 THEN default.impala_tpcds_store.s_state WHEN 19 THEN default.impala_tpcds_store.s_state WHEN 20 THEN NULL END ELSE NULL END)]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   01:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
@@ -296,15 +296,15 @@ Per-Host Resources: mem-estimate=271.88MB mem-reservation=75.81MB thread-reserva
   |  in pipelines: 02(GETNEXT)
   |
   17:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: default.impala_tpcds_store.s_state = (tok_table_or_col s_state)
+  |  hash predicates: default.impala_tpcds_store.s_state = default.impala_tpcds_store_0.s_state
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=0,1,3,11 row-size=68B cardinality=0
+  |  tuple-ids=0,1,3,17 row-size=68B cardinality=0
   |  in pipelines: 02(GETNEXT), 14(OPEN)
   |
   |--29:EXCHANGE [BROADCAST]
   |     mem-estimate=24.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=11 row-size=20B cardinality=0
+  |     tuple-ids=17 row-size=20B cardinality=0
   |     in pipelines: 14(GETNEXT)
   |
   06:HASH JOIN [INNER JOIN, BROADCAST]
@@ -379,14 +379,14 @@ Per-Host Resources: mem-estimate=144.00MB mem-reservation=50.00MB thread-reserva
   DATASTREAM SINK [FRAGMENT=F00, EXCHANGE=29, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   16:SELECT
-  |  predicates: rank_window_0 <= CAST(5 AS BIGINT)
+  |  predicates: _impala_builtins.rank() <= CAST(5 AS BIGINT)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=11 row-size=20B cardinality=0
+  |  tuple-ids=17 row-size=20B cardinality=0
   |  in pipelines: 14(GETNEXT)
   |
   07:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=11 row-size=20B cardinality=0
+  |  tuple-ids=17 row-size=20B cardinality=0
   |  in pipelines: 14(GETNEXT)
   |
   15:ANALYTIC
@@ -395,13 +395,13 @@ Per-Host Resources: mem-estimate=144.00MB mem-reservation=50.00MB thread-reserva
   |  order by: _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_net_profit) DESC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=16,15 row-size=36B cardinality=0
+  |  tuple-ids=15,14 row-size=36B cardinality=0
   |  in pipelines: 14(GETNEXT)
   |
   14:SORT
   |  order by: default.impala_tpcds_store_0.s_state ASC NULLS FIRST, _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_net_profit) DESC NULLS FIRST
   |  mem-estimate=12.00MB mem-reservation=12.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=16 row-size=28B cardinality=0
+  |  tuple-ids=15 row-size=28B cardinality=0
   |  in pipelines: 14(GETNEXT), 28(OPEN)
   |
   28:AGGREGATE [FINALIZE]

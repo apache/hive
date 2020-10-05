@@ -192,11 +192,11 @@ STAGE PLANS:
 F15:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
 Per-Host Resources: mem-estimate=36.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: rnk, best_performing, worst_performing
+  |  output exprs: _impala_builtins.rank(), i1.i_product_name, i2.i_product_name
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   40:MERGING-EXCHANGE [UNPARTITIONED]
-     order by: rnk ASC NULLS LAST
+     order by: _impala_builtins.rank() ASC NULLS LAST
      limit: 100
      mem-estimate=36.00KB mem-reservation=0B thread-reservation=0
      tuple-ids=27 row-size=32B cardinality=0
@@ -207,7 +207,7 @@ Per-Host Resources: mem-estimate=3.94MB mem-reservation=3.88MB thread-reservatio
   DATASTREAM SINK [FRAGMENT=F15, EXCHANGE=40, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   24:TOP-N [LIMIT=100]
-  |  order by: rnk ASC NULLS LAST
+  |  order by: _impala_builtins.rank() ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |  tuple-ids=27 row-size=32B cardinality=0
   |  in pipelines: 24(GETNEXT), 01(OPEN)
@@ -218,27 +218,27 @@ Per-Host Resources: mem-estimate=3.94MB mem-reservation=3.88MB thread-reservatio
   |  in pipelines: 01(GETNEXT)
   |
   23:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: rank_window_0 = rank_window_0
+  |  hash predicates: _impala_builtins.rank() = _impala_builtins.rank()
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=0,6,17,24 row-size=72B cardinality=0
+  |  tuple-ids=0,12,23,24 row-size=72B cardinality=0
   |  in pipelines: 01(GETNEXT), 18(OPEN)
   |
   |--39:EXCHANGE [BROADCAST]
   |     mem-estimate=44.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=17,24 row-size=36B cardinality=0
+  |     tuple-ids=23,24 row-size=36B cardinality=0
   |     in pipelines: 18(GETNEXT)
   |
   11:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: i1.i_item_sk = item_sk
+  |  hash predicates: i1.i_item_sk = ss1.ss_item_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=0,6 row-size=36B cardinality=0
+  |  tuple-ids=0,12 row-size=36B cardinality=0
   |  in pipelines: 01(GETNEXT), 08(OPEN)
   |
   |--31:EXCHANGE [BROADCAST]
   |     mem-estimate=20.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=6 row-size=16B cardinality=0
+  |     tuple-ids=12 row-size=16B cardinality=0
   |     in pipelines: 08(GETNEXT)
   |
   01:SCAN HDFS [default.impala_tpcds_item i1, RANDOM]
@@ -257,14 +257,14 @@ Per-Host Resources: mem-estimate=4.07MB mem-reservation=4.00MB thread-reservatio
   DATASTREAM SINK [FRAGMENT=F14, EXCHANGE=31, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   10:SELECT
-  |  predicates: item_sk IS NOT NULL, rank_window_0 < CAST(11 AS BIGINT)
+  |  predicates: ss1.ss_item_sk IS NOT NULL, _impala_builtins.rank() < CAST(11 AS BIGINT)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=6 row-size=16B cardinality=0
+  |  tuple-ids=12 row-size=16B cardinality=0
   |  in pipelines: 08(GETNEXT)
   |
   02:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=6 row-size=16B cardinality=0
+  |  tuple-ids=12 row-size=16B cardinality=0
   |  in pipelines: 08(GETNEXT)
   |
   09:ANALYTIC
@@ -273,13 +273,13 @@ Per-Host Resources: mem-estimate=4.07MB mem-reservation=4.00MB thread-reservatio
   |  order by: casttodecimal(divide(_impala_builtins.sum(ss1.ss_net_profit), casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) ASC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=11,10 row-size=73B cardinality=0
+  |  tuple-ids=10,9 row-size=73B cardinality=0
   |  in pipelines: 08(GETNEXT)
   |
   30:MERGING-EXCHANGE [UNPARTITIONED]
      order by: 0 ASC NULLS FIRST, casttodecimal(divide(_impala_builtins.sum(ss1.ss_net_profit), casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) ASC NULLS LAST
      mem-estimate=69.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=11 row-size=65B cardinality=0
+     tuple-ids=10 row-size=65B cardinality=0
      in pipelines: 08(GETNEXT)
 
 F02:PLAN FRAGMENT [HASH(ss1.ss_item_sk)] hosts=1 instances=1
@@ -290,7 +290,7 @@ Per-Host Resources: mem-estimate=134.03MB mem-reservation=40.00MB thread-reserva
   |  order by: 0 ASC NULLS FIRST, casttodecimal(divide(_impala_builtins.sum(ss1.ss_net_profit), casttodecimal(_impala_builtins.count(ss1.ss_net_profit)))) ASC NULLS LAST
   |  materialized: casttodecimal(divide(_impala_builtins.sum(ss1.ss_net_profit), casttodecimal(_impala_builtins.count(ss1.ss_net_profit))))
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=11 row-size=65B cardinality=0
+  |  tuple-ids=10 row-size=65B cardinality=0
   |  in pipelines: 08(GETNEXT), 26(OPEN)
   |
   07:NESTED LOOP JOIN [INNER JOIN, BROADCAST]
@@ -385,10 +385,10 @@ Per-Host Resources: mem-estimate=6.03MB mem-reservation=5.94MB thread-reservatio
   DATASTREAM SINK [FRAGMENT=F14, EXCHANGE=39, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   22:HASH JOIN [INNER JOIN, BROADCAST]
-  |  hash predicates: item_sk = i2.i_item_sk
+  |  hash predicates: ss1_0.ss_item_sk = i2.i_item_sk
   |  fk/pk conjuncts: assumed fk/pk
   |  mem-estimate=1.94MB mem-reservation=1.94MB spill-buffer=64.00KB thread-reservation=0
-  |  tuple-ids=17,24 row-size=36B cardinality=0
+  |  tuple-ids=23,24 row-size=36B cardinality=0
   |  in pipelines: 18(GETNEXT), 21(OPEN)
   |
   |--38:EXCHANGE [UNPARTITIONED]
@@ -397,14 +397,14 @@ Per-Host Resources: mem-estimate=6.03MB mem-reservation=5.94MB thread-reservatio
   |     in pipelines: 21(GETNEXT)
   |
   20:SELECT
-  |  predicates: item_sk IS NOT NULL, rank_window_0 < CAST(11 AS BIGINT)
+  |  predicates: ss1_0.ss_item_sk IS NOT NULL, _impala_builtins.rank() < CAST(11 AS BIGINT)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=17 row-size=16B cardinality=0
+  |  tuple-ids=23 row-size=16B cardinality=0
   |  in pipelines: 18(GETNEXT)
   |
   12:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=17 row-size=16B cardinality=0
+  |  tuple-ids=23 row-size=16B cardinality=0
   |  in pipelines: 18(GETNEXT)
   |
   19:ANALYTIC
@@ -413,13 +413,13 @@ Per-Host Resources: mem-estimate=6.03MB mem-reservation=5.94MB thread-reservatio
   |  order by: casttodecimal(divide(_impala_builtins.sum(ss1_0.ss_net_profit), casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) DESC
   |  window: RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
   |  mem-estimate=4.00MB mem-reservation=4.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=22,21 row-size=73B cardinality=0
+  |  tuple-ids=21,20 row-size=73B cardinality=0
   |  in pipelines: 18(GETNEXT)
   |
   37:MERGING-EXCHANGE [UNPARTITIONED]
      order by: 0 ASC NULLS FIRST, casttodecimal(divide(_impala_builtins.sum(ss1_0.ss_net_profit), casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) DESC NULLS FIRST
      mem-estimate=69.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=22 row-size=65B cardinality=0
+     tuple-ids=21 row-size=65B cardinality=0
      in pipelines: 18(GETNEXT)
 
 F08:PLAN FRAGMENT [HASH(ss1_0.ss_item_sk)] hosts=1 instances=1
@@ -430,7 +430,7 @@ Per-Host Resources: mem-estimate=134.03MB mem-reservation=40.00MB thread-reserva
   |  order by: 0 ASC NULLS FIRST, casttodecimal(divide(_impala_builtins.sum(ss1_0.ss_net_profit), casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit)))) DESC NULLS FIRST
   |  materialized: casttodecimal(divide(_impala_builtins.sum(ss1_0.ss_net_profit), casttodecimal(_impala_builtins.count(ss1_0.ss_net_profit))))
   |  mem-estimate=6.00MB mem-reservation=6.00MB spill-buffer=2.00MB thread-reservation=0
-  |  tuple-ids=22 row-size=65B cardinality=0
+  |  tuple-ids=21 row-size=65B cardinality=0
   |  in pipelines: 18(GETNEXT), 33(OPEN)
   |
   17:NESTED LOOP JOIN [INNER JOIN, BROADCAST]
