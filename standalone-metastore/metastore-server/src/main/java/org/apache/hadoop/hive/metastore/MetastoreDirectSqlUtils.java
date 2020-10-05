@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.SQLException;
@@ -168,7 +169,7 @@ class MetastoreDirectSqlUtils {
     loopJoinOrderedResult(pm, partitions, queryText, 0, new ApplyFunc<Partition>() {
       @Override
       public void apply(Partition t, Object[] fields) {
-        t.putToParameters((String)fields[1], extractSqlClob(fields[2]));
+        t.putToParameters(extractSqlClob(fields[1]), extractSqlClob(fields[2]));
       }});
     // Perform conversion of null map values
     for (Partition t : partitions.values()) {
@@ -507,7 +508,9 @@ class MetastoreDirectSqlUtils {
 
   /**
    * Convert a boolean value returned from the RDBMS to a Java Boolean object.
-   * MySQL has booleans, but e.g. Derby uses 'Y'/'N' mapping.
+   * MySQL has booleans, but e.g. Derby uses 'Y'/'N' mapping and Oracle DB
+   * doesn't supports boolean, so we have used Number to store the value,
+   * which maps to BigDecimal.
    *
    * @param value
    *          column value from the database
@@ -539,6 +542,16 @@ class MetastoreDirectSqlUtils {
         // NOOP
       }
     }
+
+    if (value instanceof BigDecimal) {
+      BigDecimal bigDecimal = (BigDecimal) value;
+      if (bigDecimal.intValue() == 0) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+    LOG.debug("Value is of type {}", value.getClass());
     throw new MetaException("Cannot extract boolean from column value " + value);
   }
 
