@@ -39,11 +39,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileUtil;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -944,9 +940,9 @@ public class TestCompactor {
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
     Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 0, count);
 
-    stat =
-        fs.listStatus(new Path(table.getSd().getLocation()));
-    if (0 != stat.length) {
+    RemoteIterator it =
+        fs.listFiles(new Path(table.getSd().getLocation()), true);
+    if (it.hasNext()) {
       Assert.fail("Expecting compaction to have cleaned the directories, FileStatus[] stat " + Arrays.toString(stat));
     }
 
@@ -1010,9 +1006,9 @@ public class TestCompactor {
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
     Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 0, count);
 
-    stat =
-        fs.listStatus(new Path(table1.getSd().getLocation()));
-    if (0 != stat.length) {
+    RemoteIterator it =
+        fs.listFiles(new Path(table1.getSd().getLocation()), true);
+    if (it.hasNext()) {
       Assert.fail("Expecting compaction to have cleaned the directories, FileStatus[] stat " + Arrays.toString(stat));
     }
 
