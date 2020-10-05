@@ -53,8 +53,71 @@ set hive.explain.user=false;
 
 set hive.optimize.shared.work.dppunion=false;
 
+select 'expected to see a plan in which ts scan could be shared by combining semijoin conditions';
 -- note: this plan should involve a semijoin reduction
 explain 
+select   sum(s.ss_item_sk)
+ from
+     x1_store_sales s
+     ,x1_date_dim d
+ where
+        1=1
+        and s.ss_sold_date_sk=d.d_date_sk
+	and d.d_moy=3
+union
+select   sum(s.ss_item_sk)
+ from
+     x1_store_sales s
+     ,x1_date_dim d
+ where
+        1=1
+        and s.ss_sold_date_sk=d.d_date_sk
+	and d.d_moy=5
+;
+
+select   sum(s.ss_item_sk)
+ from
+     x1_store_sales s
+     ,x1_date_dim d
+ where
+        1=1
+        and s.ss_sold_date_sk=d.d_date_sk
+	and d.d_moy=3
+union
+select   sum(s.ss_item_sk)
+ from
+     x1_store_sales s
+     ,x1_date_dim d
+ where
+        1=1
+        and s.ss_sold_date_sk=d.d_date_sk
+	and d.d_moy=5
+;
+
+
+set hive.optimize.shared.work.dppunion=true;
+
+select 'expected to see a plan in which x1_store_sales(s) is only scanned once';
+explain 
+select   sum(s.ss_item_sk)
+ from
+     x1_store_sales s
+     ,x1_date_dim d
+ where
+        1=1
+        and s.ss_sold_date_sk=d.d_date_sk
+	and d.d_moy=3
+union
+select   sum(s.ss_item_sk)
+ from
+     x1_store_sales s
+     ,x1_date_dim d
+ where
+        1=1
+        and s.ss_sold_date_sk=d.d_date_sk
+	and d.d_moy=5
+;
+
 select   sum(s.ss_item_sk)
  from
      x1_store_sales s
