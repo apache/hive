@@ -2584,6 +2584,8 @@ public class HiveConf extends Configuration {
         "Whether to enable shared work extended optimizer for semijoins. The optimizer tries to merge\n" +
         "scan operators if one of them reads the full table, even if the other one is the target for\n" +
         "one or more semijoin edges. Tez only."),
+    HIVE_SHARED_WORK_DPPUNION_OPTIMIZATION("hive.optimize.shared.work.dppunion", true,
+        "FIXME"),
     HIVE_SHARED_WORK_MERGE_TS_SCHEMA("hive.optimize.shared.work.merge.ts.schema", true,
         "Whether to enable merging scan operators over the same table but with different schema." +
             "The optimizer tries to merge the scan operators by taking the union of needed columns from " +
