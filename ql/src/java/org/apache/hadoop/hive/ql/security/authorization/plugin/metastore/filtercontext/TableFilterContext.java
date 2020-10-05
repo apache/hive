@@ -71,7 +71,7 @@ public class TableFilterContext extends HiveMetaStoreAuthorizableEvent {
             for (Table table : tables) {
                 HivePrivilegeObjectType type = HivePrivilegeObjectType.TABLE_OR_VIEW;
                 HivePrivObjectActionType objectActionType = HivePrivilegeObject.HivePrivObjectActionType.OTHER;
-                HivePrivilegeObject hivePrivilegeObject = new HivePrivilegeObject(type, table.getDbName(), table.getTableName(), null, null, objectActionType, null, null);
+                HivePrivilegeObject hivePrivilegeObject = new HivePrivilegeObject(type, table.getDbName(), table.getTableName(), null, null, objectActionType, null, null, table.getOwner(), table.getOwnerType());
                 ret.add(hivePrivilegeObject);
             }
         } else {
