@@ -205,7 +205,7 @@ Stage-0
                                     Select Operator [SEL_145] (rows=35631408 width=119)
                                       Output:["_col0","_col1","_col2","_col3"]
                                       Filter Operator [FIL_144] (rows=35631408 width=19)
-                                        predicate:((c_birth_month) IN (9, 5, 12, 4, 1, 10) and c_current_cdemo_sk is not null and c_customer_sk is not null and c_current_addr_sk is not null)
+                                        predicate:((c_birth_month) IN (9, 5, 12, 4, 1, 10) and c_current_cdemo_sk is not null and c_current_addr_sk is not null and c_customer_sk is not null)
                                         TableScan [TS_0] (rows=80000000 width=19)
                                           default@customer,customer,Tbl:COMPLETE,Col:COMPLETE,Output:["c_customer_sk","c_current_cdemo_sk","c_current_addr_sk","c_birth_month","c_birth_year"]
                                 <-Map 7 [SIMPLE_EDGE] vectorized

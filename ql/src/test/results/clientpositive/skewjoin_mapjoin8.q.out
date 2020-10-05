@@ -87,10 +87,10 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
-            filterExpr: (key is not null and val is not null) (type: boolean)
+            filterExpr: (val is not null and key is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (key is not null and val is not null) (type: boolean)
+              predicate: (val is not null and key is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), val (type: string)

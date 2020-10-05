@@ -2199,8 +2199,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
       rules.add(HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN);
       rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_JOIN);
       rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_SEMIJOIN);
-      generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
-          rules.toArray(new RelOptRule[rules.size()]));
+      // We use DEPTH_FIRST traversal order because it is more efficient
+      // than TOP_DOWN or BOTTOM_UP. The reason is that the former does
+      // not restart traversing the full plan when a rule executes a
+      // transformation. TOP_DOWN and BOTTOM_UP do, and hence, they may
+      // lead to re-triggering of rules, again and again, without producing
+      // any successor
+      generatePartialProgram(program, true, HepMatchOrder.DEPTH_FIRST,
+          rules.toArray(new RelOptRule[0]));
 
       // Additional rules that merge operators and pull up constants
       // through the plan

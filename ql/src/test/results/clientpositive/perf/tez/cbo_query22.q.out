@@ -61,7 +61,7 @@ HiveSortLimit(sort0=[$4], sort1=[$0], sort2=[$1], sort3=[$2], sort4=[$3], dir0=[
         HiveJoin(condition=[=($2, $5)], joinType=[inner], algorithm=[none], cost=[not available])
           HiveJoin(condition=[=($0, $4)], joinType=[inner], algorithm=[none], cost=[not available])
             HiveProject(inv_date_sk=[$0], inv_item_sk=[$1], inv_warehouse_sk=[$2], inv_quantity_on_hand=[$3])
-              HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1), IS NOT NULL($2))])
+              HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($1), IS NOT NULL($0))])
                 HiveTableScan(table=[[default, inventory]], table:alias=[inventory])
             HiveProject(d_date_sk=[$0])
               HiveFilter(condition=[AND(BETWEEN(false, $3, 1212, 1223), IS NOT NULL($0))])

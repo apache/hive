@@ -121,7 +121,7 @@ Stage-0
                         Select Operator [SEL_5] (rows=25/25 width=175)
                           Output:["_col0","_col1"]
                           Filter Operator [FIL_70] (rows=25/25 width=175)
-                            predicate:(key is not null and value is not null)
+                            predicate:(value is not null and key is not null)
                             TableScan [TS_3] (rows=25/25 width=175)
                               default@src1,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
           <-Reducer 7 [CONTAINS] llap
@@ -344,7 +344,7 @@ Stage-0
                               Select Operator [SEL_5] (rows=25/25 width=175)
                                 Output:["_col0","_col1"]
                                 Filter Operator [FIL_137] (rows=25/25 width=175)
-                                  predicate:(key is not null and value is not null)
+                                  predicate:(value is not null and key is not null)
                                   TableScan [TS_3] (rows=25/25 width=175)
                                     default@src1,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                 <-Reducer 3 [CONTAINS] llap
@@ -698,7 +698,7 @@ Stage-0
                 Select Operator [SEL_2] (rows=242/242 width=95)
                   Output:["_col0","_col1"]
                   Filter Operator [FIL_22] (rows=242/242 width=95)
-                    predicate:(key is not null and value is not null)
+                    predicate:(value is not null and key is not null)
                      Please refer to the previous TableScan [TS_0]
             <-Map 4 [SIMPLE_EDGE] llap
               SHUFFLE [RS_10]
@@ -835,7 +835,7 @@ Stage-0
                 Select Operator [SEL_2] (rows=242/242 width=95)
                   Output:["_col0","_col1"]
                   Filter Operator [FIL_22] (rows=242/242 width=95)
-                    predicate:(key is not null and value is not null)
+                    predicate:(value is not null and key is not null)
                     TableScan [TS_0] (rows=242/242 width=95)
                       default@tab_n6,s1,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
@@ -1230,7 +1230,7 @@ Stage-5
                                   Select Operator [SEL_5] (rows=25/25 width=175)
                                     Output:["_col0","_col1"]
                                     Filter Operator [FIL_120] (rows=25/25 width=175)
-                                      predicate:(key is not null and value is not null)
+                                      predicate:(value is not null and key is not null)
                                       TableScan [TS_3] (rows=25/25 width=175)
                                         default@src1,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                               <-Map 21 [SIMPLE_EDGE] llap
@@ -1377,7 +1377,7 @@ Stage-5
                                   Select Operator [SEL_23] (rows=500/500 width=178)
                                     Output:["_col0","_col1"]
                                     Filter Operator [FIL_123] (rows=500/500 width=178)
-                                      predicate:(key is not null and value is not null)
+                                      predicate:(value is not null and key is not null)
                                        Please refer to the previous TableScan [TS_0]
                               <-Map 16 [SIMPLE_EDGE] llap
                                 SHUFFLE [RS_39]
@@ -1612,7 +1612,7 @@ Stage-5
                                         Select Operator [SEL_5] (rows=25/25 width=175)
                                           Output:["_col0","_col1"]
                                           Filter Operator [FIL_160] (rows=25/25 width=175)
-                                            predicate:(key is not null and value is not null)
+                                            predicate:(value is not null and key is not null)
                                             TableScan [TS_3] (rows=25/25 width=175)
                                               default@src1,x,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                                     <-Map 28 [SIMPLE_EDGE] llap
@@ -1708,7 +1708,7 @@ Stage-5
                                               Select Operator [SEL_27] (rows=500/500 width=178)
                                                 Output:["_col0","_col1"]
                                                 Filter Operator [FIL_163] (rows=500/500 width=178)
-                                                  predicate:(key is not null and value is not null)
+                                                  predicate:(value is not null and key is not null)
                                                   TableScan [TS_0] (rows=500/500 width=178)
                                                     default@src,y,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
                                           <-Map 20 [SIMPLE_EDGE] llap

@@ -234,7 +234,7 @@ Stage-0
                                                     Select Operator [SEL_191] (rows=77201384 width=11)
                                                       Output:["_col0","_col1","_col2"]
                                                       Filter Operator [FIL_190] (rows=77201384 width=11)
-                                                        predicate:(c_current_cdemo_sk is not null and c_current_addr_sk is not null and c_customer_sk is not null)
+                                                        predicate:(c_current_cdemo_sk is not null and c_customer_sk is not null and c_current_addr_sk is not null)
                                                         TableScan [TS_0] (rows=80000000 width=11)
                                                           default@customer,c,Tbl:COMPLETE,Col:COMPLETE,Output:["c_customer_sk","c_current_cdemo_sk","c_current_addr_sk"]
                                                 <-Map 11 [SIMPLE_EDGE] vectorized

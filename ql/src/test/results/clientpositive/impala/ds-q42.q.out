@@ -53,7 +53,7 @@ ImpalaProjectPassthroughRel(d_year=[CAST(1998):INTEGER], i_category_id=[$0], i_c
         ImpalaJoinRel(condition=[=($0, $4)], joinType=[inner])
           ImpalaJoinRel(condition=[=($3, $2)], joinType=[inner])
             ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_ext_sales_price=[$14], ss_sold_date_sk=[$22])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($22), IS NOT NULL($1))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($22))])
             ImpalaProjectPassthroughRel(d_date_sk=[$0])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($8, 12), =($6, 1998), IS NOT NULL($0))])
           ImpalaProjectPassthroughRel(i_item_sk=[$0], i_category_id=[$11], i_category=[$12])

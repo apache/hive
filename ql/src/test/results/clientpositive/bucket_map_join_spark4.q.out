@@ -77,7 +77,7 @@ POSTHOOK: Input: default@tbl3
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t4`.`value` AS `value0`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`tbl1_n0`
-WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t0`
+WHERE `value` IS NOT NULL AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `value`
 FROM `default`.`tbl3`
 WHERE `value` IS NOT NULL) AS `t2` ON `t0`.`value` = `t2`.`value`
@@ -103,12 +103,12 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
-            filterExpr: (key is not null and value is not null) (type: boolean)
+            filterExpr: (value is not null and key is not null) (type: boolean)
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (key is not null and value is not null) (type: boolean)
+              predicate: (value is not null and key is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)
@@ -415,7 +415,7 @@ POSTHOOK: Input: default@tbl3
 OPTIMIZED SQL: SELECT `t0`.`key`, `t0`.`value`, `t4`.`value` AS `value0`, `t2`.`value` AS `value1`
 FROM (SELECT `key`, `value`
 FROM `default`.`tbl1_n0`
-WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t0`
+WHERE `value` IS NOT NULL AND `key` IS NOT NULL) AS `t0`
 INNER JOIN (SELECT `value`
 FROM `default`.`tbl3`
 WHERE `value` IS NOT NULL) AS `t2` ON `t0`.`value` = `t2`.`value`
@@ -441,12 +441,12 @@ STAGE PLANS:
         $hdt$_0:a 
           TableScan
             alias: a
-            filterExpr: (key is not null and value is not null) (type: boolean)
+            filterExpr: (value is not null and key is not null) (type: boolean)
             Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (key is not null and value is not null) (type: boolean)
+              predicate: (value is not null and key is not null) (type: boolean)
               Statistics: Num rows: 10 Data size: 70 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: int), value (type: string)

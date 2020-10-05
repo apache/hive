@@ -63,7 +63,7 @@ ImpalaProjectPassthroughRel(total_sum=[$0], i_category=[$1], i_class=[$2], lochi
             ImpalaJoinRel(condition=[=($4, $1)], joinType=[inner])
               ImpalaJoinRel(condition=[=($3, $0)], joinType=[inner])
                 ImpalaProjectPassthroughRel(ws_sold_date_sk=[$0], ws_item_sk=[$3], ws_net_paid=[$29])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_sales]], condition=[AND(IS NOT NULL($0), IS NOT NULL($3))])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_sales]], condition=[AND(IS NOT NULL($3), IS NOT NULL($0))])
                 ImpalaProjectPassthroughRel(d_date_sk=[$0])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, $3, 1215, +(1215, 11)), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(i_item_sk=[$0], i_class=[$10], i_category=[$12])

@@ -136,10 +136,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t5
-            filterExpr: ((predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_to') and subject is not null and object is not null) (type: boolean)
+            filterExpr: ((predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_to') and object is not null and subject is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_to') and subject is not null and object is not null) (type: boolean)
+              predicate: ((predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_to') and object is not null and subject is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: subject (type: string), object (type: string)
@@ -266,10 +266,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: t3
-            filterExpr: ((predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_from') and object is not null and subject is not null) (type: boolean)
+            filterExpr: ((predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_from') and subject is not null and object is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: ((predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_from') and object is not null and subject is not null) (type: boolean)
+              predicate: ((predicate = 'http://www.ontosearch.com/2007/12/ontosofa-ns#_from') and subject is not null and object is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: subject (type: string), object (type: string)

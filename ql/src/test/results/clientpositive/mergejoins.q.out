@@ -67,10 +67,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: a_n0
-            filterExpr: (val1 is not null and val2 is not null) (type: boolean)
+            filterExpr: (val2 is not null and val1 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
             Filter Operator
-              predicate: (val1 is not null and val2 is not null) (type: boolean)
+              predicate: (val2 is not null and val1 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 0 Basic stats: PARTIAL Column stats: NONE
               Select Operator
                 expressions: val1 (type: int), val2 (type: int)

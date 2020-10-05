@@ -45,7 +45,7 @@ FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t2`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
+WHERE `value` IS NOT NULL AND `key` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -142,12 +142,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (key is not null and value is not null) (type: boolean)
+                  filterExpr: (value is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (key is not null and value is not null) (type: boolean)
+                    predicate: (value is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -534,7 +534,7 @@ FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t2`
 INNER JOIN ((SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `value` IS NOT NULL AND `key` IS NOT NULL) AS `t4`
+WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t4`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
 WHERE `key` IS NOT NULL) AS `t6` ON `t4`.`key` = `t6`.`key`) ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
@@ -559,13 +559,13 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (value is not null and key is not null) (type: boolean)
+                  filterExpr: (key is not null and value is not null) (type: boolean)
                   probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_76_container, bigKeyColName:key, smallTablePos:1, keyRatio:0.64
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (value is not null and key is not null) (type: boolean)
+                    predicate: (key is not null and value is not null) (type: boolean)
                     Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1098,7 +1098,7 @@ FROM `default`.`src`
 WHERE `key` IS NOT NULL) AS `t2`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
+WHERE `value` IS NOT NULL AND `key` IS NOT NULL) AS `t4` ON `t2`.`key` = `t4`.`key`) ON `t0`.`value` = `t4`.`value`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -1195,12 +1195,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (key is not null and value is not null) (type: boolean)
+                  filterExpr: (value is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (key is not null and value is not null) (type: boolean)
+                    predicate: (value is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -2144,10 +2144,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (key is not null and value is not null) (type: boolean)
+                  filterExpr: (value is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and value is not null) (type: boolean)
+                    predicate: (value is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -2447,10 +2447,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (key is not null and value is not null) (type: boolean)
+                  filterExpr: (value is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and value is not null) (type: boolean)
+                    predicate: (value is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)

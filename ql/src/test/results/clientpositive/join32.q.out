@@ -37,7 +37,7 @@ FROM `default`.`srcpart`
 WHERE `value` IS NOT NULL AND `ds` = '2008-04-08' AND `hr` = 11) AS `t2`
 INNER JOIN (SELECT `key`, `value`
 FROM `default`.`src1`
-WHERE `key` IS NOT NULL AND `value` IS NOT NULL) AS `t4` ON `t2`.`value` = `t4`.`value`) ON `t0`.`key` = `t4`.`key`
+WHERE `value` IS NOT NULL AND `key` IS NOT NULL) AS `t4` ON `t2`.`value` = `t4`.`value`) ON `t0`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-9 is a root stage
   Stage-7 depends on stages: Stage-9
@@ -78,12 +78,12 @@ STAGE PLANS:
         $hdt$_2:x 
           TableScan
             alias: x
-            filterExpr: (key is not null and value is not null) (type: boolean)
+            filterExpr: (value is not null and key is not null) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
-              predicate: (key is not null and value is not null) (type: boolean)
+              predicate: (value is not null and key is not null) (type: boolean)
               Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

@@ -25,12 +25,14 @@ where l_linenumber = 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
 CBO PLAN:
-ImpalaProjectPassthroughRel(l_orderkey=[$0], l_partkey=[$1], l_suppkey=[$2], l_linenumber=[$3], l_quantity=[$4], l_extendedprice=[$5], l_discount=[$6], l_tax=[$7], l_returnflag=[$8], l_linestatus=[$9], l_shipdate=[$10], l_commitdate=[$11], l_receiptdate=[$12], l_shipinstruct=[$13], l_shipmode=[$14], l_comment=[$15])
+ImpalaProjectPassthroughRel(l_orderkey=[$0], l_partkey=[$1], l_suppkey=[$2], l_linenumber=[CAST(10):INTEGER], l_quantity=[$3], l_extendedprice=[$4], l_discount=[$5], l_tax=[$6], l_returnflag=[$7], l_linestatus=[$8], l_shipdate=[$9], l_commitdate=[$10], l_receiptdate=[$11], l_shipinstruct=[$12], l_shipmode=[$13], l_comment=[$14])
   ImpalaJoinRel(condition=[true], joinType=[inner])
     ImpalaSortRel(fetch=[0])
-      ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]])
+      ImpalaProjectRel(l_orderkey=[$0], l_partkey=[$1], l_suppkey=[$2], l_quantity=[$4], l_extendedprice=[$5], l_discount=[$6], l_tax=[$7], l_returnflag=[$8], l_linestatus=[$9], l_shipdate=[$10], l_commitdate=[$11], l_receiptdate=[$12], l_shipinstruct=[$13], l_shipmode=[$14], l_comment=[$15])
+        ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]])
     ImpalaProjectPassthroughRel(DUMMY=[0])
-      ImpalaUnionRel
+      ImpalaSortRel(fetch=[0])
+        ImpalaUnionRel
 
 PREHOOK: query: explain
 select 5 + 3
@@ -89,51 +91,58 @@ STAGE PLANS:
   Stage: Stage-1
     Impala
       Impala Plan: 
-F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=176.00KB mem-reservation=0B thread-reservation=1
+F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=172.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: t.l_orderkey, t.l_partkey, t.l_suppkey, t.l_linenumber, t.l_quantity, t.l_extendedprice, t.l_discount, t.l_tax, t.l_returnflag, t.l_linestatus, t.l_shipdate, t.l_commitdate, t.l_receiptdate, t.l_shipinstruct, t.l_shipmode, t.l_comment
+  |  output exprs: t.l_orderkey, t.l_partkey, t.l_suppkey, CAST(10 AS INT), t.l_quantity, t.l_extendedprice, t.l_discount, t.l_tax, t.l_returnflag, t.l_linestatus, t.l_shipdate, t.l_commitdate, t.l_receiptdate, t.l_shipinstruct, t.l_shipmode, t.l_comment
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
-  02:NESTED LOOP JOIN [CROSS JOIN, BROADCAST]
+  03:NESTED LOOP JOIN [CROSS JOIN, BROADCAST]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=0,2 row-size=156B cardinality=0
-  |  in pipelines: 00(GETNEXT)
+  |  tuple-ids=2,3 row-size=152B cardinality=0
+  |  in pipelines: 01(GETNEXT)
   |
-  |--04:EXCHANGE [UNPARTITIONED]
+  |--05:EXCHANGE [UNPARTITIONED]
   |     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
-  |     tuple-ids=2 row-size=0B cardinality=1
+  |     tuple-ids=3 row-size=0B cardinality=1
   |     in pipelines: <none>
   |
-  03:EXCHANGE [UNPARTITIONED]
+  04:EXCHANGE [UNPARTITIONED]
      limit: 0
-     mem-estimate=160.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=0 row-size=156B cardinality=0
-     in pipelines: 00(GETNEXT)
+     mem-estimate=156.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=2 row-size=152B cardinality=0
+     in pipelines: 01(GETNEXT)
 
-F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+F01:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
 Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=03, UNPARTITIONED]
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=04, UNPARTITIONED]
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  00:SCAN HDFS [default.impala_tpch_lineitem t, RANDOM]
+  00:UNION
+  |  pass-through-operands: all
+  |  limit: 0
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  |  tuple-ids=2 row-size=152B cardinality=0
+  |  in pipelines: 01(GETNEXT)
+  |
+  01:SCAN HDFS [default.impala_tpch_lineitem t, RANDOM]
      HDFS partitions=1/1 files=0 size=0B
      stored statistics:
        table: rows=unavailable size=unavailable
        columns: unavailable
      extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=152B cardinality=0
+     in pipelines: 01(GETNEXT)
+
+F03:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F02, EXCHANGE=05, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  02:UNION
+     constant-operands=1
      limit: 0
      mem-estimate=0B mem-reservation=0B thread-reservation=0
-     tuple-ids=0 row-size=156B cardinality=0
-     in pipelines: 00(GETNEXT)
-
-F02:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
-  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=04, UNPARTITIONED]
-  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  01:UNION
-     constant-operands=1
-     mem-estimate=0B mem-reservation=0B thread-reservation=0
-     tuple-ids=2 row-size=0B cardinality=1
+     tuple-ids=3 row-size=0B cardinality=1
      in pipelines: <none>
 
 

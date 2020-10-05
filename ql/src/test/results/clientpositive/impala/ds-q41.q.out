@@ -103,9 +103,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpcds_item
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
-  ImpalaAggregateRel(group=[{1}])
-    ImpalaJoinRel(condition=[=($2, $0)], joinType=[inner])
-      ImpalaProjectPassthroughRel(i_manufact=[$14], i_product_name=[$21])
+  ImpalaAggregateRel(group=[{2}])
+    ImpalaJoinRel(condition=[=($3, $1)], joinType=[inner])
+      ImpalaProjectPassthroughRel(i_manufact_id=[$13], i_manufact=[$14], i_product_name=[$21])
         ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(BETWEEN(false, $13, 970, +(970, 40)), IS NOT NULL($14))])
       ImpalaProjectPassthroughRel(i_manufact=[$0])
         ImpalaAggregateRel(group=[{14}], agg#0=[count()], condition=[>($1, 0)])

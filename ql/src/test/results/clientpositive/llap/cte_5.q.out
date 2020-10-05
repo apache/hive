@@ -86,7 +86,7 @@ Stage-0
             XPROD_EDGE [RS_19]
               Select Operator [SEL_18] (rows=2 width=85)
                 Filter Operator [FIL_17] (rows=2 width=87)
-                  predicate:(key = '5')
+                  predicate:((key = '5') and UDFToDouble(key) is not null)
                   TableScan [TS_3] (rows=500 width=87)
                     default@src,src,Tbl:COMPLETE,Col:COMPLETE,Output:["key"]
 

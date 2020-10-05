@@ -1706,7 +1706,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  filterExpr: (((p_size <> 340) and (p_brand <> 'Brand#14')) or (p_type is not null or (((p_size * p_size) <> 340) and p_type is not null and p_size is not null))) (type: boolean)
+                  filterExpr: (((p_size <> 340) and (p_brand <> 'Brand#14')) or (p_type is not null or (((p_size * p_size) <> 340) and p_type is not null))) (type: boolean)
                   Statistics: Num rows: 26 Data size: 16094 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((p_size <> 340) and (p_brand <> 'Brand#14')) (type: boolean)
@@ -1744,7 +1744,7 @@ STAGE PLANS:
                           Statistics: Num rows: 13 Data size: 1560 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: bigint), _col2 (type: bigint)
                   Filter Operator
-                    predicate: (((p_size * p_size) <> 340) and p_type is not null and p_size is not null) (type: boolean)
+                    predicate: (((p_size * p_size) <> 340) and p_type is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 2808 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: (p_size * p_size) (type: int), p_type (type: string)
@@ -5435,7 +5435,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 13 Data size: 2548 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble((p_size + 100)) is not null and p_size is not null) (type: boolean)
+                    predicate: (p_size is not null and UDFToDouble((p_size + 100)) is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: p_size (type: int)

@@ -228,7 +228,7 @@ Stage-0
                       Select Operator [SEL_96] (rows=8888888 width=100)
                         Output:["_col0"]
                         Filter Operator [FIL_95] (rows=8888888 width=556)
-                          predicate:((((((_col6 / _col8) > (_col2 / _col4)) and _col9) or ((0 > (_col2 / _col4)) and _col10)) and _col4 is not null) or (((_col6 / _col8) > 0) and _col4 is null and _col9))
+                          predicate:((((_col9 and ((_col6 / _col8) > (_col2 / _col4))) or ((0 > (_col2 / _col4)) and _col10)) and _col4 is not null) or (_col9 and ((_col6 / _col8) > 0) and _col4 is null))
                           Merge Join Operator [MERGEJOIN_329] (rows=26666666 width=556)
                             Conds:RS_92._col0=RS_403._col0(Inner),Output:["_col0","_col2","_col4","_col6","_col8","_col9","_col10"]
                           <-Reducer 22 [SIMPLE_EDGE] vectorized

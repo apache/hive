@@ -249,7 +249,7 @@ Stage-0
                                       Select Operator [SEL_369] (rows=462000 width=104)
                                         Output:["_col0","_col1"]
                                         Filter Operator [FIL_368] (rows=462000 width=104)
-                                          predicate:(i_item_sk is not null and i_item_id is not null)
+                                          predicate:(i_item_id is not null and i_item_sk is not null)
                                           TableScan [TS_3] (rows=462000 width=104)
                                             default@item,item,Tbl:COMPLETE,Col:COMPLETE,Output:["i_item_sk","i_item_id"]
                                   <-Map 21 [SIMPLE_EDGE] vectorized
@@ -335,7 +335,7 @@ Stage-0
                                           Select Operator [SEL_366] (rows=28798881 width=11)
                                             Output:["_col0","_col1","_col2"]
                                             Filter Operator [FIL_365] (rows=28798881 width=11)
-                                              predicate:(cr_item_sk is not null and cr_returned_date_sk is not null)
+                                              predicate:(cr_returned_date_sk is not null and cr_item_sk is not null)
                                               TableScan [TS_0] (rows=28798881 width=11)
                                                 default@catalog_returns,catalog_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["cr_returned_date_sk","cr_item_sk","cr_return_quantity"]
 

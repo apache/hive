@@ -283,7 +283,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: od1
-                  filterExpr: (o_date is not null and id is not null) (type: boolean)
+                  filterExpr: (id is not null and o_date is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -292,8 +292,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:timestamp), SelectColumnIsNotNull(col 0:int))
-                    predicate: (o_date is not null and id is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:timestamp))
+                    predicate: (id is not null and o_date is not null) (type: boolean)
                     Statistics: Num rows: 2 Data size: 88 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: id (type: int), o_date (type: timestamp)
@@ -541,7 +541,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: lday2
-                  filterExpr: (ly_date is not null and d_date is not null) (type: boolean)
+                  filterExpr: (d_date is not null and ly_date is not null) (type: boolean)
                   Statistics: Num rows: 2 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -550,8 +550,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:timestamp), SelectColumnIsNotNull(col 0:timestamp))
-                    predicate: (ly_date is not null and d_date is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:timestamp), SelectColumnIsNotNull(col 1:timestamp))
+                    predicate: (d_date is not null and ly_date is not null) (type: boolean)
                     Statistics: Num rows: 2 Data size: 160 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: d_date (type: timestamp), ly_date (type: timestamp)

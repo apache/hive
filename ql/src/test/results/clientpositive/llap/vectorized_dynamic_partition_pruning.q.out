@@ -929,7 +929,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (ds is not null and hr is not null) (type: boolean)
+                  filterExpr: (hr is not null and ds is not null) (type: boolean)
                   Statistics: Num rows: 2000 Data size: 757248 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: ds (type: string), hr (type: string)

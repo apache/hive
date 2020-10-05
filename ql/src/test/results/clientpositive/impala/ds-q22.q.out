@@ -48,7 +48,7 @@ ImpalaSortRel(sort0=[$4], sort1=[$0], sort2=[$1], sort3=[$2], sort4=[$3], dir0=[
       ImpalaJoinRel(condition=[=($1, $4)], joinType=[inner])
         ImpalaJoinRel(condition=[=($0, $3)], joinType=[inner])
           ImpalaProjectPassthroughRel(inv_date_sk=[$0], inv_item_sk=[$1], CAST=[CAST($3):BIGINT])
-            ImpalaHdfsScanRel(table=[[default, impala_tpcds_inventory]], condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
+            ImpalaHdfsScanRel(table=[[default, impala_tpcds_inventory]], condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
           ImpalaProjectPassthroughRel(d_date_sk=[$0])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, $3, 1186, +(1186, 11)), IS NOT NULL($0))])
         ImpalaProjectPassthroughRel(i_item_sk=[$0], i_brand=[$8], i_class=[$10], i_category=[$12], i_product_name=[$21])

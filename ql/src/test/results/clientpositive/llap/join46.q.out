@@ -193,16 +193,16 @@ STAGE PLANS:
                   alias: test1_n2
                   Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: int), value (type: int), col_1 (type: string), (key >= 100) (type: boolean), (key <= 102) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 6 Data size: 620 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: int)
                       null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col1 (type: int)
-                      Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean)
+                      Statistics: Num rows: 6 Data size: 620 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean), _col4 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
@@ -234,15 +234,15 @@ STAGE PLANS:
                 condition map:
                      Left Outer Join 0 to 1
                 filter predicates:
-                  0 {VALUE._col2}
+                  0 {VALUE._col2} {VALUE._col3}
                   1 
                 keys:
                   0 _col1 (type: int)
                   1 _col1 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6
+                outputColumnNames: _col0, _col1, _col2, _col5, _col6, _col7
                 Statistics: Num rows: 8 Data size: 1049 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 8 Data size: 1049 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -320,14 +320,14 @@ STAGE PLANS:
                   alias: test1_n2
                   Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
-                    outputColumnNames: _col0, _col1, _col2, _col3
-                    Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: int), value (type: int), col_1 (type: string), (key >= 100) (type: boolean), (key <= 102) (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3, _col4
+                    Statistics: Num rows: 6 Data size: 620 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
+                      Statistics: Num rows: 6 Data size: 620 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean), _col4 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
@@ -357,15 +357,15 @@ STAGE PLANS:
                 condition map:
                      Left Outer Join 0 to 1
                 filter predicates:
-                  0 {VALUE._col3}
+                  0 {VALUE._col3} {VALUE._col4}
                   1 
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6
+                outputColumnNames: _col0, _col1, _col2, _col5, _col6, _col7
                 Statistics: Num rows: 6 Data size: 1142 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 6 Data size: 1142 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -693,14 +693,14 @@ STAGE PLANS:
                   alias: test2_n0
                   Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: int), value (type: int), col_2 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: int), value (type: int), col_2 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                      Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -712,9 +712,9 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                residual filter predicates: {((_col1 = _col5) or _col3 or _col4 BETWEEN 100 AND 102)}
-                Statistics: Num rows: 24 Data size: 4676 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                residual filter predicates: {((_col1 = _col5) or _col3 or _col7)}
+                Statistics: Num rows: 24 Data size: 4772 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -941,14 +941,14 @@ STAGE PLANS:
                   alias: test2_n0
                   Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: int), value (type: int), col_2 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: int), value (type: int), col_2 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                      Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -960,16 +960,20 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                residual filter predicates: {((_col1 = _col4) or _col3 BETWEEN 100 AND 102)}
-                Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                residual filter predicates: {((_col1 = _col4) or _col6)}
+                Statistics: Num rows: 24 Data size: 4676 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1062,16 +1066,16 @@ STAGE PLANS:
                     predicate: value is not null (type: boolean)
                     Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: key (type: int), value (type: int), col_2 (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: key (type: int), value (type: int), col_2 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 3 Data size: 297 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int), _col2 (type: string)
+                        Statistics: Num rows: 3 Data size: 297 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1083,9 +1087,9 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: int)
                   1 _col1 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                residual filter predicates: {(_col3 or _col4 BETWEEN 100 AND 102)}
-                Statistics: Num rows: 9 Data size: 1557 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                residual filter predicates: {(_col3 or _col7)}
+                Statistics: Num rows: 9 Data size: 1585 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
@@ -1286,14 +1290,14 @@ STAGE PLANS:
                   alias: test1_n2
                   Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: int), value (type: int), col_1 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                      Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
@@ -1321,11 +1325,11 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102 or _col6)}
-                Statistics: Num rows: 24 Data size: 4676 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                residual filter predicates: {((_col1 = _col5) or _col3 or _col7)}
+                Statistics: Num rows: 24 Data size: 4772 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -1411,14 +1415,14 @@ STAGE PLANS:
                   alias: test1_n2
                   Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: int), value (type: int), col_1 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                      Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
@@ -1446,16 +1450,20 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102)}
-                Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                residual filter predicates: {((_col1 = _col5) or _col3)}
+                Statistics: Num rows: 24 Data size: 4676 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1652,16 +1660,16 @@ STAGE PLANS:
                     predicate: value is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: key (type: int), value (type: int), col_1 (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int), _col2 (type: string)
+                        Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
@@ -1691,11 +1699,11 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: int)
                   1 _col1 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col6)}
-                Statistics: Num rows: 7 Data size: 1265 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                residual filter predicates: {(_col3 or _col7)}
+                Statistics: Num rows: 7 Data size: 1289 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 7 Data size: 1237 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -1774,14 +1782,14 @@ STAGE PLANS:
                   alias: test1_n2
                   Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: int), value (type: int), col_1 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                      Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
@@ -1790,14 +1798,14 @@ STAGE PLANS:
                   alias: test2_n0
                   Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: int), value (type: int), col_2 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: int), value (type: int), col_2 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                      Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1809,16 +1817,20 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
-                Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                residual filter predicates: {((_col1 = _col5) or _col3 or _col7)}
+                Statistics: Num rows: 24 Data size: 4772 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -1895,14 +1907,14 @@ STAGE PLANS:
                   alias: test1_n2
                   Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: int), value (type: int), col_1 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                      Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
@@ -1930,16 +1942,20 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                residual filter predicates: {((_col1 = _col4) or _col0 BETWEEN 100 AND 102)}
-                Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                residual filter predicates: {((_col1 = _col5) or _col3)}
+                Statistics: Num rows: 24 Data size: 4676 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -2030,14 +2046,14 @@ STAGE PLANS:
                   alias: test2_n0
                   Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: int), value (type: int), col_2 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: int), value (type: int), col_2 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
-                      Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string)
+                      Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -2049,16 +2065,20 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                residual filter predicates: {((_col1 = _col4) or _col3 BETWEEN 100 AND 102)}
-                Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
+                residual filter predicates: {((_col1 = _col4) or _col6)}
+                Statistics: Num rows: 24 Data size: 4676 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 24 Data size: 4580 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -2131,16 +2151,16 @@ STAGE PLANS:
                   alias: test1_n2
                   Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: int), value (type: int), col_1 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: int)
                       null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col1 (type: int)
-                      Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col2 (type: string)
+                      Statistics: Num rows: 6 Data size: 596 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 3 
@@ -2149,16 +2169,16 @@ STAGE PLANS:
                   alias: test2_n0
                   Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: int), value (type: int), col_2 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
+                    expressions: key (type: int), value (type: int), col_2 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                    outputColumnNames: _col0, _col1, _col2, _col3
+                    Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       key expressions: _col1 (type: int)
                       null sort order: a
                       sort order: +
                       Map-reduce partition columns: _col1 (type: int)
-                      Statistics: Num rows: 4 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: int), _col2 (type: string)
+                      Statistics: Num rows: 4 Data size: 396 Basic stats: COMPLETE Column stats: COMPLETE
+                      value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -2170,16 +2190,20 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: int)
                   1 _col1 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col3 BETWEEN 100 AND 102)}
-                Statistics: Num rows: 13 Data size: 1711 Basic stats: COMPLETE Column stats: COMPLETE
-                File Output Operator
-                  compressed: false
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                residual filter predicates: {(_col3 or _col7)}
+                Statistics: Num rows: 13 Data size: 1783 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
                   Statistics: Num rows: 13 Data size: 1711 Basic stats: COMPLETE Column stats: COMPLETE
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  File Output Operator
+                    compressed: false
+                    Statistics: Num rows: 13 Data size: 1711 Basic stats: COMPLETE Column stats: COMPLETE
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -2295,16 +2319,16 @@ STAGE PLANS:
                     predicate: value is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: key (type: int), value (type: int), col_1 (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 4 Data size: 384 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int), _col2 (type: string)
+                        Statistics: Num rows: 4 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 5 
@@ -2316,16 +2340,16 @@ STAGE PLANS:
                     predicate: value is not null (type: boolean)
                     Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: key (type: int), value (type: int), col_2 (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                      expressions: key (type: int), value (type: int), col_2 (type: string), key BETWEEN 100 AND 102 (type: boolean)
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 3 Data size: 297 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
                         key expressions: _col1 (type: int)
                         null sort order: a
                         sort order: +
                         Map-reduce partition columns: _col1 (type: int)
-                        Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: int), _col2 (type: string)
+                        Statistics: Num rows: 3 Data size: 297 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: int), _col2 (type: string), _col3 (type: boolean)
                   Select Operator
                     expressions: key (type: int), value (type: int), col_2 (type: string), key BETWEEN 100 AND 102 (type: boolean)
                     outputColumnNames: _col0, _col1, _col2, _col3
@@ -2348,13 +2372,13 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: int)
                   1 _col1 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                residual filter predicates: {(_col3 or _col4 BETWEEN 100 AND 102)}
-                Statistics: Num rows: 9 Data size: 1557 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                residual filter predicates: {(_col3 or _col7)}
+                Statistics: Num rows: 9 Data size: 1585 Basic stats: COMPLETE Column stats: COMPLETE
                 Reduce Output Operator
                   null sort order: 
                   sort order: 
-                  Statistics: Num rows: 9 Data size: 1557 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 9 Data size: 1585 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
         Reducer 3 
             Execution mode: llap
@@ -2365,11 +2389,11 @@ STAGE PLANS:
                 keys:
                   0 
                   1 
-                outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
-                residual filter predicates: {(_col8 is null or (_col5 is null and (_col1 <> _col11)))}
+                outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6, _col8, _col9, _col10, _col12, _col13, _col14
+                residual filter predicates: {(_col9 is null or (_col5 is null and (_col1 <> _col13)))}
                 Statistics: Num rows: 63 Data size: 23768 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col7 (type: int), _col8 (type: int), _col9 (type: string), _col10 (type: int), _col11 (type: int), _col12 (type: string), _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+                  expressions: _col8 (type: int), _col9 (type: int), _col10 (type: string), _col12 (type: int), _col13 (type: int), _col14 (type: string), _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
                   Statistics: Num rows: 63 Data size: 23768 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -2388,18 +2412,18 @@ STAGE PLANS:
                 keys:
                   0 _col1 (type: int)
                   1 _col1 (type: int)
-                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6
-                residual filter predicates: {(_col0 BETWEEN 100 AND 102 or _col6)}
-                Statistics: Num rows: 7 Data size: 1265 Basic stats: COMPLETE Column stats: COMPLETE
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7
+                residual filter predicates: {(_col3 or _col7)}
+                Statistics: Num rows: 7 Data size: 1289 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
-                  outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
-                  Statistics: Num rows: 7 Data size: 1265 Basic stats: COMPLETE Column stats: COMPLETE
+                  expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
+                  outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col6
+                  Statistics: Num rows: 7 Data size: 1289 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 7 Data size: 1265 Basic stats: COMPLETE Column stats: COMPLETE
-                    value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col3 (type: int), _col4 (type: int), _col5 (type: string)
+                    Statistics: Num rows: 7 Data size: 1289 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: string), _col4 (type: int), _col5 (type: int), _col6 (type: string)
 
   Stage: Stage-0
     Fetch Operator

@@ -78,7 +78,7 @@ ImpalaProjectPassthroughRel(order count=[$0], total shipping cost=[$1], total ne
               ImpalaJoinRel(condition=[=($1, $9)], joinType=[inner])
                 ImpalaJoinRel(condition=[=($0, $7)], joinType=[inner])
                   ImpalaProjectPassthroughRel(cs_ship_date_sk=[$2], cs_ship_addr_sk=[$10], cs_call_center_sk=[$11], cs_warehouse_sk=[$14], cs_order_number=[$17], cs_ext_ship_cost=[$28], cs_net_profit=[$33])
-                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($2), IS NOT NULL($10), IS NOT NULL($11), IS NOT NULL($17))])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($17), IS NOT NULL($11), IS NOT NULL($10), IS NOT NULL($2))])
                   ImpalaProjectPassthroughRel(d_date_sk=[$0], d_date=[$2])
                     ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 1999-04-01 00:00:00:TIMESTAMP(9), +(1999-04-01 00:00:00:TIMESTAMP(9), 5184000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
                 ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_state=[CAST(_UTF-16LE'IL':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"])

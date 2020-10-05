@@ -100,10 +100,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and value is not null) (type: boolean)
+                  filterExpr: (value is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and value is not null) (type: boolean)
+                    predicate: (value is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -263,10 +263,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and value is not null) (type: boolean)
+                  filterExpr: (value is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and value is not null) (type: boolean)
+                    predicate: (value is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -426,10 +426,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and value is not null) (type: boolean)
+                  filterExpr: (value is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and value is not null) (type: boolean)
+                    predicate: (value is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -600,10 +600,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                  filterExpr: (UDFToDouble(key) is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), UDFToDouble(key) (type: double)
@@ -873,10 +873,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and value is not null) (type: boolean)
+                  filterExpr: (value is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and value is not null) (type: boolean)
+                    predicate: (value is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -1036,10 +1036,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and value is not null) (type: boolean)
+                  filterExpr: (value is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and value is not null) (type: boolean)
+                    predicate: (value is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -1210,10 +1210,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                  filterExpr: (UDFToDouble(key) is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: (UDFToDouble(key) is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), UDFToDouble(key) (type: double)
@@ -1483,10 +1483,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and value is not null) (type: boolean)
+                  filterExpr: (value is not null and key is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and value is not null) (type: boolean)
+                    predicate: (value is not null and key is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)

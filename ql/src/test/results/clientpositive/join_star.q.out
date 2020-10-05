@@ -295,10 +295,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: fact
-            filterExpr: (d1 is not null and d2 is not null) (type: boolean)
+            filterExpr: (d2 is not null and d1 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 980 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (d1 is not null and d2 is not null) (type: boolean)
+              predicate: (d2 is not null and d1 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 980 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: m1 (type: int), m2 (type: int), d1 (type: int), d2 (type: int)
@@ -394,10 +394,10 @@ STAGE PLANS:
         $hdt$_0:dim1 
           TableScan
             alias: dim1
-            filterExpr: (f1 is not null and f2 is not null) (type: boolean)
+            filterExpr: (f2 is not null and f1 is not null) (type: boolean)
             Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (f1 is not null and f2 is not null) (type: boolean)
+              predicate: (f2 is not null and f1 is not null) (type: boolean)
               Statistics: Num rows: 1 Data size: 160 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: f1 (type: int), f2 (type: int)

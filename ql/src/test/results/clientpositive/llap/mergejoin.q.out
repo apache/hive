@@ -2037,7 +2037,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and value is not null and value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) (type: boolean)
+                  filterExpr: (value is not null and key is not null and value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -2046,8 +2046,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:string), FilterStringColumnBetweenDynamicValue(col 1:string, left NULL, right NULL), VectorInBloomFilterColDynamicValue)
-                    predicate: (key is not null and value is not null and value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:string), SelectColumnIsNotNull(col 0:int), FilterStringColumnBetweenDynamicValue(col 1:string, left NULL, right NULL), VectorInBloomFilterColDynamicValue)
+                    predicate: (value is not null and key is not null and value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -3172,7 +3172,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and value is not null and value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) (type: boolean)
+                  filterExpr: (value is not null and key is not null and value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) (type: boolean)
                   Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true
@@ -3181,8 +3181,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:string), FilterStringColumnBetweenDynamicValue(col 1:string, left NULL, right NULL), VectorInBloomFilterColDynamicValue)
-                    predicate: (key is not null and value is not null and value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:string), SelectColumnIsNotNull(col 0:int), FilterStringColumnBetweenDynamicValue(col 1:string, left NULL, right NULL), VectorInBloomFilterColDynamicValue)
+                    predicate: (value is not null and key is not null and value BETWEEN DynamicValue(RS_10_c_value_min) AND DynamicValue(RS_10_c_value_max) and in_bloom_filter(value, DynamicValue(RS_10_c_value_bloom_filter))) (type: boolean)
                     Statistics: Num rows: ###Masked### Data size: ###Masked### Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int), value (type: string)
@@ -4108,8 +4108,8 @@ POSTHOOK: Input: default@tab_part_n10@ds=2008-04-08
 #### A masked pattern was here ####
 NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	98	val_98	2008-04-08
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
-Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[25][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from
 (select * from tab_n9 where tab_n9.key = 0)a
 full outer join
@@ -4684,8 +4684,8 @@ NULL	NULL	NULL	NULL	NULL	NULL	97	val_97	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	97	val_97	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	98	val_98	2008-04-08
 NULL	NULL	NULL	NULL	NULL	NULL	98	val_98	2008-04-08
-Warning: Shuffle Join MERGEJOIN[21][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
-Warning: Shuffle Join MERGEJOIN[22][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[23][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[24][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: select * from
 (select * from tab_n9 where tab_n9.key = 0)a
 join

@@ -213,7 +213,7 @@ Stage-0
                 Top N Key Operator [TNK_158] (rows=8165394 width=828)
                   keys:_col8, _col9, _col10, _col11,top n:100
                   Filter Operator [FIL_93] (rows=8165394 width=828)
-                    predicate:((((((_col1 / _col5) > (_col12 / _col3)) and _col6) or ((0 > (_col12 / _col3)) and _col7)) and _col3 is not null) or (((_col1 / _col5) > 0) and _col3 is null and _col6))
+                    predicate:((((_col6 and ((_col1 / _col5) > (_col12 / _col3))) or ((0 > (_col12 / _col3)) and _col7)) and _col3 is not null) or (_col6 and ((_col1 / _col5) > 0) and _col3 is null))
                     Merge Join Operator [MERGEJOIN_288] (rows=24496186 width=828)
                       Conds:RS_90._col2=RS_351._col0(Inner),Output:["_col1","_col3","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12"]
                     <-Reducer 20 [SIMPLE_EDGE] vectorized

@@ -130,7 +130,7 @@ Stage-0
                       Select Operator [SEL_206] (rows=1704 width=104)
                         Output:["_col0","_col1"]
                         Filter Operator [FIL_205] (rows=1704 width=104)
-                          predicate:(s_store_sk is not null and s_store_id is not null)
+                          predicate:(s_store_id is not null and s_store_sk is not null)
                           TableScan [TS_43] (rows=1704 width=104)
                             default@store,store,Tbl:COMPLETE,Col:COMPLETE,Output:["s_store_sk","s_store_id","s_store_name"]
                   <-Reducer 6 [SIMPLE_EDGE]
@@ -172,7 +172,7 @@ Stage-0
                                           Select Operator [SEL_196] (rows=73049 width=36)
                                             Output:["_col0","_col1","_col2","_col3","_col5","_col6","_col7","_col8"]
                                             Filter Operator [FIL_192] (rows=73049 width=99)
-                                              predicate:(d_date_sk is not null and d_week_seq is not null)
+                                              predicate:(d_week_seq is not null and d_date_sk is not null)
                                                Please refer to the previous TableScan [TS_3]
                                       <-Map 1 [SIMPLE_EDGE] vectorized
                                         SHUFFLE [RS_191]

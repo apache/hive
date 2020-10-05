@@ -409,7 +409,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t1
-                  filterExpr: (int_col_1 is not null and decimal0801_col is not null) (type: boolean)
+                  filterExpr: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
                   probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:int_col_1, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
@@ -419,8 +419,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:decimal(8,1)/DECIMAL_64))
-                    predicate: (int_col_1 is not null and decimal0801_col is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: SelectColumnIsNotNull(col 0:decimal(8,1)/DECIMAL_64), SelectColumnIsNotNull(col 1:int))
+                    predicate: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
                     Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: decimal0801_col (type: decimal(8,1)), int_col_1 (type: int)

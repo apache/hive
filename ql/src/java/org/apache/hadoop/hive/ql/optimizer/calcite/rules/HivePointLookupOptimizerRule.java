@@ -535,6 +535,10 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
             RexNode newNode = transformIntoInClauseCondition(rexBuilder,
                 call, minNumORClauses, multiColumnClauseSupported);
             if (newNode != null) {
+              if (!newNode.getType().equals(call.getType())) {
+                // Fix nullability
+                return rexBuilder.makeCast(call.getType(), newNode, true);
+              }
               return newNode;
             }
           } catch (SemanticException e) {
@@ -767,7 +771,12 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
           visitedRefs, inLHSExprToRHSExprs, inLHSExprToRHSNullableExprs);
       newOperands.addAll(operands);
       // Return node
-      return RexUtil.composeConjunction(rexBuilder, newOperands, false);
+      RexNode result = RexUtil.composeConjunction(rexBuilder, newOperands, false);
+      if (!result.getType().equals(call.getType())) {
+        // Fix nullability
+        return rexBuilder.makeCast(call.getType(), result, true);
+      }
+      return result;
     }
 
     private static RexNode handleOR(RexBuilder rexBuilder, RexCall call) {
@@ -796,6 +805,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       // Return node
       RexNode result = RexUtil.composeDisjunction(rexBuilder, newOperands, false);
       if (!result.getType().equals(call.getType())) {
+        // Fix nullability
         return rexBuilder.makeCast(call.getType(), result, true);
       }
       return result;

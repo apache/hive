@@ -151,7 +151,7 @@ STAGE PLANS:
               predicate: (ROW__ID.writeid = 3L) (type: boolean)
               Statistics: Num rows: 1 Data size: 6640 Basic stats: COMPLETE Column stats: NONE
               Select Operator
-                expressions: ROW__ID.writeid (type: bigint)
+                expressions: 3L (type: bigint)
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 6640 Basic stats: COMPLETE Column stats: NONE
                 File Output Operator

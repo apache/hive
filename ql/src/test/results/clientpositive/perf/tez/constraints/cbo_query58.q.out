@@ -1,4 +1,4 @@
-Warning: Shuffle Join MERGEJOIN[407][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 20' is a cross product
+Warning: Shuffle Join MERGEJOIN[407][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 21' is a cross product
 PREHOOK: query: explain cbo
 with ss_items as
  (select i_item_id item_id
@@ -188,7 +188,7 @@ HiveSortLimit(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
                     HiveAggregate(group=[{0}])
                       HiveJoin(condition=[=($1, $3)], joinType=[inner], algorithm=[none], cost=[not available])
                         HiveProject(d_date=[$2], d_week_seq=[$4])
-                          HiveFilter(condition=[AND(IS NOT NULL($4), IS NOT NULL($2))])
+                          HiveFilter(condition=[AND(IS NOT NULL($2), IS NOT NULL($4))])
                             HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
                         HiveJoin(condition=[true], joinType=[inner], algorithm=[none], cost=[not available])
                           HiveProject(cnt=[$0])

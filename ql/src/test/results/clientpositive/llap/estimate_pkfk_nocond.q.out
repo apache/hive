@@ -207,7 +207,7 @@ Stage-0
                 Select Operator [SEL_48] (rows=100/100 width=8)
                   Output:["_col0","_col1"]
                   Filter Operator [FIL_47] (rows=100/100 width=8)
-                    predicate:(ship_type_id is not null and id is not null)
+                    predicate:(id is not null and ship_type_id is not null)
                     TableScan [TS_0] (rows=100/100 width=8)
                       default@ships,s,Tbl:COMPLETE,Col:COMPLETE,Output:["id","ship_type_id"]
             <-Map 4 [SIMPLE_EDGE] vectorized, llap

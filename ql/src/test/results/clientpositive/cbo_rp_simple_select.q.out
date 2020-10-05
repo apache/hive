@@ -881,11 +881,13 @@ PREHOOK: query: -- c_int is not null
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (NULL)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cbo_t2
+PREHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
 POSTHOOK: query: -- c_int is not null
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (NULL)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cbo_t2
+POSTHOOK: Input: default@cbo_t2@dt=2014
 #### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -893,9 +895,23 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
-      limit: 0
+      limit: -1
       Processor Tree:
-        ListSink
+        TableScan
+          alias: cbo_t2
+          Statistics: Num rows: 20 Data size: 7062 Basic stats: COMPLETE Column stats: COMPLETE
+          Select Operator
+            expressions: key (type: string), value (type: string), c_float (type: float), c_boolean (type: boolean), dt (type: string)
+            outputColumnNames: key, value, c_float, c_boolean, dt
+            Statistics: Num rows: 20 Data size: 7062 Basic stats: COMPLETE Column stats: COMPLETE
+            Limit
+              Number of rows: 0
+              Statistics: Num rows: 1 Data size: 362 Basic stats: COMPLETE Column stats: COMPLETE
+              Select Operator
+                expressions: key (type: string), value (type: string), null (type: int), c_float (type: float), c_boolean (type: boolean), dt (type: string)
+                outputColumnNames: key, value, c_int, c_float, c_boolean, dt
+                Statistics: Num rows: 1 Data size: 366 Basic stats: COMPLETE Column stats: COMPLETE
+                ListSink
 
 PREHOOK: query: -- rewrite to NULL
 EXPLAIN select * from cbo_t2 where (cbo_t2.c_int) IN (cbo_t2.c_int, 2*cbo_t2.c_int)

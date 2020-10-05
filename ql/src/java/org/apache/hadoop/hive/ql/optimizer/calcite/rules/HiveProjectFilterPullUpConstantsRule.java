@@ -33,6 +33,7 @@ import org.apache.calcite.rex.RexInputRef;
 import org.apache.calcite.rex.RexNode;
 import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.rex.RexUtil;
+import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
@@ -164,6 +165,10 @@ public class HiveProjectFilterPullUpConstantsRule extends RelOptRule {
     }
 
     private RexNode visit(final RexNode call) {
+      if (call.getType().getSqlTypeName() == SqlTypeName.ROW) {
+        // TODO: Support struct type
+        return null;
+      }
       RexNode replacement = replacements.get(call.toString());
       if (replacement == null) {
         return null;

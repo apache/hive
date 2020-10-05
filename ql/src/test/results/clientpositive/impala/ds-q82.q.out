@@ -48,7 +48,7 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[IS NOT NULL($1)])
       ImpalaJoinRel(condition=[=($2, $0)], joinType=[inner])
         ImpalaProjectPassthroughRel(inv_date_sk=[$0], inv_item_sk=[$1])
-          ImpalaHdfsScanRel(table=[[default, impala_tpcds_inventory]], condition=[AND(BETWEEN(false, $3, 100, 500), IS NOT NULL($1), IS NOT NULL($0))])
+          ImpalaHdfsScanRel(table=[[default, impala_tpcds_inventory]], condition=[AND(BETWEEN(false, $3, 100, 500), IS NOT NULL($0), IS NOT NULL($1))])
         ImpalaProjectPassthroughRel(d_date_sk=[$0])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), CAST(CAST(_UTF-16LE'2001-01-28':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE):TIMESTAMP(9), +(CAST(CAST(_UTF-16LE'2001-01-28':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE):TIMESTAMP(9), 5184000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
 

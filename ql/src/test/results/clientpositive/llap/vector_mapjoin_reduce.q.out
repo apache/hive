@@ -34,7 +34,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: li
-                  filterExpr: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
+                  filterExpr: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
                   probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_50_container, bigKeyColName:l_orderkey, smallTablePos:1, keyRatio:0.07
                   Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
@@ -43,8 +43,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:int))
-                    predicate: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:int))
+                    predicate: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int)
@@ -294,7 +294,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: li
-                  filterExpr: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
+                  filterExpr: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
                   probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_50_container, bigKeyColName:l_partkey, smallTablePos:1, keyRatio:0.14
                   Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
@@ -303,8 +303,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 1:int), SelectColumnIsNotNull(col 0:int))
-                    predicate: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
+                        predicateExpression: FilterExprAndExpr(children: FilterLongColEqualLongScalar(col 3:int, val 1), SelectColumnIsNotNull(col 0:int), SelectColumnIsNotNull(col 1:int))
+                    predicate: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int), 1 (type: int)

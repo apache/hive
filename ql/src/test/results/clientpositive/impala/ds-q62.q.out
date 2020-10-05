@@ -85,7 +85,7 @@ ImpalaProjectPassthroughRel(_o__c0=[$0], sm_type=[$1], web_name=[$2], 30 days=[$
             ImpalaJoinRel(condition=[=($3, $10)], joinType=[inner])
               ImpalaJoinRel(condition=[=($0, $9)], joinType=[inner])
                 ImpalaProjectPassthroughRel(ws_ship_date_sk=[$2], ws_web_site_sk=[$13], ws_ship_mode_sk=[$14], ws_warehouse_sk=[$15], CAST=[CAST(CASE(<=(-(CAST($2):BIGINT, CAST($0):BIGINT), 30), 1:TINYINT, 0:TINYINT)):BIGINT], CAST5=[CAST(CASE(AND(>(-(CAST($2):BIGINT, CAST($0):BIGINT), 30), <=(-(CAST($2):BIGINT, CAST($0):BIGINT), 60)), 1:TINYINT, 0:TINYINT)):BIGINT], CAST6=[CAST(CASE(AND(>(-(CAST($2):BIGINT, CAST($0):BIGINT), 60), <=(-(CAST($2):BIGINT, CAST($0):BIGINT), 90)), 1:TINYINT, 0:TINYINT)):BIGINT], CAST7=[CAST(CASE(AND(>(-(CAST($2):BIGINT, CAST($0):BIGINT), 90), <=(-(CAST($2):BIGINT, CAST($0):BIGINT), 120)), 1:TINYINT, 0:TINYINT)):BIGINT], CAST8=[CAST(CASE(>(-(CAST($2):BIGINT, CAST($0):BIGINT), 120), 1:TINYINT, 0:TINYINT)):BIGINT])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_sales]], condition=[AND(IS NOT NULL($15), IS NOT NULL($14), IS NOT NULL($13), IS NOT NULL($2))])
+                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_sales]], condition=[AND(IS NOT NULL($2), IS NOT NULL($13), IS NOT NULL($14), IS NOT NULL($15))])
                 ImpalaProjectPassthroughRel(d_date_sk=[$0])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, $3, 1215, +(1215, 11)), IS NOT NULL($0))])
               ImpalaProjectPassthroughRel(w_warehouse_sk=[$0], SUBSTRING=[SUBSTRING($2, 1:BIGINT, 20:BIGINT)])

@@ -106,24 +106,25 @@ POSTHOOK: Input: default@impala_tpcds_item
 POSTHOOK: Input: default@impala_tpcds_store
 POSTHOOK: Input: default@impala_tpcds_store_sales
 CBO PLAN:
-ImpalaProjectPassthroughRel(s_store_name=[$0], d_year=[$1], d_moy=[$2], avg_monthly_sales=[$3], sum_sales=[$4], psum=[$5], nsum=[$6])
-  ImpalaSortRel(sort0=[$7], sort1=[$4], dir0=[ASC], dir1=[ASC], fetch=[100])
-    ImpalaProjectRel(s_store_name=[$2], d_year=[$4], d_moy=[$5], avg_monthly_sales=[$7], sum_sales=[$6], psum=[$13], nsum=[$19], (- (tok_table_or_col sum_sales) (tok_table_or_col avg_monthly_sales))=[-($6, $7)])
-      ImpalaJoinRel(condition=[AND(=($0, $15), =($1, $16), =($2, $17), =($3, $18), =($8, $20))], joinType=[inner])
-        ImpalaJoinRel(condition=[AND(=($0, $9), =($1, $10), =($2, $11), =($3, $12), =($8, $14))], joinType=[inner])
-          ImpalaProjectRel((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col s_store_name)=[$4], (tok_table_or_col s_company_name)=[$5], (tok_table_or_col d_year)=[$2], (tok_table_or_col d_moy)=[$3], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], avg_window_0=[avg($6) OVER (PARTITION BY $1, $0, $4, $5, $2 ORDER BY $1 NULLS FIRST, $0 NULLS FIRST, $4 NULLS FIRST, $5 NULLS FIRST, $2 NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4, $5 ORDER BY $2 NULLS LAST, $3 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[AND(>($7, 0), =($4, 1999), CASE(>($7, 0), >(/(ABS(-($6, $7)), $7), 0.1:DECIMAL(1, 1)), false), IS NOT NULL($8))])
-            ImpalaAggregateRel(group=[{5, 6, 8, 9, 11, 12}], agg#0=[sum($2)])
-              ImpalaJoinRel(condition=[=($1, $10)], joinType=[inner])
-                ImpalaJoinRel(condition=[=($3, $7)], joinType=[inner])
-                  ImpalaJoinRel(condition=[=($0, $4)], joinType=[inner])
-                    ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_store_sk=[$6], ss_sales_price=[$12], ss_sold_date_sk=[$22])
-                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($22), IS NOT NULL($6))])
-                    ImpalaProjectPassthroughRel(i_item_sk=[$0], i_brand=[$8], i_category=[$12])
-                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($0), IS NOT NULL($12), IS NOT NULL($8))])
-                  ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6], d_moy=[$8])
-                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(OR(=($6, 1999), AND(=($6, -(1999, 1)), =($8, 12)), AND(=($6, +(1999, 1)), =($8, 1))), IN($6, 1999, -(1999, 1), +(1999, 1)), IS NOT NULL($0))])
-                ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_name=[$5], s_company_name=[$17])
-                  ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($0), IS NOT NULL($5), IS NOT NULL($17))])
+ImpalaProjectPassthroughRel(s_store_name=[$0], d_year=[CAST(1999):INTEGER], d_moy=[$1], avg_monthly_sales=[$2], sum_sales=[$3], psum=[$4], nsum=[$5])
+  ImpalaSortRel(sort0=[$6], sort1=[$3], dir0=[ASC], dir1=[ASC], fetch=[100])
+    ImpalaProjectRel(s_store_name=[$2], d_moy=[$4], avg_monthly_sales=[$6], sum_sales=[$5], psum=[$12], nsum=[$18], (- (tok_table_or_col sum_sales) (tok_table_or_col avg_monthly_sales))=[-($5, $6)])
+      ImpalaJoinRel(condition=[AND(=($0, $14), =($1, $15), =($2, $16), =($3, $17), =($7, $19))], joinType=[inner])
+        ImpalaJoinRel(condition=[AND(=($0, $8), =($1, $9), =($2, $10), =($3, $11), =($7, $13))], joinType=[inner])
+          ImpalaProjectPassthroughRel((tok_table_or_col i_category)=[$0], (tok_table_or_col i_brand)=[$1], (tok_table_or_col s_store_name)=[$2], (tok_table_or_col s_company_name)=[$3], (tok_table_or_col d_moy)=[$5], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], avg_window_0=[$7], rank_window_1=[$8])
+            ImpalaProjectRel((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col s_store_name)=[$4], (tok_table_or_col s_company_name)=[$5], (tok_table_or_col d_year)=[$2], (tok_table_or_col d_moy)=[$3], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], avg_window_0=[avg($6) OVER (PARTITION BY $1, $0, $4, $5, $2 ORDER BY $1 NULLS FIRST, $0 NULLS FIRST, $4 NULLS FIRST, $5 NULLS FIRST, $2 NULLS FIRST ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING)], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4, $5 ORDER BY $2 NULLS LAST, $3 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[AND(>($7, 0), =($4, 1999), CASE(>($7, 0), >(/(ABS(-($6, $7)), $7), 0.1:DECIMAL(1, 1)), false), IS NOT NULL($8))])
+              ImpalaAggregateRel(group=[{5, 6, 8, 9, 11, 12}], agg#0=[sum($2)])
+                ImpalaJoinRel(condition=[=($1, $10)], joinType=[inner])
+                  ImpalaJoinRel(condition=[=($3, $7)], joinType=[inner])
+                    ImpalaJoinRel(condition=[=($0, $4)], joinType=[inner])
+                      ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_store_sk=[$6], ss_sales_price=[$12], ss_sold_date_sk=[$22])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($6), IS NOT NULL($22), IS NOT NULL($1))])
+                      ImpalaProjectPassthroughRel(i_item_sk=[$0], i_brand=[$8], i_category=[$12])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($12), IS NOT NULL($8), IS NOT NULL($0))])
+                    ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6], d_moy=[$8])
+                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(OR(=($6, 1999), AND(=($6, -(1999, 1)), =($8, 12)), AND(=($6, +(1999, 1)), =($8, 1))), IN($6, 1999, -(1999, 1), +(1999, 1)), IS NOT NULL($0))])
+                  ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_name=[$5], s_company_name=[$17])
+                    ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(IS NOT NULL($5), IS NOT NULL($17), IS NOT NULL($0))])
           ImpalaProjectPassthroughRel((tok_table_or_col i_category)=[$0], (tok_table_or_col i_brand)=[$1], (tok_table_or_col s_store_name)=[$2], (tok_table_or_col s_company_name)=[$3], (tok_function sum (tok_table_or_col ss_sales_price))=[$4], +=[+($5, 1)])
             ImpalaProjectRel((tok_table_or_col i_category)=[$1], (tok_table_or_col i_brand)=[$0], (tok_table_or_col s_store_name)=[$4], (tok_table_or_col s_company_name)=[$5], (tok_function sum (tok_table_or_col ss_sales_price))=[$6], rank_window_1=[rank() OVER (PARTITION BY $1, $0, $4, $5 ORDER BY $2 NULLS LAST, $3 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)], condition=[IS NOT NULL($5)])
               ImpalaAggregateRel(group=[{5, 6, 8, 9, 11, 12}], agg#0=[sum($2)])
@@ -131,7 +132,7 @@ ImpalaProjectPassthroughRel(s_store_name=[$0], d_year=[$1], d_moy=[$2], avg_mont
                   ImpalaJoinRel(condition=[=($3, $7)], joinType=[inner])
                     ImpalaJoinRel(condition=[=($0, $4)], joinType=[inner])
                       ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_store_sk=[$6], ss_sales_price=[$12], ss_sold_date_sk=[$22])
-                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($22), IS NOT NULL($6))])
+                        ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($6), IS NOT NULL($22), IS NOT NULL($1))])
                       ImpalaProjectPassthroughRel(i_item_sk=[$0], i_brand=[$8], i_category=[$12])
                         ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($0), IS NOT NULL($12), IS NOT NULL($8))])
                     ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6], d_moy=[$8])
@@ -145,7 +146,7 @@ ImpalaProjectPassthroughRel(s_store_name=[$0], d_year=[$1], d_moy=[$2], avg_mont
                 ImpalaJoinRel(condition=[=($3, $7)], joinType=[inner])
                   ImpalaJoinRel(condition=[=($0, $4)], joinType=[inner])
                     ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_store_sk=[$6], ss_sales_price=[$12], ss_sold_date_sk=[$22])
-                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($22), IS NOT NULL($6))])
+                      ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($6), IS NOT NULL($22), IS NOT NULL($1))])
                     ImpalaProjectPassthroughRel(i_item_sk=[$0], i_brand=[$8], i_category=[$12])
                       ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IS NOT NULL($0), IS NOT NULL($12), IS NOT NULL($8))])
                   ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6], d_moy=[$8])
@@ -269,16 +270,16 @@ STAGE PLANS:
     Impala
       Impala Plan: 
 F23:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
-Per-Host Resources: mem-estimate=104.00KB mem-reservation=0B thread-reservation=1
+Per-Host Resources: mem-estimate=100.00KB mem-reservation=0B thread-reservation=1
   PLAN-ROOT SINK
-  |  output exprs: default.impala_tpcds_store.s_store_name, default.impala_tpcds_date_dim.d_year, default.impala_tpcds_date_dim.d_moy, _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales_1.ss_sales_price)
+  |  output exprs: default.impala_tpcds_store.s_store_name, CAST(1999 AS INT), default.impala_tpcds_date_dim.d_moy, _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price)), _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales_0.ss_sales_price), _impala_builtins.sum(default.impala_tpcds_store_sales_1.ss_sales_price)
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
   |
   63:MERGING-EXCHANGE [UNPARTITIONED]
      order by: subtract(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price), _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price))) ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price) ASC NULLS LAST
      limit: 100
-     mem-estimate=104.00KB mem-reservation=0B thread-reservation=0
-     tuple-ids=50 row-size=100B cardinality=0
+     mem-estimate=100.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=50 row-size=96B cardinality=0
      in pipelines: 41(GETNEXT)
 
 F22:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
@@ -288,12 +289,12 @@ Per-Host Resources: mem-estimate=20.11MB mem-reservation=19.88MB thread-reservat
   41:TOP-N [LIMIT=100]
   |  order by: subtract(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price), _impala_builtins.avg(_impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price))) ASC NULLS LAST, _impala_builtins.sum(default.impala_tpcds_store_sales.ss_sales_price) ASC NULLS LAST
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=50 row-size=100B cardinality=0
+  |  tuple-ids=50 row-size=96B cardinality=0
   |  in pipelines: 41(GETNEXT), 12(OPEN)
   |
   00:UNION
   |  mem-estimate=0B mem-reservation=0B thread-reservation=0
-  |  tuple-ids=49 row-size=100B cardinality=0
+  |  tuple-ids=49 row-size=96B cardinality=0
   |  in pipelines: 12(GETNEXT)
   |
   40:HASH JOIN [INNER JOIN, BROADCAST]

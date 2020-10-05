@@ -14,7 +14,7 @@ POSTHOOK: Input: default@customer
 POSTHOOK: Input: default@customer_address
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@mv_customer_customer_address_n101
-Warning: Shuffle Join MERGEJOIN[104][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[110][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
 select  ca_zip, ca_county, sum(ws_sales_price)
  from web_sales, customer, customer_address, date_dim, item

@@ -104,10 +104,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
-                  filterExpr: ((p_size is not null and p_brand is not null) or p_brand is not null) (type: boolean)
+                  filterExpr: ((p_brand is not null and p_size is not null) or p_brand is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (p_size is not null and p_brand is not null) (type: boolean)
+                    predicate: (p_brand is not null and p_size is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
@@ -2070,10 +2070,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part_null
-                  filterExpr: (p_name is not null and p_type is not null and p_brand is not null) (type: boolean)
+                  filterExpr: (p_type is not null and p_brand is not null and p_name is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (p_name is not null and p_type is not null and p_brand is not null) (type: boolean)
+                    predicate: (p_type is not null and p_brand is not null and p_name is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       expressions: p_partkey (type: int), p_name (type: string), p_mfgr (type: string), p_brand (type: string), p_type (type: string), p_size (type: int), p_container (type: string), p_retailprice (type: double), p_comment (type: string)
@@ -2843,10 +2843,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  filterExpr: (p_type is not null and p_brand is not null and p_name is not null) (type: boolean)
+                  filterExpr: (p_type is not null and p_name is not null and p_brand is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 8242 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (p_type is not null and p_brand is not null and p_name is not null) (type: boolean)
+                    predicate: (p_type is not null and p_name is not null and p_brand is not null) (type: boolean)
                     Statistics: Num rows: 26 Data size: 8242 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: p_name (type: string), p_brand (type: string), p_type (type: string)
@@ -3013,7 +3013,7 @@ STAGE PLANS:
                   alias: li
                   Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((l_linenumber = 1) and l_partkey is not null and l_orderkey is not null) (type: boolean)
+                    predicate: ((l_linenumber = 1) and l_orderkey is not null and l_partkey is not null) (type: boolean)
                     Statistics: Num rows: 14 Data size: 224 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: l_orderkey (type: int), l_partkey (type: int), l_suppkey (type: int), 1 (type: int)

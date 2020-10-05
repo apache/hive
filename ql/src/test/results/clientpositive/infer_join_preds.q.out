@@ -711,10 +711,10 @@ STAGE PLANS:
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src1
-            filterExpr: (4.0D BETWEEN UDFToDouble(key) AND UDFToDouble(value) and key is not null and value is not null) (type: boolean)
+            filterExpr: 4.0D BETWEEN UDFToDouble(key) AND UDFToDouble(value) (type: boolean)
             Statistics: Num rows: 25 Data size: 191 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: (4.0D BETWEEN UDFToDouble(key) AND UDFToDouble(value) and key is not null and value is not null) (type: boolean)
+              predicate: 4.0D BETWEEN UDFToDouble(key) AND UDFToDouble(value) (type: boolean)
               Statistics: Num rows: 2 Data size: 15 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string), value (type: string)

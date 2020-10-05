@@ -54,10 +54,10 @@ STAGE PLANS:
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src
-            filterExpr: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
+            filterExpr: ((key > '0') and (key < '400') and (key <> '1') and (key <> '4') and (key <> '11') and (key <> '13') and (key <> '12') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
+              predicate: ((key > '0') and (key < '400') and (key <> '1') and (key <> '4') and (key <> '11') and (key <> '13') and (key <> '12') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
@@ -1800,10 +1800,10 @@ STAGE PLANS:
                   Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
           TableScan
             alias: src
-            filterExpr: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
+            filterExpr: ((key > '0') and (key < '400') and (key <> '1') and (key <> '4') and (key <> '11') and (key <> '13') and (key <> '12') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
             Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: NONE
             Filter Operator
-              predicate: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
+              predicate: ((key > '0') and (key < '400') and (key <> '1') and (key <> '4') and (key <> '11') and (key <> '13') and (key <> '12') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
               Statistics: Num rows: 55 Data size: 584 Basic stats: COMPLETE Column stats: NONE
               Select Operator
                 expressions: key (type: string)
