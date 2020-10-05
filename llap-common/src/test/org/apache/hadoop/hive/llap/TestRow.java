@@ -22,16 +22,12 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang.RandomStringUtils;
-
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
+import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class TestRow {
 
@@ -42,16 +38,16 @@ public class TestRow {
 
     Random rand = new Random();
     int iterations = 100;
-    Text col0 = new Text();
-    IntWritable col1 = new IntWritable();
+    String col0 = "";
+    Integer col1 = 0;
     for (int idx = 0; idx < iterations; ++idx) {
       // Set the row values
       boolean isNullCol0 = (rand.nextDouble() <= 0.25);
-      col0.set(RandomStringUtils.random(10));
+      col0 = RandomStringUtils.random(10);
       row.setValue(0, isNullCol0 ? null : col0);
 
       boolean isNullCol1 = (rand.nextDouble() <= 0.25);
-      col1.set(rand.nextInt());
+      col1 = rand.nextInt();
       row.setValue(1, isNullCol1 ? null : col1);
 
       // Validate the row values
@@ -60,7 +56,7 @@ public class TestRow {
         assertTrue(row.getValue("col0") == null);
       } else {
         assertTrue(row.getValue(0) != null);
-        assertTrue(col0 != row.getValue(0));
+        assertTrue(col0 == row.getValue(0));
         assertEquals(col0, row.getValue(0));
         assertEquals(col0, row.getValue("col0"));
       }
@@ -70,7 +66,7 @@ public class TestRow {
         assertTrue(row.getValue("col1") == null);
       } else {
         assertTrue(row.getValue(1) != null);
-        assertTrue(col1 != row.getValue(1));
+        assertTrue(col1 == row.getValue(1));
         assertEquals(col1, row.getValue(1));
         assertEquals(col1, row.getValue("col1"));
       }
@@ -81,10 +77,10 @@ public class TestRow {
     List<FieldDesc> colDescs = new ArrayList<FieldDesc>();
 
     colDescs.add(new FieldDesc("col0",
-        new TypeDesc(TypeDesc.Type.STRING)));
+        TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME)));
 
     colDescs.add(new FieldDesc("col1",
-        new TypeDesc(TypeDesc.Type.INT)));
+        TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INT_TYPE_NAME)));
 
     Schema schema = new Schema(colDescs);
     return schema;

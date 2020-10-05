@@ -115,7 +115,7 @@ import com.google.common.base.Preconditions;
 
 /**
  * GenericUDTFGetSplits.
- * 
+ *
  */
 @Description(name = "get_splits", value = "_FUNC_(string,int) - "
     + "Returns an array of length int serialized splits for the referenced tables string.")
@@ -289,7 +289,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   }
 
   public InputSplit[] getSplits(JobConf job, int numSplits, TezWork work, Schema schema)
-    throws IOException {
+      throws IOException {
 
     DAG dag = DAG.create(work.getName());
     dag.setCredentials(job.getCredentials());
@@ -315,16 +315,16 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
       // we have the dag now proceed to get the splits:
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
-              ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS));
+          ConfVars.HIVE_TEZ_GENERATE_CONSISTENT_SPLITS));
       Preconditions.checkState(HiveConf.getBoolVar(wxConf,
-              ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
+          ConfVars.LLAP_CLIENT_CONSISTENT_SPLITS));
       HiveSplitGenerator splitGenerator = new HiveSplitGenerator(wxConf, mapWork);
       List<Event> eventList = splitGenerator.initialize();
 
       InputSplit[] result = new InputSplit[eventList.size() - 1];
 
       InputConfigureVertexTasksEvent configureEvent
-        = (InputConfigureVertexTasksEvent) eventList.get(0);
+          = (InputConfigureVertexTasksEvent) eventList.get(0);
 
       List<TaskLocationHint> hints = configureEvent.getLocationHint().getTaskLocationHints();
 
@@ -351,7 +351,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       LlapSigner signer = null;
       if (UserGroupInformation.isSecurityEnabled()) {
         signer = coordinator.getLlapSigner(job);
- 
+
         // 1. Generate the token for query user (applies to all splits).
         queryUser = SessionState.getUserFromAuthenticator();
         if (queryUser == null) {
@@ -374,7 +374,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
       SignedMessage signedSvs = null;
       for (int i = 0; i < eventList.size() - 1; i++) {
         TaskSpec taskSpec = new TaskSpecBuilder().constructTaskSpec(dag, vertexName,
-              eventList.size() - 1, applicationId, i);
+            eventList.size() - 1, applicationId, i);
 
         // 2. Generate the vertex/submit information for all events.
         if (i == 0) {
@@ -401,7 +401,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
 
         result[i] = new LlapInputSplit(i, submitWorkBytes, eventBytes.message,
             eventBytes.signature, locations, schema, llapUser, tokenBytes);
-       }
+      }
       return result;
     } catch (Exception e) {
       throw new IOException(e);
@@ -473,7 +473,7 @@ public class GenericUDTFGetSplits extends GenericUDTF {
   /**
    * Returns a local resource representing a jar. This resource will be used to
    * execute the plan on the cluster.
-   * 
+   *
    * @param localJarPath
    *          Local path to the jar to be localized.
    * @return LocalResource corresponding to the localized hive exec resource.
@@ -594,8 +594,15 @@ public class GenericUDTFGetSplits extends GenericUDTF {
     for (FieldSchema fs : schema.getFieldSchemas()) {
       String colName = fs.getName();
       String typeString = fs.getType();
-      TypeDesc typeDesc = convertTypeString(typeString);
-      colDescs.add(new FieldDesc(colName, typeDesc));
+      try {
+        TypeInfo typeInfo = TypeInfoUtils.getTypeInfoFromTypeString(typeString);
+        colDescs.add(new FieldDesc(colName, typeInfo));
+      }
+      catch (Exception e) {
+        String errorMsg = "Cannot convert schema type from string " + typeString + " for column " + colName;
+        LOG.error(errorMsg, e);
+        throw new HiveException(errorMsg, e);
+      }
     }
     Schema Schema = new Schema(colDescs);
     return Schema;

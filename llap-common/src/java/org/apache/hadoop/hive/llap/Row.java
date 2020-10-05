@@ -17,150 +17,184 @@
  */
 package org.apache.hadoop.hive.llap;
 
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import com.google.common.base.Preconditions;
 
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DateWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable;
-import org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
-import org.apache.hadoop.hive.serde2.io.TimestampWritable;
-
-import org.apache.hadoop.io.BooleanWritable;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
-
-
 public class Row {
   private final Schema schema;
-  private final Writable[] colValues;
-  private final boolean[] nullIndicators;
+  private final Object[] colValues;
   private Map<String, Integer> nameToIndexMapping;
 
   public Row(Schema schema) {
     this.schema = schema;
-    this.colValues = new Writable[schema.getColumns().size()];
-    this.nullIndicators = new boolean[schema.getColumns().size()];
-    this.nameToIndexMapping = new HashMap<String, Integer>(schema.getColumns().size());
-
+    this.colValues = new Object[schema.getColumns().size()];
+    this.nameToIndexMapping = new HashMap(schema.getColumns().size());
     List<FieldDesc> colDescs = schema.getColumns();
-    for (int idx = 0; idx < colDescs.size(); ++idx) {
-      FieldDesc colDesc = colDescs.get(idx);
-      nameToIndexMapping.put(colDesc.getName(), idx);
-      colValues[idx] = createWritableForType(colDesc.getTypeDesc());
+
+    for(int idx = 0; idx < colDescs.size(); ++idx) {
+      FieldDesc colDesc = (FieldDesc)colDescs.get(idx);
+      this.nameToIndexMapping.put(colDesc.getName(), idx);
     }
   }
 
-  public Writable getValue(int colIndex) {
-    if (nullIndicators[colIndex]) {
-      return null;
-    }
-    return colValues[colIndex];
+  public Object getValue(int colIndex) {
+    return this.colValues[colIndex];
   }
 
-  public Writable getValue(String colName) {
-    Integer idx = nameToIndexMapping.get(colName);
+  public Object getValue(String colName) {
+    Integer idx = (Integer)this.nameToIndexMapping.get(colName);
     Preconditions.checkArgument(idx != null);
-    return getValue(idx);
+    return this.getValue(idx);
+  }
+
+  public Boolean getBoolean(int idx) {
+    return (Boolean)this.getValue(idx);
+  }
+
+  public Boolean getBoolean(String colName) {
+    return (Boolean)this.getValue(colName);
+  }
+
+  public Byte getByte(int idx) {
+    return (Byte)this.getValue(idx);
+  }
+
+  public Byte getByte(String colName) {
+    return (Byte)this.getValue(colName);
+  }
+
+  public Short getShort(int idx) {
+    return (Short)this.getValue(idx);
+  }
+
+  public Short getShort(String colName) {
+    return (Short)this.getValue(colName);
+  }
+
+  public Integer getInt(int idx) {
+    return (Integer)this.getValue(idx);
+  }
+
+  public Integer getInt(String colName) {
+    return (Integer)this.getValue(colName);
+  }
+
+  public Long getLong(int idx) {
+    return (Long)this.getValue(idx);
+  }
+
+  public Long getLong(String colName) {
+    return (Long)this.getValue(colName);
+  }
+
+  public Float getFloat(int idx) {
+    return (Float)this.getValue(idx);
+  }
+
+  public Float getFloat(String colName) {
+    return (Float)this.getValue(colName);
+  }
+
+  public Double getDouble(int idx) {
+    return (Double)this.getValue(idx);
+  }
+
+  public Double getDouble(String colName) {
+    return (Double)this.getValue(colName);
+  }
+
+  public String getString(int idx) {
+    return (String)this.getValue(idx);
+  }
+
+  public String getString(String colName) {
+    return (String)this.getValue(colName);
+  }
+
+  public Date getDate(int idx) {
+    return (Date)this.getValue(idx);
+  }
+
+  public Date getDate(String colName) {
+    return (Date)this.getValue(colName);
+  }
+
+  public Timestamp getTimestamp(int idx) {
+    return (Timestamp)this.getValue(idx);
+  }
+
+  public Timestamp getTimestamp(String colName) {
+    return (Timestamp)this.getValue(colName);
+  }
+
+  public byte[] getBytes(int idx) {
+    return (byte[])((byte[])this.getValue(idx));
+  }
+
+  public byte[] getBytes(String colName) {
+    return (byte[])((byte[])this.getValue(colName));
+  }
+
+  public BigDecimal getDecimal(int idx) {
+    return (BigDecimal)this.getValue(idx);
+  }
+
+  public BigDecimal getDecimal(String colName) {
+    return (BigDecimal)this.getValue(colName);
+  }
+
+  public List<?> getList(int idx) {
+    return (List)this.getValue(idx);
+  }
+
+  public List<?> getList(String colName) {
+    return (List)this.getValue(colName);
+  }
+
+  public Map<?, ?> getMap(int idx) {
+    return (Map)this.getValue(idx);
+  }
+
+  public Map<?, ?> getMap(String colName) {
+    return (Map)this.getValue(colName);
+  }
+
+  public List<?> getStruct(int idx) {
+    return (List)this.getValue(idx);
+  }
+
+  public List<?> getStruct(String colName) {
+    return (List)this.getValue(colName);
   }
 
   public Schema getSchema() {
-    return schema;
+    return this.schema;
   }
 
-  void setValue(int colIdx, Writable value) {
-    Preconditions.checkArgument(colIdx <= schema.getColumns().size());
+  void setValue(int colIdx, Object obj) {
+    this.colValues[colIdx] = obj;
+  }
 
-    if (value == null) {
-      nullIndicators[colIdx] = true;
-    } else {
-      nullIndicators[colIdx] = false;
-      FieldDesc colDesc = schema.getColumns().get(colIdx);
-      switch (colDesc.getTypeDesc().getType()) {
-        case BOOLEAN:
-          ((BooleanWritable) colValues[colIdx]).set(((BooleanWritable) value).get());
-          break;
-        case TINYINT:
-          ((ByteWritable) colValues[colIdx]).set(((ByteWritable) value).get());
-          break;
-        case SMALLINT:
-          ((ShortWritable) colValues[colIdx]).set(((ShortWritable) value).get());
-          break;
-        case INT:
-          ((IntWritable) colValues[colIdx]).set(((IntWritable) value).get());
-          break;
-        case BIGINT:
-          ((LongWritable) colValues[colIdx]).set(((LongWritable) value).get());
-          break;
-        case FLOAT:
-          ((FloatWritable) colValues[colIdx]).set(((FloatWritable) value).get());
-          break;
-        case DOUBLE:
-          ((DoubleWritable) colValues[colIdx]).set(((DoubleWritable) value).get());
-          break;
-        case STRING:
-        // Just handle char/varchar as Text
-        case CHAR:
-        case VARCHAR:
-          ((Text) colValues[colIdx]).set((Text) value);
-          break;
-        case DATE:
-          ((DateWritable) colValues[colIdx]).set((DateWritable) value);
-          break;
-        case TIMESTAMP:
-          ((TimestampWritable) colValues[colIdx]).set((TimestampWritable) value);
-          break;
-        case BINARY:
-          ((BytesWritable) colValues[colIdx]).set(((BytesWritable) value));
-          break;
-        case DECIMAL:
-          ((HiveDecimalWritable) colValues[colIdx]).set((HiveDecimalWritable) value);
-          break;
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
+
+    for(int idx = 0; idx < this.schema.getColumns().size(); ++idx) {
+      if (idx > 0) {
+        sb.append(", ");
       }
-    }
-  }
 
-  private Writable createWritableForType(TypeDesc typeDesc) {
-    switch (typeDesc.getType()) {
-      case BOOLEAN:
-        return new BooleanWritable();
-      case TINYINT:
-        return new ByteWritable();
-      case SMALLINT:
-        return new ShortWritable();
-      case INT:
-        return new IntWritable();
-      case BIGINT:
-        return new LongWritable();
-      case FLOAT:
-        return new FloatWritable();
-      case DOUBLE:
-        return new DoubleWritable();
-      case STRING:
-      // Just handle char/varchar as Text
-      case CHAR:
-      case VARCHAR:
-        return new Text();
-      case DATE:
-        return new DateWritable();
-      case TIMESTAMP:
-        return new TimestampWritable();
-      case BINARY:
-        return new BytesWritable();
-      case DECIMAL:
-        return new HiveDecimalWritable();
-      default:
-        throw new RuntimeException("Cannot create writable for " + typeDesc.getType());
+      Object val = this.getValue(idx);
+      sb.append(val == null ? "null" : val.toString());
     }
+
+    sb.append("]");
+    return sb.toString();
   }
 }

@@ -18,35 +18,22 @@
 
 package org.apache.hadoop.hive.llap;
 
-import com.google.common.base.Preconditions;
-
 import java.io.IOException;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.JobConf;
-
-import org.apache.hadoop.hive.llap.Row;
-import org.apache.hadoop.hive.llap.FieldDesc;
-import org.apache.hadoop.hive.llap.Schema;
-import org.apache.hadoop.hive.llap.TypeDesc;
+import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
-import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-
+import org.apache.hadoop.hive.serde2.objectinspector.*;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.RecordReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,6 +87,85 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
     return 0;
   }
 
+  private void setRowFromStruct(Row row, Object structVal, StructObjectInspector soi) {
+    // Add struct field data to the Row
+    List<? extends StructField> structFields = soi.getAllStructFieldRefs();
+    for (int idx = 0; idx < structFields.size(); ++idx) {
+      StructField structField = structFields.get(idx);
+      Object convertedFieldValue = convertValue(
+          soi.getStructFieldData(structVal, structField),
+          structField.getFieldObjectInspector());
+      row.setValue(idx, convertedFieldValue);
+    }
+  }
+
+  private Object convertPrimitive(Object val, PrimitiveObjectInspector poi) {
+    switch (poi.getPrimitiveCategory()) {
+    // Save char/varchar as string
+    case CHAR:
+      return ((HiveChar) poi.getPrimitiveJavaObject(val)).getPaddedValue();
+    case VARCHAR:
+      return ((HiveVarchar) poi.getPrimitiveJavaObject(val)).toString();
+    case DECIMAL:
+      return ((HiveDecimal) poi.getPrimitiveJavaObject(val)).bigDecimalValue();
+    default:
+      return poi.getPrimitiveJavaObject(val);
+    }
+  }
+
+  private Object convertValue(Object val, ObjectInspector oi) {
+    if (val == null) {
+      return null;
+    }
+    ObjectInspector.Category oiCategory = oi.getCategory();
+    switch (oiCategory) {
+    case PRIMITIVE:
+      return convertPrimitive(val, (PrimitiveObjectInspector) oi);
+    case LIST:
+      ListObjectInspector loi = (ListObjectInspector) oi;
+      int listSize = loi.getListLength(val);
+      // Per ListObjectInpsector.getListLength(), -1 length means null list.
+      if (listSize < 0) {
+        return null;
+      }
+      List<Object> convertedList = new ArrayList<>(listSize);
+      ObjectInspector listElementOI = loi.getListElementObjectInspector();
+      for (int idx = 0; idx < listSize; ++idx) {
+        convertedList.add(convertValue(loi.getListElement(val, idx), listElementOI));
+      }
+      return convertedList;
+    case MAP:
+      MapObjectInspector moi = (MapObjectInspector) oi;
+      int mapSize = moi.getMapSize(val);
+      // Per MapObjectInpsector.getMapSize(), -1 length means null map.
+      if (mapSize < 0) {
+        return null;
+      }
+      Map<Object, Object> convertedMap = new LinkedHashMap<>(mapSize);
+      ObjectInspector mapKeyOI = moi.getMapKeyObjectInspector();
+      ObjectInspector mapValOI = moi.getMapValueObjectInspector();
+      Map<?, ?> mapCol = moi.getMap(val);
+      for (Object mapKey : mapCol.keySet()) {
+        Object convertedMapKey = convertValue(mapKey, mapKeyOI);
+        Object convertedMapVal = convertValue(mapCol.get(mapKey), mapValOI);
+        convertedMap.put(convertedMapKey,  convertedMapVal);
+      }
+      return convertedMap;
+    case STRUCT:
+      StructObjectInspector soi = (StructObjectInspector) oi;
+      List<Object> convertedRow = new ArrayList<>();
+      for (StructField structField : soi.getAllStructFieldRefs()) {
+        Object convertedFieldValue = convertValue(
+            soi.getStructFieldData(val, structField),
+            structField.getFieldObjectInspector());
+        convertedRow.add(convertedFieldValue);
+      }
+      return convertedRow;
+    default:
+      throw new IllegalArgumentException("Cannot convert type " + oiCategory);
+    }
+  }
+
   @Override
   public boolean next(NullWritable key, Row value) throws IOException {
     Preconditions.checkArgument(value != null);
@@ -111,27 +177,7 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
       try {
         StructObjectInspector rowOI = (StructObjectInspector) serde.getObjectInspector();
         rowObj = serde.deserialize(textData);
-        List<? extends StructField> colFields = rowOI.getAllStructFieldRefs();
-        for (int idx = 0; idx < colFields.size(); ++idx) {
-          StructField field = colFields.get(idx);
-          Object colValue = rowOI.getStructFieldData(rowObj, field);
-          Preconditions.checkState(field.getFieldObjectInspector().getCategory() == Category.PRIMITIVE,
-              "Cannot handle non-primitive column type " + field.getFieldObjectInspector().getTypeName());
-
-          PrimitiveObjectInspector poi = (PrimitiveObjectInspector) field.getFieldObjectInspector();
-          // char/varchar special cased here since the row record handles them using Text
-          switch (poi.getPrimitiveCategory()) {
-            case CHAR:
-              value.setValue(idx, ((HiveCharWritable) poi.getPrimitiveWritableObject(colValue)).getPaddedValue());
-              break;
-            case VARCHAR:
-              value.setValue(idx, ((HiveVarcharWritable) poi.getPrimitiveWritableObject(colValue)).getTextValue());
-              break;
-            default:
-              value.setValue(idx, (Writable) poi.getPrimitiveWritableObject(colValue));
-              break;
-          }
-        }
+        setRowFromStruct(value, rowObj, rowOI);
       } catch (SerDeException err) {
         if (LOG.isDebugEnabled()) {
           LOG.debug("Error deserializing row from text: " + textData);
@@ -158,7 +204,7 @@ public class LlapRowRecordReader implements RecordReader<NullWritable, Row> {
         typesBuffer.append(',');
       }
       columnsBuffer.append(colDesc.getName());
-      typesBuffer.append(colDesc.getTypeDesc().toString());
+      typesBuffer.append(colDesc.getTypeInfo().toString());
       isFirst = false;
     }
     String columns = columnsBuffer.toString();
