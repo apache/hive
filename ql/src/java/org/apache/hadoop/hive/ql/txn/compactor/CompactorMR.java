@@ -237,7 +237,6 @@ public class CompactorMR {
     }
 
     JobConf job = createBaseJobConf(conf, jobName, t, sd, writeIds, ci);
-    QueryCompactor.Util.removeAbortedDirsForAcidTable(conf, dir);
 
     List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
     int maxDeltasToHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);

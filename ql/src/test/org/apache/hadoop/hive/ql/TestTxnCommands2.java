@@ -2283,41 +2283,36 @@ public class TestTxnCommands2 {
     r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBL);
     Assert.assertEquals("2", r1.get(0));
 
-    // 4. Perform a MINOR compaction, expectation is it should remove aborted base dir
+    // 4. Perform a MINOR compaction
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MINOR'");
-    // The worker should remove the subdir for aborted transaction
     runWorker(hiveConf);
-    verifyDeltaDirAndResult(3, Table.ACIDTBL.toString(), "", resultData2);
+    verifyDeltaDirAndResult(4, Table.ACIDTBL.toString(), "", resultData2);
     verifyBaseDirAndResult(0, Table.ACIDTBL.toString(), "", resultData2);
-    // 5. Run Cleaner.should remove all deltas except compacted one.
+    // 5. Run Cleaner, should remove compacted deltas including aborted ones.
     runCleaner(hiveConf);
     verifyDeltaDirAndResult(1, Table.ACIDTBL.toString(), "", resultData2);
-    // 6. Run initiator remove aborted entry from TXNS table
-    runInitiator(hiveConf);
 
     // Verify query result
     List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
     Assert.assertEquals(stringifyValues(resultData2), rs);
 
     int [][] resultData3 = new int[][] {{1,2}, {5,6}, {7,8}, {9,10}};
-    // 7. add few more rows
+    // 6. add few more rows
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(7,8)");
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(9,10)");
-    // 8. add one more aborted delta
+    // 7. add one more aborted delta
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(11,12)");
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
 
-    // 9. Perform a MAJOR compaction, expectation is it should remove aborted base dir
+    // 8. Perform a MAJOR compaction
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
     verifyDeltaDirAndResult(4, Table.ACIDTBL.toString(), "", resultData3);
     runWorker(hiveConf);
-    verifyDeltaDirAndResult(3, Table.ACIDTBL.toString(), "", resultData3);
+    verifyDeltaDirAndResult(4, Table.ACIDTBL.toString(), "", resultData3);
     verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData3);
+    // The cleaner should remove compacted deltas including aborted ones.
     runCleaner(hiveConf);
-    verifyDeltaDirAndResult(0, Table.ACIDTBL.toString(), "", resultData3);
-    verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData3);
-    runInitiator(hiveConf);
     verifyDeltaDirAndResult(0, Table.ACIDTBL.toString(), "", resultData3);
     verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData3);
 
@@ -2345,21 +2340,19 @@ public class TestTxnCommands2 {
     r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBL);
     Assert.assertEquals("2", r1.get(0));
 
-    // 4.1 Perform a MAJOR compaction, expectation is it should remove aborted base dir
+    // 4.1 Perform a MAJOR compaction
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
     // The worker should remove the subdir for aborted transaction
     runWorker(hiveConf);
-    // 4.2 Perform another MAJOR compaction, expectation is it should remove aborted base dir
+    // 4.2 Perform another MAJOR compaction
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
     runWorker(hiveConf);
-    verifyDeltaDirAndResult(2, Table.ACIDTBL.toString(), "", resultData1);
+    verifyDeltaDirAndResult(3, Table.ACIDTBL.toString(), "", resultData1);
     verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData1);
-    // 5. Run Cleaner. Should remove all the deltas.
+    // 5. Run Cleaner, should remove compacted deltas including aborted ones.
     runCleaner(hiveConf);
     verifyDeltaDirAndResult(0, Table.ACIDTBL.toString(), "", resultData1);
     verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData1);
-    // 6. Run initiator remove aborted entry from TXNS table
-    runInitiator(hiveConf);
 
     // Verify query result
     List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
@@ -2380,20 +2373,18 @@ public class TestTxnCommands2 {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
     verifyDeltaDirAndResult(3, Table.ACIDTBL.toString(), "", resultData1);
 
-    // 3. Perform a MAJOR compaction. It should remove the subdir for aborted transaction.
+    // 3. Perform a MAJOR compaction.
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
     // The worker should remove the subdir for aborted transaction
     runWorker(hiveConf);
-    verifyDeltaDirAndResult(2, Table.ACIDTBL.toString(), "", resultData1);
+    verifyDeltaDirAndResult(3, Table.ACIDTBL.toString(), "", resultData1);
     verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData1);
     // 4. Perform one more MAJOR compaction, this should not remove any dirs
     runStatementOnDriver("alter table "+ Table.ACIDTBL + " compact 'MAJOR'");
     runWorker(hiveConf);
-    verifyDeltaDirAndResult(2, Table.ACIDTBL.toString(), "", resultData1);
+    verifyDeltaDirAndResult(3, Table.ACIDTBL.toString(), "", resultData1);
     verifyBaseDirAndResult(1, Table.ACIDTBL.toString(), "", resultData1);
 
-    // 5. run initiator, should not have any effect
-    runInitiator(hiveConf);
     // Verify query result
     List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBL + " order by a");
     Assert.assertEquals(stringifyValues(resultData1), rs);
@@ -2431,41 +2422,39 @@ public class TestTxnCommands2 {
     runCleaner(hiveConf);
     Assert.assertEquals(TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS"), 6);
 
-    // 3.1 Perform a MAJOR compaction again. This time it will remove the subdir for aborted transaction.
+    // 3.1 Perform a MAJOR compaction again.
     runStatementOnDriver("alter table "+ Table.ACIDTBLPART + " partition(p='p1') compact 'MAJOR'");
-    // The worker should remove the subdir for aborted transaction
     runWorker(hiveConf);
-    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
+    verifyDeltaDirAndResult(4, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
     verifyDeltaDirAndResult(4, Table.ACIDTBLPART.toString(), "p=p2", resultData1);
     verifyDeltaDirAndResult(4, Table.ACIDTBLPART.toString(), "p=p3", resultData1);
     verifyBaseDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
+    // The cleaner should remove compacted deltas including aborted ones.
     runCleaner(hiveConf);
-    runInitiator(hiveConf);
     Assert.assertEquals(TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS"), 4);
 
-    // 3.2 Perform a MAJOR compaction again. This time it will remove the subdir for aborted transaction.
+    // 3.2 Perform a MAJOR compaction again.
     runStatementOnDriver("alter table "+ Table.ACIDTBLPART + " partition(p='p2') compact 'MAJOR'");
-    // The worker should remove the subdir for aborted transaction
     runWorker(hiveConf);
     verifyDeltaDirAndResult(0, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
-    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p2", resultData1);
+    verifyDeltaDirAndResult(4, Table.ACIDTBLPART.toString(), "p=p2", resultData1);
     verifyDeltaDirAndResult(4, Table.ACIDTBLPART.toString(), "p=p3", resultData1);
     verifyBaseDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p2", resultData1);
+    // The cleaner should remove compacted deltas including aborted ones.
     runCleaner(hiveConf);
-    runInitiator(hiveConf);
     Assert.assertEquals(TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS"), 2);
 
-    // 3.3 Perform a MAJOR compaction again. This time it will remove the subdir for aborted transaction.
+    // 3.3 Perform a MAJOR compaction again.
     runStatementOnDriver("alter table "+ Table.ACIDTBLPART + " partition(p='p3') compact 'MAJOR'");
-    // The worker should remove the subdir for aborted transaction
     runWorker(hiveConf);
     verifyDeltaDirAndResult(0, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
     verifyDeltaDirAndResult(0, Table.ACIDTBLPART.toString(), "p=p2", resultData1);
-    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p3", resultData1);
+    verifyDeltaDirAndResult(4, Table.ACIDTBLPART.toString(), "p=p3", resultData1);
     verifyBaseDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p3", resultData1);
+    // The cleaner should remove compacted deltas including aborted ones.
     runCleaner(hiveConf);
-    runInitiator(hiveConf);
     Assert.assertEquals(TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS"), 0);
+    verifyDeltaDirAndResult(0, Table.ACIDTBLPART.toString(), "p=p3", resultData1);
 
     // 4. Verify query result
     int [][] resultData2 =  new int[][] {{1,2},{1,2},{1,2},{3,4},{3,4},{3,4}};

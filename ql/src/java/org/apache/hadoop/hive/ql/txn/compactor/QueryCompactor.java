@@ -254,7 +254,7 @@ abstract class QueryCompactor {
     /**
      * Remove the delta directories of aborted transactions.
      */
-    static void removeAbortedDirsForAcidTable(HiveConf conf, AcidUtils.Directory dir) throws IOException {
+    static void removeFilesForMmTable(HiveConf conf, AcidUtils.Directory dir) throws IOException {
       List<Path> filesToDelete = dir.getAbortedDirectories();
       if (filesToDelete.size() < 1) {
         return;
