@@ -47,6 +47,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
@@ -1553,5 +1554,34 @@ public class MetaStoreServerUtils {
       tpart.getSd().setLocation((location != null) ? location.toString() : null);
     }
     return tpart;
+  }
+
+  /**
+   * Validate bucket columns should belong to table columns.
+   * @param sd StorageDescriptor of given table
+   * @return true if bucket columns are empty or belong to table columns else false
+   */
+  public static List<String> validateBucketColumns(StorageDescriptor sd) {
+    List<String> bucketColumnNames = null;
+
+    if (CollectionUtils.isNotEmpty(sd.getBucketCols())) {
+      bucketColumnNames = sd.getBucketCols().stream().map(String::toLowerCase).collect(Collectors.toList());
+      List<String> columnNames = getColumnNames(sd.getCols());
+      if (CollectionUtils.isNotEmpty(columnNames))
+        bucketColumnNames.removeAll(columnNames);
+    }
+    return bucketColumnNames;
+  }
+
+  /**
+   * Generate list of lower case column names from the fieldSchema list
+   * @param cols fieldSchema list
+   * @return column name list
+   */
+  public static List<String> getColumnNames(List<FieldSchema> cols) {
+    if (CollectionUtils.isNotEmpty(cols)) {
+      return cols.stream().map(FieldSchema::getName).map(String::toLowerCase).collect(Collectors.toList());
+    }
+    return null;
   }
 }
