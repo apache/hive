@@ -472,8 +472,8 @@ public class SharedWorkOptimizer extends Transform {
               ExprNodeDesc exprNode = disjunction(modelR.normalFilterExpr, modelD.normalFilterExpr);
               List<ExprNodeDesc> semiJoinExpr = null;
               if (mode == Mode.DPPUnion) {
-                semiJoinExpr = Lists.newArrayList(
-                    disjunction(conjunction(modelR.semijoinExprNodes), conjunction(modelD.semijoinExprNodes)));
+                ExprNodeDesc disjunction = disjunction(conjunction(modelR.semijoinExprNodes), conjunction(modelD.semijoinExprNodes));
+                semiJoinExpr = disjunction == null ? null : Lists.newArrayList(disjunction);
               } else {
                 semiJoinExpr = modelR.semijoinExprNodes;
               }
@@ -574,14 +574,14 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     private ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes) throws UDFArgumentException {
-      if (!semijoinExprNodes.isEmpty()) {
-        if (semijoinExprNodes.size() > 1) {
-          return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), semijoinExprNodes);
-        } else {
-          return semijoinExprNodes.get(0);
-        }
+      if (semijoinExprNodes.isEmpty()) {
+        return null;
       }
-      throw new RuntimeException("unexpected: no expressions available");
+      if (semijoinExprNodes.size() > 1) {
+        return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), semijoinExprNodes);
+      } else {
+        return semijoinExprNodes.get(0);
+      }
     }
 
     private ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes, ExprNodeDesc exprNode)
