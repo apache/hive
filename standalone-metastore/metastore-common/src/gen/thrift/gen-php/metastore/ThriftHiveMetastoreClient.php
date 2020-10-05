@@ -15943,16 +15943,15 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("get_open_txns_req failed: unknown result");
     }
 
-    public function create_stored_procedure($catName, \metastore\StoredProcedure $proc)
+    public function create_stored_procedure(\metastore\StoredProcedure $proc)
     {
-        $this->send_create_stored_procedure($catName, $proc);
+        $this->send_create_stored_procedure($proc);
         $this->recv_create_stored_procedure();
     }
 
-    public function send_create_stored_procedure($catName, \metastore\StoredProcedure $proc)
+    public function send_create_stored_procedure(\metastore\StoredProcedure $proc)
     {
         $args = new \metastore\ThriftHiveMetastore_create_stored_procedure_args();
-        $args->catName = $catName;
         $args->proc = $proc;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
@@ -16006,18 +16005,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
-    public function get_stored_procedure($catName, $db, $name)
+    public function get_stored_procedure(\metastore\StoredProcedureRequest $request)
     {
-        $this->send_get_stored_procedure($catName, $db, $name);
+        $this->send_get_stored_procedure($request);
         return $this->recv_get_stored_procedure();
     }
 
-    public function send_get_stored_procedure($catName, $db, $name)
+    public function send_get_stored_procedure(\metastore\StoredProcedureRequest $request)
     {
         $args = new \metastore\ThriftHiveMetastore_get_stored_procedure_args();
-        $args->catName = $catName;
-        $args->db = $db;
-        $args->name = $name;
+        $args->request = $request;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(
@@ -16073,18 +16070,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("get_stored_procedure failed: unknown result");
     }
 
-    public function drop_stored_procedure($catName, $dbName, $funcName)
+    public function drop_stored_procedure(\metastore\StoredProcedureRequest $request)
     {
-        $this->send_drop_stored_procedure($catName, $dbName, $funcName);
+        $this->send_drop_stored_procedure($request);
         $this->recv_drop_stored_procedure();
     }
 
-    public function send_drop_stored_procedure($catName, $dbName, $funcName)
+    public function send_drop_stored_procedure(\metastore\StoredProcedureRequest $request)
     {
         $args = new \metastore\ThriftHiveMetastore_drop_stored_procedure_args();
-        $args->catName = $catName;
-        $args->dbName = $dbName;
-        $args->funcName = $funcName;
+        $args->request = $request;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(
@@ -16137,16 +16132,16 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         return;
     }
 
-    public function get_all_stored_procedures($catName)
+    public function get_all_stored_procedures(\metastore\ListStoredProcedureRequest $request)
     {
-        $this->send_get_all_stored_procedures($catName);
+        $this->send_get_all_stored_procedures($request);
         return $this->recv_get_all_stored_procedures();
     }
 
-    public function send_get_all_stored_procedures($catName)
+    public function send_get_all_stored_procedures(\metastore\ListStoredProcedureRequest $request)
     {
         $args = new \metastore\ThriftHiveMetastore_get_all_stored_procedures_args();
-        $args->catName = $catName;
+        $args->request = $request;
         $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
         if ($bin_accel) {
             thrift_protocol_write_binary(

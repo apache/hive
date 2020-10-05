@@ -270,10 +270,10 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void add_replication_metrics(const ReplicationMetricList& replicationMetricList) = 0;
   virtual void get_replication_metrics(ReplicationMetricList& _return, const GetReplicationMetricsRequest& rqst) = 0;
   virtual void get_open_txns_req(GetOpenTxnsResponse& _return, const GetOpenTxnsRequest& getOpenTxnsRequest) = 0;
-  virtual void create_stored_procedure(const std::string& catName, const StoredProcedure& proc) = 0;
-  virtual void get_stored_procedure(StoredProcedure& _return, const std::string& catName, const std::string& db, const std::string& name) = 0;
-  virtual void drop_stored_procedure(const std::string& catName, const std::string& dbName, const std::string& funcName) = 0;
-  virtual void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const std::string& catName) = 0;
+  virtual void create_stored_procedure(const StoredProcedure& proc) = 0;
+  virtual void get_stored_procedure(StoredProcedure& _return, const StoredProcedureRequest& request) = 0;
+  virtual void drop_stored_procedure(const StoredProcedureRequest& request) = 0;
+  virtual void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const ListStoredProcedureRequest& request) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -1073,16 +1073,16 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void get_open_txns_req(GetOpenTxnsResponse& /* _return */, const GetOpenTxnsRequest& /* getOpenTxnsRequest */) {
     return;
   }
-  void create_stored_procedure(const std::string& /* catName */, const StoredProcedure& /* proc */) {
+  void create_stored_procedure(const StoredProcedure& /* proc */) {
     return;
   }
-  void get_stored_procedure(StoredProcedure& /* _return */, const std::string& /* catName */, const std::string& /* db */, const std::string& /* name */) {
+  void get_stored_procedure(StoredProcedure& /* _return */, const StoredProcedureRequest& /* request */) {
     return;
   }
-  void drop_stored_procedure(const std::string& /* catName */, const std::string& /* dbName */, const std::string& /* funcName */) {
+  void drop_stored_procedure(const StoredProcedureRequest& /* request */) {
     return;
   }
-  void get_all_stored_procedures(std::vector<StoredProcedure> & /* _return */, const std::string& /* catName */) {
+  void get_all_stored_procedures(std::vector<StoredProcedure> & /* _return */, const ListStoredProcedureRequest& /* request */) {
     return;
   }
 };
@@ -30979,8 +30979,7 @@ class ThriftHiveMetastore_get_open_txns_req_presult {
 };
 
 typedef struct _ThriftHiveMetastore_create_stored_procedure_args__isset {
-  _ThriftHiveMetastore_create_stored_procedure_args__isset() : catName(false), proc(false) {}
-  bool catName :1;
+  _ThriftHiveMetastore_create_stored_procedure_args__isset() : proc(false) {}
   bool proc :1;
 } _ThriftHiveMetastore_create_stored_procedure_args__isset;
 
@@ -30989,23 +30988,18 @@ class ThriftHiveMetastore_create_stored_procedure_args {
 
   ThriftHiveMetastore_create_stored_procedure_args(const ThriftHiveMetastore_create_stored_procedure_args&);
   ThriftHiveMetastore_create_stored_procedure_args& operator=(const ThriftHiveMetastore_create_stored_procedure_args&);
-  ThriftHiveMetastore_create_stored_procedure_args() : catName() {
+  ThriftHiveMetastore_create_stored_procedure_args() {
   }
 
   virtual ~ThriftHiveMetastore_create_stored_procedure_args() noexcept;
-  std::string catName;
   StoredProcedure proc;
 
   _ThriftHiveMetastore_create_stored_procedure_args__isset __isset;
-
-  void __set_catName(const std::string& val);
 
   void __set_proc(const StoredProcedure& val);
 
   bool operator == (const ThriftHiveMetastore_create_stored_procedure_args & rhs) const
   {
-    if (!(catName == rhs.catName))
-      return false;
     if (!(proc == rhs.proc))
       return false;
     return true;
@@ -31027,7 +31021,6 @@ class ThriftHiveMetastore_create_stored_procedure_pargs {
 
 
   virtual ~ThriftHiveMetastore_create_stored_procedure_pargs() noexcept;
-  const std::string* catName;
   const StoredProcedure* proc;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
@@ -31098,10 +31091,8 @@ class ThriftHiveMetastore_create_stored_procedure_presult {
 };
 
 typedef struct _ThriftHiveMetastore_get_stored_procedure_args__isset {
-  _ThriftHiveMetastore_get_stored_procedure_args__isset() : catName(false), db(false), name(false) {}
-  bool catName :1;
-  bool db :1;
-  bool name :1;
+  _ThriftHiveMetastore_get_stored_procedure_args__isset() : request(false) {}
+  bool request :1;
 } _ThriftHiveMetastore_get_stored_procedure_args__isset;
 
 class ThriftHiveMetastore_get_stored_procedure_args {
@@ -31109,29 +31100,19 @@ class ThriftHiveMetastore_get_stored_procedure_args {
 
   ThriftHiveMetastore_get_stored_procedure_args(const ThriftHiveMetastore_get_stored_procedure_args&);
   ThriftHiveMetastore_get_stored_procedure_args& operator=(const ThriftHiveMetastore_get_stored_procedure_args&);
-  ThriftHiveMetastore_get_stored_procedure_args() : catName(), db(), name() {
+  ThriftHiveMetastore_get_stored_procedure_args() {
   }
 
   virtual ~ThriftHiveMetastore_get_stored_procedure_args() noexcept;
-  std::string catName;
-  std::string db;
-  std::string name;
+  StoredProcedureRequest request;
 
   _ThriftHiveMetastore_get_stored_procedure_args__isset __isset;
 
-  void __set_catName(const std::string& val);
-
-  void __set_db(const std::string& val);
-
-  void __set_name(const std::string& val);
+  void __set_request(const StoredProcedureRequest& val);
 
   bool operator == (const ThriftHiveMetastore_get_stored_procedure_args & rhs) const
   {
-    if (!(catName == rhs.catName))
-      return false;
-    if (!(db == rhs.db))
-      return false;
-    if (!(name == rhs.name))
+    if (!(request == rhs.request))
       return false;
     return true;
   }
@@ -31152,9 +31133,7 @@ class ThriftHiveMetastore_get_stored_procedure_pargs {
 
 
   virtual ~ThriftHiveMetastore_get_stored_procedure_pargs() noexcept;
-  const std::string* catName;
-  const std::string* db;
-  const std::string* name;
+  const StoredProcedureRequest* request;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -31232,10 +31211,8 @@ class ThriftHiveMetastore_get_stored_procedure_presult {
 };
 
 typedef struct _ThriftHiveMetastore_drop_stored_procedure_args__isset {
-  _ThriftHiveMetastore_drop_stored_procedure_args__isset() : catName(false), dbName(false), funcName(false) {}
-  bool catName :1;
-  bool dbName :1;
-  bool funcName :1;
+  _ThriftHiveMetastore_drop_stored_procedure_args__isset() : request(false) {}
+  bool request :1;
 } _ThriftHiveMetastore_drop_stored_procedure_args__isset;
 
 class ThriftHiveMetastore_drop_stored_procedure_args {
@@ -31243,29 +31220,19 @@ class ThriftHiveMetastore_drop_stored_procedure_args {
 
   ThriftHiveMetastore_drop_stored_procedure_args(const ThriftHiveMetastore_drop_stored_procedure_args&);
   ThriftHiveMetastore_drop_stored_procedure_args& operator=(const ThriftHiveMetastore_drop_stored_procedure_args&);
-  ThriftHiveMetastore_drop_stored_procedure_args() : catName(), dbName(), funcName() {
+  ThriftHiveMetastore_drop_stored_procedure_args() {
   }
 
   virtual ~ThriftHiveMetastore_drop_stored_procedure_args() noexcept;
-  std::string catName;
-  std::string dbName;
-  std::string funcName;
+  StoredProcedureRequest request;
 
   _ThriftHiveMetastore_drop_stored_procedure_args__isset __isset;
 
-  void __set_catName(const std::string& val);
-
-  void __set_dbName(const std::string& val);
-
-  void __set_funcName(const std::string& val);
+  void __set_request(const StoredProcedureRequest& val);
 
   bool operator == (const ThriftHiveMetastore_drop_stored_procedure_args & rhs) const
   {
-    if (!(catName == rhs.catName))
-      return false;
-    if (!(dbName == rhs.dbName))
-      return false;
-    if (!(funcName == rhs.funcName))
+    if (!(request == rhs.request))
       return false;
     return true;
   }
@@ -31286,9 +31253,7 @@ class ThriftHiveMetastore_drop_stored_procedure_pargs {
 
 
   virtual ~ThriftHiveMetastore_drop_stored_procedure_pargs() noexcept;
-  const std::string* catName;
-  const std::string* dbName;
-  const std::string* funcName;
+  const StoredProcedureRequest* request;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -31358,8 +31323,8 @@ class ThriftHiveMetastore_drop_stored_procedure_presult {
 };
 
 typedef struct _ThriftHiveMetastore_get_all_stored_procedures_args__isset {
-  _ThriftHiveMetastore_get_all_stored_procedures_args__isset() : catName(false) {}
-  bool catName :1;
+  _ThriftHiveMetastore_get_all_stored_procedures_args__isset() : request(false) {}
+  bool request :1;
 } _ThriftHiveMetastore_get_all_stored_procedures_args__isset;
 
 class ThriftHiveMetastore_get_all_stored_procedures_args {
@@ -31367,19 +31332,19 @@ class ThriftHiveMetastore_get_all_stored_procedures_args {
 
   ThriftHiveMetastore_get_all_stored_procedures_args(const ThriftHiveMetastore_get_all_stored_procedures_args&);
   ThriftHiveMetastore_get_all_stored_procedures_args& operator=(const ThriftHiveMetastore_get_all_stored_procedures_args&);
-  ThriftHiveMetastore_get_all_stored_procedures_args() : catName() {
+  ThriftHiveMetastore_get_all_stored_procedures_args() {
   }
 
   virtual ~ThriftHiveMetastore_get_all_stored_procedures_args() noexcept;
-  std::string catName;
+  ListStoredProcedureRequest request;
 
   _ThriftHiveMetastore_get_all_stored_procedures_args__isset __isset;
 
-  void __set_catName(const std::string& val);
+  void __set_request(const ListStoredProcedureRequest& val);
 
   bool operator == (const ThriftHiveMetastore_get_all_stored_procedures_args & rhs) const
   {
-    if (!(catName == rhs.catName))
+    if (!(request == rhs.request))
       return false;
     return true;
   }
@@ -31400,7 +31365,7 @@ class ThriftHiveMetastore_get_all_stored_procedures_pargs {
 
 
   virtual ~ThriftHiveMetastore_get_all_stored_procedures_pargs() noexcept;
-  const std::string* catName;
+  const ListStoredProcedureRequest* request;
 
   uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
 
@@ -32221,17 +32186,17 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_open_txns_req(GetOpenTxnsResponse& _return, const GetOpenTxnsRequest& getOpenTxnsRequest);
   void send_get_open_txns_req(const GetOpenTxnsRequest& getOpenTxnsRequest);
   void recv_get_open_txns_req(GetOpenTxnsResponse& _return);
-  void create_stored_procedure(const std::string& catName, const StoredProcedure& proc);
-  void send_create_stored_procedure(const std::string& catName, const StoredProcedure& proc);
+  void create_stored_procedure(const StoredProcedure& proc);
+  void send_create_stored_procedure(const StoredProcedure& proc);
   void recv_create_stored_procedure();
-  void get_stored_procedure(StoredProcedure& _return, const std::string& catName, const std::string& db, const std::string& name);
-  void send_get_stored_procedure(const std::string& catName, const std::string& db, const std::string& name);
+  void get_stored_procedure(StoredProcedure& _return, const StoredProcedureRequest& request);
+  void send_get_stored_procedure(const StoredProcedureRequest& request);
   void recv_get_stored_procedure(StoredProcedure& _return);
-  void drop_stored_procedure(const std::string& catName, const std::string& dbName, const std::string& funcName);
-  void send_drop_stored_procedure(const std::string& catName, const std::string& dbName, const std::string& funcName);
+  void drop_stored_procedure(const StoredProcedureRequest& request);
+  void send_drop_stored_procedure(const StoredProcedureRequest& request);
   void recv_drop_stored_procedure();
-  void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const std::string& catName);
-  void send_get_all_stored_procedures(const std::string& catName);
+  void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const ListStoredProcedureRequest& request);
+  void send_get_all_stored_procedures(const ListStoredProcedureRequest& request);
   void recv_get_all_stored_procedures(std::vector<StoredProcedure> & _return);
 };
 
@@ -35159,41 +35124,41 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
-  void create_stored_procedure(const std::string& catName, const StoredProcedure& proc) {
+  void create_stored_procedure(const StoredProcedure& proc) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->create_stored_procedure(catName, proc);
+      ifaces_[i]->create_stored_procedure(proc);
     }
-    ifaces_[i]->create_stored_procedure(catName, proc);
+    ifaces_[i]->create_stored_procedure(proc);
   }
 
-  void get_stored_procedure(StoredProcedure& _return, const std::string& catName, const std::string& db, const std::string& name) {
+  void get_stored_procedure(StoredProcedure& _return, const StoredProcedureRequest& request) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->get_stored_procedure(_return, catName, db, name);
+      ifaces_[i]->get_stored_procedure(_return, request);
     }
-    ifaces_[i]->get_stored_procedure(_return, catName, db, name);
+    ifaces_[i]->get_stored_procedure(_return, request);
     return;
   }
 
-  void drop_stored_procedure(const std::string& catName, const std::string& dbName, const std::string& funcName) {
+  void drop_stored_procedure(const StoredProcedureRequest& request) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->drop_stored_procedure(catName, dbName, funcName);
+      ifaces_[i]->drop_stored_procedure(request);
     }
-    ifaces_[i]->drop_stored_procedure(catName, dbName, funcName);
+    ifaces_[i]->drop_stored_procedure(request);
   }
 
-  void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const std::string& catName) {
+  void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const ListStoredProcedureRequest& request) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
-      ifaces_[i]->get_all_stored_procedures(_return, catName);
+      ifaces_[i]->get_all_stored_procedures(_return, request);
     }
-    ifaces_[i]->get_all_stored_procedures(_return, catName);
+    ifaces_[i]->get_all_stored_procedures(_return, request);
     return;
   }
 
@@ -35954,17 +35919,17 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_open_txns_req(GetOpenTxnsResponse& _return, const GetOpenTxnsRequest& getOpenTxnsRequest);
   int32_t send_get_open_txns_req(const GetOpenTxnsRequest& getOpenTxnsRequest);
   void recv_get_open_txns_req(GetOpenTxnsResponse& _return, const int32_t seqid);
-  void create_stored_procedure(const std::string& catName, const StoredProcedure& proc);
-  int32_t send_create_stored_procedure(const std::string& catName, const StoredProcedure& proc);
+  void create_stored_procedure(const StoredProcedure& proc);
+  int32_t send_create_stored_procedure(const StoredProcedure& proc);
   void recv_create_stored_procedure(const int32_t seqid);
-  void get_stored_procedure(StoredProcedure& _return, const std::string& catName, const std::string& db, const std::string& name);
-  int32_t send_get_stored_procedure(const std::string& catName, const std::string& db, const std::string& name);
+  void get_stored_procedure(StoredProcedure& _return, const StoredProcedureRequest& request);
+  int32_t send_get_stored_procedure(const StoredProcedureRequest& request);
   void recv_get_stored_procedure(StoredProcedure& _return, const int32_t seqid);
-  void drop_stored_procedure(const std::string& catName, const std::string& dbName, const std::string& funcName);
-  int32_t send_drop_stored_procedure(const std::string& catName, const std::string& dbName, const std::string& funcName);
+  void drop_stored_procedure(const StoredProcedureRequest& request);
+  int32_t send_drop_stored_procedure(const StoredProcedureRequest& request);
   void recv_drop_stored_procedure(const int32_t seqid);
-  void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const std::string& catName);
-  int32_t send_get_all_stored_procedures(const std::string& catName);
+  void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const ListStoredProcedureRequest& request);
+  int32_t send_get_all_stored_procedures(const ListStoredProcedureRequest& request);
   void recv_get_all_stored_procedures(std::vector<StoredProcedure> & _return, const int32_t seqid);
 };
 

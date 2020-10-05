@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsProjectionSpec;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.Catalog;
@@ -1419,8 +1420,8 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public void createOrUpdateStoredProcedure(String catName, StoredProcedure proc) throws NoSuchObjectException, MetaException {
-    objectStore.createOrUpdateStoredProcedure(catName, proc);
+  public void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
+    objectStore.createOrUpdateStoredProcedure(proc);
   }
 
   @Override
@@ -1434,8 +1435,8 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
-  public List<StoredProcedure> getAllStoredProcedures(String catName) {
-    return objectStore.getAllStoredProcedures(catName);
+  public List<StoredProcedure> getAllStoredProcedures(ListStoredProcedureRequest request) {
+    return objectStore.getAllStoredProcedures(request);
   }
 
 }

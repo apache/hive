@@ -1557,9 +1557,6 @@
       <field name="createTime">
         <column name="CREATE_TIME" jdbc-type="integer" allows-null="false"/>
       </field>
-      <field name="lastAccessTime">
-        <column name="LAST_ACCESS_TIME" jdbc-type="integer" allows-null="false"/>
-      </field>
       <field name="database">
         <column name="DB_ID" allows-null="false"/>
       </field>
@@ -1570,7 +1567,7 @@
         <column name="OWNER_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
       </field>
       <field name="source">
-        <column name="SOURCE" jdbc-type="MEDIUMTEXT" allows-null="false"/>
+        <column name="SOURCE" jdbc-type="CLOB" allows-null="false"/>
       </field>
       <field name="language">
         <column name="LANG" jdbc-type="varchar" length="128" allows-null="false"/>

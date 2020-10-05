@@ -772,6 +772,10 @@ class GetReplicationMetricsRequest; end
 
 class GetOpenTxnsRequest; end
 
+class StoredProcedureRequest; end
+
+class ListStoredProcedureRequest; end
+
 class StoredProcedure; end
 
 class PosParam; end
@@ -7059,19 +7063,61 @@ class GetOpenTxnsRequest
   ::Thrift::Struct.generate_accessors self
 end
 
+class StoredProcedureRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+  PROCNAME = 3
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    PROCNAME => {:type => ::Thrift::Types::STRING, :name => 'procName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field procName is unset!') unless @procName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ListStoredProcedureRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class StoredProcedure
   include ::Thrift::Struct, ::Thrift::Struct_Union
   NAME = 1
   DBNAME = 2
-  OWNERNAME = 3
-  SOURCE = 4
-  LANGUAGE = 5
-  RETURNTYPE = 6
-  POSPARAMS = 7
+  CATNAME = 3
+  OWNERNAME = 4
+  SOURCE = 5
+  LANGUAGE = 6
+  RETURNTYPE = 7
+  POSPARAMS = 8
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
     OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
     SOURCE => {:type => ::Thrift::Types::STRING, :name => 'source'},
     LANGUAGE => {:type => ::Thrift::Types::STRING, :name => 'language'},

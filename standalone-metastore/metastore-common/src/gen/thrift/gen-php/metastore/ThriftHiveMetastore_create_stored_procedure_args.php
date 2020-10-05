@@ -22,11 +22,6 @@ class ThriftHiveMetastore_create_stored_procedure_args
 
     static public $_TSPEC = array(
         1 => array(
-            'var' => 'catName',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ),
-        2 => array(
             'var' => 'proc',
             'isRequired' => false,
             'type' => TType::STRUCT,
@@ -35,10 +30,6 @@ class ThriftHiveMetastore_create_stored_procedure_args
     );
 
     /**
-     * @var string
-     */
-    public $catName = null;
-    /**
      * @var \metastore\StoredProcedure
      */
     public $proc = null;
@@ -46,9 +37,6 @@ class ThriftHiveMetastore_create_stored_procedure_args
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['catName'])) {
-                $this->catName = $vals['catName'];
-            }
             if (isset($vals['proc'])) {
                 $this->proc = $vals['proc'];
             }
@@ -75,13 +63,6 @@ class ThriftHiveMetastore_create_stored_procedure_args
             }
             switch ($fid) {
                 case 1:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->catName);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
-                case 2:
                     if ($ftype == TType::STRUCT) {
                         $this->proc = new \metastore\StoredProcedure();
                         $xfer += $this->proc->read($input);
@@ -103,16 +84,11 @@ class ThriftHiveMetastore_create_stored_procedure_args
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('ThriftHiveMetastore_create_stored_procedure_args');
-        if ($this->catName !== null) {
-            $xfer += $output->writeFieldBegin('catName', TType::STRING, 1);
-            $xfer += $output->writeString($this->catName);
-            $xfer += $output->writeFieldEnd();
-        }
         if ($this->proc !== null) {
             if (!is_object($this->proc)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('proc', TType::STRUCT, 2);
+            $xfer += $output->writeFieldBegin('proc', TType::STRUCT, 1);
             $xfer += $this->proc->write($output);
             $xfer += $output->writeFieldEnd();
         }

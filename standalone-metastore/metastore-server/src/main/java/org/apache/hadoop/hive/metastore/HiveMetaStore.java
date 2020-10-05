@@ -10161,11 +10161,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public void create_stored_procedure(String catName, StoredProcedure proc) throws NoSuchObjectException, MetaException {
+    public void create_stored_procedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
       startFunction("create_stored_procedure");
       Exception ex = null;
       try {
-        getMS().createOrUpdateStoredProcedure(catName, proc);
+        getMS().createOrUpdateStoredProcedure(proc);
       } catch (Exception e) {
         LOG.error("Caught exception", e);
         ex = e;
@@ -10175,13 +10175,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    public StoredProcedure get_stored_procedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
+    public StoredProcedure get_stored_procedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException {
       startFunction("get_stored_procedure");
       Exception ex = null;
       try {
-        StoredProcedure result = getMS().getStoredProcedure(catName, db, name);
+        StoredProcedure result = getMS().getStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
         if (result == null) {
-          throw new NoSuchObjectException("StoredProcedure " + db + "." + name + " does not exist");
+          throw new NoSuchObjectException("StoredProcedure " + request.getDbName() + "." + request.getProcName() + " does not exist");
         }
         return result;
       } catch (Exception e) {
@@ -10194,11 +10194,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public void drop_stored_procedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException {
+    public void drop_stored_procedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException {
       startFunction("drop_stored_procedure");
       Exception ex = null;
       try {
-        getMS().dropStoredProcedure(catName, dbName, funcName);
+        getMS().dropStoredProcedure(request.getCatName(), request.getDbName(), request.getProcName());
       } catch (Exception e) {
         LOG.error("Caught exception", e);
         ex = e;
@@ -10209,11 +10209,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public List<StoredProcedure> get_all_stored_procedures(String catName) throws MetaException {
+    public List<StoredProcedure> get_all_stored_procedures(ListStoredProcedureRequest request) throws MetaException {
       startFunction("get_all_stored_procedures");
       Exception ex = null;
       try {
-        return getMS().getAllStoredProcedures(catName);
+        return getMS().getAllStoredProcedures(request);
       } catch (Exception e) {
         LOG.error("Caught exception", e);
         ex = e;

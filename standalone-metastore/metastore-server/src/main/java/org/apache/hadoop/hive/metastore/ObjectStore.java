@@ -103,6 +103,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
+import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -10410,11 +10411,11 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createOrUpdateStoredProcedure(String catName, StoredProcedure proc) throws NoSuchObjectException, MetaException {
+  public void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
     boolean committed = false;
     MStoredProc mProc;
     Query query = null;
-    catName = normalizeIdentifier(catName);
+    String catName = normalizeIdentifier(proc.getCatName());
     String dbName = normalizeIdentifier(proc.getDbName());
     MDatabase db = getMDatabase(catName, dbName);
     try {
@@ -10450,7 +10451,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
     MStoredProc proc = getMStoredProcedure(catName, db, name);
-    return proc == null ? null : convertToStoredProc(proc);
+    return proc == null ? null : convertToStoredProc(catName, proc);
   }
 
   private MStoredProc getMStoredProcedure(String catName, String db, String procName) {
@@ -10479,10 +10480,11 @@ public class ObjectStore implements RawStore, Configurable {
     return query;
   }
 
-  private StoredProcedure convertToStoredProc(MStoredProc proc) {
+  private StoredProcedure convertToStoredProc(String catName, MStoredProc proc) {
     return new StoredProcedure(
             proc.getName(),
             proc.getDatabase().getName(),
+            catName,
             proc.getOwner(),
             proc.getSource(),
             proc.getLanguage(),
@@ -10520,18 +10522,18 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<StoredProcedure> getAllStoredProcedures(String catName) {
+  public List<StoredProcedure> getAllStoredProcedures(ListStoredProcedureRequest request) {
     boolean committed = false;
     Query query = null;
+    final String catName = normalizeIdentifier(request.getCatName());
     try {
       openTransaction();
-      catName = normalizeIdentifier(catName);
       query = pm.newQuery(MStoredProc.class, "database.catalogName == catName");
       query.declareParameters("java.lang.String catName");
       List<MStoredProc> allProcedures = (List<MStoredProc>) query.execute(catName);
       pm.retrieveAll(allProcedures);
       committed = commitTransaction();
-      return allProcedures.stream().map(this::convertToStoredProc).collect(Collectors.toList());
+      return allProcedures.stream().map(each -> convertToStoredProc(catName, each)).collect(Collectors.toList());
     } finally {
       rollbackAndCleanup(committed, query);
     }

@@ -3315,8 +3315,8 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public void createOrUpdateStoredProcedure(String catName, StoredProcedure proc) throws NoSuchObjectException, MetaException {
-    rawStore.createOrUpdateStoredProcedure(catName, proc);
+  public void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
+    rawStore.createOrUpdateStoredProcedure(proc);
   }
 
   @Override
@@ -3330,8 +3330,8 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<StoredProcedure> getAllStoredProcedures(String catName) {
-    return rawStore.getAllStoredProcedures(catName);
+  public List<StoredProcedure> getAllStoredProcedures(ListStoredProcedureRequest request) {
+    return rawStore.getAllStoredProcedures(request);
   }
 
 }

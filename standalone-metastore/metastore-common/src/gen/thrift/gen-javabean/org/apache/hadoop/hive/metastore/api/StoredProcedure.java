@@ -13,17 +13,19 @@ package org.apache.hadoop.hive.metastore.api;
 
   private static final org.apache.thrift.protocol.TField NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("name", org.apache.thrift.protocol.TType.STRING, (short)1);
   private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)2);
-  private static final org.apache.thrift.protocol.TField OWNER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerName", org.apache.thrift.protocol.TType.STRING, (short)3);
-  private static final org.apache.thrift.protocol.TField SOURCE_FIELD_DESC = new org.apache.thrift.protocol.TField("source", org.apache.thrift.protocol.TType.STRING, (short)4);
-  private static final org.apache.thrift.protocol.TField LANGUAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("language", org.apache.thrift.protocol.TType.STRING, (short)5);
-  private static final org.apache.thrift.protocol.TField RETURN_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("returnType", org.apache.thrift.protocol.TType.STRING, (short)6);
-  private static final org.apache.thrift.protocol.TField POS_PARAMS_FIELD_DESC = new org.apache.thrift.protocol.TField("posParams", org.apache.thrift.protocol.TType.LIST, (short)7);
+  private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)3);
+  private static final org.apache.thrift.protocol.TField OWNER_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("ownerName", org.apache.thrift.protocol.TType.STRING, (short)4);
+  private static final org.apache.thrift.protocol.TField SOURCE_FIELD_DESC = new org.apache.thrift.protocol.TField("source", org.apache.thrift.protocol.TType.STRING, (short)5);
+  private static final org.apache.thrift.protocol.TField LANGUAGE_FIELD_DESC = new org.apache.thrift.protocol.TField("language", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField RETURN_TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("returnType", org.apache.thrift.protocol.TType.STRING, (short)7);
+  private static final org.apache.thrift.protocol.TField POS_PARAMS_FIELD_DESC = new org.apache.thrift.protocol.TField("posParams", org.apache.thrift.protocol.TType.LIST, (short)8);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new StoredProcedureStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new StoredProcedureTupleSchemeFactory();
 
   private @org.apache.thrift.annotation.Nullable java.lang.String name; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String dbName; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String catName; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String ownerName; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String source; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String language; // required
@@ -34,11 +36,12 @@ package org.apache.hadoop.hive.metastore.api;
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     NAME((short)1, "name"),
     DB_NAME((short)2, "dbName"),
-    OWNER_NAME((short)3, "ownerName"),
-    SOURCE((short)4, "source"),
-    LANGUAGE((short)5, "language"),
-    RETURN_TYPE((short)6, "returnType"),
-    POS_PARAMS((short)7, "posParams");
+    CAT_NAME((short)3, "catName"),
+    OWNER_NAME((short)4, "ownerName"),
+    SOURCE((short)5, "source"),
+    LANGUAGE((short)6, "language"),
+    RETURN_TYPE((short)7, "returnType"),
+    POS_PARAMS((short)8, "posParams");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -58,15 +61,17 @@ package org.apache.hadoop.hive.metastore.api;
           return NAME;
         case 2: // DB_NAME
           return DB_NAME;
-        case 3: // OWNER_NAME
+        case 3: // CAT_NAME
+          return CAT_NAME;
+        case 4: // OWNER_NAME
           return OWNER_NAME;
-        case 4: // SOURCE
+        case 5: // SOURCE
           return SOURCE;
-        case 5: // LANGUAGE
+        case 6: // LANGUAGE
           return LANGUAGE;
-        case 6: // RETURN_TYPE
+        case 7: // RETURN_TYPE
           return RETURN_TYPE;
-        case 7: // POS_PARAMS
+        case 8: // POS_PARAMS
           return POS_PARAMS;
         default:
           return null;
@@ -116,6 +121,8 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.OWNER_NAME, new org.apache.thrift.meta_data.FieldMetaData("ownerName", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.SOURCE, new org.apache.thrift.meta_data.FieldMetaData("source", org.apache.thrift.TFieldRequirementType.DEFAULT, 
@@ -137,6 +144,7 @@ package org.apache.hadoop.hive.metastore.api;
   public StoredProcedure(
     java.lang.String name,
     java.lang.String dbName,
+    java.lang.String catName,
     java.lang.String ownerName,
     java.lang.String source,
     java.lang.String language,
@@ -146,6 +154,7 @@ package org.apache.hadoop.hive.metastore.api;
     this();
     this.name = name;
     this.dbName = dbName;
+    this.catName = catName;
     this.ownerName = ownerName;
     this.source = source;
     this.language = language;
@@ -162,6 +171,9 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (other.isSetDbName()) {
       this.dbName = other.dbName;
+    }
+    if (other.isSetCatName()) {
+      this.catName = other.catName;
     }
     if (other.isSetOwnerName()) {
       this.ownerName = other.ownerName;
@@ -192,6 +204,7 @@ package org.apache.hadoop.hive.metastore.api;
   public void clear() {
     this.name = null;
     this.dbName = null;
+    this.catName = null;
     this.ownerName = null;
     this.source = null;
     this.language = null;
@@ -244,6 +257,30 @@ package org.apache.hadoop.hive.metastore.api;
   public void setDbNameIsSet(boolean value) {
     if (!value) {
       this.dbName = null;
+    }
+  }
+
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getCatName() {
+    return this.catName;
+  }
+
+  public void setCatName(@org.apache.thrift.annotation.Nullable java.lang.String catName) {
+    this.catName = catName;
+  }
+
+  public void unsetCatName() {
+    this.catName = null;
+  }
+
+  /** Returns true if field catName is set (has been assigned a value) and false otherwise */
+  public boolean isSetCatName() {
+    return this.catName != null;
+  }
+
+  public void setCatNameIsSet(boolean value) {
+    if (!value) {
+      this.catName = null;
     }
   }
 
@@ -401,6 +438,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
+    case CAT_NAME:
+      if (value == null) {
+        unsetCatName();
+      } else {
+        setCatName((java.lang.String)value);
+      }
+      break;
+
     case OWNER_NAME:
       if (value == null) {
         unsetOwnerName();
@@ -453,6 +498,9 @@ package org.apache.hadoop.hive.metastore.api;
     case DB_NAME:
       return getDbName();
 
+    case CAT_NAME:
+      return getCatName();
+
     case OWNER_NAME:
       return getOwnerName();
 
@@ -483,6 +531,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetName();
     case DB_NAME:
       return isSetDbName();
+    case CAT_NAME:
+      return isSetCatName();
     case OWNER_NAME:
       return isSetOwnerName();
     case SOURCE:
@@ -527,6 +577,15 @@ package org.apache.hadoop.hive.metastore.api;
       if (!(this_present_dbName && that_present_dbName))
         return false;
       if (!this.dbName.equals(that.dbName))
+        return false;
+    }
+
+    boolean this_present_catName = true && this.isSetCatName();
+    boolean that_present_catName = true && that.isSetCatName();
+    if (this_present_catName || that_present_catName) {
+      if (!(this_present_catName && that_present_catName))
+        return false;
+      if (!this.catName.equals(that.catName))
         return false;
     }
 
@@ -590,6 +649,10 @@ package org.apache.hadoop.hive.metastore.api;
     if (isSetDbName())
       hashCode = hashCode * 8191 + dbName.hashCode();
 
+    hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
+    if (isSetCatName())
+      hashCode = hashCode * 8191 + catName.hashCode();
+
     hashCode = hashCode * 8191 + ((isSetOwnerName()) ? 131071 : 524287);
     if (isSetOwnerName())
       hashCode = hashCode * 8191 + ownerName.hashCode();
@@ -637,6 +700,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetDbName()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dbName, other.dbName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.valueOf(isSetCatName()).compareTo(other.isSetCatName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetCatName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -725,6 +798,14 @@ package org.apache.hadoop.hive.metastore.api;
       sb.append("null");
     } else {
       sb.append(this.dbName);
+    }
+    first = false;
+    if (!first) sb.append(", ");
+    sb.append("catName:");
+    if (this.catName == null) {
+      sb.append("null");
+    } else {
+      sb.append(this.catName);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -826,7 +907,15 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 3: // OWNER_NAME
+          case 3: // CAT_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.catName = iprot.readString();
+              struct.setCatNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
+          case 4: // OWNER_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.ownerName = iprot.readString();
               struct.setOwnerNameIsSet(true);
@@ -834,7 +923,7 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // SOURCE
+          case 5: // SOURCE
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.source = iprot.readString();
               struct.setSourceIsSet(true);
@@ -842,7 +931,7 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 5: // LANGUAGE
+          case 6: // LANGUAGE
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.language = iprot.readString();
               struct.setLanguageIsSet(true);
@@ -850,7 +939,7 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // RETURN_TYPE
+          case 7: // RETURN_TYPE
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
               struct.returnType = iprot.readString();
               struct.setReturnTypeIsSet(true);
@@ -858,7 +947,7 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 7: // POS_PARAMS
+          case 8: // POS_PARAMS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
                 org.apache.thrift.protocol.TList _list1344 = iprot.readListBegin();
@@ -898,6 +987,11 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.dbName != null) {
         oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
         oprot.writeString(struct.dbName);
+        oprot.writeFieldEnd();
+      }
+      if (struct.catName != null) {
+        oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
+        oprot.writeString(struct.catName);
         oprot.writeFieldEnd();
       }
       if (struct.ownerName != null) {
@@ -956,27 +1050,33 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetDbName()) {
         optionals.set(1);
       }
-      if (struct.isSetOwnerName()) {
+      if (struct.isSetCatName()) {
         optionals.set(2);
       }
-      if (struct.isSetSource()) {
+      if (struct.isSetOwnerName()) {
         optionals.set(3);
       }
-      if (struct.isSetLanguage()) {
+      if (struct.isSetSource()) {
         optionals.set(4);
       }
-      if (struct.isSetReturnType()) {
+      if (struct.isSetLanguage()) {
         optionals.set(5);
       }
-      if (struct.isSetPosParams()) {
+      if (struct.isSetReturnType()) {
         optionals.set(6);
       }
-      oprot.writeBitSet(optionals, 7);
+      if (struct.isSetPosParams()) {
+        optionals.set(7);
+      }
+      oprot.writeBitSet(optionals, 8);
       if (struct.isSetName()) {
         oprot.writeString(struct.name);
       }
       if (struct.isSetDbName()) {
         oprot.writeString(struct.dbName);
+      }
+      if (struct.isSetCatName()) {
+        oprot.writeString(struct.catName);
       }
       if (struct.isSetOwnerName()) {
         oprot.writeString(struct.ownerName);
@@ -1004,7 +1104,7 @@ package org.apache.hadoop.hive.metastore.api;
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, StoredProcedure struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
-      java.util.BitSet incoming = iprot.readBitSet(7);
+      java.util.BitSet incoming = iprot.readBitSet(8);
       if (incoming.get(0)) {
         struct.name = iprot.readString();
         struct.setNameIsSet(true);
@@ -1014,22 +1114,26 @@ package org.apache.hadoop.hive.metastore.api;
         struct.setDbNameIsSet(true);
       }
       if (incoming.get(2)) {
+        struct.catName = iprot.readString();
+        struct.setCatNameIsSet(true);
+      }
+      if (incoming.get(3)) {
         struct.ownerName = iprot.readString();
         struct.setOwnerNameIsSet(true);
       }
-      if (incoming.get(3)) {
+      if (incoming.get(4)) {
         struct.source = iprot.readString();
         struct.setSourceIsSet(true);
       }
-      if (incoming.get(4)) {
+      if (incoming.get(5)) {
         struct.language = iprot.readString();
         struct.setLanguageIsSet(true);
       }
-      if (incoming.get(5)) {
+      if (incoming.get(6)) {
         struct.returnType = iprot.readString();
         struct.setReturnTypeIsSet(true);
       }
-      if (incoming.get(6)) {
+      if (incoming.get(7)) {
         {
           org.apache.thrift.protocol.TList _list1349 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
           struct.posParams = new java.util.ArrayList<PosParam>(_list1349.size);

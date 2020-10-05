@@ -4110,13 +4110,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_open_txns_req failed: unknown result')
     end
 
-    def create_stored_procedure(catName, proc)
-      send_create_stored_procedure(catName, proc)
+    def create_stored_procedure(proc)
+      send_create_stored_procedure(proc)
       recv_create_stored_procedure()
     end
 
-    def send_create_stored_procedure(catName, proc)
-      send_message('create_stored_procedure', Create_stored_procedure_args, :catName => catName, :proc => proc)
+    def send_create_stored_procedure(proc)
+      send_message('create_stored_procedure', Create_stored_procedure_args, :proc => proc)
     end
 
     def recv_create_stored_procedure()
@@ -4126,13 +4126,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def get_stored_procedure(catName, db, name)
-      send_get_stored_procedure(catName, db, name)
+    def get_stored_procedure(request)
+      send_get_stored_procedure(request)
       return recv_get_stored_procedure()
     end
 
-    def send_get_stored_procedure(catName, db, name)
-      send_message('get_stored_procedure', Get_stored_procedure_args, :catName => catName, :db => db, :name => name)
+    def send_get_stored_procedure(request)
+      send_message('get_stored_procedure', Get_stored_procedure_args, :request => request)
     end
 
     def recv_get_stored_procedure()
@@ -4143,13 +4143,13 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_stored_procedure failed: unknown result')
     end
 
-    def drop_stored_procedure(catName, dbName, funcName)
-      send_drop_stored_procedure(catName, dbName, funcName)
+    def drop_stored_procedure(request)
+      send_drop_stored_procedure(request)
       recv_drop_stored_procedure()
     end
 
-    def send_drop_stored_procedure(catName, dbName, funcName)
-      send_message('drop_stored_procedure', Drop_stored_procedure_args, :catName => catName, :dbName => dbName, :funcName => funcName)
+    def send_drop_stored_procedure(request)
+      send_message('drop_stored_procedure', Drop_stored_procedure_args, :request => request)
     end
 
     def recv_drop_stored_procedure()
@@ -4159,13 +4159,13 @@ module ThriftHiveMetastore
       return
     end
 
-    def get_all_stored_procedures(catName)
-      send_get_all_stored_procedures(catName)
+    def get_all_stored_procedures(request)
+      send_get_all_stored_procedures(request)
       return recv_get_all_stored_procedures()
     end
 
-    def send_get_all_stored_procedures(catName)
-      send_message('get_all_stored_procedures', Get_all_stored_procedures_args, :catName => catName)
+    def send_get_all_stored_procedures(request)
+      send_message('get_all_stored_procedures', Get_all_stored_procedures_args, :request => request)
     end
 
     def recv_get_all_stored_procedures()
@@ -7255,7 +7255,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Create_stored_procedure_args)
       result = Create_stored_procedure_result.new()
       begin
-        @handler.create_stored_procedure(args.catName, args.proc)
+        @handler.create_stored_procedure(args.proc)
       rescue ::NoSuchObjectException => o1
         result.o1 = o1
       rescue ::MetaException => o2
@@ -7268,7 +7268,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Get_stored_procedure_args)
       result = Get_stored_procedure_result.new()
       begin
-        result.success = @handler.get_stored_procedure(args.catName, args.db, args.name)
+        result.success = @handler.get_stored_procedure(args.request)
       rescue ::MetaException => o1
         result.o1 = o1
       rescue ::NoSuchObjectException => o2
@@ -7281,7 +7281,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Drop_stored_procedure_args)
       result = Drop_stored_procedure_result.new()
       begin
-        @handler.drop_stored_procedure(args.catName, args.dbName, args.funcName)
+        @handler.drop_stored_procedure(args.request)
       rescue ::MetaException => o1
         result.o1 = o1
       rescue ::NoSuchObjectException => o2
@@ -7294,7 +7294,7 @@ module ThriftHiveMetastore
       args = read_args(iprot, Get_all_stored_procedures_args)
       result = Get_all_stored_procedures_result.new()
       begin
-        result.success = @handler.get_all_stored_procedures(args.catName)
+        result.success = @handler.get_all_stored_procedures(args.request)
       rescue ::MetaException => o1
         result.o1 = o1
       end
@@ -16369,11 +16369,9 @@ module ThriftHiveMetastore
 
   class Create_stored_procedure_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    CATNAME = 1
-    PROC = 2
+    PROC = 1
 
     FIELDS = {
-      CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
       PROC => {:type => ::Thrift::Types::STRUCT, :name => 'proc', :class => ::StoredProcedure}
     }
 
@@ -16405,14 +16403,10 @@ module ThriftHiveMetastore
 
   class Get_stored_procedure_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    CATNAME = 1
-    DB = 2
-    NAME = 3
+    REQUEST = -1
 
     FIELDS = {
-      CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
-      DB => {:type => ::Thrift::Types::STRING, :name => 'db'},
-      NAME => {:type => ::Thrift::Types::STRING, :name => 'name'}
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::StoredProcedureRequest}
     }
 
     def struct_fields; FIELDS; end
@@ -16445,14 +16439,10 @@ module ThriftHiveMetastore
 
   class Drop_stored_procedure_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    CATNAME = 1
-    DBNAME = 2
-    FUNCNAME = 3
+    REQUEST = -1
 
     FIELDS = {
-      CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
-      DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
-      FUNCNAME => {:type => ::Thrift::Types::STRING, :name => 'funcName'}
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::StoredProcedureRequest}
     }
 
     def struct_fields; FIELDS; end
@@ -16483,10 +16473,10 @@ module ThriftHiveMetastore
 
   class Get_all_stored_procedures_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    CATNAME = 1
+    REQUEST = 1
 
     FIELDS = {
-      CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'}
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::ListStoredProcedureRequest}
     }
 
     def struct_fields; FIELDS; end

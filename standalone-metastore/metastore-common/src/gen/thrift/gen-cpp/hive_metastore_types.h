@@ -948,6 +948,10 @@ class GetReplicationMetricsRequest;
 
 class GetOpenTxnsRequest;
 
+class StoredProcedureRequest;
+
+class ListStoredProcedureRequest;
+
 class StoredProcedure;
 
 class PosParam;
@@ -16701,10 +16705,93 @@ void swap(GetOpenTxnsRequest &a, GetOpenTxnsRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const GetOpenTxnsRequest& obj);
 
+
+class StoredProcedureRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  StoredProcedureRequest(const StoredProcedureRequest&);
+  StoredProcedureRequest& operator=(const StoredProcedureRequest&);
+  StoredProcedureRequest() : catName(), dbName(), procName() {
+  }
+
+  virtual ~StoredProcedureRequest() noexcept;
+  std::string catName;
+  std::string dbName;
+  std::string procName;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_procName(const std::string& val);
+
+  bool operator == (const StoredProcedureRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(procName == rhs.procName))
+      return false;
+    return true;
+  }
+  bool operator != (const StoredProcedureRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const StoredProcedureRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(StoredProcedureRequest &a, StoredProcedureRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const StoredProcedureRequest& obj);
+
+
+class ListStoredProcedureRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  ListStoredProcedureRequest(const ListStoredProcedureRequest&);
+  ListStoredProcedureRequest& operator=(const ListStoredProcedureRequest&);
+  ListStoredProcedureRequest() : catName() {
+  }
+
+  virtual ~ListStoredProcedureRequest() noexcept;
+  std::string catName;
+
+  void __set_catName(const std::string& val);
+
+  bool operator == (const ListStoredProcedureRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    return true;
+  }
+  bool operator != (const ListStoredProcedureRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ListStoredProcedureRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ListStoredProcedureRequest &a, ListStoredProcedureRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const ListStoredProcedureRequest& obj);
+
 typedef struct _StoredProcedure__isset {
-  _StoredProcedure__isset() : name(false), dbName(false), ownerName(false), source(false), language(false), returnType(false), posParams(false) {}
+  _StoredProcedure__isset() : name(false), dbName(false), catName(false), ownerName(false), source(false), language(false), returnType(false), posParams(false) {}
   bool name :1;
   bool dbName :1;
+  bool catName :1;
   bool ownerName :1;
   bool source :1;
   bool language :1;
@@ -16717,12 +16804,13 @@ class StoredProcedure : public virtual ::apache::thrift::TBase {
 
   StoredProcedure(const StoredProcedure&);
   StoredProcedure& operator=(const StoredProcedure&);
-  StoredProcedure() : name(), dbName(), ownerName(), source(), language(), returnType() {
+  StoredProcedure() : name(), dbName(), catName(), ownerName(), source(), language(), returnType() {
   }
 
   virtual ~StoredProcedure() noexcept;
   std::string name;
   std::string dbName;
+  std::string catName;
   std::string ownerName;
   std::string source;
   std::string language;
@@ -16734,6 +16822,8 @@ class StoredProcedure : public virtual ::apache::thrift::TBase {
   void __set_name(const std::string& val);
 
   void __set_dbName(const std::string& val);
+
+  void __set_catName(const std::string& val);
 
   void __set_ownerName(const std::string& val);
 
@@ -16750,6 +16840,8 @@ class StoredProcedure : public virtual ::apache::thrift::TBase {
     if (!(name == rhs.name))
       return false;
     if (!(dbName == rhs.dbName))
+      return false;
+    if (!(catName == rhs.catName))
       return false;
     if (!(ownerName == rhs.ownerName))
       return false;

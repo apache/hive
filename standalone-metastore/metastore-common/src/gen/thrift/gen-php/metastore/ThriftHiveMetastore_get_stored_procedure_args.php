@@ -21,47 +21,24 @@ class ThriftHiveMetastore_get_stored_procedure_args
     static public $isValidate = false;
 
     static public $_TSPEC = array(
-        1 => array(
-            'var' => 'catName',
+        -1 => array(
+            'var' => 'request',
             'isRequired' => false,
-            'type' => TType::STRING,
-        ),
-        2 => array(
-            'var' => 'db',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ),
-        3 => array(
-            'var' => 'name',
-            'isRequired' => false,
-            'type' => TType::STRING,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\StoredProcedureRequest',
         ),
     );
 
     /**
-     * @var string
+     * @var \metastore\StoredProcedureRequest
      */
-    public $catName = null;
-    /**
-     * @var string
-     */
-    public $db = null;
-    /**
-     * @var string
-     */
-    public $name = null;
+    public $request = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['catName'])) {
-                $this->catName = $vals['catName'];
-            }
-            if (isset($vals['db'])) {
-                $this->db = $vals['db'];
-            }
-            if (isset($vals['name'])) {
-                $this->name = $vals['name'];
+            if (isset($vals['request'])) {
+                $this->request = $vals['request'];
             }
         }
     }
@@ -85,23 +62,10 @@ class ThriftHiveMetastore_get_stored_procedure_args
                 break;
             }
             switch ($fid) {
-                case 1:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->catName);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
-                case 2:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->db);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
-                case 3:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->name);
+                case -1:
+                    if ($ftype == TType::STRUCT) {
+                        $this->request = new \metastore\StoredProcedureRequest();
+                        $xfer += $this->request->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -120,19 +84,12 @@ class ThriftHiveMetastore_get_stored_procedure_args
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_stored_procedure_args');
-        if ($this->catName !== null) {
-            $xfer += $output->writeFieldBegin('catName', TType::STRING, 1);
-            $xfer += $output->writeString($this->catName);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->db !== null) {
-            $xfer += $output->writeFieldBegin('db', TType::STRING, 2);
-            $xfer += $output->writeString($this->db);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->name !== null) {
-            $xfer += $output->writeFieldBegin('name', TType::STRING, 3);
-            $xfer += $output->writeString($this->name);
+        if ($this->request !== null) {
+            if (!is_object($this->request)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('request', TType::STRUCT, -1);
+            $xfer += $this->request->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

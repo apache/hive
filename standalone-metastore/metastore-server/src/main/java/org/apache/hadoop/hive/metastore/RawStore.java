@@ -1868,11 +1868,11 @@ public interface RawStore extends Configurable {
 
   void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList);
 
-  void createOrUpdateStoredProcedure(String catName, StoredProcedure proc) throws NoSuchObjectException, MetaException;
+  void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException;
 
   StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException;
 
   void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException;
 
-  List<StoredProcedure> getAllStoredProcedures(String catName);
+  List<StoredProcedure> getAllStoredProcedures(ListStoredProcedureRequest request);
 }

@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -1156,6 +1157,7 @@ public class TestObjectStore {
             .build(conf));
 
     StoredProcedure input = new StoredProcedure();
+    input.setCatName("hive");
     input.setSource("print 'Hello world'");
     input.setOwnerName("user1");
     input.setName("toBeUpdated");
@@ -1165,9 +1167,9 @@ public class TestObjectStore {
             new PosParam("a", "String", false),
             new PosParam("b", "CURSOR", true)
     ));
-    objectStore.createOrUpdateStoredProcedure("hive", input);
+    objectStore.createOrUpdateStoredProcedure(input);
     input.setSource("print 'Hello world2'");
-    objectStore.createOrUpdateStoredProcedure("hive", input);
+    objectStore.createOrUpdateStoredProcedure(input);
 
     StoredProcedure retrieved = objectStore.getStoredProcedure("hive", DB1, "toBeUpdated");
     Assert.assertEquals(input, retrieved);
@@ -1187,6 +1189,7 @@ public class TestObjectStore {
 
     StoredProcedure input = new StoredProcedure();
     input.setSource("print 'Hello world'");
+    input.setCatName("hive");
     input.setOwnerName("user1");
     input.setName("greetings");
     input.setDbName(DB1);
@@ -1197,7 +1200,7 @@ public class TestObjectStore {
     p3.setScale(3);
     input.setPosParams(Arrays.asList(p1, p2, p3));
 
-    objectStore.createOrUpdateStoredProcedure("hive", input);
+    objectStore.createOrUpdateStoredProcedure(input);
     StoredProcedure retrieved = objectStore.getStoredProcedure("hive", DB1, "greetings");
 
     Assert.assertEquals(input, retrieved);
@@ -1218,11 +1221,12 @@ public class TestObjectStore {
 
     StoredProcedure toBeDeleted = new StoredProcedure();
     toBeDeleted.setSource("print 'Hello world'");
+    toBeDeleted.setCatName("hive");
     toBeDeleted.setOwnerName("user1");
     toBeDeleted.setName("greetings");
     toBeDeleted.setDbName(DB1);
     toBeDeleted.setLanguage("HPL/SQL");
-    objectStore.createOrUpdateStoredProcedure("hive", toBeDeleted);
+    objectStore.createOrUpdateStoredProcedure(toBeDeleted);
     Assert.assertNotNull(objectStore.getStoredProcedure("hive", DB1, "greetings"));
     objectStore.dropStoredProcedure("hive", DB1, "greetings");
     Assert.assertNull(objectStore.getStoredProcedure("hive", DB1, "greetings"));
@@ -1238,23 +1242,25 @@ public class TestObjectStore {
 
     StoredProcedure proc1 = new StoredProcedure();
     proc1.setSource("print 'Hello world'");
+    proc1.setCatName("hive");
     proc1.setOwnerName("user1");
     proc1.setName("proc1");
     proc1.setDbName(DB1);
     proc1.setLanguage("HPL/SQL");
     proc1.setPosParams(Collections.emptyList());
-    objectStore.createOrUpdateStoredProcedure("hive", proc1);
+    objectStore.createOrUpdateStoredProcedure(proc1);
 
     StoredProcedure proc2 = new StoredProcedure();
     proc2.setSource("print 'Hello world'");
+    proc2.setCatName("hive");
     proc2.setOwnerName("user2");
     proc2.setName("proc2");
     proc2.setDbName(DB1);
     proc2.setLanguage("HPL/SQL");
     proc2.setPosParams(Arrays.asList(new PosParam("p1", "String", false)));
-    objectStore.createOrUpdateStoredProcedure("hive", proc2);
+    objectStore.createOrUpdateStoredProcedure(proc2);
 
-    List<StoredProcedure> result = objectStore.getAllStoredProcedures("hive");
+    List<StoredProcedure> result = objectStore.getAllStoredProcedures(new ListStoredProcedureRequest("hive"));
     Assert.assertEquals(2, result.size());
     assertThat(result, hasItems(proc1, proc2));
   }

@@ -32,26 +32,31 @@ class StoredProcedure
             'type' => TType::STRING,
         ),
         3 => array(
-            'var' => 'ownerName',
+            'var' => 'catName',
             'isRequired' => false,
             'type' => TType::STRING,
         ),
         4 => array(
-            'var' => 'source',
+            'var' => 'ownerName',
             'isRequired' => false,
             'type' => TType::STRING,
         ),
         5 => array(
-            'var' => 'language',
+            'var' => 'source',
             'isRequired' => false,
             'type' => TType::STRING,
         ),
         6 => array(
-            'var' => 'returnType',
+            'var' => 'language',
             'isRequired' => false,
             'type' => TType::STRING,
         ),
         7 => array(
+            'var' => 'returnType',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
+        8 => array(
             'var' => 'posParams',
             'isRequired' => false,
             'type' => TType::LST,
@@ -71,6 +76,10 @@ class StoredProcedure
      * @var string
      */
     public $dbName = null;
+    /**
+     * @var string
+     */
+    public $catName = null;
     /**
      * @var string
      */
@@ -100,6 +109,9 @@ class StoredProcedure
             }
             if (isset($vals['dbName'])) {
                 $this->dbName = $vals['dbName'];
+            }
+            if (isset($vals['catName'])) {
+                $this->catName = $vals['catName'];
             }
             if (isset($vals['ownerName'])) {
                 $this->ownerName = $vals['ownerName'];
@@ -154,33 +166,40 @@ class StoredProcedure
                     break;
                 case 3:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->ownerName);
+                        $xfer += $input->readString($this->catName);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 4:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->source);
+                        $xfer += $input->readString($this->ownerName);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 5:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->language);
+                        $xfer += $input->readString($this->source);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 6:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->returnType);
+                        $xfer += $input->readString($this->language);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
                     break;
                 case 7:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->returnType);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 8:
                     if ($ftype == TType::LST) {
                         $this->posParams = array();
                         $_size1183 = 0;
@@ -221,23 +240,28 @@ class StoredProcedure
             $xfer += $output->writeString($this->dbName);
             $xfer += $output->writeFieldEnd();
         }
+        if ($this->catName !== null) {
+            $xfer += $output->writeFieldBegin('catName', TType::STRING, 3);
+            $xfer += $output->writeString($this->catName);
+            $xfer += $output->writeFieldEnd();
+        }
         if ($this->ownerName !== null) {
-            $xfer += $output->writeFieldBegin('ownerName', TType::STRING, 3);
+            $xfer += $output->writeFieldBegin('ownerName', TType::STRING, 4);
             $xfer += $output->writeString($this->ownerName);
             $xfer += $output->writeFieldEnd();
         }
         if ($this->source !== null) {
-            $xfer += $output->writeFieldBegin('source', TType::STRING, 4);
+            $xfer += $output->writeFieldBegin('source', TType::STRING, 5);
             $xfer += $output->writeString($this->source);
             $xfer += $output->writeFieldEnd();
         }
         if ($this->language !== null) {
-            $xfer += $output->writeFieldBegin('language', TType::STRING, 5);
+            $xfer += $output->writeFieldBegin('language', TType::STRING, 6);
             $xfer += $output->writeString($this->language);
             $xfer += $output->writeFieldEnd();
         }
         if ($this->returnType !== null) {
-            $xfer += $output->writeFieldBegin('returnType', TType::STRING, 6);
+            $xfer += $output->writeFieldBegin('returnType', TType::STRING, 7);
             $xfer += $output->writeString($this->returnType);
             $xfer += $output->writeFieldEnd();
         }
@@ -245,7 +269,7 @@ class StoredProcedure
             if (!is_array($this->posParams)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('posParams', TType::LST, 7);
+            $xfer += $output->writeFieldBegin('posParams', TType::LST, 8);
             $output->writeListBegin(TType::STRUCT, count($this->posParams));
             foreach ($this->posParams as $iter1189) {
                 $xfer += $iter1189->write($output);

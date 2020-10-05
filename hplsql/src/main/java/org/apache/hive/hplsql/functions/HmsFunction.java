@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.PosParam;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
+import org.apache.hadoop.hive.metastore.api.StoredProcedureRequest;
 import org.apache.hive.hplsql.Exec;
 import org.apache.hive.hplsql.HplsqlLexer;
 import org.apache.hive.hplsql.HplsqlParser;
@@ -101,7 +102,7 @@ public class HmsFunction implements Function {
   private Optional<StoredProcedure> getProcFromHMS(String name) {
     try {
       Database db = currentDatabase();
-      return Optional.of(msc.getStoredProcedure(db.getCatalogName(), db.getName(), name));
+      return Optional.of(msc.getStoredProcedure(new StoredProcedureRequest(db.getCatalogName(), db.getName(), name)));
     } catch (NoSuchObjectException e) {
       return Optional.empty();
     } catch (TException e) {
@@ -181,7 +182,7 @@ public class HmsFunction implements Function {
     Database db = currentDatabase();
     StoredProcedure proc = newStoredProc(name, formalParameters(ctx), returnType(ctx), body(ctx), db);
     cache.put(name, proc);
-    saveStoredProcInHMS(db, proc);
+    saveStoredProcInHMS(proc);
   }
 
   private String body(HplsqlParser.Create_function_stmtContext ctx) {
@@ -207,7 +208,7 @@ public class HmsFunction implements Function {
     Database db = currentDatabase();
     StoredProcedure proc = newStoredProc(name, formalParameters(ctx), null, Exec.getFormattedText(ctx.proc_block()), db);
     cache.put(name, proc);
-    saveStoredProcInHMS(db, proc);
+    saveStoredProcInHMS(proc);
   }
 
   private Database currentDatabase() {
@@ -218,9 +219,9 @@ public class HmsFunction implements Function {
     }
   }
 
-  private void saveStoredProcInHMS(Database db, StoredProcedure proc) {
+  private void saveStoredProcInHMS(StoredProcedure proc) {
     try {
-      msc.createStoredProcedure(db.getCatalogName(), proc);
+      msc.createStoredProcedure(proc);
     } catch (TException e) {
       throw new RuntimeException(e);
     }
@@ -228,6 +229,7 @@ public class HmsFunction implements Function {
 
   private StoredProcedure newStoredProc(String name, List<PosParam> formalParams, String returnType, String source, Database db) {
     StoredProcedure storedProcedure = new StoredProcedure();
+    storedProcedure.setCatName(db.getCatalogName());
     storedProcedure.setName(name);
     storedProcedure.setLanguage(LANGUAGE);
     storedProcedure.setOwnerName(db.getOwnerName()); // TODO

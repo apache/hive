@@ -2119,39 +2119,34 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def create_stored_procedure(self, catName, proc):
+    def create_stored_procedure(self, proc):
         """
         Parameters:
-         - catName
          - proc
 
         """
         pass
 
-    def get_stored_procedure(self, catName, db, name):
+    def get_stored_procedure(self, request):
         """
         Parameters:
-         - catName
-         - db
-         - name
+         - request
 
         """
         pass
 
-    def drop_stored_procedure(self, catName, dbName, funcName):
+    def drop_stored_procedure(self, request):
         """
         Parameters:
-         - catName
-         - dbName
-         - funcName
+         - request
 
         """
         pass
 
-    def get_all_stored_procedures(self, catName):
+    def get_all_stored_procedures(self, request):
         """
         Parameters:
-         - catName
+         - request
 
         """
         pass
@@ -11141,20 +11136,18 @@ class Client(fb303.FacebookService.Client, Iface):
             return result.success
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_open_txns_req failed: unknown result")
 
-    def create_stored_procedure(self, catName, proc):
+    def create_stored_procedure(self, proc):
         """
         Parameters:
-         - catName
          - proc
 
         """
-        self.send_create_stored_procedure(catName, proc)
+        self.send_create_stored_procedure(proc)
         self.recv_create_stored_procedure()
 
-    def send_create_stored_procedure(self, catName, proc):
+    def send_create_stored_procedure(self, proc):
         self._oprot.writeMessageBegin('create_stored_procedure', TMessageType.CALL, self._seqid)
         args = create_stored_procedure_args()
-        args.catName = catName
         args.proc = proc
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
@@ -11177,23 +11170,19 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o2
         return
 
-    def get_stored_procedure(self, catName, db, name):
+    def get_stored_procedure(self, request):
         """
         Parameters:
-         - catName
-         - db
-         - name
+         - request
 
         """
-        self.send_get_stored_procedure(catName, db, name)
+        self.send_get_stored_procedure(request)
         return self.recv_get_stored_procedure()
 
-    def send_get_stored_procedure(self, catName, db, name):
+    def send_get_stored_procedure(self, request):
         self._oprot.writeMessageBegin('get_stored_procedure', TMessageType.CALL, self._seqid)
         args = get_stored_procedure_args()
-        args.catName = catName
-        args.db = db
-        args.name = name
+        args.request = request
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -11217,23 +11206,19 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o2
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_stored_procedure failed: unknown result")
 
-    def drop_stored_procedure(self, catName, dbName, funcName):
+    def drop_stored_procedure(self, request):
         """
         Parameters:
-         - catName
-         - dbName
-         - funcName
+         - request
 
         """
-        self.send_drop_stored_procedure(catName, dbName, funcName)
+        self.send_drop_stored_procedure(request)
         self.recv_drop_stored_procedure()
 
-    def send_drop_stored_procedure(self, catName, dbName, funcName):
+    def send_drop_stored_procedure(self, request):
         self._oprot.writeMessageBegin('drop_stored_procedure', TMessageType.CALL, self._seqid)
         args = drop_stored_procedure_args()
-        args.catName = catName
-        args.dbName = dbName
-        args.funcName = funcName
+        args.request = request
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -11255,19 +11240,19 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o2
         return
 
-    def get_all_stored_procedures(self, catName):
+    def get_all_stored_procedures(self, request):
         """
         Parameters:
-         - catName
+         - request
 
         """
-        self.send_get_all_stored_procedures(catName)
+        self.send_get_all_stored_procedures(request)
         return self.recv_get_all_stored_procedures()
 
-    def send_get_all_stored_procedures(self, catName):
+    def send_get_all_stored_procedures(self, request):
         self._oprot.writeMessageBegin('get_all_stored_procedures', TMessageType.CALL, self._seqid)
         args = get_all_stored_procedures_args()
-        args.catName = catName
+        args.request = request
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
@@ -18624,7 +18609,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         iprot.readMessageEnd()
         result = create_stored_procedure_result()
         try:
-            self._handler.create_stored_procedure(args.catName, args.proc)
+            self._handler.create_stored_procedure(args.proc)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -18653,7 +18638,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         iprot.readMessageEnd()
         result = get_stored_procedure_result()
         try:
-            result.success = self._handler.get_stored_procedure(args.catName, args.db, args.name)
+            result.success = self._handler.get_stored_procedure(args.request)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -18682,7 +18667,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         iprot.readMessageEnd()
         result = drop_stored_procedure_result()
         try:
-            self._handler.drop_stored_procedure(args.catName, args.dbName, args.funcName)
+            self._handler.drop_stored_procedure(args.request)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -18711,7 +18696,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         iprot.readMessageEnd()
         result = get_all_stored_procedures_result()
         try:
-            result.success = self._handler.get_all_stored_procedures(args.catName)
+            result.success = self._handler.get_all_stored_procedures(args.request)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -57150,14 +57135,12 @@ get_open_txns_req_result.thrift_spec = (
 class create_stored_procedure_args(object):
     """
     Attributes:
-     - catName
      - proc
 
     """
 
 
-    def __init__(self, catName=None, proc=None,):
-        self.catName = catName
+    def __init__(self, proc=None,):
         self.proc = proc
 
     def read(self, iprot):
@@ -57170,11 +57153,6 @@ class create_stored_procedure_args(object):
             if ftype == TType.STOP:
                 break
             if fid == 1:
-                if ftype == TType.STRING:
-                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
                 if ftype == TType.STRUCT:
                     self.proc = StoredProcedure()
                     self.proc.read(iprot)
@@ -57190,12 +57168,8 @@ class create_stored_procedure_args(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('create_stored_procedure_args')
-        if self.catName is not None:
-            oprot.writeFieldBegin('catName', TType.STRING, 1)
-            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
-            oprot.writeFieldEnd()
         if self.proc is not None:
-            oprot.writeFieldBegin('proc', TType.STRUCT, 2)
+            oprot.writeFieldBegin('proc', TType.STRUCT, 1)
             self.proc.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -57217,8 +57191,7 @@ class create_stored_procedure_args(object):
 all_structs.append(create_stored_procedure_args)
 create_stored_procedure_args.thrift_spec = (
     None,  # 0
-    (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
-    (2, TType.STRUCT, 'proc', [StoredProcedure, None], None, ),  # 2
+    (1, TType.STRUCT, 'proc', [StoredProcedure, None], None, ),  # 1
 )
 
 
@@ -57301,17 +57274,13 @@ create_stored_procedure_result.thrift_spec = (
 class get_stored_procedure_args(object):
     """
     Attributes:
-     - catName
-     - db
-     - name
+     - request
 
     """
 
 
-    def __init__(self, catName=None, db=None, name=None,):
-        self.catName = catName
-        self.db = db
-        self.name = name
+    def __init__(self, request=None,):
+        self.request = request
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -57322,19 +57291,10 @@ class get_stored_procedure_args(object):
             (fname, ftype, fid) = iprot.readFieldBegin()
             if ftype == TType.STOP:
                 break
-            if fid == 1:
-                if ftype == TType.STRING:
-                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRING:
-                    self.db = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 3:
-                if ftype == TType.STRING:
-                    self.name = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+            if fid == -1:
+                if ftype == TType.STRUCT:
+                    self.request = StoredProcedureRequest()
+                    self.request.read(iprot)
                 else:
                     iprot.skip(ftype)
             else:
@@ -57347,17 +57307,9 @@ class get_stored_procedure_args(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('get_stored_procedure_args')
-        if self.catName is not None:
-            oprot.writeFieldBegin('catName', TType.STRING, 1)
-            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
-            oprot.writeFieldEnd()
-        if self.db is not None:
-            oprot.writeFieldBegin('db', TType.STRING, 2)
-            oprot.writeString(self.db.encode('utf-8') if sys.version_info[0] == 2 else self.db)
-            oprot.writeFieldEnd()
-        if self.name is not None:
-            oprot.writeFieldBegin('name', TType.STRING, 3)
-            oprot.writeString(self.name.encode('utf-8') if sys.version_info[0] == 2 else self.name)
+        if self.request is not None:
+            oprot.writeFieldBegin('request', TType.STRUCT, -1)
+            self.request.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -57376,12 +57328,7 @@ class get_stored_procedure_args(object):
     def __ne__(self, other):
         return not (self == other)
 all_structs.append(get_stored_procedure_args)
-get_stored_procedure_args.thrift_spec = (
-    None,  # 0
-    (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
-    (2, TType.STRING, 'db', 'UTF8', None, ),  # 2
-    (3, TType.STRING, 'name', 'UTF8', None, ),  # 3
-)
+get_stored_procedure_args.thrift_spec = ()
 
 
 class get_stored_procedure_result(object):
@@ -57475,17 +57422,13 @@ get_stored_procedure_result.thrift_spec = (
 class drop_stored_procedure_args(object):
     """
     Attributes:
-     - catName
-     - dbName
-     - funcName
+     - request
 
     """
 
 
-    def __init__(self, catName=None, dbName=None, funcName=None,):
-        self.catName = catName
-        self.dbName = dbName
-        self.funcName = funcName
+    def __init__(self, request=None,):
+        self.request = request
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -57496,19 +57439,10 @@ class drop_stored_procedure_args(object):
             (fname, ftype, fid) = iprot.readFieldBegin()
             if ftype == TType.STOP:
                 break
-            if fid == 1:
-                if ftype == TType.STRING:
-                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 2:
-                if ftype == TType.STRING:
-                    self.dbName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                else:
-                    iprot.skip(ftype)
-            elif fid == 3:
-                if ftype == TType.STRING:
-                    self.funcName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+            if fid == -1:
+                if ftype == TType.STRUCT:
+                    self.request = StoredProcedureRequest()
+                    self.request.read(iprot)
                 else:
                     iprot.skip(ftype)
             else:
@@ -57521,17 +57455,9 @@ class drop_stored_procedure_args(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('drop_stored_procedure_args')
-        if self.catName is not None:
-            oprot.writeFieldBegin('catName', TType.STRING, 1)
-            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
-            oprot.writeFieldEnd()
-        if self.dbName is not None:
-            oprot.writeFieldBegin('dbName', TType.STRING, 2)
-            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
-            oprot.writeFieldEnd()
-        if self.funcName is not None:
-            oprot.writeFieldBegin('funcName', TType.STRING, 3)
-            oprot.writeString(self.funcName.encode('utf-8') if sys.version_info[0] == 2 else self.funcName)
+        if self.request is not None:
+            oprot.writeFieldBegin('request', TType.STRUCT, -1)
+            self.request.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -57550,12 +57476,7 @@ class drop_stored_procedure_args(object):
     def __ne__(self, other):
         return not (self == other)
 all_structs.append(drop_stored_procedure_args)
-drop_stored_procedure_args.thrift_spec = (
-    None,  # 0
-    (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
-    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
-    (3, TType.STRING, 'funcName', 'UTF8', None, ),  # 3
-)
+drop_stored_procedure_args.thrift_spec = ()
 
 
 class drop_stored_procedure_result(object):
@@ -57637,13 +57558,13 @@ drop_stored_procedure_result.thrift_spec = (
 class get_all_stored_procedures_args(object):
     """
     Attributes:
-     - catName
+     - request
 
     """
 
 
-    def __init__(self, catName=None,):
-        self.catName = catName
+    def __init__(self, request=None,):
+        self.request = request
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -57655,8 +57576,9 @@ class get_all_stored_procedures_args(object):
             if ftype == TType.STOP:
                 break
             if fid == 1:
-                if ftype == TType.STRING:
-                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                if ftype == TType.STRUCT:
+                    self.request = ListStoredProcedureRequest()
+                    self.request.read(iprot)
                 else:
                     iprot.skip(ftype)
             else:
@@ -57669,9 +57591,9 @@ class get_all_stored_procedures_args(object):
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
         oprot.writeStructBegin('get_all_stored_procedures_args')
-        if self.catName is not None:
-            oprot.writeFieldBegin('catName', TType.STRING, 1)
-            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+        if self.request is not None:
+            oprot.writeFieldBegin('request', TType.STRUCT, 1)
+            self.request.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -57692,7 +57614,7 @@ class get_all_stored_procedures_args(object):
 all_structs.append(get_all_stored_procedures_args)
 get_all_stored_procedures_args.thrift_spec = (
     None,  # 0
-    (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
+    (1, TType.STRUCT, 'request', [ListStoredProcedureRequest, None], None, ),  # 1
 )
 
 

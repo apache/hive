@@ -37,8 +37,7 @@ public class MStoredProc {
   private String language = "HPL/SQL";
   private String returnType = null;
   private int createTime = (int)(System.currentTimeMillis() / 1000);
-  private int lastAccessTime = (int)(System.currentTimeMillis() / 1000);
-  public static final int MAX_SOURCE_SIZE = 640 * 1024;
+  public static final int MAX_SOURCE_SIZE = 1073741823;
 
   public MStoredProc() {}
 

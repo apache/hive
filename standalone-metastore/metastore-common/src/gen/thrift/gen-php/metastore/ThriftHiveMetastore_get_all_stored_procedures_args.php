@@ -22,22 +22,23 @@ class ThriftHiveMetastore_get_all_stored_procedures_args
 
     static public $_TSPEC = array(
         1 => array(
-            'var' => 'catName',
+            'var' => 'request',
             'isRequired' => false,
-            'type' => TType::STRING,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\ListStoredProcedureRequest',
         ),
     );
 
     /**
-     * @var string
+     * @var \metastore\ListStoredProcedureRequest
      */
-    public $catName = null;
+    public $request = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['catName'])) {
-                $this->catName = $vals['catName'];
+            if (isset($vals['request'])) {
+                $this->request = $vals['request'];
             }
         }
     }
@@ -62,8 +63,9 @@ class ThriftHiveMetastore_get_all_stored_procedures_args
             }
             switch ($fid) {
                 case 1:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->catName);
+                    if ($ftype == TType::STRUCT) {
+                        $this->request = new \metastore\ListStoredProcedureRequest();
+                        $xfer += $this->request->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -82,9 +84,12 @@ class ThriftHiveMetastore_get_all_stored_procedures_args
     {
         $xfer = 0;
         $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_all_stored_procedures_args');
-        if ($this->catName !== null) {
-            $xfer += $output->writeFieldBegin('catName', TType::STRING, 1);
-            $xfer += $output->writeString($this->catName);
+        if ($this->request !== null) {
+            if (!is_object($this->request)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('request', TType::STRUCT, 1);
+            $xfer += $this->request->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
