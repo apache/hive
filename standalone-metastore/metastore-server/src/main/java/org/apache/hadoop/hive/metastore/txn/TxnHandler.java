@@ -3796,8 +3796,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           where += "\"CTC_TABLE\" = " + quoteString(normalizeCase(oldTabName)) + " AND ";
         }
         if(oldDbName != null) {
-          update += "CTC_DATABASE = " + quoteString(normalizeCase(newDbName));
-          where += "CTC_DATABASE = " + quoteString(normalizeCase(oldDbName));
+          update += "\"CTC_DATABASE\" = " + quoteString(normalizeCase(newDbName));
+          where += "\"CTC_DATABASE\" = " + quoteString(normalizeCase(oldDbName));
         }
         queries.add(update + where);
 
