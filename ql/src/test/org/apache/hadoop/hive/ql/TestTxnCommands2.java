@@ -149,6 +149,7 @@ public class TestTxnCommands2 {
     //TestTxnCommands2WithSplitUpdateAndVectorization has the vectorized version
     //of these tests.
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
 
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.prepDb(hiveConf);
@@ -2160,7 +2161,7 @@ public class TestTxnCommands2 {
     runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MINOR'");
     // The worker should remove the subdir for aborted transaction
     runWorker(hiveConf);
-    verifyDeltaDirAndResult(2, Table.MMTBL.toString(), "", resultData2);
+    verifyDeltaDirAndResult(3, Table.MMTBL.toString(), "", resultData2);
     verifyBaseDirAndResult(0, Table.MMTBL.toString(), "", resultData2);
     // 5. Run Cleaner. Shouldn't impact anything.
     runCleaner(hiveConf);
@@ -2181,9 +2182,9 @@ public class TestTxnCommands2 {
 
     // 9. Perform a MAJOR compaction, expectation is it should remove aborted base dir
     runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MAJOR'");
-    verifyDeltaDirAndResult(4, Table.MMTBL.toString(), "", resultData3);
-    runWorker(hiveConf);
     verifyDeltaDirAndResult(3, Table.MMTBL.toString(), "", resultData3);
+    runWorker(hiveConf);
+    verifyDeltaDirAndResult(2, Table.MMTBL.toString(), "", resultData3);
     verifyBaseDirAndResult(1, Table.MMTBL.toString(), "", resultData3);
     runCleaner(hiveConf);
     verifyDeltaDirAndResult(0, Table.MMTBL.toString(), "", resultData3);
@@ -2220,7 +2221,7 @@ public class TestTxnCommands2 {
     runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MINOR'");
     // The worker should remove the subdir for aborted transaction
     runWorker(hiveConf);
-    verifyDeltaDirAndResult(2, Table.MMTBL.toString(), "", resultData1);
+    verifyDeltaDirAndResult(3, Table.MMTBL.toString(), "", resultData1);
     verifyBaseDirAndResult(0, Table.MMTBL.toString(), "", resultData1);
     // Verify query result
     List<String> rs = runStatementOnDriver("select a,b from " + Table.MMTBL + " order by a");
@@ -2233,18 +2234,18 @@ public class TestTxnCommands2 {
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, true);
     runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(9,10)");
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEROLLBACKTXN, false);
-    verifyDeltaDirAndResult(4, Table.MMTBL.toString(), "", resultData3);
+    verifyDeltaDirAndResult(5, Table.MMTBL.toString(), "", resultData3);
 
     // 6. Perform a MAJOR compaction, expectation is it should remove aborted delta dir
     runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MAJOR'");
     runWorker(hiveConf);
-    verifyDeltaDirAndResult(3, Table.MMTBL.toString(), "", resultData3);
+    verifyDeltaDirAndResult(4, Table.MMTBL.toString(), "", resultData3);
     verifyBaseDirAndResult(1, Table.MMTBL.toString(), "", resultData3);
 
     // 7. Run one more Major compaction this should not have any affect
     runStatementOnDriver("alter table "+ Table.MMTBL + " compact 'MAJOR'");
     runWorker(hiveConf);
-    verifyDeltaDirAndResult(3, Table.MMTBL.toString(), "", resultData3);
+    verifyDeltaDirAndResult(4, Table.MMTBL.toString(), "", resultData3);
     verifyBaseDirAndResult(1, Table.MMTBL.toString(), "", resultData3);
 
     runCleaner(hiveConf);
