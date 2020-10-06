@@ -1878,7 +1878,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       String queryString = ctx.getTokenRewriteStream().toString(ast.getTokenStartIndex(), ast.getTokenStopIndex());
       RelOptMaterialization relOptMaterialization = MaterializedViewCache.INSTANCE.lookup(queryString);
       if (relOptMaterialization != null) {
-        return relOptMaterialization.queryRel;
+        return relOptMaterialization.tableRel;
       }
 
       // Create executor
