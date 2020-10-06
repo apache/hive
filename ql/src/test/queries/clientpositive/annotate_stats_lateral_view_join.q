@@ -19,18 +19,21 @@ set hive.stats.udtf.factor=10;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
 explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c;
+explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d;
 
 -- 0.5x tests
 set hive.stats.udtf.factor=0.5;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
 explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c;
+explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d;
 
 -- Default behaviour tests
 set hive.stats.udtf.factor=1;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
 explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c;
+explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d;
 
 -- without column stats
 set hive.stats.fetch.column.stats=false;
@@ -40,15 +43,18 @@ set hive.stats.udtf.factor=10;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
 explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c;
+explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d;
 
 -- 0.5x tests
 set hive.stats.udtf.factor=0.5;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
 explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c;
+explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d;
 
 -- Default behaviour tests
 set hive.stats.udtf.factor=1;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
 explain select a.id, name as n, b.* from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b;
 explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c;
+explain select * from annotate_stats_lateral_view_join_test a lateral view explode(array(1, 2, 3)) b lateral view explode(array(1)) c lateral view explode(array(1, 2)) d;
