@@ -3,6 +3,7 @@
 --! qt:dataset:lineitem
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=false;
+set hive.optimize.shared.work.dppunion=false;
 -- SORT_QUERY_RESULTS
 
 create table tnull_n0(i int, c char(2));
