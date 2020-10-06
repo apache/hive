@@ -338,13 +338,11 @@ public class Cleaner extends MetaStoreCompactorThread {
 
   private void removeFilesClean(String rootLocation, CompactionInfo ci) throws IOException, HiveException {
     List<Path> deleted = AcidUtils.deleteDeltaDirectories(new Path(rootLocation), conf, ci.writeIds);
-
     if (deleted.size() == 0) {
       LOG.info("No files were deleted in the clean abort compaction: " + idWatermark(ci));
       return;
     }
     Database db = Hive.get().getDatabase(ci.dbname);
-
     for (Path deadPath : deleted) {
       LOG.info("Deleted path " + deadPath.toString());
       if (ReplChangeManager.isSourceOfReplication(db)) {

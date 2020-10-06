@@ -2804,7 +2804,8 @@ public class AcidUtils {
 
   public static Long extractWriteId(Path file) {
     String fileName = file.getName();
-    if (!fileName.startsWith(DELTA_PREFIX) && !fileName.startsWith(BASE_PREFIX)) {
+    if (Stream.of(BASE_PREFIX, DELTA_PREFIX, DELETE_DELTA_PREFIX)
+          .noneMatch(fileName::startsWith)) {
       LOG.trace("Cannot extract write ID for a MM table: {}", file);
       return null;
     }
@@ -2814,9 +2815,10 @@ public class AcidUtils {
           + " (" + Arrays.toString(parts) + ")");
       return null;
     }
-    long writeId = -1;
+    long writeId;
     try {
-      writeId = Long.parseLong(parts[1]);
+      writeId = Long.parseLong(isDeleteDelta(file) ?
+          parts[2] : parts[1]);
     } catch (NumberFormatException ex) {
       LOG.debug("Cannot extract write ID for a MM table: " + file
           + "; parsing " + parts[1] + " got " + ex.getMessage());

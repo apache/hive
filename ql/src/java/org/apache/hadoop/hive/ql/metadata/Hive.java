@@ -2766,9 +2766,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       final boolean resetStatistics, final AcidUtils.Operation operation,
       boolean isInsertOverwrite, boolean isDirectInsert) throws HiveException {
 
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) && HiveConf.getBoolVar(conf, ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION)) {
-      throw new HiveException(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION.name() + "=true");
-    }
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
 
@@ -2955,7 +2952,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       LOG.debug("Cancelling " + futures.size() + " dynamic loading tasks");
       executor.shutdownNow();
     }
-
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) && HiveConf.getBoolVar(conf, ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION)) {
+      throw new HiveException(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION.name() + "=true");
+    }
     try {
       if (isTxnTable) {
         List<String> partNames =
