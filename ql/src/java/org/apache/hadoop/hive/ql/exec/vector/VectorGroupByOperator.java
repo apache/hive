@@ -25,6 +25,7 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -316,7 +317,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
    */
    final class ProcessingModeHashAggregate extends ProcessingModeBase {
 
-    private Queue<KeyWrapper> reusableKeyWrapperBuffer;
+    private Deque<KeyWrapper> reusableKeyWrapperBuffer;
 
     /**
      * The global key-aggregation hash map.
@@ -324,8 +325,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     @VisibleForTesting
     Map<KeyWrapper, VectorAggregationBufferRow> mapKeysAggregationBuffers;
 
-    private Queue<VectorAggregationBufferRow> reusableAggregationBufferRows =
-        new ArrayDeque<>(VectorizedRowBatch.DEFAULT_SIZE);
+    private Queue<VectorAggregationBufferRow> reusableAggregationBufferRows;
 
     /**
      * Total per hashtable entry fixed memory (does not depend on key/agg values).
@@ -427,8 +427,12 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       computeMemoryLimits();
       LOG.debug("using hash aggregation processing mode");
 
+      int reusableBufferSize = (int) (maxHtEntries * percentEntriesToFlush);
+
+      reusableAggregationBufferRows = new ArrayDeque<>(reusableBufferSize);
+
       if (keyWrappersBatch.getVectorHashKeyWrappers()[0] instanceof VectorHashKeyWrapperGeneral) {
-        reusableKeyWrapperBuffer = new ArrayDeque<>(VectorizedRowBatch.DEFAULT_SIZE);
+        reusableKeyWrapperBuffer = new ArrayDeque<>(reusableBufferSize);
       }
     }
 
@@ -582,7 +586,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
 
     private KeyWrapper cloneKeyWrapper(VectorHashKeyWrapperBase from) {
       if (reusableKeyWrapperBuffer != null && reusableKeyWrapperBuffer.size() > 0) {
-        KeyWrapper keyWrapper = reusableKeyWrapperBuffer.poll();
+        VectorHashKeyWrapperGeneral keyWrapperHolder = (VectorHashKeyWrapperGeneral) reusableKeyWrapperBuffer.remove();
+        VectorHashKeyWrapperGeneral keyWrapper = new VectorHashKeyWrapperGeneral(keyWrapperHolder);
         from.copyKey(keyWrapper);
         return keyWrapper;
       } else {
@@ -680,10 +685,12 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           totalAccessCount -= bufferRow.getAccessCount();
           reusableAggregationBufferRows.add(bufferRow);
           bufferRow.resetAccessCount();
-          if (reusableKeyWrapperBuffer != null) {
-            reusableKeyWrapperBuffer.add(pair.getKey());
-          }
           iter.remove();
+          if (reusableKeyWrapperBuffer != null) {
+            VectorHashKeyWrapperGeneral reclaimedKW = (VectorHashKeyWrapperGeneral) pair.getKey();
+            reclaimedKW.cleanupForReuse();
+            reusableKeyWrapperBuffer.push(reclaimedKW);
+          }
           --numEntriesHashTable;
           if (++entriesFlushed >= entriesToFlush) {
             break;

@@ -112,7 +112,31 @@ public class VectorHashKeyWrapperGeneral extends VectorHashKeyWrapperBase {
     isNull = new boolean[keyCount];
   }
 
-  private VectorHashKeyWrapperGeneral() {
+  public VectorHashKeyWrapperGeneral(VectorHashKeyWrapperGeneral other) {
+    super();
+    byteValues = other.byteValues;
+    hashcode = other.hashcode;
+    longValues = other.longValues;
+    doubleValues = other.doubleValues;
+
+    byteValues = other.byteValues;
+    byteStarts = other.byteStarts;
+    byteLengths = other.byteLengths;
+
+    decimalValues = other.decimalValues;
+
+    timestampValues = other.timestampValues;
+
+    intervalDayTimeValues = other.intervalDayTimeValues;
+
+    isNull = other.isNull;
+
+    hashCtx = other.hashCtx;
+
+    keyCount = other.keyCount;
+  }
+
+  public VectorHashKeyWrapperGeneral() {
     super();
   }
 
@@ -259,34 +283,26 @@ public class VectorHashKeyWrapperGeneral extends VectorHashKeyWrapperBase {
     return clone;
   }
 
-  private long[] copyInPlaceOrAllocate(long[] from, long[] to) {
+  private static long[] copyInPlaceOrAllocateLong(long[] from, long[] to) {
     if (from.length > 0) {
-      if (to != null && to.length == from.length) {
-        System.arraycopy(from, 0, to, 0, from.length);
-        return to;
-      } else {
-        return from.clone();
-      }
+      System.arraycopy(from, 0, to, 0, from.length);
+      return to;
     } else {
       return EMPTY_LONG_ARRAY;
     }
   }
 
-  private double[] copyInPlaceOrAllocate(double[] from, double[] to) {
+  private static double[] copyInPlaceOrAllocateDouble(double[] from, double[] to) {
     if (from.length > 0) {
-      if (to != null && to.length == from.length) {
-        System.arraycopy(from, 0, to, 0, from.length);
-        return to;
-      } else {
-        return from.clone();
-      }
+      System.arraycopy(from, 0, to, 0, from.length);
+      return to;
     } else {
       return EMPTY_DOUBLE_ARRAY;
     }
   }
 
-  private boolean[] copyInPlaceOrAllocate(boolean[] from, boolean[] to) {
-    if (to != null && to.length == from.length) {
+  private static boolean[] copyInPlaceOrAllocateNull(boolean[] from, boolean[] to) {
+    if (from.length > 0) {
       System.arraycopy(from, 0, to, 0, from.length);
       return to;
     } else {
@@ -294,11 +310,8 @@ public class VectorHashKeyWrapperGeneral extends VectorHashKeyWrapperBase {
     }
   }
 
-  private HiveDecimalWritable[] copyInPlaceOrAllocate(HiveDecimalWritable[] from, HiveDecimalWritable[] to) {
+  private static HiveDecimalWritable[] copyInPlaceOrAllocateDecimal(HiveDecimalWritable[] from, HiveDecimalWritable[] to) {
     if (from.length > 0) {
-      if (to == null || to.length != from.length) {
-        to = new HiveDecimalWritable[from.length];
-      }
       for (int i = 0; i < from.length; i++) {
         to[i] = new HiveDecimalWritable(from[i]);
       }
@@ -308,11 +321,8 @@ public class VectorHashKeyWrapperGeneral extends VectorHashKeyWrapperBase {
     }
   }
 
-  private Timestamp[] copyInPlaceOrAllocate(Timestamp[] from, Timestamp[] to) {
+  private static Timestamp[] copyInPlaceOrAllocateTimestamp(Timestamp[] from, Timestamp[] to) {
     if (from.length > 0) {
-      if (to == null || to.length != from.length) {
-        to = new Timestamp[from.length];
-      }
       for (int i = 0; i < from.length; i++) {
         to[i] = (Timestamp) from[i].clone();
       }
@@ -322,64 +332,8 @@ public class VectorHashKeyWrapperGeneral extends VectorHashKeyWrapperBase {
     }
   }
 
-  @Override
-  public void copyKey(KeyWrapper oldWrapper) {
-    VectorHashKeyWrapperGeneral clone = (VectorHashKeyWrapperGeneral) oldWrapper;
-    clone.hashCtx = hashCtx;
-    clone.keyCount = keyCount;
-    clone.longValues = copyInPlaceOrAllocate(longValues, clone.longValues);
-    clone.doubleValues = copyInPlaceOrAllocate(doubleValues, clone.doubleValues);
-    clone.isNull = copyInPlaceOrAllocate(isNull, clone.isNull);
-    clone.decimalValues = copyInPlaceOrAllocate(decimalValues, clone.decimalValues);
-
-    if (byteLengths.length > 0) {
-      if (clone.byteLengths == null || clone.byteValues.length != byteValues.length) {
-        // byteValues and byteStarts are always the same length
-        clone.byteValues = new byte[byteValues.length][];
-        clone.byteStarts = new int[byteValues.length];
-        clone.byteLengths = byteLengths.clone();
-        for (int i = 0; i < byteValues.length; ++i) {
-          // avoid allocation/copy of nulls, because it potentially expensive.
-          // branch instead.
-          if (byteLengths[i] != -1) {
-            clone.byteValues[i] = Arrays.copyOfRange(byteValues[i],
-                byteStarts[i], byteStarts[i] + byteLengths[i]);
-          }
-        }
-      } else {
-        System.arraycopy(byteLengths, 0, clone.byteLengths, 0, byteValues.length);
-        Arrays.fill(byteStarts, 0);
-        System.arraycopy(byteStarts, 0, clone.byteStarts, 0, byteValues.length);
-        for (int i = 0; i < byteValues.length; ++i) {
-          // avoid allocation/copy of nulls, because it potentially expensive.
-          // branch instead.
-          if (byteLengths[i] != -1) {
-            if (clone.byteValues[i] != null && clone.byteValues[i].length >= byteValues[i].length) {
-              System.arraycopy(byteValues[i], byteStarts[i], clone.byteValues[i], 0, byteLengths[i]);
-            } else {
-              clone.byteValues[i] = Arrays.copyOfRange(byteValues[i],
-                  byteStarts[i], byteStarts[i] + byteLengths[i]);
-            }
-          }
-        }
-      }
-    } else {
-      clone.byteValues = EMPTY_BYTES_ARRAY;
-      clone.byteStarts = EMPTY_INT_ARRAY;
-      clone.byteLengths = EMPTY_INT_ARRAY;
-    }
-    clone.timestampValues = copyInPlaceOrAllocate(timestampValues, clone.timestampValues);
-    clone.intervalDayTimeValues = copyInPlaceOrAllocate(intervalDayTimeValues, clone.intervalDayTimeValues);
-
-    clone.hashcode = hashcode;
-    assert clone.equals(this);
-  }
-
-  private HiveIntervalDayTime[] copyInPlaceOrAllocate(HiveIntervalDayTime[] from, HiveIntervalDayTime[] to) {
+  private static HiveIntervalDayTime[] copyInPlaceOrAllocateInterval(HiveIntervalDayTime[] from, HiveIntervalDayTime[] to) {
     if (from.length > 0) {
-      if (to == null || to.length != from.length) {
-        to = new HiveIntervalDayTime[from.length];
-      }
       for (int i = 0; i < from.length; i++) {
         to[i] = (HiveIntervalDayTime) from[i].clone();
       }
@@ -387,6 +341,63 @@ public class VectorHashKeyWrapperGeneral extends VectorHashKeyWrapperBase {
     } else {
       return EMPTY_INTERVAL_DAY_TIME_ARRAY;
     }
+  }
+
+  /**
+   * This is to clean up byte buffers stored in to-be-reused
+   * key wrapper. These are barely re-used as required number
+   * of bytes change all the time. Saving these causes unnecessary
+   * memory overhead which is going to be freed later anyway.
+   */
+  public void cleanupForReuse() {
+    hashcode = 0;
+
+    byteValues = EMPTY_BYTES_ARRAY;
+
+    hashCtx = null;
+
+    keyCount = 0;
+  }
+
+  /**
+   * Copies the values in this wrappeer to oldWrapper.
+   * oldWrapper has to have the same dimensions with this key wrapper.
+   *
+   * @param oldWrapper
+   */
+  @Override
+  public void copyKey(KeyWrapper oldWrapper) {
+    VectorHashKeyWrapperGeneral clone = (VectorHashKeyWrapperGeneral) oldWrapper;
+    clone.hashCtx = hashCtx;
+    clone.keyCount = keyCount;
+
+    clone.longValues = copyInPlaceOrAllocateLong(longValues, clone.longValues);
+    clone.doubleValues = copyInPlaceOrAllocateDouble(doubleValues, clone.doubleValues);
+    clone.isNull = copyInPlaceOrAllocateNull(isNull, clone.isNull);
+    clone.decimalValues = copyInPlaceOrAllocateDecimal(decimalValues, clone.decimalValues);
+
+    if (byteLengths.length > 0) {
+      clone.byteValues = new byte[byteLengths.length][];
+      for (int i = 0; i < byteValues.length; ++i) {
+        // avoid allocation/copy of nulls, because it potentially expensive.
+        // branch instead.
+        if (byteLengths[i] != -1) {
+          clone.byteStarts[i] = 0;
+          clone.byteValues[i] = Arrays.copyOfRange(byteValues[i],
+              byteStarts[i], byteStarts[i] + byteLengths[i]);
+        }
+      }
+      System.arraycopy(byteLengths, 0, clone.byteLengths, 0, byteValues.length);
+    } else {
+      clone.byteValues = EMPTY_BYTES_ARRAY;
+      clone.byteStarts = EMPTY_INT_ARRAY;
+      clone.byteLengths = EMPTY_INT_ARRAY;
+    }
+    clone.timestampValues = copyInPlaceOrAllocateTimestamp(timestampValues, clone.timestampValues);
+    clone.intervalDayTimeValues = copyInPlaceOrAllocateInterval(intervalDayTimeValues, clone.intervalDayTimeValues);
+
+    clone.hashcode = hashcode;
+    assert clone.equals(this);
   }
 
   @Override
