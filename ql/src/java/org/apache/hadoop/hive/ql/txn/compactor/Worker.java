@@ -143,13 +143,12 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   }
 
   private void verifyTableIdHasNotChanged(CompactionInfo ci, Table originalTable) throws HiveException, MetaException {
-    String fullTableName = originalTable.getDbName() + "." + originalTable.getTableName();
     Table currentTable = resolveTable(ci);
-
     if (originalTable.getId() != currentTable.getId()) {
-      throw new HiveException("Table " + fullTableName + " id (" + currentTable.getId() + ") is not equal to its id "
-          + "when compaction started (" + originalTable.getId() + "). The table might have been dropped and recreated "
-          + "while compaction was running. Marking compaction as failed.");
+      throw new HiveException("Table " + originalTable.getDbName() + "." + originalTable.getTableName()
+          + " id (" + currentTable.getId() + ") is not equal to its id when compaction started ("
+          + originalTable.getId() + "). The table might have been dropped and recreated while compaction was running."
+          + " Marking compaction as failed.");
     }
   }
 
