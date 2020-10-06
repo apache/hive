@@ -86,6 +86,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.AcidConstants;
+import org.apache.hadoop.hive.common.AcidMetaDataFile;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
@@ -3256,6 +3258,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       //first set basic stats to true
       StatsSetupConst.setBasicStatsState(props, StatsSetupConst.TRUE);
       environmentContext.putToProperties(StatsSetupConst.STATS_GENERATED, StatsSetupConst.TASK);
+      environmentContext.putToProperties(StatsSetupConst.DO_NOT_POPULATE_QUICK_STATS, StatsSetupConst.TRUE);
       //then invalidate column stats
       StatsSetupConst.clearColumnStatsState(props);
       return;
@@ -3379,31 +3382,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         String[] parsedDbName = parseDbName(dbName, conf);
         Table tbl = get_table_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableName);
-        boolean isAutopurge = (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
-        Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+
+        boolean truncateFiles = !TxnUtils.isTransactionalTable(tbl) ||
+            !MetastoreConf.getBoolVar(getConf(), MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE);
 
         // This is not transactional
         for (Path location : getLocationsForTruncate(getMS(), parsedDbName[CAT_NAME],
             parsedDbName[DB_NAME], tableName, tbl, partNames)) {
           FileSystem fs = location.getFileSystem(getConf());
-          if (!org.apache.hadoop.hive.metastore.utils.HdfsUtils.isPathEncrypted(getConf(), fs.getUri(), location) &&
-              !FileUtils.pathHasSnapshotSubDir(location, fs)) {
-            HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getConf(), fs, location);
-            FileStatus targetStatus = fs.getFileStatus(location);
-            String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
-            wh.deleteDir(location, true, isAutopurge,
-                    ReplChangeManager.shouldEnableCm(db, tbl));
-            fs.mkdirs(location);
-            HdfsUtils.setFullFileStatus(getConf(), status, targetGroup, fs, location, false);
+          if (truncateFiles) {
+            truncateDataFiles(tbl, parsedDbName, location, fs);
           } else {
-            FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
-            if (statuses == null || statuses.length == 0) {
-              continue;
-            }
-            for (final FileStatus status : statuses) {
-              wh.deleteDir(status.getPath(), true, isAutopurge,
-                      ReplChangeManager.shouldEnableCm(db, tbl));
-            }
+            // For Acid tables we don't need to delete the old files, only write an empty baseDir.
+            // Compaction and cleaner will take care of the rest
+            addTruncateBaseFile(location, writeId, fs);
           }
         }
 
@@ -3412,13 +3404,47 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             tableName, tbl, partNames, validWriteIds, writeId);
       } catch (IOException e) {
         throw new MetaException(e.getMessage());
+      } catch (MetaException | NoSuchObjectException e) {
+        throw e;
       } catch (Exception e) {
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else {
-          throw newMetaException(e);
+        throw newMetaException(e);
+      }
+    }
+
+    /**
+     * Add an empty baseDir with a truncate metadatafile
+     * @param location partition or table directory
+     * @param writeId allocated writeId
+     * @param fs FileSystem
+     * @throws Exception
+     */
+    private void addTruncateBaseFile(Path location, long writeId, FileSystem fs) throws Exception {
+      Path basePath = new Path(location, AcidConstants.baseDir(writeId));
+      fs.mkdirs(basePath);
+      // We can not leave the folder empty, otherwise it will be skipped at some file listing in AcidUtils
+      // No need for a data file, a simple metadata is enough
+      AcidMetaDataFile.writeToFile(fs, basePath, AcidMetaDataFile.DataFormat.TRUNCATED);
+    }
+
+    private void truncateDataFiles(Table tbl, String[] parsedDbName, Path location, FileSystem fs)
+        throws IOException, MetaException, NoSuchObjectException {
+      boolean isAutopurge = (tbl.isSetParameters() && "true".equalsIgnoreCase(tbl.getParameters().get("auto.purge")));
+      Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+      if (!HdfsUtils.isPathEncrypted(getConf(), fs.getUri(), location) &&
+          !FileUtils.pathHasSnapshotSubDir(location, fs)) {
+        HdfsUtils.HadoopFileStatus status = new HdfsUtils.HadoopFileStatus(getConf(), fs, location);
+        FileStatus targetStatus = fs.getFileStatus(location);
+        String targetGroup = targetStatus == null ? null : targetStatus.getGroup();
+        wh.deleteDir(location, true, isAutopurge, ReplChangeManager.shouldEnableCm(db, tbl));
+        fs.mkdirs(location);
+        HdfsUtils.setFullFileStatus(getConf(), status, targetGroup, fs, location, false);
+      } else {
+        FileStatus[] statuses = fs.listStatus(location, FileUtils.HIDDEN_FILES_PATH_FILTER);
+        if (statuses == null || statuses.length == 0) {
+          return;
+        }
+        for (final FileStatus status : statuses) {
+          wh.deleteDir(status.getPath(), true, isAutopurge, ReplChangeManager.shouldEnableCm(db, tbl));
         }
       }
     }

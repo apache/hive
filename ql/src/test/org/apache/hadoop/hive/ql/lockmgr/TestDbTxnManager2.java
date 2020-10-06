@@ -3122,7 +3122,17 @@ public class TestDbTxnManager2 {
   }
 
   @Test
-  public void testTruncate() throws Exception {
+  public void testTruncateWithBaseLockingExlWrite() throws Exception {
+    testTruncate(true);
+  }
+
+  @Test
+  public void testTruncateWithExl() throws Exception {
+    testTruncate(false);
+  }
+
+  private void testTruncate(boolean useBaseDir) throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE, useBaseDir);
     dropTable(new String[] {"T"});
     driver.run("create table T (a int, b int) stored as orc tblproperties('transactional'='true')");
     driver.run("insert into T values(0,2),(1,4)");
@@ -3131,7 +3141,10 @@ public class TestDbTxnManager2 {
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer"); //gets X lock on T
     List<ShowLocksResponseElement> locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
-    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T", null, locks);
+    checkLock(useBaseDir ? LockType.EXCL_WRITE : LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T", null, locks);
+
+    txnMgr.commitTxn();
+    dropTable(new String[] {"T"});
   }
 
   @Test
@@ -3184,5 +3197,4 @@ public class TestDbTxnManager2 {
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
   }
-
 }
