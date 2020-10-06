@@ -158,10 +158,15 @@ public class SharedWorkOptimizer extends Transform {
     // Gather information about the DPP table scans and store it in the cache
     gatherDPPTableScanOps(pctx, optimizerCache);
 
-    // FIXME xx new
+    BaseSharedWorkOptimizer swo;
+    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
+      swo = new BaseSharedWorkOptimizer();
+    } else {
+      swo = new SchemaAwareSharedWorkOptimizer();
+    }
+
     // Execute shared work optimization
-    new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(
-        pctx, optimizerCache, tableNameToOps, sortedTables, Mode.SubtreeMerge);
+    swo.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables, Mode.SubtreeMerge);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("After SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
@@ -184,8 +189,8 @@ public class SharedWorkOptimizer extends Transform {
       sortedTables = rankTablesByAccumulatedSize(pctx);
 
       // Execute shared work optimization with semijoin removal
-      boolean optimized = new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(
-          pctx, optimizerCache, tableNameToOps, sortedTables, Mode.RemoveSemijoin);
+      boolean optimized =
+          swo.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables, Mode.RemoveSemijoin);
       if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
         // If it was further optimized, execute a second round of extended shared work optimizer
         sharedWorkExtendedOptimization(pctx, optimizerCache);
@@ -194,15 +199,6 @@ public class SharedWorkOptimizer extends Transform {
       if (LOG.isDebugEnabled()) {
         LOG.debug("After SharedWorkSJOptimizer:\n"
             + Operator.toString(pctx.getTopOps().values()));
-      }
-    }
-
-    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
-      new BaseSharedWorkOptimizer().sharedWorkOptimization(
-          pctx, optimizerCache, tableNameToOps, sortedTables, Mode.SubtreeMerge);
-
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("After SharedWorkOptimizer merging TS schema:\n" + Operator.toString(pctx.getTopOps().values()));
       }
     }
 
