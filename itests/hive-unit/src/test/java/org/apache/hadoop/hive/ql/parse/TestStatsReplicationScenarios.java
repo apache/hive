@@ -129,7 +129,7 @@ public class TestStatsReplicationScenarios {
   public void setup() throws Throwable {
     // set up metastore client cache
     if (conf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
-      HiveMetaStoreClientWithLocalCache.init();
+      HiveMetaStoreClientWithLocalCache.init(conf);
     }
     primaryDbName = testName.getMethodName() + "_" + +System.currentTimeMillis();
     replicatedDbName = "replicated_" + primaryDbName;
