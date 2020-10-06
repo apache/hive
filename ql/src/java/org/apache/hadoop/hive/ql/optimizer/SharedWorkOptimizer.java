@@ -371,6 +371,7 @@ public class SharedWorkOptimizer extends Transform {
                 LOG.debug("{} and {} cannot be merged", retainableTsOp, discardableTsOp);
                 continue;
               }
+              // FIXME: I think this optimization is assymetric; but the check is symmetric
               boolean validMerge = areMergeableExcludeSemijoinsExtendedCheck(
                   pctx, optimizerCache, retainableTsOp, discardableTsOp);
               if (!validMerge) {
