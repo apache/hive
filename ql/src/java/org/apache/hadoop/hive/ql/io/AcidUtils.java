@@ -2832,7 +2832,7 @@ public class AcidUtils {
 
   /**
    * Look for delta directories matching the list of writeIds and deletes them.
-   * @param rootPartition root partition to look for the delta directories
+   * @param root path to look for the delta directories
    * @param conf configuration
    * @param writeIds list of writeIds to look for in the delta directories
    * @return list of deleted directories.
@@ -2843,17 +2843,12 @@ public class AcidUtils {
     FileSystem fs = root.getFileSystem(conf);
     Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, root);
 
-    Predicate<Path> deltaPredicate = p -> {
-      ParsedDelta delta = parsedDelta(p, false);
-      return delta.getMinWriteId() == delta.getMaxWriteId() && writeIds.contains(delta.getMinWriteId());
-    };
-
     List<Path> deleted = hdfsDirSnapshots.values().stream()
       .map(HdfsDirSnapshot::getPath)
-      .filter(t ->t.getName().startsWith(DELTA_PREFIX))
-      .filter(deltaPredicate).collect(Collectors.toList());
+      .filter(p -> writeIds.contains(extractWriteId(p)))
+      .collect(Collectors.toList());
 
-    for(Path toDelete : deleted) {
+    for (Path toDelete : deleted) {
       fs.delete(toDelete, true);
     }
     return deleted;

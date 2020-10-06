@@ -127,10 +127,12 @@ class CompactionTxnHandler extends TxnHandler {
             info.dbname = rs.getString(1);
             info.tableName = rs.getString(2);
             info.partName = rs.getString(3);
-            if (rs.getBoolean(6) ) {
+
+            boolean isDP = rs.getBoolean(6);
+            if (isDP) {
               info.type = dbCompactionType2ThriftType(OperationType.DYNPART.getSqlConst().charAt(0));
             }
-            info.tooManyAborts = numAbortedTxns > abortedThreshold;
+            info.tooManyAborts = numAbortedTxns > abortedThreshold || isDP;
             info.hasOldAbort = pastTimeThreshold;
             if (LOG.isDebugEnabled()) {
               LOG.debug("Found potential compaction: " + info.toString());
