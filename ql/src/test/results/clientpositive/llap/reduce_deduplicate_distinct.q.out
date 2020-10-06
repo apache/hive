@@ -22,13 +22,13 @@ from count_distinct_test
 group by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@count_distinct_test
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain select id,count(distinct key),count(distinct name)
 from count_distinct_test
 group by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@count_distinct_test
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -52,6 +52,7 @@ STAGE PLANS:
                     Statistics: Num rows: 5 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), 0L (type: bigint)
+                      grouping sets: 1, 2
                       minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -101,26 +102,26 @@ from count_distinct_test
 group by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@count_distinct_test
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select id,count(distinct key),count(distinct name)
 from count_distinct_test
 group by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@count_distinct_test
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	5	2
 PREHOOK: query: explain select id,count(Distinct key),count(Distinct name)
 from (select id,key,name from count_distinct_test group by id,key,name)m
 group by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@count_distinct_test
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain select id,count(Distinct key),count(Distinct name)
 from (select id,key,name from count_distinct_test group by id,key,name)m
 group by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@count_distinct_test
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -167,6 +168,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), 0L (type: bigint)
+                  grouping sets: 1, 2
                   minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
@@ -214,26 +216,26 @@ from (select id,key,name from count_distinct_test group by id,key,name)m
 group by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@count_distinct_test
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select id,count(Distinct key),count(Distinct name)
 from (select id,key,name from count_distinct_test group by id,key,name)m
 group by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@count_distinct_test
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	5	2
 PREHOOK: query: explain select id,count(Distinct name),count(Distinct key)
 from (select id,key,name from count_distinct_test group by id,name,key)m
 group by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@count_distinct_test
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain select id,count(Distinct name),count(Distinct key)
 from (select id,key,name from count_distinct_test group by id,name,key)m
 group by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@count_distinct_test
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -280,6 +282,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), 0L (type: bigint)
+                  grouping sets: 1, 2
                   minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
@@ -327,26 +330,26 @@ from (select id,key,name from count_distinct_test group by id,name,key)m
 group by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@count_distinct_test
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select id,count(Distinct name),count(Distinct key)
 from (select id,key,name from count_distinct_test group by id,name,key)m
 group by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@count_distinct_test
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	2	5
 PREHOOK: query: explain select id,count(Distinct key),count(Distinct name)
 from (select id,key,name from count_distinct_test group by id,key,name)m
 group by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@count_distinct_test
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain select id,count(Distinct key),count(Distinct name)
 from (select id,key,name from count_distinct_test group by id,key,name)m
 group by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@count_distinct_test
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -394,6 +397,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), 0L (type: bigint)
+                  grouping sets: 1, 2
                   minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
@@ -458,26 +462,26 @@ from (select id,key,name from count_distinct_test group by id,key,name)m
 group by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@count_distinct_test
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select id,count(Distinct key),count(Distinct name)
 from (select id,key,name from count_distinct_test group by id,key,name)m
 group by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@count_distinct_test
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	5	2
 PREHOOK: query: explain select id,count(Distinct name),count(Distinct key)
 from (select id,key,name from count_distinct_test group by id,name,key)m
 group by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@count_distinct_test
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: explain select id,count(Distinct name),count(Distinct key)
 from (select id,key,name from count_distinct_test group by id,name,key)m
 group by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@count_distinct_test
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -525,6 +529,7 @@ STAGE PLANS:
                 Statistics: Num rows: 2 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: int), _col1 (type: int), _col2 (type: int), 0L (type: bigint)
+                  grouping sets: 1, 2
                   minReductionHashAggr: 0.0
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2, _col3
@@ -589,11 +594,11 @@ from (select id,key,name from count_distinct_test group by id,name,key)m
 group by id
 PREHOOK: type: QUERY
 PREHOOK: Input: default@count_distinct_test
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: select id,count(Distinct name),count(Distinct key)
 from (select id,key,name from count_distinct_test group by id,name,key)m
 group by id
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@count_distinct_test
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	2	5

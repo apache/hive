@@ -60,6 +60,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: max(live), max(comments)
                       keys: category (type: int), 0L (type: bigint)
+                      grouping sets: 1, 0
                       minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3

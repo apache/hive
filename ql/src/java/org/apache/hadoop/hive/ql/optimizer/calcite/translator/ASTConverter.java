@@ -154,11 +154,7 @@ public class ASTConverter {
           b = ASTBuilder.construct(HiveParser.TOK_GROUPBY, "TOK_GROUPBY");
           break;
         case ROLLUP:
-          b = ASTBuilder.construct(HiveParser.TOK_ROLLUP_GROUPBY, "TOK_ROLLUP_GROUPBY");
-          break;
         case CUBE:
-          b = ASTBuilder.construct(HiveParser.TOK_CUBE_GROUPBY, "TOK_CUBE_GROUPBY");
-          break;
         case OTHER:
           b = ASTBuilder.construct(HiveParser.TOK_GROUPING_SETS, "TOK_GROUPING_SETS");
           groupingSetsExpression = true;
@@ -191,9 +187,7 @@ public class ASTConverter {
           ASTBuilder expression = ASTBuilder.construct(
                   HiveParser.TOK_GROUPING_SETS_EXPRESSION, "TOK_GROUPING_SETS_EXPRESSION");
           for (int i : groupSet) {
-            RexInputRef iRef = new RexInputRef(i, groupBy.getCluster().getTypeFactory()
-                .createSqlType(SqlTypeName.ANY));
-            expression.add(iRef.accept(new RexVisitor(schema, false, root.getCluster().getRexBuilder())));
+            addRefToBuilder(expression, i);
           }
           b.add(expression);
         }
