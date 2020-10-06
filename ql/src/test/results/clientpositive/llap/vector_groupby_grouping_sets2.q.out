@@ -144,6 +144,7 @@ STAGE PLANS:
                     vectorProcessingMode: STREAMING
                     projectedOutputColumnNums: [0]
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), 0L (type: bigint)
+                grouping sets: 0, 1, 2, 3
                 mode: partials
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
@@ -332,6 +333,7 @@ STAGE PLANS:
                     vectorProcessingMode: STREAMING
                     projectedOutputColumnNums: [0]
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), 0L (type: bigint)
+                grouping sets: 0, 1, 2, 3
                 mode: partials
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
@@ -514,6 +516,7 @@ STAGE PLANS:
                     vectorProcessingMode: STREAMING
                     projectedOutputColumnNums: [0]
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), 0L (type: bigint)
+                grouping sets: 0, 1, 2, 3
                 mode: partials
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
@@ -750,6 +753,7 @@ STAGE PLANS:
                     vectorProcessingMode: STREAMING
                     projectedOutputColumnNums: [0]
                 keys: KEY._col0 (type: string), KEY._col1 (type: string), 0L (type: bigint)
+                grouping sets: 0, 1, 2, 3
                 mode: partials
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE

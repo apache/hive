@@ -53,6 +53,7 @@ STAGE PLANS:
                     Statistics: Num rows: 12 Data size: 1023 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: int), _col1 (type: varchar(10)), _col2 (type: int), 0L (type: bigint)
+                      grouping sets: 3, 5, 6
                       minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -202,6 +203,7 @@ STAGE PLANS:
                     Statistics: Num rows: 12 Data size: 1023 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: varchar(10)), _col1 (type: int), _col2 (type: int), 0L (type: bigint)
+                      grouping sets: 0, 3, 4, 5, 6
                       minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3

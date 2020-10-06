@@ -63,6 +63,7 @@ STAGE PLANS:
           Group By Operator
             aggregations: count()
             keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
+            grouping sets: 0, 1, 2, 3
             minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0, _col1, _col2, _col3
@@ -160,6 +161,7 @@ STAGE PLANS:
           Group By Operator
             aggregations: count()
             keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
+            grouping sets: 0, 1, 2, 3
             minReductionHashAggr: 0.99
             mode: hash
             outputColumnNames: _col0, _col1, _col2, _col3
@@ -309,6 +311,7 @@ STAGE PLANS:
         Group By Operator
           aggregations: count(VALUE._col0)
           keys: KEY._col0 (type: string), KEY._col1 (type: string), 0L (type: bigint)
+          grouping sets: 0, 1, 2, 3
           mode: partials
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics: Num rows: 4 Data size: 1440 Basic stats: COMPLETE Column stats: NONE
