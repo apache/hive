@@ -1272,7 +1272,6 @@ public class SharedWorkOptimizer extends Transform {
         pctx.getRsToSemiJoinBranchInfo().put(semijoinRsOps.get(i), sjBranches.get(i));
       }
     }
-
     return validMerge;
   }
 
