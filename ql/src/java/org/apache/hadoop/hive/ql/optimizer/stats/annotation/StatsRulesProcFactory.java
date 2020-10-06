@@ -2958,8 +2958,8 @@ public class StatsRulesProcFactory {
         return null;
       }
 
-      final Statistics selectStats = parents.get(LateralViewJoinOperator.SELECT_TAG).getStatistics().clone();
-      final Statistics udtfStats = parents.get(LateralViewJoinOperator.UDTF_TAG).getStatistics().clone();
+      final Statistics selectStats = parents.get(LateralViewJoinOperator.SELECT_TAG).getStatistics();
+      final Statistics udtfStats = parents.get(LateralViewJoinOperator.UDTF_TAG).getStatistics();
 
       final double factor = (double) udtfStats.getNumRows() / (double) selectStats.getNumRows();
       final long selectDataSize = StatsUtils.safeMult(selectStats.getDataSize(), factor);
