@@ -463,7 +463,9 @@ public class SharedWorkOptimizer extends Transform {
               // Push filter on top of children for retainable
               pushFilterToTopOfTableScan(optimizerCache, retainableTsOp);
 
-              if (mode == Mode.RemoveSemijoin) {
+              if (mode == Mode.RemoveSemijoin || mode == Mode.SubtreeMerge) {
+                // FIXME: I think idea here is to clear the discardable's semijoin filter
+                // - by using the retainable's (which should be empty in case of this mode)
                 replaceSemijoinExpressions(discardableTsOp, modelR.getSemiJoinFilter());
               }
               // Push filter on top of children for discardable
