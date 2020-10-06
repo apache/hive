@@ -2,6 +2,8 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class MaterializedViews {
+  private static final Logger LOG = LoggerFactory.getLogger(MaterializedViews.class);
+
   /* Key is the database name. Value a map from the qualified name to the view object. */
   private final ConcurrentMap<String, ConcurrentMap<String, RelOptMaterialization>> materializedViews =
           new ConcurrentHashMap<>();
@@ -25,6 +29,9 @@ public class MaterializedViews {
       sqlToMaterializedView.put(materializedViewTable.getViewOriginalText(), materialization);
       return materialization;
     });
+
+    LOG.debug("Materialized view {}.{} added to registry",
+            materializedViewTable.getDbName(), materializedViewTable.getTableName());
   }
 
   private ConcurrentMap<String, RelOptMaterialization> ensureDbMap(Table materializedViewTable) {
@@ -60,6 +67,10 @@ public class MaterializedViews {
       sqlToMaterializedView.put(materializedViewTable.getViewOriginalText(), existingMaterialization);
       return existingMaterialization;
     });
+
+    LOG.debug("Refreshed materialized view {}.{} -> {}.{}",
+            oldMaterializedViewTable.getDbName(), oldMaterializedViewTable.getTableName(),
+            materializedViewTable.getDbName(), materializedViewTable.getTableName());
   }
 
   public void remove(Table materializedViewTable) {
@@ -75,6 +86,9 @@ public class MaterializedViews {
         return oldMaterialization;
       });
     }
+
+    LOG.debug("Materialized view {}.{} removed from registry",
+            materializedViewTable.getDbName(), materializedViewTable.getTableName());
   }
 
   public void remove(String dbName, String tableName) {
@@ -85,6 +99,8 @@ public class MaterializedViews {
         sqlToMaterializedView.remove(queryText);
         return null;
       });
+
+      LOG.debug("Materialized view {}.{} removed from registry", dbName, tableName);
     }
   }
 
@@ -96,12 +112,20 @@ public class MaterializedViews {
 
   RelOptMaterialization get(String dbName, String viewName) {
     if (materializedViews.get(dbName) != null) {
+      LOG.debug("Found materialized view {}.{} in registry", dbName, viewName);
       return materializedViews.get(dbName).get(viewName);
     }
+    LOG.debug("Materialized view {}.{} not found in registry", dbName, viewName);
     return null;
   }
 
   public RelOptMaterialization get(String queryText) {
-    return sqlToMaterializedView.get(queryText);
+    RelOptMaterialization relOptMaterialization = sqlToMaterializedView.get(queryText);
+    if (relOptMaterialization == null) {
+      LOG.debug("No materialized view with query text '{}' found in registry", queryText);
+      return null;
+    }
+    LOG.debug("Found materialized view with query text '{}' in registry", queryText);
+    return relOptMaterialization;
   }
 }
