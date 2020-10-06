@@ -283,7 +283,7 @@ class CompactorTestUtil {
     conf.setBoolean("orc.schema.evolution.case.sensitive", false);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     AcidInputFormat.RawReader<OrcStruct> reader =
-        aif.getRawReader(conf, true, bucket, writeIdList, base, deltas, new HashMap<String, String>());
+        aif.getRawReader(conf, true, bucket, writeIdList, base, deltas, new HashMap<String, Integer>());
     RecordIdentifier identifier = reader.createKey();
     OrcStruct value = reader.createValue();
     long currentTxn = min;

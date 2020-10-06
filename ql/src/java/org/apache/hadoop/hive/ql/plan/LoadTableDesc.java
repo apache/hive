@@ -85,6 +85,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
     this.currentWriteId = o.currentWriteId;
     this.table = o.table;
     this.partitionSpec = o.partitionSpec;
+    this.isDirectInsert = o.isDirectInsert;
   }
 
   public LoadTableDesc(final Path sourcePath,
