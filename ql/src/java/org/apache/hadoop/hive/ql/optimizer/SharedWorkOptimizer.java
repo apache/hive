@@ -392,7 +392,7 @@ public class SharedWorkOptimizer extends Transform {
                 continue;
               }
               boolean validMerge =
-                  areMergeableExcludeSemijoinsExtendedCheckXXX(pctx, optimizerCache, retainableTsOp, discardableTsOp);
+                  areMergeableDppUninon(pctx, optimizerCache, retainableTsOp, discardableTsOp);
               if (!validMerge) {
                 // Skip
                 LOG.debug("{} and {} do not meet preconditions", retainableTsOp, discardableTsOp);
@@ -1276,94 +1276,46 @@ public class SharedWorkOptimizer extends Transform {
     return validMerge;
   }
 
-  private static boolean areMergeableExcludeSemijoinsExtendedCheckXXX(ParseContext pctx,
+  private static boolean areMergeableDppUninon(ParseContext pctx,
       SharedWorkOptimizerCache optimizerCache, TableScanOperator tsOp1, TableScanOperator tsOp2)
       throws SemanticException {
-    // We remove RS-based SJs from consideration, then we compare
+
     List<Operator<?>> dppsOp1 = new ArrayList<>(optimizerCache.tableScanToDPPSource.get(tsOp1));
-    boolean removedDppOp1 = false;
-    List<ReduceSinkOperator> rsOpsSemijoin1 = new ArrayList<>();
     List<Operator<?>> dppsOp2 = new ArrayList<>(optimizerCache.tableScanToDPPSource.get(tsOp2));
-    boolean removedDppOp2 = false;
-    List<ReduceSinkOperator> rsOpsSemijoin2 = new ArrayList<>();
-    for (int i = 0; i < dppsOp1.size(); i++) {
-      Operator<?> op = dppsOp1.get(i);
-      if (op instanceof ReduceSinkOperator) {
-        ReduceSinkOperator semijoinRSOp = (ReduceSinkOperator) op;
-        if (pctx.getRsToSemiJoinBranchInfo().get(semijoinRSOp).getIsHint()) {
-          // This is a hint, we should keep it, hence we bail out
-          return false;
-        }
-        rsOpsSemijoin1.add(semijoinRSOp);
-        dppsOp1.remove(i);
-        removedDppOp1 = true;
-      } else {
-        throw new RuntimeException("what is this?");
-      }
+
+    if (dppsOp1.isEmpty() || dppsOp2.isEmpty()) {
+      return false;
     }
-    for (int i = 0; i < dppsOp2.size(); i++) {
-      Operator<?> op = dppsOp2.get(i);
-      if (op instanceof ReduceSinkOperator) {
-        ReduceSinkOperator semijoinRSOp = (ReduceSinkOperator) op;
-        if (pctx.getRsToSemiJoinBranchInfo().get(semijoinRSOp).getIsHint()) {
-          // This is a hint, we should keep it, hence we bail out
-          return false;
-        }
-        rsOpsSemijoin2.add(semijoinRSOp);
-        dppsOp2.remove(i);
-        removedDppOp2 = true;
-      } else {
-        throw new RuntimeException("what is this?");
-      }
+    if (!areSupportedDppUnionOps(pctx, optimizerCache, tsOp1, tsOp2)) {
+      return false;
     }
-    if (!removedDppOp1 || !removedDppOp2) {
-      // only care with both being filtered by dpp
+    if (!areSupportedDppUnionOps(pctx, optimizerCache, tsOp2, tsOp1)) {
       return false;
     }
 
-    // FIXME one of them may only contain SemiJoin filters for now!
-    if (true) {
-      return true;
-    }
-    // FIXME: think thru validPreConditions
+    return true;
+  }
 
-    TableScanOperator targetTSOp;
-    List<ReduceSinkOperator> semijoinRsOps;
-    List<SemiJoinBranchInfo> sjBranches = new ArrayList<>();
-    if (removedDppOp1) {
-      targetTSOp = tsOp1;
-      semijoinRsOps = rsOpsSemijoin1;
-    } else {
-      targetTSOp = tsOp2;
-      semijoinRsOps = rsOpsSemijoin2;
-    }
-    optimizerCache.tableScanToDPPSource.get(targetTSOp).removeAll(semijoinRsOps);
-    for (ReduceSinkOperator rsOp : semijoinRsOps) {
-      sjBranches.add(pctx.getRsToSemiJoinBranchInfo().remove(rsOp));
-    }
-
-    boolean validMerge = validPreConditions(pctx, optimizerCache,
-        extractSharedOptimizationInfoForRoot(pctx, optimizerCache, tsOp1, tsOp2, false));
-
-    if (validMerge) {
-      // We are going to merge, hence we remove the semijoins completely
-      for (ReduceSinkOperator semijoinRsOp : semijoinRsOps) {
-        Operator<?> branchOp = GenTezUtils.removeBranch(semijoinRsOp);
-        while (branchOp != null) {
-          optimizerCache.removeOp(branchOp);
-          branchOp = branchOp.getNumChild() > 0 ? branchOp.getChildOperators().get(0) : null;
+  private static boolean areSupportedDppUnionOps(ParseContext pctx, SharedWorkOptimizerCache cache, TableScanOperator tsOp1,
+      TableScanOperator tsOp2) {
+    Collection<Operator<?>> dppOps = cache.tableScanToDPPSource.get(tsOp1);
+    for (Operator<?> op : dppOps) {
+      if (op instanceof ReduceSinkOperator) {
+        ReduceSinkOperator semijoinRSOp = (ReduceSinkOperator) op;
+        if (pctx.getRsToSemiJoinBranchInfo().get(semijoinRSOp).getIsHint()) {
+          // This is a hint, we should keep it, hence we bail out
+          return false;
         }
-        GenTezUtils.removeSemiJoinOperator(pctx, semijoinRsOp, targetTSOp);
-      }
-    } else {
-      // Otherwise, the put the semijoins back in the auxiliary data structures
-      optimizerCache.tableScanToDPPSource.get(targetTSOp).addAll(semijoinRsOps);
-      for (int i = 0; i < semijoinRsOps.size(); i++) {
-        pctx.getRsToSemiJoinBranchInfo().put(semijoinRsOps.get(i), sjBranches.get(i));
+        Set<Operator<?>> ascendants = findAscendantWorkOperators(pctx, cache, op);
+        if (ascendants.contains(tsOp2)) {
+          // This should not happen, we cannot merge
+          return false;
+        }
+      } else {
+        return false;
       }
     }
-
-    return validMerge;
+    return true;
   }
 
   private static SharedResult extractSharedOptimizationInfoForRoot(ParseContext pctx,
