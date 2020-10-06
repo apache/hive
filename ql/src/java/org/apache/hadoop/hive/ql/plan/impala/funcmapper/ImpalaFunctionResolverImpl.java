@@ -174,16 +174,30 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
           " in resource file");
     }
 
+    // Check if we should favor a precise numeric function (e.g. decimal) over a
+    // non-precise one.  Non-precise functions appear before precise functions in
+    // the candidate list.
+    boolean favorPreciseFunction = favorPreciseFunction(argTypes);
+
     // iterate through list of potential functions which we could cast.  These functions should be
     // in a pre-determined optimal order.
-    // For instance:  we have sum(BIGINT), sum(DECIMAL), and sum(DOUBLE) in that order.  If the arg
-    // is a TINYINT, we should return a RexNode of "sum(CAST arg AS BIGINT)"
+    // For instance:  we have sum(BIGINT), sum(DOUBLE), and sum(DECIMAL) in that order.  If we are
+    // trying to map a sum(tinyint_col), we would choose sum(BIGINT).  If we are trying to map
+    // a sum(float_col), we would choose sum(DOUBLE).
+    List<ImpalaFunctionSignature> matchingCandidates = Lists.newArrayList();
     for (ImpalaFunctionSignature castCandidate : castCandidates) {
       if (canCast(castCandidate)) {
-        return castCandidate;
+        // if we are not favoring the precise function, we can return the first function found.
+        if (!favorPreciseFunction) {
+          return castCandidate;
+        }
+        matchingCandidates.add(castCandidate);
       }
     }
-    throw new SemanticException("Could not cast for function name " + func);
+    if (matchingCandidates.isEmpty()) {
+      throw new SemanticException("Could not cast for function name " + func);
+    }
+    return pickPreferredCastCandidate(matchingCandidates);
   }
 
   protected List<ImpalaFunctionSignature> getCastCandidates(String func) throws SemanticException {
@@ -354,6 +368,51 @@ public class ImpalaFunctionResolverImpl implements ImpalaFunctionResolver {
       result.add(lastArg);
     }
     return result;
+  }
+
+  // Return true if we have a case where we would prefer a precise function to a non-precise
+  // function. Impala has rules that state that if one of the argTypes is a DECIMAL, and all
+  // the other types are precise, we should use precise types.
+  // should use precise types.
+  private boolean favorPreciseFunction(List<RelDataType> types) {
+    return hasDecimalType(types) && !hasFloatingType(types);
+  }
+
+  private boolean hasDecimalType(List<RelDataType> types) {
+    for (RelDataType type : types) {
+      if (type.getSqlTypeName().equals(SqlTypeName.DECIMAL)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean hasFloatingType(List<RelDataType> types) {
+    for (RelDataType type : types) {
+      if (SqlTypeName.APPROX_TYPES.contains(type.getSqlTypeName())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Follow the Impala rules to pick the preferred candidate from a list of
+   * matching candidates. The original list is in sorted order of preferability, for the
+   * most part. However, Impala has a rule that if one of the operands is a decimal
+   * we would prefer to cast to a decimal and keep the function precise.
+   * However, if we can't find a precise function, it's ok to use a non-precise one.
+   */
+  private ImpalaFunctionSignature pickPreferredCastCandidate (
+      List<ImpalaFunctionSignature> matchingCandidates) {
+    for (ImpalaFunctionSignature ifs : matchingCandidates) {
+      if (!hasFloatingType(ifs.getArgTypes())) {
+        return ifs;
+      }
+    }
+    // If all functions are floating type, just return the first one.
+    Preconditions.checkState(!matchingCandidates.isEmpty());
+    return matchingCandidates.get(0);
   }
 
   private static ImpalaFunctionResolver createGenericFuncResolver(FunctionHelper helper,
