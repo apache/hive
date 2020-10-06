@@ -97,18 +97,18 @@ import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNSET;
  *
  * <p>Originally, this rule would find scan operators over the same table
  * in the query plan and merge them if they met some preconditions.
- *
+ * <pre>
  *  TS   TS             TS
- *  |    |     -&gt;      /  \
+ *  |    |     -&gt;   /  \
  *  Op   Op           Op  Op
- *
+ * </pre>
  * <p>Now the rule has been extended to find opportunities to other operators
  * downstream, not only a single table scan.
  *
  *  TS1   TS2    TS1   TS2            TS1   TS2
  *   |     |      |     |              |     |
  *   |    RS      |    RS              |    RS
- *    \   /        \   /       -&gt;       \   /
+ *    \   /        \   /       -&gt;    \   /
  *   MapJoin      MapJoin              MapJoin
  *      |            |                  /   \
  *      Op           Op                Op   Op
