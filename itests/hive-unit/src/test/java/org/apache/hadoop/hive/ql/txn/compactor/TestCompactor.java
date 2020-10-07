@@ -140,7 +140,6 @@ public class TestCompactor {
 
     conf = hiveConf;
     HiveConf.setBoolVar(conf, ConfVars.HIVE_MM_ALLOW_ORIGINALS, true);
-    HiveConf.setIntVar(conf, ConfVars.HIVE_COMPACTOR_ABORTEDTXN_THRESHOLD, 0);
     HiveConf.setTimeVar(conf, ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, 0, TimeUnit.MILLISECONDS);
     msClient = new HiveMetaStoreClient(conf);
     driver = DriverFactory.newDriver(hiveConf);

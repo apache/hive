@@ -3378,24 +3378,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         buf.append(state);
         buf.append("', '");
-        switch (rqst.getType()) {
-          case MAJOR:
-            buf.append(MAJOR_TYPE);
-            break;
-
-          case MINOR:
-            buf.append(MINOR_TYPE);
-            break;
-
-          case CLEAN_ABORTED:
-            buf.append(CLEAN_ABORTED);
-            break;
-
-          default:
-            LOG.debug("Going to rollback");
-            dbConn.rollback();
-            throw new MetaException("Unexpected compaction type " + rqst.getType().toString());
-        }
+        buf.append(thriftCompactionType2DbType(rqst.getType()));
         buf.append("',");
         buf.append(getEpochFn(dbProduct));
         if (rqst.getProperties() != null) {
@@ -3476,12 +3459,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           e.setTablename(rs.getString(2));
           e.setPartitionname(rs.getString(3));
           e.setState(compactorStateToResponse(rs.getString(4).charAt(0)));
-          switch (rs.getString(5).charAt(0)) {
-            case MAJOR_TYPE: e.setType(CompactionType.MAJOR); break;
-            case MINOR_TYPE: e.setType(CompactionType.MINOR); break;
-            case CLEAN_ABORTED: e.setType(CompactionType.CLEAN_ABORTED); break;
-            default:
-              //do nothing to handle RU/D if we add another status
+          try {
+            e.setType(dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
+          } catch (MetaException ex) {
+            //do nothing to handle RU/D if we add another status
           }
           e.setWorkerid(rs.getString(6));
           long start = rs.getLong(7);
@@ -5238,7 +5219,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   static String quoteChar(char c) {
     return "'" + c + "'";
   }
-  static CompactionType dbCompactionType2ThriftType(char dbValue) {
+
+  static CompactionType dbCompactionType2ThriftType(char dbValue) throws MetaException {
     switch (dbValue) {
       case MAJOR_TYPE:
         return CompactionType.MAJOR;
@@ -5247,11 +5229,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       case CLEAN_ABORTED:
         return CompactionType.CLEAN_ABORTED;
       default:
-        LOG.warn("Unexpected compaction type " + dbValue);
-        return null;
+        throw new MetaException("Unexpected compaction type " + dbValue);
     }
   }
-  static Character thriftCompactionType2DbType(CompactionType ct) {
+  static Character thriftCompactionType2DbType(CompactionType ct) throws MetaException {
     switch (ct) {
       case MAJOR:
         return MAJOR_TYPE;
@@ -5260,8 +5241,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       case CLEAN_ABORTED:
         return CLEAN_ABORTED;
       default:
-        LOG.warn("Unexpected compaction type " + ct);
-        return null;
+        throw new MetaException("Unexpected compaction type " + ct);
     }
   }
 

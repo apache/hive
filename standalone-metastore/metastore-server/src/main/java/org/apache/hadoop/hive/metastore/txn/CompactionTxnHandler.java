@@ -33,8 +33,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -281,7 +283,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.ReadOnly
   public List<CompactionInfo> findReadyToClean() throws MetaException {
     Connection dbConn = null;
-    List<CompactionInfo> rc = new ArrayList<>();
+    Map<String, CompactionInfo> rc = new HashMap<>();
 
     Statement stmt = null;
     ResultSet rs = null;
@@ -289,49 +291,43 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
-                + "\"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '"
-                + READY_FOR_CLEANING + "'";
+        String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", \"CQ_TYPE\", " +
+          "\"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"TC_WRITEID\" FROM \"COMPACTION_QUEUE\" " +
+          "   LEFT JOIN (" +
+          "SELECT \"TC_WRITEID\", \"TC_DATABASE\", \"TC_TABLE\" FROM \"TXN_COMPONENTS\" " +
+          "   WHERE \"TC_OPERATION_TYPE\" = '" + OperationType.DYNPART.getSqlConst() + "') \"TC\" " +
+          "ON \"CQ_TYPE\" = '" + CLEAN_ABORTED + "' AND \"CQ_DATABASE\" = \"TC\".\"TC_DATABASE\" " +
+          "   AND \"CQ_TABLE\" = \"TC\".\"TC_TABLE\" " +
+          "WHERE \"CQ_STATE\" = '" + READY_FOR_CLEANING + "'";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
+
         while (rs.next()) {
           CompactionInfo info = new CompactionInfo();
-          info.id = rs.getLong(1);
-          info.dbname = rs.getString(2);
+          info.dbname = rs.getString(2);;
           info.tableName = rs.getString(3);
           info.partName = rs.getString(4);
-          switch (rs.getString(5).charAt(0)) {
-            case MAJOR_TYPE: info.type = CompactionType.MAJOR; break;
-            case MINOR_TYPE: info.type = CompactionType.MINOR; break;
-            case CLEAN_ABORTED: info.type = CompactionType.CLEAN_ABORTED; break;
-            default: throw new MetaException("Unexpected compaction type " + rs.getString(5));
-          }
-          info.runAs = rs.getString(6);
-          info.highestWriteId = rs.getLong(7);
-          if (LOG.isDebugEnabled()) {
-            LOG.debug("Found ready to clean: " + info.toString());
-          }
-          rc.add(info);
-        }
-        for (CompactionInfo ci: rc) {
-          if (ci.type.equals(CompactionType.CLEAN_ABORTED)) {
-            String s2 = "SELECT \"TC_WRITEID\" FROM \"TXN_COMPONENTS\" " +
-              "WHERE \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ? AND \"TC_OPERATION_TYPE\" = ?";
-            PreparedStatement pStmt = dbConn.prepareStatement(s2);
-            LOG.debug("Going to execute query <" + s2 + ">");
-            pStmt.setString(1, ci.dbname);
-            pStmt.setString(2, ci.tableName);
-            pStmt.setString(3, String.valueOf(OperationType.DYNPART.getSqlConst()));
-            rs = pStmt.executeQuery();
-            ci.writeIds = new HashSet<>();
-            while(rs.next()) {
-              ci.writeIds.add(rs.getLong(1));
+
+          if (!rc.containsKey(info.getFullPartitionName())) {
+            info.id = rs.getLong(1);
+            info.type = dbCompactionType2ThriftType(rs.getString(5).charAt(0));
+            info.runAs = rs.getString(6);
+            info.highestWriteId = rs.getLong(7);
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Found ready to clean: " + info.toString());
             }
+            if (info.type.equals(CompactionType.CLEAN_ABORTED)) {
+              info.writeIds = new HashSet<>();
+              info.writeIds.add(rs.getLong(8));
+            }
+            rc.put(info.getFullPartitionName(), info);
+          } else {
+            // next aborted DP write to the same db/table
+            rc.get(info.getFullPartitionName()).writeIds.add(
+                rs.getLong(8));
           }
         }
-        LOG.debug("Going to rollback");
-        dbConn.rollback();
-        return rc;
+        return new ArrayList<>(rc.values());
       } catch (SQLException e) {
         LOG.error("Unable to select next element for cleaning, " + e.getMessage());
         LOG.debug("Going to rollback");
