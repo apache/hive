@@ -1434,6 +1434,7 @@ public class TestTxnHandler {
   @Ignore("Wedges Derby")
   public void deadlockDetected() throws Exception {
     LOG.debug("Starting deadlock test");
+
     if (txnHandler instanceof TxnHandler) {
       final TxnHandler tHndlr = (TxnHandler)txnHandler;
       Connection conn = tHndlr.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
