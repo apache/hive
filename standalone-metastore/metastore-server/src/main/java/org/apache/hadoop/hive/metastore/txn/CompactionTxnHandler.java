@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -132,7 +133,7 @@ class CompactionTxnHandler extends TxnHandler {
 
             boolean isDP = rs.getBoolean(6);
             if (isDP) {
-              info.type = dbCompactionType2ThriftType(OperationType.DYNPART.getSqlConst().charAt(0));
+              info.type = CompactionType.CLEAN_ABORTED;
             }
             info.tooManyAborts = numAbortedTxns > abortedThreshold || isDP;
             info.hasOldAbort = pastTimeThreshold;
@@ -283,7 +284,7 @@ class CompactionTxnHandler extends TxnHandler {
   @RetrySemantics.ReadOnly
   public List<CompactionInfo> findReadyToClean() throws MetaException {
     Connection dbConn = null;
-    Map<String, CompactionInfo> rc = new HashMap<>();
+    Map<Long, CompactionInfo> rc = new HashMap<>();
 
     Statement stmt = null;
     ResultSet rs = null;
@@ -295,7 +296,7 @@ class CompactionTxnHandler extends TxnHandler {
           "\"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"TC_WRITEID\" FROM \"COMPACTION_QUEUE\" " +
           "   LEFT JOIN (" +
           "SELECT \"TC_WRITEID\", \"TC_DATABASE\", \"TC_TABLE\" FROM \"TXN_COMPONENTS\" " +
-          "   WHERE \"TC_OPERATION_TYPE\" = '" + OperationType.DYNPART.getSqlConst() + "') \"TC\" " +
+          "   WHERE \"TC_OPERATION_TYPE\" = " + OperationType.DYNPART + ") \"TC\" " +
           "ON \"CQ_TYPE\" = '" + CLEAN_ABORTED + "' AND \"CQ_DATABASE\" = \"TC\".\"TC_DATABASE\" " +
           "   AND \"CQ_TABLE\" = \"TC\".\"TC_TABLE\" " +
           "WHERE \"CQ_STATE\" = '" + READY_FOR_CLEANING + "'";
@@ -303,13 +304,14 @@ class CompactionTxnHandler extends TxnHandler {
         rs = stmt.executeQuery(s);
 
         while (rs.next()) {
-          CompactionInfo info = new CompactionInfo();
-          info.dbname = rs.getString(2);;
-          info.tableName = rs.getString(3);
-          info.partName = rs.getString(4);
+          long cqId = rs.getLong(1);
 
-          if (!rc.containsKey(info.getFullPartitionName())) {
-            info.id = rs.getLong(1);
+          if (!rc.containsKey(cqId)) {
+            CompactionInfo info = new CompactionInfo();
+            info.id = cqId;
+            info.dbname = rs.getString(2);;
+            info.tableName = rs.getString(3);
+            info.partName = rs.getString(4);
             info.type = dbCompactionType2ThriftType(rs.getString(5).charAt(0));
             info.runAs = rs.getString(6);
             info.highestWriteId = rs.getLong(7);
@@ -320,11 +322,10 @@ class CompactionTxnHandler extends TxnHandler {
               info.writeIds = new HashSet<>();
               info.writeIds.add(rs.getLong(8));
             }
-            rc.put(info.getFullPartitionName(), info);
+            rc.put(cqId, info);
           } else {
-            // next aborted DP write to the same db/table
-            rc.get(info.getFullPartitionName()).writeIds.add(
-                rs.getLong(8));
+            // aborted DP write to the same db/table
+            rc.get(cqId).writeIds.add(rs.getLong(8));
           }
         }
         return new ArrayList<>(rc.values());
@@ -377,7 +378,7 @@ class CompactionTxnHandler extends TxnHandler {
           throw new IllegalStateException("No record with CQ_ID=" + info.id + " found in COMPACTION_QUEUE");
         }
         close(rs);
-        String s = "delete from \"COMPACTION_QUEUE\" where \"CQ_ID\" = ?";
+        String s = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
         pStmt = dbConn.prepareStatement(s);
         pStmt.setLong(1, info.id);
         LOG.debug("Going to execute update <" + s + ">");
@@ -418,7 +419,7 @@ class CompactionTxnHandler extends TxnHandler {
           pStmt.setString(paramCount++, info.partName);
         }
         if(info.highestWriteId != 0) {
-          pStmt.setLong(paramCount++, info.highestWriteId);
+          pStmt.setLong(paramCount, info.highestWriteId);
         }
         LOG.debug("Going to execute update <" + s + ">");
         if ((updCount = pStmt.executeUpdate()) < 1) {
@@ -435,85 +436,56 @@ class CompactionTxnHandler extends TxnHandler {
          * aborted TXN_COMPONENTS above tc_writeid (and consequently about aborted txns).
          * See {@link ql.txn.compactor.Cleaner.removeFiles()}
          */
-        s = "SELECT DISTINCT \"TXN_ID\" FROM \"TXNS\", \"TXN_COMPONENTS\" WHERE \"TXN_ID\" = \"TC_TXNID\" "
-            + "AND \"TXN_STATE\" = " + TxnStatus.ABORTED + " AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ?";
-        if (info.highestWriteId != 0) s += " AND \"TC_WRITEID\" <= ?";
-        if (info.partName != null) s += " AND \"TC_PARTITION\" = ?";
+        List<String> queries = new ArrayList<>();
+        Iterator<Long> writeIdsIter = null;
+        List<Integer> counts = null;
 
-        pStmt = dbConn.prepareStatement(s);
-        paramCount = 1;
-        pStmt.setString(paramCount++, info.dbname);
-        pStmt.setString(paramCount++, info.tableName);
-        if(info.highestWriteId != 0) {
-          pStmt.setLong(paramCount++, info.highestWriteId);
+        s = "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN (" +
+          "   SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED + ") " +
+          "AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ?";
+        if (info.highestWriteId != 0) {
+          s += " AND \"TC_WRITEID\" <= ?";
         }
         if (info.partName != null) {
-          pStmt.setString(paramCount++, info.partName);
+          s += " AND \"TC_PARTITION\" = ?";
         }
         if (info.writeIds != null && info.writeIds.size() > 0) {
-          String[] writeIds = info.writeIds.stream().map(String::valueOf).toArray(String[]::new);
-          s += " AND \"TC_WRITEID\" IN (" + String.join(",", writeIds) + ")";
+          StringBuilder prefix = new StringBuilder(s).append(" AND ");
+          List<String> questions = Collections.nCopies(info.writeIds.size(), "?");
+          counts = TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix, new StringBuilder(),
+              questions, "\"TC_WRITEID\"", false, false);
+          writeIdsIter = info.writeIds.iterator();
+        } else {
+          queries.add(s);
         }
-        LOG.debug("Going to execute update <" + s + ">");
-        rs = pStmt.executeQuery();
-        List<Long> txnids = new ArrayList<>();
-        List<String> questions = new ArrayList<>();
-        while (rs.next()) {
-          long id = rs.getLong(1);
-          txnids.add(id);
-          questions.add("?");
-        }
-        // Remove entries from txn_components, as there may be aborted txn components
-        if (txnids.size() > 0) {
-          List<String> queries = new ArrayList<>();
 
-          // Prepare prefix and suffix
-          StringBuilder prefix = new StringBuilder();
-          StringBuilder suffix = new StringBuilder();
+        for (int i = 0; i < queries.size(); i++) {
+          String query = queries.get(i);
+          int writeIdCount = (counts != null) ? counts.get(i) : 0;
 
-          prefix.append("DELETE FROM \"TXN_COMPONENTS\" WHERE ");
+          LOG.debug("Going to execute update <" + query + ">");
+          pStmt = dbConn.prepareStatement(query);
+          paramCount = 1;
 
-          //because 1 txn may include different partitions/tables even in auto commit mode
-          suffix.append(" AND \"TC_DATABASE\" = ?");
-          suffix.append(" AND \"TC_TABLE\" = ?");
+          pStmt.setString(paramCount++, info.dbname);
+          pStmt.setString(paramCount++, info.tableName);
+          if (info.highestWriteId != 0) {
+            pStmt.setLong(paramCount++, info.highestWriteId);
+          }
           if (info.partName != null) {
-            suffix.append(" AND \"TC_PARTITION\" = ?");
+            pStmt.setString(paramCount++, info.partName);
           }
-
-          if (info.writeIds != null && info.writeIds.size() > 0) {
-            String[] writeIds = info.writeIds.stream().map(String::valueOf).toArray(String[]::new);
-            suffix.append(" AND \"TC_WRITEID\" IN (").append(String.join(",", writeIds)).append(")");
-          }
-          // Populate the complete query with provided prefix and suffix
-          List<Integer> counts = TxnUtils
-              .buildQueryWithINClauseStrings(conf, queries, prefix, suffix, questions, "\"TC_TXNID\"",
-                  true, false);
-          int totalCount = 0;
-          for (int i = 0; i < queries.size(); i++) {
-            String query = queries.get(i);
-            int insertCount = counts.get(i);
-
-            LOG.debug("Going to execute update <" + query + ">");
-            pStmt = dbConn.prepareStatement(query);
-            for (int j = 0; j < insertCount; j++) {
-              pStmt.setLong(j + 1, txnids.get(totalCount + j));
+          for (int j = 0; j < writeIdCount; j++) {
+            if (writeIdsIter.hasNext()) {
+              pStmt.setLong(paramCount + j, writeIdsIter.next());
             }
-            totalCount += insertCount;
-            paramCount = insertCount + 1;
-            pStmt.setString(paramCount++, info.dbname);
-            pStmt.setString(paramCount++, info.tableName);
-            if (info.partName != null) {
-              pStmt.setString(paramCount++, info.partName);
-            }
-            int rc = pStmt.executeUpdate();
-            LOG.debug("Removed " + rc + " records from txn_components");
-
-            // Don't bother cleaning from the txns table.  A separate call will do that.  We don't
-            // know here which txns still have components from other tables or partitions in the
-            // table, so we don't know which ones we can and cannot clean.
           }
+          int rc = pStmt.executeUpdate();
+          LOG.debug("Removed " + rc + " records from txn_components");
+          // Don't bother cleaning from the txns table.  A separate call will do that.  We don't
+          // know here which txns still have components from other tables or partitions in the
+          // table, so we don't know which ones we can and cannot clean.
         }
-
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {

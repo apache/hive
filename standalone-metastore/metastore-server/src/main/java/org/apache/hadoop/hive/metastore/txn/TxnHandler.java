@@ -255,7 +255,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "\"TC_TXNID\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_OPERATION_TYPE\", \"TC_WRITEID\")" +
       " VALUES (?, ?, ?, ?, ?, ?)";
   private static final String TXN_COMPONENTS_DP_DELETE_QUERY = "DELETE FROM \"TXN_COMPONENTS\" " +
-      "WHERE \"TC_TXNID\" = ? AND \"TC_PARTITION\" IS NULL";
+      "WHERE \"TC_TXNID\" = ? AND \"TC_OPERATION_TYPE\" = " + OperationType.DYNPART;
   private static final String INCREMENT_NEXT_LOCK_ID_QUERY = "UPDATE \"NEXT_LOCK_ID\" SET \"NL_NEXT\" = %s";
   private static final String UPDATE_HIVE_LOCKS_EXT_ID_QUERY = "UPDATE \"HIVE_LOCKS\" SET \"HL_LOCK_EXT_ID\" = %s " +
       "WHERE \"HL_LOCK_EXT_ID\" = %s";
@@ -1496,7 +1496,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         "' FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" = " + txnid +
         //we only track compactor activity in TXN_COMPONENTS to handle the case where the
         //compactor txn aborts - so don't bother copying it to COMPLETED_TXN_COMPONENTS
-        " AND \"TC_OPERATION_TYPE\" NOT IN(" + OperationType.COMPACT + "," + OperationType.DYNPART + ")";
+        " AND \"TC_OPERATION_TYPE\" <> " + OperationType.COMPACT;
     LOG.debug("Going to execute insert <" + s + ">");
 
     if ((stmt.executeUpdate(s)) < 1) {
