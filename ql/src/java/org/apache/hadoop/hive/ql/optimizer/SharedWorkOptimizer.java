@@ -473,13 +473,13 @@ public class SharedWorkOptimizer extends Transform {
 
               // Obtain filter for shared TS operator
               ExprNodeDesc exprNode = null;
-              if(modelR.normalFilterExpr != null && modelD.normalFilterExpr!= null) {
-                exprNode =disjunction(modelR.normalFilterExpr, modelD.normalFilterExpr);
+              if (modelR.normalFilterExpr != null && modelD.normalFilterExpr != null) {
+                exprNode = disjunction(modelR.normalFilterExpr, modelD.normalFilterExpr);
               }
               List<ExprNodeDesc> semiJoinExpr = null;
               if (mode == Mode.DPPUnion) {
                 assert modelR.semijoinExprNodes != null;
-                assert modelD.semijoinExprNodes == null;
+                assert modelD.semijoinExprNodes != null;
                 ExprNodeDesc disjunction = disjunction(conjunction(modelR.semijoinExprNodes), conjunction(modelD.semijoinExprNodes));
                 semiJoinExpr = disjunction == null ? null : Lists.newArrayList(disjunction);
               } else {
