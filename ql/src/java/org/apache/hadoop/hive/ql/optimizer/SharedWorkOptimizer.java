@@ -539,8 +539,13 @@ public class SharedWorkOptimizer extends Transform {
               // reparent all
               Collection<Operator<?>> discardableDPP = optimizerCache.tableScanToDPPSource.get(discardableTsOp);
               for (Operator<?> op : discardableDPP) {
-                SemiJoinBranchInfo sjInfo = pctx.getRsToSemiJoinBranchInfo().get(op);
-                sjInfo.setTableScan(retainableTsOp);
+                if (op instanceof ReduceSinkOperator) {
+                  SemiJoinBranchInfo sjInfo = pctx.getRsToSemiJoinBranchInfo().get(op);
+                  sjInfo.setTableScan(retainableTsOp);
+                } else if (op.getConf() instanceof DynamicPruningEventDesc) {
+                  DynamicPruningEventDesc dynamicPruningEventDesc = (DynamicPruningEventDesc) op.getConf();
+                  dynamicPruningEventDesc.setTableScan(retainableTsOp);
+                }
               }
               optimizerCache.tableScanToDPPSource.get(retainableTsOp).addAll(discardableDPP);
               discardableDPP.clear();
@@ -1305,14 +1310,17 @@ public class SharedWorkOptimizer extends Transform {
           // This is a hint, we should keep it, hence we bail out
           return false;
         }
-        Set<Operator<?>> ascendants = findAscendantWorkOperators(pctx, cache, op);
-        if (ascendants.contains(tsOp2)) {
-          // This should not happen, we cannot merge
-          return false;
-        }
+      } else if (op.getConf() instanceof DynamicPruningEventDesc) {
+        // ok
       } else {
         return false;
       }
+      Set<Operator<?>> ascendants = findAscendantWorkOperators(pctx, cache, op);
+      if (ascendants.contains(tsOp2)) {
+        // This should not happen, we cannot merge
+        return false;
+      }
+
     }
     return true;
   }
