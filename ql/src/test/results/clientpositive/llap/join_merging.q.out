@@ -51,7 +51,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p3
-                  filterExpr: ((p_size > 10) and p_partkey is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: p_partkey (type: int)
@@ -179,7 +178,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p3
-                  filterExpr: ((p_size > 10) and p_partkey is not null) (type: boolean)
                   Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: p_partkey (type: int)

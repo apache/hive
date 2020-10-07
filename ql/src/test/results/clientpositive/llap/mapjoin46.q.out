@@ -2552,7 +2552,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test1_n4
-                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
@@ -2803,7 +2802,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: test1_n4
-                  filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 6 Data size: 572 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: int), value (type: int), col_1 (type: string), key BETWEEN 100 AND 102 (type: boolean)
