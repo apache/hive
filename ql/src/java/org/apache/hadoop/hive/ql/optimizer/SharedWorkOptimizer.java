@@ -562,6 +562,11 @@ public class SharedWorkOptimizer extends Transform {
               LOG.debug("Operator removed: {}", op);
             }
 
+            // try to merge downstream operators
+            if (sr.discardableOps.size() == 1) {
+              downStreamMerge(retainableTsOp, optimizerCache, pctx);
+            }
+
             break;
           }
 
@@ -580,6 +585,34 @@ public class SharedWorkOptimizer extends Transform {
           (Entry<String, TableScanOperator> e) -> e.getValue().getNumChild() == 0);
 
       return mergedExecuted;
+    }
+
+    private void downStreamMerge(Operator<?> op, SharedWorkOptimizerCache optimizerCache, ParseContext pctx)
+        throws SemanticException {
+      List<Operator<?>> childs = op.getChildOperators();
+      for (int i = 0; i < childs.size(); i++) {
+        Operator<?> cI = childs.get(i);
+        for (int j = i + 1; j < childs.size(); j++) {
+          Operator<?> cJ = childs.get(j);
+          if (cI.logicalEquals(cJ)) {
+            LOG.debug("downstream merge: from {} into {}", cJ, cI);
+            adoptChildren(cI, cJ);
+            op.removeChild(cJ);
+            optimizerCache.removeOp(cJ);
+            j--;
+            downStreamMerge(cI, optimizerCache, pctx);
+          }
+        }
+      }
+    }
+
+    private void adoptChildren(Operator<?> target, Operator<?> donor) {
+      List<Operator<?>> children = donor.getChildOperators();
+      for (Operator<?> c : children) {
+        c.getParentOperators().remove(donor);
+        c.getParentOperators().add(target);
+      }
+      target.getChildOperators().addAll(children);
     }
 
     private ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes) throws UDFArgumentException {
