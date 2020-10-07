@@ -634,7 +634,7 @@ public class SharedWorkOptimizer extends Transform {
 
     private ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes, ExprNodeDesc exprNode)
         throws UDFArgumentException {
-      if (!semijoinExprNodes.isEmpty()) {
+      if (semijoinExprNodes != null && !semijoinExprNodes.isEmpty()) {
         if (exprNode != null) {
           semijoinExprNodes.add(0, exprNode);
         }
