@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -49,7 +50,8 @@ public class ImpalaBasicTableCreator {
     Database msDb = context.getDb(table);
     String tableName = msTbl.getDbName() + "." + msTbl.getTableName();
     HiveConf conf = context.getConf();
-    ValidWriteIdList validWriteIdList = context.getValidWriteIdList(conf, tableName);
+    ValidWriteIdList validWriteIdList =
+        AcidUtils.isTransactionalTable(msTbl) ? context.getValidWriteIdList(conf, tableName) : null;
     basicTable = new ImpalaBasicHdfsTable(conf, client, msTbl, msDb, validWriteIdList);
     context.cacheBasicTable(msTbl, basicTable);
     return basicTable;
