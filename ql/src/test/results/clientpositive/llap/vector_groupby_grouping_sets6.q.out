@@ -83,6 +83,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: a (type: string), b (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1
                       minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
@@ -231,6 +232,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: a (type: string), b (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1
                       minReductionHashAggr: 0.0
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2

@@ -67,6 +67,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: key (type: string), val (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -210,6 +211,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: key (type: string), val (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -379,6 +381,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -532,6 +535,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT val)
                       keys: key (type: string), 0L (type: bigint), val (type: string)
+                      grouping sets: 0, 1
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -651,6 +655,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: key (type: string), val (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -851,6 +856,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT val)
                       keys: key (type: string), 0L (type: bigint), val (type: string)
+                      grouping sets: 0, 1
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -1021,6 +1027,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: key (type: string), val (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -1058,6 +1065,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: key (type: string), val (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
