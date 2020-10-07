@@ -355,6 +355,7 @@ public class SharedWorkOptimizer extends Transform {
               LOG.debug("Skip {} as it has already been removed", retainableTsOp);
               continue;
             }
+            LOG.debug("Can we merge {} into {} to remove a scan on {}?", discardableTsOp, retainableTsOp, tableName);
 
             SharedResult sr;
             if (mode == Mode.RemoveSemijoin) {
@@ -430,7 +431,7 @@ public class SharedWorkOptimizer extends Transform {
                 continue;
               }
             } else {
-              throw new RuntimeException("unhandled mode");
+              throw new RuntimeException("unhandled mode: " + mode);
             }
 
             // We can merge
