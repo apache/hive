@@ -1876,8 +1876,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
 
       String queryString = ctx.getTokenRewriteStream().toString(ast.getTokenStartIndex(), ast.getTokenStopIndex());
-      RelOptMaterialization relOptMaterialization =
-              HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(queryString);
+      RelOptMaterialization relOptMaterialization = db.getMaterialization(queryString);
       if (relOptMaterialization != null) {
         return relOptMaterialization.tableRel;
       }

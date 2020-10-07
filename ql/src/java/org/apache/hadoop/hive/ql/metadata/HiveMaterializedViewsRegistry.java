@@ -91,11 +91,6 @@ public final class HiveMaterializedViewsRegistry {
   /* Singleton */
   private static final HiveMaterializedViewsRegistry SINGLETON = new HiveMaterializedViewsRegistry();
 
-//  /* Key is the database name. Value a map from the qualified name to the view object. */
-//  private final ConcurrentMap<String, ConcurrentMap<String, RelOptMaterialization>> materializedViews =
-//      new ConcurrentHashMap<>();
-//  // Map for looking up materialization by view query text
-//  private final Map<String, RelOptMaterialization> sqlToMaterializedView = new ConcurrentHashMap<>();
   private final MaterializedViews materializedViews = new MaterializedViews();
 
   /* Whether the cache has been initialized or not. */

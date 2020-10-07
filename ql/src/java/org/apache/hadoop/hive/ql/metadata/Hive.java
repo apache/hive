@@ -1945,6 +1945,10 @@ public class Hive {
     }
   }
 
+  public RelOptMaterialization getMaterialization(String queryString) {
+    return HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(queryString);
+  }
+
   /**
    * Get all existing database names.
    *
