@@ -93,14 +93,14 @@ Stage-0
     limit:-1
     Stage-1
       Reducer 8 vectorized
-      File Output Operator [FS_241]
-        Group By Operator [GBY_240] (rows=1 width=232)
+      File Output Operator [FS_243]
+        Group By Operator [GBY_242] (rows=1 width=232)
           Output:["_col0","_col1","_col2"],aggregations:["count(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)"]
         <-Reducer 7 [CUSTOM_SIMPLE_EDGE] vectorized
-          PARTITION_ONLY_SHUFFLE [RS_239]
-            Group By Operator [GBY_238] (rows=1 width=232)
+          PARTITION_ONLY_SHUFFLE [RS_241]
+            Group By Operator [GBY_240] (rows=1 width=232)
               Output:["_col0","_col1","_col2"],aggregations:["count(_col0)","sum(_col1)","sum(_col2)"]
-              Group By Operator [GBY_237] (rows=5022875 width=228)
+              Group By Operator [GBY_239] (rows=5022875 width=228)
                 Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0
               <-Reducer 6 [SIMPLE_EDGE]
                 SHUFFLE [RS_102]
@@ -131,7 +131,7 @@ Stage-0
                                 SHUFFLE [RS_40]
                                   PartitionCols:_col1
                                   Merge Join Operator [MERGEJOIN_208] (rows=141176436 width=11)
-                                    Conds:RS_217._col1=RS_236._col0(Inner),Output:["_col0","_col1","_col2"]
+                                    Conds:RS_217._col1=RS_238._col0(Inner),Output:["_col0","_col1","_col2"]
                                   <-Map 1 [SIMPLE_EDGE] vectorized
                                     SHUFFLE [RS_217]
                                       PartitionCols:_col1
@@ -139,9 +139,9 @@ Stage-0
                                         Output:["_col0","_col1"]
                                          Please refer to the previous TableScan [TS_0]
                                   <-Map 17 [SIMPLE_EDGE] vectorized
-                                    SHUFFLE [RS_236]
+                                    SHUFFLE [RS_238]
                                       PartitionCols:_col0
-                                      Select Operator [SEL_235] (rows=14398467 width=4)
+                                      Select Operator [SEL_237] (rows=14398467 width=4)
                                         Output:["_col0"]
                                         TableScan [TS_33] (rows=14398467 width=4)
                                           default@web_returns,web_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["wr_order_number"]
@@ -212,13 +212,13 @@ Stage-0
                                 Filter Operator [FIL_29] (rows=1411940834 width=11)
                                   predicate:(_col0 <> _col2)
                                   Merge Join Operator [MERGEJOIN_207] (rows=1411940834 width=11)
-                                    Conds:RS_233._col1=RS_233._col1(Inner),Output:["_col0","_col1","_col2"]
+                                    Conds:RS_235._col1=RS_235._col1(Inner),Output:["_col0","_col1","_col2"]
                                   <-Map 15 [SIMPLE_EDGE] vectorized
-                                    SHUFFLE [RS_234]
+                                    SHUFFLE [RS_236]
                                       PartitionCols:_col1
-                                      Select Operator [SEL_232] (rows=144002668 width=7)
+                                      Select Operator [SEL_234] (rows=144002668 width=7)
                                         Output:["_col0","_col1"]
-                                        Filter Operator [FIL_231] (rows=144002668 width=7)
+                                        Filter Operator [FIL_232] (rows=144002668 width=7)
                                           predicate:(ws_order_number BETWEEN DynamicValue(RS_47_ws1_ws_order_number_min) AND DynamicValue(RS_47_ws1_ws_order_number_max) and in_bloom_filter(ws_order_number, DynamicValue(RS_47_ws1_ws_order_number_bloom_filter)))
                                           TableScan [TS_22] (rows=144002668 width=7)
                                             default@web_sales,ws1,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_warehouse_sk","ws_order_number"]
@@ -236,5 +236,5 @@ Stage-0
                                           <-Reducer 9 [BROADCAST_EDGE] vectorized
                                              Please refer to the previous BROADCAST [RS_230]
                                   <-Map 15 [SIMPLE_EDGE] vectorized
-                                     Please refer to the previous SHUFFLE [RS_234]
+                                     Please refer to the previous SHUFFLE [RS_236]
 

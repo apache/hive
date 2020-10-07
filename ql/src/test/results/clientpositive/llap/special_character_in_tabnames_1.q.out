@@ -1018,7 +1018,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (value > 'val_2') (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     key expressions: value (type: string)
@@ -1147,7 +1146,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (value > 'val_12') (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), value (type: string)
@@ -2214,7 +2212,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p/a/r/t
-                  filterExpr: p_name is not null (type: boolean)
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_name is not null (type: boolean)
@@ -2389,7 +2386,6 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: s1
-                  filterExpr: ((key > '2') or ((key > '2') and key is null)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (key > '2') (type: boolean)
@@ -2564,15 +2560,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: ((p_size < 10) or ((p_size < 10) and (p_name is null or p_mfgr is null))) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (p_size < 10) (type: boolean)
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
-                      Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
                   Filter Operator
                     predicate: (p_size < 10) (type: boolean)
                     Statistics: Num rows: 5 Data size: 1115 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2742,15 +2735,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: p/a/r/t
-                  filterExpr: (p_size < 10) (type: boolean)
                   Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (p_size < 10) (type: boolean)
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
-                      Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: p_name (type: string), p_size (type: int)
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 26 Data size: 3250 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: p_name (type: string), p_size (type: int)
                   Filter Operator
                     predicate: (p_size < 10) (type: boolean)
                     Statistics: Num rows: 5 Data size: 20 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2948,15 +2938,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: ((p_size < 10) or (p_size < 10)) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: (p_size < 10) (type: boolean)
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
-                      Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                  Reduce Output Operator
+                    null sort order: 
+                    sort order: 
+                    Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
+                    value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
                   Filter Operator
                     predicate: (p_size < 10) (type: boolean)
                     Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
