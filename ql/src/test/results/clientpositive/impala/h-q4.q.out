@@ -22,7 +22,7 @@ order by
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_orders
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select
   o_orderpriority,
   count(*) as order_count
@@ -47,7 +47,6 @@ order by
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_orders
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], dir0=[ASC])
   ImpalaAggregateRel(group=[{2}], agg#0=[count()])
@@ -81,7 +80,7 @@ order by
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_orders
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select
   o_orderpriority,
   count(*) as order_count
@@ -106,7 +105,6 @@ order by
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_orders
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

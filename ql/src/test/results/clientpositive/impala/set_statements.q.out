@@ -9,11 +9,10 @@ impala.num_nodes=2
 PREHOOK: query: explain select count(*) from impala_tpch_lineitem
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select count(*) from impala_tpch_lineitem
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -59,11 +58,10 @@ num_nodes=3
 PREHOOK: query: explain select count(*) from impala_tpch_lineitem
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select count(*) from impala_tpch_lineitem
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -123,11 +121,10 @@ dummy_option=aaa
 PREHOOK: query: explain select count(*) from impala_tpch_lineitem
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select count(*) from impala_tpch_lineitem
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

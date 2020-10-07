@@ -36,7 +36,7 @@ PREHOOK: Input: default@impala_tpcds_ship_mode
 PREHOOK: Input: default@impala_tpcds_warehouse
 PREHOOK: Input: default@impala_tpcds_web_sales
 PREHOOK: Input: default@impala_tpcds_web_site
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select  
    substr(w_warehouse_name,1,20)
   ,sm_type
@@ -75,7 +75,6 @@ POSTHOOK: Input: default@impala_tpcds_ship_mode
 POSTHOOK: Input: default@impala_tpcds_warehouse
 POSTHOOK: Input: default@impala_tpcds_web_sales
 POSTHOOK: Input: default@impala_tpcds_web_site
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(_o__c0=[$0], sm_type=[$1], web_name=[$2], 30 days=[$3], 31-60 days=[$4], 61-90 days=[$5], 91-120 days=[$6], >120 days=[$7])
   ImpalaSortRel(sort0=[$8], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
@@ -134,7 +133,7 @@ PREHOOK: Input: default@impala_tpcds_ship_mode
 PREHOOK: Input: default@impala_tpcds_warehouse
 PREHOOK: Input: default@impala_tpcds_web_sales
 PREHOOK: Input: default@impala_tpcds_web_site
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select  
    substr(w_warehouse_name,1,20)
   ,sm_type
@@ -173,7 +172,6 @@ POSTHOOK: Input: default@impala_tpcds_ship_mode
 POSTHOOK: Input: default@impala_tpcds_warehouse
 POSTHOOK: Input: default@impala_tpcds_web_sales
 POSTHOOK: Input: default@impala_tpcds_web_site
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

@@ -18,7 +18,7 @@ where
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_part
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select
   sum(l_extendedprice) / 7.0 as avg_yearly
 from
@@ -39,7 +39,6 @@ where
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_part
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(avg_yearly=[/($0, 7:DECIMAL(1, 0))])
   ImpalaAggregateRel(group=[{}], agg#0=[sum($2)])
@@ -73,7 +72,7 @@ where
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_part
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select
   sum(l_extendedprice) / 7.0 as avg_yearly
 from
@@ -94,7 +93,6 @@ where
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_part
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

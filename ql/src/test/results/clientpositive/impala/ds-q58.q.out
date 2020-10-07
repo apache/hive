@@ -66,7 +66,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo with ss_items as
  (select i_item_id item_id
         ,sum(ss_ext_sales_price) ss_item_rev 
@@ -135,7 +135,6 @@ POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_item
 POSTHOOK: Input: default@impala_tpcds_store_sales
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   ImpalaProjectRel(item_id=[$0], ss_item_rev=[$5], ss_dev=[*(/($5, /(+(+($5, $1), $9), 3:DECIMAL(3, 0))), 100:DECIMAL(3, 0))], cs_item_rev=[$1], cs_dev=[*(/($1, /(+(+($5, $1), $9), 3:DECIMAL(3, 0))), 100:DECIMAL(3, 0))], ws_item_rev=[$9], ws_dev=[*(/($9, /(+(+($5, $1), $9), 3:DECIMAL(3, 0))), 100:DECIMAL(3, 0))], average=[/(+(+($5, $1), $9), 3:DECIMAL(3, 0))])
@@ -273,7 +272,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain with ss_items as
  (select i_item_id item_id
         ,sum(ss_ext_sales_price) ss_item_rev 
@@ -342,7 +341,6 @@ POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_item
 POSTHOOK: Input: default@impala_tpcds_store_sales
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

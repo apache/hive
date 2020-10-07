@@ -36,7 +36,7 @@ PREHOOK: Input: default@impala_tpcds_customer_address
 PREHOOK: Input: default@impala_tpcds_customer_demographics
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_item
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select  i_item_id,
         ca_country,
         ca_state, 
@@ -75,7 +75,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_address
 POSTHOOK: Input: default@impala_tpcds_customer_demographics
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_item
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$1], sort1=[$2], sort2=[$3], sort3=[$0], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
   ImpalaProjectRel($f0=[$0], $f1=[$3], $f2=[$2], $f3=[$1], $f4=[CAST(/($4, CAST($5):DECIMAL(19, 0))):DECIMAL(16, 6)], $f5=[CAST(/($6, CAST($7):DECIMAL(19, 0))):DECIMAL(16, 6)], $f6=[CAST(/($8, CAST($9):DECIMAL(19, 0))):DECIMAL(16, 6)], $f7=[CAST(/($10, CAST($11):DECIMAL(19, 0))):DECIMAL(16, 6)], $f8=[CAST(/($12, CAST($13):DECIMAL(19, 0))):DECIMAL(16, 6)], $f9=[CAST(/($14, CAST($15):DECIMAL(19, 0))):DECIMAL(16, 6)], $f10=[CAST(/($16, CAST($17):DECIMAL(19, 0))):DECIMAL(16, 6)])
@@ -139,7 +138,7 @@ PREHOOK: Input: default@impala_tpcds_customer_address
 PREHOOK: Input: default@impala_tpcds_customer_demographics
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_item
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select  i_item_id,
         ca_country,
         ca_state, 
@@ -178,7 +177,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_address
 POSTHOOK: Input: default@impala_tpcds_customer_demographics
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_item
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

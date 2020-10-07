@@ -1,11 +1,10 @@
 PREHOOK: query: explain
 select inline(array(struct('abc')))
 PREHOOK: type: QUERY
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select inline(array(struct('abc')))
 POSTHOOK: type: QUERY
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -37,12 +36,11 @@ PREHOOK: query: explain
 select 'abc' from simple_char_tbl union all select 'def'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@simple_char_tbl
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select 'abc' from simple_char_tbl union all select 'def'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@simple_char_tbl
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

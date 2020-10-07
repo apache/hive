@@ -29,7 +29,7 @@ PREHOOK: Input: default@impala_tpch_nation
 PREHOOK: Input: default@impala_tpch_orders
 PREHOOK: Input: default@impala_tpch_region
 PREHOOK: Input: default@impala_tpch_supplier
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select
   n_name,
   sum(l_extendedprice * (1 - l_discount)) as revenue
@@ -61,7 +61,6 @@ POSTHOOK: Input: default@impala_tpch_nation
 POSTHOOK: Input: default@impala_tpch_orders
 POSTHOOK: Input: default@impala_tpch_region
 POSTHOOK: Input: default@impala_tpch_supplier
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$1], dir0=[DESC])
   ImpalaAggregateRel(group=[{8}], agg#0=[sum($6)])
@@ -114,7 +113,7 @@ PREHOOK: Input: default@impala_tpch_nation
 PREHOOK: Input: default@impala_tpch_orders
 PREHOOK: Input: default@impala_tpch_region
 PREHOOK: Input: default@impala_tpch_supplier
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select
   n_name,
   sum(l_extendedprice * (1 - l_discount)) as revenue
@@ -146,7 +145,6 @@ POSTHOOK: Input: default@impala_tpch_nation
 POSTHOOK: Input: default@impala_tpch_orders
 POSTHOOK: Input: default@impala_tpch_region
 POSTHOOK: Input: default@impala_tpch_supplier
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

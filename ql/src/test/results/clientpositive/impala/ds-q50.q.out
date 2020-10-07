@@ -59,7 +59,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_returns
 PREHOOK: Input: default@impala_tpcds_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select  
    s_store_name
   ,s_company_id
@@ -121,7 +121,6 @@ POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store
 POSTHOOK: Input: default@impala_tpcds_store_returns
 POSTHOOK: Input: default@impala_tpcds_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=[$5], sort6=[$6], sort7=[$7], sort8=[$8], sort9=[$9], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], dir6=[ASC], dir7=[ASC], dir8=[ASC], dir9=[ASC], fetch=[100])
   ImpalaAggregateRel(group=[{0, 1, 2, 3, 4, 5, 6, 7, 8, 9}], agg#0=[sum($10)], agg#1=[sum($11)], agg#2=[sum($12)], agg#3=[sum($13)], agg#4=[sum($14)])
@@ -202,7 +201,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_returns
 PREHOOK: Input: default@impala_tpcds_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select  
    s_store_name
   ,s_company_id
@@ -264,7 +263,6 @@ POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store
 POSTHOOK: Input: default@impala_tpcds_store_returns
 POSTHOOK: Input: default@impala_tpcds_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

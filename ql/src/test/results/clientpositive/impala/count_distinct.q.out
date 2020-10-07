@@ -3,13 +3,12 @@ select count(distinct l_quantity), count(distinct l_suppkey)
 from impala_tpch_lineitem
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select count(distinct l_quantity), count(distinct l_suppkey)
 from impala_tpch_lineitem
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -102,14 +101,13 @@ from impala_tpch_lineitem
 group by l_orderkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select l_orderkey, count(distinct l_quantity), count(distinct l_suppkey)
 from impala_tpch_lineitem
 group by l_orderkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -213,14 +211,13 @@ from impala_tpch_lineitem
 group by l_orderkey, l_partkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select l_orderkey, l_partkey, count(distinct l_quantity), count(distinct l_suppkey)
 from impala_tpch_lineitem
 group by l_orderkey, l_partkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -324,14 +321,13 @@ from impala_tpch_lineitem
 group by l_orderkey, l_partkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select l_partkey, l_orderkey, count(distinct l_quantity), count(distinct l_suppkey)
 from impala_tpch_lineitem
 group by l_orderkey, l_partkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -435,14 +431,13 @@ from impala_tpch_lineitem
 group by l_suppkey, l_partkey, l_linenumber
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select l_partkey, l_suppkey, l_linenumber, count(distinct l_quantity)
 from impala_tpch_lineitem
 group by l_suppkey, l_partkey, l_linenumber
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -533,14 +528,13 @@ from impala_tpch_lineitem
 group by l_orderkey, l_partkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select l_partkey, count(distinct l_quantity), l_orderkey, count(distinct l_suppkey)
 from impala_tpch_lineitem
 group by l_orderkey, l_partkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -643,13 +637,12 @@ select count(l_quantity), count(distinct l_suppkey), count(distinct l_quantity),
 from impala_tpch_lineitem
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select count(l_quantity), count(distinct l_suppkey), count(distinct l_quantity), count(l_orderkey)
 from impala_tpch_lineitem
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -754,13 +747,12 @@ select count(l_quantity), count(distinct l_suppkey), count(distinct l_quantity),
 from impala_tpch_lineitem
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select count(l_quantity), count(distinct l_suppkey), count(distinct l_quantity), count(distinct l_orderkey)
 from impala_tpch_lineitem
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -874,14 +866,13 @@ from impala_tpch_lineitem
 group by l_orderkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select l_orderkey, count(distinct l_quantity), count(l_suppkey)
 from impala_tpch_lineitem
 group by l_orderkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -974,14 +965,13 @@ from impala_tpch_lineitem
 group by l_orderkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select l_orderkey, count(distinct l_quantity), count(l_suppkey), count(distinct l_suppkey), count(distinct l_quantity)
 from impala_tpch_lineitem
 group by l_orderkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -1104,13 +1094,12 @@ select count(l_quantity), sum(distinct l_suppkey), avg(distinct l_quantity), cou
 from impala_tpch_lineitem
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select count(l_quantity), sum(distinct l_suppkey), avg(distinct l_quantity), count(distinct l_orderkey)
 from impala_tpch_lineitem
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -1224,14 +1213,13 @@ from impala_tpch_lineitem
 group by l_orderkey
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select l_orderkey, avg(distinct l_quantity), count(l_suppkey), sum(distinct l_suppkey), count(distinct l_quantity)
 from impala_tpch_lineitem
 group by l_orderkey
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

@@ -48,7 +48,7 @@ PREHOOK: Input: default@impala_tpch_part
 PREHOOK: Input: default@impala_tpch_partsupp
 PREHOOK: Input: default@impala_tpch_region
 PREHOOK: Input: default@impala_tpch_supplier
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select
   s_acctbal,
   s_name,
@@ -99,7 +99,6 @@ POSTHOOK: Input: default@impala_tpch_part
 POSTHOOK: Input: default@impala_tpch_partsupp
 POSTHOOK: Input: default@impala_tpch_region
 POSTHOOK: Input: default@impala_tpch_supplier
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$2], sort2=[$1], sort3=[$3], dir0=[DESC], dir1=[ASC], dir2=[ASC], dir3=[ASC], fetch=[100])
   ImpalaProjectRel(s_acctbal=[$9], s_name=[$5], n_name=[$1], p_partkey=[$14], p_mfgr=[$15], s_address=[$6], s_phone=[$8], s_comment=[$10])
@@ -180,7 +179,7 @@ PREHOOK: Input: default@impala_tpch_part
 PREHOOK: Input: default@impala_tpch_partsupp
 PREHOOK: Input: default@impala_tpch_region
 PREHOOK: Input: default@impala_tpch_supplier
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select
   s_acctbal,
   s_name,
@@ -231,7 +230,6 @@ POSTHOOK: Input: default@impala_tpch_part
 POSTHOOK: Input: default@impala_tpch_partsupp
 POSTHOOK: Input: default@impala_tpch_region
 POSTHOOK: Input: default@impala_tpch_supplier
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

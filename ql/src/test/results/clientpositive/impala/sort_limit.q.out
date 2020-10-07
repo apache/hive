@@ -2,12 +2,11 @@ PREHOOK: query: explain cbo
 select l_quantity from `impala_tpch_lineitem` limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo
 select l_quantity from `impala_tpch_lineitem` limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(fetch=[10])
   ImpalaProjectRel(l_quantity=[$4])
@@ -17,12 +16,11 @@ PREHOOK: query: explain
 select l_quantity from `impala_tpch_lineitem` limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select l_quantity from `impala_tpch_lineitem` limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

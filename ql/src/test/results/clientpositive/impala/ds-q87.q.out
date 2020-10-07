@@ -23,7 +23,7 @@ PREHOOK: Input: default@impala_tpcds_customer
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select count(*) 
 from ((select distinct c_last_name, c_first_name, d_date
        from impala_tpcds_store_sales, impala_tpcds_date_dim, impala_tpcds_customer
@@ -49,7 +49,6 @@ POSTHOOK: Input: default@impala_tpcds_customer
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store_sales
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[count()])
   ImpalaAggregateRel(group=[{0, 1, 2}], agg#0=[sum($3)], agg#1=[sum($4)], condition=[AND(>($3, 0), =(*($3, 2), $4))])
@@ -119,7 +118,7 @@ PREHOOK: Input: default@impala_tpcds_customer
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select count(*) 
 from ((select distinct c_last_name, c_first_name, d_date
        from impala_tpcds_store_sales, impala_tpcds_date_dim, impala_tpcds_customer
@@ -145,7 +144,6 @@ POSTHOOK: Input: default@impala_tpcds_customer
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store_sales
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

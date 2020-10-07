@@ -17,7 +17,7 @@ PREHOOK: Input: default@impala_tpcds_catalog_sales
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_inventory
 PREHOOK: Input: default@impala_tpcds_item
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select  i_item_id
        ,i_item_desc
        ,i_current_price
@@ -37,7 +37,6 @@ POSTHOOK: Input: default@impala_tpcds_catalog_sales
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_inventory
 POSTHOOK: Input: default@impala_tpcds_item
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
   ImpalaAggregateRel(group=[{1, 2, 3}])
@@ -72,7 +71,7 @@ PREHOOK: Input: default@impala_tpcds_catalog_sales
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_inventory
 PREHOOK: Input: default@impala_tpcds_item
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select  i_item_id
        ,i_item_desc
        ,i_current_price
@@ -92,7 +91,6 @@ POSTHOOK: Input: default@impala_tpcds_catalog_sales
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_inventory
 POSTHOOK: Input: default@impala_tpcds_item
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

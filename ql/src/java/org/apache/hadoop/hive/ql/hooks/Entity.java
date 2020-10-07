@@ -31,8 +31,10 @@ import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 
 /**
  * This class encapsulates an object that is being read or written to by the
- * query. This object may be a table, partition, dfs directory or a local
- * directory.
+ * query. This object may be a database, table, partition, dfs directory,
+ * local directory or a "stream". A STREAM entity has no backing object and
+ * is used as a marker indicating that results will be read directly from
+ * the executor (through the network).
  */
 public class Entity implements Serializable {
   private static final long serialVersionUID = 1L;
@@ -41,7 +43,7 @@ public class Entity implements Serializable {
    * The type of the entity.
    */
   public static enum Type {
-    DATABASE, TABLE, PARTITION, DUMMYPARTITION, DFS_DIR, LOCAL_DIR, FUNCTION, SERVICE_NAME
+    DATABASE, TABLE, PARTITION, DUMMYPARTITION, DFS_DIR, LOCAL_DIR, FUNCTION, SERVICE_NAME, STREAMING
   }
 
   /**
@@ -382,6 +384,7 @@ public class Entity implements Serializable {
         return database.getName() + "." + stringObject;
       }
       return stringObject;
+    case STREAMING:
     case SERVICE_NAME:
       return stringObject;
     default:

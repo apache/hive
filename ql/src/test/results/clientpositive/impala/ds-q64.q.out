@@ -130,7 +130,7 @@ PREHOOK: Input: default@impala_tpcds_promotion
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_returns
 PREHOOK: Input: default@impala_tpcds_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo with cs_ui as
  (select cs_item_sk
         ,sum(cs_ext_list_price) as sale,sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit) as refund
@@ -263,7 +263,6 @@ POSTHOOK: Input: default@impala_tpcds_promotion
 POSTHOOK: Input: default@impala_tpcds_store
 POSTHOOK: Input: default@impala_tpcds_store_returns
 POSTHOOK: Input: default@impala_tpcds_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(product_name=[$0], store_name=[$1], store_zip=[$2], b_street_number=[$3], b_street_name=[$4], b_city=[$5], b_zip=[$6], c_street_number=[$7], c_street_name=[$8], c_city=[$9], c_zip=[$10], syear=[CAST(1999):INTEGER], cnt=[$11], s11=[$12], s21=[$13], s31=[$14], s12=[$15], s22=[$16], s32=[$17], syear1=[+(1999, 1)], cnt1=[$18])
   ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$18], sort3=[$19], sort4=[$20], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC])
@@ -522,7 +521,7 @@ PREHOOK: Input: default@impala_tpcds_promotion
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_returns
 PREHOOK: Input: default@impala_tpcds_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain with cs_ui as
  (select cs_item_sk
         ,sum(cs_ext_list_price) as sale,sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit) as refund
@@ -655,7 +654,6 @@ POSTHOOK: Input: default@impala_tpcds_promotion
 POSTHOOK: Input: default@impala_tpcds_store
 POSTHOOK: Input: default@impala_tpcds_store_returns
 POSTHOOK: Input: default@impala_tpcds_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

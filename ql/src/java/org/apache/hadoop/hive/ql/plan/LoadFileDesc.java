@@ -40,6 +40,7 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
   private transient CreateTableDesc ctasCreateTableDesc;
   private transient CreateViewDesc createViewDesc;
   private boolean isMmCtas;
+  private boolean isStreaming;
 
   public LoadFileDesc(final LoadFileDesc o) {
     super(o.getSourcePath(), o.getWriteType());
@@ -51,11 +52,13 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     this.isMmCtas = o.isMmCtas;
     this.ctasCreateTableDesc = o.ctasCreateTableDesc;
     this.createViewDesc = o.createViewDesc;
+    this.isStreaming = o.isStreaming;
   }
 
   public LoadFileDesc(final CreateTableDesc createTableDesc, final CreateViewDesc createViewDesc,
-      final Path sourcePath, final Path targetDir, final boolean isDfsDir,
-      final String columns, final String columnTypes, AcidUtils.Operation writeType, boolean isMmCtas) {
+      final Path sourcePath, final Path targetDir, final boolean isDfsDir, final String columns,
+      final String columnTypes, AcidUtils.Operation writeType, boolean isMmCtas,
+      boolean isStreaming) {
     this(sourcePath, targetDir, isDfsDir, columns, columnTypes, writeType, isMmCtas);
     if (createTableDesc != null && createTableDesc.isCTAS()) {
       this.ctasCreateTableDesc = createTableDesc;
@@ -63,16 +66,18 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     if (createViewDesc != null && createViewDesc.isMaterialized()) {
       this.createViewDesc = createViewDesc;
     }
+    this.isStreaming = isStreaming;
   }
 
-  public LoadFileDesc(final Path sourcePath, final Path targetDir,
-      final boolean isDfsDir, final String columns, final String columnTypes, boolean isMmCtas) {
-    this(sourcePath, targetDir, isDfsDir, columns, columnTypes, AcidUtils.Operation.NOT_ACID, isMmCtas);
+  public LoadFileDesc(final Path sourcePath, final Path targetDir, final boolean isDfsDir,
+      final String columns, final String columnTypes, boolean isMmCtas) {
+    this(sourcePath, targetDir, isDfsDir, columns, columnTypes, AcidUtils.Operation.NOT_ACID,
+        isMmCtas);
   }
 
-  private LoadFileDesc(final Path sourcePath, final Path targetDir,
-      final boolean isDfsDir, final String columns,
-      final String columnTypes, AcidUtils.Operation writeType, boolean isMmCtas) {
+  private LoadFileDesc(final Path sourcePath, final Path targetDir, final boolean isDfsDir,
+      final String columns, final String columnTypes, AcidUtils.Operation writeType,
+      boolean isMmCtas) {
     super(sourcePath, writeType);
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
       Utilities.FILE_OP_LOGGER.trace("creating LFD from " + sourcePath + " to " + targetDir);
@@ -82,6 +87,10 @@ public class LoadFileDesc extends LoadDesc implements Serializable {
     this.columns = columns;
     this.columnTypes = columnTypes;
     this.isMmCtas = isMmCtas;
+  }
+
+  public boolean isStreaming() {
+    return isStreaming;
   }
 
   @Explain(displayName = "destination")

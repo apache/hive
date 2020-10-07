@@ -67,7 +67,7 @@ PREHOOK: Input: default@impala_tpcds_customer_demographics
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select sum (ss_quantity)
  from impala_tpcds_store_sales, impala_tpcds_store, impala_tpcds_customer_demographics, impala_tpcds_customer_address, impala_tpcds_date_dim
  where s_store_sk = ss_store_sk
@@ -137,7 +137,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_demographics
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store
 POSTHOOK: Input: default@impala_tpcds_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[sum($4)])
   ImpalaJoinRel(condition=[AND(=($17, $0), OR(AND($18, $19, $8), AND($20, $21, $9), AND($22, $23, $10)))], joinType=[inner])
@@ -224,7 +223,7 @@ PREHOOK: Input: default@impala_tpcds_customer_demographics
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select sum (ss_quantity)
  from impala_tpcds_store_sales, impala_tpcds_store, impala_tpcds_customer_demographics, impala_tpcds_customer_address, impala_tpcds_date_dim
  where s_store_sk = ss_store_sk
@@ -294,7 +293,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_demographics
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store
 POSTHOOK: Input: default@impala_tpcds_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

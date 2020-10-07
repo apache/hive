@@ -48,7 +48,7 @@ where r_reason_sk = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpcds_reason
 PREHOOK: Input: default@impala_tpcds_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select case when (select count(*) 
                   from impala_tpcds_store_sales 
                   where ss_quantity between 1 and 20) > 98972190
@@ -99,7 +99,6 @@ where r_reason_sk = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpcds_reason
 POSTHOOK: Input: default@impala_tpcds_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(bucket1=[CASE($1, $2, $3)], bucket2=[CASE($4, $5, $6)], bucket3=[CASE($7, $8, $9)], bucket4=[CASE($10, $11, $12)], bucket5=[CASE($13, $14, $15)])
   ImpalaJoinRel(condition=[true], joinType=[left])
@@ -215,7 +214,7 @@ where r_reason_sk = 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpcds_reason
 PREHOOK: Input: default@impala_tpcds_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select case when (select count(*) 
                   from impala_tpcds_store_sales 
                   where ss_quantity between 1 and 20) > 98972190
@@ -266,7 +265,6 @@ where r_reason_sk = 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpcds_reason
 POSTHOOK: Input: default@impala_tpcds_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

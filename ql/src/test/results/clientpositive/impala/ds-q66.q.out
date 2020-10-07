@@ -222,7 +222,7 @@ PREHOOK: Input: default@impala_tpcds_ship_mode
 PREHOOK: Input: default@impala_tpcds_time_dim
 PREHOOK: Input: default@impala_tpcds_warehouse
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select   
          w_warehouse_name
       ,w_warehouse_sq_ft
@@ -447,7 +447,6 @@ POSTHOOK: Input: default@impala_tpcds_ship_mode
 POSTHOOK: Input: default@impala_tpcds_time_dim
 POSTHOOK: Input: default@impala_tpcds_warehouse
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(w_warehouse_name=[$0], w_warehouse_sq_ft=[$1], w_city=[$2], w_county=[$3], w_state=[$4], w_country=[$5], ship_carriers=[||(||(_UTF-16LE'MSC':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE',':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), _UTF-16LE'GERMA':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")], year=[CAST(2001):INTEGER], jan_sales=[$6], feb_sales=[$7], mar_sales=[$8], apr_sales=[$9], may_sales=[$10], jun_sales=[$11], jul_sales=[$12], aug_sales=[$13], sep_sales=[$14], oct_sales=[$15], nov_sales=[$16], dec_sales=[$17], jan_sales_per_sq_foot=[$18], feb_sales_per_sq_foot=[$19], mar_sales_per_sq_foot=[$20], apr_sales_per_sq_foot=[$21], may_sales_per_sq_foot=[$22], jun_sales_per_sq_foot=[$23], jul_sales_per_sq_foot=[$24], aug_sales_per_sq_foot=[$25], sep_sales_per_sq_foot=[$26], oct_sales_per_sq_foot=[$27], nov_sales_per_sq_foot=[$28], dec_sales_per_sq_foot=[$29], jan_net=[$30], feb_net=[$31], mar_net=[$32], apr_net=[$33], may_net=[$34], jun_net=[$35], jul_net=[$36], aug_net=[$37], sep_net=[$38], oct_net=[$39], nov_net=[$40], dec_net=[$41])
   ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
@@ -711,7 +710,7 @@ PREHOOK: Input: default@impala_tpcds_ship_mode
 PREHOOK: Input: default@impala_tpcds_time_dim
 PREHOOK: Input: default@impala_tpcds_warehouse
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select   
          w_warehouse_name
       ,w_warehouse_sq_ft
@@ -936,7 +935,6 @@ POSTHOOK: Input: default@impala_tpcds_ship_mode
 POSTHOOK: Input: default@impala_tpcds_time_dim
 POSTHOOK: Input: default@impala_tpcds_warehouse
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

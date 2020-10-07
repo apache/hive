@@ -66,12 +66,11 @@ PREHOOK: query: explain cbo
 select sum(ss_quantity) over(order by ss_quantity) from tab_sales_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_sales_n1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo
 select sum(ss_quantity) over(order by ss_quantity) from tab_sales_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_sales_n1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(sum_window_0=[sum($1) OVER (PARTITION BY 0:TINYINT ORDER BY $0 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
   ImpalaProjectRel(ss_quantity=[$10], $func_0=[CAST($10):BIGINT])
@@ -81,12 +80,11 @@ PREHOOK: query: explain cbo
 select sum(ss_net_profit) over(order by ss_net_profit) from tab_sales_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_sales_n1
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo
 select sum(ss_net_profit) over(order by ss_net_profit) from tab_sales_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_sales_n1
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(sum_window_0=[sum($22) OVER (PARTITION BY 0:TINYINT ORDER BY $22 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
   ImpalaHdfsScanRel(table=[[default, tab_sales_n1]])

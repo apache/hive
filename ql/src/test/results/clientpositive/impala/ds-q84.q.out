@@ -23,7 +23,7 @@ PREHOOK: Input: default@impala_tpcds_customer_demographics
 PREHOOK: Input: default@impala_tpcds_household_demographics
 PREHOOK: Input: default@impala_tpcds_income_band
 PREHOOK: Input: default@impala_tpcds_store_returns
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select  c_customer_id as customer_id
        , coalesce(c_last_name,'') || ', ' || coalesce(c_first_name,'') as customername
  from impala_tpcds_customer
@@ -49,7 +49,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_demographics
 POSTHOOK: Input: default@impala_tpcds_household_demographics
 POSTHOOK: Input: default@impala_tpcds_income_band
 POSTHOOK: Input: default@impala_tpcds_store_returns
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(customer_id=[$0], customername=[$1])
   ImpalaSortRel(sort0=[$2], dir0=[ASC], fetch=[100])
@@ -97,7 +96,7 @@ PREHOOK: Input: default@impala_tpcds_customer_demographics
 PREHOOK: Input: default@impala_tpcds_household_demographics
 PREHOOK: Input: default@impala_tpcds_income_band
 PREHOOK: Input: default@impala_tpcds_store_returns
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select  c_customer_id as customer_id
        , coalesce(c_last_name,'') || ', ' || coalesce(c_first_name,'') as customername
  from impala_tpcds_customer
@@ -123,7 +122,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_demographics
 POSTHOOK: Input: default@impala_tpcds_household_demographics
 POSTHOOK: Input: default@impala_tpcds_income_band
 POSTHOOK: Input: default@impala_tpcds_store_returns
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

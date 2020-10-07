@@ -109,7 +109,7 @@ PREHOOK: Input: default@impala_tpcds_customer_address
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select  s_store_name
       ,sum(ss_net_profit)
  from impala_tpcds_store_sales
@@ -221,7 +221,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_address
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store
 POSTHOOK: Input: default@impala_tpcds_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
   ImpalaAggregateRel(group=[{5}], agg#0=[sum($1)])
@@ -360,7 +359,7 @@ PREHOOK: Input: default@impala_tpcds_customer_address
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select  s_store_name
       ,sum(ss_net_profit)
  from impala_tpcds_store_sales
@@ -472,7 +471,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_address
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store
 POSTHOOK: Input: default@impala_tpcds_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

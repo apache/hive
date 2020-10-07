@@ -50,7 +50,7 @@ PREHOOK: Input: default@impala_tpcds_customer_demographics
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select  
   cd_gender,
   cd_marital_status,
@@ -103,7 +103,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_demographics
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store_sales
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$4], sort4=[$6], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], fetch=[100])
   ImpalaProjectRel(cd_gender=[$0], cd_marital_status=[$1], cd_education_status=[$2], cnt1=[$5], cd_purchase_estimate=[$3], cnt2=[$5], cd_credit_rating=[$4], cnt3=[$5])
@@ -192,7 +191,7 @@ PREHOOK: Input: default@impala_tpcds_customer_demographics
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select  
   cd_gender,
   cd_marital_status,
@@ -245,7 +244,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_demographics
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store_sales
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

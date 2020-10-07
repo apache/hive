@@ -30,7 +30,7 @@ PREHOOK: Input: default@impala_tpcds_catalog_returns
 PREHOOK: Input: default@impala_tpcds_catalog_sales
 PREHOOK: Input: default@impala_tpcds_customer_address
 PREHOOK: Input: default@impala_tpcds_date_dim
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select count(distinct cs_order_number) as 'order count'
    ,sum(cs_ext_ship_cost) as "total shipping cost"
@@ -63,7 +63,6 @@ POSTHOOK: Input: default@impala_tpcds_catalog_returns
 POSTHOOK: Input: default@impala_tpcds_catalog_sales
 POSTHOOK: Input: default@impala_tpcds_customer_address
 POSTHOOK: Input: default@impala_tpcds_date_dim
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -316,14 +315,13 @@ select "What\'s happening?" as single_within_double,
        "Homer wrote \"The Iliad\"." as double_within_double,
        'Homer also wrote "The Odyssey".' as double_within_single
 PREHOOK: type: QUERY
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select "What\'s happening?" as single_within_double,
        'I\'m not sure.' as single_within_single,
        "Homer wrote \"The Iliad\"." as double_within_double,
        'Homer also wrote "The Odyssey".' as double_within_single
 POSTHOOK: type: QUERY
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -355,12 +353,11 @@ PREHOOK: query: explain
 select * from impala_tpch_customer "c" limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_customer
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select * from impala_tpch_customer "c" limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_customer
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -397,12 +394,11 @@ PREHOOK: query: explain
 select * from impala_tpch_customer AS 'c' limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_customer
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select * from impala_tpch_customer AS 'c' limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_customer
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -439,12 +435,11 @@ PREHOOK: query: explain
 select * from (select * from impala_tpch_customer) "c" limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_customer
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select * from (select * from impala_tpch_customer) "c" limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_customer
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -481,12 +476,11 @@ PREHOOK: query: explain
 select * from (select * from impala_tpch_customer) AS "c" limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_customer
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select * from (select * from impala_tpch_customer) AS "c" limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_customer
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -523,12 +517,11 @@ PREHOOK: query: explain
 select 'c' from impala_tpch_customer AS 'c' limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_customer
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select 'c' from impala_tpch_customer AS 'c' limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_customer
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -580,12 +573,11 @@ PREHOOK: query: explain
 select *, 'c' from impala_tpch_customer AS 'c' limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_customer
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select *, 'c' from impala_tpch_customer AS 'c' limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_customer
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -643,7 +635,7 @@ limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpcds_catalog_sales
 PREHOOK: Input: default@impala_tpcds_date_dim
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select *
 from impala_tpcds_catalog_sales "cs1"
@@ -654,7 +646,6 @@ limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpcds_catalog_sales
 POSTHOOK: Input: default@impala_tpcds_date_dim
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -728,11 +719,10 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
 PREHOOK: query: explain
 select 'value''alias'
 PREHOOK: type: QUERY
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select 'value''alias'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -763,11 +753,10 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
 PREHOOK: query: explain
 select "value"'alias'
 PREHOOK: type: QUERY
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select "value"'alias'
 POSTHOOK: type: QUERY
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -798,11 +787,10 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
 PREHOOK: query: explain
 select 'value'"alias"
 PREHOOK: type: QUERY
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select 'value'"alias"
 POSTHOOK: type: QUERY
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -833,11 +821,10 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
 PREHOOK: query: explain
 select 'value'alias
 PREHOOK: type: QUERY
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select 'value'alias
 POSTHOOK: type: QUERY
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -868,11 +855,10 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
 PREHOOK: query: explain
 select "value"alias
 PREHOOK: type: QUERY
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select "value"alias
 POSTHOOK: type: QUERY
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

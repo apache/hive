@@ -29,7 +29,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select  
    sum(ws_ext_discount_amt)  as `Excess Discount Amount` 
 from 
@@ -61,7 +61,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_item
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(excess discount amount=[$0])
   ImpalaSortRel(sort0=[$1], dir0=[ASC], fetch=[100])
@@ -115,7 +114,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select  
    sum(ws_ext_discount_amt)  as `Excess Discount Amount` 
 from 
@@ -147,7 +146,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_item
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

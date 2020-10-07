@@ -36,7 +36,7 @@ PREHOOK: Input: default@impala_tpch_customer
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_nation
 PREHOOK: Input: default@impala_tpch_orders
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select
   c_custkey,
   c_name,
@@ -75,7 +75,6 @@ POSTHOOK: Input: default@impala_tpch_customer
 POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_nation
 POSTHOOK: Input: default@impala_tpch_orders
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$2], sort1=[$0], dir0=[DESC], dir1=[ASC], fetch=[20])
   ImpalaProjectRel(c_custkey=[$0], c_name=[$1], revenue=[$7], c_acctbal=[$4], n_name=[$6], c_address=[$2], c_phone=[$3], c_comment=[$5])
@@ -130,7 +129,7 @@ PREHOOK: Input: default@impala_tpch_customer
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_nation
 PREHOOK: Input: default@impala_tpch_orders
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select
   c_custkey,
   c_name,
@@ -169,7 +168,6 @@ POSTHOOK: Input: default@impala_tpch_customer
 POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_nation
 POSTHOOK: Input: default@impala_tpch_orders
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

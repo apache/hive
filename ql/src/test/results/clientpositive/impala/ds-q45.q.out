@@ -21,7 +21,7 @@ PREHOOK: Input: default@impala_tpcds_customer_address
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select  ca_zip, ca_county, sum(ws_sales_price)
  from impala_tpcds_web_sales, impala_tpcds_customer, impala_tpcds_customer_address, impala_tpcds_date_dim, impala_tpcds_item
  where ws_bill_customer_sk = c_customer_sk
@@ -45,7 +45,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_address
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_item
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
   ImpalaProjectRel(ca_zip=[$1], ca_county=[$0], $f2=[$2])
@@ -96,7 +95,7 @@ PREHOOK: Input: default@impala_tpcds_customer_address
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select  ca_zip, ca_county, sum(ws_sales_price)
  from impala_tpcds_web_sales, impala_tpcds_customer, impala_tpcds_customer_address, impala_tpcds_date_dim, impala_tpcds_item
  where ws_bill_customer_sk = c_customer_sk
@@ -120,7 +119,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_address
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_item
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

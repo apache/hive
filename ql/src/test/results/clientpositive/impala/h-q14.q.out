@@ -14,7 +14,7 @@ where
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_part
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select
   100.00 * sum(case
     when p_type like 'PROMO%'
@@ -31,7 +31,6 @@ where
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_part
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(promo_revenue=[/(*(100:DECIMAL(3, 0), $0), $1)])
   ImpalaAggregateRel(group=[{}], agg#0=[sum($0)], agg#1=[sum($1)])
@@ -58,7 +57,7 @@ where
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_part
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select
   100.00 * sum(case
     when p_type like 'PROMO%'
@@ -75,7 +74,6 @@ where
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_part
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

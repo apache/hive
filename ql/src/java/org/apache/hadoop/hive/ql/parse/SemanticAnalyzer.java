@@ -2398,9 +2398,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           } else {
             // This is the only place where isQuery is set to true; it defaults to false.
             qb.setIsQuery(true);
-            Path stagingPath = getStagingDirectoryPathname(qb);
-            fname = stagingPath.toString();
-            ctx.setResDir(stagingPath);
+            if (conf.getEngine() == Engine.IMPALA &&
+                conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING) {
+              // Streaming mode does not use a staging directory for results
+              fname = null;
+            } else {
+              Path stagingPath = getStagingDirectoryPathname(qb);
+              ctx.setResDir(stagingPath);
+              fname = stagingPath.toString();
+            }
           }
         }
 
@@ -2408,8 +2414,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (ast.getChildCount() >= 2 && ast.getChild(1).getText().toLowerCase().equals("local")) {
           isDfsFile = false;
         }
-        // Set the destination for the SELECT query inside the CTAS
-        qb.getMetaData().setDestForAlias(name, fname, isDfsFile);
+
+        if (fname == null) {
+          qb.getMetaData().setStreamingDestForAlias(name);
+        } else {
+          // Set the destination for the SELECT query inside the CTAS. This is also used to determine
+          // the location for query results.
+          qb.getMetaData().setDestForAlias(name, fname, isDfsFile);
+        }
 
         CreateTableDesc directoryDesc = new CreateTableDesc();
         boolean directoryDescIsSet = false;
@@ -7436,6 +7448,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isMmTable = false, isMmCreate = false, isNonNativeTable = false;
     Long writeId = null;
     HiveTxnManager txnMgr = getTxnMgr();
+    boolean isStreaming = false;
 
     switch (destType.intValue()) {
     case QBMetaData.DEST_TABLE: {
@@ -7720,8 +7733,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     case QBMetaData.DEST_LOCAL_FILE:
       isLocal = true;
       // fall through
+    case QBMetaData.DEST_STREAMING:
+      if (!isLocal) {
+        isStreaming = true;
+      }
     case QBMetaData.DEST_DFS_FILE: {
-      destinationPath = new Path(qbm.getDestFileForAlias(dest));
+      if (!isStreaming) {
+        destinationPath = new Path(qbm.getDestFileForAlias(dest));
+      }
       // CTAS case: the file output format and serde are defined by the create
       // table command rather than taking the default value
       List<FieldSchema> fieldSchemas = null;
@@ -7785,7 +7804,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
 
-      if (isLocal) {
+      if (isStreaming) {
+        queryTmpdir = null;
+      } else if (isLocal) {
         assert !isMmTable;
         // for local directory - we always write to map-red intermediate
         // store and then copy to local fs
@@ -7848,8 +7869,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
 
       boolean isDestTempFile = true;
-      if (!ctx.isMRTmpFileURI(destinationPath.toUri().toString())) {
-        idToTableNameMap.put(String.valueOf(destTableId), destinationPath.toUri().toString());
+      if (isStreaming || !ctx.isMRTmpFileURI(destinationPath.toUri().toString())) {
+        if (!isStreaming) {
+          idToTableNameMap.put(String.valueOf(destTableId), destinationPath.toUri().toString());
+        }
         currentTableId = destTableId;
         destTableId++;
         isDestTempFile = false;
@@ -7968,12 +7991,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ctx.getLoadTableOutputMap().put(ltd, output);
       } else {
         // Create LFD even for MM CTAS - it's a no-op move, but it still seems to be used for stats.
-        loadFileWork.add(new LoadFileDesc(tblDesc, viewDesc, queryTmpdir, destinationPath, isDfsDir, cols,
-            colTypes,
-            destTableIsFullAcid ?//there is a change here - prev version had 'transactional', one before 'acid'
-                Operation.INSERT : Operation.NOT_ACID,
-            isMmCreate));
-        if (!outputs.add(new WriteEntity(destinationPath, !isDfsDir, isDestTempFile))) {
+        loadFileWork.add(new LoadFileDesc(tblDesc, viewDesc, queryTmpdir, destinationPath,
+              isDfsDir, cols, colTypes,
+              destTableIsFullAcid ? Operation.INSERT : Operation.NOT_ACID, isMmCreate,
+              isStreaming));
+        WriteEntity we;
+        if (isStreaming) {
+          we = new WriteEntity("streaming", Entity.Type.STREAMING);
+        } else {
+          we = new WriteEntity(destinationPath, !isDfsDir, isDestTempFile);
+        }
+        if (!outputs.add(we)) {
           throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
               .getMsg(destinationPath.toUri().toString()));
         }
@@ -8274,6 +8302,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                           RowSchema fsRS, boolean canBeMerged, Table dest_tab, Long mmWriteId, boolean isMmCtas,
                                           Integer dest_type, QB qb, boolean isDirectInsert) throws SemanticException {
     boolean isInsertOverwrite = false;
+    boolean isStreaming = false;
     switch (dest_type) {
     case QBMetaData.DEST_PARTITION:
       //fall through
@@ -8286,9 +8315,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         isInsertOverwrite = true;
       }
       break;
+    case QBMetaData.DEST_STREAMING:
+      isStreaming = true;
+    break;
     case QBMetaData.DEST_LOCAL_FILE:
     case QBMetaData.DEST_DFS_FILE:
-      //CTAS path or insert into file/directory
+      //CTAS path, insert into file/directory or query results
       break;
     default:
       throw new IllegalStateException("Unexpected dest_type=" + dest_tab);
@@ -8333,12 +8365,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // the same as directory name. The directory name
     // can be changed in the optimizer but the key should not be changed
     // it should be the same as the MoveWork's sourceDir.
-    fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName().toString());
-    if (!destTableIsMaterialization &&
-        HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
-      String statsTmpLoc = ctx.getTempDirForInterimJobPath(dest_path).toString();
-      fileSinkDesc.setStatsTmpDir(statsTmpLoc);
-      LOG.debug("Set stats collection dir : " + statsTmpLoc);
+    if (!isStreaming) {
+      fileSinkDesc.setStatsAggPrefix(fileSinkDesc.getDirName().toString());
+      if (!destTableIsMaterialization &&
+          HiveConf.getVar(conf, HIVESTATSDBCLASS).equalsIgnoreCase(StatDB.fs.name())) {
+        String statsTmpLoc = ctx.getTempDirForInterimJobPath(dest_path).toString();
+        fileSinkDesc.setStatsTmpDir(statsTmpLoc);
+        LOG.debug("Set stats collection dir : " + statsTmpLoc);
+      }
     }
 
     if (dest_part != null) {

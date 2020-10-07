@@ -42,7 +42,7 @@ PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_nation
 PREHOOK: Input: default@impala_tpch_orders
 PREHOOK: Input: default@impala_tpch_supplier
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select
   supp_nation,
   cust_nation,
@@ -87,7 +87,6 @@ POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_nation
 POSTHOOK: Input: default@impala_tpch_orders
 POSTHOOK: Input: default@impala_tpch_supplier
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC])
   ImpalaProjectRel(n_name=[$1], n_name0=[$2], YEAR=[$0], $f3=[$3])
@@ -154,7 +153,7 @@ PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_nation
 PREHOOK: Input: default@impala_tpch_orders
 PREHOOK: Input: default@impala_tpch_supplier
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select
   supp_nation,
   cust_nation,
@@ -199,7 +198,6 @@ POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_nation
 POSTHOOK: Input: default@impala_tpch_orders
 POSTHOOK: Input: default@impala_tpch_supplier
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

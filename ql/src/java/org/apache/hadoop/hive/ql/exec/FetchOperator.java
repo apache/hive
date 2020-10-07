@@ -97,6 +97,7 @@ public class FetchOperator implements Serializable {
   private Operator<?> operator;    // operator tree for processing row further (optional)
 
   private final boolean hasVC;
+  private final boolean isStreaming;
   private final boolean isStatReader;
   private final boolean isPartitioned;
   private final boolean isNonNativeTable;
@@ -147,7 +148,8 @@ public class FetchOperator implements Serializable {
     this.vcCols = vcCols;
     this.hasVC = vcCols != null && !vcCols.isEmpty();
     this.isStatReader = work.getTblDesc() == null;
-    this.isPartitioned = !isStatReader && work.isPartitioned();
+    this.isStreaming = work.isStreaming();
+    this.isPartitioned = !isStatReader && work.isPartitioned() && !work.isStreaming();
     this.isNonNativeTable = !isStatReader && work.getTblDesc().isNonNative();
     initialize();
   }
@@ -156,6 +158,26 @@ public class FetchOperator implements Serializable {
     job.set(ValidWriteIdList.VALID_WRITEIDS_KEY, writeIdStr);
     LOG.debug("FetchOperator set writeIdStr: " + writeIdStr);
   }
+
+  private Iterator<Path> getPathIterator() {
+    if (isStreaming) {
+      // Streaming mode does not have any paths.
+      return Collections.emptyIterator();
+    } else if (isPartitioned) {
+      return work.getPartDir().iterator();
+    }
+    return Arrays.asList(work.getTblDir()).iterator();
+  }
+
+  private Iterator<PartitionDesc> getPartitionDescIterator() {
+    if (isStreaming) {
+      return Collections.emptyIterator();
+    } else if (isPartitioned) {
+      return work.getPartDesc().iterator();
+    }
+    return Iterators.cycle(new PartitionDesc(work.getTblDesc(), null));
+  }
+
   private void initialize() throws HiveException {
     ensureCorrectSchemaEvolutionConfigs(job);
 
@@ -180,13 +202,9 @@ public class FetchOperator implements Serializable {
     } else {
       row = new Object[1];
     }
-    if (isPartitioned) {
-      iterPath = work.getPartDir().iterator();
-      iterPartDesc = work.getPartDesc().iterator();
-    } else {
-      iterPath = Arrays.asList(work.getTblDir()).iterator();
-      iterPartDesc = Iterators.cycle(new PartitionDesc(work.getTblDesc(), null));
-    }
+
+    iterPartDesc = getPartitionDescIterator();
+    iterPath = getPathIterator();
     outputOI = setupOutputObjectInspector();
     context = setupExecContext(operator, work.getPathLists());
   }

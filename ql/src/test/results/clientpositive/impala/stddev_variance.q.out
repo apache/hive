@@ -2,12 +2,11 @@ PREHOOK: query: EXPLAIN CBO
 SELECT stddev(p_size) FROM impala_tpch_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_part
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: EXPLAIN CBO
 SELECT stddev(p_size) FROM impala_tpch_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_part
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[stddev_samp($5)])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_part]])
@@ -16,12 +15,11 @@ PREHOOK: query: EXPLAIN CBO
 SELECT stddev_pop(p_size) FROM impala_tpch_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_part
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: EXPLAIN CBO
 SELECT stddev_pop(p_size) FROM impala_tpch_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_part
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[stddev_pop($5)])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_part]])
@@ -30,12 +28,11 @@ PREHOOK: query: EXPLAIN CBO
 SELECT stddev_samp(p_size) FROM impala_tpch_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_part
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: EXPLAIN CBO
 SELECT stddev_samp(p_size) FROM impala_tpch_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_part
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[stddev_samp($5)])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_part]])
@@ -44,12 +41,11 @@ PREHOOK: query: EXPLAIN CBO
 SELECT variance(p_size) FROM impala_tpch_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_part
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: EXPLAIN CBO
 SELECT variance(p_size) FROM impala_tpch_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_part
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[var_samp($5)])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_part]])
@@ -58,12 +54,11 @@ PREHOOK: query: EXPLAIN CBO
 SELECT var_pop(p_size) FROM impala_tpch_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_part
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: EXPLAIN CBO
 SELECT var_pop(p_size) FROM impala_tpch_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_part
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[var_pop($5)])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_part]])
@@ -72,12 +67,11 @@ PREHOOK: query: EXPLAIN CBO
 SELECT var_samp(p_size) FROM impala_tpch_part
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_part
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: EXPLAIN CBO
 SELECT var_samp(p_size) FROM impala_tpch_part
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_part
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[var_samp($5)])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_part]])

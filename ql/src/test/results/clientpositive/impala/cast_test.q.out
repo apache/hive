@@ -1,9 +1,8 @@
 PREHOOK: query: explain select cast (3 as string)
 PREHOOK: type: QUERY
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select cast (3 as string)
 POSTHOOK: type: QUERY
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -33,10 +32,9 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
 
 PREHOOK: query: explain select cast ('3' as double)
 PREHOOK: type: QUERY
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select cast ('3' as double)
 POSTHOOK: type: QUERY
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -67,11 +65,10 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
 PREHOOK: query: explain SELECT 0.10000000000000001 * lat FROM impala_airports
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_airports
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain SELECT 0.10000000000000001 * lat FROM impala_airports
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_airports
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -115,11 +112,10 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
 PREHOOK: query: explain SELECT 0.10000000000000001 * c_acctbal FROM impala_tpch_customer
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_customer
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain SELECT 0.10000000000000001 * c_acctbal FROM impala_tpch_customer
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_customer
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

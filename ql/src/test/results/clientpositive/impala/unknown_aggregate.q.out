@@ -2,12 +2,11 @@ PREHOOK: query: explain cbo
 select ndv(l_returnflag) from `impala_tpch_lineitem`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo
 select ndv(l_returnflag) from `impala_tpch_lineitem`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[ndv($8)])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]])
@@ -16,12 +15,11 @@ PREHOOK: query: explain
 select ndv(l_returnflag) from `impala_tpch_lineitem`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select ndv(l_returnflag) from `impala_tpch_lineitem`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

@@ -61,7 +61,7 @@ PREHOOK: Input: default@impala_tpcds_customer_demographics
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select   
   ca_state,
   cd_gender,
@@ -125,7 +125,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_demographics
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store_sales
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$8], sort5=[$13], dir0=[ASC], dir1=[ASC], dir2=[ASC], dir3=[ASC], dir4=[ASC], dir5=[ASC], fetch=[100])
   ImpalaProjectRel(ca_state=[$0], cd_gender=[$1], cd_marital_status=[$2], cd_dep_count=[$3], cnt1=[$6], _o__c5=[/(CAST($7):DOUBLE, CAST($8):DOUBLE)], _o__c6=[$9], _o__c7=[$10], cd_dep_employed_count=[$4], cnt2=[$6], _o__c10=[/(CAST($11):DOUBLE, CAST($12):DOUBLE)], _o__c11=[$13], _o__c12=[$14], cd_dep_college_count=[$5], cnt3=[$6], _o__c15=[/(CAST($15):DOUBLE, CAST($16):DOUBLE)], _o__c16=[$17], _o__c17=[$18])
@@ -226,7 +225,7 @@ PREHOOK: Input: default@impala_tpcds_customer_demographics
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select   
   ca_state,
   cd_gender,
@@ -290,7 +289,6 @@ POSTHOOK: Input: default@impala_tpcds_customer_demographics
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store_sales
 POSTHOOK: Input: default@impala_tpcds_web_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

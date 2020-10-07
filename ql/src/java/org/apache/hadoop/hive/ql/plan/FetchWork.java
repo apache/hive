@@ -59,6 +59,7 @@ public class FetchWork implements Serializable {
 
   private int limit;
   private int leastNumRows;
+  private boolean isStreaming;
 
   private SplitSample splitSample;
 
@@ -87,6 +88,10 @@ public class FetchWork implements Serializable {
 
   public boolean isHiveServerQuery() {
 	return isHiveServerQuery;
+  }
+
+  public boolean isStreaming() {
+    return isStreaming;
   }
 
   public void setHiveServerQuery(boolean isHiveServerQuery) {
@@ -119,6 +124,11 @@ public class FetchWork implements Serializable {
 
   public FetchWork(Path tblDir, TableDesc tblDesc) {
     this(tblDir, tblDesc, -1);
+  }
+
+  public FetchWork(Path tblDir, TableDesc tblDesc, int limit, boolean isStreaming) {
+    this(tblDir, tblDesc, limit);
+    this.isStreaming = isStreaming;
   }
 
   public FetchWork(Path tblDir, TableDesc tblDesc, int limit) {

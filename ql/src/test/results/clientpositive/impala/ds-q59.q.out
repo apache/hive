@@ -43,7 +43,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo with wss as 
  (select d_week_seq,
         ss_store_sk,
@@ -89,7 +89,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store
 POSTHOOK: Input: default@impala_tpcds_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[ASC], fetch=[100])
   ImpalaProjectRel(s_store_name1=[$12], s_store_id1=[$11], d_week_seq1=[$0], _o__c3=[/($2, $17)], _o__c4=[/($3, $18)], _o__c5=[/($4, $19)], _o__c6=[/($5, $20)], _o__c7=[/($6, $21)], _o__c8=[/($7, $22)], _o__c9=[/($8, $23)])
@@ -166,7 +165,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain with wss as 
  (select d_week_seq,
         ss_store_sk,
@@ -212,7 +211,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpcds_date_dim
 POSTHOOK: Input: default@impala_tpcds_store
 POSTHOOK: Input: default@impala_tpcds_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

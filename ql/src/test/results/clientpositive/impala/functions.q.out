@@ -1,9 +1,8 @@
 PREHOOK: query: explain SELECT  (1 + IF(7<0, PMOD((IF(7<0, PMOD(DATEDIFF(TO_DATE('1996-01-01'), '1995-01-01'),7)-7, PMOD(DATEDIFF(TO_DATE('1996-01-01'), '1995-01-01'), 7)) + 7),7)-7, PMOD((IF(7<0, PMOD(DATEDIFF(TO_DATE('1996-01-01'), '1995-01-01'),7)-7, PMOD(DATEDIFF(TO_DATE('1996-01-01'), '1995-01-01'), 7)) + 7), 7))) AS `sum_z_datepart_weekday_ok`
 PREHOOK: type: QUERY
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain SELECT  (1 + IF(7<0, PMOD((IF(7<0, PMOD(DATEDIFF(TO_DATE('1996-01-01'), '1995-01-01'),7)-7, PMOD(DATEDIFF(TO_DATE('1996-01-01'), '1995-01-01'), 7)) + 7),7)-7, PMOD((IF(7<0, PMOD(DATEDIFF(TO_DATE('1996-01-01'), '1995-01-01'),7)-7, PMOD(DATEDIFF(TO_DATE('1996-01-01'), '1995-01-01'), 7)) + 7), 7))) AS `sum_z_datepart_weekday_ok`
 POSTHOOK: type: QUERY
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

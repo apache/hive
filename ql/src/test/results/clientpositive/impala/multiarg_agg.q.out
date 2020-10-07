@@ -5,7 +5,7 @@ select l_orderkey, group_concat(cast(l_suppkey as string), ':')
   limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select l_orderkey, group_concat(cast(l_suppkey as string), ':')
   from impala_tpch_lineitem
@@ -13,7 +13,6 @@ select l_orderkey, group_concat(cast(l_suppkey as string), ':')
   limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

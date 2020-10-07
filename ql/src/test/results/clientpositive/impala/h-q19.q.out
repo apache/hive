@@ -36,7 +36,7 @@ where
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_part
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select
   sum(l_extendedprice * (1 - l_discount)) as revenue
 from
@@ -75,7 +75,6 @@ where
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_part
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[sum($1)])
   ImpalaJoinRel(condition=[AND(=($5, $0), OR(AND($6, $7, $2, $8), AND($9, $10, $3, $11), AND($12, $13, $4, $14)))], joinType=[inner])
@@ -122,7 +121,7 @@ where
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_part
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select
   sum(l_extendedprice * (1 - l_discount)) as revenue
 from
@@ -161,7 +160,6 @@ where
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Input: default@impala_tpch_part
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

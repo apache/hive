@@ -21,7 +21,7 @@ order by
   l_linestatus
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo select
   l_returnflag,
   l_linestatus,
@@ -45,7 +45,6 @@ order by
   l_linestatus
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC])
   ImpalaProjectRel($f0=[$0], $f1=[$1], $f2=[$2], $f3=[$3], $f4=[$4], $f5=[$5], $f6=[CAST(/($2, CAST($6):DECIMAL(19, 0))):DECIMAL(16, 6)], $f7=[CAST(/($3, CAST($7):DECIMAL(19, 0))):DECIMAL(16, 6)], $f8=[CAST(/($8, CAST($9):DECIMAL(19, 0))):DECIMAL(16, 6)], $f9=[$10])
@@ -76,7 +75,7 @@ order by
   l_linestatus
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain select
   l_returnflag,
   l_linestatus,
@@ -100,7 +99,6 @@ order by
   l_linestatus
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

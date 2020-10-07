@@ -24,7 +24,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_airlines
 PREHOOK: Input: default@impala_airports
 PREHOOK: Input: default@impala_flights
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: EXPLAIN CBO
 SELECT
   a.description,
@@ -51,7 +51,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_airlines
 POSTHOOK: Input: default@impala_airports
 POSTHOOK: Input: default@impala_flights
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaSortRel(sort0=[$2], dir0=[DESC], fetch=[50])
   ImpalaProjectRel($f1=[$4], $f3=[$5], $f4=[$6])

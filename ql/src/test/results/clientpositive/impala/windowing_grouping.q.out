@@ -142,7 +142,7 @@ select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_item_n0
 PREHOOK: Input: default@tab_sales_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
@@ -161,7 +161,6 @@ select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_item_n0
 POSTHOOK: Input: default@tab_sales_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(gross_margin=[$7], i_category=[$2], i_class=[$3], lochierarchy=[$5], rank_within_parent=[rank() OVER (PARTITION BY $5, $6 ORDER BY $7 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
   ImpalaProjectRel($f2=[$2], $f3=[$3], $f0=[$0], $f1=[$1], GROUPING__ID=[$4], $func_0=[GROUPING($4, 0:BIGINT)], $func_1=[CASE(=(GROUPING($4, 0:BIGINT), 0), $0, null:VARCHAR(2147483647))], $func_2=[/($2, $3)])
@@ -191,7 +190,7 @@ select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_item_n0
 PREHOOK: Input: default@tab_sales_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
@@ -210,7 +209,6 @@ select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_item_n0
 POSTHOOK: Input: default@tab_sales_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(gross_margin=[$6], i_category=[$2], i_class=[$3], lochierarchy=[$4], rank_within_parent=[rank() OVER (PARTITION BY $4, $5 ORDER BY $6 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
   ImpalaProjectRel($f2=[$2], $f3=[$3], i_category=[$1], i_class=[$0], $func_0=[+(CAST(CHAR_LENGTH($1)):BIGINT, CAST(CHAR_LENGTH($0)):BIGINT)], $func_1=[CASE(=(CHAR_LENGTH($0), 0), $1, null:VARCHAR(2147483647))], $func_2=[/($2, $3)])
@@ -239,7 +237,7 @@ select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_item_n0
 PREHOOK: Input: default@tab_sales_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain cbo
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
@@ -258,7 +256,6 @@ select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_item_n0
 POSTHOOK: Input: default@tab_sales_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(gross_margin=[$7], i_category=[$2], i_class=[$3], lochierarchy=[$5], rank_within_parent=[rank() OVER (PARTITION BY $5, $6 ORDER BY $7 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
   ImpalaProjectRel($f2=[$2], $f3=[$3], $f0=[$0], $f1=[$1], GROUPING__ID=[$4], $func_0=[+(GROUPING($4, 1:BIGINT), GROUPING($4, 0:BIGINT))], $func_1=[CASE(=(GROUPING($4, 0:BIGINT), 0), $0, null:VARCHAR(2147483647))], $func_2=[/($2, $3)])
@@ -288,7 +285,7 @@ select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_item_n0
 PREHOOK: Input: default@tab_sales_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
@@ -307,7 +304,6 @@ select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_item_n0
 POSTHOOK: Input: default@tab_sales_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -467,7 +463,7 @@ select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_item_n0
 PREHOOK: Input: default@tab_sales_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
@@ -486,7 +482,6 @@ select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_item_n0
 POSTHOOK: Input: default@tab_sales_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage
@@ -646,7 +641,7 @@ select
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_item_n0
 PREHOOK: Input: default@tab_sales_n0
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: explain
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
@@ -665,7 +660,6 @@ select
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_item_n0
 POSTHOOK: Input: default@tab_sales_n0
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

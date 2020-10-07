@@ -41,6 +41,8 @@ public class QBMetaData {
   public static final int DEST_DFS_FILE = 3;
   public static final int DEST_REDUCE = 4;
   public static final int DEST_LOCAL_FILE = 5;
+  // Indicates query results will be streamed from the execution engine
+  public static final int DEST_STREAMING = 6;
 
   private final HashMap<String, Table> aliasToTable;
   private final HashMap<String, Table> nameToDestTable;
@@ -91,6 +93,13 @@ public class QBMetaData {
   public void setDestForAlias(String alias, Partition part) {
     nameToDestType.put(alias, Integer.valueOf(DEST_PARTITION));
     nameToDestPartition.put(alias, part);
+  }
+
+  /**
+   * Sets the destination for the given alias as DEST_STREAMING.
+   */
+  public void setStreamingDestForAlias(String alias) {
+    nameToDestType.put(alias, Integer.valueOf(DEST_STREAMING));
   }
 
   public void setDestForAlias(String alias, String fname, boolean isDfsFile) {

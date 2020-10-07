@@ -7,7 +7,7 @@ WHERE
   cast(10 as bigint) < cast(ss_sold_date_sk as bigint) + 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpcds_store_sales
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: EXPLAIN
 SELECT
   ss_sold_date_sk
@@ -17,7 +17,6 @@ WHERE
   cast(10 as bigint) < cast(ss_sold_date_sk as bigint) + 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpcds_store_sales
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 is a root stage

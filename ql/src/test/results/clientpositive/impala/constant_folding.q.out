@@ -25,7 +25,7 @@ LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_airports
 PREHOOK: Input: default@impala_flights
-PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: streaming
 POSTHOOK: query: EXPLAIN CBO
 SELECT
   f.`year`,
@@ -53,7 +53,6 @@ LIMIT 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_airports
 POSTHOOK: Input: default@impala_flights
-POSTHOOK: Output: hdfs://### HDFS PATH ###
 CBO PLAN:
 ImpalaProjectPassthroughRel(year=[$0], iata=[$1], airport=[$2], city=[$3], state=[$4], country=[$5])
   ImpalaSortRel(sort0=[$6], dir0=[DESC], fetch=[10])

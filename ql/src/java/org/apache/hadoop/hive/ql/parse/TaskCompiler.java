@@ -208,7 +208,7 @@ public abstract class TaskCompiler {
         }
       }
 
-      FetchWork fetch = new FetchWork(loadFileDesc.getSourcePath(), resultTab, outerQueryLimit);
+      FetchWork fetch = new FetchWork(loadFileDesc.getSourcePath(), resultTab, outerQueryLimit, loadFileDesc.isStreaming());
       boolean isHiveServerQuery = SessionState.get().isHiveServerQuery();
       fetch.setHiveServerQuery(isHiveServerQuery);
       fetch.setSource(pCtx.getFetchSource());
