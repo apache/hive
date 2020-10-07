@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -563,8 +564,11 @@ public class SharedWorkOptimizer extends Transform {
             }
 
             // try to merge downstream operators
-            if (sr.discardableOps.size() == 1) {
-              downStreamMerge(retainableTsOp, optimizerCache, pctx);
+
+            if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DOWNSTREAM_MERGE)) {
+              if (sr.discardableOps.size() == 1) {
+                downStreamMerge(retainableTsOp, optimizerCache, pctx);
+              }
             }
 
             break;
@@ -592,6 +596,9 @@ public class SharedWorkOptimizer extends Transform {
       List<Operator<?>> childs = op.getChildOperators();
       for (int i = 0; i < childs.size(); i++) {
         Operator<?> cI = childs.get(i);
+        if (cI instanceof ReduceSinkOperator || cI instanceof JoinOperator || cI.getParentOperators().size() != 1) {
+          continue;
+        }
         for (int j = i + 1; j < childs.size(); j++) {
           Operator<?> cJ = childs.get(j);
           if (cI.logicalEquals(cJ)) {
@@ -877,6 +884,10 @@ public class SharedWorkOptimizer extends Transform {
           }
           Collection<ReduceSinkOperator> otherRsOps = existingRsOps.get(rsParent);
           for (ReduceSinkOperator retainableRsOp : otherRsOps) {
+            if (retainableRsOp.getChildOperators().size() == 0) {
+              // just skip this RS - its a semijoin/bloomfilter related RS
+              continue;
+            }
             if (removedOps.contains(retainableRsOp)) {
               LOG.debug("Skip {} as it has already been removed", retainableRsOp);
               continue;
