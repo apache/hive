@@ -295,7 +295,6 @@ public class SharedWorkOptimizer extends Transform {
     RemoveSemijoin, SubtreeMerge, DPPUnion,
   }
 
-  // FIXME renames
   static class SharedWorkModel {
 
     private TableScanOperator ts;
