@@ -413,6 +413,9 @@ public class HiveSubQueryRemoveRule extends RelOptRule {
       // Query has 'exists' and correlation:
       // select * from web_sales ws1
       // where exists (select 1 from web_sales ws2 where ws1.ws_order_number = ws2.ws_order_number limit 1);
+      //
+      // HiveRelDecorrelator will replace LogicalCorrelate with a SemiJoin. Hence the right hand side won't be
+      // evaluated for every row coming from left and SortLimit cuts the right result set incorrectly. (HIVE-24199)
       builder.push(e.rel.accept(new HiveSortLimitRemover()));
     } else {
       // Query may has exists but no correlation
