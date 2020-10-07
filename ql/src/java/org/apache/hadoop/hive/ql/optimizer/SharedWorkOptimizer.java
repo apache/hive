@@ -1305,7 +1305,6 @@ public class SharedWorkOptimizer extends Transform {
     if (!areSupportedDppUnionOps(pctx, optimizerCache, tsOp2, tsOp1)) {
       return false;
     }
-
     return true;
   }
 
@@ -1331,6 +1330,16 @@ public class SharedWorkOptimizer extends Transform {
       }
 
     }
+    final Set<Operator<?>> workOps1 = findWorkOperators(cache, tsOp1);
+    for (Operator<?> op : workOps1) {
+      if (op instanceof UnionOperator) {
+        return false;
+      }
+      if (op instanceof DummyStoreOperator) {
+        return false;
+      }
+    }
+
     return true;
   }
 
