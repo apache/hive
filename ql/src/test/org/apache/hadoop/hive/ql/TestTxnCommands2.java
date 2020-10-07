@@ -2130,7 +2130,7 @@ public class TestTxnCommands2 {
   }
 
   @Test
-    public void testMmTableAbortWithCompaction() throws Exception {
+  public void testMmTableAbortWithCompaction() throws Exception {
     // 1. Insert some rows into MM table
     runStatementOnDriver("insert into " + Table.MMTBL + "(a,b) values(1,2)");
     // There should be 1 delta directory
@@ -2197,6 +2197,7 @@ public class TestTxnCommands2 {
     rs = runStatementOnDriver("select a,b from " + Table.MMTBL + " order by a");
     Assert.assertEquals(stringifyValues(resultData3), rs);
   }
+
   @Test
   public void testMmTableAbortWithCompactionNoCleanup() throws Exception {
     // 1. Insert some rows into MM table
@@ -2256,95 +2257,230 @@ public class TestTxnCommands2 {
   }
 
   @Test
-  public void testFullACID_AbortDynamicPartitionIOW_WithCleanAbortCompaction() throws Exception {
-    // 1. Insert some rows into acid table
-    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values (1,2,'p1')");
-    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values (3,4,'p1')");
-    // There should be 2 delta directories
-    int[][] resultData1 = new int[][]{{1, 2}, {3, 4}};
-    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
-    List<String> r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
-    Assert.assertEquals("2", r1.get(0));
+  public void testDynPartInsertWithAborts() throws Exception {
+    int[][] resultData = new int[][]{{1, 1}, {2, 2}};
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1')");
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
 
-    // 2. Let a transaction be aborted
-    runStatementOnDriver("insert into " + Table.NONACIDPART + " partition(p='p1') (a,b) values (5,6)");
+    // forcing a txn to abort before addDynamicPartitions
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION, true);
-    Exception exception = null;
-    try {
-      runStatementOnDriver("insert overwrite table " + Table.ACIDTBLPART + " select * from " + Table.NONACIDPART);
-    } catch (RuntimeException ex) {
-      Assert.assertTrue(ex.getMessage().contains("Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask."));
-      exception = ex;
-    }
-    Assert.assertNotNull(exception);
-
+    runStatementOnDriverWithAbort("insert into " + Table.ACIDTBLPART + " partition(p) values(3,3,'p1'),(4,4,'p1')");
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION, false);
-    // There should be 2 delta and 1 base directory. The base one is the aborted one.
-    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
-    verifyBaseDir(1, Table.ACIDTBLPART.toString(), "p=p1");
-    r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
-    Assert.assertEquals("2", r1.get(0));
+    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p1", resultData);
+
+    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    // We should have 1 row corresponding to the aborted transaction
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_COMPONENTS"), 1, count);
 
     hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, 0, TimeUnit.MILLISECONDS);
     runInitiator(hiveConf);
-    // 4. Perform a CLEAN_ABORTED compaction
-    runWorker(hiveConf);
-    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
-    verifyBaseDir(1, Table.ACIDTBLPART.toString(), "p=p1");
-    // 5. Run Cleaner, should remove the basedir for aborted transaction.
-    runCleaner(hiveConf);
-    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
-    verifyBaseDir(0, Table.ACIDTBLPART.toString(), "p=p1");
 
-    // Verify query result
-    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBLPART + " order by a");
-    Assert.assertEquals(stringifyValues(resultData1), rs);
+    count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPACTION_QUEUE where CQ_TYPE='p'");
+    // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
+    // with rows in TXN_COMPONENTS
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"), 1, count);
+
+    runCleaner(hiveConf);
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
   }
 
   @Test
-  public void testFullACID_AbortDynamicPartitionUpdate_WithCleanAbortCompaction() throws Exception {
-    // 1. Insert some rows into acid table
-    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values (1,2,'p1')");
-    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values (3,4,'p1')");
-    // There should be 2 delta directories
-    int[][] resultData1 = new int[][]{{1, 2}, {3, 4}};
-    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
+  public void testDynPartInsertWithMultiPartitionAborts() throws Exception {
+    int [][] resultData = new int[][] {{1,1}, {2,2}};
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1')");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p2'),(2,2,'p2')");
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p2", resultData);
     List<String> r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
-    Assert.assertEquals("2", r1.get(0));
+    Assert.assertEquals("4", r1.get(0));
 
-    // 2. Let a transaction be aborted
+    // forcing a txn to abort before addDynamicPartitions
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION, true);
-    Exception exception = null;
-    try {
-      runStatementOnDriver("update " + Table.ACIDTBLPART + " set b=a+2 where a<5");
-    } catch (RuntimeException ex) {
-      Assert.assertTrue(ex.getMessage().contains("Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.MoveTask."));
-      exception = ex;
-    }
-    Assert.assertNotNull(exception);
-
+    runStatementOnDriverWithAbort("insert into " + Table.ACIDTBLPART + " partition(p) values(3,3,'p1'),(4,4,'p1')");
+    runStatementOnDriverWithAbort("insert into " + Table.ACIDTBLPART + " partition(p) values(3,3,'p2'),(4,4,'p2')");
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION, false);
-    // There should be 3 delta and 1 delete_delta.
-    verifyDeltaDirAndResult(3, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
-    verifyDeleteDeltaDir(1, Table.ACIDTBLPART.toString(), "p=p1");
+    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p1", resultData);
+    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p2", resultData);
     r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
-    Assert.assertEquals("2", r1.get(0));
+    Assert.assertEquals("4", r1.get(0));
+
+    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    // We should have 2 rows corresponding to the two aborted transactions
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_COMPONENTS"), 2, count);
 
     hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, 0, TimeUnit.MILLISECONDS);
     runInitiator(hiveConf);
-    // 4. Perform a CLEAN_ABORTED compaction
-    runWorker(hiveConf);
+
+    count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPACTION_QUEUE where CQ_TYPE='p'");
+    // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
+    // with rows in TXN_COMPONENTS
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"), 1, count);
+
+    r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
+    Assert.assertEquals("4", r1.get(0));
+
+    runCleaner(hiveConf);
+
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p2", resultData);
+    r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
+    Assert.assertEquals("4", r1.get(0));
+  }
+
+  @Test
+  public void testDynPartIOWWithAborts() throws Exception {
+    int [][] resultData = new int[][] {{1,1}, {2,2}};
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1')");
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
+
+    // forcing a txn to abort before addDynamicPartitions
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION, true);
+    runStatementOnDriverWithAbort("insert overwrite table " + Table.ACIDTBLPART + " partition(p) values(3,3,'p1'),(4,4,'p1')");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION, false);
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
+    verifyBaseDir(1, Table.ACIDTBLPART.toString(), "p=p1");
+
+    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    // We should have 1 row corresponding to the aborted transaction
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_COMPONENTS"), 1, count);
+
+    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, 0, TimeUnit.MILLISECONDS);
+    runInitiator(hiveConf);
+
+    count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPACTION_QUEUE where CQ_TYPE='p'");
+    // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
+    // with rows in TXN_COMPONENTS
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"), 1, count);
+
+    runCleaner(hiveConf);
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
+    verifyBaseDir(0, Table.ACIDTBLPART.toString(), "p=p1");
+  }
+
+  @Test
+  public void testDynPartIOWWithMultiPartitionAborts() throws Exception {
+    int [][] resultData = new int[][] {{1,1}, {2,2}};
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1')");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p2'),(2,2,'p2')");
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p2", resultData);
+    List<String> r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
+    Assert.assertEquals("4", r1.get(0));
+
+    // forcing a txn to abort before addDynamicPartitions
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION, true);
+    runStatementOnDriverWithAbort("insert overwrite table " + Table.ACIDTBLPART + " partition(p) values(3,3,'p1'),(4,4,'p1')");
+    runStatementOnDriverWithAbort("insert overwrite table " + Table.ACIDTBLPART + " partition(p) values(3,3,'p2'),(4,4,'p2')");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION, false);
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
+    verifyBaseDir(1, Table.ACIDTBLPART.toString(), "p=p1");
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p2", resultData);
+    verifyBaseDir(1, Table.ACIDTBLPART.toString(), "p=p2");
+    r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
+    Assert.assertEquals("4", r1.get(0));
+
+    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    // We should have two rows corresponding to the two aborted transactions
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_COMPONENTS"), 2, count);
+
+    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, 0, TimeUnit.MILLISECONDS);
+    runInitiator(hiveConf);
+
+    count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPACTION_QUEUE where CQ_TYPE='p'");
+    // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
+    // with rows in TXN_COMPONENTS
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"), 1, count);
+
+    r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
+    Assert.assertEquals("4", r1.get(0));
+
+    runCleaner(hiveConf);
+
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
+    verifyBaseDir(0, Table.ACIDTBLPART.toString(), "p=p1");
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p2", resultData);
+    verifyBaseDir(0, Table.ACIDTBLPART.toString(), "p=p2");
+    r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
+    Assert.assertEquals("4", r1.get(0));
+  }
+
+  @Test
+  public void testDynPartUpdateWithAborts() throws Exception {
+    int[][] resultData1 = new int[][]{{1, 2}, {3, 4}};
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values (1,2,'p1')");
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values (3,4,'p1')");
+    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
+
+    // forcing a txn to abort before addDynamicPartitions
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION, true);
+    runStatementOnDriverWithAbort("update " + Table.ACIDTBLPART + " set b=a+2 where a<5");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION, false);
     verifyDeltaDirAndResult(3, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
     verifyDeleteDeltaDir(1, Table.ACIDTBLPART.toString(), "p=p1");
 
-    // 5. Run Cleaner, should remove the basedir for aborted transaction.
+    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    // We should have 1 row corresponding to the aborted transaction
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_COMPONENTS"), 1, count);
+
+    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, 0, TimeUnit.MILLISECONDS);
+    runInitiator(hiveConf);
+
+    count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPACTION_QUEUE where CQ_TYPE='p'");
+    // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
+    // with rows in TXN_COMPONENTS
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"), 1, count);
+
     runCleaner(hiveConf);
     verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
     verifyDeleteDeltaDir(0, Table.ACIDTBLPART.toString(), "p=p1");
+  }
 
-    // Verify query result
-    List<String> rs = runStatementOnDriver("select a,b from " + Table.ACIDTBLPART + " order by a");
-    Assert.assertEquals(stringifyValues(resultData1), rs);
+  @Test
+  public void testDynPartMergeWithAborts() throws Exception {
+    int [][] resultData = new int[][] {{1,1}, {2,2}};
+    runStatementOnDriver("insert into " + Table.ACIDTBLPART + " partition(p) values(1,1,'p1'),(2,2,'p1')");
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
+    List<String> r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
+    Assert.assertEquals("2", r1.get(0));
+
+    int[][] sourceVals = {{2,15},{4,44},{5,5},{11,11}};
+    runStatementOnDriver("insert into " + TestTxnCommands2.Table.NONACIDORCTBL + " " + TestTxnCommands2.makeValuesClause(sourceVals));
+
+    // forcing a txn to abort before addDynamicPartitions
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION, true);
+    runStatementOnDriverWithAbort("merge into " + Table.ACIDTBLPART + " using " + TestTxnCommands2.Table.NONACIDORCTBL +
+      " as s ON " + Table.ACIDTBLPART + ".a = s.a " +
+      "when matched then update set b = s.b " +
+      "when not matched then insert values(s.a, s.b, 'newpart')");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION, false);
+    verifyDeltaDirAndResult(2, Table.ACIDTBLPART.toString(), "p=p1", resultData);
+    verifyDeleteDeltaDir(1, Table.ACIDTBLPART.toString(), "p=p1");
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=newpart", resultData);
+    r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
+    Assert.assertEquals("2", r1.get(0));
+
+    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    // We should have 1 row corresponding to the aborted transaction
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_COMPONENTS"), 1, count);
+
+    hiveConf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, 0, TimeUnit.MILLISECONDS);
+    runInitiator(hiveConf);
+
+    count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from COMPACTION_QUEUE where CQ_TYPE='p'");
+    // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
+    // with rows in TXN_COMPONENTS
+    Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from COMPACTION_QUEUE"), 1, count);
+
+    r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
+    Assert.assertEquals("2", r1.get(0));
+
+    runCleaner(hiveConf);
+
+    verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
+    verifyDeleteDeltaDir(0, Table.ACIDTBLPART.toString(), "p=p1");
+    verifyDeltaDirAndResult(0, Table.ACIDTBLPART.toString(), "p=newpart", resultData);
+    r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
+    Assert.assertEquals("2", r1.get(0));
   }
 
   @Test
@@ -2414,7 +2550,7 @@ public class TestTxnCommands2 {
   }
 
   @Test
-  public void testFullACIDAbortWithMajorMajorCompaction() throws Exception {
+  public void testFullACIDAbortWithMajorCompaction() throws Exception {
     // 1. Insert some rows into acid table
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(1,2)");
     runStatementOnDriver("insert into " + Table.ACIDTBL + "(a,b) values(3,4)");
@@ -2539,8 +2675,8 @@ public class TestTxnCommands2 {
     verifyBaseDir(1, Table.ACIDTBLPART.toString(), "p=p3");
     // The cleaner should remove compacted deltas including aborted ones.
     runCleaner(hiveConf);
-    Assert.assertEquals(TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS"), 0);
     verifyDeltaDirAndResult(0, Table.ACIDTBLPART.toString(), "p=p3", resultData1);
+    Assert.assertEquals(TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS"), 0);
 
     // 4. Verify query result
     int [][] resultData2 =  new int[][] {{1,2},{1,2},{1,2},{3,4},{3,4},{3,4}};
@@ -2712,17 +2848,26 @@ public class TestTxnCommands2 {
     return sb.toString();
   }
 
-  protected List<String> runStatementOnDriver(String stmt) throws Exception {
+  private void runStatementOnDriverWithAbort(String stmt) {
+    LOG.info("+runStatementOnDriver(" + stmt + ")");
+    try {
+      d.run(stmt);
+    } catch (CommandProcessorException e) {
+    }
+  }
+
+  private List<String> runStatementOnDriver(String stmt) throws Exception {
     LOG.info("+runStatementOnDriver(" + stmt + ")");
     try {
       d.run(stmt);
     } catch (CommandProcessorException e) {
       throw new RuntimeException(stmt + " failed: " + e);
     }
-    List<String> rs = new ArrayList<String>();
+    List<String> rs = new ArrayList<>();
     d.getResults(rs);
     return rs;
   }
+
   final void assertUniqueID(Table table) throws Exception {
     String partCols = table.getPartitionColumns();
     //check to make sure there are no duplicate ROW__IDs - HIVE-16832
