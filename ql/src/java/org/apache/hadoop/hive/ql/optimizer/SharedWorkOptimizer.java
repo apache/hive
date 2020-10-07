@@ -472,9 +472,14 @@ public class SharedWorkOptimizer extends Transform {
               pushFilterToTopOfTableScan(optimizerCache, discardableTsOp);
 
               // Obtain filter for shared TS operator
-              ExprNodeDesc exprNode = disjunction(modelR.normalFilterExpr, modelD.normalFilterExpr);
+              ExprNodeDesc exprNode = null;
+              if(modelR.normalFilterExpr != null && modelD.normalFilterExpr!= null) {
+                exprNode =disjunction(modelR.normalFilterExpr, modelD.normalFilterExpr);
+              }
               List<ExprNodeDesc> semiJoinExpr = null;
               if (mode == Mode.DPPUnion) {
+                assert modelR.semijoinExprNodes != null;
+                assert modelD.semijoinExprNodes == null;
                 ExprNodeDesc disjunction = disjunction(conjunction(modelR.semijoinExprNodes), conjunction(modelD.semijoinExprNodes));
                 semiJoinExpr = disjunction == null ? null : Lists.newArrayList(disjunction);
               } else {
