@@ -7877,7 +7877,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // If directInsert=false, adding the lineage info here for the other operations is
     // ok, as the pathes are different. But if directInsert=true, the path for all
     // operation is the same (the table location) and this can case error in a merge statement.
-    if (isDirectInsert && acidOperation == AcidUtils.Operation.INSERT) {
+    if (!isDirectInsert || acidOperation == AcidUtils.Operation.INSERT) {
       handleLineage(ltd, output);
     }
     setWriteIdForSurrogateKeys(ltd, input);

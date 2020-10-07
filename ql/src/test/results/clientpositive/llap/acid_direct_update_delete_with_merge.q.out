@@ -78,6 +78,9 @@ POSTHOOK: query: INSERT INTO merge_source VALUES
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@merge_source
+POSTHOOK: Lineage: merge_source.id SCRIPT []
+POSTHOOK: Lineage: merge_source.tran_date SCRIPT []
+POSTHOOK: Lineage: merge_source.value SCRIPT []
 PREHOOK: query: MERGE INTO transactions AS T
 USING merge_source AS S
 ON T.ID = S.ID and T.tran_date = S.tran_date
@@ -113,20 +116,21 @@ POSTHOOK: Output: default@transactions@tran_date=20170410
 POSTHOOK: Output: default@transactions@tran_date=20170413
 POSTHOOK: Output: default@transactions@tran_date=20170413
 POSTHOOK: Output: default@transactions@tran_date=20170415
+POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(transactions)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), (transactions)t.FieldSchema(name:tran_date, type:string, comment:null), ]
 PREHOOK: query: SELECT * FROM transactions ORDER BY ID
 PREHOOK: type: QUERY
 PREHOOK: Input: default@transactions
 PREHOOK: Input: default@transactions@tran_date=20170410
 PREHOOK: Input: default@transactions@tran_date=20170413
 PREHOOK: Input: default@transactions@tran_date=20170415
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM transactions ORDER BY ID
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@transactions
 POSTHOOK: Input: default@transactions@tran_date=20170410
 POSTHOOK: Input: default@transactions@tran_date=20170413
 POSTHOOK: Input: default@transactions@tran_date=20170415
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 1	value_01	creation	20170410
 2	value_02	creation	20170410
 3	value_03	creation	20170410

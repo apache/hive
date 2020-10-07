@@ -26,6 +26,9 @@ POSTHOOK: query: INSERT INTO test_update_part_text VALUES (11, 1, 11), (12, 2, 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_update_part_text
+POSTHOOK: Lineage: test_update_part_text.a SCRIPT []
+POSTHOOK: Lineage: test_update_part_text.b SCRIPT []
+POSTHOOK: Lineage: test_update_part_text.c SCRIPT []
 PREHOOK: query: CREATE TABLE test_update_part (a int, b int) PARTITIONED BY (c int) CLUSTERED BY(a) INTO 4 BUCKETS STORED AS ORC TBLPROPERTIES('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
@@ -61,7 +64,7 @@ PREHOOK: Input: default@test_update_part@c=11
 PREHOOK: Input: default@test_update_part@c=22
 PREHOOK: Input: default@test_update_part@c=33
 PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM test_update_part ORDER BY c, b, a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_part
@@ -69,7 +72,7 @@ POSTHOOK: Input: default@test_update_part@c=11
 POSTHOOK: Input: default@test_update_part@c=22
 POSTHOOK: Input: default@test_update_part@c=33
 POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 11	1	11
 12	2	11
 13	3	11
@@ -200,7 +203,7 @@ PREHOOK: Input: default@test_update_part@c=11
 PREHOOK: Input: default@test_update_part@c=22
 PREHOOK: Input: default@test_update_part@c=33
 PREHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM test_update_part ORDER BY c, b, a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_part
@@ -208,7 +211,7 @@ POSTHOOK: Input: default@test_update_part@c=11
 POSTHOOK: Input: default@test_update_part@c=22
 POSTHOOK: Input: default@test_update_part@c=33
 POSTHOOK: Input: default@test_update_part@c=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 11	1	11
 13	3	11
 14	3333	11
@@ -257,7 +260,7 @@ PREHOOK: Input: default@test_delete_part@c=11
 PREHOOK: Input: default@test_delete_part@c=22
 PREHOOK: Input: default@test_delete_part@c=33
 PREHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM test_delete_part order by c, b, a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_delete_part
@@ -265,7 +268,7 @@ POSTHOOK: Input: default@test_delete_part@c=11
 POSTHOOK: Input: default@test_delete_part@c=22
 POSTHOOK: Input: default@test_delete_part@c=33
 POSTHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 11	1	11
 12	2	11
 13	3	11
@@ -418,7 +421,7 @@ PREHOOK: Input: default@test_delete_part@c=11
 PREHOOK: Input: default@test_delete_part@c=22
 PREHOOK: Input: default@test_delete_part@c=33
 PREHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
-PREHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 POSTHOOK: query: SELECT * FROM test_delete_part order by c, b, a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_delete_part
@@ -426,7 +429,7 @@ POSTHOOK: Input: default@test_delete_part@c=11
 POSTHOOK: Input: default@test_delete_part@c=22
 POSTHOOK: Input: default@test_delete_part@c=33
 POSTHOOK: Input: default@test_delete_part@c=__HIVE_DEFAULT_PARTITION__
-POSTHOOK: Output: hdfs://### HDFS PATH ###
+#### A masked pattern was here ####
 11	1	11
 13	3	11
 PREHOOK: query: DROP TABLE IF EXISTS test_update_part_text
