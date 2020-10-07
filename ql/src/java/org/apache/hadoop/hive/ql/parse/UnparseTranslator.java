@@ -49,6 +49,7 @@ public class UnparseTranslator {
     this.conf = conf;
     translations = new TreeMap<Integer, Translation>();
     copyTranslations = new ArrayList<CopyTranslation>();
+    enable();
   }
 
   /**
@@ -269,6 +270,6 @@ public class UnparseTranslator {
   public void clear() {
     translations.clear();
     copyTranslations.clear();
-    enabled = false;
+//    enabled = false;
   }
 }

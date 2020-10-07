@@ -26,7 +26,7 @@ public class MaterializedViews {
 
     // You store the materialized view
     dbMap.compute(materializedViewTable.getTableName(), (mvTableName, relOptMaterialization) -> {
-      sqlToMaterializedView.put(materializedViewTable.getViewOriginalText(), materialization);
+      sqlToMaterializedView.put(materializedViewTable.getViewExpandedText(), materialization);
       return materialization;
     });
 
@@ -54,17 +54,17 @@ public class MaterializedViews {
     dbMap.compute(materializedViewTable.getTableName(), (mvTableName, existingMaterialization) -> {
       if (existingMaterialization == null) {
         // If it was not existing, we just create it
-        sqlToMaterializedView.put(materializedViewTable.getViewOriginalText(), newMaterialization);
+        sqlToMaterializedView.put(materializedViewTable.getViewExpandedText(), newMaterialization);
         return newMaterialization;
       }
       Table existingMaterializedViewTable = HiveMaterializedViewUtils.extractTable(existingMaterialization);
       if (existingMaterializedViewTable.equals(oldMaterializedViewTable)) {
         // If the old version is the same, we replace it
-        sqlToMaterializedView.put(materializedViewTable.getViewOriginalText(), newMaterialization);
+        sqlToMaterializedView.put(materializedViewTable.getViewExpandedText(), newMaterialization);
         return newMaterialization;
       }
       // Otherwise, we return existing materialization
-      sqlToMaterializedView.put(materializedViewTable.getViewOriginalText(), existingMaterialization);
+      sqlToMaterializedView.put(materializedViewTable.getViewExpandedText(), existingMaterialization);
       return existingMaterialization;
     });
 
@@ -80,7 +80,7 @@ public class MaterializedViews {
       // in the map match. Otherwise, keep the one in the map.
       dbMap.computeIfPresent(materializedViewTable.getTableName(), (mvTableName, oldMaterialization) -> {
         if (HiveMaterializedViewUtils.extractTable(oldMaterialization).equals(materializedViewTable)) {
-          sqlToMaterializedView.remove(materializedViewTable.getViewOriginalText());
+          sqlToMaterializedView.remove(materializedViewTable.getViewExpandedText());
           return null;
         }
         return oldMaterialization;
@@ -95,7 +95,7 @@ public class MaterializedViews {
     ConcurrentMap<String, RelOptMaterialization> dbMap = materializedViews.get(dbName);
     if (dbMap != null) {
       dbMap.computeIfPresent(tableName, (mvTableName, relOptMaterialization) -> {
-        String queryText = HiveMaterializedViewUtils.extractTable(relOptMaterialization).getViewOriginalText();
+        String queryText = HiveMaterializedViewUtils.extractTable(relOptMaterialization).getViewExpandedText();
         sqlToMaterializedView.remove(queryText);
         return null;
       });
