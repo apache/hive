@@ -63,6 +63,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inputtbl1_n11
+                  filterExpr: key is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Select Operator
                     expressions: key (type: string), 1L (type: bigint)
