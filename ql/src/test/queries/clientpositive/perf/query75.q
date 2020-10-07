@@ -1,4 +1,3 @@
-set hive.optimize.shared.work.dppunion=false;
 set hive.mapred.mode=nonstrict;
 -- start query 1 in stream 0 using template query75.tpl and seed 1819994127
 explain
