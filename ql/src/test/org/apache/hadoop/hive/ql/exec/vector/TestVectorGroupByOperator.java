@@ -739,7 +739,8 @@ public class TestVectorGroupByOperator {
     //Get the processing mode
     VectorGroupByOperator.ProcessingModeHashAggregate processingMode =
         (VectorGroupByOperator.ProcessingModeHashAggregate) vgo.processingMode;
-    assertEquals(333333,
+    // No changes to the size of the hashtable due to grouping sets.
+    assertEquals(1000000,
         ((VectorGroupByOperator.ProcessingModeHashAggregate)vgo.processingMode).getMaxHtEntries());
 
     this.outputRowCount = 0;
