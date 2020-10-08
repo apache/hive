@@ -405,7 +405,9 @@ public class SharedWorkOptimizer extends Transform {
               // about the part of the tree that can be merged. We need to regenerate the
               // cache because semijoin operators have been removed
               sr = extractSharedOptimizationInfoForRoot(pctx, optimizerCache, retainableTsOp, discardableTsOp, false);
-              if (!isResultValid(sr)) {
+              if (!validPreConditions(pctx, optimizerCache, sr)) {
+                // Skip
+                LOG.debug("{} and {} do not meet preconditions", retainableTsOp, discardableTsOp);
                 continue;
               }
             } else if (mode == Mode.SubtreeMerge) {
@@ -1773,17 +1775,12 @@ public class SharedWorkOptimizer extends Transform {
     // TODO: Extend rule so it can be applied for these cases.
     final Set<Operator<?>> workOps1 = findWorkOperators(optimizerCache, op1);
     final Set<Operator<?>> workOps2 = findWorkOperators(optimizerCache, op2);
-    for (Operator<?> op : workOps1) {
-      if (op instanceof UnionOperator) {
-        // We cannot merge (1.1)
-        return false;
-      }
-      if (op instanceof DummyStoreOperator) {
-        // We cannot merge (1.2)
-        return false;
-      }
-    }
-    for (Operator<?> op : workOps2) {
+
+    Set<Operator<?>> intersection = Sets.newIdentityHashSet();
+    intersection.addAll(workOps1);
+    intersection.retainAll(workOps2);
+
+    for (Operator<?> op : intersection) {
       if (op instanceof UnionOperator) {
         // We cannot merge (1.1)
         return false;
