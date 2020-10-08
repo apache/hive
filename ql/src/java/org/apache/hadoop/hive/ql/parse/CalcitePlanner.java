@@ -1876,19 +1876,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
 
-      // Re-using the TokenRewriteStream map for views so we do not overwrite the current TokenRewriteStream
-      String rewriteStreamName = "__qualified_query_string__";
-      try {
-        ASTNode astNode = ParseUtils.parse(ctx.getCmd(), ctx, rewriteStreamName);
-        TokenRewriteStream tokenRewriteStream = ctx.getViewTokenRewriteStream(rewriteStreamName);
-        unparseTranslator.applyTranslations(tokenRewriteStream);
-        String expandedQueryText = tokenRewriteStream.toString(astNode.getTokenStartIndex(), astNode.getTokenStopIndex());
+      if (ast.getToken().getType() != HiveParser.TOK_CREATE_MATERIALIZED_VIEW) {
+        unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
+        String expandedQueryText = ctx.getTokenRewriteStream().toString(ast.getTokenStartIndex(), ast.getTokenStopIndex());
         RelOptMaterialization relOptMaterialization = db.getMaterialization(expandedQueryText);
         if (relOptMaterialization != null) {
           return relOptMaterialization.tableRel;
         }
-      } catch (Exception err) {
-        LOG.warn("Unexpected error while reparsing the query string [" + ctx.getCmd() + "]", err);
       }
 
       // Create executor
