@@ -336,6 +336,8 @@ public class Context {
     opContext = new CompilationOpContext();
 
     viewsTokenRewriteStreams = new HashMap<>();
+
+    enableUnparse = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED);
   }
 
   protected Context(Context ctx) {
@@ -380,6 +382,7 @@ public class Context {
     this.viewsTokenRewriteStreams = new HashMap<>();
     this.subContexts = new HashSet<>();
     this.opContext = new CompilationOpContext();
+    this.enableUnparse = ctx.enableUnparse;
   }
 
   public Map<String, Path> getFsScratchDirs() {
