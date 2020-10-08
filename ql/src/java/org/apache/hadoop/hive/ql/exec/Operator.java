@@ -1543,5 +1543,4 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
     return true;
   }
-
 }
