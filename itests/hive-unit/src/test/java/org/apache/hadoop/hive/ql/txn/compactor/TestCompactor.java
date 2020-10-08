@@ -948,7 +948,7 @@ public class TestCompactor {
     RemoteIterator it =
         fs.listFiles(new Path(table.getSd().getLocation()), true);
     if (it.hasNext()) {
-      Assert.fail("Expecting compaction to have cleaned the directories, FileStatus[] stat " + Arrays.toString(stat));
+      Assert.fail("Expected cleaner to drop aborted delta & base directories, FileStatus[] stat " + Arrays.toString(stat));
     }
 
     rsp = txnHandler.showCompact(new ShowCompactRequest());
@@ -1014,7 +1014,7 @@ public class TestCompactor {
     RemoteIterator it =
         fs.listFiles(new Path(table1.getSd().getLocation()), true);
     if (it.hasNext()) {
-      Assert.fail("Expecting compaction to have cleaned the directories, FileStatus[] stat " + Arrays.toString(stat));
+      Assert.fail("Expected cleaner to drop aborted delta & base directories, FileStatus[] stat " + Arrays.toString(stat));
     }
 
     connection1.close();
@@ -1032,14 +1032,13 @@ public class TestCompactor {
     connection.write("2,2".getBytes());
 
     int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
-    // We should have two rows corresponding to the two aborted transactions
+    // We should have 1 row corresponding to the aborted transaction
     Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 1, count);
 
     connection.commitTransaction();
 
     // After commit the row should have been deleted
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
-    // We should have two rows corresponding to the two aborted transactions
     Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
   }
 

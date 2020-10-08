@@ -244,6 +244,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   private void cleanAborted(CompactionInfo ci) throws MetaException {
     if (ci.writeIds == null || ci.writeIds.size() == 0) {
       LOG.warn("Attempted cleaning aborted transaction with empty writeId list");
+      txnHandler.markCleaned(ci);
       return;
     }
     LOG.info("Starting aborted cleaning for table " + ci.getFullTableName()
