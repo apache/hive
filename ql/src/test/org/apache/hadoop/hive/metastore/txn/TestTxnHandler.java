@@ -1422,21 +1422,25 @@ public class TestTxnHandler {
   @Ignore("Wedges Derby")
   public void deadlockDetected() throws Exception {
     LOG.debug("Starting deadlock test");
+
     if (txnHandler instanceof TxnHandler) {
       final TxnHandler tHndlr = (TxnHandler)txnHandler;
       Connection conn = tHndlr.getDbConn(Connection.TRANSACTION_SERIALIZABLE);
-      Statement stmt = conn.createStatement();
-      long now = tHndlr.getDbTime(conn);
-      stmt.executeUpdate("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\", \"TXN_LAST_HEARTBEAT\", " +
-          "txn_user, txn_host) values (1, 'o', " + now + ", " + now + ", 'shagy', " +
-          "'scooby.com')");
-      stmt.executeUpdate("INSERT INTO \"HIVE_LOCKS\" (\"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", " +
-          "\"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", " +
-          "\"HL_USER\", \"HL_HOST\") VALUES (1, 1, 1, 'MYDB', 'MYTABLE', 'MYPARTITION', '" +
-          tHndlr.LOCK_WAITING + "', '" + getEncoding(LockType.EXCLUSIVE) + "', " + now + ", 'fred', " +
-          "'scooby.com')");
-      conn.commit();
-      tHndlr.closeDbConn(conn);
+      try {
+        Statement stmt = conn.createStatement();
+        long now = tHndlr.getDbTime(conn);
+        stmt.executeUpdate("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\", \"TXN_LAST_HEARTBEAT\", " +
+                "txn_user, txn_host) values (1, 'o', " + now + ", " + now + ", 'shagy', " +
+                "'scooby.com')");
+        stmt.executeUpdate("INSERT INTO \"HIVE_LOCKS\" (\"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", \"HL_TXNID\", " +
+                "\"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", " +
+                "\"HL_USER\", \"HL_HOST\") VALUES (1, 1, 1, 'MYDB', 'MYTABLE', 'MYPARTITION', '" +
+                tHndlr.LOCK_WAITING + "', '" + getEncoding(LockType.EXCLUSIVE) + "', " + now + ", 'fred', " +
+                "'scooby.com')");
+        conn.commit();
+      } finally {
+        tHndlr.closeDbConn(conn);
+      }
 
       final AtomicBoolean sawDeadlock = new AtomicBoolean();
 
