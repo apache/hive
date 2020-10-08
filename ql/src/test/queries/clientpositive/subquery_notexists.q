@@ -2,6 +2,7 @@
 --! qt:dataset:part
 -- SORT_QUERY_RESULTS
 set hive.mapred.mode=nonstrict;
+set hive.optimize.shared.work.dppunion=false;
 
 
 -- no agg, corr

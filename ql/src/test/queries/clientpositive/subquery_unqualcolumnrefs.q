@@ -1,6 +1,7 @@
 --! qt:dataset:src
 --! qt:dataset:part
 set hive.mapred.mode=nonstrict;
+set hive.optimize.shared.work.dppunion=false;
 create table src11_n0 (key1 string, value1 string);
 
 create table part2_n2( 

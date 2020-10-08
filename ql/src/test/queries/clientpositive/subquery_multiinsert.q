@@ -1,5 +1,6 @@
 --! qt:dataset:src
 set hive.mapred.mode=nonstrict;
+set hive.optimize.shared.work.dppunion=false;
 set hive.exec.post.hooks=org.apache.hadoop.hive.ql.hooks.PostExecutePrinter,org.apache.hadoop.hive.ql.hooks.PrintCompletedTasksHook;
 
 -- SORT_QUERY_RESULTS

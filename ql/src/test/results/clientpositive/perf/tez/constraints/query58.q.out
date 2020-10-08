@@ -1,4 +1,4 @@
-Warning: Shuffle Join MERGEJOIN[407][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 20' is a cross product
+Warning: Shuffle Join MERGEJOIN[407][tables = [$hdt$_3, $hdt$_4]] in Stage 'Reducer 21' is a cross product
 PREHOOK: query: explain
 with ss_items as
  (select i_item_id item_id
@@ -153,11 +153,11 @@ Reducer 14 <- Map 25 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 15 <- Map 23 (SIMPLE_EDGE), Reducer 14 (SIMPLE_EDGE)
 Reducer 16 <- Reducer 15 (SIMPLE_EDGE)
 Reducer 17 <- Reducer 2 (CUSTOM_SIMPLE_EDGE)
-Reducer 18 <- Map 1 (SIMPLE_EDGE), Reducer 20 (SIMPLE_EDGE)
+Reducer 18 <- Map 1 (SIMPLE_EDGE), Reducer 21 (SIMPLE_EDGE)
 Reducer 19 <- Reducer 18 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 19 (SIMPLE_EDGE)
-Reducer 20 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 21 (CUSTOM_SIMPLE_EDGE)
-Reducer 21 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 20 <- Map 1 (CUSTOM_SIMPLE_EDGE)
+Reducer 21 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 20 (CUSTOM_SIMPLE_EDGE)
 Reducer 3 <- Map 22 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Map 23 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
@@ -246,19 +246,19 @@ Stage-0
                                                         Filter Operator [FIL_425] (rows=73049 width=98)
                                                           predicate:(d_week_seq is not null and d_date is not null)
                                                            Please refer to the previous TableScan [TS_0]
-                                                  <-Reducer 20 [SIMPLE_EDGE]
+                                                  <-Reducer 21 [SIMPLE_EDGE]
                                                     SHUFFLE [RS_21]
                                                       PartitionCols:_col1
                                                       Merge Join Operator [MERGEJOIN_407] (rows=1 width=4)
                                                         Conds:(Inner),Output:["_col1"]
                                                       <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                        PARTITION_ONLY_SHUFFLE [RS_434]
-                                                          Select Operator [SEL_430] (rows=1 width=4)
+                                                        PARTITION_ONLY_SHUFFLE [RS_435]
+                                                          Select Operator [SEL_431] (rows=1 width=4)
                                                             Output:["_col0"]
-                                                            Filter Operator [FIL_426] (rows=1 width=98)
+                                                            Filter Operator [FIL_427] (rows=1 width=98)
                                                               predicate:((d_date = '1998-02-19') and d_week_seq is not null)
                                                                Please refer to the previous TableScan [TS_0]
-                                                      <-Reducer 21 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                      <-Reducer 20 [CUSTOM_SIMPLE_EDGE] vectorized
                                                         PARTITION_ONLY_SHUFFLE [RS_440]
                                                           Select Operator [SEL_439] (rows=1 width=8)
                                                             Filter Operator [FIL_438] (rows=1 width=8)
@@ -267,10 +267,10 @@ Stage-0
                                                                 Output:["_col0"],aggregations:["count(VALUE._col0)"]
                                                               <-Map 1 [CUSTOM_SIMPLE_EDGE] vectorized
                                                                 PARTITION_ONLY_SHUFFLE [RS_436]
-                                                                  Group By Operator [GBY_435] (rows=1 width=8)
+                                                                  Group By Operator [GBY_434] (rows=1 width=8)
                                                                     Output:["_col0"],aggregations:["count()"]
-                                                                    Select Operator [SEL_431] (rows=1 width=94)
-                                                                      Filter Operator [FIL_427] (rows=1 width=94)
+                                                                    Select Operator [SEL_430] (rows=1 width=94)
+                                                                      Filter Operator [FIL_426] (rows=1 width=94)
                                                                         predicate:(d_date = '1998-02-19')
                                                                          Please refer to the previous TableScan [TS_0]
                                     <-Map 25 [SIMPLE_EDGE] vectorized
