@@ -624,8 +624,7 @@ public class SharedWorkOptimizer extends Transform {
     private void adoptChildren(Operator<?> target, Operator<?> donor) {
       List<Operator<?>> children = donor.getChildOperators();
       for (Operator<?> c : children) {
-        c.getParentOperators().remove(donor);
-        c.getParentOperators().add(target);
+        c.replaceParent(donor, target);
       }
       target.getChildOperators().addAll(children);
     }
