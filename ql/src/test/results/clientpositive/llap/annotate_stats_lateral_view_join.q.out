@@ -755,14 +755,14 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                             Lateral View Join Operator
                               outputColumnNames: _col0, _col1, _col5, _col6
-                              Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                              Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                               Select Operator
                                 expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                 outputColumnNames: _col0, _col1, _col2, _col3
-                                Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                 File Output Operator
                                   compressed: false
-                                  Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                  Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                   table:
                                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -776,14 +776,14 @@ STAGE PLANS:
                               function name: explode
                               Lateral View Join Operator
                                 outputColumnNames: _col0, _col1, _col5, _col6
-                                Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                 Select Operator
                                   expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                   outputColumnNames: _col0, _col1, _col2, _col3
-                                  Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                  Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                   File Output Operator
                                     compressed: false
-                                    Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                    Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                     table:
                                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -806,14 +806,14 @@ STAGE PLANS:
                               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                               Lateral View Join Operator
                                 outputColumnNames: _col0, _col1, _col5, _col6
-                                Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                 Select Operator
                                   expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                   outputColumnNames: _col0, _col1, _col2, _col3
-                                  Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                  Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                   File Output Operator
                                     compressed: false
-                                    Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                    Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                     table:
                                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -827,14 +827,14 @@ STAGE PLANS:
                                 function name: explode
                                 Lateral View Join Operator
                                   outputColumnNames: _col0, _col1, _col5, _col6
-                                  Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                  Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                   Select Operator
                                     expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                     outputColumnNames: _col0, _col1, _col2, _col3
-                                    Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                    Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                     File Output Operator
                                       compressed: false
-                                      Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                      Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                       table:
                                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -887,23 +887,23 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                             Lateral View Join Operator
                               outputColumnNames: _col0, _col1, _col5, _col6
-                              Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                              Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                               Lateral View Forward
-                                Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                 Select Operator
                                   expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                   outputColumnNames: _col0, _col1, _col5, _col6
-                                  Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                  Statistics: Num rows: 1 Data size: 420 Basic stats: COMPLETE Column stats: COMPLETE
                                   Lateral View Join Operator
                                     outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                    Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                    Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                     Select Operator
                                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                      Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                      Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                       File Output Operator
                                         compressed: false
-                                        Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                         table:
                                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -911,20 +911,20 @@ STAGE PLANS:
                                 Select Operator
                                   expressions: array(1,2) (type: array<int>)
                                   outputColumnNames: _col0
-                                  Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                  Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                                   UDTF Operator
-                                    Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: COMPLETE
+                                    Statistics: Num rows: 0 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                                     function name: explode
                                     Lateral View Join Operator
                                       outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                      Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                      Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                       Select Operator
                                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                         outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                        Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                         File Output Operator
                                           compressed: false
-                                          Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                           table:
                                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -938,23 +938,23 @@ STAGE PLANS:
                               function name: explode
                               Lateral View Join Operator
                                 outputColumnNames: _col0, _col1, _col5, _col6
-                                Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                 Lateral View Forward
-                                  Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                  Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                   Select Operator
                                     expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                     outputColumnNames: _col0, _col1, _col5, _col6
-                                    Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                    Statistics: Num rows: 1 Data size: 420 Basic stats: COMPLETE Column stats: COMPLETE
                                     Lateral View Join Operator
                                       outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                      Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                      Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                       Select Operator
                                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                         outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                        Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                         File Output Operator
                                           compressed: false
-                                          Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                           table:
                                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -962,20 +962,20 @@ STAGE PLANS:
                                   Select Operator
                                     expressions: array(1,2) (type: array<int>)
                                     outputColumnNames: _col0
-                                    Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                    Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                                     UDTF Operator
-                                      Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: COMPLETE
+                                      Statistics: Num rows: 0 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                                       function name: explode
                                       Lateral View Join Operator
                                         outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                        Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                         Select Operator
                                           expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                          Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                           File Output Operator
                                             compressed: false
-                                            Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                            Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                             table:
                                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -998,23 +998,23 @@ STAGE PLANS:
                               Statistics: Num rows: 1 Data size: 376 Basic stats: COMPLETE Column stats: COMPLETE
                               Lateral View Join Operator
                                 outputColumnNames: _col0, _col1, _col5, _col6
-                                Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                 Lateral View Forward
-                                  Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                  Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                   Select Operator
                                     expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                     outputColumnNames: _col0, _col1, _col5, _col6
-                                    Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                    Statistics: Num rows: 1 Data size: 420 Basic stats: COMPLETE Column stats: COMPLETE
                                     Lateral View Join Operator
                                       outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                      Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                      Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                       Select Operator
                                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                         outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                        Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                         File Output Operator
                                           compressed: false
-                                          Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                           table:
                                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1022,20 +1022,20 @@ STAGE PLANS:
                                   Select Operator
                                     expressions: array(1,2) (type: array<int>)
                                     outputColumnNames: _col0
-                                    Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                    Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                                     UDTF Operator
-                                      Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: COMPLETE
+                                      Statistics: Num rows: 0 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                                       function name: explode
                                       Lateral View Join Operator
                                         outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                        Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                         Select Operator
                                           expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                          Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                           File Output Operator
                                             compressed: false
-                                            Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                            Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                             table:
                                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1049,23 +1049,23 @@ STAGE PLANS:
                                 function name: explode
                                 Lateral View Join Operator
                                   outputColumnNames: _col0, _col1, _col5, _col6
-                                  Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                  Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                   Lateral View Forward
-                                    Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                    Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                                     Select Operator
                                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                       outputColumnNames: _col0, _col1, _col5, _col6
-                                      Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                      Statistics: Num rows: 1 Data size: 420 Basic stats: COMPLETE Column stats: COMPLETE
                                       Lateral View Join Operator
                                         outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                        Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                         Select Operator
                                           expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                          Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                           File Output Operator
                                             compressed: false
-                                            Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                            Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                             table:
                                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1073,20 +1073,20 @@ STAGE PLANS:
                                     Select Operator
                                       expressions: array(1,2) (type: array<int>)
                                       outputColumnNames: _col0
-                                      Statistics: Num rows: 0 Data size: 24 Basic stats: PARTIAL Column stats: COMPLETE
+                                      Statistics: Num rows: 1 Data size: 48 Basic stats: COMPLETE Column stats: COMPLETE
                                       UDTF Operator
-                                        Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: COMPLETE
+                                        Statistics: Num rows: 0 Data size: 24 Basic stats: COMPLETE Column stats: COMPLETE
                                         function name: explode
                                         Lateral View Join Operator
                                           outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                          Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                           Select Operator
                                             expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                             outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                            Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                            Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                             File Output Operator
                                               compressed: false
-                                              Statistics: Num rows: 0 Data size: 12 Basic stats: PARTIAL Column stats: NONE
+                                              Statistics: Num rows: 1 Data size: 444 Basic stats: COMPLETE Column stats: COMPLETE
                                               table:
                                                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2339,14 +2339,14 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 55 Basic stats: COMPLETE Column stats: NONE
                             Lateral View Join Operator
                               outputColumnNames: _col0, _col1, _col5, _col6
-                              Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                              Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                               Select Operator
                                 expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                 outputColumnNames: _col0, _col1, _col2, _col3
-                                Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                 File Output Operator
                                   compressed: false
-                                  Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                  Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                   table:
                                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2360,14 +2360,14 @@ STAGE PLANS:
                               function name: explode
                               Lateral View Join Operator
                                 outputColumnNames: _col0, _col1, _col5, _col6
-                                Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                 Select Operator
                                   expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                   outputColumnNames: _col0, _col1, _col2, _col3
-                                  Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                  Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                   File Output Operator
                                     compressed: false
-                                    Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                    Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                     table:
                                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2390,14 +2390,14 @@ STAGE PLANS:
                               Statistics: Num rows: 1 Data size: 55 Basic stats: COMPLETE Column stats: NONE
                               Lateral View Join Operator
                                 outputColumnNames: _col0, _col1, _col5, _col6
-                                Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                 Select Operator
                                   expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                   outputColumnNames: _col0, _col1, _col2, _col3
-                                  Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                  Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                   File Output Operator
                                     compressed: false
-                                    Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                    Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                     table:
                                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2411,14 +2411,14 @@ STAGE PLANS:
                                 function name: explode
                                 Lateral View Join Operator
                                   outputColumnNames: _col0, _col1, _col5, _col6
-                                  Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                  Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                   Select Operator
                                     expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                     outputColumnNames: _col0, _col1, _col2, _col3
-                                    Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                    Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                     File Output Operator
                                       compressed: false
-                                      Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                      Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                       table:
                                           input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2471,23 +2471,23 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 55 Basic stats: COMPLETE Column stats: NONE
                             Lateral View Join Operator
                               outputColumnNames: _col0, _col1, _col5, _col6
-                              Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                              Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                               Lateral View Forward
-                                Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                 Select Operator
                                   expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                   outputColumnNames: _col0, _col1, _col5, _col6
-                                  Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                  Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                   Lateral View Join Operator
                                     outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                    Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                    Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                     Select Operator
                                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                       outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                      Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                      Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                       File Output Operator
                                         compressed: false
-                                        Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                         table:
                                             input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2495,20 +2495,20 @@ STAGE PLANS:
                                 Select Operator
                                   expressions: array(1,2) (type: array<int>)
                                   outputColumnNames: _col0
-                                  Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                  Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                   UDTF Operator
-                                    Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                    Statistics: Num rows: 0 Data size: 41 Basic stats: COMPLETE Column stats: NONE
                                     function name: explode
                                     Lateral View Join Operator
                                       outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                      Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                      Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                       Select Operator
                                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                         outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                        Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                         File Output Operator
                                           compressed: false
-                                          Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                           table:
                                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2522,23 +2522,23 @@ STAGE PLANS:
                               function name: explode
                               Lateral View Join Operator
                                 outputColumnNames: _col0, _col1, _col5, _col6
-                                Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                 Lateral View Forward
-                                  Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                  Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                   Select Operator
                                     expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                     outputColumnNames: _col0, _col1, _col5, _col6
-                                    Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                    Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                     Lateral View Join Operator
                                       outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                      Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                      Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                       Select Operator
                                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                         outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                        Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                         File Output Operator
                                           compressed: false
-                                          Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                           table:
                                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2546,20 +2546,20 @@ STAGE PLANS:
                                   Select Operator
                                     expressions: array(1,2) (type: array<int>)
                                     outputColumnNames: _col0
-                                    Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                    Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                     UDTF Operator
-                                      Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                      Statistics: Num rows: 0 Data size: 41 Basic stats: COMPLETE Column stats: NONE
                                       function name: explode
                                       Lateral View Join Operator
                                         outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                        Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                         Select Operator
                                           expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                          Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                           File Output Operator
                                             compressed: false
-                                            Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                            Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                             table:
                                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2582,23 +2582,23 @@ STAGE PLANS:
                               Statistics: Num rows: 1 Data size: 55 Basic stats: COMPLETE Column stats: NONE
                               Lateral View Join Operator
                                 outputColumnNames: _col0, _col1, _col5, _col6
-                                Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                 Lateral View Forward
-                                  Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                  Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                   Select Operator
                                     expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                     outputColumnNames: _col0, _col1, _col5, _col6
-                                    Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                    Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                     Lateral View Join Operator
                                       outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                      Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                      Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                       Select Operator
                                         expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                         outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                        Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                         File Output Operator
                                           compressed: false
-                                          Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                           table:
                                               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2606,20 +2606,20 @@ STAGE PLANS:
                                   Select Operator
                                     expressions: array(1,2) (type: array<int>)
                                     outputColumnNames: _col0
-                                    Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                    Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                     UDTF Operator
-                                      Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                      Statistics: Num rows: 0 Data size: 41 Basic stats: COMPLETE Column stats: NONE
                                       function name: explode
                                       Lateral View Join Operator
                                         outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                        Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                         Select Operator
                                           expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                          Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                           File Output Operator
                                             compressed: false
-                                            Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                            Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                             table:
                                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2633,23 +2633,23 @@ STAGE PLANS:
                                 function name: explode
                                 Lateral View Join Operator
                                   outputColumnNames: _col0, _col1, _col5, _col6
-                                  Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                  Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                   Lateral View Forward
-                                    Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                    Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                     Select Operator
                                       expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int)
                                       outputColumnNames: _col0, _col1, _col5, _col6
-                                      Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                      Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                       Lateral View Join Operator
                                         outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                        Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                         Select Operator
                                           expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                           outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                          Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                           File Output Operator
                                             compressed: false
-                                            Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                            Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                             table:
                                                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2657,20 +2657,20 @@ STAGE PLANS:
                                     Select Operator
                                       expressions: array(1,2) (type: array<int>)
                                       outputColumnNames: _col0
-                                      Statistics: Num rows: 0 Data size: 27 Basic stats: PARTIAL Column stats: NONE
+                                      Statistics: Num rows: 1 Data size: 82 Basic stats: COMPLETE Column stats: NONE
                                       UDTF Operator
-                                        Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                        Statistics: Num rows: 0 Data size: 41 Basic stats: COMPLETE Column stats: NONE
                                         function name: explode
                                         Lateral View Join Operator
                                           outputColumnNames: _col0, _col1, _col5, _col6, _col7
-                                          Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                          Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                           Select Operator
                                             expressions: _col0 (type: int), _col1 (type: string), _col5 (type: int), _col6 (type: int), _col7 (type: int)
                                             outputColumnNames: _col0, _col1, _col2, _col3, _col4
-                                            Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                            Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                             File Output Operator
                                               compressed: false
-                                              Statistics: Num rows: 0 Data size: 13 Basic stats: PARTIAL Column stats: NONE
+                                              Statistics: Num rows: 1 Data size: 123 Basic stats: COMPLETE Column stats: NONE
                                               table:
                                                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                                                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

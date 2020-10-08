@@ -2961,10 +2961,11 @@ public class StatsRulesProcFactory {
       final Statistics selectStats = parents.get(LateralViewJoinOperator.SELECT_TAG).getStatistics();
       final Statistics udtfStats = parents.get(LateralViewJoinOperator.UDTF_TAG).getStatistics();
 
-      final double factor = (double) udtfStats.getNumRows() / (double) selectStats.getNumRows();
+      final long udtfNumRows = Math.max(udtfStats.getNumRows(), 1);
+      final double factor = (double) udtfNumRows / (double) Math.max(selectStats.getNumRows(), 1);
       final long selectDataSize = StatsUtils.safeMult(selectStats.getDataSize(), factor);
       final long dataSize = StatsUtils.safeAdd(selectDataSize, udtfStats.getDataSize());
-      Statistics joinedStats = new Statistics(udtfStats.getNumRows(), dataSize, 0, 0);
+      Statistics joinedStats = new Statistics(udtfNumRows, dataSize, 0, 0);
 
       if (satisfyPrecondition(selectStats) && satisfyPrecondition(udtfStats)) {
         final Map<String, ExprNodeDesc> columnExprMap = lop.getColumnExprMap();
@@ -2973,7 +2974,8 @@ public class StatsRulesProcFactory {
         joinedStats.updateColumnStatsState(selectStats.getColumnStatsState());
         final List<ColStatistics> selectColStats = StatsUtils
                 .getColStatisticsFromExprMap(conf, selectStats, columnExprMap, schema);
-        joinedStats.addToColumnStats(multiplyColStats(selectColStats, factor));
+        StatsUtils.scaleColStatistics(selectColStats, factor);
+        joinedStats.addToColumnStats(selectColStats);
 
         joinedStats.updateColumnStatsState(udtfStats.getColumnStatsState());
         final List<ColStatistics> udtfColStats = StatsUtils
@@ -2989,19 +2991,6 @@ public class StatsRulesProcFactory {
       }
 
       return null;
-    }
-
-    private List<ColStatistics> multiplyColStats(List<ColStatistics> colStatistics, double factor) {
-      for (ColStatistics colStats : colStatistics) {
-        colStats.setNumFalses(StatsUtils.safeMult(colStats.getNumFalses(), factor));
-        colStats.setNumTrues(StatsUtils.safeMult(colStats.getNumTrues(), factor));
-        colStats.setNumNulls(StatsUtils.safeMult(colStats.getNumNulls(), factor));
-        // When factor > 1, the same records are duplicated and countDistinct never changes.
-        if (factor < 1.0) {
-          colStats.setCountDistint(StatsUtils.safeMult(colStats.getCountDistint(), factor));
-        }
-      }
-      return colStatistics;
     }
   }
 
