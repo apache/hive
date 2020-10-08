@@ -2979,21 +2979,15 @@ public class StatsRulesProcFactory {
         final List<ColStatistics> udtfColStats = StatsUtils
                 .getColStatisticsFromExprMap(conf, udtfStats, columnExprMap, schema);
         joinedStats.addToColumnStats(udtfColStats);
-
-        joinedStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), joinedStats, lop);
-        lop.setStatistics(joinedStats);
-
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("[0] STATS-" + lop.toString() + ": " + joinedStats.extendedToString());
-        }
-      } else {
-        joinedStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), joinedStats, lop);
-        lop.setStatistics(joinedStats);
-
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("[1] STATS-" + lop.toString() + ": " + joinedStats.extendedToString());
-        }
       }
+
+      joinedStats = applyRuntimeStats(aspCtx.getParseContext().getContext(), joinedStats, lop);
+      lop.setStatistics(joinedStats);
+
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("[0] STATS-" + lop.toString() + ": " + joinedStats.extendedToString());
+      }
+
       return null;
     }
 
