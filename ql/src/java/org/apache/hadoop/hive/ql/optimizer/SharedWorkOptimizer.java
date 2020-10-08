@@ -572,7 +572,6 @@ public class SharedWorkOptimizer extends Transform {
             }
 
             // try to merge downstream operators
-
             if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DOWNSTREAM_MERGE)) {
               if (sr.discardableOps.size() == 1) {
                 downStreamMerge(retainableTsOp, optimizerCache, pctx);
