@@ -858,6 +858,54 @@ public class TestCompactor {
   }
 
   @Test
+  public void testCleanAbortCompactAfter2ndCommitAbort() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+
+    HiveStreamingConnection connection1 = prepareTableAndConnection(dbName, tblName, 2);
+    HiveStreamingConnection connection2 = prepareTableAndConnection(dbName, tblName, 2);
+
+    connection1.beginTransaction();
+    connection1.write("1,1".getBytes());
+    connection1.write("2,2".getBytes());
+    connection1.commitTransaction();
+
+    connection2.beginTransaction();
+    connection2.write("2,3".getBytes());
+    connection2.write("3,3".getBytes());
+    connection2.abortTransaction();
+
+    assertAndCompactCleanAbort(dbName, tblName, false);
+
+    connection1.close();
+    connection2.close();
+  }
+
+  @Test
+  public void testCleanAbortCompactAfter1stCommitAbort() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+
+    HiveStreamingConnection connection1 = prepareTableAndConnection(dbName, tblName, 2);
+    HiveStreamingConnection connection2 = prepareTableAndConnection(dbName, tblName, 2);
+
+    connection1.beginTransaction();
+    connection1.write("1,1".getBytes());
+    connection1.write("2,2".getBytes());
+    connection1.abortTransaction();
+
+    connection2.beginTransaction();
+    connection2.write("2,3".getBytes());
+    connection2.write("3,3".getBytes());
+    connection2.commitTransaction();
+
+    assertAndCompactCleanAbort(dbName, tblName, false);
+
+    connection1.close();
+    connection2.close();
+  }
+
+  @Test
   public void testCleanAbortCompactAfterAbortTwoPartitions() throws Exception {
     String dbName = "default";
     String tblName = "cws";
@@ -876,7 +924,7 @@ public class TestCompactor {
     connection2.write("3,3".getBytes());
     connection2.abortTransaction();
 
-    assertAndCompactCleanAbort(dbName, tblName);
+    assertAndCompactCleanAbort(dbName, tblName, true);
 
     connection1.close();
     connection2.close();
@@ -902,13 +950,13 @@ public class TestCompactor {
     connection2.write("3,3".getBytes());
     connection2.abortTransaction();
 
-    assertAndCompactCleanAbort(dbName, tblName);
+    assertAndCompactCleanAbort(dbName, tblName, true);
 
     connection1.close();
     connection2.close();
   }
 
-  private void assertAndCompactCleanAbort(String dbName, String tblName) throws Exception {
+  private void assertAndCompactCleanAbort(String dbName, String tblName, boolean allAborted) throws Exception {
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     Table table = msClient.getTable(dbName, tblName);
@@ -921,7 +969,7 @@ public class TestCompactor {
 
     int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
     // We should have two rows corresponding to the two aborted transactions
-    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 2, count);
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), allAborted ? 2 : 1, count);
 
     runInitiator(conf);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_TYPE='p'");
@@ -947,7 +995,7 @@ public class TestCompactor {
 
     RemoteIterator it =
         fs.listFiles(new Path(table.getSd().getLocation()), true);
-    if (it.hasNext()) {
+    if (it.hasNext() && allAborted) {
       Assert.fail("Expected cleaner to drop aborted delta & base directories, FileStatus[] stat " + Arrays.toString(stat));
     }
 
