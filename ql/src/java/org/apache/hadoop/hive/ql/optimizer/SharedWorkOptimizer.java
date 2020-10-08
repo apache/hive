@@ -177,8 +177,7 @@ public class SharedWorkOptimizer extends Transform {
       sharedWorkExtendedOptimization(pctx, optimizerCache);
 
       if (LOG.isDebugEnabled()) {
-        LOG.debug("After SharedWorkExtendedOptimizer:\n"
-            + Operator.toString(pctx.getTopOps().values()));
+        LOG.debug("After SharedWorkExtendedOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
       }
     }
 
@@ -203,8 +202,13 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DPPUNION_OPTIMIZATION)) {
-      BaseSharedWorkOptimizer x = new BaseSharedWorkOptimizer();
-      x.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables, Mode.DPPUnion);
+
+      boolean optimized = swo.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables, Mode.DPPUnion);
+
+      if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
+        // If it was further optimized, do a round of extended shared work optimizer
+        sharedWorkExtendedOptimization(pctx, optimizerCache);
+      }
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("After DPPUnion:\n" + Operator.toString(pctx.getTopOps().values()));
