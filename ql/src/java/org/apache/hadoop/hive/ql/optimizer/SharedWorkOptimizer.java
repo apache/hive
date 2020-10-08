@@ -1009,18 +1009,15 @@ public class SharedWorkOptimizer extends Transform {
     // 1) TS with DPP.
     // 2) TS with semijoin DPP.
     Map<String, TableScanOperator> topOps = pctx.getTopOps();
-    Collection<Operator<? extends OperatorDesc>> tableScanOps =
-            Lists.<Operator<?>>newArrayList(topOps.values());
-    Set<AppMasterEventOperator> s =
-            OperatorUtils.findOperators(tableScanOps, AppMasterEventOperator.class);
+    Collection<Operator<?>> tableScanOps = Lists.<Operator<?>> newArrayList(topOps.values());
+    Set<AppMasterEventOperator> s = OperatorUtils.findOperators(tableScanOps, AppMasterEventOperator.class);
     for (AppMasterEventOperator a : s) {
       if (a.getConf() instanceof DynamicPruningEventDesc) {
         DynamicPruningEventDesc dped = (DynamicPruningEventDesc) a.getConf();
         optimizerCache.tableScanToDPPSource.put(dped.getTableScan(), a);
       }
     }
-    for (Entry<ReduceSinkOperator, SemiJoinBranchInfo> e
-            : pctx.getRsToSemiJoinBranchInfo().entrySet()) {
+    for (Entry<ReduceSinkOperator, SemiJoinBranchInfo> e : pctx.getRsToSemiJoinBranchInfo().entrySet()) {
       optimizerCache.tableScanToDPPSource.put(e.getValue().getTsOp(), e.getKey());
     }
     LOG.debug("DPP information stored in the cache: {}", optimizerCache.tableScanToDPPSource);
