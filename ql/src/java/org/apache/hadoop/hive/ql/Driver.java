@@ -497,38 +497,44 @@ public class Driver implements IDriver {
         HiveConf.ConfVars.HIVE_TXN_MAX_RETRYSNAPSHOT_COUNT);
 
       try {
-        while (!driverTxnHandler.isValidTxnListState() && ++retryShapshotCnt <= maxRetrySnapshotCnt) {
-          LOG.info("Re-compiling after acquiring locks, attempt #" + retryShapshotCnt);
-          // Snapshot was outdated when locks were acquired, hence regenerate context, txn list and retry.
-          // TODO: Lock acquisition should be moved before analyze, this is a bit hackish.
-          // Currently, we acquire a snapshot, compile the query with that snapshot, and then - acquire locks.
-          // If snapshot is still valid, we continue as usual.
-          // But if snapshot is not valid, we recompile the query.
-          if (driverContext.isOutdatedTxn()) {
-            LOG.info("Snapshot is outdated, re-initiating transaction ...");
-            driverContext.getTxnManager().rollbackTxn();
+        do {
+          driverContext.setOutdatedTxn(false);
+          // Inserts will not invalidate the snapshot, that could cause duplicates.
+          if (!driverTxnHandler.isValidTxnListState()) {
+            LOG.info("Re-compiling after acquiring locks, attempt #" + retryShapshotCnt);
+            // Snapshot was outdated when locks were acquired, hence regenerate context, txn list and retry.
+            // TODO: Lock acquisition should be moved before analyze, this is a bit hackish.
+            // Currently, we acquire a snapshot, compile the query with that snapshot, and then - acquire locks.
+            // If snapshot is still valid, we continue as usual.
+            // But if snapshot is not valid, we recompile the query.
+            if (driverContext.isOutdatedTxn()) {
+              // Later transaction invalidated the snapshot, a new transaction is required
+              LOG.info("Snapshot is outdated, re-initiating transaction ...");
+              driverContext.getTxnManager().rollbackTxn();
 
-            String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
-            driverContext.getTxnManager().openTxn(context, userFromUGI, driverContext.getTxnType());
-            lockAndRespond();
+              String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
+              driverContext.getTxnManager().openTxn(context, userFromUGI, driverContext.getTxnType());
+              lockAndRespond();
+            }
+            driverContext.setRetrial(true);
+            driverContext.getBackupContext().addSubContext(context);
+            driverContext.getBackupContext().setHiveLocks(context.getHiveLocks());
+            context = driverContext.getBackupContext();
+
+            driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
+              driverContext.getTxnManager().getValidTxns().toString());
+
+            if (driverContext.getPlan().hasAcidResourcesInQuery()) {
+              compileInternal(context.getCmd(), true);
+              driverTxnHandler.recordValidWriteIds();
+              driverTxnHandler.setWriteIdForAcidFileSinks();
+            }
+            // Since we're reusing the compiled plan, we need to update its start time for current run
+            driverContext.getPlan().setQueryStartTime(driverContext.getQueryDisplay().getQueryStartTime());
           }
-
-          driverContext.setRetrial(true);
-          driverContext.getBackupContext().addSubContext(context);
-          driverContext.getBackupContext().setHiveLocks(context.getHiveLocks());
-          context = driverContext.getBackupContext();
-
-          driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
-            driverContext.getTxnManager().getValidTxns().toString());
-
-          if (driverContext.getPlan().hasAcidResourcesInQuery()) {
-            compileInternal(context.getCmd(), true);
-            driverTxnHandler.recordValidWriteIds();
-            driverTxnHandler.setWriteIdForAcidFileSinks();
-          }
-          // Since we're reusing the compiled plan, we need to update its start time for current run
-          driverContext.getPlan().setQueryStartTime(driverContext.getQueryDisplay().getQueryStartTime());
-        }
+          // Re-check snapshot only in case we had to release locks and open a new transaction,
+          // otherwise exclusive locks should protect output tables/partitions in snapshot from concurrent writes.
+        } while (driverContext.isOutdatedTxn() && ++retryShapshotCnt <= maxRetrySnapshotCnt);
 
         if (retryShapshotCnt > maxRetrySnapshotCnt) {
           // Throw exception

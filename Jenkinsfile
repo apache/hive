@@ -174,6 +174,17 @@ def loadWS() {
     tar -xf archive.tar'''
 }
 
+def saveFile(name) {
+  sh """#!/bin/bash -e
+    rsync -rltDq --stats ${name} rsync://rsync/data/$LOCKED_RESOURCE.${name}"""
+}
+
+def loadFile(name) {
+  sh """#!/bin/bash -e
+    rsync -rltDq --stats rsync://rsync/data/$LOCKED_RESOURCE.${name} ${name}"""
+}
+
+
 jobWrappers {
 
   def splits
@@ -251,9 +262,10 @@ reinit_metastore $dbType
             }
           } finally {
             stage('Archive') {
-              sh '''#!/bin/bash -e
-tar -czf test-results.tgz --files-from  <(find . -path '*/surefire-reports/*')'''
-              archiveArtifacts artifacts: '**/test-results.tgz'
+              def fn="${splitName}.tgz"
+              sh """#!/bin/bash -e
+tar -czf ${fn} --files-from  <(find . -path '*/surefire-reports/*')"""
+              saveFile(fn)
               junit '**/TEST-*.xml'
             }
           }
@@ -261,5 +273,23 @@ tar -czf test-results.tgz --files-from  <(find . -path '*/surefire-reports/*')''
       }
     }
     parallel branches
+  }
+
+  stage('Archive') {
+    executorNode {
+      for (int i = 0; i < splits.size(); i++) {
+        def num = i
+        def splitName=String.format("split-%02d",num+1)
+        def fn="${splitName}.tgz"
+        loadFile(fn)
+        sh("""#!/bin/bash -e
+            mkdir ${splitName}
+            tar xzf ${fn} -C ${splitName}
+            unlink ${fn}""")
+      }
+      sh("""#!/bin/bash -e
+      tar czf test-results.tgz split*""")
+      archiveArtifacts artifacts: "**/test-results.tgz"
+    }
   }
 }
