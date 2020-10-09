@@ -36,6 +36,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 /** Database product inferred via JDBC. Encapsulates all SQL logic associated with
@@ -105,15 +106,14 @@ public class DatabaseProduct implements Configurable {
               theDatabaseProduct = (DatabaseProduct)
                   ReflectionUtils.newInstance(Class.forName(className), conf);
   
-              LOG.info(String.format("Using custom RDBMS %s. Overriding DbType: %s", className, dbt));
+              LOG.info(String.format("Using custom RDBMS %s", className));
               dbt = DbType.CUSTOM;
             }catch (Exception e) {
-              LOG.warn("Caught exception instantiating custom database product. Reverting to " + dbt, e);
+              throw new RuntimeException("Caught exception instantiating custom database product", e);
             }
-          }
-          else {
-            LOG.warn("Unexpected: metastore.use.custom.database.product was set, " +
-                     "but metastore.custom.database.product.classname was not. Reverting to " + dbt);
+          } else {
+            throw new RuntimeException("Unexpected: metastore.use.custom.database.product was set, " +
+                                    "but metastore.custom.database.product.classname was not");
           }
         }
 
@@ -218,6 +218,7 @@ public class DatabaseProduct implements Configurable {
     }
   }
 
+  @VisibleForTesting
   public static void reset() {
     theDatabaseProduct = null;
   }
