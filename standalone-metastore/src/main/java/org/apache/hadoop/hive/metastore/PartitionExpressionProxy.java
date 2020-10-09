@@ -40,7 +40,7 @@ public interface PartitionExpressionProxy {
    * @param defaultPartitionName Default partition name.
    * @return Filter string.
    */
-  String convertExprToFilter(byte[] exprBytes, String defaultPartitionName) throws MetaException;
+  String convertExprToFilter(byte[] exprBytes, String defaultPartitionName, boolean decodeFilterExpToStr) throws MetaException;
 
   /**
    * Filters the partition names via serialized Hive expression.

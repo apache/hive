@@ -42,12 +42,13 @@ public class PartFilterExprUtil {
 
 
   public static ExpressionTree makeExpressionTree(PartitionExpressionProxy expressionProxy,
-      byte[] expr, String defaultPartitionName) throws MetaException {
+      byte[] expr, String defaultPartitionName, Configuration conf) throws MetaException {
     // We will try pushdown first, so make the filter. This will also validate the expression,
     // if serialization fails we will throw incompatible metastore error to the client.
     String filter = null;
     try {
-      filter = expressionProxy.convertExprToFilter(expr, defaultPartitionName);
+      filter = expressionProxy.convertExprToFilter(expr, defaultPartitionName,
+          conf.getBoolean(MetastoreConf.ConfVars.DECODE_FILTER_EXPRESSION_TO_STRING.getVarname(), false));
     } catch (MetaException ex) {
       // TODO MS-SPLIT - for now we have construct this by reflection because IMetaStoreClient
       // can't be
