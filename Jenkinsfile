@@ -251,9 +251,9 @@ reinit_metastore $dbType
             }
           } finally {
             stage('Archive') {
-              sh '''#!/bin/bash -e
-tar -czf test-results.tgz --files-from  <(find . -path '*/surefire-reports/*')'''
-              archiveArtifacts artifacts: '**/test-results.tgz'
+              sh """#!/bin/bash -e
+tar -czf test-results.${splitName}.tgz --files-from  <(find . -path '*/surefire-reports/*')"""
+              archiveArtifacts artifacts: "**/test-results.${splitName}.tgz"
               junit '**/TEST-*.xml'
             }
           }
