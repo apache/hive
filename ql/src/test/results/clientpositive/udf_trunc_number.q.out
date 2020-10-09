@@ -77,11 +77,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: sampletable
-          Statistics: Num rows: 1 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: trunc(c, d) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select trunc (c,d) from sampletable
@@ -136,11 +136,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: sampletable1
-          Statistics: Num rows: 1 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: trunc(c, d) (type: float)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select trunc (c,d) from sampletable1
@@ -195,11 +195,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: sampletable2
-          Statistics: Num rows: 1 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: trunc(c, d) (type: double)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 500 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select trunc (c,d) from sampletable2
@@ -254,11 +254,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: sampletable3
-          Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: trunc(c, d) (type: bigint)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select trunc (c,d) from sampletable3
@@ -313,11 +313,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: sampletable4
-          Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
           Select Operator
             expressions: trunc(c, d) (type: int)
             outputColumnNames: _col0
-            Statistics: Num rows: 1 Data size: 300 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
             ListSink
 
 PREHOOK: query: select trunc (c,d) from sampletable4

@@ -37,22 +37,22 @@ STAGE PLANS:
           TableScan
             alias: ax
             filterExpr: ((s = 'a') and (t = 'a         ')) (type: boolean)
-            Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((s = 'a') and (t = 'a         ')) (type: boolean)
-              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -60,14 +60,14 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 'expected 2' (type: string), _col0 (type: bigint)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -109,22 +109,22 @@ STAGE PLANS:
           TableScan
             alias: ax
             filterExpr: (struct(CAST( s AS STRING),CAST( t AS STRING))) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
-            Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (struct(CAST( s AS STRING),CAST( t AS STRING))) IN (const struct('a','a'), const struct('b','bb')) (type: boolean)
-              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -132,14 +132,14 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 'expected 3' (type: string), _col0 (type: bigint)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -215,22 +215,22 @@ STAGE PLANS:
           TableScan
             alias: ax
             filterExpr: ((null and (CAST( t AS STRING) = 'bb')) or ((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a'))) is null (type: boolean)
-            Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((null and (CAST( t AS STRING) = 'bb')) or ((CAST( s AS STRING) = 'a') and (CAST( t AS STRING) = 'a'))) is null (type: boolean)
-              Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 1 Data size: 12 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 170 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -238,14 +238,14 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: 'expected 1' (type: string), _col0 (type: bigint)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
             File Output Operator
               compressed: false
-              Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
               table:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -302,22 +302,22 @@ STAGE PLANS:
           TableScan
             alias: ax
             filterExpr: (t) IN ('a         ', 'bb        ', 'aa        ', 'bbb       ', 'ab        ', 'ba        ', 'aaa       ', 'bbb       ', 'abc       ', 'bc        ', 'ac        ', 'bca       ', 'cab       ', 'cb        ', 'ca        ', 'cbc       ', 'z         ') (type: boolean)
-            Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (t) IN ('a         ', 'bb        ', 'aa        ', 'bbb       ', 'ab        ', 'ba        ', 'aaa       ', 'bbb       ', 'abc       ', 'bc        ', 'ac        ', 'bca       ', 'cab       ', 'cb        ', 'ca        ', 'cbc       ', 'z         ') (type: boolean)
-              Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -325,10 +325,10 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -376,22 +376,22 @@ STAGE PLANS:
           TableScan
             alias: ax
             filterExpr: ((t = 'a         ') or (t = 'bb        ') or (t = 'aa        ') or (t = 'bbb       ') or (t = 'ab        ') or (t = 'ba        ') or (t = 'aaa       ') or (t = 'abc       ') or (t = 'bc        ') or (t = 'ac        ') or (t = 'bca       ') or (t = 'cab       ') or (t = 'cb        ') or (t = 'ca        ') or (t = 'cbc       ') or (t = 'z         ')) (type: boolean)
-            Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: ((t = 'a         ') or (t = 'bb        ') or (t = 'aa        ') or (t = 'bbb       ') or (t = 'ab        ') or (t = 'ba        ') or (t = 'aaa       ') or (t = 'abc       ') or (t = 'bc        ') or (t = 'ac        ') or (t = 'bca       ') or (t = 'cab       ') or (t = 'cb        ') or (t = 'ca        ') or (t = 'cbc       ') or (t = 'z         ')) (type: boolean)
-              Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
-                Statistics: Num rows: 3 Data size: 36 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 3 Data size: 255 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: bigint)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -399,10 +399,10 @@ STAGE PLANS:
           aggregations: count(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

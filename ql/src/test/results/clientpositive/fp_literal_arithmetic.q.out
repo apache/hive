@@ -21,24 +21,24 @@ STAGE PLANS:
           TableScan
             alias: q0
             filterExpr: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
-            Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
-              Statistics: Num rows: 11 Data size: 1319 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: l_extendedprice (type: double)
                 outputColumnNames: l_extendedprice
-                Statistics: Num rows: 11 Data size: 1319 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 11 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(l_extendedprice)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: double)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -46,10 +46,10 @@ STAGE PLANS:
           aggregations: sum(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -95,24 +95,24 @@ STAGE PLANS:
           TableScan
             alias: q1
             filterExpr: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
-            Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: l_discount BETWEEN 0.05D AND 0.07D (type: boolean)
-              Statistics: Num rows: 11 Data size: 1319 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: l_extendedprice (type: double)
                 outputColumnNames: l_extendedprice
-                Statistics: Num rows: 11 Data size: 1319 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 11 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(l_extendedprice)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: double)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -120,10 +120,10 @@ STAGE PLANS:
           aggregations: sum(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -206,24 +206,24 @@ STAGE PLANS:
           TableScan
             alias: q10
             filterExpr: l_discount BETWEEN CAST( '0.05' AS decimal(3,2)) AND CAST( '0.07' AS decimal(3,2)) (type: boolean)
-            Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: l_discount BETWEEN CAST( '0.05' AS decimal(3,2)) AND CAST( '0.07' AS decimal(3,2)) (type: boolean)
-              Statistics: Num rows: 11 Data size: 1319 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: l_extendedprice (type: double)
                 outputColumnNames: l_extendedprice
-                Statistics: Num rows: 11 Data size: 1319 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 11 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(l_extendedprice)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: double)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -231,10 +231,10 @@ STAGE PLANS:
           aggregations: sum(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -280,24 +280,24 @@ STAGE PLANS:
           TableScan
             alias: q11
             filterExpr: l_discount BETWEEN (0.06 - 0.01) AND (0.06 + 0.01) (type: boolean)
-            Statistics: Num rows: 100 Data size: 11999 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 100 Data size: 1600 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: l_discount BETWEEN (0.06 - 0.01) AND (0.06 + 0.01) (type: boolean)
-              Statistics: Num rows: 11 Data size: 1319 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 11 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: l_extendedprice (type: double)
                 outputColumnNames: l_extendedprice
-                Statistics: Num rows: 11 Data size: 1319 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 11 Data size: 176 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: sum(l_extendedprice)
                   minReductionHashAggr: 0.99
                   mode: hash
                   outputColumnNames: _col0
-                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
                     null sort order: 
                     sort order: 
-                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+                    Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: double)
       Execution mode: vectorized
       Reduce Operator Tree:
@@ -305,10 +305,10 @@ STAGE PLANS:
           aggregations: sum(VALUE._col0)
           mode: mergepartial
           outputColumnNames: _col0
-          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
           File Output Operator
             compressed: false
-            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
             table:
                 input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

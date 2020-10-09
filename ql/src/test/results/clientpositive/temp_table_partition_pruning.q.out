@@ -126,22 +126,22 @@ STAGE PLANS:
           TableScan
             alias: daysales_temp
             filterExpr: COALESCE(((dt = '2001-01-01') and (customer = 1)),false) (type: boolean)
-            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: PARTIAL
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: COALESCE(((dt = '2001-01-01') and (customer = 1)),false) (type: boolean)
-              Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: customer (type: int), dt (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -269,22 +269,22 @@ STAGE PLANS:
           TableScan
             alias: daysales_temp
             filterExpr: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
-            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: PARTIAL
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
-              Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: customer (type: int), dt (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -412,22 +412,22 @@ STAGE PLANS:
           TableScan
             alias: daysales_temp
             filterExpr: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
-            Statistics: Num rows: 2 Data size: 2 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 2 Data size: 376 Basic stats: COMPLETE Column stats: PARTIAL
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate: COALESCE(((dt = '2001-01-01') or (customer = 3)),false) (type: boolean)
-              Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: PARTIAL
               Select Operator
                 expressions: customer (type: int), dt (type: string)
                 outputColumnNames: _col0, _col1
-                Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: PARTIAL
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
-                  Statistics: Num rows: 1 Data size: 1 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 188 Basic stats: COMPLETE Column stats: PARTIAL
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat

@@ -58,11 +58,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: dest1_n8
-          Statistics: Num rows: 1 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 1 Data size: 265 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: concat_ws(c1, c2, c3) (type: string), concat_ws(',', c1, c2, c3) (type: string), concat_ws(null, c1, c2, c3) (type: string), concat_ws('**', c1, null, c3) (type: string)
             outputColumnNames: _col0, _col1, _col2, _col3
-            Statistics: Num rows: 1 Data size: 15 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: SELECT concat_ws(dest1_n8.c1, dest1_n8.c2, dest1_n8.c3),

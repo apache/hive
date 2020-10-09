@@ -40,17 +40,17 @@ STAGE PLANS:
           TableScan
             alias: decimal_test
             filterExpr: (dc = 4327269606205.029297) (type: boolean)
-            Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (dc = 4327269606205.029297) (type: boolean)
-              Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: 4327269606205.029297 (type: decimal(38,18))
                 outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 1 Data size: 32 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 1 Data size: 112 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat

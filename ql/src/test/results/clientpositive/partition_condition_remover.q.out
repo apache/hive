@@ -49,11 +49,11 @@ STAGE PLANS:
         TableScan
           alias: foo_n5
           filterExpr: (s <> 'bar') (type: boolean)
-          Statistics: Num rows: 10 Data size: 90 Basic stats: COMPLETE Column stats: NONE
+          Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
           Select Operator
             expressions: i (type: int), s (type: string)
             outputColumnNames: _col0, _col1
-            Statistics: Num rows: 10 Data size: 90 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 10 Data size: 1880 Basic stats: COMPLETE Column stats: COMPLETE
             ListSink
 
 PREHOOK: query: select * from foo_n5 where s not in ('bar')

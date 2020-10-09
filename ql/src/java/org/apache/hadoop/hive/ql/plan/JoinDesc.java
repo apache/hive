@@ -690,6 +690,7 @@ public class JoinDesc extends AbstractOperatorDesc {
     aliasToOpInfo = joinDesc.aliasToOpInfo;
     leftInputJoin = joinDesc.leftInputJoin;
     streamAliases = joinDesc.streamAliases;
+    joinKeys = joinDesc.joinKeys;
   }
 
   public void setQBJoinTreeProps(QBJoinTree joinTree) {
@@ -716,6 +717,12 @@ public class JoinDesc extends AbstractOperatorDesc {
     aliasToOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>(joinDesc.aliasToOpInfo);
     leftInputJoin = joinDesc.leftInputJoin;
     streamAliases = joinDesc.streamAliases == null ? null : new ArrayList<String>(joinDesc.streamAliases);
+    if (joinDesc.joinKeys != null) {
+      joinKeys = new ExprNodeDesc[joinDesc.joinKeys.length][];
+      for(int i = 0; i < joinDesc.joinKeys.length; i++) {
+        joinKeys[i] = joinDesc.joinKeys[i].clone();
+      }
+    }
   }
 
   public MemoryMonitorInfo getMemoryMonitorInfo() {

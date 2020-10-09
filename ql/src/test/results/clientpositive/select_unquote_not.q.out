@@ -62,17 +62,17 @@ STAGE PLANS:
           TableScan
             alias: npe_test_n1
             filterExpr: (UDFToDouble(ds) >= 1970.0D) (type: boolean)
-            Statistics: Num rows: 498 Data size: 5290 Basic stats: COMPLETE Column stats: NONE
+            Statistics: Num rows: 498 Data size: 180276 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
               predicate: (UDFToDouble(ds) >= 1970.0D) (type: boolean)
-              Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+              Statistics: Num rows: 166 Data size: 60092 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: key (type: string), value (type: string), ds (type: string)
                 outputColumnNames: _col0, _col1, _col2
-                Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                Statistics: Num rows: 166 Data size: 60092 Basic stats: COMPLETE Column stats: COMPLETE
                 File Output Operator
                   compressed: false
-                  Statistics: Num rows: 166 Data size: 1763 Basic stats: COMPLETE Column stats: NONE
+                  Statistics: Num rows: 166 Data size: 60092 Basic stats: COMPLETE Column stats: COMPLETE
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
