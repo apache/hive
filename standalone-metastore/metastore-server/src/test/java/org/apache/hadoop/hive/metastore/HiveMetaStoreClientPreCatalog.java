@@ -2629,6 +2629,11 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     }
   }
 
+  @Override
+  public long getLatestTxnInConflict(long txnId) throws MetaException {
+    return 0;
+  }
+
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
   @Override
   public NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
