@@ -159,8 +159,6 @@ public class SharedWorkOptimizer extends Transform {
     // Gather information about the DPP table scans and store it in the cache
     gatherDPPTableScanOps(pctx, optimizerCache);
 
-    OperatorGraph og = new OperatorGraph(pctx);
-
     BaseSharedWorkOptimizer swo;
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
       swo = new BaseSharedWorkOptimizer();
@@ -1366,7 +1364,23 @@ public class SharedWorkOptimizer extends Transform {
       } else {
         return false;
       }
+      Set<Operator<?>> ascendants = findAscendantWorkOperators(pctx, cache, op);
+      if (ascendants.contains(tsOp2)) {
+        // This should not happen, we cannot merge
+        return false;
+      }
+
     }
+    final Set<Operator<?>> workOps1 = findWorkOperators(cache, tsOp1);
+    for (Operator<?> op : workOps1) {
+      if (op instanceof UnionOperator) {
+        return false;
+      }
+      if (op instanceof DummyStoreOperator) {
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -1748,10 +1762,6 @@ public class SharedWorkOptimizer extends Transform {
     Operator<?> op1 = sr.retainableOps.get(0);
     Operator<?> op2 = sr.discardableOps.get(0);
 
-    OperatorGraph og = new OperatorGraph(pctx);
-    if (!og.mayMerge(op1, op2)) {
-      return false;
-    }
     // 1) The set of operators in the works that we are merging need to meet
     // some requirements. In particular:
     // 1.1. None of the works that we are merging can contain a Union
@@ -1772,11 +1782,11 @@ public class SharedWorkOptimizer extends Transform {
     for (Operator<?> op : intersection) {
       if (op instanceof UnionOperator) {
         // We cannot merge (1.1)
-        //        return false;
+        return false;
       }
       if (op instanceof DummyStoreOperator) {
         // We cannot merge (1.2)
-        //      return false;
+        return false;
       }
     }
     // 2) We check whether output works when we merge the operators will collide.
