@@ -2070,6 +2070,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
           mdProvider.getMetadataProvider(), executorProvider);
       markEvent("Calcite - Post-join order optimization");
 
+      // XXX: CDPD-18190, this logging should be after the generateEnginePlan
+      // code below.
+      if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+        LOG.debug("CBO Planning details:\n");
+        LOG.debug("Original Plan:\n" + RelOptUtil.toString(calciteGenPlan));
+        LOG.debug("Plan After PPD, PartPruning, ColumnPruning:\n"
+            + RelOptUtil.toString(calcitePreCboPlan));
+        LOG.debug("Plan After Join Reordering:\n"
+            + RelOptUtil.toString(calciteOptimizedPlan, SqlExplainLevel.ALL_ATTRIBUTES));
+      }
+
       if (generateEnginePlan) {
         switch (conf.getEngine()) {
         case IMPALA:
@@ -2086,15 +2097,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         default:
           // Nothing to do for other engines for the time being
         }
-      }
-
-      if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
-        LOG.debug("CBO Planning details:\n");
-        LOG.debug("Original Plan:\n" + RelOptUtil.toString(calciteGenPlan));
-        LOG.debug("Plan After PPD, PartPruning, ColumnPruning:\n"
-            + RelOptUtil.toString(calcitePreCboPlan));
-        LOG.debug("Plan After Join Reordering:\n"
-            + RelOptUtil.toString(calciteOptimizedPlan, SqlExplainLevel.ALL_ATTRIBUTES));
       }
 
       return calciteOptimizedPlan;
