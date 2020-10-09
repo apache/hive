@@ -13912,8 +13912,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(msg);
         }
         if (!isValidAutomaticRewritingMaterialization()) {
-          throw new SemanticException("Cannot enable automatic rewriting for materialized view. " +
-              getInvalidAutomaticRewritingMaterializationReason());
+          LOG.warn("Cannot enable automatic rewriting for materialized view. " +
+                  getInvalidAutomaticRewritingMaterializationReason() +
+                  " Only query text based rewriting is available.");
         }
       }
     } catch (HiveException e) {
