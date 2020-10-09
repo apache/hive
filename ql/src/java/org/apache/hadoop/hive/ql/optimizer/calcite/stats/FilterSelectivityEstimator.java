@@ -213,7 +213,7 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
       }
       tmpCardinality = childCardinality * tmpSelectivity;
 
-      if (tmpCardinality > 1 && tmpCardinality < childCardinality) {
+      if (tmpCardinality > 1 && tmpCardinality <= childCardinality) {
         tmpSelectivity = (1 - tmpCardinality / childCardinality);
       } else {
         tmpSelectivity = 1.0;

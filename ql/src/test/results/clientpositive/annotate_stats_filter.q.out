@@ -772,10 +772,10 @@ STAGE PLANS:
       Map Operator Tree:
           TableScan
             alias: loc_orc
-            filterExpr: (((year = 2001) or year is null) and (state = 'CA')) (type: boolean)
+            filterExpr: ((state = 'CA') and ((year = 2001) or year is null)) (type: boolean)
             Statistics: Num rows: 8 Data size: 816 Basic stats: COMPLETE Column stats: COMPLETE
             Filter Operator
-              predicate: (((year = 2001) or year is null) and (state = 'CA')) (type: boolean)
+              predicate: ((state = 'CA') and ((year = 2001) or year is null)) (type: boolean)
               Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
               Select Operator
                 expressions: 'CA' (type: string), locid (type: int), zip (type: bigint), year (type: int)

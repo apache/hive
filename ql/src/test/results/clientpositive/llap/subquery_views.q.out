@@ -383,7 +383,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col4, _col5, _col7
                 Statistics: Num rows: 319 Data size: 30993 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
-                  predicate: ((_col7 is null or (_col4 = 0L) or _col4 is null) and ((_col5 < _col4) is not true or (_col4 = 0L) or _col4 is null or _col7 is not null or _col0 is null) and (_col0 is not null or (_col4 = 0L) or _col4 is null or _col7 is not null)) (type: boolean)
+                  predicate: ((_col7 is null or (_col4 = 0L) or _col4 is null) and (_col0 is not null or (_col4 = 0L) or _col4 is null or _col7 is not null) and ((_col5 < _col4) is not true or (_col4 = 0L) or _col4 is null or _col7 is not null or _col0 is null)) (type: boolean)
                   Statistics: Num rows: 304 Data size: 29540 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col0 (type: string)
