@@ -337,7 +337,8 @@ public class Context {
 
     viewsTokenRewriteStreams = new HashMap<>();
 
-    enableUnparse = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED);
+    enableUnparse = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED)
+            || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_BY_QUERY_TEXT);
   }
 
   protected Context(Context ctx) {

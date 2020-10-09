@@ -1876,7 +1876,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
 
-      if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING) &&
+      if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_BY_QUERY_TEXT) &&
               !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
               getQB().hasTableDefined()) {
         unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
