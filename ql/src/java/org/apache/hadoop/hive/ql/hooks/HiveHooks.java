@@ -33,22 +33,22 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *  Loads and stores different kinds of hooks, provides {@link HooksLoader#addHook(HookContext.HookType, Object)}} to
- *  add hook alone or {@link HooksLoader#getHooks(HookContext.HookType, Class)} to get all hooks
+ *  Loads and stores different kinds of hooks, provides {@link HiveHooks#addHook(HookContext.HookType, Object)}} to
+ *  add hook alone or {@link HiveHooks#getHooks(HookContext.HookType, Class)} to get all hooks
  *  corresponding to the specific hook type.
  */
-public class HooksLoader {
-  private static final Logger LOG = LoggerFactory.getLogger(HooksLoader.class);
+public class HiveHooks {
+  private static final Logger LOG = LoggerFactory.getLogger(HiveHooks.class);
   private final HiveConf conf;
   private final Map<HookContext.HookType, Hooks> typeHooks;
   private SessionState.LogHelper console;
 
-  public HooksLoader(HiveConf conf) {
+  public HiveHooks(HiveConf conf) {
     this.conf = conf;
     this.typeHooks = new HashMap<>();
   }
 
-  public HooksLoader(HiveConf conf, SessionState.LogHelper console) {
+  public HiveHooks(HiveConf conf, SessionState.LogHelper console) {
     this(conf);
     this.console = console;
   }

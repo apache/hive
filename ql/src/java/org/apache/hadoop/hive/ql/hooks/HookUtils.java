@@ -39,6 +39,6 @@ public class HookUtils {
   }
 
   public static <T> List<T> readHooksFromConf(HiveConf conf, HookContext.HookType type) {
-    return new HooksLoader(conf).getHooks(type);
+    return new HiveHooks(conf).getHooks(type);
   }
 }

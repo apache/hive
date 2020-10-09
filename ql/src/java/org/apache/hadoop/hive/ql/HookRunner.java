@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
-import org.apache.hadoop.hive.ql.hooks.HooksLoader;
+import org.apache.hadoop.hive.ql.hooks.HiveHooks;
 import org.apache.hadoop.hive.ql.hooks.MetricsQueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHook;
 import org.apache.hadoop.hive.ql.hooks.QueryLifeTimeHookContext;
@@ -47,28 +47,28 @@ public class HookRunner {
 
   private static final String CLASS_NAME = Driver.class.getName();
   private final HiveConf conf;
-  private final HooksLoader loader;
+  private final HiveHooks hooks;
 
   /**
-   * Constructs a {@link HookRunner} that loads all hooks to be run via a {@link HooksLoader}.
+   * Constructs a {@link HookRunner} that loads all hooks to be run via a {@link HiveHooks}.
    */
   HookRunner(HiveConf conf, SessionState.LogHelper console) {
     this.conf = conf;
-    this.loader = new HooksLoader(conf, console);
+    this.hooks = new HiveHooks(conf, console);
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED)) {
       addLifeTimeHook(new MetricsQueryLifeTimeHook());
     }
   }
 
   /**
-   * If {@link QueryLifeTimeHookWithParseHooks} have been loaded via the {@link HooksLoader} then invoke the
+   * If {@link QueryLifeTimeHookWithParseHooks} have been loaded via the {@link HiveHooks} then invoke the
    * {@link QueryLifeTimeHookWithParseHooks#beforeParse(QueryLifeTimeHookContext)} method for each
    * {@link QueryLifeTimeHookWithParseHooks}.
    *
    * @param command the Hive command that is being run
    */
   void runBeforeParseHook(String command) {
-    List<QueryLifeTimeHook> queryHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
+    List<QueryLifeTimeHook> queryHooks = hooks.getHooks(QUERY_LIFETIME_HOOKS);
     if (!queryHooks.isEmpty()) {
       QueryLifeTimeHookContext qhc =
           new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
@@ -82,7 +82,7 @@ public class HookRunner {
   }
 
   /**
-   * If {@link QueryLifeTimeHookWithParseHooks} have been loaded via the {@link HooksLoader} then invoke the
+   * If {@link QueryLifeTimeHookWithParseHooks} have been loaded via the {@link HiveHooks} then invoke the
    * {@link QueryLifeTimeHookWithParseHooks#afterParse(QueryLifeTimeHookContext, boolean)} method for each
    * {@link QueryLifeTimeHookWithParseHooks}.
    *
@@ -90,7 +90,7 @@ public class HookRunner {
    * @param parseError true if there was an error while parsing the command, false otherwise
    */
   void runAfterParseHook(String command, boolean parseError) {
-    List<QueryLifeTimeHook> queryHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
+    List<QueryLifeTimeHook> queryHooks = hooks.getHooks(QUERY_LIFETIME_HOOKS);
     if (!queryHooks.isEmpty()) {
       QueryLifeTimeHookContext qhc =
           new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
@@ -109,7 +109,7 @@ public class HookRunner {
    * @param command the Hive command that is being run
    */
   void runBeforeCompileHook(String command) {
-    List<QueryLifeTimeHook> queryHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
+    List<QueryLifeTimeHook> queryHooks = hooks.getHooks(QUERY_LIFETIME_HOOKS);
     if (!queryHooks.isEmpty()) {
       QueryLifeTimeHookContext qhc =
           new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
@@ -127,7 +127,7 @@ public class HookRunner {
   * @param compileError true if there was an error while compiling the command, false otherwise
   */
   void runAfterCompilationHook(String command, boolean compileError) {
-    List<QueryLifeTimeHook> queryHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
+    List<QueryLifeTimeHook> queryHooks = hooks.getHooks(QUERY_LIFETIME_HOOKS);
     if (!queryHooks.isEmpty()) {
       QueryLifeTimeHookContext qhc =
           new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command).build();
@@ -145,7 +145,7 @@ public class HookRunner {
    * @param hookContext the {@link HookContext} of the command being run
    */
   void runBeforeExecutionHook(String command, HookContext hookContext) {
-    List<QueryLifeTimeHook> queryHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
+    List<QueryLifeTimeHook> queryHooks = hooks.getHooks(QUERY_LIFETIME_HOOKS);
     if (!queryHooks.isEmpty()) {
       QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command)
           .withHookContext(hookContext).build();
@@ -164,7 +164,7 @@ public class HookRunner {
    * @param executionError true if there was an error while executing the command, false otherwise
    */
   void runAfterExecutionHook(String command, HookContext hookContext, boolean executionError) {
-    List<QueryLifeTimeHook> queryHooks = loader.getHooks(QUERY_LIFETIME_HOOKS);
+    List<QueryLifeTimeHook> queryHooks = hooks.getHooks(QUERY_LIFETIME_HOOKS);
     if (!queryHooks.isEmpty()) {
       QueryLifeTimeHookContext qhc = new QueryLifeTimeHookContextImpl.Builder().withHiveConf(conf).withCommand(command)
           .withHookContext(hookContext).build();
@@ -178,7 +178,7 @@ public class HookRunner {
   public ASTNode runPreAnalyzeHooks(HiveSemanticAnalyzerHookContext hookCtx, ASTNode tree) throws HiveException {
     try {
       for (HiveSemanticAnalyzerHook hook :
-          loader.getHooks(SEMANTIC_ANALYZER_HOOK, HiveSemanticAnalyzerHook.class)) {
+          hooks.getHooks(SEMANTIC_ANALYZER_HOOK, HiveSemanticAnalyzerHook.class)) {
         tree = hook.preAnalyze(hookCtx, tree);
       }
       return tree;
@@ -190,14 +190,14 @@ public class HookRunner {
   }
 
   public boolean hasPreAnalyzeHooks() {
-    return !loader.getHooks(SEMANTIC_ANALYZER_HOOK).isEmpty();
+    return !hooks.getHooks(SEMANTIC_ANALYZER_HOOK).isEmpty();
   }
 
   public void runPostAnalyzeHooks(HiveSemanticAnalyzerHookContext hookCtx,
       List<Task<?>> allRootTasks) throws HiveException {
     try {
       for (HiveSemanticAnalyzerHook hook :
-          loader.getHooks(SEMANTIC_ANALYZER_HOOK, HiveSemanticAnalyzerHook.class)) {
+          hooks.getHooks(SEMANTIC_ANALYZER_HOOK, HiveSemanticAnalyzerHook.class)) {
         hook.postAnalyze(hookCtx, allRootTasks);
       }
     } catch (HiveException e) {
@@ -210,7 +210,7 @@ public class HookRunner {
 
   public void runPreDriverHooks(HiveDriverRunHookContext hookContext) throws HiveException {
     try {
-      for (HiveDriverRunHook driverRunHook : loader.getHooks(DRIVER_RUN_HOOKS, HiveDriverRunHook.class)) {
+      for (HiveDriverRunHook driverRunHook : hooks.getHooks(DRIVER_RUN_HOOKS, HiveDriverRunHook.class)) {
         driverRunHook.preDriverRun(hookContext);
       }
     } catch (HiveException e) {
@@ -222,7 +222,7 @@ public class HookRunner {
 
   public void runPostDriverHooks(HiveDriverRunHookContext hookContext) throws HiveException {
     try {
-      for (HiveDriverRunHook driverRunHook : loader.getHooks(DRIVER_RUN_HOOKS, HiveDriverRunHook.class)) {
+      for (HiveDriverRunHook driverRunHook : hooks.getHooks(DRIVER_RUN_HOOKS, HiveDriverRunHook.class)) {
         driverRunHook.postDriverRun(hookContext);
       }
     } catch (HiveException e) {
@@ -233,15 +233,15 @@ public class HookRunner {
   }
 
   public void runPreHooks(HookContext hookContext) throws HiveException {
-    invokeGeneralHook(loader.getHooks(PRE_EXEC_HOOK), PerfLogger.PRE_HOOK, hookContext);
+    invokeGeneralHook(hooks.getHooks(PRE_EXEC_HOOK), PerfLogger.PRE_HOOK, hookContext);
   }
 
   public void runPostExecHooks(HookContext hookContext) throws HiveException {
-    invokeGeneralHook(loader.getHooks(POST_EXEC_HOOK), PerfLogger.POST_HOOK, hookContext);
+    invokeGeneralHook(hooks.getHooks(POST_EXEC_HOOK), PerfLogger.POST_HOOK, hookContext);
   }
 
   public void runFailureHooks(HookContext hookContext) throws HiveException {
-    invokeGeneralHook(loader.getHooks(ON_FAILURE_HOOK), PerfLogger.FAILURE_HOOK, hookContext);
+    invokeGeneralHook(hooks.getHooks(ON_FAILURE_HOOK), PerfLogger.FAILURE_HOOK, hookContext);
   }
 
   private static void invokeGeneralHook(List<ExecuteWithHookContext> hooks, String prefix, HookContext hookContext)
@@ -265,23 +265,23 @@ public class HookRunner {
   }
 
   public void addLifeTimeHook(QueryLifeTimeHook hook) {
-    loader.addHook(QUERY_LIFETIME_HOOKS, hook);
+    hooks.addHook(QUERY_LIFETIME_HOOKS, hook);
   }
 
   public void addPreHook(ExecuteWithHookContext hook) {
-    loader.addHook(PRE_EXEC_HOOK, hook);
+    hooks.addHook(PRE_EXEC_HOOK, hook);
   }
 
   public void addPostHook(ExecuteWithHookContext hook) {
-    loader.addHook(POST_EXEC_HOOK, hook);
+    hooks.addHook(POST_EXEC_HOOK, hook);
   }
 
   public void addOnFailureHook(ExecuteWithHookContext hook) {
-    loader.addHook(ON_FAILURE_HOOK, hook);
+    hooks.addHook(ON_FAILURE_HOOK, hook);
   }
 
   public void addSemanticAnalyzerHook(HiveSemanticAnalyzerHook hook) {
-    loader.addHook(SEMANTIC_ANALYZER_HOOK, hook);
+    hooks.addHook(SEMANTIC_ANALYZER_HOOK, hook);
   }
 
 }
