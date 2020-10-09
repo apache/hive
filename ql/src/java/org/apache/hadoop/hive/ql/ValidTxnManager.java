@@ -93,23 +93,15 @@ class ValidTxnManager {
       return true; // Nothing to check
     }
 
-    GetOpenTxnsResponse openTxns = driverContext.getTxnManager().getOpenTxns();
-    ValidTxnList validTxnList = TxnUtils.createValidReadTxnList(openTxns, 0);
-    long txnId = driverContext.getTxnManager().getCurrentTxnId();
-
-    String currentTxnString;
-    if (validTxnList.isTxnRangeValid(txnId + 1, openTxns.getTxn_high_water_mark()) != ValidTxnList.RangeResponse.NONE) {
-      // If here, there was another txn opened & committed between current SNAPSHOT generation and locking.
-      validTxnList.removeException(txnId);
-      currentTxnString = validTxnList.toString();
-    } else {
-      currentTxnString = TxnUtils.createValidReadTxnList(openTxns, txnId).toString();
+    // 4) Check if there is conflict
+    long txnId = driverContext.getTxnManager().getLatestTxnInConflict();
+    if (txnId <= 0) {
+      return true;
     }
-
-    if (currentTxnString.equals(txnString)) {
-      return true; // Still valid, nothing more to do
+    if (txnId > driverContext.getTxnManager().getCurrentTxnId()) {
+      driverContext.setOutdatedTxn(true);
     }
-    return checkWriteIds(currentTxnString, nonSharedLockedTables, txnWriteIdListString);
+    return false;
   }
 
   private Set<String> getNonSharedLockedTables() {
@@ -139,49 +131,6 @@ class ValidTxnManager {
       }
     }
     return nonSharedLockedTables;
-  }
-
-  private boolean checkWriteIds(String currentTxnString, Set<String> nonSharedLockedTables, String txnWriteIdListString)
-      throws LockException {
-    ValidTxnWriteIdList txnWriteIdList = new ValidTxnWriteIdList(txnWriteIdListString);
-    Map<String, Table> writtenTables = getTables(false, true);
-
-    ValidTxnWriteIdList currentTxnWriteIds = driverContext.getTxnManager().getValidWriteIds(
-        getTransactionalTables(writtenTables), currentTxnString);
-
-    for (Map.Entry<String, Table> tableInfo : writtenTables.entrySet()) {
-      String fullQNameForLock = TableName.getDbTable(tableInfo.getValue().getDbName(),
-          MetaStoreUtils.encodeTableName(tableInfo.getValue().getTableName()));
-      if (nonSharedLockedTables.contains(fullQNameForLock)) {
-        // Check if table is transactional
-        if (AcidUtils.isTransactionalTable(tableInfo.getValue())) {
-          ValidWriteIdList writeIdList = txnWriteIdList.getTableValidWriteIdList(tableInfo.getKey());
-          ValidWriteIdList currentWriteIdList = currentTxnWriteIds.getTableValidWriteIdList(tableInfo.getKey());
-          // Check if there was a conflicting write between current SNAPSHOT generation and locking.
-          // If yes, mark current transaction as outdated.
-          if (currentWriteIdList.isWriteIdRangeValid(writeIdList.getHighWatermark() + 1,
-              currentWriteIdList.getHighWatermark()) != ValidWriteIdList.RangeResponse.NONE) {
-            driverContext.setOutdatedTxn(true);
-            return false;
-          }
-          // Check that write id is still valid
-          if (!TxnIdUtils.checkEquivalentWriteIds(writeIdList, currentWriteIdList)) {
-            // Write id has changed, it is not valid anymore, we need to recompile
-            return false;
-          }
-        }
-        nonSharedLockedTables.remove(fullQNameForLock);
-      }
-    }
-
-    if (!nonSharedLockedTables.isEmpty()) {
-      throw new LockException("Wrong state: non-shared locks contain information for tables that have not" +
-          " been visited when trying to validate the locks from query tables.\n" +
-          "Tables: " + writtenTables.keySet() + "\n" +
-          "Remaining locks after check: " + nonSharedLockedTables);
-    }
-
-    return true; // It passes the test, it is valid
   }
 
   /**

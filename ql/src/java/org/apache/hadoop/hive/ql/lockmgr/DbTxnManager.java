@@ -1015,6 +1015,15 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     return lockResponse;
   }
 
+  @Override
+  public long getLatestTxnInConflict() throws LockException {
+    try {
+      return getMS().getLatestTxnInConflict(txnId);
+    } catch (TException e) {
+      throw new LockException(e);
+    }
+  }
+
   private boolean heartbeatMaterializationRebuildLock(String dbName, String tableName, long txnId) throws LockException {
     try {
       return getMS().heartbeatLockMaterializationRebuild(dbName, tableName, txnId);
