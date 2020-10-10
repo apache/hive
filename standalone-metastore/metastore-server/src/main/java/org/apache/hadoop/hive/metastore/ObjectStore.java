@@ -4823,6 +4823,7 @@ public class ObjectStore implements RawStore, Configurable {
         Map<Integer, Integer> mapping = new HashMap<>();
         for (int i = 0; i < oldCols.size(); i++) {
           FieldSchema oldCol = oldCols.get(i);
+          //TODO: replace for loop with list.indexOf()
           for (int j = 0; j < newCols.size(); j++) {
             FieldSchema newCol = newCols.get(j);
             if (oldCol.equals(newCol)) {

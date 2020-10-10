@@ -1,0 +1,97 @@
+PREHOOK: query: create table alter_bucket_change_col_t1(Serial_Num string, value string) partitioned by (ds string) clustered by (Serial_Num) into 10 buckets
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@alter_bucket_change_col_t1
+POSTHOOK: query: create table alter_bucket_change_col_t1(Serial_Num string, value string) partitioned by (ds string) clustered by (Serial_Num) into 10 buckets
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@alter_bucket_change_col_t1
+PREHOOK: query: describe formatted alter_bucket_change_col_t1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_bucket_change_col_t1
+POSTHOOK: query: describe formatted alter_bucket_change_col_t1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_bucket_change_col_t1
+# col_name            	data_type           	comment             
+serial_num          	string              	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	10                  	 
+Bucket Columns:     	[serial_num]        	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: alter table alter_bucket_change_col_t1 change Serial_num Key string
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@alter_bucket_change_col_t1
+PREHOOK: Output: default@alter_bucket_change_col_t1
+POSTHOOK: query: alter table alter_bucket_change_col_t1 change Serial_num Key string
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@alter_bucket_change_col_t1
+POSTHOOK: Output: default@alter_bucket_change_col_t1
+PREHOOK: query: describe formatted alter_bucket_change_col_t1
+PREHOOK: type: DESCTABLE
+PREHOOK: Input: default@alter_bucket_change_col_t1
+POSTHOOK: query: describe formatted alter_bucket_change_col_t1
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Input: default@alter_bucket_change_col_t1
+# col_name            	data_type           	comment             
+key                 	string              	                    
+value               	string              	                    
+	 	 
+# Partition Information	 	 
+# col_name            	data_type           	comment             
+ds                  	string              	                    
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
+	bucketing_version   	2                   
+#### A masked pattern was here ####
+	numFiles            	0                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	10                  	 
+Bucket Columns:     	[key]               	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   

@@ -3428,4 +3428,64 @@ public abstract class TestHiveMetaStore {
     m.invoke(hms, tbl, part, false, null);
     verify(wh, never()).getFileStatusesForLocation(part.getSd().getLocation());
   }
+
+
+  public void testAlterTableRenameBucketedColumnPositive() throws Exception {
+    String dbName = "alterTblDb";
+    String tblName = "altertbl";
+
+    client.dropTable(dbName, tblName);
+    silentDropDatabase(dbName);
+
+    new DatabaseBuilder().setName(dbName).create(client, conf);
+
+    ArrayList<FieldSchema> origCols = new ArrayList<>(2);
+    origCols.add(new FieldSchema("originalColName", ColumnType.STRING_TYPE_NAME, ""));
+    origCols.add(new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
+    Table origTbl = new TableBuilder().setDbName(dbName).setTableName(tblName).setCols(origCols)
+        .setBucketCols(Lists.newArrayList("originalColName")).build(conf);
+    client.createTable(origTbl);
+
+    // Rename bucketed column positive case
+    ArrayList<FieldSchema> colsUpdated = new ArrayList<>(origCols);
+    colsUpdated.set(0, new FieldSchema("updatedColName1", ColumnType.STRING_TYPE_NAME, ""));
+    Table tblUpdated = client.getTable(dbName, tblName);
+    tblUpdated.getSd().setCols(colsUpdated);
+    tblUpdated.getSd().getBucketCols().set(0, colsUpdated.get(0).getName());
+    client.alter_table(dbName, tblName, tblUpdated);
+
+    Table resultTbl = client.getTable(dbName, tblUpdated.getTableName());
+    assertEquals("Num bucketed columns is not 1 ", 1, resultTbl.getSd().getBucketCols().size());
+    assertEquals("Bucketed column names incorrect", colsUpdated.get(0).getName(),
+        resultTbl.getSd().getBucketCols().get(0));
+
+    silentDropDatabase(dbName);
+  }
+
+  @Test(expected = InvalidOperationException.class)
+  public void testAlterTableRenameBucketedColumnNegative() throws Exception {
+    String dbName = "alterTblDb";
+    String tblName = "altertbl";
+
+    client.dropTable(dbName, tblName);
+    silentDropDatabase(dbName);
+
+    new DatabaseBuilder().setName(dbName).create(client, conf);
+
+    ArrayList<FieldSchema> origCols = new ArrayList<>(2);
+    origCols.add(new FieldSchema("originalColName", ColumnType.STRING_TYPE_NAME, ""));
+    origCols.add(new FieldSchema("income", ColumnType.INT_TYPE_NAME, ""));
+    Table origTbl = new TableBuilder().setDbName(dbName).setTableName(tblName).setCols(origCols)
+        .setBucketCols(Lists.newArrayList("originalColName")).build(conf);
+    client.createTable(origTbl);
+
+    // Rename bucketed column negative case
+    ArrayList<FieldSchema> colsUpdated = new ArrayList<>(origCols);
+    colsUpdated.set(0, new FieldSchema("updatedColName1", ColumnType.STRING_TYPE_NAME, ""));
+    Table tblUpdated = client.getTable(dbName, tblName);
+    tblUpdated.getSd().setCols(colsUpdated);
+    client.alter_table(dbName, tblName, tblUpdated);
+
+    silentDropDatabase(dbName);
+  }
 }
