@@ -112,13 +112,14 @@ public class TestSemanticAnalyzer {
   public void testSkipAuthorization() throws Exception {
     HiveConf hiveConf = new HiveConf();
     hiveConf.setVar(HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS, "u1,u2");
-    SessionState state = new SessionState(hiveConf);
-    state.setAuthenticator(new HadoopDefaultAuthenticator() {
+    SessionState ss = new SessionState(hiveConf);
+    ss.setIsHiveServerQuery(true);
+    ss.setAuthenticator(new HadoopDefaultAuthenticator() {
       @Override public String getUserName() {
         return "u3";
       }
     });
-    SessionState.setCurrentSessionState(state);
+    SessionState.setCurrentSessionState(ss);
     BaseSemanticAnalyzer analyzer = new BaseSemanticAnalyzer(
         new QueryState.Builder().withHiveConf(hiveConf).build(), null) {
       @Override public void analyzeInternal(ASTNode ast) throws SemanticException {
