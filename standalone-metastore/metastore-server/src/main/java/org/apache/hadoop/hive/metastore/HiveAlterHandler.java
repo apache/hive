@@ -22,6 +22,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 
 import com.google.common.collect.Multimap;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.TableName;
@@ -128,6 +129,14 @@ public class HiveAlterHandler implements AlterHandler {
     String validate = MetaStoreServerUtils.validateTblColumns(newt.getSd().getCols());
     if (validate != null) {
       throw new InvalidOperationException("Invalid column " + validate);
+    }
+
+    // Validate bucketedColumns in new table
+    List<String> bucketColumns = MetaStoreServerUtils.validateBucketColumns(newt.getSd());
+    if (CollectionUtils.isNotEmpty(bucketColumns)) {
+      String errMsg = "Bucket columns - " + bucketColumns.toString() + " doesn't match with any table columns";
+      LOG.error(errMsg);
+      throw new InvalidOperationException(errMsg);
     }
 
     Path srcPath = null;
