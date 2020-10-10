@@ -393,9 +393,7 @@ public class Compiler {
 
   private void authorize(BaseSemanticAnalyzer sem) throws HiveException, CommandProcessorException {
     // do the authorization check
-    if (!sem.skipAuthorization() &&
-        HiveConf.getBoolVar(driverContext.getConf(), HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
-
+    if (!sem.skipAuthorization()) {
       try {
         perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
         // Authorization check for kill query will be in KillQueryImpl

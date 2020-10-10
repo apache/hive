@@ -185,6 +185,9 @@ public abstract class BaseSemanticAnalyzer {
   }
 
   public boolean skipAuthorization() {
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED)) {
+      return true;
+    }
     SessionState ss = SessionState.get();
     if (ss != null && ss.getConf() != null && ss.isHiveServerQuery()) {
       String authUser = SessionState.getUserFromAuthenticator();

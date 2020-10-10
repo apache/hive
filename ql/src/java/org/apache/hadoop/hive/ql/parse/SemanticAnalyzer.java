@@ -2638,10 +2638,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     doPhase1QBExpr(viewTree, qbexpr, qb.getId(), alias, true);
     // if skip authorization, skip checking;
     // if it is inside a view, skip checking;
-    // if authorization flag is not enabled, skip checking.
     // if HIVE_STATS_COLLECT_SCANCOLS is enabled, check.
-    if ((!this.skipAuthorization() && !qb.isInsideView() && HiveConf.getBoolVar(conf,
-        HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED))
+    if ((!this.skipAuthorization() && !qb.isInsideView())
         || HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_COLLECT_SCANCOLS)) {
       qb.rewriteViewToSubq(alias, tab_name, qbexpr, tab);
     } else {
