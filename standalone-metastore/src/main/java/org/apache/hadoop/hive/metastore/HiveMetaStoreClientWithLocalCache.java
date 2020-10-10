@@ -22,7 +22,10 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
@@ -546,31 +549,31 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           rqst.getValidWriteIdList(), getTable(dbName, rqst.getTbl_name()).getId());
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
+        List<String> partitionNamesMissing = new ArrayList<>();
+        List<Partition> partitionsFound = new ArrayList<>();
         // 1) Retrieve from the cache those ids present, gather the rest
-        Pair<Pair<List<Partition>, ObjectDictionary>, List<String>> p = getPartitionsByNamesCache(
-            cache, rqst, watermark);
-        List<String> partitionsMissing = p.getRight();
-        Pair<List<Partition>, ObjectDictionary> partitions = p.getLeft();
+        ObjectDictionary od = getPartitionsByNamesCache(cache, rqst, watermark,
+            partitionNamesMissing,partitionsFound);
         // 2) If they were all present in the cache, return
-        if (partitionsMissing.isEmpty()) {
-          GetPartitionsByNamesResult result = new GetPartitionsByNamesResult(partitions.getLeft());
-          result.setDictionary(partitions.getRight());
+        if (partitionNamesMissing.isEmpty()) {
+          GetPartitionsByNamesResult result = new GetPartitionsByNamesResult(partitionsFound);
+          result.setDictionary(od);
           return result;
         }
         // 3) If they were not, gather the remaining
         GetPartitionsByNamesRequest newRqst = new GetPartitionsByNamesRequest(rqst);
-        newRqst.setNames(partitionsMissing);
+        newRqst.setNames(partitionNamesMissing);
         GetPartitionsByNamesResult r = super.getPartitionsByNamesInternal(newRqst);
         // 4) Populate the cache
-        Pair<List<Partition>, ObjectDictionary> newPartitions = loadPartitionsByNamesCache(
-            cache, r, rqst, watermark);
+        List<Partition> newPartitions = new ArrayList<>();
+        od = loadPartitionsByNamesCache(
+            cache, r, rqst, watermark, newPartitions);
         // 5) Sort result (in case there is any assumption) and return
-        GetPartitionsByNamesResult result = computePartitionsByNamesFinal(rqst, partitions, newPartitions);
-
+        GetPartitionsByNamesResult result =
+             computePartitionsByNamesFinal(rqst, partitionsFound, newPartitions, od);
         if (LOG.isDebugEnabled() && recordStats) {
           LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
         }
-
         return result;
       }
     }
@@ -657,67 +660,96 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     return new TableStatsResult(result);
   }
 
-
-  protected final Pair<Pair<List<Partition>, ObjectDictionary>, List<String>> getPartitionsByNamesCache(CacheI cache,
-      GetPartitionsByNamesRequest rqst, TableWatermark watermark) throws MetaException {
-    List<String> partitionsMissing = new ArrayList<>();
-    List<Partition> partitions = new ArrayList<>();
+  // Partitions_by_names is a 2 level cache: 1st level key is {db, table, watermark, isFileMetadata}
+  // and value is a concurrent hash map for the partitions.
+  // 2nd level is the concurrent hash map whose key is list of partition 'values' and the
+  // value is the actual Partition object itself
+  protected final ObjectDictionary getPartitionsByNamesCache(CacheI cache, GetPartitionsByNamesRequest rqst,
+      TableWatermark watermark, List<String> partitionNamesMissing,
+      List<Partition> partitionsFound) throws MetaException {
+    CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES, rqst.getDb_name(),
+        rqst.getTbl_name(), watermark, rqst.isGetFileMetadata());
     ObjectDictionary od = null;
+    Pair<Map<List<String>, Partition>, ObjectDictionary> cacheEntry =
+        (Pair<Map<List<String>, Partition>, ObjectDictionary>) cache.get(cacheKey);
+    if (cacheEntry == null) {
+      // no cached partitions exist, so all requested partitions are missing
+      partitionNamesMissing.addAll(rqst.getNames());
+      return od;
+    }
+    Map<List<String>, Partition> cacheValue = cacheEntry.getLeft();
+    od = cacheEntry.getRight();
+    List<String> partitionNamesFound = new ArrayList<>();
     for (String partitionName : rqst.getNames()) {
-      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES, watermark,
-          rqst.getDb_name(), rqst.getTbl_name(), Warehouse.getPartValuesFromPartName(partitionName),
-          rqst.isGet_col_stats(), rqst.getProcessorCapabilities(), rqst.getProcessorIdentifier(),
-          rqst.getEngine(), rqst.getValidWriteIdList(), rqst.isGetFileMetadata());
-      Pair<Partition, ObjectDictionary> v = (Pair<Partition, ObjectDictionary>) cache.get(cacheKey);
-      if (v == null) {
-        partitionsMissing.add(partitionName);
+      List<String> partitionValues = Warehouse.getPartValuesFromPartName(partitionName);
+      Partition cachedPartition = cacheValue.get(partitionValues);
+      if (cachedPartition == null) {
+        partitionNamesMissing.add(partitionName);
       } else {
-        if (watermark == null) {
-          LOG.debug(
-              "Query level HMS cache: method=getPartitionsByNamesInternal, dbName={}, tblName={}, partitionName={}, fileMetadata={}",
-              rqst.getDb_name(), rqst.getTbl_name(), partitionName, rqst.isGetFileMetadata());
-        } else {
-          LOG.debug(
-              "HS2 level HMS cache: method=getPartitionsByNamesInternal, dbName={}, tblName={}, partitionName={}, fileMetadata={}",
-              rqst.getDb_name(), rqst.getTbl_name(), partitionName, rqst.isGetFileMetadata());
-        }
-        partitions.add(v.getLeft());
-        od = v.getRight();
+        partitionsFound.add(cachedPartition);
+        partitionNamesFound.add(partitionName);
       }
     }
-    return Pair.of(Pair.of(partitions, od), partitionsMissing);
+
+    if (partitionNamesFound.size() > 0) {
+      if (watermark == null) {
+        LOG.debug(
+            "Query level HMS cache: method=getPartitionsByNamesInternal, dbName={}, tblName={}, fileMetadata={}, partitionNames={}",
+            rqst.getDb_name(), rqst.getTbl_name(), rqst.isGetFileMetadata(), partitionNamesFound);
+      } else {
+        LOG.debug(
+            "HS2 level HMS cache: method=getPartitionsByNamesInternal, dbName={}, tblName={}, fileMetadata={}, partitionNames={}",
+            rqst.getDb_name(), rqst.getTbl_name(), rqst.isGetFileMetadata(), partitionNamesFound);
+      }
+    }
+
+    return od;
   }
 
-  protected final Pair<List<Partition>, ObjectDictionary> loadPartitionsByNamesCache(CacheI cache,
-      GetPartitionsByNamesResult r, GetPartitionsByNamesRequest rqst, TableWatermark watermark) {
-    List<Partition> newPartitions = new ArrayList<>();
-    ObjectDictionary od = null;
-    for (Partition partition : r.getPartitions()) {
-      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES, watermark,
-          rqst.getDb_name(), rqst.getTbl_name(), partition.getValues(),
-          rqst.isGet_col_stats(), rqst.getProcessorCapabilities(), rqst.getProcessorIdentifier(),
-          rqst.getEngine(), rqst.getValidWriteIdList(), rqst.isGetFileMetadata());
-      cache.put(cacheKey, Pair.of(partition, r.getDictionary()));
-      newPartitions.add(partition);
-      od = r.getDictionary();
+  protected final ObjectDictionary loadPartitionsByNamesCache(CacheI cache,
+      GetPartitionsByNamesResult r, GetPartitionsByNamesRequest rqst,
+      TableWatermark watermark, List<Partition> newPartitions) {
+    CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES, rqst.getDb_name(),
+        rqst.getTbl_name(), watermark, rqst.isGetFileMetadata());
+    ObjectDictionary od = r.getDictionary();
+
+    // List<String> represents the list of values for a partition
+    // Map<List<String>, Partition> allows probing based on partition values
+    Pair<Map<List<String>, Partition>, ObjectDictionary> cacheEntry;
+    if (cache instanceof CacheWrapper) {
+      cacheEntry = (Pair<Map<List<String>, Partition>, ObjectDictionary>)
+          ((CacheWrapper) cache).cache.get(cacheKey,
+              k -> Pair.of(new ConcurrentHashMap<>(), od));
+    } else {
+      cacheEntry = (Pair<Map<List<String>, Partition>, ObjectDictionary>) cache.get(cacheKey);
+      if (cacheEntry == null) {
+        // missing partitions may be fetched by different queries, hence use a
+        // concurrent structure and we keep these in a map to allow efficient probing
+        cacheEntry = Pair.of(new ConcurrentHashMap<>(), od);
+        cache.put(cacheKey, cacheEntry);
+      }
     }
-    return Pair.of(newPartitions, od);
+
+    Map<List<String>, Partition> partitionsMap = cacheEntry.getLeft();
+    for (Partition partition : r.getPartitions()) {
+      partitionsMap.put(partition.getValues(), partition);
+      newPartitions.add(partition);
+    }
+    return od;
   }
 
   protected final GetPartitionsByNamesResult computePartitionsByNamesFinal(GetPartitionsByNamesRequest rqst,
-      Pair<List<Partition>, ObjectDictionary> partitions, Pair<List<Partition>, ObjectDictionary> newPartitions)
+      List<Partition> partitions, List<Partition> newPartitions, ObjectDictionary od)
       throws MetaException {
-    List<Partition> p1 = partitions.getLeft();
-    List<Partition> p2 = newPartitions.getLeft();
     List<Partition> resultPartitions = new ArrayList<>();
     int i = 0, j = 0;
     for (String partitionName : rqst.getNames()) {
-      if (i >= p1.size() || j >= p2.size()) {
+      if (i >= partitions.size() || j >= newPartitions.size()) {
         break;
       }
       List<String> pv = Warehouse.getPartValuesFromPartName(partitionName);
-      Partition pi = p1.get(i);
-      Partition pj = p2.get(j);
+      Partition pi = partitions.get(i);
+      Partition pj = newPartitions.get(j);
       if (pi.getValues().equals(pv)) {
         resultPartitions.add(pi);
         i++;
@@ -726,26 +758,21 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
         j++;
       }
     }
-    while (i < p1.size()) {
-      resultPartitions.add(p1.get(i));
+    while (i < partitions.size()) {
+      resultPartitions.add(partitions.get(i));
       i++;
     }
-    while (j < p2.size()) {
-      resultPartitions.add(p2.get(j));
+    while (j < newPartitions.size()) {
+      resultPartitions.add(newPartitions.get(j));
       j++;
     }
+
     GetPartitionsByNamesResult result = new GetPartitionsByNamesResult(resultPartitions);
     if (rqst.isGetFileMetadata()) {
-      // TODO: This is just choosing randomly
-      if (newPartitions.getRight() != null) {
-        result.setDictionary(newPartitions.getRight());
-      } else if (partitions.getRight() != null) {
-        result.setDictionary(partitions.getRight());
-      }
+      result.setDictionary(od);
     }
     return result;
   }
-
 
   protected final Pair<List<TableValidWriteIds>, List<String>> getValidWriteIdsCache(CacheI cache,
       GetValidWriteIdsRequest rqst) throws TException {
@@ -813,20 +840,20 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
    * Wrapper to create a cache around a Caffeine Cache.
    */
   protected static class CacheWrapper implements CacheI {
-    final Cache<CacheKey, Object> c;
+    final Cache<CacheKey, Object> cache;
 
     protected CacheWrapper(Cache<CacheKey, Object> c) {
-      this.c = c;
+      this.cache = c;
     }
 
     @Override
     public void put(Object k, Object v) {
-      c.put((CacheKey) k, v);
+      cache.put((CacheKey) k, v);
     }
 
     @Override
     public Object get(Object k) {
-      return c.getIfPresent(k);
+      return cache.getIfPresent(k);
     }
   }
 
@@ -838,7 +865,6 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
 
     Object get(Object k);
   }
-
 
   /**
    * Internal class to identify uniquely a Table.

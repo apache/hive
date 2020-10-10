@@ -135,7 +135,7 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getPvals;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.isExternalTable;
 
 /**
- * todo: This need review re: thread safety.  Various places (see callsers of
+ * todo: This needs review re: thread safety.  Various places (see callers of
  * {@link SessionState#setCurrentSessionState(SessionState)}) pass SessionState to forked threads.
  * Currently it looks like those threads only read metadata but this is fragile.
  * Also, maps (in SessionState) where tempt table metadata is stored are concurrent and so
@@ -2289,25 +2289,26 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     if (queryCache != null) {
       MapWrapper cache = new MapWrapper(queryCache);
       // 1) Retrieve from the cache those ids present, gather the rest
-      Pair<Pair<List<Partition>, ObjectDictionary>, List<String>> p = getPartitionsByNamesCache(
-          cache, rqst, null);
-      List<String> partitionsMissing = p.getRight();
-      Pair<List<Partition>, ObjectDictionary> partitions = p.getLeft();
+      List<String> partitionNamesMissing = new ArrayList<>();
+      List<Partition> partitionsFound = new ArrayList<>();
+      ObjectDictionary od =
+          getPartitionsByNamesCache(cache, rqst, null, partitionNamesMissing, partitionsFound);
       // 2) If they were all present in the cache, return
-      if (partitionsMissing.isEmpty()) {
-        GetPartitionsByNamesResult result = new GetPartitionsByNamesResult(partitions.getLeft());
-        result.setDictionary(partitions.getRight());
+      if (partitionNamesMissing.isEmpty()) {
+        GetPartitionsByNamesResult result = new GetPartitionsByNamesResult(partitionsFound);
+        result.setDictionary(od);
         return result;
       }
       // 3) If they were not, gather the remaining
       GetPartitionsByNamesRequest newRqst = new GetPartitionsByNamesRequest(rqst);
-      newRqst.setNames(partitionsMissing);
+      newRqst.setNames(partitionNamesMissing);
       GetPartitionsByNamesResult r = super.getPartitionsByNamesInternal(newRqst);
       // 4) Populate the cache
-      Pair<List<Partition>, ObjectDictionary> newPartitions = loadPartitionsByNamesCache(
-          cache, r, rqst, null);
+      List<Partition> newPartitions = new ArrayList<>();
+      od = loadPartitionsByNamesCache(
+          cache, r, rqst, null, newPartitions);
       // 5) Sort result (in case there is any assumption) and return
-      return computePartitionsByNamesFinal(rqst, partitions, newPartitions);
+      return computePartitionsByNamesFinal(rqst, partitionsFound, newPartitions, od);
     }
     return super.getPartitionsByNamesInternal(rqst);
   }
