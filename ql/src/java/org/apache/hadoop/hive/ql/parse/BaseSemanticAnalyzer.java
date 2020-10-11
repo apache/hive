@@ -189,7 +189,7 @@ public abstract class BaseSemanticAnalyzer {
       return true;
     }
     SessionState ss = SessionState.get();
-    if (ss != null && ss.getConf() != null && ss.isHiveServerQuery()) {
+    if (ss != null && ss.isHiveServerQuery()) {
       String authUser = SessionState.getUserFromAuthenticator();
       Set<String> servUsers = new HashSet<>(ss.getConf().getStringCollection(
           HiveConf.ConfVars.HIVE_SERVER2_SERVICE_USERS.varname));

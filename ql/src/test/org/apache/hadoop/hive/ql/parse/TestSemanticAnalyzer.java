@@ -121,9 +121,12 @@ public class TestSemanticAnalyzer {
       }
     });
     SessionState.setCurrentSessionState(ss);
-    BaseSemanticAnalyzer analyzer = new BaseSemanticAnalyzer(
-        new QueryState.Builder().withHiveConf(hiveConf).build(), null) {
-      @Override public void analyzeInternal(ASTNode ast) throws SemanticException {
+    BaseSemanticAnalyzer analyzer = new BaseSemanticAnalyzer(new QueryState.Builder()
+        .withHiveConf(hiveConf).nonIsolated().build(), null) {
+
+      @Override
+      public void analyzeInternal(ASTNode ast) throws SemanticException {
+        // no op
       }
     };
     assertFalse(analyzer.skipAuthorization());
