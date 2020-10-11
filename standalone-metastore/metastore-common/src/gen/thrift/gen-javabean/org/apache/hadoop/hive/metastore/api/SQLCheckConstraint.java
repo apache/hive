@@ -16,7 +16,7 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TField TABLE_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("table_name", org.apache.thrift.protocol.TType.STRING, (short)3);
   private static final org.apache.thrift.protocol.TField COLUMN_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("column_name", org.apache.thrift.protocol.TType.STRING, (short)4);
   private static final org.apache.thrift.protocol.TField CHECK_EXPRESSION_FIELD_DESC = new org.apache.thrift.protocol.TField("check_expression", org.apache.thrift.protocol.TType.STRING, (short)5);
-  private static final org.apache.thrift.protocol.TField DC_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dc_name", org.apache.thrift.protocol.TType.STRING, (short)6);
+  private static final org.apache.thrift.protocol.TField CC_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("cc_name", org.apache.thrift.protocol.TType.STRING, (short)6);
   private static final org.apache.thrift.protocol.TField ENABLE_CSTR_FIELD_DESC = new org.apache.thrift.protocol.TField("enable_cstr", org.apache.thrift.protocol.TType.BOOL, (short)7);
   private static final org.apache.thrift.protocol.TField VALIDATE_CSTR_FIELD_DESC = new org.apache.thrift.protocol.TField("validate_cstr", org.apache.thrift.protocol.TType.BOOL, (short)8);
   private static final org.apache.thrift.protocol.TField RELY_CSTR_FIELD_DESC = new org.apache.thrift.protocol.TField("rely_cstr", org.apache.thrift.protocol.TType.BOOL, (short)9);
@@ -29,7 +29,7 @@ package org.apache.hadoop.hive.metastore.api;
   private @org.apache.thrift.annotation.Nullable java.lang.String table_name; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String column_name; // required
   private @org.apache.thrift.annotation.Nullable java.lang.String check_expression; // required
-  private @org.apache.thrift.annotation.Nullable java.lang.String dc_name; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String cc_name; // required
   private boolean enable_cstr; // required
   private boolean validate_cstr; // required
   private boolean rely_cstr; // required
@@ -41,7 +41,7 @@ package org.apache.hadoop.hive.metastore.api;
     TABLE_NAME((short)3, "table_name"),
     COLUMN_NAME((short)4, "column_name"),
     CHECK_EXPRESSION((short)5, "check_expression"),
-    DC_NAME((short)6, "dc_name"),
+    CC_NAME((short)6, "cc_name"),
     ENABLE_CSTR((short)7, "enable_cstr"),
     VALIDATE_CSTR((short)8, "validate_cstr"),
     RELY_CSTR((short)9, "rely_cstr");
@@ -70,8 +70,8 @@ package org.apache.hadoop.hive.metastore.api;
           return COLUMN_NAME;
         case 5: // CHECK_EXPRESSION
           return CHECK_EXPRESSION;
-        case 6: // DC_NAME
-          return DC_NAME;
+        case 6: // CC_NAME
+          return CC_NAME;
         case 7: // ENABLE_CSTR
           return ENABLE_CSTR;
         case 8: // VALIDATE_CSTR
@@ -136,7 +136,7 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.CHECK_EXPRESSION, new org.apache.thrift.meta_data.FieldMetaData("check_expression", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
-    tmpMap.put(_Fields.DC_NAME, new org.apache.thrift.meta_data.FieldMetaData("dc_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+    tmpMap.put(_Fields.CC_NAME, new org.apache.thrift.meta_data.FieldMetaData("cc_name", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     tmpMap.put(_Fields.ENABLE_CSTR, new org.apache.thrift.meta_data.FieldMetaData("enable_cstr", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
@@ -157,7 +157,7 @@ package org.apache.hadoop.hive.metastore.api;
     java.lang.String table_name,
     java.lang.String column_name,
     java.lang.String check_expression,
-    java.lang.String dc_name,
+    java.lang.String cc_name,
     boolean enable_cstr,
     boolean validate_cstr,
     boolean rely_cstr)
@@ -168,7 +168,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.table_name = table_name;
     this.column_name = column_name;
     this.check_expression = check_expression;
-    this.dc_name = dc_name;
+    this.cc_name = cc_name;
     this.enable_cstr = enable_cstr;
     setEnable_cstrIsSet(true);
     this.validate_cstr = validate_cstr;
@@ -197,8 +197,8 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetCheck_expression()) {
       this.check_expression = other.check_expression;
     }
-    if (other.isSetDc_name()) {
-      this.dc_name = other.dc_name;
+    if (other.isSetCc_name()) {
+      this.cc_name = other.cc_name;
     }
     this.enable_cstr = other.enable_cstr;
     this.validate_cstr = other.validate_cstr;
@@ -216,7 +216,7 @@ package org.apache.hadoop.hive.metastore.api;
     this.table_name = null;
     this.column_name = null;
     this.check_expression = null;
-    this.dc_name = null;
+    this.cc_name = null;
     setEnable_cstrIsSet(false);
     this.enable_cstr = false;
     setValidate_cstrIsSet(false);
@@ -346,26 +346,26 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   @org.apache.thrift.annotation.Nullable
-  public java.lang.String getDc_name() {
-    return this.dc_name;
+  public java.lang.String getCc_name() {
+    return this.cc_name;
   }
 
-  public void setDc_name(@org.apache.thrift.annotation.Nullable java.lang.String dc_name) {
-    this.dc_name = dc_name;
+  public void setCc_name(@org.apache.thrift.annotation.Nullable java.lang.String cc_name) {
+    this.cc_name = cc_name;
   }
 
-  public void unsetDc_name() {
-    this.dc_name = null;
+  public void unsetCc_name() {
+    this.cc_name = null;
   }
 
-  /** Returns true if field dc_name is set (has been assigned a value) and false otherwise */
-  public boolean isSetDc_name() {
-    return this.dc_name != null;
+  /** Returns true if field cc_name is set (has been assigned a value) and false otherwise */
+  public boolean isSetCc_name() {
+    return this.cc_name != null;
   }
 
-  public void setDc_nameIsSet(boolean value) {
+  public void setCc_nameIsSet(boolean value) {
     if (!value) {
-      this.dc_name = null;
+      this.cc_name = null;
     }
   }
 
@@ -477,11 +477,11 @@ package org.apache.hadoop.hive.metastore.api;
       }
       break;
 
-    case DC_NAME:
+    case CC_NAME:
       if (value == null) {
-        unsetDc_name();
+        unsetCc_name();
       } else {
-        setDc_name((java.lang.String)value);
+        setCc_name((java.lang.String)value);
       }
       break;
 
@@ -530,8 +530,8 @@ package org.apache.hadoop.hive.metastore.api;
     case CHECK_EXPRESSION:
       return getCheck_expression();
 
-    case DC_NAME:
-      return getDc_name();
+    case CC_NAME:
+      return getCc_name();
 
     case ENABLE_CSTR:
       return isEnable_cstr();
@@ -563,8 +563,8 @@ package org.apache.hadoop.hive.metastore.api;
       return isSetColumn_name();
     case CHECK_EXPRESSION:
       return isSetCheck_expression();
-    case DC_NAME:
-      return isSetDc_name();
+    case CC_NAME:
+      return isSetCc_name();
     case ENABLE_CSTR:
       return isSetEnable_cstr();
     case VALIDATE_CSTR:
@@ -635,12 +635,12 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
-    boolean this_present_dc_name = true && this.isSetDc_name();
-    boolean that_present_dc_name = true && that.isSetDc_name();
-    if (this_present_dc_name || that_present_dc_name) {
-      if (!(this_present_dc_name && that_present_dc_name))
+    boolean this_present_cc_name = true && this.isSetCc_name();
+    boolean that_present_cc_name = true && that.isSetCc_name();
+    if (this_present_cc_name || that_present_cc_name) {
+      if (!(this_present_cc_name && that_present_cc_name))
         return false;
-      if (!this.dc_name.equals(that.dc_name))
+      if (!this.cc_name.equals(that.cc_name))
         return false;
     }
 
@@ -698,9 +698,9 @@ package org.apache.hadoop.hive.metastore.api;
     if (isSetCheck_expression())
       hashCode = hashCode * 8191 + check_expression.hashCode();
 
-    hashCode = hashCode * 8191 + ((isSetDc_name()) ? 131071 : 524287);
-    if (isSetDc_name())
-      hashCode = hashCode * 8191 + dc_name.hashCode();
+    hashCode = hashCode * 8191 + ((isSetCc_name()) ? 131071 : 524287);
+    if (isSetCc_name())
+      hashCode = hashCode * 8191 + cc_name.hashCode();
 
     hashCode = hashCode * 8191 + ((enable_cstr) ? 131071 : 524287);
 
@@ -769,12 +769,12 @@ package org.apache.hadoop.hive.metastore.api;
         return lastComparison;
       }
     }
-    lastComparison = java.lang.Boolean.valueOf(isSetDc_name()).compareTo(other.isSetDc_name());
+    lastComparison = java.lang.Boolean.valueOf(isSetCc_name()).compareTo(other.isSetCc_name());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetDc_name()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dc_name, other.dc_name);
+    if (isSetCc_name()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.cc_name, other.cc_name);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -870,11 +870,11 @@ package org.apache.hadoop.hive.metastore.api;
     }
     first = false;
     if (!first) sb.append(", ");
-    sb.append("dc_name:");
-    if (this.dc_name == null) {
+    sb.append("cc_name:");
+    if (this.cc_name == null) {
       sb.append("null");
     } else {
-      sb.append(this.dc_name);
+      sb.append(this.cc_name);
     }
     first = false;
     if (!first) sb.append(", ");
@@ -974,10 +974,10 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 6: // DC_NAME
+          case 6: // CC_NAME
             if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
-              struct.dc_name = iprot.readString();
-              struct.setDc_nameIsSet(true);
+              struct.cc_name = iprot.readString();
+              struct.setCc_nameIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -1044,9 +1044,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeString(struct.check_expression);
         oprot.writeFieldEnd();
       }
-      if (struct.dc_name != null) {
-        oprot.writeFieldBegin(DC_NAME_FIELD_DESC);
-        oprot.writeString(struct.dc_name);
+      if (struct.cc_name != null) {
+        oprot.writeFieldBegin(CC_NAME_FIELD_DESC);
+        oprot.writeString(struct.cc_name);
         oprot.writeFieldEnd();
       }
       oprot.writeFieldBegin(ENABLE_CSTR_FIELD_DESC);
@@ -1091,7 +1091,7 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetCheck_expression()) {
         optionals.set(4);
       }
-      if (struct.isSetDc_name()) {
+      if (struct.isSetCc_name()) {
         optionals.set(5);
       }
       if (struct.isSetEnable_cstr()) {
@@ -1119,8 +1119,8 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetCheck_expression()) {
         oprot.writeString(struct.check_expression);
       }
-      if (struct.isSetDc_name()) {
-        oprot.writeString(struct.dc_name);
+      if (struct.isSetCc_name()) {
+        oprot.writeString(struct.cc_name);
       }
       if (struct.isSetEnable_cstr()) {
         oprot.writeBool(struct.enable_cstr);
@@ -1158,8 +1158,8 @@ package org.apache.hadoop.hive.metastore.api;
         struct.setCheck_expressionIsSet(true);
       }
       if (incoming.get(5)) {
-        struct.dc_name = iprot.readString();
-        struct.setDc_nameIsSet(true);
+        struct.cc_name = iprot.readString();
+        struct.setCc_nameIsSet(true);
       }
       if (incoming.get(6)) {
         struct.enable_cstr = iprot.readBool();

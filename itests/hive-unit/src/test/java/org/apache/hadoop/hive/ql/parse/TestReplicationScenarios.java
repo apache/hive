@@ -3479,8 +3479,8 @@ public class TestReplicationScenarios {
       nnName = nns.get(0).getNn_name();
       List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl9"));
       assertEquals(cks.size(), 2);
-      ckName1 = cks.get(0).getDc_name();
-      ckName2 = cks.get(1).getDc_name();
+      ckName1 = cks.get(0).getCc_name();
+      ckName2 = cks.get(1).getCc_name();
       List<SQLDefaultConstraint> dks = metaStoreClientMirror.getDefaultConstraints(new DefaultConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
       assertEquals(dks.size(), 1);
       dkName1 = dks.get(0).getDc_name();
@@ -3499,7 +3499,7 @@ public class TestReplicationScenarios {
       assertEquals(dks.get(1).getDefault_value(), "1");
       List<SQLCheckConstraint> cks = metaStoreClientMirror.getCheckConstraints(new CheckConstraintsRequest(DEFAULT_CATALOG_NAME, replDbName, "tbl10"));
       assertEquals(cks.size(), 1);
-      assertEquals(cks.get(0).getDc_name(), ckName3);
+      assertEquals(cks.get(0).getCc_name(), ckName3);
     } catch (TException te) {
       assertNull(te);
     }

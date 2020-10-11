@@ -167,8 +167,8 @@ public class TestCheckConstraint extends MetaStoreClientTest {
     Assert.assertEquals(table.getTableName(), fetched.get(0).getTable_name());
     Assert.assertEquals("col1", fetched.get(0).getColumn_name());
     Assert.assertEquals("= 5", fetched.get(0).getCheck_expression());
-    Assert.assertEquals(table.getTableName() + "_check_constraint", fetched.get(0).getDc_name());
-    String table0PkName = fetched.get(0).getDc_name();
+    Assert.assertEquals(table.getTableName() + "_check_constraint", fetched.get(0).getCc_name());
+    String table0PkName = fetched.get(0).getCc_name();
     Assert.assertTrue(fetched.get(0).isEnable_cstr());
     Assert.assertFalse(fetched.get(0).isValidate_cstr());
     Assert.assertFalse(fetched.get(0).isRely_cstr());
@@ -205,7 +205,7 @@ public class TestCheckConstraint extends MetaStoreClientTest {
     Assert.assertEquals(testTables[2].getTableName(), fetched.get(0).getTable_name());
     Assert.assertEquals("col1", fetched.get(0).getColumn_name());
     Assert.assertEquals("like s%", fetched.get(0).getCheck_expression());
-    Assert.assertEquals(constraintName, fetched.get(0).getDc_name());
+    Assert.assertEquals(constraintName, fetched.get(0).getCc_name());
     Assert.assertTrue(fetched.get(0).isEnable_cstr());
     Assert.assertFalse(fetched.get(0).isValidate_cstr());
     Assert.assertFalse(fetched.get(0).isRely_cstr());
@@ -243,7 +243,7 @@ public class TestCheckConstraint extends MetaStoreClientTest {
     Assert.assertEquals(table.getTableName(), fetched.get(0).getTable_name());
     Assert.assertEquals("col1", fetched.get(0).getColumn_name());
     Assert.assertEquals("> 0", fetched.get(0).getCheck_expression());
-    Assert.assertEquals(constraintName, fetched.get(0).getDc_name());
+    Assert.assertEquals(constraintName, fetched.get(0).getCc_name());
     Assert.assertTrue(fetched.get(0).isEnable_cstr());
     Assert.assertFalse(fetched.get(0).isValidate_cstr());
     Assert.assertFalse(fetched.get(0).isRely_cstr());
@@ -279,8 +279,8 @@ public class TestCheckConstraint extends MetaStoreClientTest {
     Assert.assertEquals(table.getTableName(), fetched.get(0).getTable_name());
     Assert.assertEquals("col1", fetched.get(0).getColumn_name());
     Assert.assertEquals("> 0", fetched.get(0).getCheck_expression());
-    Assert.assertEquals(table.getTableName() + "_check_constraint", fetched.get(0).getDc_name());
-    String tablePkName = fetched.get(0).getDc_name();
+    Assert.assertEquals(table.getTableName() + "_check_constraint", fetched.get(0).getCc_name());
+    String tablePkName = fetched.get(0).getCc_name();
     Assert.assertTrue(fetched.get(0).isEnable_cstr());
     Assert.assertFalse(fetched.get(0).isValidate_cstr());
     Assert.assertFalse(fetched.get(0).isRely_cstr());

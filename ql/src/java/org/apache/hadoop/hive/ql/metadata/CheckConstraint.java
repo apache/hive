@@ -71,7 +71,7 @@ public class CheckConstraint implements Serializable {
       checkExpressionList.add(check_expression);
       CheckConstraintCol currCol = new CheckConstraintCol(
           colName, check_expression);
-      String constraintName = uk.getDc_name();
+      String constraintName = uk.getCc_name();
       if (checkConstraints.containsKey(constraintName)) {
         checkConstraints.get(constraintName).add(currCol);
       } else {

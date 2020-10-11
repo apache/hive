@@ -5488,7 +5488,7 @@ public class ObjectStore implements RawStore, Configurable {
       final String tableName = normalizeIdentifier(cc.get(i).getTable_name());
       final String columnName = cc.get(i).getColumn_name() == null? null
           : normalizeIdentifier(cc.get(i).getColumn_name());
-      final String ccName = cc.get(i).getDc_name();
+      final String ccName = cc.get(i).getCc_name();
       boolean isEnable = cc.get(i).isEnable_cstr();
       boolean isValidate = cc.get(i).isValidate_cstr();
       boolean isRely = cc.get(i).isRely_cstr();

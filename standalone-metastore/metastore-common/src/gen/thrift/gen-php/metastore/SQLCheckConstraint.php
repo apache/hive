@@ -47,7 +47,7 @@ class SQLCheckConstraint
             'type' => TType::STRING,
         ),
         6 => array(
-            'var' => 'dc_name',
+            'var' => 'cc_name',
             'isRequired' => false,
             'type' => TType::STRING,
         ),
@@ -91,7 +91,7 @@ class SQLCheckConstraint
     /**
      * @var string
      */
-    public $dc_name = null;
+    public $cc_name = null;
     /**
      * @var bool
      */
@@ -123,8 +123,8 @@ class SQLCheckConstraint
             if (isset($vals['check_expression'])) {
                 $this->check_expression = $vals['check_expression'];
             }
-            if (isset($vals['dc_name'])) {
-                $this->dc_name = $vals['dc_name'];
+            if (isset($vals['cc_name'])) {
+                $this->cc_name = $vals['cc_name'];
             }
             if (isset($vals['enable_cstr'])) {
                 $this->enable_cstr = $vals['enable_cstr'];
@@ -194,7 +194,7 @@ class SQLCheckConstraint
                     break;
                 case 6:
                     if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->dc_name);
+                        $xfer += $input->readString($this->cc_name);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -259,9 +259,9 @@ class SQLCheckConstraint
             $xfer += $output->writeString($this->check_expression);
             $xfer += $output->writeFieldEnd();
         }
-        if ($this->dc_name !== null) {
-            $xfer += $output->writeFieldBegin('dc_name', TType::STRING, 6);
-            $xfer += $output->writeString($this->dc_name);
+        if ($this->cc_name !== null) {
+            $xfer += $output->writeFieldBegin('cc_name', TType::STRING, 6);
+            $xfer += $output->writeString($this->cc_name);
             $xfer += $output->writeFieldEnd();
         }
         if ($this->enable_cstr !== null) {

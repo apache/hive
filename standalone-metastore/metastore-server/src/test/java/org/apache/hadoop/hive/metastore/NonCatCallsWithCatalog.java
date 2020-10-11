@@ -1090,7 +1090,7 @@ public abstract class NonCatCallsWithCatalog {
     Assert.assertEquals(table.getTableName(), ccFetched.get(0).getTable_name());
     Assert.assertEquals("col6", ccFetched.get(0).getColumn_name());
     Assert.assertEquals("> 0", ccFetched.get(0).getCheck_expression());
-    Assert.assertEquals(table.getTableName() + "_check_constraint", ccFetched.get(0).getDc_name());
+    Assert.assertEquals(table.getTableName() + "_check_constraint", ccFetched.get(0).getCc_name());
     Assert.assertTrue(ccFetched.get(0).isEnable_cstr());
     Assert.assertFalse(ccFetched.get(0).isValidate_cstr());
     Assert.assertFalse(ccFetched.get(0).isRely_cstr());

@@ -1565,13 +1565,13 @@ void swap(SQLDefaultConstraint &a, SQLDefaultConstraint &b);
 std::ostream& operator<<(std::ostream& out, const SQLDefaultConstraint& obj);
 
 typedef struct _SQLCheckConstraint__isset {
-  _SQLCheckConstraint__isset() : catName(false), table_db(false), table_name(false), column_name(false), check_expression(false), dc_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
+  _SQLCheckConstraint__isset() : catName(false), table_db(false), table_name(false), column_name(false), check_expression(false), cc_name(false), enable_cstr(false), validate_cstr(false), rely_cstr(false) {}
   bool catName :1;
   bool table_db :1;
   bool table_name :1;
   bool column_name :1;
   bool check_expression :1;
-  bool dc_name :1;
+  bool cc_name :1;
   bool enable_cstr :1;
   bool validate_cstr :1;
   bool rely_cstr :1;
@@ -1582,7 +1582,7 @@ class SQLCheckConstraint : public virtual ::apache::thrift::TBase {
 
   SQLCheckConstraint(const SQLCheckConstraint&);
   SQLCheckConstraint& operator=(const SQLCheckConstraint&);
-  SQLCheckConstraint() : catName(), table_db(), table_name(), column_name(), check_expression(), dc_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
+  SQLCheckConstraint() : catName(), table_db(), table_name(), column_name(), check_expression(), cc_name(), enable_cstr(0), validate_cstr(0), rely_cstr(0) {
   }
 
   virtual ~SQLCheckConstraint() noexcept;
@@ -1591,7 +1591,7 @@ class SQLCheckConstraint : public virtual ::apache::thrift::TBase {
   std::string table_name;
   std::string column_name;
   std::string check_expression;
-  std::string dc_name;
+  std::string cc_name;
   bool enable_cstr;
   bool validate_cstr;
   bool rely_cstr;
@@ -1608,7 +1608,7 @@ class SQLCheckConstraint : public virtual ::apache::thrift::TBase {
 
   void __set_check_expression(const std::string& val);
 
-  void __set_dc_name(const std::string& val);
+  void __set_cc_name(const std::string& val);
 
   void __set_enable_cstr(const bool val);
 
@@ -1628,7 +1628,7 @@ class SQLCheckConstraint : public virtual ::apache::thrift::TBase {
       return false;
     if (!(check_expression == rhs.check_expression))
       return false;
-    if (!(dc_name == rhs.dc_name))
+    if (!(cc_name == rhs.cc_name))
       return false;
     if (!(enable_cstr == rhs.enable_cstr))
       return false;

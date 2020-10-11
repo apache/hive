@@ -116,7 +116,7 @@ struct SQLCheckConstraint {
   3: string table_name,  // table name
   4: string column_name, // column name
   5: string check_expression,// check expression
-  6: string dc_name,     // default name
+  6: string cc_name,     // check constraint name
   7: bool enable_cstr,   // Enable/Disable
   8: bool validate_cstr, // Validate/No validate
   9: bool rely_cstr      // Rely/No Rely

@@ -1017,7 +1017,7 @@ class SQLCheckConstraint
   TABLE_NAME = 3
   COLUMN_NAME = 4
   CHECK_EXPRESSION = 5
-  DC_NAME = 6
+  CC_NAME = 6
   ENABLE_CSTR = 7
   VALIDATE_CSTR = 8
   RELY_CSTR = 9
@@ -1028,7 +1028,7 @@ class SQLCheckConstraint
     TABLE_NAME => {:type => ::Thrift::Types::STRING, :name => 'table_name'},
     COLUMN_NAME => {:type => ::Thrift::Types::STRING, :name => 'column_name'},
     CHECK_EXPRESSION => {:type => ::Thrift::Types::STRING, :name => 'check_expression'},
-    DC_NAME => {:type => ::Thrift::Types::STRING, :name => 'dc_name'},
+    CC_NAME => {:type => ::Thrift::Types::STRING, :name => 'cc_name'},
     ENABLE_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'enable_cstr'},
     VALIDATE_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'validate_cstr'},
     RELY_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'rely_cstr'}

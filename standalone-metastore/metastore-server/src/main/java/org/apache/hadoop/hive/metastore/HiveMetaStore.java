@@ -2333,8 +2333,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           if (checkConstraints!= null) {
             for (int i = 0; i < checkConstraints.size(); i++) {
-              if (checkConstraints.get(i).getDc_name() == null) {
-                checkConstraints.get(i).setDc_name(constraintNames.get(primaryKeySize + foreignKeySize
+              if (checkConstraints.get(i).getCc_name() == null) {
+                checkConstraints.get(i).setCc_name(constraintNames.get(primaryKeySize + foreignKeySize
                                                                              + uniqueConstraintSize
                                                                              + defaultConstraintSize
                                                                            + notNullConstraintSize + i));
@@ -2840,7 +2840,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throws MetaException, InvalidObjectException {
       List<SQLCheckConstraint> checkConstraintCols= req.getCheckConstraintCols();
       String constraintName = (checkConstraintCols != null && checkConstraintCols.size() > 0) ?
-          checkConstraintCols.get(0).getDc_name() : "null";
+          checkConstraintCols.get(0).getCc_name() : "null";
       startFunction("add_check_constraint", ": " + constraintName);
       boolean success = false;
       Exception ex = null;
@@ -2854,8 +2854,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         List<String> constraintNames = ms.addCheckConstraints(checkConstraintCols);
         if (checkConstraintCols != null) {
           for (int i = 0; i < checkConstraintCols.size(); i++) {
-            if (checkConstraintCols.get(i).getDc_name() == null) {
-              checkConstraintCols.get(i).setDc_name(constraintNames.get(i));
+            if (checkConstraintCols.get(i).getCc_name() == null) {
+              checkConstraintCols.get(i).setCc_name(constraintNames.get(i));
             }
           }
         }

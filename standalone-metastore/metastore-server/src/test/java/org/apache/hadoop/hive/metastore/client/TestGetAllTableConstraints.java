@@ -405,7 +405,7 @@ public class TestGetAllTableConstraints extends MetaStoreClientTest {
     Assert.assertEquals(table.getTableName(), checkConstraint.getTable_name());
     Assert.assertEquals(column, checkConstraint.getColumn_name());
     Assert.assertEquals(checkValue, checkConstraint.getCheck_expression());
-    Assert.assertEquals(checkConstraintName, checkConstraint.getDc_name());
+    Assert.assertEquals(checkConstraintName, checkConstraint.getCc_name());
     Assert.assertTrue(checkConstraint.isEnable_cstr());
     Assert.assertFalse(checkConstraint.isValidate_cstr());
     Assert.assertFalse(checkConstraint.isRely_cstr());

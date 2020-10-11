@@ -2491,8 +2491,8 @@ void SQLCheckConstraint::__set_check_expression(const std::string& val) {
   this->check_expression = val;
 }
 
-void SQLCheckConstraint::__set_dc_name(const std::string& val) {
-  this->dc_name = val;
+void SQLCheckConstraint::__set_cc_name(const std::string& val) {
+  this->cc_name = val;
 }
 
 void SQLCheckConstraint::__set_enable_cstr(const bool val) {
@@ -2576,8 +2576,8 @@ uint32_t SQLCheckConstraint::read(::apache::thrift::protocol::TProtocol* iprot) 
         break;
       case 6:
         if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->dc_name);
-          this->__isset.dc_name = true;
+          xfer += iprot->readString(this->cc_name);
+          this->__isset.cc_name = true;
         } else {
           xfer += iprot->skip(ftype);
         }
@@ -2643,8 +2643,8 @@ uint32_t SQLCheckConstraint::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeString(this->check_expression);
   xfer += oprot->writeFieldEnd();
 
-  xfer += oprot->writeFieldBegin("dc_name", ::apache::thrift::protocol::T_STRING, 6);
-  xfer += oprot->writeString(this->dc_name);
+  xfer += oprot->writeFieldBegin("cc_name", ::apache::thrift::protocol::T_STRING, 6);
+  xfer += oprot->writeString(this->cc_name);
   xfer += oprot->writeFieldEnd();
 
   xfer += oprot->writeFieldBegin("enable_cstr", ::apache::thrift::protocol::T_BOOL, 7);
@@ -2671,7 +2671,7 @@ void swap(SQLCheckConstraint &a, SQLCheckConstraint &b) {
   swap(a.table_name, b.table_name);
   swap(a.column_name, b.column_name);
   swap(a.check_expression, b.check_expression);
-  swap(a.dc_name, b.dc_name);
+  swap(a.cc_name, b.cc_name);
   swap(a.enable_cstr, b.enable_cstr);
   swap(a.validate_cstr, b.validate_cstr);
   swap(a.rely_cstr, b.rely_cstr);
@@ -2684,7 +2684,7 @@ SQLCheckConstraint::SQLCheckConstraint(const SQLCheckConstraint& other14) {
   table_name = other14.table_name;
   column_name = other14.column_name;
   check_expression = other14.check_expression;
-  dc_name = other14.dc_name;
+  cc_name = other14.cc_name;
   enable_cstr = other14.enable_cstr;
   validate_cstr = other14.validate_cstr;
   rely_cstr = other14.rely_cstr;
@@ -2696,7 +2696,7 @@ SQLCheckConstraint& SQLCheckConstraint::operator=(const SQLCheckConstraint& othe
   table_name = other15.table_name;
   column_name = other15.column_name;
   check_expression = other15.check_expression;
-  dc_name = other15.dc_name;
+  cc_name = other15.cc_name;
   enable_cstr = other15.enable_cstr;
   validate_cstr = other15.validate_cstr;
   rely_cstr = other15.rely_cstr;
@@ -2711,7 +2711,7 @@ void SQLCheckConstraint::printTo(std::ostream& out) const {
   out << ", " << "table_name=" << to_string(table_name);
   out << ", " << "column_name=" << to_string(column_name);
   out << ", " << "check_expression=" << to_string(check_expression);
-  out << ", " << "dc_name=" << to_string(dc_name);
+  out << ", " << "cc_name=" << to_string(cc_name);
   out << ", " << "enable_cstr=" << to_string(enable_cstr);
   out << ", " << "validate_cstr=" << to_string(validate_cstr);
   out << ", " << "rely_cstr=" << to_string(rely_cstr);

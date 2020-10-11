@@ -1450,7 +1450,7 @@ class SQLCheckConstraint(object):
      - table_name
      - column_name
      - check_expression
-     - dc_name
+     - cc_name
      - enable_cstr
      - validate_cstr
      - rely_cstr
@@ -1458,13 +1458,13 @@ class SQLCheckConstraint(object):
     """
 
 
-    def __init__(self, catName=None, table_db=None, table_name=None, column_name=None, check_expression=None, dc_name=None, enable_cstr=None, validate_cstr=None, rely_cstr=None,):
+    def __init__(self, catName=None, table_db=None, table_name=None, column_name=None, check_expression=None, cc_name=None, enable_cstr=None, validate_cstr=None, rely_cstr=None,):
         self.catName = catName
         self.table_db = table_db
         self.table_name = table_name
         self.column_name = column_name
         self.check_expression = check_expression
-        self.dc_name = dc_name
+        self.cc_name = cc_name
         self.enable_cstr = enable_cstr
         self.validate_cstr = validate_cstr
         self.rely_cstr = rely_cstr
@@ -1505,7 +1505,7 @@ class SQLCheckConstraint(object):
                     iprot.skip(ftype)
             elif fid == 6:
                 if ftype == TType.STRING:
-                    self.dc_name = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                    self.cc_name = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
             elif fid == 7:
@@ -1553,9 +1553,9 @@ class SQLCheckConstraint(object):
             oprot.writeFieldBegin('check_expression', TType.STRING, 5)
             oprot.writeString(self.check_expression.encode('utf-8') if sys.version_info[0] == 2 else self.check_expression)
             oprot.writeFieldEnd()
-        if self.dc_name is not None:
-            oprot.writeFieldBegin('dc_name', TType.STRING, 6)
-            oprot.writeString(self.dc_name.encode('utf-8') if sys.version_info[0] == 2 else self.dc_name)
+        if self.cc_name is not None:
+            oprot.writeFieldBegin('cc_name', TType.STRING, 6)
+            oprot.writeString(self.cc_name.encode('utf-8') if sys.version_info[0] == 2 else self.cc_name)
             oprot.writeFieldEnd()
         if self.enable_cstr is not None:
             oprot.writeFieldBegin('enable_cstr', TType.BOOL, 7)
@@ -26656,7 +26656,7 @@ SQLCheckConstraint.thrift_spec = (
     (3, TType.STRING, 'table_name', 'UTF8', None, ),  # 3
     (4, TType.STRING, 'column_name', 'UTF8', None, ),  # 4
     (5, TType.STRING, 'check_expression', 'UTF8', None, ),  # 5
-    (6, TType.STRING, 'dc_name', 'UTF8', None, ),  # 6
+    (6, TType.STRING, 'cc_name', 'UTF8', None, ),  # 6
     (7, TType.BOOL, 'enable_cstr', None, None, ),  # 7
     (8, TType.BOOL, 'validate_cstr', None, None, ),  # 8
     (9, TType.BOOL, 'rely_cstr', None, None, ),  # 9
