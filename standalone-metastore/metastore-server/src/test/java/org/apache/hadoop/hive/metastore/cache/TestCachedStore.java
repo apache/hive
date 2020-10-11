@@ -1811,6 +1811,134 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     cachedStore.shutdown();
   }
 
+  @Test
+  public void testDefaultConstraint() {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "-1Kb");
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    CachedStore cachedStore = new CachedStore();
+    CachedStore.clearSharedCache();
+    cachedStore.setConfForTest(conf);
+    SharedCache sharedCache = CachedStore.getSharedCache();
+
+    Database db = createDatabaseObject("db", "testUser");
+    Table tbl = createUnpartitionedTableObject(db);
+
+    sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db", tbl.getTableName(), tbl);
+
+    Assert.assertEquals(sharedCache.getCachedTableCount(), 1);
+
+    List<SQLDefaultConstraint> origKeys = createDefaultConstraint(tbl);
+    sharedCache.addDefaultConstraintsToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), origKeys);
+
+    // List operation
+    List<SQLDefaultConstraint> cachedKeys =
+        sharedCache.listCachedDefaultConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
+
+    Assert.assertEquals(cachedKeys.size(), 1);
+    Assert.assertEquals(cachedKeys.get(0).getDc_name(), "dc1");
+    Assert.assertEquals(cachedKeys.get(0).getTable_db(), "db");
+    Assert.assertEquals(cachedKeys.get(0).getTable_name(), tbl.getTableName());
+    Assert.assertEquals(cachedKeys.get(0).getColumn_name(), "col1");
+    Assert.assertEquals(cachedKeys.get(0).getCatName(), DEFAULT_CATALOG_NAME);
+    Assert.assertEquals(cachedKeys.get(0).getDefault_value(), "1");
+
+    SQLDefaultConstraint modifiedKey = origKeys.get(0).deepCopy();
+    modifiedKey.setColumn_name("col2");
+    modifiedKey.setDc_name("dc_modified");
+
+    sharedCache.addDefaultConstraintsToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(),
+        Arrays.asList(modifiedKey));
+    cachedKeys = sharedCache.listCachedDefaultConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
+
+    Assert.assertEquals(cachedKeys.size(), 2);
+    sharedCache.removeConstraintFromCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "dc1");
+    cachedKeys = sharedCache.listCachedDefaultConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
+
+    sharedCache.refreshDefaultConstraintsInCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(),
+        Arrays.asList(modifiedKey));
+    Assert.assertEquals(cachedKeys.size(), 1);
+    Assert.assertEquals(cachedKeys.get(0).getDc_name(), "dc_modified");
+    Assert.assertEquals(cachedKeys.get(0).getTable_db(), "db");
+    Assert.assertEquals(cachedKeys.get(0).getTable_name(), tbl.getTableName());
+    Assert.assertEquals(cachedKeys.get(0).getColumn_name(), "col2");
+    Assert.assertEquals(cachedKeys.get(0).getCatName(), DEFAULT_CATALOG_NAME);
+    Assert.assertEquals(cachedKeys.get(0).getDefault_value(), "1");
+
+    // remove constraints
+    sharedCache.removeConstraintFromCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "dc_modified");
+
+    cachedKeys = sharedCache.listCachedDefaultConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
+    Assert.assertEquals(cachedKeys.size(), 0);
+
+    cachedStore.shutdown();
+  }
+
+  @Test
+  public void testCheckConstraint() {
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST, true);
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CACHED_RAW_STORE_MAX_CACHE_MEMORY, "-1Kb");
+    MetaStoreTestUtils.setConfForStandloneMode(conf);
+    CachedStore cachedStore = new CachedStore();
+    CachedStore.clearSharedCache();
+    cachedStore.setConfForTest(conf);
+    SharedCache sharedCache = CachedStore.getSharedCache();
+
+    Database db = createDatabaseObject("db", "testUser");
+    Table tbl = createUnpartitionedTableObject(db);
+
+    sharedCache.addTableToCache(DEFAULT_CATALOG_NAME, "db", tbl.getTableName(), tbl);
+
+    Assert.assertEquals(sharedCache.getCachedTableCount(), 1);
+
+    List<SQLCheckConstraint> origKeys = createCheckConstraint(tbl);
+    sharedCache.addCheckConstraintsToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), origKeys);
+
+    // List operation
+    List<SQLCheckConstraint> cachedKeys =
+        sharedCache.listCachedCheckConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
+
+    Assert.assertEquals(cachedKeys.size(), 1);
+    Assert.assertEquals(cachedKeys.get(0).getDc_name(), "cc1");
+    Assert.assertEquals(cachedKeys.get(0).getTable_db(), "db");
+    Assert.assertEquals(cachedKeys.get(0).getTable_name(), tbl.getTableName());
+    Assert.assertEquals(cachedKeys.get(0).getColumn_name(), "col1");
+    Assert.assertEquals(cachedKeys.get(0).getCatName(), DEFAULT_CATALOG_NAME);
+    Assert.assertEquals(cachedKeys.get(0).getCheck_expression(), "1");
+
+    SQLCheckConstraint modifiedKey = origKeys.get(0).deepCopy();
+    modifiedKey.setColumn_name("col2");
+    modifiedKey.setDc_name("cc_modified");
+
+    sharedCache.addCheckConstraintsToCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(),
+        Arrays.asList(modifiedKey));
+    cachedKeys = sharedCache.listCachedCheckConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
+
+    Assert.assertEquals(cachedKeys.size(), 2);
+    sharedCache.removeConstraintFromCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "cc1");
+    cachedKeys = sharedCache.listCachedCheckConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
+
+    sharedCache.refreshCheckConstraintsInCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(),
+        Arrays.asList(modifiedKey));
+    Assert.assertEquals(cachedKeys.size(), 1);
+    Assert.assertEquals(cachedKeys.get(0).getDc_name(), "cc_modified");
+    Assert.assertEquals(cachedKeys.get(0).getTable_db(), "db");
+    Assert.assertEquals(cachedKeys.get(0).getTable_name(), tbl.getTableName());
+    Assert.assertEquals(cachedKeys.get(0).getColumn_name(), "col2");
+    Assert.assertEquals(cachedKeys.get(0).getCatName(), DEFAULT_CATALOG_NAME);
+    Assert.assertEquals(cachedKeys.get(0).getCheck_expression(), "1");
+
+    // remove constraints
+    sharedCache.removeConstraintFromCache(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "cc_modified");
+
+    cachedKeys = sharedCache.listCachedCheckConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName());
+    Assert.assertEquals(cachedKeys.size(), 0);
+
+    cachedStore.shutdown();
+  }
+
   private List<SQLPrimaryKey> createPrimaryKeys(Table tbl) {
     SQLPrimaryKey key = new SQLPrimaryKey(tbl.getDbName(), tbl.getTableName(), "col1",
             1, "pk1",false, false, false);
@@ -1846,6 +1974,19 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
     key.setCatName(DEFAULT_CATALOG_NAME);
 
     return Arrays.asList(key);
+  }
+
+  private List<SQLDefaultConstraint> createDefaultConstraint(Table tbl) {
+    SQLDefaultConstraint dc =
+        new SQLDefaultConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "col1", "1",
+            "dc1", false, false, false);
+    return Arrays.asList(dc);
+  }
+
+  private List<SQLCheckConstraint> createCheckConstraint(Table tbl) {
+    SQLCheckConstraint cc = new SQLCheckConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), "col1", "1",
+        "cc1", false, false, false);
+    return Arrays.asList(cc);
   }
 
   private Table createTable(String dbName, String tblName, List<FieldSchema> cols, List<FieldSchema> ptnCols) {
