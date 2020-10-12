@@ -1262,7 +1262,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   private void changeToStreamingMode() throws HiveException {
     processingMode = this.new ProcessingModeStreaming();
     processingMode.initialize(null);
-    LOG.trace("switched to streaming mode");
+    LOG.info("switched to streaming mode");
   }
 
   @Override
