@@ -2389,6 +2389,9 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   list<string> get_partition_names(1:string db_name, 2:string tbl_name, 3:i16 max_parts=-1)
                        throws(1:NoSuchObjectException o1, 2:MetaException o2)
 
+  map<string, string> get_partition_locations(1:string db_name, 2:string tblName, 3:i16 max_parts=-1)
+                       throws(1:NoSuchObjectException o1, 2:MetaException o2)
+
   PartitionValuesResponse get_partition_values(1:PartitionValuesRequest request)
     throws(1:MetaException o1, 2:NoSuchObjectException o2);
 

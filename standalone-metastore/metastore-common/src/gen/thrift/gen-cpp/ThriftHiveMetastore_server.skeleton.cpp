@@ -430,6 +430,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_partition_names\n");
   }
 
+  void get_partition_locations(std::map<std::string, std::string> & _return, const std::string& db_name, const std::string& tblName, const int16_t max_parts) {
+    // Your implementation goes here
+    printf("get_partition_locations\n");
+  }
+
   void get_partition_values(PartitionValuesResponse& _return, const PartitionValuesRequest& request) {
     // Your implementation goes here
     printf("get_partition_values\n");

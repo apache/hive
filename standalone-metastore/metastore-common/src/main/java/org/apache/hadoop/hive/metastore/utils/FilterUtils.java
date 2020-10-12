@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore.utils;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.CATALOG_DB_SEPARATOR;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.metastore.MetaStoreFilterHook;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -254,6 +255,36 @@ public class FilterUtils {
     }
 
     return partitionNames;
+  }
+
+  /**
+   * Filter the map of partitions if filtering is enabled. Otherwise, return original map
+   * @param isFilterEnabled true: filtering is enabled; false: filtering is disabled.
+   * @param filterHook: the object that does filtering
+   * @param catName: the catalog name
+   * @param dbName: the database name
+   * @param tableName: the table name
+   * @param partitionNamesToLocations: the map of partition names to locationss
+   * @return the map of partition names to locations that current user has access if filtering is enabled;
+   *         Otherwise, the original map
+   * @throws MetaException
+   */
+  public static Map<String, String> filterPartitionNamesIfEnabled(
+      boolean isFilterEnabled,
+      MetaStoreFilterHook filterHook,
+      final String catName, final String dbName,
+      final String tableName, Map<String, String> partitionNamesToLocations) throws MetaException {
+    if (isFilterEnabled) {
+      Map<String, String> result = new HashMap<>();
+      List<String> filteredKeys = filterHook.filterPartitionNames(catName,
+              dbName, tableName, Lists.newArrayList(partitionNamesToLocations.keySet()));
+      for (String filteredKey : filteredKeys) {
+        result.put(filteredKey, partitionNamesToLocations.get(filteredKey));
+      }
+      return result;
+    } else {
+      return partitionNamesToLocations;
+    }
   }
 
   /**

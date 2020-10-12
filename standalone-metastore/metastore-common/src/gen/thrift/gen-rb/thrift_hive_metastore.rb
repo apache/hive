@@ -1401,6 +1401,23 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partition_names failed: unknown result')
     end
 
+    def get_partition_locations(db_name, tblName, max_parts)
+      send_get_partition_locations(db_name, tblName, max_parts)
+      return recv_get_partition_locations()
+    end
+
+    def send_get_partition_locations(db_name, tblName, max_parts)
+      send_message('get_partition_locations', Get_partition_locations_args, :db_name => db_name, :tblName => tblName, :max_parts => max_parts)
+    end
+
+    def recv_get_partition_locations()
+      result = receive_message(Get_partition_locations_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_partition_locations failed: unknown result')
+    end
+
     def get_partition_values(request)
       send_get_partition_values(request)
       return recv_get_partition_values()
@@ -5217,6 +5234,19 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'get_partition_names', seqid)
+    end
+
+    def process_get_partition_locations(seqid, iprot, oprot)
+      args = read_args(iprot, Get_partition_locations_args)
+      result = Get_partition_locations_result.new()
+      begin
+        result.success = @handler.get_partition_locations(args.db_name, args.tblName, args.max_parts)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_partition_locations', seqid)
     end
 
     def process_get_partition_values(seqid, iprot, oprot)
@@ -10309,6 +10339,46 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partition_locations_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    DB_NAME = 1
+    TBLNAME = 2
+    MAX_PARTS = 3
+
+    FIELDS = {
+      DB_NAME => {:type => ::Thrift::Types::STRING, :name => 'db_name'},
+      TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
+      MAX_PARTS => {:type => ::Thrift::Types::I16, :name => 'max_parts', :default => -1}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_partition_locations_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::MAP, :name => 'success', :key => {:type => ::Thrift::Types::STRING}, :value => {:type => ::Thrift::Types::STRING}},
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
     }

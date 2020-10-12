@@ -497,6 +497,20 @@ public interface RawStore extends Configurable {
       String defaultPartName, byte[] exprBytes, String order,
       short maxParts) throws MetaException, NoSuchObjectException;
 
+
+  /**
+   * Get a map of partition names to partition locations
+   * @param catName catalog name.
+   * @param dbName database name.
+   * @param tblName table name.
+   * @param maxParts maximum number of partitions to retrieve, -1 for all.
+   * @return map of partition names to partition locations
+   * @throws MetaException there was an error accessing the RDBMS
+   * @throws NoSuchObjectException no such table.
+   */
+  Map<String, String> listPartitionLocations(String catName, String dbName, String tblName,
+                                  short maxParts) throws MetaException, NoSuchObjectException;
+
   /**
    * Get a list of partition values as one big struct.
    * @param catName catalog name.

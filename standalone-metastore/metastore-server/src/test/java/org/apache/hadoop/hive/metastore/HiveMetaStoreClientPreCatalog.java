@@ -1484,6 +1484,18 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public Map<String, String> listPartitionLocations(String db_name, String tbl_name,
+                                             short max_parts) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public Map<String, String> listPartitionLocations(String catName, String dbName, String tblName,
+                                                    short maxParts) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public Partition getPartitionWithAuthInfo(String db_name, String tbl_name,
       List<String> part_vals, String user_name, List<String> group_names)
       throws MetaException, UnknownTableException, NoSuchObjectException,

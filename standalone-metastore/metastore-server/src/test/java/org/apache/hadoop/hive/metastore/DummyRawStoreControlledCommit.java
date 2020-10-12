@@ -373,6 +373,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public Map<String, String> listPartitionLocations(String catName, String dbName, String tblName,
+                                                    short maxParts) throws MetaException, NoSuchObjectException {
+    return objectStore.listPartitionLocations(catName, dbName, tblName, maxParts);
+  }
+
+  @Override
   public PartitionValuesResponse listPartitionValues(String catName, String db_name,
       String tbl_name, List<FieldSchema> cols, boolean applyDistinct, String filter,
       boolean ascending, List<FieldSchema> order, long maxParts) throws MetaException {

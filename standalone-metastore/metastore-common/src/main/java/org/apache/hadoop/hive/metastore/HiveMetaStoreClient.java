@@ -2639,6 +2639,27 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public Map<String, String> listPartitionLocations(String dbName, String tblName,
+    short maxParts) throws NoSuchObjectException, MetaException, TException {
+    return listPartitionLocations(getDefaultCatalog(conf), dbName, tblName, maxParts);
+  }
+
+  @Override
+  public Map<String, String> listPartitionLocations(String catName, String dbName, String tableName,
+    short maxParts) throws NoSuchObjectException, MetaException, TException {
+    Map<String, String> partLocations = listPartitionLocationsInternal(
+        catName, dbName, tableName, maxParts);
+    return FilterUtils.filterPartitionNamesIfEnabled(
+        isClientFilterEnabled, filterHook, catName, dbName, tableName, partLocations);
+  }
+
+  protected Map<String, String> listPartitionLocationsInternal(String catName, String dbName, String tableName,
+                                                    short maxParts) throws TException {
+    return client.get_partition_locations(
+        prependCatalogToDbName(catName, dbName, conf), tableName, maxParts);
+  }
+
+  @Override
   public int getNumPartitionsByFilter(String db_name, String tbl_name,
                                       String filter) throws TException {
     return getNumPartitionsByFilter(getDefaultCatalog(conf), db_name, tbl_name, filter);

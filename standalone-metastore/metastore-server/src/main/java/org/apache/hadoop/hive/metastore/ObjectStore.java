@@ -213,9 +213,9 @@ import org.apache.hadoop.hive.metastore.model.MType;
 import org.apache.hadoop.hive.metastore.model.MVersionTable;
 import org.apache.hadoop.hive.metastore.model.MWMMapping;
 import org.apache.hadoop.hive.metastore.model.MWMMapping.EntityType;
+import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
 import org.apache.hadoop.hive.metastore.model.MWMPool;
 import org.apache.hadoop.hive.metastore.model.MWMResourcePlan;
-import org.apache.hadoop.hive.metastore.model.MWMResourcePlan.Status;
 import org.apache.hadoop.hive.metastore.model.MWMTrigger;
 import org.apache.hadoop.hive.metastore.model.MReplicationMetrics;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
@@ -2805,7 +2805,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public Map<String, String> getPartitionLocations(String catName, String dbName, String tblName,
-      String baseLocationToNotShow, int max) {
+                                                   String baseLocationToNotShow, int max) {
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
     tblName = normalizeIdentifier(tblName);
@@ -3048,6 +3048,28 @@ public class ObjectStore implements RawStore, Configurable {
         return result;
       }
     }.run(true);
+  }
+
+  @Override
+  public Map<String, String> listPartitionLocations(String catName, String dbName, String tblName,
+                                                          short max_parts) throws MetaException, NoSuchObjectException {
+
+    Map<String, String> partLocations;
+    boolean success = false;
+    try {
+      openTransaction();
+      catName = normalizeIdentifier(catName);
+      dbName = normalizeIdentifier(dbName);
+      tblName = normalizeIdentifier(tblName);
+      LOG.debug("executing listPartitionLocations");
+      partLocations = getPartitionLocations(catName, dbName, tblName, null, max_parts);
+      success = commitTransaction();
+      return partLocations;
+    } catch (Exception e) {
+      throw new MetaException(e.getMessage());
+    } finally {
+      rollbackAndCleanup(success, null);
+    }
   }
 
   private List<String> getPartitionNamesViaOrm(Table table, ExpressionTree tree, String order,

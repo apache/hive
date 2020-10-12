@@ -1276,6 +1276,34 @@ public interface IMetaStoreClient {
       throws MetaException, TException, NoSuchObjectException;
 
   /**
+   * Get Map of partition names to locations of partitions in a table.
+   * @param db_name database name.
+   * @param tbl_name table name.
+   * @param max_parts maximum number of parts of fetch, or -1 to fetch them all.
+   * @return map of partition names to locations
+   * @throws NoSuchObjectException No such table.
+   * @throws MetaException Error accessing the RDBMS.
+   * @throws TException thrift transport error
+   */
+  Map<String, String> listPartitionLocations(String db_name, String tbl_name,
+                                  short max_parts) throws NoSuchObjectException, MetaException, TException;
+
+  /**
+   * Get Map of partition names to locations of partitions in a table.
+   * @param cat_name catalog name.
+   * @param db_name database name.
+   * @param tbl_name table name.
+   * @param max_parts maximum number of parts of fetch, or -1 to fetch them all.
+   * @return map of partition names to locations
+   * @throws NoSuchObjectException No such table.
+   * @throws MetaException Error accessing the RDBMS.
+   * @throws TException thrift transport error
+   */
+  Map<String, String> listPartitionLocations(String cat_name, String db_name, String tbl_name,
+                                             short max_parts) throws NoSuchObjectException, MetaException, TException;
+
+
+  /**
    * Get number of partitions matching specified filter
    * @param dbName the database name
    * @param tableName the table name

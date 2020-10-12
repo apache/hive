@@ -416,6 +416,12 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   }
 
   @Override
+  public Map<String, String> listPartitionLocations(String catName, String dbName, String tblName, short maxParts)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.listPartitionLocations(catName, dbName, tblName, maxParts);
+  }
+
+  @Override
   public Partition alterPartition(String catName, String dbName, String tblName, List<String> partVals,
                              Partition newPart, String queryValidWriteIds) throws InvalidObjectException, MetaException {
     if (shouldEventSucceed) {

@@ -2000,6 +2000,34 @@ public class CachedStore implements RawStore, Configurable {
     return partitionNames;
   }
 
+  @Override public Map<String, String> listPartitionLocations(String catName, String dbName, String tblName,
+                                                     short maxParts) throws MetaException, NoSuchObjectException {
+    catName = StringUtils.normalizeIdentifier(catName);
+    dbName = StringUtils.normalizeIdentifier(dbName);
+    tblName = StringUtils.normalizeIdentifier(tblName);
+    if (!shouldCacheTable(catName, dbName, tblName) || (canUseEvents && rawStore.isActiveTransaction())) {
+      return rawStore.listPartitionLocations(catName, dbName, tblName, maxParts);
+    }
+    Table table = sharedCache.getTableFromCache(catName, dbName, tblName);
+    if (table == null) {
+      // The table is not yet loaded in cache
+      return rawStore.listPartitionLocations(catName, dbName, tblName, maxParts);
+    }
+    Map<String, String> partitionLocations = new HashMap<>();
+    List<Partition> allPartitions = sharedCache.listCachedPartitions(catName, dbName, tblName, maxParts);
+    int count = 0;
+    for (Partition part : allPartitions) {
+      String partName = Warehouse.makePartName(table.getPartitionKeys(), part.getValues());
+      if ((maxParts == -1 || count < maxParts)) {
+        if (part.getSd() != null && part.getSd().getLocation() != null) {
+          partitionLocations.put(partName, part.getSd().getLocation());
+        }
+        count++;
+      }
+    }
+    return partitionLocations;
+  }
+
   @Override public List<Partition> listPartitionsPsWithAuth(String catName, String dbName, String tblName,
       List<String> partSpecs, short maxParts, String userName, List<String> groupNames)
       throws MetaException, InvalidObjectException, NoSuchObjectException {

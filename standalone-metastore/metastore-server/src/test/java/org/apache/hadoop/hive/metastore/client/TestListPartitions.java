@@ -21,12 +21,33 @@ package org.apache.hadoop.hive.metastore.client;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.hadoop.hive.metastore.api.*;
+
+import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
+import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
+import org.apache.hadoop.hive.metastore.api.PartitionsRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionsResponse;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
@@ -167,6 +188,15 @@ public class TestListPartitions extends MetaStoreClientTest {
     client.add_partition(partitionBuilder.build(metaStore.getConf()));
   }
 
+  protected void addPartitionWithLocation(IMetaStoreClient client, Table table,
+    List<String> values, String location) throws TException {
+    PartitionBuilder partitionBuilder = new PartitionBuilder().inTable(table);
+    values.forEach(val -> partitionBuilder.addValue(val));
+    Partition p = partitionBuilder.build(metaStore.getConf());
+    p.getSd().setLocation(location);
+    client.add_partition(p);
+  }
+
   private Table createTable3PartCols1PartGeneric(IMetaStoreClient client, boolean authOn)
           throws TException {
     Table t = createTestTable(client, DB_NAME, TABLE_NAME, Lists.newArrayList("yyyy", "mm",
@@ -208,6 +238,21 @@ public class TestListPartitions extends MetaStoreClientTest {
     return createTable4PartColsPartsGeneric(client, true);
   }
 
+  protected Map<String, String> getExpectedLocations(String tableLoc,
+    List<List<String>> values, List<String> partCols) {
+    Map<String, String> results = new HashMap<>();
+    for (List<String> value : values) {
+      List<String> kvPair = new ArrayList<String>();
+      for (int i = 0; i < partCols.size(); i++) {
+        kvPair.add(partCols.get(i) + "=" + value.get(i));
+      }
+      String partLoc = tableLoc + "/" + kvPair.stream().collect(joining("/"));
+      String partName = kvPair.stream().collect(joining("/"));
+      results.put(partName, partLoc);
+    }
+    return results;
+  }
+
   protected void assertAuthInfoReturned(String user, String group, Partition partition) {
     assertNotNull(partition.getPrivileges());
     assertEquals(Lists.newArrayList(),
@@ -231,6 +276,19 @@ public class TestListPartitions extends MetaStoreClientTest {
   private void assertCorrectPartitionNames(List<String> names,
                                                   List<List<String>> testValues,
                                                   List<String>partCols) throws Exception {
+    assertEquals(testValues.size(), names.size());
+    for (int i = 0; i < names.size(); ++i) {
+      List<String> expectedKVPairs = new ArrayList<>();
+      for (int j = 0; j < partCols.size(); ++j) {
+        expectedKVPairs.add(partCols.get(j) + "=" + testValues.get(i).get(j));
+      }
+      assertEquals(expectedKVPairs.stream().collect(joining("/")), names.get(i));
+    }
+  }
+
+  private void assertCorrectPartitionLocations(List<String> names,
+                                           List<List<String>> testValues,
+                                           List<String>partCols) throws Exception {
     assertEquals(testValues.size(), names.size());
     for (int i = 0; i < names.size(); ++i) {
       List<String> expectedKVPairs = new ArrayList<>();
@@ -1437,8 +1495,6 @@ public class TestListPartitions extends MetaStoreClientTest {
     client.listPartitionNames(DB_NAME, TABLE_NAME, (List<String>)null, (short)-1);
   }
 
-
-
   /**
    * Testing listPartitionValues(PartitionValuesRequest) ->
    *         get_partition_values(PartitionValuesRequest).
@@ -1454,7 +1510,6 @@ public class TestListPartitions extends MetaStoreClientTest {
             partitionSchema);
     PartitionValuesResponse response = client.listPartitionValues(request);
     assertCorrectPartitionValuesResponse(testValues, response);
-
   }
 
   @Test
@@ -1571,6 +1626,101 @@ public class TestListPartitions extends MetaStoreClientTest {
     try {
       createTable4PartColsParts(client);
       client.listPartitionValues(null);
+      fail("Should have thrown exception");
+    } catch (NullPointerException | TTransportException e) {
+      //TODO: should not throw different exceptions for different HMS deployment types
+    }
+  }
+
+  @Test
+  public void testListPartitionLocations() throws Exception {
+    ReturnTable rt = createTable4PartColsParts(client);
+    String tableLoc = client.getTable(DB_NAME, TABLE_NAME).getSd().getLocation();
+
+    Map<String, String> partitionLocations = client.listPartitionLocations(DB_NAME, TABLE_NAME, (short)-1);
+    Map<String, String> expectedPartitionLocations = getExpectedLocations(
+      tableLoc, rt.testValues, Lists.newArrayList("yyyy", "mm", "dd"));
+    assertEquals(expectedPartitionLocations, partitionLocations);
+
+    partitionLocations = client.listPartitionLocations(DB_NAME, TABLE_NAME, (short)2);
+    Map<String, String> expectedPartitionLocations2 = getExpectedLocations(tableLoc, rt.testValues.subList(0, 2),
+        Lists.newArrayList("yyyy", "mm", "dd"));
+    assertEquals(expectedPartitionLocations2, partitionLocations);
+
+    partitionLocations = client.listPartitionLocations(DB_NAME, TABLE_NAME, (short)0);
+    assertTrue(partitionLocations.isEmpty());
+
+    //This method does not depend on MetastoreConf.LIMIT_PARTITION_REQUEST setting:
+    partitionLocations = client.listPartitionLocations(DB_NAME, TABLE_NAME, (short)101);
+    assertEquals(expectedPartitionLocations, partitionLocations);
+  }
+
+  @Test
+  public void testListPartitionLocationsExternal() throws Exception {
+    List<String> partCols = Lists.newArrayList("yyyy", "mm", "dd");
+    List<List<String>> partVals = Lists.newArrayList();
+    partVals.add(Lists.newArrayList("2020", "01", "01"));
+    partVals.add(Lists.newArrayList("2020", "01", "02"));
+
+    Table t = createTestTable(client, DB_NAME, TABLE_NAME, partCols);
+    String tableLoc = client.getTable(DB_NAME, TABLE_NAME).getSd().getLocation();
+    List<String> externalLocations = Lists.newArrayList("extern1", "extern2").stream().map(
+      l -> tableLoc + "/" + l).collect(Collectors.toList());
+    for (int i = 0; i < 2; i ++) {
+      addPartitionWithLocation(client, t, partVals.get(i), externalLocations.get(i));
+    }
+
+    Map<String, String> expected = new HashMap<>();
+    for (int i = 0; i < partVals.size(); i++) {
+      List<String> currVals = partVals.get(i);
+      String partName =
+          IntStream.range(0, partCols.size()).mapToObj(j -> partCols.get(j) + "=" + currVals.get(j)).collect(joining("/"));
+      expected.put(partName, externalLocations.get(i));
+    }
+    Map<String, String> locations = client.listPartitionLocations(DB_NAME, TABLE_NAME, (short)-1);
+    assertEquals(expected, locations);
+  }
+
+  @Test(expected = MetaException.class)
+  public void testListPartitionLocationsNoDbName() throws Exception {
+    createTable4PartColsParts(client);
+    client.listPartitionLocations("", TABLE_NAME, (short)-1);
+  }
+
+  @Test(expected = MetaException.class)
+  public void testListPartitionLocationsNoTblName() throws Exception {
+    createTable4PartColsParts(client);
+    client.listPartitionLocations(DB_NAME, "", (short)-1);
+  }
+
+  @Test
+  public void testListPartitionLocationsNoTable() throws Exception {
+    Map<String, String> names = client.listPartitionLocations(DB_NAME, TABLE_NAME, (short)-1);
+    Assert.assertEquals(0, names.size());
+  }
+
+  @Test
+  public void testListPartitionLocationsNoDb() throws Exception {
+    client.dropDatabase(DB_NAME);
+    client.listPartitionLocations(DB_NAME, TABLE_NAME, (short)-1);
+  }
+
+  @Test(expected = MetaException.class)
+  public void testListPartitionLocationsNullDbName() throws Exception {
+    try {
+      createTable4PartColsParts(client);
+      client.listPartitionLocations(null, TABLE_NAME, (short)-1);
+      fail("Should have thrown exception");
+    } catch (NullPointerException | TTransportException e) {
+      //TODO: should not throw different exceptions for different HMS deployment types
+    }
+  }
+
+  @Test(expected = MetaException.class)
+  public void testListPartitionLocationsNullTblName() throws Exception {
+    try {
+      createTable4PartColsParts(client);
+      client.listPartitionLocations(DB_NAME, (String)null, (short)-1);
       fail("Should have thrown exception");
     } catch (NullPointerException | TTransportException e) {
       //TODO: should not throw different exceptions for different HMS deployment types
