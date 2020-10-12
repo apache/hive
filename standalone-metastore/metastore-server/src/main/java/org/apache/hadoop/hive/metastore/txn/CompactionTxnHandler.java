@@ -80,8 +80,7 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         // Check for completed transactions
-        final String s = "SELECT DISTINCT \"TC\".\"CTC_DATABASE\", \"TC\".\"CTC_TABLE\", \"TC\"" +
-            ".\"CTC_PARTITION\" " +
+        final String s = "SELECT DISTINCT \"TC\".\"CTC_DATABASE\", \"TC\".\"CTC_TABLE\", \"TC\".\"CTC_PARTITION\" " +
           "FROM \"COMPLETED_TXN_COMPONENTS\" \"TC\" " + (checkInterval > 0 ?
           "LEFT JOIN ( " +
           "  SELECT \"C1\".* FROM \"COMPLETED_COMPACTIONS\" \"C1\" " +
@@ -110,13 +109,13 @@ class CompactionTxnHandler extends TxnHandler {
         // Check for aborted txns: number of aborted txns past threshold and age of aborted txns
         // past time threshold
         boolean checkAbortedTimeThreshold = abortedTimeThreshold >= 0;
-        String sCheckAborted = "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", "
-            + "MIN(\"TXN_STARTED\"), COUNT(*), "
-            + "MAX(CASE WHEN \"TC_OPERATION_TYPE\" = " + OperationType.DYNPART + " THEN 1 ELSE 0 END) AS \"IS_DP\" "
-            + "FROM \"TXNS\", \"TXN_COMPONENTS\" "
-            + "WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = " + TxnStatus.ABORTED + " "
-            + "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" "
-            + (checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold);
+        String sCheckAborted = "SELECT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", " +
+          "MIN(\"TXN_STARTED\"), COUNT(*), MAX(CASE WHEN \"TC_OPERATION_TYPE\" IN (" +
+              OperationType.DP_INSERT + "," + OperationType.DP_UPDATE + ") THEN 1 ELSE 0 END) AS \"IS_DP\" " +
+          "FROM \"TXNS\", \"TXN_COMPONENTS\" " +
+          "   WHERE \"TXN_ID\" = \"TC_TXNID\" AND \"TXN_STATE\" = " + TxnStatus.ABORTED + " " +
+          "GROUP BY \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\" " +
+              (checkAbortedTimeThreshold ? "" : " HAVING COUNT(*) > " + abortedThreshold);
 
         LOG.debug("Going to execute query <" + sCheckAborted + ">");
         rs = stmt.executeQuery(sCheckAborted);
@@ -296,7 +295,7 @@ class CompactionTxnHandler extends TxnHandler {
           "\"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"TC_WRITEID\" FROM \"COMPACTION_QUEUE\" " +
           "   LEFT JOIN (" +
           "SELECT \"TC_WRITEID\", \"TC_DATABASE\", \"TC_TABLE\" FROM \"TXN_COMPONENTS\" " +
-          "   WHERE \"TC_OPERATION_TYPE\" = " + OperationType.DYNPART + ") \"TC\" " +
+          "   WHERE \"TC_OPERATION_TYPE\" IN (" + OperationType.DP_INSERT + "," + OperationType.DP_UPDATE + ")) \"TC\" " +
           "ON \"CQ_TYPE\" = '" + CLEAN_ABORTED + "' AND \"CQ_DATABASE\" = \"TC\".\"TC_DATABASE\" " +
           "   AND \"CQ_TABLE\" = \"TC\".\"TC_TABLE\" " +
           "WHERE \"CQ_STATE\" = '" + READY_FOR_CLEANING + "'";

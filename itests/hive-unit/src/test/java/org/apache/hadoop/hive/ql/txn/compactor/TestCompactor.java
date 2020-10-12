@@ -862,23 +862,20 @@ public class TestCompactor {
     String dbName = "default";
     String tblName = "cws";
 
-    HiveStreamingConnection connection1 = prepareTableAndConnection(dbName, tblName, 2);
-    HiveStreamingConnection connection2 = prepareTableAndConnection(dbName, tblName, 2);
+    HiveStreamingConnection connection = prepareTableAndConnection(dbName, tblName, 2);
 
-    connection1.beginTransaction();
-    connection1.write("1,1".getBytes());
-    connection1.write("2,2".getBytes());
-    connection1.commitTransaction();
+    connection.beginTransaction();
+    connection.write("1,1".getBytes());
+    connection.write("2,2".getBytes());
+    connection.commitTransaction();
 
-    connection2.beginTransaction();
-    connection2.write("2,3".getBytes());
-    connection2.write("3,3".getBytes());
-    connection2.abortTransaction();
+    connection.beginTransaction();
+    connection.write("2,3".getBytes());
+    connection.write("3,3".getBytes());
+    connection.abortTransaction();
 
     assertAndCompactCleanAbort(dbName, tblName, false);
-
-    connection1.close();
-    connection2.close();
+    connection.close();
   }
 
   @Test
@@ -886,23 +883,20 @@ public class TestCompactor {
     String dbName = "default";
     String tblName = "cws";
 
-    HiveStreamingConnection connection1 = prepareTableAndConnection(dbName, tblName, 2);
-    HiveStreamingConnection connection2 = prepareTableAndConnection(dbName, tblName, 2);
+    HiveStreamingConnection connection = prepareTableAndConnection(dbName, tblName, 2);
 
-    connection1.beginTransaction();
-    connection1.write("1,1".getBytes());
-    connection1.write("2,2".getBytes());
-    connection1.abortTransaction();
+    connection.beginTransaction();
+    connection.write("1,1".getBytes());
+    connection.write("2,2".getBytes());
+    connection.abortTransaction();
 
-    connection2.beginTransaction();
-    connection2.write("2,3".getBytes());
-    connection2.write("3,3".getBytes());
-    connection2.commitTransaction();
+    connection.beginTransaction();
+    connection.write("2,3".getBytes());
+    connection.write("3,3".getBytes());
+    connection.commitTransaction();
 
     assertAndCompactCleanAbort(dbName, tblName, false);
-
-    connection1.close();
-    connection2.close();
+    connection.close();
   }
 
   @Test

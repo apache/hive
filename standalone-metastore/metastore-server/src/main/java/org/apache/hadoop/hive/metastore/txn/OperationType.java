@@ -36,7 +36,8 @@ public enum OperationType {
   UPDATE('u', DataOperationType.UPDATE),
   DELETE('d', DataOperationType.DELETE),
   COMPACT('c', null),
-  DYNPART('p', null);
+  DP_INSERT('p', null),
+  DP_UPDATE('x', null);
 
   private final char sqlConst;
   private final DataOperationType dataOperationType;

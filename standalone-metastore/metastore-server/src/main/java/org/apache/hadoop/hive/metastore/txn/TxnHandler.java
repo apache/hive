@@ -51,6 +51,8 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -255,7 +257,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "\"TC_TXNID\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_OPERATION_TYPE\", \"TC_WRITEID\")" +
       " VALUES (?, ?, ?, ?, ?, ?)";
   private static final String TXN_COMPONENTS_DP_DELETE_QUERY = "DELETE FROM \"TXN_COMPONENTS\" " +
-      "WHERE \"TC_TXNID\" = ? AND \"TC_OPERATION_TYPE\" = " + OperationType.DYNPART;
+      "WHERE \"TC_TXNID\" = ? AND \"TC_PARTITION\" IS NULL";
   private static final String INCREMENT_NEXT_LOCK_ID_QUERY = "UPDATE \"NEXT_LOCK_ID\" SET \"NL_NEXT\" = %s";
   private static final String UPDATE_HIVE_LOCKS_EXT_ID_QUERY = "UPDATE \"HIVE_LOCKS\" SET \"HL_LOCK_EXT_ID\" = %s " +
       "WHERE \"HL_LOCK_EXT_ID\" = %s";
@@ -2679,6 +2681,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // For each component in this lock request,
         // add an entry to the txn_components table
         int insertCounter = 0;
+
+        Predicate<LockComponent> isDynPart = lc -> lc.isSetIsDynamicPartitionWrite() && lc.isIsDynamicPartitionWrite();
+        Function<LockComponent, Pair<String, String>> groupKey = lc ->
+            Pair.of(normalizeCase(lc.getDbname()), normalizeCase(lc.getTablename()));
+
+        Set<Pair<String, String>> isDynPartUpdate = rqst.getComponent().stream().filter(isDynPart)
+          .filter(lc -> lc.getOperationType() == DataOperationType.UPDATE || lc.getOperationType() == DataOperationType.DELETE)
+          .map(groupKey)
+        .collect(Collectors.toSet());
+
         for (LockComponent lc : rqst.getComponent()) {
           if (lc.isSetIsTransactional() && !lc.isIsTransactional()) {
             //we don't prevent using non-acid resources in a txn but we do lock them
@@ -2692,12 +2704,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           String partName = normalizeCase(lc.getPartitionname());
           OperationType opType = OperationType.fromDataOperationType(lc.getOperationType());
 
-          if (lc.isSetIsDynamicPartitionWrite() && lc.isIsDynamicPartitionWrite()) {
-            opType = OperationType.DYNPART;
+          if (isDynPart.test(lc)) {
             partName = null;
-            if (writeIdCache.containsKey(Pair.of(dbName, tblName))) {
+            if (writeIdCache.containsKey(groupKey.apply(lc))) {
               continue;
             }
+            opType = isDynPartUpdate.contains(groupKey.apply(lc)) ? OperationType.DP_UPDATE : OperationType.DP_INSERT;
           }
           Optional<Long> writeId = getWriteId(writeIdCache, dbName, tblName, txnid, dbConn);
 
