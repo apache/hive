@@ -13736,15 +13736,17 @@ class ShowLocksRequest(object):
      - tablename
      - partname
      - isExtended
+     - txnid
 
     """
 
 
-    def __init__(self, dbname=None, tablename=None, partname=None, isExtended=False,):
+    def __init__(self, dbname=None, tablename=None, partname=None, isExtended=False, txnid=None,):
         self.dbname = dbname
         self.tablename = tablename
         self.partname = partname
         self.isExtended = isExtended
+        self.txnid = txnid
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -13775,6 +13777,11 @@ class ShowLocksRequest(object):
                     self.isExtended = iprot.readBool()
                 else:
                     iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.I64:
+                    self.txnid = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -13800,6 +13807,10 @@ class ShowLocksRequest(object):
         if self.isExtended is not None:
             oprot.writeFieldBegin('isExtended', TType.BOOL, 4)
             oprot.writeBool(self.isExtended)
+            oprot.writeFieldEnd()
+        if self.txnid is not None:
+            oprot.writeFieldBegin('txnid', TType.I64, 5)
+            oprot.writeI64(self.txnid)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -27638,6 +27649,7 @@ ShowLocksRequest.thrift_spec = (
     (2, TType.STRING, 'tablename', 'UTF8', None, ),  # 2
     (3, TType.STRING, 'partname', 'UTF8', None, ),  # 3
     (4, TType.BOOL, 'isExtended', None, False, ),  # 4
+    (5, TType.I64, 'txnid', None, None, ),  # 5
 )
 all_structs.append(ShowLocksResponseElement)
 ShowLocksResponseElement.thrift_spec = (
