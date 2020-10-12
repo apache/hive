@@ -180,7 +180,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private void addAtlasLoadTask() throws HiveException {
     Path atlasDumpDir = new Path(new Path(work.dumpDirectory).getParent(), ReplUtils.REPL_ATLAS_BASE_DIR);
     LOG.info("Adding task to load Atlas metadata from {} ", atlasDumpDir);
-    AtlasLoadWork atlasLoadWork = new AtlasLoadWork(work.getSourceDbName(), work.dbNameToLoadIn, atlasDumpDir,
+    String targetDbName = StringUtils.isEmpty(work.dbNameToLoadIn) ? work.getSourceDbName() : work.dbNameToLoadIn;
+    AtlasLoadWork atlasLoadWork = new AtlasLoadWork(work.getSourceDbName(), targetDbName, atlasDumpDir,
         work.getMetricCollector());
     Task<?> atlasLoadTask = TaskFactory.get(atlasLoadWork, conf);
     if (childTasks == null) {
