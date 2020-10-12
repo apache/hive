@@ -68,7 +68,8 @@ class TestMaterializedViewsCache {
             new DummyRel(), new DummyRel(), null, asList(table.getDbName(), table.getTableName()));
     MATERIALIZED_VIEWS_CACHE.putIfAbsent(table, relOptMaterialization);
 
-    assertThat(MATERIALIZED_VIEWS_CACHE.get(table.getViewExpandedText()), is(relOptMaterialization));
+    assertThat(MATERIALIZED_VIEWS_CACHE.get(table.getViewExpandedText()).size(), is(1));
+    assertThat(MATERIALIZED_VIEWS_CACHE.get(table.getViewExpandedText()).get(0), is(relOptMaterialization));
   }
 
   private static List<Pair<Table, RelOptMaterialization>> testData = new ArrayList<>();
