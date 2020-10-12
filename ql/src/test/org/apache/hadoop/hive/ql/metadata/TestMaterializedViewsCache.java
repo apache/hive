@@ -60,29 +60,41 @@ class TestMaterializedViewsCache {
 
   @Test
   void testAdd() {
-    Table table = new Table(new org.apache.hadoop.hive.metastore.api.Table());
-    table.setDbName("default");
-    table.setTableName("mat1");
-    table.setViewExpandedText("select col0 from t1");
-    RelOptMaterialization relOptMaterialization = new RelOptMaterialization(
-            new DummyRel(), new DummyRel(), null, asList(table.getDbName(), table.getTableName()));
+    Table table = getTable("default", "mat1", "select col0 from t1");
+    RelOptMaterialization relOptMaterialization = createRelOptMaterialization(table);
     MATERIALIZED_VIEWS_CACHE.putIfAbsent(table, relOptMaterialization);
 
     assertThat(MATERIALIZED_VIEWS_CACHE.get(table.getViewExpandedText()).size(), is(1));
     assertThat(MATERIALIZED_VIEWS_CACHE.get(table.getViewExpandedText()).get(0), is(relOptMaterialization));
+    assertThat(MATERIALIZED_VIEWS_CACHE.values().size(), is(1));
+    assertThat(MATERIALIZED_VIEWS_CACHE.values().get(0), is(relOptMaterialization));
   }
 
-  private static List<Pair<Table, RelOptMaterialization>> testData = new ArrayList<>();
+  private Table getTable(String db, String tableName, String definition) {
+    Table table = new Table(new org.apache.hadoop.hive.metastore.api.Table());
+    table.setDbName(db);
+    table.setTableName(tableName);
+    table.setViewExpandedText(definition);
+    return table;
+  }
 
-  @BeforeAll
-  static void beforeAll() {
+  private static RelOptMaterialization createRelOptMaterialization(Table table) {
+    return new RelOptMaterialization(
+            new DummyRel(), new DummyRel(), null, asList(table.getDbName(), table.getTableName()));
+  }
+
+//  @Disabled("Testing parallelism only")
+  @Test
+  void testParallelism() {
+    int ITERATIONS = 1000000;
+
+    List<Pair<Table, RelOptMaterialization>> testData = new ArrayList<>();
     for (int i = 0; i < 10; ++i) {
       Table table = new Table(new org.apache.hadoop.hive.metastore.api.Table());
       table.setDbName("default");
       table.setTableName("mat" + i);
       table.setViewOriginalText("select col0 from t" + i);
-      RelOptMaterialization relOptMaterialization = new RelOptMaterialization(
-              new DummyRel(), new DummyRel(), null, asList(table.getDbName(), table.getTableName()));
+      RelOptMaterialization relOptMaterialization = createRelOptMaterialization(table);
       testData.add(new Pair<>(table, relOptMaterialization));
     }
     for (int i = 0; i < 10; ++i) {
@@ -90,25 +102,23 @@ class TestMaterializedViewsCache {
       table.setDbName("default2");
       table.setTableName("mat" + i);
       table.setViewOriginalText("select col0 from t" + i);
-      RelOptMaterialization relOptMaterialization = new RelOptMaterialization(
-              new DummyRel(), new DummyRel(), null, asList(table.getDbName(), table.getTableName()));
+      RelOptMaterialization relOptMaterialization = createRelOptMaterialization(table);
       testData.add(new Pair<>(table, relOptMaterialization));
     }
-  }
-
-  @Disabled("Testing parallelism only")
-  @Test
-  void testParallelism() {
-    int ITERATIONS = 1000000;
 
     List<Callable<Void>> callableList = new ArrayList<>();
     callableList.add(() -> {
-      refreshAll();
+      for (Pair<Table, RelOptMaterialization> entry : testData) {
+        MATERIALIZED_VIEWS_CACHE.refresh(entry.left, entry.left, entry.right);
+      }
       return null;
     });
     callableList.add(() -> {
       for (int j = 0; j < ITERATIONS; ++j) {
-        removeThenAdd();
+        for (Pair<Table, RelOptMaterialization> entry : testData) {
+          MATERIALIZED_VIEWS_CACHE.remove(entry.left);
+          MATERIALIZED_VIEWS_CACHE.putIfAbsent(entry.left, entry.right);
+        }
       }
       return null;
     });
@@ -133,19 +143,6 @@ class TestMaterializedViewsCache {
       executor.invokeAll(callableList);
     } catch (InterruptedException e) {
       e.printStackTrace();
-    }
-  }
-
-  private void refreshAll() {
-    for (Pair<Table, RelOptMaterialization> entry : testData) {
-      MATERIALIZED_VIEWS_CACHE.refresh(entry.left, entry.left, entry.right);
-    }
-  }
-
-  private void removeThenAdd() {
-    for (Pair<Table, RelOptMaterialization> entry : testData) {
-      MATERIALIZED_VIEWS_CACHE.remove(entry.left);
-      MATERIALIZED_VIEWS_CACHE.putIfAbsent(entry.left, entry.right);
     }
   }
 
