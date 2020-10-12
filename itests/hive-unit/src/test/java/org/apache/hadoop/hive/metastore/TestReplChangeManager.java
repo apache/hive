@@ -19,8 +19,13 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.nio.file.Files;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +38,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
+
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
+
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -41,6 +48,10 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
+import org.apache.hadoop.security.AccessControlException;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.security.authorize.DefaultImpersonationProvider;
+import org.apache.hadoop.security.authorize.ProxyUsers;
 import org.apache.hadoop.util.StringUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -60,18 +71,15 @@ public class TestReplChangeManager {
   private static String cmroot;
   private static FileSystem fs;
 
+  private static HiveConf permhiveConf;
+  private static Warehouse permWarehouse;
+  private static MiniDFSCluster permDdfs;
+  private static String permCmroot;
+
   @BeforeClass
   public static void setUp() throws Exception {
-    m_dfs = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(1).format(true).build();
-    hiveConf = new HiveConf(TestReplChangeManager.class);
-    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
-        "hdfs://" + m_dfs.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
-    hiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
-    cmroot = "hdfs://" + m_dfs.getNameNode().getHostAndPort() + "/cmroot";
-    hiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmroot);
-    hiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
-    warehouse = new Warehouse(hiveConf);
-    fs = new Path(cmroot).getFileSystem(hiveConf);
+    internalSetUp();
+    internalSetUpProvidePerm();
     try {
       client = new HiveMetaStoreClient(hiveConf);
     } catch (Throwable e) {
@@ -81,10 +89,41 @@ public class TestReplChangeManager {
     }
   }
 
+  private static void internalSetUpProvidePerm() throws Exception {
+    Configuration configuration = new Configuration();
+    configuration.set("dfs.permissions.enabled", "false");
+    String noPermBaseDir = Files.createTempDirectory("noPerm").toFile().getAbsolutePath();
+    configuration.set(MiniDFSCluster.HDFS_MINIDFS_BASEDIR, noPermBaseDir);
+    configuration.set("dfs.client.use.datanode.hostname", "true");
+    permDdfs = new MiniDFSCluster.Builder(configuration).numDataNodes(1).format(true).build();
+    permhiveConf = new HiveConf(TestReplChangeManager.class);
+    permhiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+      "hdfs://" + permDdfs.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+    permhiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    permCmroot = "hdfs://" + permDdfs.getNameNode().getHostAndPort() + "/cmroot";
+    permhiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, permCmroot);
+    permhiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
+    permWarehouse = new Warehouse(permhiveConf);
+  }
+
+  private static void internalSetUp() throws Exception {
+    m_dfs = new MiniDFSCluster.Builder(new Configuration()).numDataNodes(1).format(true).build();
+    hiveConf = new HiveConf(TestReplChangeManager.class);
+    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+      "hdfs://" + m_dfs.getNameNode().getHostAndPort() + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+    hiveConf.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+    cmroot = "hdfs://" + m_dfs.getNameNode().getHostAndPort() + "/cmroot";
+    hiveConf.set(HiveConf.ConfVars.REPLCMDIR.varname, cmroot);
+    hiveConf.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
+    warehouse = new Warehouse(hiveConf);
+    fs = new Path(cmroot).getFileSystem(hiveConf);
+  }
+
   @AfterClass
-  public static void tearDown() throws Exception {
+  public static void tearDown() {
     try {
       m_dfs.shutdown();
+      permDdfs.shutdown();
       client.close();
     } catch (Throwable e) {
       System.err.println("Unable to close metastore");
@@ -297,7 +336,6 @@ public class TestReplChangeManager {
     Path part32 = new Path(dirTbl3, "part2");
     createFile(part32, "testClearer32");
     String fileChksum32 = ReplChangeManager.checksumFor(part32, fs);
-
     ReplChangeManager.getInstance(hiveConf).recycle(dirTbl1, RecycleType.MOVE, false);
     ReplChangeManager.getInstance(hiveConf).recycle(dirTbl2, RecycleType.MOVE, false);
     ReplChangeManager.getInstance(hiveConf).recycle(dirTbl3, RecycleType.MOVE, true);
@@ -338,6 +376,152 @@ public class TestReplChangeManager {
         cleared = true;
       }
     } while (!cleared);
+  }
+
+  @Test
+  public void testRecycleUsingImpersonation() throws Exception {
+    FileSystem fs = warehouse.getWhRoot().getFileSystem(hiveConf);
+    Path dirDb = new Path(warehouse.getWhRoot(), "db3");
+    long now = System.currentTimeMillis();
+    fs.delete(dirDb, true);
+    fs.mkdirs(dirDb);
+    Path dirTbl1 = new Path(dirDb, "tbl1");
+    fs.mkdirs(dirTbl1);
+    Path part11 = new Path(dirTbl1, "part1");
+    createFile(part11, "testClearer11");
+    String fileChksum11 = ReplChangeManager.checksumFor(part11, fs);
+    Path part12 = new Path(dirTbl1, "part2");
+    createFile(part12, "testClearer12");
+    String fileChksum12 = ReplChangeManager.checksumFor(part12, fs);
+    final UserGroupInformation proxyUserUgi =
+      UserGroupInformation.createRemoteUser("impala");
+    setGroupsInConf(UserGroupInformation.getCurrentUser().getGroupNames(),
+      "impala", hiveConf);
+    //set owner of data path to impala
+    fs.setOwner(dirTbl1, "impala", "default");
+    proxyUserUgi.doAs((PrivilegedExceptionAction<Void>) () -> {
+      try {
+        //impala doesn't have access. Should provide access control exception
+        ReplChangeManager.getInstance(hiveConf).recycle(dirTbl1, RecycleType.MOVE, false);
+        Assert.fail();
+      } catch (AccessControlException e) {
+        assertTrue(e.getMessage().contains("Permission denied: user=impala, access=WRITE"));
+      }
+      return null;
+    });
+    ReplChangeManager.getInstance().recycle(dirTbl1, RecycleType.MOVE, false);
+    Assert.assertFalse(fs.exists(part11));
+    Assert.assertFalse(fs.exists(part12));
+    assertTrue(fs.exists(ReplChangeManager.getCMPath(hiveConf, part11.getName(), fileChksum11, cmroot)));
+    assertTrue(fs.exists(ReplChangeManager.getCMPath(hiveConf, part12.getName(), fileChksum12, cmroot)));
+    fs.setTimes(ReplChangeManager.getCMPath(hiveConf, part11.getName(), fileChksum11, cmroot),
+      now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
+    ReplChangeManager.scheduleCMClearer(hiveConf);
+
+    long start = System.currentTimeMillis();
+    long end;
+    boolean cleared = false;
+    do {
+      Thread.sleep(200);
+      end = System.currentTimeMillis();
+      if (end - start > 5000) {
+        Assert.fail("timeout, cmroot has not been cleared");
+      }
+      if (!fs.exists(ReplChangeManager.getCMPath(hiveConf, part11.getName(), fileChksum11, cmroot)) &&
+        fs.exists(ReplChangeManager.getCMPath(hiveConf, part12.getName(), fileChksum12, cmroot))) {
+        cleared = true;
+      }
+    } while (!cleared);
+  }
+
+  @Test
+  public void testRecycleUsingImpersonationWithAccess() throws Exception {
+    try {
+      ReplChangeManager.resetReplChangeManagerInstance();
+      ReplChangeManager.getInstance(permhiveConf);
+      FileSystem fs = permWarehouse.getWhRoot().getFileSystem(permhiveConf);
+      long now = System.currentTimeMillis();
+      Path dirDb = new Path(permWarehouse.getWhRoot(), "db3");
+      fs.delete(dirDb, true);
+      fs.mkdirs(dirDb);
+      Path dirTbl1 = new Path(dirDb, "tbl1");
+      fs.mkdirs(dirTbl1);
+      Path part11 = new Path(dirTbl1, "part1");
+      createFile(part11, "testClearer11");
+      String fileChksum11 = ReplChangeManager.checksumFor(part11, fs);
+      Path part12 = new Path(dirTbl1, "part2");
+      createFile(part12, "testClearer12");
+      String fileChksum12 = ReplChangeManager.checksumFor(part12, fs);
+      final UserGroupInformation proxyUserUgi =
+        UserGroupInformation.createRemoteUser("impala");
+      setGroupsInConf(UserGroupInformation.getCurrentUser().getGroupNames(),
+        "impala", permhiveConf);
+      //set owner of data path to impala
+      fs.setOwner(dirTbl1, "impala", "default");
+      proxyUserUgi.doAs((PrivilegedExceptionAction<Void>) () -> {
+        ReplChangeManager.getInstance().recycle(dirTbl1, RecycleType.MOVE, false);
+        return null;
+      });
+      Assert.assertFalse(fs.exists(part11));
+      Assert.assertFalse(fs.exists(part12));
+      assertTrue(fs.exists(ReplChangeManager.getCMPath(permhiveConf, part11.getName(), fileChksum11, permCmroot)));
+      assertTrue(fs.exists(ReplChangeManager.getCMPath(permhiveConf, part12.getName(), fileChksum12, permCmroot)));
+      fs.setTimes(ReplChangeManager.getCMPath(permhiveConf, part11.getName(), fileChksum11, permCmroot),
+        now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
+      ReplChangeManager.scheduleCMClearer(permhiveConf);
+
+      long start = System.currentTimeMillis();
+      long end;
+      boolean cleared = false;
+      do {
+        Thread.sleep(200);
+        end = System.currentTimeMillis();
+        if (end - start > 5000) {
+          Assert.fail("timeout, cmroot has not been cleared");
+        }
+        //Impala owned file is cleared by Hive CMClearer
+        if (!fs.exists(ReplChangeManager.getCMPath(permhiveConf, part11.getName(), fileChksum11, permCmroot)) &&
+          fs.exists(ReplChangeManager.getCMPath(permhiveConf, part12.getName(), fileChksum12, permCmroot))) {
+          cleared = true;
+        }
+      } while (!cleared);
+    } finally {
+      ReplChangeManager.resetReplChangeManagerInstance();
+      ReplChangeManager.getInstance(hiveConf);
+    }
+  }
+
+  private void setGroupsInConf(String[] groupNames, String proxyUserName, Configuration conf)
+    throws IOException {
+    conf.set(
+      DefaultImpersonationProvider.getTestProvider().getProxySuperuserGroupConfKey(proxyUserName),
+      StringUtils.join(",", Arrays.asList(groupNames)));
+    configureSuperUserIPAddresses(conf, proxyUserName);
+    ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
+  }
+
+  private void configureSuperUserIPAddresses(Configuration conf,
+                                             String superUserShortName) throws IOException {
+    List<String> ipList = new ArrayList<String>();
+    Enumeration<NetworkInterface> netInterfaceList = NetworkInterface
+      .getNetworkInterfaces();
+    while (netInterfaceList.hasMoreElements()) {
+      NetworkInterface inf = netInterfaceList.nextElement();
+      Enumeration<InetAddress> addrList = inf.getInetAddresses();
+      while (addrList.hasMoreElements()) {
+        InetAddress addr = addrList.nextElement();
+        ipList.add(addr.getHostAddress());
+      }
+    }
+    StringBuilder builder = new StringBuilder();
+    for (String ip : ipList) {
+      builder.append(ip);
+      builder.append(',');
+    }
+    builder.append("127.0.1.1,");
+    builder.append(InetAddress.getLocalHost().getCanonicalHostName());
+    conf.setStrings(DefaultImpersonationProvider.getTestProvider().getProxySuperuserIpConfKey(superUserShortName),
+      builder.toString());
   }
 
   @Test
