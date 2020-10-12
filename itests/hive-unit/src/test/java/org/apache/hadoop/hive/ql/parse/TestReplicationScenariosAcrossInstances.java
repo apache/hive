@@ -453,6 +453,34 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
   }
 
   @Test
+  public void testMultipleStagesOfReplicationLoadTaskWithPartitionBatching() throws Throwable {
+    WarehouseInstance.Tuple tuple = primary
+      .run("use " + primaryDbName)
+      .run("create table t1 (id int)")
+      .run("insert into t1 values (1), (2)")
+      .run("create table t2 (place string) partitioned by (country string)")
+      .run("insert into table t2 partition(country='india') values ('bangalore')")
+      .run("insert into table t2 partition(country='us') values ('austin')")
+      .run("insert into table t2 partition(country='france') values ('paris')")
+      .run("create table t3 (rank int)")
+      .dump(primaryDbName);
+
+    // each table creation itself takes more than one task, give we are giving a max of 1, we should hit multiple runs.
+    List<String> withClause = new ArrayList<>();
+    withClause.add("'" + HiveConf.ConfVars.REPL_APPROX_MAX_LOAD_TASKS.varname + "'='1'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_LOAD_PARTITIONS_WITH_DATA_COPY_BATCH_SIZE.varname + "'='1'");
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+      .run("use " + replicatedDbName)
+      .run("show tables")
+      .verifyResults(new String[] { "t1", "t2", "t3" })
+      .run("repl status " + replicatedDbName)
+      .verifyResult(tuple.lastReplicationId)
+      .run("select country from t2 order by country")
+      .verifyResults(new String[] { "france", "india", "us" });
+  }
+
+  @Test
   public void testParallelExecutionOfReplicationBootStrapLoad() throws Throwable {
     WarehouseInstance.Tuple tuple = primary
         .run("use " + primaryDbName)
@@ -1337,12 +1365,12 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     // Inject a behavior where REPL LOAD failed when try to load table "t2" and partition "uk".
     // So, table "t2" will exist and partition "india" will exist, rest failed as operation failed.
-    BehaviourInjection<List<Partition>, Boolean> alterPartitionStub
+    BehaviourInjection<List<Partition>, Boolean> addPartitionStub
             = new BehaviourInjection<List<Partition>, Boolean>() {
       @Override
       public Boolean apply(List<Partition> ptns) {
         for (Partition ptn : ptns) {
-          if (ptn.getValues().get(0).equals("india")) {
+          if (ptn.getValues().get(0).equals("uk")) {
             injectionPathCalled = true;
             LOG.warn("####getPartition Stub called");
             return false;
@@ -1351,14 +1379,15 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
         return true;
       }
     };
-    InjectableBehaviourObjectStore.setAlterPartitionsBehaviour(alterPartitionStub);
+    InjectableBehaviourObjectStore.setAddPartitionsBehaviour(addPartitionStub);
 
     // Make sure that there's some order in which the objects are loaded.
     List<String> withConfigs = Arrays.asList("'hive.repl.approx.max.load.tasks'='1'",
-            "'hive.in.repl.test.files.sorted'='true'");
+            "'hive.in.repl.test.files.sorted'='true'",
+      "'" + HiveConf.ConfVars.REPL_LOAD_PARTITIONS_WITH_DATA_COPY_BATCH_SIZE + "' = '1'");
     replica.loadFailure(replicatedDbName, primaryDbName, withConfigs);
-    InjectableBehaviourObjectStore.setAlterPartitionsBehaviour(null); // reset the behaviour
-    alterPartitionStub.assertInjectionsPerformed(true, false);
+    InjectableBehaviourObjectStore.resetAddPartitionModifier(); // reset the behaviour
+    addPartitionStub.assertInjectionsPerformed(true, false);
 
     replica.run("use " + replicatedDbName)
             .run("repl status " + replicatedDbName)

@@ -596,7 +596,7 @@ public class HiveConf extends Configuration {
           + "'hive.repl.include.external.tables' when sets to true. If 'hive.repl.include.external.tables' is \n"
           + "set to false, then this config parameter has no effect. It should be set to true only once for \n"
           + "incremental repl dump on each existing replication policy after enabling external tables replication."),
-    REPL_ENABLE_MOVE_OPTIMIZATION("hive.repl.enable.move.optimization", false,
+    REPL_ENABLE_MOVE_OPTIMIZATION("hive.repl.enable.move.optimization", true,
           "If its set to true, REPL LOAD copies data files directly to the target table/partition location \n"
           + "instead of copying to staging directory first and then move to target location. This optimizes \n"
           + " the REPL LOAD on object data stores such as S3 or WASB where creating a directory and move \n"
@@ -652,6 +652,11 @@ public class HiveConf extends Configuration {
       "Total allowed retry duration in hours inclusive of all retries. Once this is exhausted, " +
         "the policy instance will be marked as failed and will need manual intervention to restart."),
     REPL_LOAD_PARTITIONS_BATCH_SIZE("hive.repl.load.partitions.batch.size", 10000,
+      "Provide the maximum number of partitions of a table that will be batched together during  \n"
+        + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
+        + "The data for these partitions will be copied before copying the metadata batch. "),
+    REPL_LOAD_PARTITIONS_WITH_DATA_COPY_BATCH_SIZE("hive.repl.load.partitions.with.data.copy.batch.size",
+      1000,
       "Provide the maximum number of partitions of a table that will be batched together during  \n"
         + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
         + "The data for these partitions will be copied before copying the metadata batch. "),

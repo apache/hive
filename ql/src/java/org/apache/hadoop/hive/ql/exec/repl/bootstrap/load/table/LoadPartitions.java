@@ -27,10 +27,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.drop.AlterTableDropPartitionDesc;
-import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
-import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.*;
 import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.ReplLoadOpType;
@@ -58,7 +55,6 @@ import org.datanucleus.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,6 +80,8 @@ public class LoadPartitions {
   private final TableEvent event;
   private final TaskTracker tracker;
   private final AlterTableAddPartitionDesc lastReplicatedPartition;
+  private final AlterTableAddPartitionDesc.PartitionDesc lastReplicatedPartitionDesc;
+  private final PartitionState.Stage lastReplicatedStage;
   private final ReplicationMetricCollector metricCollector;
 
   private final ImportTableDesc tableDesc;
@@ -93,23 +91,26 @@ public class LoadPartitions {
                         TableEvent event, String dbNameToLoadIn,
                         TableContext tableContext, ReplicationMetricCollector metricCollector) throws HiveException {
     this(context, replLogger, tableContext, tableTracker, event, dbNameToLoadIn, null,
-      metricCollector);
+      metricCollector, null, PartitionState.Stage.PARTITION);
   }
 
   public LoadPartitions(Context context, ReplLogger replLogger, TableContext tableContext,
                         TaskTracker limiter, TableEvent event, String dbNameToLoadIn,
                         AlterTableAddPartitionDesc lastReplicatedPartition,
-                        ReplicationMetricCollector metricCollector) throws HiveException {
+                        ReplicationMetricCollector metricCollector,
+                        AlterTableAddPartitionDesc.PartitionDesc lastReplicatedPartitionDesc,
+                        ReplicationState.PartitionState.Stage lastReplicatedStage) throws HiveException {
     this.tracker = new TaskTracker(limiter);
     this.event = event;
     this.context = context;
     this.replLogger = replLogger;
     this.lastReplicatedPartition = lastReplicatedPartition;
     this.tableContext = tableContext;
-
     this.tableDesc = event.tableDesc(dbNameToLoadIn);
     this.table = ImportSemanticAnalyzer.tableIfExists(tableDesc, context.hiveDb);
     this.metricCollector = metricCollector;
+    this.lastReplicatedPartitionDesc = lastReplicatedPartitionDesc;
+    this.lastReplicatedStage = lastReplicatedStage;
   }
 
   public TaskTracker tasks() throws Exception {
@@ -177,11 +178,29 @@ public class LoadPartitions {
    * Also, copy relevant stats and other information from original request.
    *
    * @throws SemanticException
+   * @param lastAlterTableAddPartitionDesc
    */
-  private void addConsolidatedPartitionDesc(Task ptnRootTask) throws Exception {
+  private void addConsolidatedPartitionDesc(AlterTableAddPartitionDesc lastAlterTableAddPartitionDesc) throws Exception {
+    int maxTasks = 0;
     //Load partitions equal to batch size at one go for metadata only and for external tables.
-    int maxTasks = context.hiveConf.getIntVar(HiveConf.ConfVars.REPL_LOAD_PARTITIONS_BATCH_SIZE);
+    if (isMetaDataOp() || TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+      maxTasks = context.hiveConf.getIntVar(HiveConf.ConfVars.REPL_LOAD_PARTITIONS_BATCH_SIZE);
+    } else {
+      maxTasks = context.hiveConf.getIntVar(HiveConf.ConfVars.REPL_LOAD_PARTITIONS_WITH_DATA_COPY_BATCH_SIZE);
+    }
     int currentPartitionCount = 0;
+    Iterator<AlterTableAddPartitionDesc> partitionIterator = event.partitionDescriptions(tableDesc).iterator();
+    //If already a set of partitions are processed as part of previous run, we skip those
+    if (lastAlterTableAddPartitionDesc != null) {
+      while (partitionIterator.hasNext()) {
+        currentPartitionCount++;
+        AlterTableAddPartitionDesc addPartitionDesc = partitionIterator.next();
+        if (lastAlterTableAddPartitionDesc.getPartitions().get(0).getPartSpec()
+          .equals(addPartitionDesc.getPartitions().get(0).getPartSpec())) {
+          break;
+        }
+      }
+    }
     List<AlterTableAddPartitionDesc> partitionDescs = event.partitionDescriptions(tableDesc);
     int totalPartitionCount = partitionDescs.size();
     while (currentPartitionCount < totalPartitionCount) {
@@ -208,9 +227,11 @@ public class LoadPartitions {
         tableDesc.getTableName(), true, partitions);
 
       //don't need to add ckpt task separately. Added as part of add partition task
-      addPartition((toPartitionCount < totalPartitionCount), consolidatedPartitionDesc, ptnRootTask);
-      if (partitions.size() > 0) {
-        LOG.info("Added {} partitions", partitions.size());
+      addPartition((toPartitionCount < totalPartitionCount), consolidatedPartitionDesc);
+      if (!tracker.canAddMoreTasks()) {
+        //No need to do processing as no more tasks can be added. Will be processed in next run. State is already
+        //updated in add partition task
+        return;
       }
       currentPartitionCount = toPartitionCount;
     }
@@ -222,10 +243,13 @@ public class LoadPartitions {
     return tracker;
   }
 
-  private void addPartition(boolean hasMorePartitions, AlterTableAddPartitionDesc addPartitionDesc, Task<?> ptnRootTask)
+  private void addPartition(boolean hasMorePartitions, AlterTableAddPartitionDesc addPartitionDesc)
           throws Exception {
-    tracker.addTask(tasksForAddPartition(table, addPartitionDesc, ptnRootTask));
-    if (hasMorePartitions && !tracker.canAddMoreTasks()) {
+    boolean processingComplete = addTasksForPartition(table, addPartitionDesc, null,
+      PartitionState.Stage.PARTITION);
+    //If processing is not complete, means replication state is already updated with copy or move tasks which need
+    //to be processed
+    if (processingComplete && hasMorePartitions && !tracker.canAddMoreTasks()) {
       ReplicationState currentReplicationState =
           new ReplicationState(new PartitionState(table.getTableName(), addPartitionDesc));
       updateReplicationState(currentReplicationState);
@@ -235,7 +259,9 @@ public class LoadPartitions {
   /**
    * returns the root task for adding all partitions in a batch
    */
-  private Task<?> tasksForAddPartition(Table table, AlterTableAddPartitionDesc addPartitionDesc, Task<?> ptnRootTask)
+  private boolean addTasksForPartition(Table table, AlterTableAddPartitionDesc addPartitionDesc,
+                                    AlterTableAddPartitionDesc.PartitionDesc lastPartSpec,
+                                    PartitionState.Stage lastStage)
           throws MetaException, HiveException {
     Task<?> addPartTask = TaskFactory.get(
       new DDLWork(new HashSet<>(), new HashSet<>(), addPartitionDesc,
@@ -244,102 +270,50 @@ public class LoadPartitions {
     );
     //checkpointing task already added as part of add batch of partition
     if (isMetaDataOp() || TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
-      if (ptnRootTask == null) {
-        ptnRootTask = addPartTask;
-      } else {
-        ptnRootTask.addDependentTask(addPartTask);
-      }
-      return ptnRootTask;
+      tracker.addTask(addPartTask);
+      return true;
     }
-
     //Add Copy task for all partitions
-    List<Task<?>> copyTaskList = new ArrayList<>();
-    List<Task<?>> moveTaskList = new ArrayList<>();
+    //If last stage was move, that means all copy tasks processed, go to processing move tasks
+    boolean lastProcessedStageFound = false;
     for (AlterTableAddPartitionDesc.PartitionDesc partSpec : addPartitionDesc.getPartitions()) {
+      if (!tracker.canAddMoreTasks()) {
+        //update replication state with the copy task added with which it needs to proceed next
+        ReplicationState currentReplicationState =
+          new ReplicationState(new PartitionState(table.getTableName(), addPartitionDesc,
+            partSpec, PartitionState.Stage.COPY));
+        updateReplicationState(currentReplicationState);
+        return false;
+      }
       Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, partSpec);
       partSpec.setLocation(replicaWarehousePartitionLocation.toString());
       LOG.debug("adding dependent CopyWork for partition "
         + partSpecToString(partSpec.getPartSpec()) + " with source location: "
         + partSpec.getLocation());
-
-      Path stagingDir = replicaWarehousePartitionLocation;
-      // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
-      LoadFileType loadFileType;
-      if (event.replicationSpec().isInReplicationScope() &&
-        context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
-        loadFileType = LoadFileType.IGNORE;
-      } else {
-        loadFileType = event.replicationSpec().isReplace() ? LoadFileType.REPLACE_ALL : LoadFileType.OVERWRITE_EXISTING;
-        stagingDir = PathUtils.getExternalTmpPath(replicaWarehousePartitionLocation, context.pathInfo);
+      if (!lastProcessedStageFound && lastPartSpec != null &&
+        lastPartSpec.getLocation() != partSpec.getLocation()) {
+        //Don't process copy task if already processed as part of previous run
+        continue;
       }
+      lastProcessedStageFound = true;
       boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
       Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
         event.replicationSpec(),
         new Path(event.dataPath() + Path.SEPARATOR + Warehouse.makePartPath(partSpec.getPartSpec())),
-        stagingDir,
+        replicaWarehousePartitionLocation,
         context.hiveConf, copyAtLoad, false
       );
-      copyTaskList.add(copyTask);
-
-      Task<?> movePartitionTask = null;
-      if (loadFileType != LoadFileType.IGNORE) {
-        // no need to create move task, if file is moved directly to target location.
-        movePartitionTask = movePartitionTask(table, partSpec, stagingDir, loadFileType);
-        moveTaskList.add(movePartitionTask);
-      }
+      tracker.addTask(copyTask);
     }
-    Iterator<Task<?>> copyTaskIterator = copyTaskList.iterator();
-    Iterator<Task<?>> moveTaskIterator = moveTaskList.iterator();
-    //Add the copy tasks. once copy tasks are done, add partition metadata
-    while (copyTaskIterator.hasNext()) {
-      if (ptnRootTask == null) {
-        ptnRootTask = copyTaskIterator.next();
-      } else {
-        ptnRootTask.addDependentTask(copyTaskIterator.next());
-      }
-    }
-    if (ptnRootTask == null) {
-      ptnRootTask = addPartTask;
-    } else {
-      ptnRootTask.addDependentTask(addPartTask);
-    }
-
-    //Add the move tasks after add partition metadata is done
-    while (moveTaskIterator.hasNext()) {
-      if (ptnRootTask == null) {
-        ptnRootTask = moveTaskIterator.next();
-      } else {
-        ptnRootTask.addDependentTask(moveTaskIterator.next());
-      }
-    }
-
-    return ptnRootTask;
+    //add partition metadata task once all the copy tasks are added
+    tracker.addDependentTask(addPartTask);
+    return true;
   }
 
-  /**
-   * This will create the move of partition data from temp path to actual path
-   */
-  private Task<?> movePartitionTask(Table table, AlterTableAddPartitionDesc.PartitionDesc partSpec, Path tmpPath,
-                                    LoadFileType loadFileType) {
-    MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false,
-                                    (new Path(context.dumpDirectory)).getParent().toString(), this.metricCollector,
-                                     true);
-    if (AcidUtils.isTransactionalTable(table)) {
-      LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
-        Collections.singletonList(tmpPath),
-        Collections.singletonList(new Path(partSpec.getLocation())),
-        true, null, null);
-      moveWork.setMultiFilesDesc(loadFilesWork);
-    } else {
-      LoadTableDesc loadTableWork = new LoadTableDesc(
-              tmpPath, Utilities.getTableDesc(table), partSpec.getPartSpec(),
-              loadFileType, 0L
-      );
-      loadTableWork.setInheritTableSpecs(false);
-      moveWork.setLoadTableWork(loadTableWork);
-    }
-    moveWork.setIsInReplicationScope(event.replicationSpec().isInReplicationScope());
-    return TaskFactory.get(moveWork, context.hiveConf);
+  private String getPartitionName(Path partitionMetadataFullPath) {
+    //Get partition name by removing the metadata base path.
+    //Needed for getting the data path
+    return partitionMetadataFullPath.toString().substring(event.metadataPath().toString().length());
   }
 
   /**
@@ -403,8 +377,14 @@ public class LoadPartitions {
       Map<String, String> currentSpec = addPartitionDesc.getPartitions().get(0).getPartSpec();
       encounteredTheLastReplicatedPartition = lastReplicatedPartSpec.equals(currentSpec);
     }
-    Task<?> ptnRootTask = null;
+    //Add Copy task pending for previous partition
+    if (PartitionState.Stage.COPY.equals(lastReplicatedStage)) {
+      addTasksForPartition(table, lastPartitionReplicated,
+        lastReplicatedPartitionDesc, lastReplicatedStage);
+    }
+    boolean pendingPartitions = false;
     while (partitionIterator.hasNext() && tracker.canAddMoreTasks()) {
+      pendingPartitions = true;
       AlterTableAddPartitionDesc addPartitionDesc = partitionIterator.next();
       AlterTableAddPartitionDesc.PartitionDesc src = addPartitionDesc.getPartitions().get(0);
       //Add check point task as part of add partition
@@ -420,11 +400,7 @@ public class LoadPartitions {
         case LOAD_NEW:
           break;
         case LOAD_REPLACE:
-          if (ptnRootTask == null) {
-            ptnRootTask = dropPartitionTask(table, partSpec);
-          } else {
-            ptnRootTask.addDependentTask(dropPartitionTask(table, partSpec));
-          }
+          tracker.addDependentTask(dropPartitionTask(table, partSpec));
           break;
         case LOAD_SKIP:
           continue;
@@ -432,7 +408,9 @@ public class LoadPartitions {
           break;
       }
     }
-    addConsolidatedPartitionDesc(ptnRootTask);
+    if (pendingPartitions) {
+      addConsolidatedPartitionDesc(lastPartitionReplicated);
+    }
     return tracker;
   }
 
