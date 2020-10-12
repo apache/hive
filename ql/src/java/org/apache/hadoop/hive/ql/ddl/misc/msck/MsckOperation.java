@@ -69,7 +69,6 @@ public class MsckOperation extends DDLOperation<MsckDesc> {
               partitionExpirySeconds);
         }
       }
-
       MsckInfo msckInfo = new MsckInfo(SessionState.get().getCurrentCatalog(), tableName.getDb(), tableName.getTable(),
           desc.getFilterExp(), desc.getResFile(), desc.isRepairPartitions(),
           desc.isAddPartitions(), desc.isDropPartitions(), partitionExpirySeconds);

@@ -162,6 +162,8 @@ public interface TxnStore extends Configurable {
   long getTxnIdForWriteId(String dbName, String tblName, long writeId)
       throws MetaException;
 
+  long getLatestTxnInConflict(long txnid) throws MetaException;
+
   LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId)
       throws MetaException;
 
