@@ -692,7 +692,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   }
 
   /**
-   * Create a generic Hive RecordReader than can iterate over all chunks in a
+   * Create a generic Hive RecordReader that can iterate over all chunks in a
    * CombinedFileSplit.
    */
   @Override
