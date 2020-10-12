@@ -42,6 +42,7 @@ import org.apache.calcite.util.Litmus;
 import org.apache.calcite.util.Pair;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -245,7 +246,7 @@ class TestMaterializedViewsCache {
     assertThat(materializedViewsCache.values(), hasItem(defaultRelOptMaterialization2));
   }
 
-  //  @Disabled("Testing parallelism only")
+  @Disabled("Testing parallelism only")
   @Test
   void testParallelism() {
     int ITERATIONS = 1000000;
