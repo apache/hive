@@ -40,10 +40,12 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Litmus;
 import org.apache.calcite.util.Pair;
+import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -51,7 +53,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -80,8 +87,15 @@ class TestMaterializedViewsCache {
   void testEmptyCache() {
     MaterializedViewsCache emptyCache = new MaterializedViewsCache();
 
-    assertThat(emptyCache.get("any definition").isEmpty(), is(true));
+    assertThat(emptyCache.get("select 'any definition'").isEmpty(), is(true));
     assertThat(emptyCache.values().isEmpty(), is(true));
+  }
+
+  @Test
+  void testGetByTableNameFromEmptyCache() {
+    MaterializedViewsCache emptyCache = new MaterializedViewsCache();
+
+    assertThat(emptyCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
   }
 
   @Test
@@ -96,6 +110,7 @@ class TestMaterializedViewsCache {
   void testAdd() {
     materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
 
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultRelOptMaterialization1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).get(0), is(defaultRelOptMaterialization1));
     assertThat(materializedViewsCache.values().size(), is(1));
@@ -112,7 +127,7 @@ class TestMaterializedViewsCache {
 
   private static RelOptMaterialization createRelOptMaterialization(Table table) {
     return new RelOptMaterialization(
-            new DummyRel(), new DummyRel(), null, asList(table.getDbName(), table.getTableName()));
+            new DummyRel(table), new DummyRel(table), null, asList(table.getDbName(), table.getTableName()));
   }
 
   @Test
@@ -120,6 +135,8 @@ class TestMaterializedViewsCache {
     materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
     materializedViewsCache.putIfAbsent(defaultMV2, defaultRelOptMaterialization2);
 
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV2.getDbName(), defaultMV2.getTableName()), is(defaultRelOptMaterialization2));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(2));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization2));
@@ -131,12 +148,50 @@ class TestMaterializedViewsCache {
     materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
     materializedViewsCache.putIfAbsent(db1MV1, db1RelOptMaterialization1);
 
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.get(db1MV1.getDbName(), db1MV1.getTableName()), is(db1RelOptMaterialization1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(2));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(db1RelOptMaterialization1));
     assertThat(materializedViewsCache.values().size(), is(2));
   }
 
+  @Test
+  void testRefreshWhenMVWasNotCached() {
+    materializedViewsCache.refresh(defaultMV1, defaultMV1, defaultRelOptMaterialization1);
+
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.values().size(), is(1));
+    assertThat(materializedViewsCache.values(), hasItem(defaultRelOptMaterialization1));
+  }
+
+  @Test
+  void testRefreshWhenMVIsCachedButWasUpdated() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+    RelOptMaterialization newMaterialization = createRelOptMaterialization(defaultMV1);
+    materializedViewsCache.refresh(defaultMV1, defaultMV1, newMaterialization);
+
+    assertThat(newMaterialization, is(not(defaultRelOptMaterialization1)));
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(newMaterialization));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(newMaterialization));
+    assertThat(materializedViewsCache.values().size(), is(1));
+    assertThat(materializedViewsCache.values(), hasItem(newMaterialization));
+  }
+
+  @Test
+  void testRefreshWhenMVRefersToANewMaterialization() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+    materializedViewsCache.refresh(defaultMV2, defaultMV1, defaultRelOptMaterialization1);
+
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.values().size(), is(1));
+    assertThat(materializedViewsCache.values(), hasItem(defaultRelOptMaterialization1));
+  }
 
   //  @Disabled("Testing parallelism only")
   @Test
@@ -202,6 +257,21 @@ class TestMaterializedViewsCache {
   }
 
   private static class DummyRel implements RelNode {
+
+    private final RelOptHiveTable dummyTable;
+
+    public DummyRel(Table table) {
+      this.dummyTable = new RelOptHiveTable(null, null,
+              singletonList(table.getDbName() + "." + table.getTableName()), null, table,
+              emptyList(), emptyList(), emptyList(), null, null, null,
+              null, null, null);
+    }
+
+    @Override
+    public RelOptTable getTable() {
+      return dummyTable;
+    }
+
 
     @Override
     public List<RexNode> getChildExps() {
@@ -341,11 +411,6 @@ class TestMaterializedViewsCache {
     @Override
     public void replaceInput(int i, RelNode relNode) {
 
-    }
-
-    @Override
-    public RelOptTable getTable() {
-      return null;
     }
 
     @Override
