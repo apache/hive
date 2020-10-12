@@ -116,7 +116,8 @@ public class TestSemanticAnalyzer {
     SessionState ss = new SessionState(hiveConf);
     ss.setIsHiveServerQuery(true);
     ss.setAuthenticator(new HadoopDefaultAuthenticator() {
-      @Override public String getUserName() {
+      @Override
+      public String getUserName() {
         return "u3";
       }
     });
