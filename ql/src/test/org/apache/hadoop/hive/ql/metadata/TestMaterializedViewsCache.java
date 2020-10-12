@@ -40,8 +40,7 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Litmus;
 import org.apache.calcite.util.Pair;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -52,22 +51,55 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 class TestMaterializedViewsCache {
-  private static final MaterializedViewsCache MATERIALIZED_VIEWS_CACHE = new MaterializedViewsCache();
+  private MaterializedViewsCache materializedViewsCache;
+  private Table defaultMV1;
+  private RelOptMaterialization defaultRelOptMaterialization1;
+  private Table defaultMV2;
+  private RelOptMaterialization defaultRelOptMaterialization2;
+  private Table db1MV1;
+  private RelOptMaterialization db1RelOptMaterialization1;
+
+  @BeforeEach
+  void setUp() {
+    defaultMV1 = getTable("default", "mat1", "select col0 from t1");
+    defaultRelOptMaterialization1 = createRelOptMaterialization(defaultMV1);
+    defaultMV2 = getTable("default", "mat2", "select col0 from t1");
+    defaultRelOptMaterialization2 = createRelOptMaterialization(defaultMV2);
+    db1MV1 = getTable("db1", "mat1", "select col0 from t1");
+    db1RelOptMaterialization1 = createRelOptMaterialization(db1MV1);
+
+    materializedViewsCache = new MaterializedViewsCache();
+  }
+
+  @Test
+  void testEmptyCache() {
+    MaterializedViewsCache emptyCache = new MaterializedViewsCache();
+
+    assertThat(emptyCache.get("any definition").isEmpty(), is(true));
+    assertThat(emptyCache.values().isEmpty(), is(true));
+  }
+
+  @Test
+  void testQueryDoesNotMatchAnyMVDefinition() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+
+    assertThat(materializedViewsCache.get("select 'not found'").isEmpty(), is(true));
+    assertThat(materializedViewsCache.values().size(), is(1));
+  }
 
   @Test
   void testAdd() {
-    Table table = getTable("default", "mat1", "select col0 from t1");
-    RelOptMaterialization relOptMaterialization = createRelOptMaterialization(table);
-    MATERIALIZED_VIEWS_CACHE.putIfAbsent(table, relOptMaterialization);
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
 
-    assertThat(MATERIALIZED_VIEWS_CACHE.get(table.getViewExpandedText()).size(), is(1));
-    assertThat(MATERIALIZED_VIEWS_CACHE.get(table.getViewExpandedText()).get(0), is(relOptMaterialization));
-    assertThat(MATERIALIZED_VIEWS_CACHE.values().size(), is(1));
-    assertThat(MATERIALIZED_VIEWS_CACHE.values().get(0), is(relOptMaterialization));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).get(0), is(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.values().size(), is(1));
+    assertThat(materializedViewsCache.values().get(0), is(defaultRelOptMaterialization1));
   }
 
   private Table getTable(String db, String tableName, String definition) {
@@ -83,7 +115,30 @@ class TestMaterializedViewsCache {
             new DummyRel(), new DummyRel(), null, asList(table.getDbName(), table.getTableName()));
   }
 
-//  @Disabled("Testing parallelism only")
+  @Test
+  void testAddMVsWithSameDefinition() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+    materializedViewsCache.putIfAbsent(defaultMV2, defaultRelOptMaterialization2);
+
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(2));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization2));
+    assertThat(materializedViewsCache.values().size(), is(2));
+  }
+
+  @Test
+  void testAddMVsWithSameDefinitionButDifferentDatabase() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+    materializedViewsCache.putIfAbsent(db1MV1, db1RelOptMaterialization1);
+
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(2));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(db1RelOptMaterialization1));
+    assertThat(materializedViewsCache.values().size(), is(2));
+  }
+
+
+  //  @Disabled("Testing parallelism only")
   @Test
   void testParallelism() {
     int ITERATIONS = 1000000;
@@ -99,7 +154,7 @@ class TestMaterializedViewsCache {
     }
     for (int i = 0; i < 10; ++i) {
       Table table = new Table(new org.apache.hadoop.hive.metastore.api.Table());
-      table.setDbName("default2");
+      table.setDbName("db1");
       table.setTableName("mat" + i);
       table.setViewOriginalText("select col0 from t" + i);
       RelOptMaterialization relOptMaterialization = createRelOptMaterialization(table);
@@ -109,15 +164,15 @@ class TestMaterializedViewsCache {
     List<Callable<Void>> callableList = new ArrayList<>();
     callableList.add(() -> {
       for (Pair<Table, RelOptMaterialization> entry : testData) {
-        MATERIALIZED_VIEWS_CACHE.refresh(entry.left, entry.left, entry.right);
+        materializedViewsCache.refresh(entry.left, entry.left, entry.right);
       }
       return null;
     });
     callableList.add(() -> {
       for (int j = 0; j < ITERATIONS; ++j) {
         for (Pair<Table, RelOptMaterialization> entry : testData) {
-          MATERIALIZED_VIEWS_CACHE.remove(entry.left);
-          MATERIALIZED_VIEWS_CACHE.putIfAbsent(entry.left, entry.right);
+          materializedViewsCache.remove(entry.left);
+          materializedViewsCache.putIfAbsent(entry.left, entry.right);
         }
       }
       return null;
@@ -125,14 +180,14 @@ class TestMaterializedViewsCache {
     for (Pair<Table, RelOptMaterialization> entry : testData) {
       callableList.add(() -> {
         for (int j = 0; j < ITERATIONS; ++j) {
-          MATERIALIZED_VIEWS_CACHE.get(entry.left.getViewExpandedText());
+          materializedViewsCache.get(entry.left.getViewExpandedText());
         }
         return null;
       });
     }
     callableList.add(() -> {
       for (int j = 0; j < ITERATIONS; ++j) {
-        List<RelOptMaterialization> materializations = MATERIALIZED_VIEWS_CACHE.values();
+        List<RelOptMaterialization> materializations = materializedViewsCache.values();
       }
       return null;
     });
