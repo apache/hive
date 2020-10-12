@@ -92,7 +92,6 @@ public class MaterializedViewsCache {
         return newMaterialization;
       }
       // Otherwise, we return existing materialization
-//      sqlToMaterializedView.put(materializedViewTable.getViewExpandedText(), existingMaterialization);
       return existingMaterialization;
     });
 
@@ -108,7 +107,9 @@ public class MaterializedViewsCache {
       // in the map match. Otherwise, keep the one in the map.
       dbMap.computeIfPresent(materializedViewTable.getTableName(), (mvTableName, oldMaterialization) -> {
         if (HiveMaterializedViewUtils.extractTable(oldMaterialization).equals(materializedViewTable)) {
-          sqlToMaterializedView.remove(materializedViewTable.getViewExpandedText());
+          List<RelOptMaterialization> materializationList =
+                  sqlToMaterializedView.get(materializedViewTable.getViewExpandedText());
+          materializationList.remove(oldMaterialization);
           return null;
         }
         return oldMaterialization;
@@ -124,7 +125,8 @@ public class MaterializedViewsCache {
     if (dbMap != null) {
       dbMap.computeIfPresent(tableName, (mvTableName, relOptMaterialization) -> {
         String queryText = HiveMaterializedViewUtils.extractTable(relOptMaterialization).getViewExpandedText();
-        sqlToMaterializedView.remove(queryText);
+        List<RelOptMaterialization> materializationList = sqlToMaterializedView.get(queryText);
+        materializationList.remove(relOptMaterialization);
         return null;
       });
 

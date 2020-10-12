@@ -193,6 +193,58 @@ class TestMaterializedViewsCache {
     assertThat(materializedViewsCache.values(), hasItem(defaultRelOptMaterialization1));
   }
 
+  @Test
+  void testRemoveByTable() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+
+    materializedViewsCache.remove(defaultMV1);
+
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).isEmpty(), is(true));
+    assertThat(materializedViewsCache.values().isEmpty(), is(true));
+  }
+
+  @Test
+  void testRemoveByTableRemovesOnlyOneMaterializationInstance() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+    materializedViewsCache.putIfAbsent(defaultMV2, defaultRelOptMaterialization2);
+
+    materializedViewsCache.remove(defaultMV1);
+
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
+    assertThat(materializedViewsCache.get(defaultMV2.getDbName(), defaultMV2.getTableName()), is(defaultRelOptMaterialization2));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization2));
+    assertThat(materializedViewsCache.values().size(), is(1));
+    assertThat(materializedViewsCache.values(), hasItem(defaultRelOptMaterialization2));
+  }
+
+  @Test
+  void testRemoveByTableName() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+
+    materializedViewsCache.remove(defaultMV1.getDbName(), defaultMV1.getTableName());
+
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).isEmpty(), is(true));
+    assertThat(materializedViewsCache.values().isEmpty(), is(true));
+  }
+
+  @Test
+  void testRemoveByTableNameRemovesOnlyOneMaterializationInstance() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+    materializedViewsCache.putIfAbsent(defaultMV2, defaultRelOptMaterialization2);
+
+    materializedViewsCache.remove(defaultMV1.getDbName(), defaultMV1.getTableName());
+
+    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
+    assertThat(materializedViewsCache.get(defaultMV2.getDbName(), defaultMV2.getTableName()), is(defaultRelOptMaterialization2));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization2));
+    assertThat(materializedViewsCache.values().size(), is(1));
+    assertThat(materializedViewsCache.values(), hasItem(defaultRelOptMaterialization2));
+  }
+
   //  @Disabled("Testing parallelism only")
   @Test
   void testParallelism() {
