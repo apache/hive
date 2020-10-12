@@ -52,7 +52,12 @@ shift
 JAVA=$JAVA_HOME/bin/java
 LOG_LEVEL_DEFAULT="INFO"
 LOGGER_DEFAULT="console"
-JAVA_OPTS_BASE="-server -Djava.net.preferIPv4Stack=true -XX:+UseNUMA -XX:+PrintGCDetails -verbose:gc -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=4 -XX:GCLogFileSize=100M -XX:+PrintGCDateStamps"
+JAVA_VERSION=$($JAVA -version 2>&1 | grep -i version | cut -d'"' -f2 | cut -d'.' -f1) # returns "1", "9", "11" for jdk 8,9,11 respectively
+JAVA_GC_OPTS="-XX:+PrintGCDetails -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=4 -XX:GCLogFileSize=100M -XX:+PrintGCDateStamps"
+if [ "$JAVA_VERSION" -gt "1" ]; then # from java9+, -Xlog argument should be used
+  JAVA_GC_OPTS="-Xlog:gc*,safepoint:gc.log:time,uptime:filecount=4,filesize=100M"
+fi
+JAVA_OPTS_BASE="-server -Djava.net.preferIPv4Stack=true -XX:+UseNUMA -verbose:gc $JAVA_GC_OPTS"
 
 if [ ! -d "${LLAP_DAEMON_HOME}" ]; then
   echo No LLAP_DAEMON_HOME set, or is not a directory. 
