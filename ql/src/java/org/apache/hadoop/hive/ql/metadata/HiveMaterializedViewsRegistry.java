@@ -282,7 +282,6 @@ public final class HiveMaterializedViewsRegistry {
       return;
     }
     materializedViewsCache.refresh(oldMaterializedViewTable, materializedViewTable, newMaterialization);
-;
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Materialized view refreshed: " + materializedViewTable.getFullyQualifiedName());
