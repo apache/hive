@@ -345,6 +345,8 @@ import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
+import static java.util.Collections.singletonList;
+
 
 public class CalcitePlanner extends SemanticAnalyzer {
 
@@ -1880,9 +1882,19 @@ public class CalcitePlanner extends SemanticAnalyzer {
               !ctx.isSkipTableMasking()) {
         unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
         String expandedQueryText = ctx.getTokenRewriteStream().toString(ast.getTokenStartIndex(), ast.getTokenStopIndex());
-        RelOptMaterialization relOptMaterialization = db.getMaterialization(expandedQueryText);
-        if (relOptMaterialization != null) {
-          return relOptMaterialization.tableRel;
+        List<RelOptMaterialization> relOptMaterializationList = db.getMaterialization(expandedQueryText);
+        for (RelOptMaterialization relOptMaterialization : relOptMaterializationList) {
+          try {
+            Table hiveTableMD = ((RelOptHiveTable) relOptMaterialization.tableRel.getTable()).getHiveTableMD();
+            if (db.validateMaterializedViewsFromRegistry(
+                    singletonList(hiveTableMD),
+                    singletonList(hiveTableMD.getFullyQualifiedName()),
+                    getTxnMgr())) {
+              return relOptMaterialization.tableRel;
+            }
+          } catch (HiveException e) {
+            LOG.warn("Exception validating materialized views", e);
+          }
         }
       }
 

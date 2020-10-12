@@ -320,7 +320,7 @@ public final class HiveMaterializedViewsRegistry {
     return materializedViewsCache.get(dbName, viewName);
   }
 
-  public RelOptMaterialization getRewritingMaterializedView(String queryText) {
+  public List<RelOptMaterialization> getRewritingMaterializedViews(String queryText) {
     return materializedViewsCache.get(queryText);
   }
 

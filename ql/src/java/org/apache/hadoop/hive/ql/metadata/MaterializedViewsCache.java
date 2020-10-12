@@ -24,10 +24,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static java.util.Collections.emptyList;
+import static java.util.Collections.unmodifiableList;
 
 public class MaterializedViewsCache {
   private static final Logger LOG = LoggerFactory.getLogger(MaterializedViewsCache.class);
@@ -36,7 +40,7 @@ public class MaterializedViewsCache {
   private final ConcurrentMap<String, ConcurrentMap<String, RelOptMaterialization>> materializedViews =
           new ConcurrentHashMap<>();
   // Map for looking up materialization by view query text
-  private final Map<String, RelOptMaterialization> sqlToMaterializedView = new ConcurrentHashMap<>();
+  private final Map<String, List<RelOptMaterialization>> sqlToMaterializedView = new ConcurrentHashMap<>();
 
 
   public void putIfAbsent(Table materializedViewTable, RelOptMaterialization materialization) {
@@ -44,7 +48,9 @@ public class MaterializedViewsCache {
 
     // You store the materialized view
     dbMap.compute(materializedViewTable.getTableName(), (mvTableName, relOptMaterialization) -> {
-      sqlToMaterializedView.put(materializedViewTable.getViewExpandedText(), materialization);
+      List<RelOptMaterialization> materializationList = sqlToMaterializedView.computeIfAbsent(
+              materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
+      materializationList.add(materialization);
       return materialization;
     });
 
@@ -70,19 +76,23 @@ public class MaterializedViewsCache {
     ConcurrentMap<String, RelOptMaterialization> dbMap = ensureDbMap(materializedViewTable);
 
     dbMap.compute(materializedViewTable.getTableName(), (mvTableName, existingMaterialization) -> {
+      List<RelOptMaterialization> optMaterializationList = sqlToMaterializedView.computeIfAbsent(
+              materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
+
       if (existingMaterialization == null) {
         // If it was not existing, we just create it
-        sqlToMaterializedView.put(materializedViewTable.getViewExpandedText(), newMaterialization);
+        optMaterializationList.add(newMaterialization);
         return newMaterialization;
       }
       Table existingMaterializedViewTable = HiveMaterializedViewUtils.extractTable(existingMaterialization);
       if (existingMaterializedViewTable.equals(oldMaterializedViewTable)) {
         // If the old version is the same, we replace it
-        sqlToMaterializedView.put(materializedViewTable.getViewExpandedText(), newMaterialization);
+        optMaterializationList.remove(existingMaterialization);
+        optMaterializationList.add(newMaterialization);
         return newMaterialization;
       }
       // Otherwise, we return existing materialization
-      sqlToMaterializedView.put(materializedViewTable.getViewExpandedText(), existingMaterialization);
+//      sqlToMaterializedView.put(materializedViewTable.getViewExpandedText(), existingMaterialization);
       return existingMaterialization;
     });
 
@@ -125,7 +135,7 @@ public class MaterializedViewsCache {
   public List<RelOptMaterialization> values() {
     List<RelOptMaterialization> result = new ArrayList<>();
     materializedViews.forEach((dbName, mvs) -> result.addAll(mvs.values()));
-    return result;
+    return unmodifiableList(result);
   }
 
   RelOptMaterialization get(String dbName, String viewName) {
@@ -137,13 +147,14 @@ public class MaterializedViewsCache {
     return null;
   }
 
-  public RelOptMaterialization get(String queryText) {
-    RelOptMaterialization relOptMaterialization = sqlToMaterializedView.get(queryText);
-    if (relOptMaterialization == null) {
+  public List<RelOptMaterialization> get(String queryText) {
+    List<RelOptMaterialization> relOptMaterializationList = sqlToMaterializedView.get(queryText);
+    if (relOptMaterializationList == null) {
       LOG.debug("No materialized view with query text '{}' found in registry", queryText);
-      return null;
+      return emptyList();
     }
-    LOG.debug("Found materialized view with query text '{}' in registry", queryText);
-    return relOptMaterialization;
+    LOG.debug("Found {} materialized views with query text '{}' in registry",
+            relOptMaterializationList.size(), queryText);
+    return unmodifiableList(relOptMaterializationList);
   }
 }
