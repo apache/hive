@@ -65,9 +65,9 @@ import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLI
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables.
  */
@@ -337,7 +337,6 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
     // Open 5 txns
     List<Long> txns = openTxns(numTxns, txnHandler, primaryConf);
-
     // Create 2 tables, one partitioned and other not. Also, have both types of full ACID and MM tables.
     primary.run("use " + primaryDbName)
       .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
@@ -356,13 +355,105 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     List<Long> lockIds = allocateWriteIdsForTablesAndAquireLocks(primaryDbName + "_extra",
       tablesInSecDb, txnHandler, txns, primaryConf);
 
-    // Bootstrap dump with open txn timeout as 1s.
+    // Bootstrap dump with open txn timeout as 300s.
+    //Since transactions belong to different db it won't wait.
     List<String> withConfigs = Arrays.asList(
-      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT + "'='1s'");
-    WarehouseInstance.Tuple bootstrapDump = primary
+      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT + "'='300s'");
+    long timeStarted = System.currentTimeMillis();
+    WarehouseInstance.Tuple bootstrapDump = null;
+    try {
+      bootstrapDump = primary
+        .run("use " + primaryDbName)
+        .dump(primaryDbName, withConfigs);
+    } finally {
+      //Dump shouldn't wait for 300s. It should check in the 30 secs itself that those txns belong to different db
+      Assert.assertTrue(System.currentTimeMillis() - timeStarted < 300000);
+    }
+
+    // After bootstrap dump, all the opened txns should not be aborted as itr belongs to a diff db. Verify it.
+    verifyAllOpenTxnsNotAborted(txns, primaryConf);
+    Map<String, Long> tablesInPrimary = new HashMap<>();
+    tablesInPrimary.put("t1", 1L);
+    tablesInPrimary.put("t2", 2L);
+    verifyNextId(tablesInPrimary, primaryDbName, primaryConf);
+
+    // Bootstrap load which should not replicate the write ids on both tables as they are on different db.
+    HiveConf replicaConf = replica.getConf();
+    replica.load(replicatedDbName, primaryDbName)
+      .run("use " + replicatedDbName)
+      .run("show tables")
+      .verifyResults(new String[]{"t1", "t2"})
+      .run("repl status " + replicatedDbName)
+      .verifyResult(bootstrapDump.lastReplicationId)
+      .run("select id from t1")
+      .verifyResults(new String[]{"1"})
+      .run("select rank from t2 order by rank")
+      .verifyResults(new String[]{"10", "11"});
+
+    // Verify if HWM is properly set after REPL LOAD
+    verifyNextId(tablesInPrimary, replicatedDbName, replicaConf);
+
+    // Verify if none of the write ids are not replicated to the replicated DB as they belong to diff db
+    for (Map.Entry<String, Long> entry : tablesInPrimary.entrySet()) {
+      entry.setValue((long) 0);
+    }
+    verifyWriteIdsForTables(tablesInPrimary, replicaConf, replicatedDbName);
+    //Abort the txns
+    txnHandler.abortTxns(new AbortTxnsRequest(txns));
+    verifyAllOpenTxnsAborted(txns, primaryConf);
+    //Release the locks
+    releaseLocks(txnHandler, lockIds);
+  }
+
+  @Test
+  public void testAcidTablesBootstrapWithOpenTxnsWaitingForLock() throws Throwable {
+    int numTxns = 5;
+    HiveConf primaryConf = primary.getConf();
+    TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
+    // Open 5 txns
+    List<Long> txns = openTxns(numTxns, txnHandler, primaryConf);
+
+    // Create 2 tables, one partitioned and other not. Also, have both types of full ACID and MM tables.
+    primary.run("use " + primaryDbName)
+      .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+        "tblproperties (\"transactional\"=\"true\")")
+      .run("insert into t1 values(1)")
+      .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
+        "\"transactional_properties\"=\"insert_only\")")
+      .run("insert into t2 partition(name='Bob') values(11)")
+      .run("insert into t2 partition(name='Carl') values(10)");
+
+    // Bootstrap dump with open txn timeout as 80s. Dump should fail as there will be open txns and
+    // lock is not acquired by them and we have set abort to false
+    List<String> withConfigs = Arrays.asList(
+      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT + "'='80s'",
+      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT + "'='false'");
+    try {
+      primary
+        .run("use " + primaryDbName)
+        .dump(primaryDbName, withConfigs);
+      fail();
+    } catch (Exception e) {
+      Assert.assertEquals(IllegalStateException.class, e.getClass());
+      Assert.assertEquals("REPL DUMP cannot proceed. Force abort all the open txns is disabled. "
+        + "Enable hive.repl.bootstrap.dump.abort.write.txn.after.timeout to proceed.", e.getMessage());
+    }
+
+    withConfigs = Arrays.asList(
+      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT + "'='1s'",
+      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT + "'='true'");
+    // Acquire locks
+    // Allocate write ids for both tables of secondary db for all txns
+    // t1=5 and t2=5
+    Map<String, Long> tablesInSecDb = new HashMap<>();
+    tablesInSecDb.put("t1", (long) numTxns);
+    tablesInSecDb.put("t2", (long) numTxns);
+    List<Long> lockIds = allocateWriteIdsForTablesAndAquireLocks(primaryDbName + "_extra",
+      tablesInSecDb, txnHandler, txns, primaryConf);
+
+    WarehouseInstance.Tuple bootstrapDump  = primary
       .run("use " + primaryDbName)
       .dump(primaryDbName, withConfigs);
-
     // After bootstrap dump, all the opened txns should not be aborted as itr belongs to a diff db. Verify it.
     verifyAllOpenTxnsNotAborted(txns, primaryConf);
     Map<String, Long> tablesInPrimary = new HashMap<>();
@@ -393,6 +484,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     verifyWriteIdsForTables(tablesInPrimary, replicaConf, replicatedDbName);
     //Abort the txns
     txnHandler.abortTxns(new AbortTxnsRequest(txns));
+    verifyAllOpenTxnsAborted(txns, primaryConf);
     //Release the locks
     releaseLocks(txnHandler, lockIds);
   }
@@ -469,6 +561,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     verifyWriteIdsForTables(tablesInPrimDb, replicaConf, replicatedDbName);
     //Abort the txns for secondary db
     txnHandler.abortTxns(new AbortTxnsRequest(txns));
+    verifyAllOpenTxnsAborted(txns, primaryConf);
     //Release the locks
     releaseLocks(txnHandler, lockIds);
   }
@@ -515,6 +608,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     verifyAllOpenTxnsNotAborted(txns, primaryConf);
     //Abort the txns
     txnHandler.abortTxns(new AbortTxnsRequest(txns));
+    verifyAllOpenTxnsAborted(txns, primaryConf);
     //Release the locks
     releaseLocks(txnHandler, lockIds);
   }

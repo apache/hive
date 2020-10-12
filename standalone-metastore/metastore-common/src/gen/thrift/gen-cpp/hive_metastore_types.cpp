@@ -23872,6 +23872,11 @@ void ShowLocksRequest::__set_isExtended(const bool val) {
   this->isExtended = val;
 __isset.isExtended = true;
 }
+
+void ShowLocksRequest::__set_txnid(const int64_t val) {
+  this->txnid = val;
+__isset.txnid = true;
+}
 std::ostream& operator<<(std::ostream& out, const ShowLocksRequest& obj)
 {
   obj.printTo(out);
@@ -23932,6 +23937,14 @@ uint32_t ShowLocksRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->txnid);
+          this->__isset.txnid = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -23969,6 +23982,11 @@ uint32_t ShowLocksRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeBool(this->isExtended);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.txnid) {
+    xfer += oprot->writeFieldBegin("txnid", ::apache::thrift::protocol::T_I64, 5);
+    xfer += oprot->writeI64(this->txnid);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -23980,6 +23998,7 @@ void swap(ShowLocksRequest &a, ShowLocksRequest &b) {
   swap(a.tablename, b.tablename);
   swap(a.partname, b.partname);
   swap(a.isExtended, b.isExtended);
+  swap(a.txnid, b.txnid);
   swap(a.__isset, b.__isset);
 }
 
@@ -23988,6 +24007,7 @@ ShowLocksRequest::ShowLocksRequest(const ShowLocksRequest& other887) {
   tablename = other887.tablename;
   partname = other887.partname;
   isExtended = other887.isExtended;
+  txnid = other887.txnid;
   __isset = other887.__isset;
 }
 ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other888) {
@@ -23995,6 +24015,7 @@ ShowLocksRequest& ShowLocksRequest::operator=(const ShowLocksRequest& other888) 
   tablename = other888.tablename;
   partname = other888.partname;
   isExtended = other888.isExtended;
+  txnid = other888.txnid;
   __isset = other888.__isset;
   return *this;
 }
@@ -24005,6 +24026,7 @@ void ShowLocksRequest::printTo(std::ostream& out) const {
   out << ", " << "tablename="; (__isset.tablename ? (out << to_string(tablename)) : (out << "<null>"));
   out << ", " << "partname="; (__isset.partname ? (out << to_string(partname)) : (out << "<null>"));
   out << ", " << "isExtended="; (__isset.isExtended ? (out << to_string(isExtended)) : (out << "<null>"));
+  out << ", " << "txnid="; (__isset.txnid ? (out << to_string(txnid)) : (out << "<null>"));
   out << ")";
 }
 
