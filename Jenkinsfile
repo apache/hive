@@ -285,7 +285,7 @@ tar -czf ${fn} --files-from  <(find . -path '*/surefire-reports/*')"""
         sh("""#!/bin/bash -e
             mkdir ${splitName}
             tar xzf ${fn} -C ${splitName}
-            unink ${fn}""")
+            unlink ${fn}""")
       }
       sh("""#!/bin/bash -e
       tar czf test-results.tgz split*""")
