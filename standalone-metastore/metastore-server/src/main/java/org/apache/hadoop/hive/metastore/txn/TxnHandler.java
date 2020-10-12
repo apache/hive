@@ -1422,7 +1422,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * @return max Id for the conflicting transaction, if any, otherwise -1
    * @throws MetaException
    */
-  public long getLatestTxnInConflict(long txnid) throws MetaException {
+  public long getLatestTxnIdInConflict(long txnid) throws MetaException {
     Connection dbConn = null;
     Statement stmt = null;
 
@@ -1436,7 +1436,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         "SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\" " +
         " FROM \"TXN_COMPONENTS\"  " +
         "   WHERE \"TC_TXNID\" = " + txnid +
-        "     AND \"TC_OPERATION_TYPE\" IN (" + OperationType.UPDATE + ", " + OperationType.DELETE + ")) \"CUR\" " +
+        "     AND \"TC_OPERATION_TYPE\" IN (" + OperationType.UPDATE + "," + OperationType.DELETE + "," +
+        OperationType.DP_UPDATE + ")) \"CUR\" " + // handle DP update/delete scenario
         "   ON \"COMMITTED\".\"WS_DATABASE\" = \"CUR\".\"TC_DATABASE\" " +
         "     AND \"COMMITTED\".\"WS_TABLE\" = \"CUR\".\"TC_TABLE\" " +
         //For partitioned table we always track writes at partition level (never at table)
