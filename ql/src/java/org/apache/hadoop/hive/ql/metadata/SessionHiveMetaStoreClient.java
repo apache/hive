@@ -2091,24 +2091,23 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       MapWrapper cache = new MapWrapper(queryCache);
+      List<String> columnNamesMissing = new ArrayList<>();
+      List<ColumnStatisticsObj> columnStatsFound = new ArrayList<>();
       // 1) Retrieve from the cache those ids present, gather the rest
-      Pair<List<ColumnStatisticsObj>, List<String>> p = getTableColumnStatisticsCache(
-          cache, rqst, null);
-      List<String> colStatsMissing = p.getRight();
-      List<ColumnStatisticsObj> colStats = p.getLeft();
+      getTableColumnStatisticsCache(cache, rqst, null, columnNamesMissing, columnStatsFound);
       // 2) If they were all present in the cache, return
-      if (colStatsMissing.isEmpty()) {
-        return new TableStatsResult(colStats);
+      if (columnNamesMissing.isEmpty()) {
+        return new TableStatsResult(columnStatsFound);
       }
       // 3) If they were not, gather the remaining
       TableStatsRequest newRqst = new TableStatsRequest(rqst);
-      newRqst.setColNames(colStatsMissing);
+      newRqst.setColNames(columnNamesMissing);
       TableStatsResult r = super.getTableColumnStatisticsInternal(newRqst);
       // 4) Populate the cache
-      List<ColumnStatisticsObj> newColStats = loadTableColumnStatisticsCache(
-          cache, r, rqst, null);
+      List<ColumnStatisticsObj> newColumnStats = new ArrayList<>();
+      loadTableColumnStatisticsCache(cache, r, rqst, null, newColumnStats);
       // 5) Sort result (in case there is any assumption) and return
-      return computeTableColumnStatisticsFinal(rqst, colStats, newColStats);
+      return computeTableColumnStatisticsFinal(rqst, columnStatsFound, newColumnStats);
     }
     return super.getTableColumnStatisticsInternal(rqst);
   }

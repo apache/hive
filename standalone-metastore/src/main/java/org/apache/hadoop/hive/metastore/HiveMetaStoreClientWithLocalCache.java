@@ -151,9 +151,9 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     NOT_NULL_CONSTRAINTS(NotNullConstraintsResponse.class, NotNullConstraintsRequest.class),
     // TableStatsResult <-- getTableColumnStatisticsInternal(TableStatsRequest rqst)
     // Stored individually as:
-    // ColumnStatisticsObj <-- String dbName, String tblName, List<string> colNames,
-    //      String catName, String validWriteIdList, String engine, long id, (TableWatermark tw ?)
-    TABLE_COLUMN_STATS(ColumnStatisticsObj.class, String.class, long.class, TableWatermark.class),
+    // ConcurrentHashMap <-- String dbName, String tblName,
+    //      (TableWatermark tw ?)
+    TABLE_COLUMN_STATS(ConcurrentHashMap.class, String.class, ColumnStatisticsObj.class, String.class, String.class, TableWatermark.class),
     // AggrStats <-- getAggrStatsForInternal(PartitionsStatsRequest req), (TableWatermark tw ?)
     AGGR_COL_STATS(AggrStats.class, PartitionsStatsRequest.class, TableWatermark.class),
     // PartitionsByExprResult <-- getPartitionsByExprInternal(PartitionsByExprRequest req), (TableWatermark tw ?)
@@ -486,24 +486,23 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           getTable(req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
+        List<String> columnNamesMissing = new ArrayList<>();
+        List<ColumnStatisticsObj> columnStatsFound = new ArrayList<>();
         // 1) Retrieve from the cache those ids present, gather the rest
-        Pair<List<ColumnStatisticsObj>, List<String>> p = getTableColumnStatisticsCache(
-            cache, req, watermark);
-        List<String> colStatsMissing = p.getRight();
-        List<ColumnStatisticsObj> colStats = p.getLeft();
+        getTableColumnStatisticsCache(cache, req, watermark, columnNamesMissing, columnStatsFound);
         // 2) If they were all present in the cache, return
-        if (colStatsMissing.isEmpty()) {
-          return new TableStatsResult(colStats);
+        if (columnNamesMissing.isEmpty()) {
+          return new TableStatsResult(columnStatsFound);
         }
         // 3) If they were not, gather the remaining
         TableStatsRequest newRqst = new TableStatsRequest(req);
-        newRqst.setColNames(colStatsMissing);
+        newRqst.setColNames(columnNamesMissing);
         TableStatsResult r = super.getTableColumnStatisticsInternal(newRqst);
         // 4) Populate the cache
-        List<ColumnStatisticsObj> newColStats = loadTableColumnStatisticsCache(
-            cache, r, req, watermark);
+        List<ColumnStatisticsObj> newColumnStats = new ArrayList<>();
+        loadTableColumnStatisticsCache(cache, r, req, watermark, newColumnStats);
         // 5) Sort result (in case there is any assumption) and return
-        TableStatsResult result = computeTableColumnStatisticsFinal(req, colStats, newColStats);
+        TableStatsResult result = computeTableColumnStatisticsFinal(req, columnStatsFound, newColumnStats);
 
         if (LOG.isDebugEnabled() && recordStats) {
           LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
@@ -591,46 +590,64 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   }
 
 
-  protected final Pair<List<ColumnStatisticsObj>, List<String>> getTableColumnStatisticsCache(CacheI cache,
-      TableStatsRequest rqst, TableWatermark watermark) {
-    List<String> colStatsMissing = new ArrayList<>();
-    List<ColumnStatisticsObj> colStats = new ArrayList<>();
+  protected final void getTableColumnStatisticsCache(CacheI cache,
+      TableStatsRequest rqst, TableWatermark watermark, List<String> columnNamesMissing,
+      List<ColumnStatisticsObj> columnStatsFound) {
+    CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS, watermark,
+        rqst.getDbName(), rqst.getTblName());
+    Map<String, ColumnStatisticsObj> cacheValue =
+        (Map<String, ColumnStatisticsObj>) cache.get(cacheKey);
+    if (cacheValue == null) {
+      // no cached column stats exist, so all requested column stats are missing
+      columnNamesMissing.addAll(rqst.getColNames());
+      return;
+    }
+
+    List<String> columnNamesFound = new ArrayList<>();
     for (String colName : rqst.getColNames()) {
-      CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS, watermark,
-          rqst.getDbName(), rqst.getTblName(), colName,
-          rqst.getCatName(), rqst.getValidWriteIdList(),
-          rqst.getEngine(), rqst.getId());
-      ColumnStatisticsObj v = (ColumnStatisticsObj) cache.get(cacheKey);
-      if (v == null) {
-        colStatsMissing.add(colName);
+      ColumnStatisticsObj cachedColStats = cacheValue.get(colName);
+      if (cachedColStats == null) {
+        columnNamesMissing.add(colName);
       } else {
-        if (watermark == null) {
-          LOG.debug(
-              "Query level HMS cache: method=getTableColumnStatisticsInternal, dbName={}, tblName={}, colName={}",
-              rqst.getDbName(), rqst.getTblName(), colName);
-        } else {
-          LOG.debug(
-              "HS2 level HMS cache: method=getTableColumnStatisticsInternal, dbName={}, tblName={}, colName={}",
-              rqst.getDbName(), rqst.getTblName(), colName);
-        }
-        colStats.add(v);
+        columnStatsFound.add(cachedColStats);
+        columnNamesFound.add(colName);
       }
     }
-    return Pair.of(colStats, colStatsMissing);
+
+    if (columnNamesFound.size() > 0) {
+      if (watermark == null) {
+        LOG.debug(
+            "Query level HMS cache: method=getTableColumnStatisticsInternal, dbName={}, tblName={}, columnNames={}",
+            rqst.getDbName(), rqst.getTblName(), columnNamesFound);
+      } else {
+        LOG.debug(
+            "HS2 level HMS cache: method=getTableColumnStatisticsInternal, dbName={}, tblName={}, columnNames={}",
+            rqst.getDbName(), rqst.getTblName(), columnNamesFound);
+      }
+    }
   }
 
-  protected final List<ColumnStatisticsObj> loadTableColumnStatisticsCache(CacheI cache,
-      TableStatsResult r, TableStatsRequest rqst, TableWatermark watermark) {
-    List<ColumnStatisticsObj> newColStats = new ArrayList<>();
-    for (ColumnStatisticsObj colStat : r.getTableStats()) {
-      CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS, watermark,
-          rqst.getDbName(), rqst.getTblName(), colStat.getColName(),
-          rqst.getCatName(), rqst.getValidWriteIdList(),
-          rqst.getEngine(), rqst.getId());
-      cache.put(cacheKey, colStat);
-      newColStats.add(colStat);
+  protected final void loadTableColumnStatisticsCache(CacheI cache,
+      TableStatsResult r, TableStatsRequest rqst, TableWatermark watermark,
+      List<ColumnStatisticsObj> newColumnStats) {
+    CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS, watermark,
+        rqst.getDbName(), rqst.getTblName());
+    Map<String, ColumnStatisticsObj> cacheValue;
+    if (cache instanceof CacheWrapper) {
+      cacheValue = (Map<String, ColumnStatisticsObj>) ((CacheWrapper) cache).cache.get(cacheKey,
+          k -> new ConcurrentHashMap<String, ColumnStatisticsObj>());
+    } else {
+      cacheValue = (Map<String, ColumnStatisticsObj>) cache.get(cacheKey);
+      if (cacheValue == null) {
+        cacheValue = new ConcurrentHashMap<>();
+        cache.put(cacheKey, cacheValue);
+      }
     }
-    return newColStats;
+
+    for (ColumnStatisticsObj colStat : r.getTableStats()) {
+      cacheValue.put(colStat.getColName(), colStat);
+      newColumnStats.add(colStat);
+    }
   }
 
   protected final TableStatsResult computeTableColumnStatisticsFinal(TableStatsRequest rqst,
