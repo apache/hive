@@ -29,8 +29,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-public class MaterializedViews {
-  private static final Logger LOG = LoggerFactory.getLogger(MaterializedViews.class);
+public class MaterializedViewsCache {
+  private static final Logger LOG = LoggerFactory.getLogger(MaterializedViewsCache.class);
 
   /* Key is the database name. Value a map from the qualified name to the view object. */
   private final ConcurrentMap<String, ConcurrentMap<String, RelOptMaterialization>> materializedViews =

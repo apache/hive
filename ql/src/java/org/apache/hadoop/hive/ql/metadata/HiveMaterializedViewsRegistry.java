@@ -91,7 +91,7 @@ public final class HiveMaterializedViewsRegistry {
   /* Singleton */
   private static final HiveMaterializedViewsRegistry SINGLETON = new HiveMaterializedViewsRegistry();
 
-  private final MaterializedViews materializedViews = new MaterializedViews();
+  private final MaterializedViewsCache materializedViewsCache = new MaterializedViewsCache();
 
   /* Whether the cache has been initialized or not. */
   private final AtomicBoolean initialized = new AtomicBoolean(false);
@@ -251,7 +251,7 @@ public final class HiveMaterializedViewsRegistry {
       return;
     }
 
-    materializedViews.putIfAbsent(materializedViewTable, materialization);
+    materializedViewsCache.putIfAbsent(materializedViewTable, materialization);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created materialized view for rewriting: " + materializedViewTable.getFullyQualifiedName());
@@ -281,7 +281,7 @@ public final class HiveMaterializedViewsRegistry {
     if (newMaterialization == null) {
       return;
     }
-    materializedViews.refresh(oldMaterializedViewTable, materializedViewTable, newMaterialization);
+    materializedViewsCache.refresh(oldMaterializedViewTable, materializedViewTable, newMaterialization);
 ;
 
     if (LOG.isDebugEnabled()) {
@@ -293,14 +293,14 @@ public final class HiveMaterializedViewsRegistry {
    * Removes the materialized view from the cache (based on table object equality), if exists.
    */
   public void dropMaterializedView(Table materializedViewTable) {
-    materializedViews.remove(materializedViewTable);
+    materializedViewsCache.remove(materializedViewTable);
   }
 
   /**
    * Removes the materialized view from the cache (based on qualified name), if exists.
    */
   public void dropMaterializedView(String dbName, String tableName) {
-    materializedViews.remove(dbName, tableName);
+    materializedViewsCache.remove(dbName, tableName);
   }
 
   /**
@@ -309,7 +309,7 @@ public final class HiveMaterializedViewsRegistry {
    * @return the collection of materialized views, or the empty collection if none
    */
   List<RelOptMaterialization> getRewritingMaterializedViews() {
-    return materializedViews.values();
+    return materializedViewsCache.values();
   }
 
   /**
@@ -318,11 +318,11 @@ public final class HiveMaterializedViewsRegistry {
    * @return the collection of materialized views, or the empty collection if none
    */
   RelOptMaterialization getRewritingMaterializedView(String dbName, String viewName) {
-    return materializedViews.get(dbName, viewName);
+    return materializedViewsCache.get(dbName, viewName);
   }
 
   public RelOptMaterialization getRewritingMaterializedView(String queryText) {
-    return materializedViews.get(queryText);
+    return materializedViewsCache.get(queryText);
   }
 
   private static RelNode createMaterializedViewScan(HiveConf conf, Table viewTable) {

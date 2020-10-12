@@ -40,7 +40,9 @@ import org.apache.calcite.rex.RexShuttle;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.Litmus;
 import org.apache.calcite.util.Pair;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -53,22 +55,21 @@ import java.util.concurrent.Executors;
 import static org.apache.derby.vti.XmlVTI.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.jupiter.api.Assertions.*;
 
-class TestMaterializedViews {
-  private static final MaterializedViews materializedViews = new MaterializedViews();
+class TestMaterializedViewsCache {
+  private static final MaterializedViewsCache MATERIALIZED_VIEWS_CACHE = new MaterializedViewsCache();
 
   @Test
   void testAdd() {
     Table table = new Table(new org.apache.hadoop.hive.metastore.api.Table());
     table.setDbName("default");
     table.setTableName("mat1");
-    table.setViewOriginalText("select col0 from t1");
+    table.setViewExpandedText("select col0 from t1");
     RelOptMaterialization relOptMaterialization = new RelOptMaterialization(
             new DummyRel(), new DummyRel(), null, asList(table.getDbName(), table.getTableName()));
-    materializedViews.putIfAbsent(table, relOptMaterialization);
+    MATERIALIZED_VIEWS_CACHE.putIfAbsent(table, relOptMaterialization);
 
-    assertThat(materializedViews.get(table.getViewOriginalText()), is(relOptMaterialization));
+    assertThat(MATERIALIZED_VIEWS_CACHE.get(table.getViewExpandedText()), is(relOptMaterialization));
   }
 
   private static List<Pair<Table, RelOptMaterialization>> testData = new ArrayList<>();
@@ -95,9 +96,10 @@ class TestMaterializedViews {
     }
   }
 
+  @Disabled("Testing parallelism only")
   @Test
   void testParallelism() {
-    int ITERATIONS = 100000;
+    int ITERATIONS = 1000000;
 
     List<Callable<Void>> callableList = new ArrayList<>();
     callableList.add(() -> {
@@ -113,14 +115,14 @@ class TestMaterializedViews {
     for (Pair<Table, RelOptMaterialization> entry : testData) {
       callableList.add(() -> {
         for (int j = 0; j < ITERATIONS; ++j) {
-          materializedViews.get(entry.left.getViewOriginalText());
+          MATERIALIZED_VIEWS_CACHE.get(entry.left.getViewExpandedText());
         }
         return null;
       });
     }
     callableList.add(() -> {
       for (int j = 0; j < ITERATIONS; ++j) {
-        List<RelOptMaterialization> materializations = materializedViews.values();
+        List<RelOptMaterialization> materializations = MATERIALIZED_VIEWS_CACHE.values();
       }
       return null;
     });
@@ -136,14 +138,14 @@ class TestMaterializedViews {
 
   private void refreshAll() {
     for (Pair<Table, RelOptMaterialization> entry : testData) {
-      materializedViews.refresh(entry.left, entry.left, entry.right);
+      MATERIALIZED_VIEWS_CACHE.refresh(entry.left, entry.left, entry.right);
     }
   }
 
   private void removeThenAdd() {
     for (Pair<Table, RelOptMaterialization> entry : testData) {
-      materializedViews.remove(entry.left);
-      materializedViews.putIfAbsent(entry.left, entry.right);
+      MATERIALIZED_VIEWS_CACHE.remove(entry.left);
+      MATERIALIZED_VIEWS_CACHE.putIfAbsent(entry.left, entry.right);
     }
   }
 
