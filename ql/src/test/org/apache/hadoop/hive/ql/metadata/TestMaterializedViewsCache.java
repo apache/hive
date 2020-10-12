@@ -46,7 +46,6 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -55,7 +54,6 @@ import java.util.concurrent.Executors;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.not;
@@ -63,6 +61,10 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
+/**
+ * Functional and parallel execution tests for {@link MaterializedViewsCache}.
+ * Parallel execution test is disabled by default.
+ */
 class TestMaterializedViewsCache {
   private MaterializedViewsCache materializedViewsCache;
   private Table defaultMV1;

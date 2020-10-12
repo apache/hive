@@ -29,14 +29,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.function.BiFunction;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
+/**
+ * Collection for storing {@link RelOptMaterialization}s.
+ * RelOptMaterialization can be lookup by
+ * - the Materialized View fully qualified name
+ * - query text.
+ * This implementation contains two {@link ConcurrentHashMap} one for name based and one for query text based lookup.
+ * The map contents are synchronized during each dml operation: Dml operations are performed initially on the map
+ * which provides name based lookup. The map which provides query text based lookup is updated by lambda expressions
+ * passed to {@link ConcurrentHashMap#compute(Object, BiFunction)}.
+ */
 public class MaterializedViewsCache {
   private static final Logger LOG = LoggerFactory.getLogger(MaterializedViewsCache.class);
 
-  /* Key is the database name. Value a map from the qualified name to the view object. */
+  // Key is the database name. Value a map from the qualified name to the view object.
   private final ConcurrentMap<String, ConcurrentMap<String, RelOptMaterialization>> materializedViews =
           new ConcurrentHashMap<>();
   // Map for looking up materialization by view query text
