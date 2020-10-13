@@ -3,7 +3,6 @@
 -- SORT_QUERY_RESULTS
 
 set hive.mapred.mode=nonstrict;
-set hive.optimize.shared.work.dppunion=false;
 -- non agg, non corr
 
 explain

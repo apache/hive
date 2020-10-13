@@ -2611,24 +2611,26 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: (ds = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 18624 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    Statistics: Num rows: 1000 Data size: 94000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
+                  Filter Operator
+                    predicate: (ds = '2008-04-08') (type: boolean)
+                    Select Operator
                       Statistics: Num rows: 1000 Data size: 94000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      keys: true (type: boolean)
-                      minReductionHashAggr: 0.99
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: boolean)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: boolean)
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1000 Data size: 94000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        keys: true (type: boolean)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: boolean)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: boolean)
+                          Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 
@@ -5676,24 +5678,26 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: (ds = '2008-04-08') (type: boolean)
                   Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                  Select Operator
-                    Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
-                      Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: true (type: boolean)
-                      minReductionHashAggr: 0.99
-                      mode: hash
-                      outputColumnNames: _col0
+                  Filter Operator
+                    predicate: (ds = '2008-04-08') (type: boolean)
+                    Select Operator
                       Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
                       Reduce Output Operator
-                        key expressions: _col0 (type: boolean)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: boolean)
+                        null sort order: 
+                        sort order: 
                         Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                      Group By Operator
+                        keys: true (type: boolean)
+                        minReductionHashAggr: 0.99
+                        mode: hash
+                        outputColumnNames: _col0
+                        Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: boolean)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: boolean)
+                          Statistics: Num rows: 1000 Data size: 10624 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: all inputs
         Reducer 2 

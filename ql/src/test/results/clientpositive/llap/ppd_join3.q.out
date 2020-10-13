@@ -43,11 +43,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  filterExpr: ((key > '0') and (key < '400') and (key <> '1') and (key <> '4') and (key <> '13') and (key <> '11') and (key <> '12')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
-                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((key > '0') and (key < '400') and (key <> '1') and (key <> '4') and (key <> '13') and (key <> '11') and (key <> '12')) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
@@ -64,7 +64,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '12') and (key <> '11') and (key <> '13')) (type: boolean)
+                  filterExpr: (((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '12') and (key <> '11') and (key <> '13')) or ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and ((value <> 'val_500') or (key > '1')))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '12') and (key <> '11') and (key <> '13')) (type: boolean)
@@ -80,6 +80,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
+                  Filter Operator
+                    predicate: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
@@ -1785,11 +1788,11 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
-                  Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
+                  filterExpr: ((key > '0') and (key < '400') and (key <> '1') and (key <> '4') and (key <> '13') and (key <> '11') and (key <> '12')) (type: boolean)
+                  Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
-                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
+                    predicate: ((key > '0') and (key < '400') and (key <> '1') and (key <> '4') and (key <> '13') and (key <> '11') and (key <> '12')) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0
@@ -1806,7 +1809,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '12') and (key <> '11') and (key <> '13')) (type: boolean)
+                  filterExpr: (((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '12') and (key <> '11') and (key <> '13')) or ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and ((value <> 'val_500') or (key > '1')))) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '12') and (key <> '11') and (key <> '13')) (type: boolean)
@@ -1822,6 +1825,9 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
+                  Filter Operator
+                    predicate: ((key > '0') and (key < '400') and (key <> '4') and (key <> '1') and (key <> '11') and (key <> '12') and (key <> '13') and ((value <> 'val_500') or (key > '1'))) (type: boolean)
+                    Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
                       outputColumnNames: _col0

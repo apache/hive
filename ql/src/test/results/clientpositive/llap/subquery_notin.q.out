@@ -3283,10 +3283,10 @@ STAGE PLANS:
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
-        Reducer 4 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
         Reducer 5 <- Map 1 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 5 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
-        Reducer 7 <- Map 1 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
+        Reducer 9 <- Map 7 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -3345,6 +3345,14 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                           Statistics: Num rows: 13 Data size: 1404 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Map 7 
+            Map Operator Tree:
+                TableScan
+                  alias: part
+                  filterExpr: p_size is not null (type: boolean)
+                  Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: p_size is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3364,27 +3372,6 @@ STAGE PLANS:
                           sort order: +
                           Map-reduce partition columns: _col0 (type: int)
                           Statistics: Num rows: 13 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 8 
-            Map Operator Tree:
-                TableScan
-                  alias: part
-                  filterExpr: p_size is not null (type: boolean)
-                  Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: p_size is not null (type: boolean)
-                    Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: (p_size + 1) (type: int)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 26 Data size: 104 Basic stats: COMPLETE Column stats: COMPLETE
-                      Group By Operator
-                        keys: _col0 (type: int)
-                        minReductionHashAggr: 0.5
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 13 Data size: 52 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
                           key expressions: _col0 (type: int)
                           null sort order: z
@@ -3512,7 +3499,7 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string), _col2 (type: int)
                     Statistics: Num rows: 13 Data size: 1456 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: boolean)
-        Reducer 7 
+        Reducer 9 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -7319,7 +7306,7 @@ PREHOOK: query: drop table t1_n0
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table t1_n0
 POSTHOOK: type: DROPTABLE
-Warning: Shuffle Join MERGEJOIN[54][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[54][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: explain select *
 from src b
 where b.key not in
@@ -7349,11 +7336,11 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
-        Reducer 4 <- Map 1 (SIMPLE_EDGE)
-        Reducer 5 <- Map 1 (XPROD_EDGE), Reducer 4 (XPROD_EDGE)
-        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+        Reducer 4 <- Map 1 (XPROD_EDGE), Reducer 7 (XPROD_EDGE)
+        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
+        Reducer 6 <- Map 1 (SIMPLE_EDGE)
         Reducer 7 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
@@ -7373,21 +7360,6 @@ STAGE PLANS:
                       Map-reduce partition columns: _col1 (type: string)
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string)
-                  Filter Operator
-                    predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
-                    Group By Operator
-                      keys: value (type: string)
-                      minReductionHashAggr: 0.5
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 250 Data size: 22750 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 250 Data size: 22750 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: ((key > '9') and value is not null) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
@@ -7415,6 +7387,21 @@ STAGE PLANS:
                         sort order: ++
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                         Statistics: Num rows: 83 Data size: 14774 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: value is not null (type: boolean)
+                    Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: value (type: string)
+                      minReductionHashAggr: 0.5
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 250 Data size: 22750 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 250 Data size: 22750 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -7462,19 +7449,6 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
         Reducer 4 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 250 Data size: 22750 Basic stats: COMPLETE Column stats: COMPLETE
-                Reduce Output Operator
-                  null sort order: 
-                  sort order: 
-                  Statistics: Num rows: 250 Data size: 22750 Basic stats: COMPLETE Column stats: COMPLETE
-                  value expressions: _col0 (type: string)
-        Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -7504,7 +7478,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 250 Data size: 26750 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: bigint), _col2 (type: bigint)
-        Reducer 6 
+        Reducer 5 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -7520,7 +7494,7 @@ STAGE PLANS:
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 250 Data size: 26750 Basic stats: COMPLETE Column stats: COMPLETE
                   value expressions: _col1 (type: bigint), _col2 (type: bigint)
-        Reducer 7 
+        Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -7539,6 +7513,19 @@ STAGE PLANS:
                     Map-reduce partition columns: _col0 (type: string)
                     Statistics: Num rows: 83 Data size: 15106 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: boolean), _col2 (type: string)
+        Reducer 7 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 250 Data size: 22750 Basic stats: COMPLETE Column stats: COMPLETE
+                Reduce Output Operator
+                  null sort order: 
+                  sort order: 
+                  Statistics: Num rows: 250 Data size: 22750 Basic stats: COMPLETE Column stats: COMPLETE
+                  value expressions: _col0 (type: string)
 
   Stage: Stage-0
     Fetch Operator
@@ -7546,7 +7533,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[54][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 5' is a cross product
+Warning: Shuffle Join MERGEJOIN[54][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 4' is a cross product
 PREHOOK: query: select *
 from src b
 where b.key not in
