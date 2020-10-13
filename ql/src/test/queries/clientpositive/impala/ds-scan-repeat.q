@@ -1,0 +1,25 @@
+--! qt:dataset:impala_dataset
+
+explain cbo select  ca_zip, ca_county, sum(ws_sales_price)
+ from impala_tpcds_web_sales, impala_tpcds_customer_address, impala_tpcds_item
+ where ws_item_sk <> i_item_sk
+      and ( substr(ca_zip,1,5) in ('85669', '86197','88274','83405','86475', '85392', '85460', '80348', '81792')
+            or
+            i_item_id in (select i_item_id
+                             from impala_tpcds_item
+                             where i_item_sk in (2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
+                             )
+          )
+ group by ca_zip, ca_county;
+
+explain select  ca_zip, ca_county, sum(ws_sales_price)
+ from impala_tpcds_web_sales, impala_tpcds_customer_address, impala_tpcds_item
+ where ws_item_sk <> i_item_sk
+      and ( substr(ca_zip,1,5) in ('85669', '86197','88274','83405','86475', '85392', '85460', '80348', '81792')
+            or
+            i_item_id in (select i_item_id
+                             from impala_tpcds_item
+                             where i_item_sk in (2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
+                             )
+          )
+ group by ca_zip, ca_county;
