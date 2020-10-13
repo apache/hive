@@ -187,7 +187,7 @@ public class SharedWorkOptimizer extends Transform {
       swo0 = swo;
     }
     // Execute shared work optimization
-    swo0.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables, Mode.SubtreeMerge);
+    swo0.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables,        Mode.SubtreeMerge);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("After SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
@@ -1319,12 +1319,11 @@ public class SharedWorkOptimizer extends Transform {
       } else {
         return false;
       }
-      Set<Operator<?>> ascendants = findAscendantWorkOperators(pctx, cache, op);
-      if (ascendants.contains(tsOp2)) {
-        // This should not happen, we cannot merge
-        return false;
-      }
-
+    }
+    Set<Operator<?>> ascendants = findAscendantWorkOperators(pctx, cache, tsOp1);
+    if (ascendants.contains(tsOp2)) {
+      // This should not happen, we cannot merge
+      return false;
     }
     final Set<Operator<?>> workOps1 = findWorkOperators(cache, tsOp1);
     for (Operator<?> op : workOps1) {
