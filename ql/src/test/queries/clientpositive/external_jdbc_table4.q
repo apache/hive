@@ -140,6 +140,11 @@ SELECT * FROM db1_ext_auth2;
 
 set hive.cbo.enable=true;
 
+set hive.limit.optimize.enable=true;
+explain select * from db1_ext_auth1 limit 10;
+select * from db1_ext_auth1 limit 10;
+set hive.limit.optimize.enable=false;
+
 DROP TABLE db1_ext_auth1;
 DROP TABLE db2_ext_auth2;
 DROP TABLE db1_ext_auth2;
