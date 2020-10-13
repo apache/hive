@@ -304,8 +304,24 @@ public class SharedWorkOptimizer extends Transform {
     return pctx;
   }
 
+  /** SharedWorkOptimization strategy modes */
   public enum Mode {
-    RemoveSemijoin, SubtreeMerge, DPPUnion,
+    /**
+     * Merges two identical subtrees.
+     */
+    SubtreeMerge,
+    /**
+     * Merges a filtered scan into a non-filtered scan.
+     *
+     * In case we are already scanning the whole table - we should not scan it twice.
+     */
+    RemoveSemijoin,
+    /**
+     * Fuses two filtered table scans into a single one.
+     *
+     * Dynamic filter subtree is kept on both sides - but the table is onlt scanned once.
+     */
+    DPPUnion;
   }
 
   /**
