@@ -197,13 +197,13 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
-            new BaseSharedWorkOptimizer().sharedWorkOptimization(
-                pctx, optimizerCache, tableNameToOps, sortedTables, Mode.SubtreeMerge);
+      new BaseSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables,
+          Mode.SubtreeMerge);
 
-             if (LOG.isDebugEnabled()) {
-              LOG.debug("After SharedWorkOptimizer merging TS schema:\n" + Operator.toString(pctx.getTopOps().values()));
-             }
-           }
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("After SharedWorkOptimizer merging TS schema:\n" + Operator.toString(pctx.getTopOps().values()));
+      }
+    }
 
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DPPUNION_OPTIMIZATION)) {
       BaseSharedWorkOptimizer swo;
@@ -307,13 +307,16 @@ public class SharedWorkOptimizer extends Transform {
     RemoveSemijoin, SubtreeMerge, DPPUnion,
   }
 
-  static class SharedWorkModel {
+  /**
+   * Analyzes the TS and exposes dynamic filters separetly.
+   */
+  static class DecomposedTs {
 
     private TableScanOperator ts;
     private ExprNodeDesc normalFilterExpr;
     private List<ExprNodeDesc> semijoinExprNodes = new ArrayList<>();
 
-    public SharedWorkModel(TableScanOperator ts) throws UDFArgumentException {
+    public DecomposedTs(TableScanOperator ts) throws UDFArgumentException {
       this.ts = ts;
       TableScanOperator retainableTsOp = ts;
       if (retainableTsOp.getConf().getFilterExpr() != null) {
@@ -470,8 +473,8 @@ public class SharedWorkOptimizer extends Transform {
                 throw new RuntimeException("we can't discard more in this path");
               }
 
-              SharedWorkModel modelR = new SharedWorkModel(retainableTsOp);
-              SharedWorkModel modelD = new SharedWorkModel(discardableTsOp);
+              DecomposedTs modelR = new DecomposedTs(retainableTsOp);
+              DecomposedTs modelD = new DecomposedTs(discardableTsOp);
 
               // Push filter on top of children for retainable
               pushFilterToTopOfTableScan(optimizerCache, retainableTsOp);
