@@ -149,6 +149,7 @@ final class CommandAuthorizerV2 {
       hivePrivObject = new HivePrivilegeObject(privObjType, dbName, privObject.getFunctionName(),
           null, null, actionType, null, privObject.getClassName(), null, null);
       break;
+    case STREAMING:
     case DUMMYPARTITION:
     case PARTITION:
       // TODO: not currently handled
