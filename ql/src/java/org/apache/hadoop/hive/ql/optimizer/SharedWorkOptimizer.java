@@ -92,6 +92,7 @@ import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.FIXED;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNIFORM;
 import static org.apache.hadoop.hive.ql.plan.ReduceSinkDesc.ReducerTraits.UNSET;
 
+import static org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils.*;
 /**
  * Shared computation optimizer.
  *
@@ -325,13 +326,7 @@ public class SharedWorkOptimizer extends Transform {
         splitExpressions(retainableTsOp.getConf().getFilterExpr(),
             allExprNodesExceptSemijoin, semijoinExprNodes);
         // Create new expressions
-        if (allExprNodesExceptSemijoin.size() > 1) {
-          normalFilterExpr = ExprNodeGenericFuncDesc.newInstance(
-              new GenericUDFOPAnd(), allExprNodesExceptSemijoin);
-        } else if (allExprNodesExceptSemijoin.size() > 0 &&
-            allExprNodesExceptSemijoin.get(0) instanceof ExprNodeGenericFuncDesc) {
-          normalFilterExpr = allExprNodesExceptSemijoin.get(0);
-        }
+        normalFilterExpr = conjunction(allExprNodesExceptSemijoin);
       }
     }
 
@@ -384,7 +379,6 @@ public class SharedWorkOptimizer extends Transform {
                 LOG.debug("{} and {} cannot be merged", retainableTsOp, discardableTsOp);
                 continue;
               }
-              // FIXME: I think this optimization is assymetric; but the check is symmetric
               boolean validMerge = areMergeableExcludeSemijoinsExtendedCheck(
                   pctx, optimizerCache, retainableTsOp, discardableTsOp);
               if (!validMerge) {
@@ -405,7 +399,7 @@ public class SharedWorkOptimizer extends Transform {
                 continue;
               }
               boolean validMerge =
-                  areMergeableDppUninon(pctx, optimizerCache, retainableTsOp, discardableTsOp);
+                  areMergeableDppUnion(pctx, optimizerCache, retainableTsOp, discardableTsOp);
               if (!validMerge) {
                 // Skip
                 LOG.debug("{} and {} do not meet preconditions", retainableTsOp, discardableTsOp);
@@ -480,8 +474,7 @@ public class SharedWorkOptimizer extends Transform {
               pushFilterToTopOfTableScan(optimizerCache, retainableTsOp);
 
               if (mode == Mode.RemoveSemijoin || mode == Mode.SubtreeMerge) {
-                // FIXME: I think idea here is to clear the discardable's semijoin filter
-                // - by using the retainable's (which should be empty in case of this mode)
+                // For RemoveSemiJoin; this will clear the discardable's semijoin filters
                 replaceSemijoinExpressions(discardableTsOp, modelR.getSemiJoinFilter());
               }
               // Push filter on top of children for discardable
@@ -600,81 +593,6 @@ public class SharedWorkOptimizer extends Transform {
           (Entry<String, TableScanOperator> e) -> e.getValue().getNumChild() == 0);
 
       return mergedExecuted;
-    }
-
-    private ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes) throws UDFArgumentException {
-      if (semijoinExprNodes.isEmpty()) {
-        return null;
-      }
-      if (semijoinExprNodes.size() > 1) {
-        return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), semijoinExprNodes);
-      } else {
-        return semijoinExprNodes.get(0);
-      }
-    }
-
-    private ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes, ExprNodeDesc exprNode)
-        throws UDFArgumentException {
-      if (semijoinExprNodes != null && !semijoinExprNodes.isEmpty()) {
-        if (exprNode != null) {
-          semijoinExprNodes.add(0, exprNode);
-        }
-        if (semijoinExprNodes.size() > 1) {
-          exprNode = ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), semijoinExprNodes);
-        } else {
-          exprNode = semijoinExprNodes.get(0);
-        }
-      }
-      return exprNode;
-    }
-
-    private ExprNodeDesc disjunction(ExprNodeDesc e1, ExprNodeDesc e2) throws UDFArgumentException {
-      if (e1 == null) {
-        return e2;
-      }
-      if (e2 == null) {
-        return e1;
-      }
-      if (e1.isSame(e2)) {
-        return e1;
-      }
-      List<ExprNodeDesc> operands = new ArrayList<ExprNodeDesc>();
-      disjunctiveDecomposition(e1,operands);
-      disjunctiveDecomposition(e2,operands);
-      return disjunction(operands);
-    }
-
-    private ExprNodeDesc disjunction(List<ExprNodeDesc> operands) throws UDFArgumentException {
-      if (operands.size() == 0) {
-        return null;
-      }
-      if (operands.size() == 1) {
-        return operands.get(0);
-      }
-      return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPOr(), operands);
-    }
-
-    private void disjunctiveDecomposition(ExprNodeDesc expr, List<ExprNodeDesc> operands) {
-      if(isOr(expr)) {
-        for (ExprNodeDesc c : expr.getChildren()) {
-          disjunctiveDecomposition(c, operands);
-        }
-      }else {
-        for (ExprNodeDesc o : operands) {
-          if (o.isSame(expr)) {
-            return;
-          }
-        }
-        operands.add(expr);
-      }
-    }
-
-    private boolean isOr(ExprNodeDesc expr) {
-      if (expr instanceof ExprNodeGenericFuncDesc) {
-        ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) expr;
-        return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFOPOr);
-      }
-      return false;
     }
 
     // FIXME: probably this should also be integrated with isSame() logics
@@ -1302,7 +1220,7 @@ public class SharedWorkOptimizer extends Transform {
     return validMerge;
   }
 
-  private static boolean areMergeableDppUninon(ParseContext pctx,
+  private static boolean areMergeableDppUnion(ParseContext pctx,
       SharedWorkOptimizerCache optimizerCache, TableScanOperator tsOp1, TableScanOperator tsOp2)
       throws SemanticException {
 
