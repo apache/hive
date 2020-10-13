@@ -48,8 +48,14 @@ public class AckTask extends Task<AckWork> implements Serializable {
       LOG.info("Created ack file : {} ", ackPath);
     } catch (Exception e) {
       setException(e);
-      return ReplUtils.handleException(true, e, work.getAckFilePath().getParent().getParent().toString(),
-              work.getMetricCollector(), getName(), conf);
+      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      try {
+        return ReplUtils.handleException(true, e, work.getAckFilePath().getParent().getParent().toString(),
+                work.getMetricCollector(), getName(), conf);
+      } catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+        return errorCode;
+      }
     }
     return 0;
   }

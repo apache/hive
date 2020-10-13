@@ -35,8 +35,8 @@ public class CopyWork implements Serializable {
   private Path[] toPath;
   private boolean errorOnSrcEmpty;
   private boolean overwrite = true;
-  boolean isReplication;
-  String dumpDirectory;
+  private boolean isReplication;
+  private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
 
   public CopyWork() {

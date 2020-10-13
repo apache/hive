@@ -144,7 +144,7 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
       LOG.error("Replication failed ", e);
       Exception ex = new SecurityException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
       setException(ex);
-      return ReplUtils.handleException(true, ex, work.dumpDirectory, work.getMetricCollector(), getName(), conf);
+      return ReplUtils.handleException(true, ex, work.getDumpDirectory(), work.getMetricCollector(), getName(), conf);
     }
   }
 

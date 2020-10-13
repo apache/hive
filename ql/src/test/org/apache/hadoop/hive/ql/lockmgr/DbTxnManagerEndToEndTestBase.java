@@ -58,7 +58,7 @@ public abstract class DbTxnManagerEndToEndTestBase {
   public void setUp() throws Exception {
     // set up metastore client cache
     if (conf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
-      HiveMetaStoreClientWithLocalCache.init();
+      HiveMetaStoreClientWithLocalCache.init(conf);
     }
     SessionState.start(conf);
     ctx = new Context(conf);

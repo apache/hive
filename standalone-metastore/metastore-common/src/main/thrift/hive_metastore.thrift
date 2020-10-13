@@ -122,6 +122,15 @@ struct SQLCheckConstraint {
   9: bool rely_cstr      // Rely/No Rely
 }
 
+struct SQLAllTableConstraints {
+  1: optional list<SQLPrimaryKey> primaryKeys,
+  2: optional list<SQLForeignKey> foreignKeys,
+  3: optional list<SQLUniqueConstraint> uniqueConstraints,
+  4: optional list<SQLNotNullConstraint> notNullConstraints,
+  5: optional list<SQLDefaultConstraint> defaultConstraints,
+  6: optional list<SQLCheckConstraint> checkConstraints
+}
+
 struct Type {
   1: string          name,             // one of the types in PrimitiveTypes or CollectionTypes or User defined types
   2: optional string type1,            // object type if the name is 'list' (LIST_TYPE), key type if the name is 'map' (MAP_TYPE)
@@ -720,6 +729,15 @@ struct CheckConstraintsResponse {
   1: required list<SQLCheckConstraint> checkConstraints
 }
 
+struct AllTableConstraintsRequest {
+  1: required string dbName,
+  2: required string tblName,
+  3: required string catName
+}
+
+struct AllTableConstraintsResponse {
+  1: required SQLAllTableConstraints allTableConstraints
+}
 
 struct DropConstraintRequest {
   1: required string dbname, 
@@ -1012,9 +1030,9 @@ struct CommitTxnRequest {
     3: optional list<WriteEventInfo> writeEventInfos,
     // Information to update the last repl id of table/partition along with commit txn (replication from 2.6 to 3.0)
     4: optional ReplLastIdInfo replLastIdInfo,
-    5: optional bool exclWriteEnabled = true,
     // An optional key/value to store atomically with the transaction
-    6: optional CommitTxnKeyValue keyValue,
+    5: optional CommitTxnKeyValue keyValue,
+    6: optional bool exclWriteEnabled = true
 }
 
 struct ReplTblWriteIdStateRequest {
@@ -1126,6 +1144,7 @@ struct ShowLocksRequest {
     2: optional string tablename,
     3: optional string partname,
     4: optional bool isExtended=false,
+    5: optional i64 txnid,
 }
 
 struct ShowLocksResponseElement {
@@ -2502,6 +2521,9 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
   CheckConstraintsResponse get_check_constraints(1:CheckConstraintsRequest request)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  // All table constrains
+  AllTableConstraintsResponse get_all_table_constraints(1:AllTableConstraintsRequest request)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // column statistics interfaces
 
@@ -2660,6 +2682,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void abort_txn(1:AbortTxnRequest rqst) throws (1:NoSuchTxnException o1)
   void abort_txns(1:AbortTxnsRequest rqst) throws (1:NoSuchTxnException o1)
   void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  i64 get_latest_txn_in_conflict(1:i64 txnId) throws (1:MetaException o1)
   void repl_tbl_writeid_state(1: ReplTblWriteIdStateRequest rqst)
   GetValidWriteIdsResponse get_valid_write_ids(1:GetValidWriteIdsRequest rqst)
       throws (1:NoSuchTxnException o1, 2:MetaException o2)

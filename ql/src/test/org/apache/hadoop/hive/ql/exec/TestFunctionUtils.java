@@ -15,26 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.exec;
 
-/**
- * Exception thrown by any task processor to signal a problem with task
- * execution.
- */
-public class TaskExecutionException extends RuntimeException {
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.junit.Assert;
+import org.junit.Test;
 
-  private static final long serialVersionUID = 1L;
+public class TestFunctionUtils {
 
-  public TaskExecutionException(String msg) {
-    super(msg);
-  }
+  @Test
+  public void testSplitQualifiedFunctionName() throws HiveException {
 
-  public TaskExecutionException(String msg, Throwable cause) {
-    super(msg, cause);
-  }
+    String function1 = Registry.WINDOW_FUNC_PREFIX + "database1.function1";
+    String function2 = "database2.function2";
 
-  public TaskExecutionException(Throwable cause) {
-    super(cause);
+    String[] output1 = FunctionUtils.splitQualifiedFunctionName(function1);
+    Assert.assertEquals("database1", output1[0]);
+    Assert.assertEquals("function1", output1[1]);
+
+    String[] output2 = FunctionUtils.splitQualifiedFunctionName(function2);
+    Assert.assertEquals("database2", output2[0]);
+    Assert.assertEquals("function2", output2[1]);
+
   }
 
 }

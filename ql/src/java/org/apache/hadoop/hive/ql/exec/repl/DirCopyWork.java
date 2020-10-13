@@ -34,7 +34,7 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
   private static final long serialVersionUID = 1L;
   private Path fullyQualifiedSourcePath;
   private Path fullyQualifiedTargetPath;
-  String dumpDirectory;
+  private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
 
   public DirCopyWork(ReplicationMetricCollector metricCollector, String dumpDirectory) {
@@ -64,6 +64,10 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
 
   public ReplicationMetricCollector getMetricCollector() {
     return metricCollector;
+  }
+
+  public String getDumpDirectory() {
+    return dumpDirectory;
   }
 
   @Override

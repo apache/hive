@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.parse.repl.load.message;
 import org.apache.hadoop.hive.metastore.messaging.DropFunctionMessage;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.function.drop.DropFunctionDesc;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -37,6 +39,11 @@ public class DropFunctionHandler extends AbstractMessageHandler {
     String actualDbName = context.isDbNameEmpty() ? msg.getDB() : context.dbName;
     String qualifiedFunctionName =
         FunctionUtils.qualifyFunctionName(msg.getFunctionName(), actualDbName);
+    // When the load is invoked via Scheduler's executor route, the function resources will not be
+    // there in classpath. Processing drop function event tries to unregister the function resulting
+    // in ClassNotFoundException being thrown in such case.
+    // Obtaining FunctionInfo object from FunctionRegistry will add the function's resources URLs to UDFClassLoader.
+    FunctionInfo functionInfo = FunctionRegistry.getFunctionInfo(qualifiedFunctionName);
     DropFunctionDesc desc = new DropFunctionDesc(
             qualifiedFunctionName, false, context.eventOnlyReplicationSpec());
     Task<DDLWork> dropFunctionTask =

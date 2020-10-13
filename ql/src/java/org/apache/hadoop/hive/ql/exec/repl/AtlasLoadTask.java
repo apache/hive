@@ -91,14 +91,25 @@ public class AtlasLoadTask extends Task<AtlasLoadWork> implements Serializable {
     } catch (RuntimeException e) {
       LOG.error("RuntimeException while loading atlas metadata", e);
       setException(e);
-      ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
-                                 getName(), conf);
+      try{
+        ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
+                getName(), conf);
+      } catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+      }
       throw e;
     } catch (Exception e) {
       LOG.error("Exception while loading atlas metadata", e);
       setException(e);
-      return ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
-              getName(), conf);
+      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      try{
+        return ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
+                getName(), conf);
+      }
+      catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+        return errorCode;
+      }
     }
   }
 

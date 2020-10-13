@@ -420,6 +420,8 @@ class SQLDefaultConstraint;
 
 class SQLCheckConstraint;
 
+class SQLAllTableConstraints;
+
 class Type;
 
 class HiveObjectRef;
@@ -557,6 +559,10 @@ class DefaultConstraintsResponse;
 class CheckConstraintsRequest;
 
 class CheckConstraintsResponse;
+
+class AllTableConstraintsRequest;
+
+class AllTableConstraintsResponse;
 
 class DropConstraintRequest;
 
@@ -1647,6 +1653,90 @@ class SQLCheckConstraint : public virtual ::apache::thrift::TBase {
 void swap(SQLCheckConstraint &a, SQLCheckConstraint &b);
 
 std::ostream& operator<<(std::ostream& out, const SQLCheckConstraint& obj);
+
+typedef struct _SQLAllTableConstraints__isset {
+  _SQLAllTableConstraints__isset() : primaryKeys(false), foreignKeys(false), uniqueConstraints(false), notNullConstraints(false), defaultConstraints(false), checkConstraints(false) {}
+  bool primaryKeys :1;
+  bool foreignKeys :1;
+  bool uniqueConstraints :1;
+  bool notNullConstraints :1;
+  bool defaultConstraints :1;
+  bool checkConstraints :1;
+} _SQLAllTableConstraints__isset;
+
+class SQLAllTableConstraints : public virtual ::apache::thrift::TBase {
+ public:
+
+  SQLAllTableConstraints(const SQLAllTableConstraints&);
+  SQLAllTableConstraints& operator=(const SQLAllTableConstraints&);
+  SQLAllTableConstraints() {
+  }
+
+  virtual ~SQLAllTableConstraints() noexcept;
+  std::vector<SQLPrimaryKey>  primaryKeys;
+  std::vector<SQLForeignKey>  foreignKeys;
+  std::vector<SQLUniqueConstraint>  uniqueConstraints;
+  std::vector<SQLNotNullConstraint>  notNullConstraints;
+  std::vector<SQLDefaultConstraint>  defaultConstraints;
+  std::vector<SQLCheckConstraint>  checkConstraints;
+
+  _SQLAllTableConstraints__isset __isset;
+
+  void __set_primaryKeys(const std::vector<SQLPrimaryKey> & val);
+
+  void __set_foreignKeys(const std::vector<SQLForeignKey> & val);
+
+  void __set_uniqueConstraints(const std::vector<SQLUniqueConstraint> & val);
+
+  void __set_notNullConstraints(const std::vector<SQLNotNullConstraint> & val);
+
+  void __set_defaultConstraints(const std::vector<SQLDefaultConstraint> & val);
+
+  void __set_checkConstraints(const std::vector<SQLCheckConstraint> & val);
+
+  bool operator == (const SQLAllTableConstraints & rhs) const
+  {
+    if (__isset.primaryKeys != rhs.__isset.primaryKeys)
+      return false;
+    else if (__isset.primaryKeys && !(primaryKeys == rhs.primaryKeys))
+      return false;
+    if (__isset.foreignKeys != rhs.__isset.foreignKeys)
+      return false;
+    else if (__isset.foreignKeys && !(foreignKeys == rhs.foreignKeys))
+      return false;
+    if (__isset.uniqueConstraints != rhs.__isset.uniqueConstraints)
+      return false;
+    else if (__isset.uniqueConstraints && !(uniqueConstraints == rhs.uniqueConstraints))
+      return false;
+    if (__isset.notNullConstraints != rhs.__isset.notNullConstraints)
+      return false;
+    else if (__isset.notNullConstraints && !(notNullConstraints == rhs.notNullConstraints))
+      return false;
+    if (__isset.defaultConstraints != rhs.__isset.defaultConstraints)
+      return false;
+    else if (__isset.defaultConstraints && !(defaultConstraints == rhs.defaultConstraints))
+      return false;
+    if (__isset.checkConstraints != rhs.__isset.checkConstraints)
+      return false;
+    else if (__isset.checkConstraints && !(checkConstraints == rhs.checkConstraints))
+      return false;
+    return true;
+  }
+  bool operator != (const SQLAllTableConstraints &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const SQLAllTableConstraints & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(SQLAllTableConstraints &a, SQLAllTableConstraints &b);
+
+std::ostream& operator<<(std::ostream& out, const SQLAllTableConstraints& obj);
 
 typedef struct _Type__isset {
   _Type__isset() : name(false), type1(false), type2(false), fields(false) {}
@@ -5718,6 +5808,88 @@ void swap(CheckConstraintsResponse &a, CheckConstraintsResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const CheckConstraintsResponse& obj);
 
+
+class AllTableConstraintsRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  AllTableConstraintsRequest(const AllTableConstraintsRequest&);
+  AllTableConstraintsRequest& operator=(const AllTableConstraintsRequest&);
+  AllTableConstraintsRequest() : dbName(), tblName(), catName() {
+  }
+
+  virtual ~AllTableConstraintsRequest() noexcept;
+  std::string dbName;
+  std::string tblName;
+  std::string catName;
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblName(const std::string& val);
+
+  void __set_catName(const std::string& val);
+
+  bool operator == (const AllTableConstraintsRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(catName == rhs.catName))
+      return false;
+    return true;
+  }
+  bool operator != (const AllTableConstraintsRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AllTableConstraintsRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AllTableConstraintsRequest &a, AllTableConstraintsRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const AllTableConstraintsRequest& obj);
+
+
+class AllTableConstraintsResponse : public virtual ::apache::thrift::TBase {
+ public:
+
+  AllTableConstraintsResponse(const AllTableConstraintsResponse&);
+  AllTableConstraintsResponse& operator=(const AllTableConstraintsResponse&);
+  AllTableConstraintsResponse() {
+  }
+
+  virtual ~AllTableConstraintsResponse() noexcept;
+  SQLAllTableConstraints allTableConstraints;
+
+  void __set_allTableConstraints(const SQLAllTableConstraints& val);
+
+  bool operator == (const AllTableConstraintsResponse & rhs) const
+  {
+    if (!(allTableConstraints == rhs.allTableConstraints))
+      return false;
+    return true;
+  }
+  bool operator != (const AllTableConstraintsResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const AllTableConstraintsResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(AllTableConstraintsResponse &a, AllTableConstraintsResponse &b);
+
+std::ostream& operator<<(std::ostream& out, const AllTableConstraintsResponse& obj);
+
 typedef struct _DropConstraintRequest__isset {
   _DropConstraintRequest__isset() : catName(false) {}
   bool catName :1;
@@ -7853,12 +8025,12 @@ void swap(ReplLastIdInfo &a, ReplLastIdInfo &b);
 std::ostream& operator<<(std::ostream& out, const ReplLastIdInfo& obj);
 
 typedef struct _CommitTxnRequest__isset {
-  _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false), replLastIdInfo(false), exclWriteEnabled(true), keyValue(false) {}
+  _CommitTxnRequest__isset() : replPolicy(false), writeEventInfos(false), replLastIdInfo(false), keyValue(false), exclWriteEnabled(true) {}
   bool replPolicy :1;
   bool writeEventInfos :1;
   bool replLastIdInfo :1;
-  bool exclWriteEnabled :1;
   bool keyValue :1;
+  bool exclWriteEnabled :1;
 } _CommitTxnRequest__isset;
 
 class CommitTxnRequest : public virtual ::apache::thrift::TBase {
@@ -7874,8 +8046,8 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
   std::string replPolicy;
   std::vector<WriteEventInfo>  writeEventInfos;
   ReplLastIdInfo replLastIdInfo;
-  bool exclWriteEnabled;
   CommitTxnKeyValue keyValue;
+  bool exclWriteEnabled;
 
   _CommitTxnRequest__isset __isset;
 
@@ -7887,9 +8059,9 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
 
   void __set_replLastIdInfo(const ReplLastIdInfo& val);
 
-  void __set_exclWriteEnabled(const bool val);
-
   void __set_keyValue(const CommitTxnKeyValue& val);
+
+  void __set_exclWriteEnabled(const bool val);
 
   bool operator == (const CommitTxnRequest & rhs) const
   {
@@ -7907,13 +8079,13 @@ class CommitTxnRequest : public virtual ::apache::thrift::TBase {
       return false;
     else if (__isset.replLastIdInfo && !(replLastIdInfo == rhs.replLastIdInfo))
       return false;
-    if (__isset.exclWriteEnabled != rhs.__isset.exclWriteEnabled)
-      return false;
-    else if (__isset.exclWriteEnabled && !(exclWriteEnabled == rhs.exclWriteEnabled))
-      return false;
     if (__isset.keyValue != rhs.__isset.keyValue)
       return false;
     else if (__isset.keyValue && !(keyValue == rhs.keyValue))
+      return false;
+    if (__isset.exclWriteEnabled != rhs.__isset.exclWriteEnabled)
+      return false;
+    else if (__isset.exclWriteEnabled && !(exclWriteEnabled == rhs.exclWriteEnabled))
       return false;
     return true;
   }
@@ -8781,11 +8953,12 @@ void swap(UnlockRequest &a, UnlockRequest &b);
 std::ostream& operator<<(std::ostream& out, const UnlockRequest& obj);
 
 typedef struct _ShowLocksRequest__isset {
-  _ShowLocksRequest__isset() : dbname(false), tablename(false), partname(false), isExtended(true) {}
+  _ShowLocksRequest__isset() : dbname(false), tablename(false), partname(false), isExtended(true), txnid(false) {}
   bool dbname :1;
   bool tablename :1;
   bool partname :1;
   bool isExtended :1;
+  bool txnid :1;
 } _ShowLocksRequest__isset;
 
 class ShowLocksRequest : public virtual ::apache::thrift::TBase {
@@ -8793,7 +8966,7 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
 
   ShowLocksRequest(const ShowLocksRequest&);
   ShowLocksRequest& operator=(const ShowLocksRequest&);
-  ShowLocksRequest() : dbname(), tablename(), partname(), isExtended(false) {
+  ShowLocksRequest() : dbname(), tablename(), partname(), isExtended(false), txnid(0) {
   }
 
   virtual ~ShowLocksRequest() noexcept;
@@ -8801,6 +8974,7 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
   std::string tablename;
   std::string partname;
   bool isExtended;
+  int64_t txnid;
 
   _ShowLocksRequest__isset __isset;
 
@@ -8811,6 +8985,8 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
   void __set_partname(const std::string& val);
 
   void __set_isExtended(const bool val);
+
+  void __set_txnid(const int64_t val);
 
   bool operator == (const ShowLocksRequest & rhs) const
   {
@@ -8829,6 +9005,10 @@ class ShowLocksRequest : public virtual ::apache::thrift::TBase {
     if (__isset.isExtended != rhs.__isset.isExtended)
       return false;
     else if (__isset.isExtended && !(isExtended == rhs.isExtended))
+      return false;
+    if (__isset.txnid != rhs.__isset.txnid)
+      return false;
+    else if (__isset.txnid && !(txnid == rhs.txnid))
       return false;
     return true;
   }

@@ -46,8 +46,8 @@ public class ColumnStatsUpdateWork implements Serializable, DDLDescWithWriteId {
   private final String colType;
   private final ColumnStatistics colStats;
   private long writeId;
-  boolean isReplication;
-  String dumpDirectory;
+  private boolean isReplication;
+  private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
 
   public ColumnStatsUpdateWork(String partName,

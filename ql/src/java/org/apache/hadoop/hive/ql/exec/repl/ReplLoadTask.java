@@ -85,6 +85,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZ
 public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private final static int ZERO_TASKS = 0;
+  private final String STAGE_NAME = "REPL_LOAD";
 
   @Override
   public String getName() {
@@ -129,13 +130,25 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
     } catch (RuntimeException e) {
       LOG.error("replication failed with run time exception", e);
-      ReplUtils.handleException(true, e, new Path(work.getDumpDirectory()).getParent().toString(),
-              work.getMetricCollector(), "REPL_LOAD", conf);
+      setException(e);
+      try {
+        ReplUtils.handleException(true, e, new Path(work.getDumpDirectory()).getParent().toString(),
+                work.getMetricCollector(), STAGE_NAME, conf);
+      } catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+      }
       throw e;
     } catch (Exception e) {
       setException(e);
-      return ReplUtils.handleException(true, e, new Path(work.getDumpDirectory()).getParent().toString(),
-              work.getMetricCollector(), "REPL_LOAD", conf);
+      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      try {
+        return ReplUtils.handleException(true, e, new Path(work.getDumpDirectory()).getParent().toString(),
+                work.getMetricCollector(), STAGE_NAME, conf);
+      }
+      catch (Exception ex) {
+        LOG.error("Failed to collect replication metrics: ", ex);
+        return errorCode;
+      }
     }
   }
 
@@ -147,7 +160,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
       Path rangerLoadRoot = new Path(new Path(work.dumpDirectory).getParent(), ReplUtils.REPL_RANGER_BASE_DIR);
       LOG.info("Adding Import Ranger Metadata Task from {} ", rangerLoadRoot);
-      RangerLoadWork rangerLoadWork = new RangerLoadWork(rangerLoadRoot, work.getSourceDbName(), work.dbNameToLoadIn,
+      String targetDbName = StringUtils.isEmpty(work.dbNameToLoadIn) ? work.getSourceDbName() : work.dbNameToLoadIn;
+      RangerLoadWork rangerLoadWork = new RangerLoadWork(rangerLoadRoot, work.getSourceDbName(), targetDbName,
           work.getMetricCollector());
       Task<RangerLoadWork> rangerLoadTask = TaskFactory.get(rangerLoadWork, conf);
       if (childTasks == null) {

@@ -42,8 +42,8 @@ public class MoveWork implements Serializable {
   private boolean checkFileFormat;
   private boolean srcLocal;
   private boolean needCleanTarget;
-  boolean isReplication;
-  String dumpDirectory;
+  private boolean isReplication;
+  private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
 
   /**

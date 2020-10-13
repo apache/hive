@@ -57,6 +57,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.common.io.SessionStream;
 import org.apache.hadoop.hive.common.log.ProgressMonitor;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -95,6 +96,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.TempTable;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook;
@@ -134,6 +136,11 @@ public class SessionState implements ISessionAuthState{
   static final String INFO_FILE_NAME = "inuse.info";
 
   /**
+   *
+   */
+  private final ConcurrentHashMap<String, Map<Object, Object>> cache = new ConcurrentHashMap<>();
+
+  /**
    * Concurrent since SessionState is often propagated to workers in thread pools
    */
   private final Map<String, Map<String, Table>> tempTables = new ConcurrentHashMap<>();
@@ -143,7 +150,7 @@ public class SessionState implements ISessionAuthState{
       new ConcurrentHashMap<>();
 
   // Prepared statement plans
-  private final Map<String, BaseSemanticAnalyzer> preparePlanMap = new ConcurrentHashMap<>();
+  private final Map<String, SemanticAnalyzer> preparePlanMap = new ConcurrentHashMap<>();
 
   protected ClassLoader parentLoader;
 
@@ -542,7 +549,7 @@ public class SessionState implements ISessionAuthState{
   }
   public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim() throws HiveException {
     try {
-      return getHdfsEncryptionShim(FileSystem.get(sessionConf));
+      return getHdfsEncryptionShim(FileSystem.get(sessionConf), sessionConf);
     }
     catch(HiveException hiveException) {
       throw hiveException;
@@ -552,20 +559,31 @@ public class SessionState implements ISessionAuthState{
     }
   }
 
-  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim(FileSystem fs) throws HiveException {
-    if (!hdfsEncryptionShims.containsKey(fs.getUri())) {
-      try {
-        if ("hdfs".equals(fs.getUri().getScheme())) {
-          hdfsEncryptionShims.put(fs.getUri(), ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, sessionConf));
-        } else {
-          LOG.info("Could not get hdfsEncryptionShim, it is only applicable to hdfs filesystem.");
-        }
-      } catch (Exception e) {
-        throw new HiveException(e);
-      }
+  public HadoopShims.HdfsEncryptionShim getHdfsEncryptionShim(FileSystem fs, HiveConf conf) throws HiveException {
+
+    if (!"hdfs".equals(fs.getUri().getScheme())) {
+      LOG.warn("Unable to get hdfs encryption shim, because FileSystem URI schema is not hdfs. Returning null. "
+          + "FileSystem URI: " + fs.getUri());
+      return null;
     }
 
-    return hdfsEncryptionShims.get(fs.getUri());
+    if (conf.getBoolVar(ConfVars.HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON)) {
+      if (!hdfsEncryptionShims.containsKey(fs.getUri())) {
+          hdfsEncryptionShims.put(fs.getUri(), getHdfsEncryptionShimInternal(fs));
+      }
+      return hdfsEncryptionShims.get(fs.getUri());
+
+    } else { // skip the cache
+      return getHdfsEncryptionShimInternal(fs);
+    }
+  }
+
+  private HadoopShims.HdfsEncryptionShim getHdfsEncryptionShimInternal(FileSystem fs) throws HiveException {
+    try {
+      return ShimLoader.getHadoopShims().createHdfsEncryptionShim(fs, sessionConf);
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
 
   // SessionState is not available in runtime and Hive.get().getConf() is not safe to call
@@ -1978,7 +1996,7 @@ public class SessionState implements ISessionAuthState{
     return tempTables;
   }
 
-  public Map<String, BaseSemanticAnalyzer> getPreparePlans() {
+  public Map<String, SemanticAnalyzer> getPreparePlans() {
     return preparePlanMap;
   }
 
@@ -2135,6 +2153,33 @@ public class SessionState implements ISessionAuthState{
 
   public String getNewSparkSessionId() {
     return getSessionId() + "_" + Long.toString(this.sparkSessionId.getAndIncrement());
+  }
+
+  /**
+   * Can be called when we start compilation of a query.
+   * @param queryId the unique identifier of the query
+   */
+  public void startScope(String queryId) {
+    Map<Object, Object> existingVal = cache.put(queryId, new HashMap<>());
+    Preconditions.checkState(existingVal == null);
+  }
+
+  /**
+   * Can be called when we end compilation of a query.
+   * @param queryId the unique identifier of the query
+   */
+  public void endScope(String queryId) {
+    Map<Object, Object> existingVal = cache.remove(queryId);
+    Preconditions.checkState(existingVal != null);
+  }
+
+  /**
+   * Retrieves the query cache for the given query.
+   * @param queryId the unique identifier of the query
+   * @return the cache for the query
+   */
+  public Map<Object, Object> getQueryCache(String queryId) {
+    return cache.get(queryId);
   }
 }
 

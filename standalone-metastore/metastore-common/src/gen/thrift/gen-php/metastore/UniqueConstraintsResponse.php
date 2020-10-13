@@ -69,14 +69,14 @@ class UniqueConstraintsResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->uniqueConstraints = array();
-                        $_size326 = 0;
-                        $_etype329 = 0;
-                        $xfer += $input->readListBegin($_etype329, $_size326);
-                        for ($_i330 = 0; $_i330 < $_size326; ++$_i330) {
-                            $elem331 = null;
-                            $elem331 = new \metastore\SQLUniqueConstraint();
-                            $xfer += $elem331->read($input);
-                            $this->uniqueConstraints []= $elem331;
+                        $_size368 = 0;
+                        $_etype371 = 0;
+                        $xfer += $input->readListBegin($_etype371, $_size368);
+                        for ($_i372 = 0; $_i372 < $_size368; ++$_i372) {
+                            $elem373 = null;
+                            $elem373 = new \metastore\SQLUniqueConstraint();
+                            $xfer += $elem373->read($input);
+                            $this->uniqueConstraints []= $elem373;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class UniqueConstraintsResponse
             }
             $xfer += $output->writeFieldBegin('uniqueConstraints', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->uniqueConstraints));
-            foreach ($this->uniqueConstraints as $iter332) {
-                $xfer += $iter332->write($output);
+            foreach ($this->uniqueConstraints as $iter374) {
+                $xfer += $iter374->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

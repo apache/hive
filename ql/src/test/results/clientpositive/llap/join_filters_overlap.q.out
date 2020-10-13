@@ -23,10 +23,10 @@ FROM (SELECT `key`, `value`, `value` = 60 AS `=`, `value` = 50 AS `=3`
 FROM `default`.`a_n4`) AS `t`
 LEFT JOIN (SELECT `key`, CAST(50 AS INTEGER) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 50 AND `key` IS NOT NULL) AS `t1` ON `t`.`key` = `t1`.`key` AND `t`.`=3`
+WHERE `value` = 50 AND `key` IS NOT NULL) AS `t1` ON `t`.`=3` AND `t`.`key` = `t1`.`key`
 LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t`.`key` = `t3`.`key` AND `t`.`=`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t`.`=` AND `t`.`key` = `t3`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -301,10 +301,10 @@ FROM (SELECT `key`, CAST(50 AS INTEGER) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 50 AND `key` IS NOT NULL) AS `t0`
 RIGHT JOIN (SELECT `key`, `value`, `value` = 60 AS `=`, `value` = 50 AS `=3`
-FROM `default`.`a_n4`) AS `t1` ON `t0`.`key` = `t1`.`key` AND `t1`.`=3`
+FROM `default`.`a_n4`) AS `t1` ON `t1`.`=3` AND `t0`.`key` = `t1`.`key`
 LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t1`.`key` = `t3`.`key` AND `t1`.`=`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t1`.`=` AND `t1`.`key` = `t3`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -579,10 +579,10 @@ FROM (SELECT `key`, CAST(50 AS INTEGER) AS `value`
 FROM `default`.`a_n4`
 WHERE `value` = 50 AND `key` IS NOT NULL) AS `t0`
 RIGHT JOIN (SELECT `key`, `value`, `value` = 60 AS `=`, `value` = 50 AS `=3`
-FROM `default`.`a_n4`) AS `t1` ON `t0`.`key` = `t1`.`key` AND `t1`.`=3`
+FROM `default`.`a_n4`) AS `t1` ON `t1`.`=3` AND `t0`.`key` = `t1`.`key`
 LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t1`.`key` = `t3`.`key` AND `t1`.`=`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t1`.`=` AND `t1`.`key` = `t3`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -856,13 +856,13 @@ OPTIMIZED SQL: SELECT `t`.`key`, `t`.`value`, `t0`.`key` AS `key1`, `t0`.`value`
 FROM (SELECT `key`, `value`, `value` = 40 AS `=`, `value` = 50 AS `=3`
 FROM `default`.`a_n4`) AS `t`
 FULL JOIN (SELECT `key`, `value`, `value` = 60 AS `=`, `value` = 50 AS `=3`
-FROM `default`.`a_n4`) AS `t0` ON `t`.`key` = `t0`.`key` AND `t`.`=3` AND `t0`.`=3`
+FROM `default`.`a_n4`) AS `t0` ON `t`.`=3` AND `t0`.`=3` AND `t`.`key` = `t0`.`key`
 LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 60 AND `key` IS NOT NULL) AS `t2` ON `t0`.`key` = `t2`.`key` AND `t0`.`=`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t2` ON `t0`.`=` AND `t0`.`key` = `t2`.`key`
 LEFT JOIN (SELECT `key`, CAST(40 AS INTEGER) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 40 AND `key` IS NOT NULL) AS `t4` ON `t`.`key` = `t4`.`key` AND `t`.`=`
+WHERE `value` = 40 AND `key` IS NOT NULL) AS `t4` ON `t`.`=` AND `t`.`key` = `t4`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
@@ -1173,13 +1173,13 @@ FROM (SELECT `key`, `value`, `value` = 40 AS `=`, `value` = 60 AS `=3`, `value` 
 FROM `default`.`a_n4`) AS `t`
 LEFT JOIN (SELECT `key`, CAST(50 AS INTEGER) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 50 AND `key` IS NOT NULL) AS `t1` ON `t`.`key` = `t1`.`key` AND `t`.`=4`
+WHERE `value` = 50 AND `key` IS NOT NULL) AS `t1` ON `t`.`=4` AND `t`.`key` = `t1`.`key`
 LEFT JOIN (SELECT `key`, CAST(60 AS INTEGER) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t`.`key` = `t3`.`key` AND `t`.`=3`
+WHERE `value` = 60 AND `key` IS NOT NULL) AS `t3` ON `t`.`=3` AND `t`.`key` = `t3`.`key`
 LEFT JOIN (SELECT `key`, CAST(40 AS INTEGER) AS `value`
 FROM `default`.`a_n4`
-WHERE `value` = 40 AND `key` IS NOT NULL) AS `t5` ON `t`.`key` = `t5`.`key` AND `t`.`=`
+WHERE `value` = 40 AND `key` IS NOT NULL) AS `t5` ON `t`.`=` AND `t`.`key` = `t5`.`key`
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1

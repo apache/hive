@@ -137,14 +137,24 @@ public class RangerDumpTask extends Task<RangerDumpWork> implements Serializable
     } catch (RuntimeException e) {
       LOG.error("RuntimeException during Ranger dump", e);
       setException(e);
-      ReplUtils.handleException(true, e, work.getCurrentDumpPath().getParent().toString(), work.getMetricCollector(),
-              getName(), conf);
+      try{
+        ReplUtils.handleException(true, e, work.getCurrentDumpPath().getParent().toString(),
+                work.getMetricCollector(), getName(), conf); 
+      } catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+      }
       throw e;
     } catch (Exception e) {
-      LOG.error("failed", e);
+      LOG.error("Ranger Dump Failed: ", e);
       setException(e);
-      return ReplUtils.handleException(true, e, work.getCurrentDumpPath().getParent().toString(), work.getMetricCollector(),
-              getName(), conf);
+      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      try{
+        return ReplUtils.handleException(true, e, work.getCurrentDumpPath().getParent().toString(),
+                work.getMetricCollector(), getName(), conf);
+      } catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+        return errorCode;        
+      }
     }
   }
 

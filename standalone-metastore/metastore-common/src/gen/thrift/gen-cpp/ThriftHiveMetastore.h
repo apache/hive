@@ -138,6 +138,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_not_null_constraints(NotNullConstraintsResponse& _return, const NotNullConstraintsRequest& request) = 0;
   virtual void get_default_constraints(DefaultConstraintsResponse& _return, const DefaultConstraintsRequest& request) = 0;
   virtual void get_check_constraints(CheckConstraintsResponse& _return, const CheckConstraintsRequest& request) = 0;
+  virtual void get_all_table_constraints(AllTableConstraintsResponse& _return, const AllTableConstraintsRequest& request) = 0;
   virtual bool update_table_column_statistics(const ColumnStatistics& stats_obj) = 0;
   virtual bool update_partition_column_statistics(const ColumnStatistics& stats_obj) = 0;
   virtual void update_table_column_statistics_req(SetPartitionsStatsResponse& _return, const SetPartitionsStatsRequest& req) = 0;
@@ -189,6 +190,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void abort_txn(const AbortTxnRequest& rqst) = 0;
   virtual void abort_txns(const AbortTxnsRequest& rqst) = 0;
   virtual void commit_txn(const CommitTxnRequest& rqst) = 0;
+  virtual int64_t get_latest_txn_in_conflict(const int64_t txnId) = 0;
   virtual void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst) = 0;
   virtual void get_valid_write_ids(GetValidWriteIdsResponse& _return, const GetValidWriteIdsRequest& rqst) = 0;
   virtual void allocate_table_write_ids(AllocateTableWriteIdsResponse& _return, const AllocateTableWriteIdsRequest& rqst) = 0;
@@ -653,6 +655,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void get_check_constraints(CheckConstraintsResponse& /* _return */, const CheckConstraintsRequest& /* request */) {
     return;
   }
+  void get_all_table_constraints(AllTableConstraintsResponse& /* _return */, const AllTableConstraintsRequest& /* request */) {
+    return;
+  }
   bool update_table_column_statistics(const ColumnStatistics& /* stats_obj */) {
     bool _return = false;
     return _return;
@@ -821,6 +826,10 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   }
   void commit_txn(const CommitTxnRequest& /* rqst */) {
     return;
+  }
+  int64_t get_latest_txn_in_conflict(const int64_t /* txnId */) {
+    int64_t _return = 0;
+    return _return;
   }
   void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& /* rqst */) {
     return;
@@ -15736,6 +15745,126 @@ class ThriftHiveMetastore_get_check_constraints_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_get_all_table_constraints_args__isset {
+  _ThriftHiveMetastore_get_all_table_constraints_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_get_all_table_constraints_args__isset;
+
+class ThriftHiveMetastore_get_all_table_constraints_args {
+ public:
+
+  ThriftHiveMetastore_get_all_table_constraints_args(const ThriftHiveMetastore_get_all_table_constraints_args&);
+  ThriftHiveMetastore_get_all_table_constraints_args& operator=(const ThriftHiveMetastore_get_all_table_constraints_args&);
+  ThriftHiveMetastore_get_all_table_constraints_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_all_table_constraints_args() noexcept;
+  AllTableConstraintsRequest request;
+
+  _ThriftHiveMetastore_get_all_table_constraints_args__isset __isset;
+
+  void __set_request(const AllTableConstraintsRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_all_table_constraints_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_all_table_constraints_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_all_table_constraints_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_all_table_constraints_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_all_table_constraints_pargs() noexcept;
+  const AllTableConstraintsRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_table_constraints_result__isset {
+  _ThriftHiveMetastore_get_all_table_constraints_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_all_table_constraints_result__isset;
+
+class ThriftHiveMetastore_get_all_table_constraints_result {
+ public:
+
+  ThriftHiveMetastore_get_all_table_constraints_result(const ThriftHiveMetastore_get_all_table_constraints_result&);
+  ThriftHiveMetastore_get_all_table_constraints_result& operator=(const ThriftHiveMetastore_get_all_table_constraints_result&);
+  ThriftHiveMetastore_get_all_table_constraints_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_all_table_constraints_result() noexcept;
+  AllTableConstraintsResponse success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_all_table_constraints_result__isset __isset;
+
+  void __set_success(const AllTableConstraintsResponse& val);
+
+  void __set_o1(const MetaException& val);
+
+  void __set_o2(const NoSuchObjectException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_all_table_constraints_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_all_table_constraints_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_all_table_constraints_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_table_constraints_presult__isset {
+  _ThriftHiveMetastore_get_all_table_constraints_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_all_table_constraints_presult__isset;
+
+class ThriftHiveMetastore_get_all_table_constraints_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_all_table_constraints_presult() noexcept;
+  AllTableConstraintsResponse* success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_all_table_constraints_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_update_table_column_statistics_args__isset {
   _ThriftHiveMetastore_update_table_column_statistics_args__isset() : stats_obj(false) {}
   bool stats_obj :1;
@@ -21784,6 +21913,118 @@ class ThriftHiveMetastore_commit_txn_presult {
   TxnAbortedException o2;
 
   _ThriftHiveMetastore_commit_txn_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_latest_txn_in_conflict_args__isset {
+  _ThriftHiveMetastore_get_latest_txn_in_conflict_args__isset() : txnId(false) {}
+  bool txnId :1;
+} _ThriftHiveMetastore_get_latest_txn_in_conflict_args__isset;
+
+class ThriftHiveMetastore_get_latest_txn_in_conflict_args {
+ public:
+
+  ThriftHiveMetastore_get_latest_txn_in_conflict_args(const ThriftHiveMetastore_get_latest_txn_in_conflict_args&);
+  ThriftHiveMetastore_get_latest_txn_in_conflict_args& operator=(const ThriftHiveMetastore_get_latest_txn_in_conflict_args&);
+  ThriftHiveMetastore_get_latest_txn_in_conflict_args() : txnId(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_get_latest_txn_in_conflict_args() noexcept;
+  int64_t txnId;
+
+  _ThriftHiveMetastore_get_latest_txn_in_conflict_args__isset __isset;
+
+  void __set_txnId(const int64_t val);
+
+  bool operator == (const ThriftHiveMetastore_get_latest_txn_in_conflict_args & rhs) const
+  {
+    if (!(txnId == rhs.txnId))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_latest_txn_in_conflict_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_latest_txn_in_conflict_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_latest_txn_in_conflict_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_latest_txn_in_conflict_pargs() noexcept;
+  const int64_t* txnId;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_latest_txn_in_conflict_result__isset {
+  _ThriftHiveMetastore_get_latest_txn_in_conflict_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_latest_txn_in_conflict_result__isset;
+
+class ThriftHiveMetastore_get_latest_txn_in_conflict_result {
+ public:
+
+  ThriftHiveMetastore_get_latest_txn_in_conflict_result(const ThriftHiveMetastore_get_latest_txn_in_conflict_result&);
+  ThriftHiveMetastore_get_latest_txn_in_conflict_result& operator=(const ThriftHiveMetastore_get_latest_txn_in_conflict_result&);
+  ThriftHiveMetastore_get_latest_txn_in_conflict_result() : success(0) {
+  }
+
+  virtual ~ThriftHiveMetastore_get_latest_txn_in_conflict_result() noexcept;
+  int64_t success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_latest_txn_in_conflict_result__isset __isset;
+
+  void __set_success(const int64_t val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_latest_txn_in_conflict_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_latest_txn_in_conflict_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_latest_txn_in_conflict_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_latest_txn_in_conflict_presult__isset {
+  _ThriftHiveMetastore_get_latest_txn_in_conflict_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_latest_txn_in_conflict_presult__isset;
+
+class ThriftHiveMetastore_get_latest_txn_in_conflict_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_latest_txn_in_conflict_presult() noexcept;
+  int64_t* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_latest_txn_in_conflict_presult__isset __isset;
 
   uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
 
@@ -31077,6 +31318,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_check_constraints(CheckConstraintsResponse& _return, const CheckConstraintsRequest& request);
   void send_get_check_constraints(const CheckConstraintsRequest& request);
   void recv_get_check_constraints(CheckConstraintsResponse& _return);
+  void get_all_table_constraints(AllTableConstraintsResponse& _return, const AllTableConstraintsRequest& request);
+  void send_get_all_table_constraints(const AllTableConstraintsRequest& request);
+  void recv_get_all_table_constraints(AllTableConstraintsResponse& _return);
   bool update_table_column_statistics(const ColumnStatistics& stats_obj);
   void send_update_table_column_statistics(const ColumnStatistics& stats_obj);
   bool recv_update_table_column_statistics();
@@ -31230,6 +31474,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void commit_txn(const CommitTxnRequest& rqst);
   void send_commit_txn(const CommitTxnRequest& rqst);
   void recv_commit_txn();
+  int64_t get_latest_txn_in_conflict(const int64_t txnId);
+  void send_get_latest_txn_in_conflict(const int64_t txnId);
+  int64_t recv_get_latest_txn_in_conflict();
   void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst);
   void send_repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst);
   void recv_repl_tbl_writeid_state();
@@ -31592,6 +31839,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_not_null_constraints(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_default_constraints(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_check_constraints(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_all_table_constraints(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_table_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_partition_column_statistics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_update_table_column_statistics_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -31643,6 +31891,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_abort_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_abort_txns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_commit_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_latest_txn_in_conflict(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_repl_tbl_writeid_state(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_valid_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_allocate_table_write_ids(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -31841,6 +32090,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_not_null_constraints"] = &ThriftHiveMetastoreProcessor::process_get_not_null_constraints;
     processMap_["get_default_constraints"] = &ThriftHiveMetastoreProcessor::process_get_default_constraints;
     processMap_["get_check_constraints"] = &ThriftHiveMetastoreProcessor::process_get_check_constraints;
+    processMap_["get_all_table_constraints"] = &ThriftHiveMetastoreProcessor::process_get_all_table_constraints;
     processMap_["update_table_column_statistics"] = &ThriftHiveMetastoreProcessor::process_update_table_column_statistics;
     processMap_["update_partition_column_statistics"] = &ThriftHiveMetastoreProcessor::process_update_partition_column_statistics;
     processMap_["update_table_column_statistics_req"] = &ThriftHiveMetastoreProcessor::process_update_table_column_statistics_req;
@@ -31892,6 +32142,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["abort_txn"] = &ThriftHiveMetastoreProcessor::process_abort_txn;
     processMap_["abort_txns"] = &ThriftHiveMetastoreProcessor::process_abort_txns;
     processMap_["commit_txn"] = &ThriftHiveMetastoreProcessor::process_commit_txn;
+    processMap_["get_latest_txn_in_conflict"] = &ThriftHiveMetastoreProcessor::process_get_latest_txn_in_conflict;
     processMap_["repl_tbl_writeid_state"] = &ThriftHiveMetastoreProcessor::process_repl_tbl_writeid_state;
     processMap_["get_valid_write_ids"] = &ThriftHiveMetastoreProcessor::process_get_valid_write_ids;
     processMap_["allocate_table_write_ids"] = &ThriftHiveMetastoreProcessor::process_allocate_table_write_ids;
@@ -33112,6 +33363,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void get_all_table_constraints(AllTableConstraintsResponse& _return, const AllTableConstraintsRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_all_table_constraints(_return, request);
+    }
+    ifaces_[i]->get_all_table_constraints(_return, request);
+    return;
+  }
+
   bool update_table_column_statistics(const ColumnStatistics& stats_obj) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -33596,6 +33857,15 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
       ifaces_[i]->commit_txn(rqst);
     }
     ifaces_[i]->commit_txn(rqst);
+  }
+
+  int64_t get_latest_txn_in_conflict(const int64_t txnId) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_latest_txn_in_conflict(txnId);
+    }
+    return ifaces_[i]->get_latest_txn_in_conflict(txnId);
   }
 
   void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst) {
@@ -34723,6 +34993,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_check_constraints(CheckConstraintsResponse& _return, const CheckConstraintsRequest& request);
   int32_t send_get_check_constraints(const CheckConstraintsRequest& request);
   void recv_get_check_constraints(CheckConstraintsResponse& _return, const int32_t seqid);
+  void get_all_table_constraints(AllTableConstraintsResponse& _return, const AllTableConstraintsRequest& request);
+  int32_t send_get_all_table_constraints(const AllTableConstraintsRequest& request);
+  void recv_get_all_table_constraints(AllTableConstraintsResponse& _return, const int32_t seqid);
   bool update_table_column_statistics(const ColumnStatistics& stats_obj);
   int32_t send_update_table_column_statistics(const ColumnStatistics& stats_obj);
   bool recv_update_table_column_statistics(const int32_t seqid);
@@ -34876,6 +35149,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void commit_txn(const CommitTxnRequest& rqst);
   int32_t send_commit_txn(const CommitTxnRequest& rqst);
   void recv_commit_txn(const int32_t seqid);
+  int64_t get_latest_txn_in_conflict(const int64_t txnId);
+  int32_t send_get_latest_txn_in_conflict(const int64_t txnId);
+  int64_t recv_get_latest_txn_in_conflict(const int32_t seqid);
   void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst);
   int32_t send_repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst);
   void recv_repl_tbl_writeid_state(const int32_t seqid);

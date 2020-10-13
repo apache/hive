@@ -595,6 +595,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_check_constraints\n");
   }
 
+  void get_all_table_constraints(AllTableConstraintsResponse& _return, const AllTableConstraintsRequest& request) {
+    // Your implementation goes here
+    printf("get_all_table_constraints\n");
+  }
+
   bool update_table_column_statistics(const ColumnStatistics& stats_obj) {
     // Your implementation goes here
     printf("update_table_column_statistics\n");
@@ -848,6 +853,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void commit_txn(const CommitTxnRequest& rqst) {
     // Your implementation goes here
     printf("commit_txn\n");
+  }
+
+  int64_t get_latest_txn_in_conflict(const int64_t txnId) {
+    // Your implementation goes here
+    printf("get_latest_txn_in_conflict\n");
   }
 
   void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst) {

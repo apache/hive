@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.log.AtlasDumpLogger;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.yarn.webapp.hamlet2.Hamlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,14 +108,24 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
     } catch (RuntimeException e) {
       LOG.error("RuntimeException while dumping atlas metadata", e);
       setException(e);
-      ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
-              getName(), conf);
+      try{
+        ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
+                getName(), conf);
+      } catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+      }
       throw e;
     } catch (Exception e) {
       LOG.error("Exception while dumping atlas metadata", e);
       setException(e);
-      return ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
-              getName(), conf);
+      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      try{
+        return ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
+                getName(), conf);
+      } catch (Exception ex) {
+        LOG.error("Failed to collect replication metrics: ", ex);
+        return errorCode;
+      }
     }
   }
 

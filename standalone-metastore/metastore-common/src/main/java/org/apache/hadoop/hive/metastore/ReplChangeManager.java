@@ -287,9 +287,6 @@ public class ReplChangeManager {
       // Ignore if a file with same content already exist in cmroot
       // We might want to setXAttr for the new location in the future
       if (success) {
-        // set the file owner to hive (or the id metastore run as)
-        fs.setOwner(cmPath, msUser, msGroup);
-
         // tag the original file name so we know where the file comes from
         // Note we currently only track the last known trace as
         // xattr has limited capacity. We shall revisit and store all original
@@ -411,11 +408,18 @@ public class ReplChangeManager {
     if (instance == null) {
       throw new IllegalStateException("Uninitialized ReplChangeManager instance.");
     }
+    Path cmRootPath = getCmRoot(new Path(fileUriStr));
+    String cmRoot = null;
+    if (cmRootPath != null) {
+      cmRoot = FileUtils.makeQualified(cmRootPath, conf).toString();
+    }
+    return ReplChangeManager.encodeFileUri(fileUriStr, fileChecksum, cmRoot, encodedSubDir);
+  }
+
+  public static String encodeFileUri(String fileUriStr, String fileChecksum, String cmRoot, String encodedSubDir) {
     String encodedUri = fileUriStr;
-    Path cmRoot = getCmRoot(new Path(fileUriStr));
     if ((fileChecksum != null) && (cmRoot != null)) {
-      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum
-              + URI_FRAGMENT_SEPARATOR + FileUtils.makeQualified(cmRoot, conf);
+      encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + fileChecksum + URI_FRAGMENT_SEPARATOR + cmRoot;
     } else {
       encodedUri = encodedUri + URI_FRAGMENT_SEPARATOR + URI_FRAGMENT_SEPARATOR;
     }

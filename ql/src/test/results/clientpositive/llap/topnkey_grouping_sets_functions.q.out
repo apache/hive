@@ -78,6 +78,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(c)
                       keys: a (type: int), b (type: int), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.15384614
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -206,6 +207,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: min(c)
                       keys: a (type: int), b (type: int), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.15384614
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -334,6 +336,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: max(c)
                       keys: a (type: int), b (type: int), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.15384614
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3

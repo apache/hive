@@ -72,6 +72,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.rel.RelNode;
 import org.apache.calcite.rel.core.Project;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -111,6 +112,7 @@ import org.apache.hadoop.hive.metastore.SynchronizedMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
+import org.apache.hadoop.hive.metastore.api.AllTableConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
@@ -156,6 +158,7 @@ import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
+import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -2695,7 +2698,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     Set<Path> validPartitions = new HashSet<Path>();
     try {
       FileSystem fs = loadPath.getFileSystem(conf);
-      if (!isMmTable || !isDirectInsert) {
+      if (!isMmTable && !isDirectInsert) {
         List<FileStatus> leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP, fs);
         // Check for empty partitions
         for (FileStatus s : leafStatus) {
@@ -4646,8 +4649,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return false;
     }
     //Check if different encryption zones
-    HadoopShims.HdfsEncryptionShim srcHdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(srcFs);
-    HadoopShims.HdfsEncryptionShim destHdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(destFs);
+    HadoopShims.HdfsEncryptionShim srcHdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(srcFs, conf);
+    HadoopShims.HdfsEncryptionShim destHdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(destFs, conf);
     try {
       return srcHdfsEncryptionShim != null
           && destHdfsEncryptionShim != null
@@ -5533,13 +5536,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public ImmutableMap<String, Long> dumpAndClearMetaCallTiming(String phase) {
-    boolean phaseInfoLogged = false;
-    if (LOG.isDebugEnabled()) {
-      phaseInfoLogged = logDumpPhase(phase);
-      LOG.debug("Total time spent in each metastore function (ms): " + metaCallTimeMap);
-    }
-
     if (LOG.isInfoEnabled()) {
+      boolean phaseInfoLogged = logDumpPhase(phase);
+      LOG.info("Total time spent in each metastore function (ms): " + metaCallTimeMap);
       // print information about calls that took longer time at INFO level
       for (Entry<String, Long> callTime : metaCallTimeMap.entrySet()) {
         // dump information if call took more than 1 sec (1000ms)
@@ -5673,8 +5672,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
   public List<SQLCheckConstraint> getCheckConstraintList(String dbName, String tblName) throws HiveException, NoSuchObjectException {
     try {
-      return getMSC().getCheckConstraints(new CheckConstraintsRequest(getDefaultCatalog(conf),
-          dbName, tblName));
+      return getMSC().getCheckConstraints(new CheckConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
     } catch (NoSuchObjectException e) {
       throw e;
     } catch (Exception e) {
@@ -5682,161 +5680,67 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  /**
-   * Get all primary key columns associated with the table.
-   *
-   * @param dbName Database Name
-   * @param tblName Table Name
-   * @return Primary Key associated with the table.
-   * @throws HiveException
-   */
-  public PrimaryKeyInfo getPrimaryKeys(String dbName, String tblName) throws HiveException {
-    return getPrimaryKeys(dbName, tblName, false);
-  }
-
-  /**
-   * Get primary key columns associated with the table that are available for optimization.
-   *
-   * @param dbName Database Name
-   * @param tblName Table Name
-   * @return Primary Key associated with the table.
-   * @throws HiveException
-   */
-  public PrimaryKeyInfo getReliablePrimaryKeys(String dbName, String tblName) throws HiveException {
-    return getPrimaryKeys(dbName, tblName, true);
-  }
-
-  private PrimaryKeyInfo getPrimaryKeys(String dbName, String tblName, boolean onlyReliable)
-      throws HiveException {
-    PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_PK);
+  public SQLAllTableConstraints getTableConstraints(String dbName, String tblName)
+      throws HiveException, NoSuchObjectException {
     try {
-      List<SQLPrimaryKey> primaryKeys = getMSC().getPrimaryKeys(new PrimaryKeysRequest(dbName, tblName));
-      if (onlyReliable && primaryKeys != null && !primaryKeys.isEmpty()) {
-        primaryKeys = primaryKeys.stream()
-          .filter(pk -> pk.isRely_cstr())
-          .collect(Collectors.toList());
-      }
-
-      return new PrimaryKeyInfo(primaryKeys, tblName, dbName);
+      return getMSC().getAllTableConstraints(new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf)));
+    } catch (NoSuchObjectException e) {
+      throw e;
     } catch (Exception e) {
       throw new HiveException(e);
-    } finally {
-      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_PK, "HS2-cache");
     }
   }
 
-  /**
-   * Get all foreign keys associated with the table.
-   *
-   * @param dbName Database Name
-   * @param tblName Table Name
-   * @return Foreign keys associated with the table.
-   * @throws HiveException
-   */
-  public ForeignKeyInfo getForeignKeys(String dbName, String tblName) throws HiveException {
-    return getForeignKeys(dbName, tblName, false);
-  }
-
-  /**
-   * Get foreign keys associated with the table that are available for optimization.
-   *
-   * @param dbName Database Name
-   * @param tblName Table Name
-   * @return Foreign keys associated with the table.
-   * @throws HiveException
-   */
-  public ForeignKeyInfo getReliableForeignKeys(String dbName, String tblName) throws HiveException {
-    return getForeignKeys(dbName, tblName, true);
-  }
-
-  private ForeignKeyInfo getForeignKeys(String dbName, String tblName, boolean onlyReliable)
-      throws HiveException {
+  public TableConstraintsInfo getTableConstraints(String dbName, String tblName, boolean fetchReliable,
+      boolean fetchEnabled) throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_FK);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_CONSTRAINTS);
     try {
-      List<SQLForeignKey> foreignKeys = getMSC().getForeignKeys(new ForeignKeysRequest(null, null, dbName, tblName));
-      if (onlyReliable && foreignKeys != null && !foreignKeys.isEmpty()) {
-        foreignKeys = foreignKeys.stream()
-          .filter(fk -> fk.isRely_cstr())
-          .collect(Collectors.toList());
+      SQLAllTableConstraints tableConstraints =
+          getMSC().getAllTableConstraints(new AllTableConstraintsRequest(dbName, tblName, getDefaultCatalog(conf)));
+      if (fetchReliable && tableConstraints != null) {
+        if (CollectionUtils.isNotEmpty(tableConstraints.getPrimaryKeys())) {
+          tableConstraints.setPrimaryKeys(
+              tableConstraints.getPrimaryKeys().stream().filter(primaryKey -> primaryKey.isRely_cstr())
+                  .collect(Collectors.toList()));
+        }
+        if (CollectionUtils.isNotEmpty(tableConstraints.getForeignKeys())) {
+          tableConstraints.setForeignKeys(
+              tableConstraints.getForeignKeys().stream().filter(foreignKey -> foreignKey.isRely_cstr())
+                  .collect(Collectors.toList()));
+        }
+        if (CollectionUtils.isNotEmpty(tableConstraints.getUniqueConstraints())) {
+          tableConstraints.setUniqueConstraints(tableConstraints.getUniqueConstraints().stream()
+              .filter(uniqueConstraint -> uniqueConstraint.isRely_cstr()).collect(Collectors.toList()));
+        }
+        if (CollectionUtils.isNotEmpty(tableConstraints.getNotNullConstraints())) {
+          tableConstraints.setNotNullConstraints(tableConstraints.getNotNullConstraints().stream()
+              .filter(notNullConstraint -> notNullConstraint.isRely_cstr()).collect(Collectors.toList()));
+        }
       }
 
-      return new ForeignKeyInfo(foreignKeys, tblName, dbName);
+      if (fetchEnabled && tableConstraints != null) {
+        if (CollectionUtils.isNotEmpty(tableConstraints.getCheckConstraints())) {
+          tableConstraints.setCheckConstraints(
+              tableConstraints.getCheckConstraints().stream().filter(checkConstraint -> checkConstraint.isEnable_cstr())
+                  .collect(Collectors.toList()));
+        }
+        if (CollectionUtils.isNotEmpty(tableConstraints.getDefaultConstraints())) {
+          tableConstraints.setDefaultConstraints(tableConstraints.getDefaultConstraints().stream()
+              .filter(defaultConstraint -> defaultConstraint.isEnable_cstr()).collect(Collectors.toList()));
+        }
+      }
+      return new TableConstraintsInfo(new PrimaryKeyInfo(tableConstraints.getPrimaryKeys(), tblName, dbName),
+          new ForeignKeyInfo(tableConstraints.getForeignKeys(), tblName, dbName),
+          new UniqueConstraint(tableConstraints.getUniqueConstraints(), tblName, dbName),
+          new DefaultConstraint(tableConstraints.getDefaultConstraints(), tblName, dbName),
+          new CheckConstraint(tableConstraints.getCheckConstraints()),
+          new NotNullConstraint(tableConstraints.getNotNullConstraints(), tblName, dbName));
     } catch (Exception e) {
       throw new HiveException(e);
     } finally {
-      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_FK, "HS2-cache");
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_CONSTRAINTS, "HS2-cache");
     }
-  }
-
-  /**
-   * Get all unique constraints associated with the table.
-   *
-   * @param dbName Database Name
-   * @param tblName Table Name
-   * @return Unique constraints associated with the table.
-   * @throws HiveException
-   */
-  public UniqueConstraint getUniqueConstraints(String dbName, String tblName) throws HiveException {
-    return getUniqueConstraints(dbName, tblName, false);
-  }
-
-  /**
-   * Get unique constraints associated with the table that are available for optimization.
-   *
-   * @param dbName Database Name
-   * @param tblName Table Name
-   * @return Unique constraints associated with the table.
-   * @throws HiveException
-   */
-  public UniqueConstraint getReliableUniqueConstraints(String dbName, String tblName) throws HiveException {
-    return getUniqueConstraints(dbName, tblName, true);
-  }
-
-  private UniqueConstraint getUniqueConstraints(String dbName, String tblName, boolean onlyReliable)
-      throws HiveException {
-    PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_UNIQ_CONSTRAINT);
-    try {
-      List<SQLUniqueConstraint> uniqueConstraints = getMSC().getUniqueConstraints(
-              new UniqueConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
-      if (onlyReliable && uniqueConstraints != null && !uniqueConstraints.isEmpty()) {
-        uniqueConstraints = uniqueConstraints.stream()
-          .filter(uk -> uk.isRely_cstr())
-          .collect(Collectors.toList());
-      }
-
-      return new UniqueConstraint(uniqueConstraints, tblName, dbName);
-    } catch (Exception e) {
-      throw new HiveException(e);
-    } finally {
-      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_UNIQ_CONSTRAINT, "HS2-cache");
-    }
-  }
-
-  /**
-   * Get all not null constraints associated with the table.
-   *
-   * @param dbName Database Name
-   * @param tblName Table Name
-   * @return Not null constraints associated with the table.
-   * @throws HiveException
-   */
-  public NotNullConstraint getNotNullConstraints(String dbName, String tblName) throws HiveException {
-    return getNotNullConstraints(dbName, tblName, false);
-  }
-
-  /**
-   * Get not null constraints associated with the table that are available for optimization.
-   *
-   * @param dbName Database Name
-   * @param tblName Table Name
-   * @return Not null constraints associated with the table.
-   * @throws HiveException
-   */
-  public NotNullConstraint getReliableNotNullConstraints(String dbName, String tblName) throws HiveException {
-    return getNotNullConstraints(dbName, tblName, true);
   }
 
   /**
@@ -5910,56 +5814,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  private NotNullConstraint getNotNullConstraints(String dbName, String tblName, boolean onlyReliable)
-      throws HiveException {
-    PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_NOT_NULL_CONSTRAINT);
-    try {
-      List<SQLNotNullConstraint> notNullConstraints = getMSC().getNotNullConstraints(
-              new NotNullConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
-      if (onlyReliable && notNullConstraints != null && !notNullConstraints.isEmpty()) {
-        notNullConstraints = notNullConstraints.stream()
-          .filter(nnc -> nnc.isRely_cstr())
-          .collect(Collectors.toList());
-      }
-
-      return new NotNullConstraint(notNullConstraints, tblName, dbName);
-    } catch (Exception e) {
-      throw new HiveException(e);
-    } finally {
-      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_NOT_NULL_CONSTRAINT, "HS2-cache");
-    }
-  }
-
-  public DefaultConstraint getDefaultConstraints(String dbName, String tblName)
-      throws HiveException {
-    try {
-      List<SQLDefaultConstraint> defaultConstraints = getMSC().getDefaultConstraints(
-          new DefaultConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
-      if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
-        defaultConstraints = defaultConstraints.stream()
-            .collect(Collectors.toList());
-      }
-      return new DefaultConstraint(defaultConstraints, tblName, dbName);
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
-  }
-
-  public CheckConstraint getCheckConstraints(String dbName, String tblName)
-      throws HiveException {
-    try {
-      List<SQLCheckConstraint> checkConstraints = getMSC().getCheckConstraints(
-          new CheckConstraintsRequest(getDefaultCatalog(conf), dbName, tblName));
-      if (checkConstraints != null && !checkConstraints.isEmpty()) {
-        checkConstraints = checkConstraints.stream()
-            .collect(Collectors.toList());
-      }
-      return new CheckConstraint(checkConstraints);
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
-  }
 
   public void addPrimaryKey(List<SQLPrimaryKey> primaryKeyCols)
     throws HiveException, NoSuchObjectException {

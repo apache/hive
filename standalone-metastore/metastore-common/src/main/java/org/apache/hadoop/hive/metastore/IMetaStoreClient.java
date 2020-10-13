@@ -3401,7 +3401,9 @@ public interface IMetaStoreClient {
    */
   void insertTable(Table table, boolean overwrite) throws MetaException;
 
-    /**
+  long getLatestTxnInConflict(long txnId) throws TException;
+
+  /**
    * A filter provided by the client that determines if a given notification event should be
    * returned.
    */
@@ -3630,6 +3632,17 @@ public interface IMetaStoreClient {
 
   List<SQLCheckConstraint> getCheckConstraints(CheckConstraintsRequest request) throws MetaException,
       NoSuchObjectException, TException;
+
+  /**
+   * Get all constraints of given table
+   * @param request Request info
+   * @return all constraints of this table
+   * @throws MetaException
+   * @throws NoSuchObjectException
+   * @throws TException
+   */
+  SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest request)
+      throws MetaException, NoSuchObjectException, TException;
 
   void createTableWithConstraints(
     org.apache.hadoop.hive.metastore.api.Table tTbl,
@@ -4087,4 +4100,5 @@ public interface IMetaStoreClient {
 
   ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
                                                 replicationMetricsRequest) throws MetaException, TException;
+
 }

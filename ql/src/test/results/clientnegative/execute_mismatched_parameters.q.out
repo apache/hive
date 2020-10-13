@@ -1,5 +1,1 @@
-PREHOOK: query: prepare query1 from select count(*) from src where key > ? and value < ?
-PREHOOK: type: EXECUTE QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask
+FAILED: IllegalArgumentException Paramter index not found

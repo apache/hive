@@ -471,7 +471,14 @@ public class ConvertAstToSearchArg {
     } else if (op == GenericUDFIn.class) {
       createLeaf(PredicateLeaf.Operator.IN, expr, 0);
     } else if (op == GenericUDFBetween.class) {
-      createLeaf(PredicateLeaf.Operator.BETWEEN, expr, 1);
+      // Start with NOT operator when the first child of GenericUDFBetween operator is set to TRUE
+      if (Boolean.TRUE.equals(((ExprNodeConstantDesc) expression.getChildren().get(0)).getValue())) {
+        builder.startNot();
+        createLeaf(PredicateLeaf.Operator.BETWEEN, expr, 1);
+        builder.end();
+      } else {
+        createLeaf(PredicateLeaf.Operator.BETWEEN, expr, 1);
+      }
     } else if (op == GenericUDFOPNull.class) {
       createLeaf(PredicateLeaf.Operator.IS_NULL, expr, 0);
     } else if (op == GenericUDFOPNotNull.class) {

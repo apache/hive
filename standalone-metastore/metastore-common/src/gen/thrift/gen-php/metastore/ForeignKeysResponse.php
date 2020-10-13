@@ -69,14 +69,14 @@ class ForeignKeysResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->foreignKeys = array();
-                        $_size319 = 0;
-                        $_etype322 = 0;
-                        $xfer += $input->readListBegin($_etype322, $_size319);
-                        for ($_i323 = 0; $_i323 < $_size319; ++$_i323) {
-                            $elem324 = null;
-                            $elem324 = new \metastore\SQLForeignKey();
-                            $xfer += $elem324->read($input);
-                            $this->foreignKeys []= $elem324;
+                        $_size361 = 0;
+                        $_etype364 = 0;
+                        $xfer += $input->readListBegin($_etype364, $_size361);
+                        for ($_i365 = 0; $_i365 < $_size361; ++$_i365) {
+                            $elem366 = null;
+                            $elem366 = new \metastore\SQLForeignKey();
+                            $xfer += $elem366->read($input);
+                            $this->foreignKeys []= $elem366;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class ForeignKeysResponse
             }
             $xfer += $output->writeFieldBegin('foreignKeys', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->foreignKeys));
-            foreach ($this->foreignKeys as $iter325) {
-                $xfer += $iter325->write($output);
+            foreach ($this->foreignKeys as $iter367) {
+                $xfer += $iter367->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

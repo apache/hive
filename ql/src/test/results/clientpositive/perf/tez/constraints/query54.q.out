@@ -308,7 +308,7 @@ Stage-0
                                                                   Filter Operator [FIL_381] (rows=285117831 width=11)
                                                                     predicate:(cs_sold_date_sk is not null and cs_bill_customer_sk is not null and cs_sold_date_sk BETWEEN DynamicValue(RS_51_date_dim_d_date_sk_min) AND DynamicValue(RS_51_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_51_date_dim_d_date_sk_bloom_filter)))
                                                                     TableScan [TS_297] (rows=287989836 width=11)
-                                                                      Output:["cs_sold_date_sk","cs_bill_customer_sk","cs_item_sk"]
+                                                                      default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_sold_date_sk","cs_bill_customer_sk","cs_item_sk"]
                                                                     <-Reducer 22 [BROADCAST_EDGE] vectorized
                                                                       BROADCAST [RS_379]
                                                                         Group By Operator [GBY_378] (rows=1 width=12)
@@ -328,7 +328,7 @@ Stage-0
                                                                   Filter Operator [FIL_384] (rows=143930993 width=11)
                                                                     predicate:(ws_bill_customer_sk is not null and ws_sold_date_sk is not null and ws_sold_date_sk BETWEEN DynamicValue(RS_51_date_dim_d_date_sk_min) AND DynamicValue(RS_51_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_51_date_dim_d_date_sk_bloom_filter)))
                                                                     TableScan [TS_302] (rows=144002668 width=11)
-                                                                      Output:["ws_sold_date_sk","ws_item_sk","ws_bill_customer_sk"]
+                                                                      default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_sold_date_sk","ws_item_sk","ws_bill_customer_sk"]
                                                                     <-Reducer 22 [BROADCAST_EDGE] vectorized
                                                                       BROADCAST [RS_380]
                                                                          Please refer to the previous Group By Operator [GBY_378]

@@ -472,6 +472,7 @@ public enum ErrorMsg {
   WITHIN_GROUP_PARAMETER_MISMATCH(10422,
           "The number of hypothetical direct arguments ({0}) must match the number of ordering columns ({1})", true),
   AMBIGUOUS_STRUCT_ATTRIBUTE(10423, "Attribute \"{0}\" specified more than once in structured type.", true),
+  OFFSET_NOT_SUPPORTED_IN_SUBQUERY(10424, "OFFSET is not supported in subquery of exists", true),
 
   //========================== 20000 range starts here ========================//
 
@@ -624,8 +625,8 @@ public enum ErrorMsg {
   REPL_RETRY_EXHAUSTED(40010, "Retry exhausted for retryable error code {0}.", true),
   REPL_FAILED_WITH_NON_RECOVERABLE_ERROR(40011, "Replication failed with non recoverable error. Needs manual intervention"),
   REPL_INVALID_ARGUMENTS(40012, "Invalid arguments error : {0}.", true),
-  REPL_INVALID_ALTER_TABLE(40013, "{0}Unable to alter table{0}", true),
-  REPL_PERMISSION_DENIED(40014, "{0} org.apache.hadoop.security.AccessControlException {0}", true)
+  REPL_INVALID_ALTER_TABLE(40013, "{0}Unable to alter table{1}", true),
+  REPL_PERMISSION_DENIED(40014, "{0}org.apache.hadoop.security.AccessControlException{1}", true)
   ;
 
   private int errorCode;

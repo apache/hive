@@ -112,13 +112,13 @@ class SkewedInfo
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->skewedColNames = array();
-                        $_size115 = 0;
-                        $_etype118 = 0;
-                        $xfer += $input->readListBegin($_etype118, $_size115);
-                        for ($_i119 = 0; $_i119 < $_size115; ++$_i119) {
-                            $elem120 = null;
-                            $xfer += $input->readString($elem120);
-                            $this->skewedColNames []= $elem120;
+                        $_size157 = 0;
+                        $_etype160 = 0;
+                        $xfer += $input->readListBegin($_etype160, $_size157);
+                        for ($_i161 = 0; $_i161 < $_size157; ++$_i161) {
+                            $elem162 = null;
+                            $xfer += $input->readString($elem162);
+                            $this->skewedColNames []= $elem162;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -128,22 +128,22 @@ class SkewedInfo
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->skewedColValues = array();
-                        $_size121 = 0;
-                        $_etype124 = 0;
-                        $xfer += $input->readListBegin($_etype124, $_size121);
-                        for ($_i125 = 0; $_i125 < $_size121; ++$_i125) {
-                            $elem126 = null;
-                            $elem126 = array();
-                            $_size127 = 0;
-                            $_etype130 = 0;
-                            $xfer += $input->readListBegin($_etype130, $_size127);
-                            for ($_i131 = 0; $_i131 < $_size127; ++$_i131) {
-                                $elem132 = null;
-                                $xfer += $input->readString($elem132);
-                                $elem126 []= $elem132;
+                        $_size163 = 0;
+                        $_etype166 = 0;
+                        $xfer += $input->readListBegin($_etype166, $_size163);
+                        for ($_i167 = 0; $_i167 < $_size163; ++$_i167) {
+                            $elem168 = null;
+                            $elem168 = array();
+                            $_size169 = 0;
+                            $_etype172 = 0;
+                            $xfer += $input->readListBegin($_etype172, $_size169);
+                            for ($_i173 = 0; $_i173 < $_size169; ++$_i173) {
+                                $elem174 = null;
+                                $xfer += $input->readString($elem174);
+                                $elem168 []= $elem174;
                             }
                             $xfer += $input->readListEnd();
-                            $this->skewedColValues []= $elem126;
+                            $this->skewedColValues []= $elem168;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -153,25 +153,25 @@ class SkewedInfo
                 case 3:
                     if ($ftype == TType::MAP) {
                         $this->skewedColValueLocationMaps = array();
-                        $_size133 = 0;
-                        $_ktype134 = 0;
-                        $_vtype135 = 0;
-                        $xfer += $input->readMapBegin($_ktype134, $_vtype135, $_size133);
-                        for ($_i137 = 0; $_i137 < $_size133; ++$_i137) {
-                            $key138 = array();
-                            $val139 = '';
-                            $key138 = array();
-                            $_size140 = 0;
-                            $_etype143 = 0;
-                            $xfer += $input->readListBegin($_etype143, $_size140);
-                            for ($_i144 = 0; $_i144 < $_size140; ++$_i144) {
-                                $elem145 = null;
-                                $xfer += $input->readString($elem145);
-                                $key138 []= $elem145;
+                        $_size175 = 0;
+                        $_ktype176 = 0;
+                        $_vtype177 = 0;
+                        $xfer += $input->readMapBegin($_ktype176, $_vtype177, $_size175);
+                        for ($_i179 = 0; $_i179 < $_size175; ++$_i179) {
+                            $key180 = array();
+                            $val181 = '';
+                            $key180 = array();
+                            $_size182 = 0;
+                            $_etype185 = 0;
+                            $xfer += $input->readListBegin($_etype185, $_size182);
+                            for ($_i186 = 0; $_i186 < $_size182; ++$_i186) {
+                                $elem187 = null;
+                                $xfer += $input->readString($elem187);
+                                $key180 []= $elem187;
                             }
                             $xfer += $input->readListEnd();
-                            $xfer += $input->readString($val139);
-                            $this->skewedColValueLocationMaps[$key138] = $val139;
+                            $xfer += $input->readString($val181);
+                            $this->skewedColValueLocationMaps[$key180] = $val181;
                         }
                         $xfer += $input->readMapEnd();
                     } else {
@@ -198,8 +198,8 @@ class SkewedInfo
             }
             $xfer += $output->writeFieldBegin('skewedColNames', TType::LST, 1);
             $output->writeListBegin(TType::STRING, count($this->skewedColNames));
-            foreach ($this->skewedColNames as $iter146) {
-                $xfer += $output->writeString($iter146);
+            foreach ($this->skewedColNames as $iter188) {
+                $xfer += $output->writeString($iter188);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -210,10 +210,10 @@ class SkewedInfo
             }
             $xfer += $output->writeFieldBegin('skewedColValues', TType::LST, 2);
             $output->writeListBegin(TType::LST, count($this->skewedColValues));
-            foreach ($this->skewedColValues as $iter147) {
-                $output->writeListBegin(TType::STRING, count($iter147));
-                foreach ($iter147 as $iter148) {
-                    $xfer += $output->writeString($iter148);
+            foreach ($this->skewedColValues as $iter189) {
+                $output->writeListBegin(TType::STRING, count($iter189));
+                foreach ($iter189 as $iter190) {
+                    $xfer += $output->writeString($iter190);
                 }
                 $output->writeListEnd();
             }
@@ -226,13 +226,13 @@ class SkewedInfo
             }
             $xfer += $output->writeFieldBegin('skewedColValueLocationMaps', TType::MAP, 3);
             $output->writeMapBegin(TType::LST, TType::STRING, count($this->skewedColValueLocationMaps));
-            foreach ($this->skewedColValueLocationMaps as $kiter149 => $viter150) {
-                $output->writeListBegin(TType::STRING, count($kiter149));
-                foreach ($kiter149 as $iter151) {
-                    $xfer += $output->writeString($iter151);
+            foreach ($this->skewedColValueLocationMaps as $kiter191 => $viter192) {
+                $output->writeListBegin(TType::STRING, count($kiter191));
+                foreach ($kiter191 as $iter193) {
+                    $xfer += $output->writeString($iter193);
                 }
                 $output->writeListEnd();
-                $xfer += $output->writeString($viter150);
+                $xfer += $output->writeString($viter192);
             }
             $output->writeMapEnd();
             $xfer += $output->writeFieldEnd();

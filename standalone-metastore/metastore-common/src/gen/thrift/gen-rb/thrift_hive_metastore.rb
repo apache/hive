@@ -1960,6 +1960,23 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_check_constraints failed: unknown result')
     end
 
+    def get_all_table_constraints(request)
+      send_get_all_table_constraints(request)
+      return recv_get_all_table_constraints()
+    end
+
+    def send_get_all_table_constraints(request)
+      send_message('get_all_table_constraints', Get_all_table_constraints_args, :request => request)
+    end
+
+    def recv_get_all_table_constraints()
+      result = receive_message(Get_all_table_constraints_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_table_constraints failed: unknown result')
+    end
+
     def update_table_column_statistics(stats_obj)
       send_update_table_column_statistics(stats_obj)
       return recv_update_table_column_statistics()
@@ -2795,6 +2812,22 @@ module ThriftHiveMetastore
       raise result.o1 unless result.o1.nil?
       raise result.o2 unless result.o2.nil?
       return
+    end
+
+    def get_latest_txn_in_conflict(txnId)
+      send_get_latest_txn_in_conflict(txnId)
+      return recv_get_latest_txn_in_conflict()
+    end
+
+    def send_get_latest_txn_in_conflict(txnId)
+      send_message('get_latest_txn_in_conflict', Get_latest_txn_in_conflict_args, :txnId => txnId)
+    end
+
+    def recv_get_latest_txn_in_conflict()
+      result = receive_message(Get_latest_txn_in_conflict_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_latest_txn_in_conflict failed: unknown result')
     end
 
     def repl_tbl_writeid_state(rqst)
@@ -5623,6 +5656,19 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'get_check_constraints', seqid)
     end
 
+    def process_get_all_table_constraints(seqid, iprot, oprot)
+      args = read_args(iprot, Get_all_table_constraints_args)
+      result = Get_all_table_constraints_result.new()
+      begin
+        result.success = @handler.get_all_table_constraints(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_all_table_constraints', seqid)
+    end
+
     def process_update_table_column_statistics(seqid, iprot, oprot)
       args = read_args(iprot, Update_table_column_statistics_args)
       result = Update_table_column_statistics_result.new()
@@ -6222,6 +6268,17 @@ module ThriftHiveMetastore
         result.o2 = o2
       end
       write_result(result, oprot, 'commit_txn', seqid)
+    end
+
+    def process_get_latest_txn_in_conflict(seqid, iprot, oprot)
+      args = read_args(iprot, Get_latest_txn_in_conflict_args)
+      result = Get_latest_txn_in_conflict_result.new()
+      begin
+        result.success = @handler.get_latest_txn_in_conflict(args.txnId)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_latest_txn_in_conflict', seqid)
     end
 
     def process_repl_tbl_writeid_state(seqid, iprot, oprot)
@@ -11538,6 +11595,42 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
+  class Get_all_table_constraints_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::AllTableConstraintsRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_table_constraints_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::AllTableConstraintsResponse},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
   class Update_table_column_statistics_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     STATS_OBJ = 1
@@ -13383,6 +13476,40 @@ module ThriftHiveMetastore
     FIELDS = {
       O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchTxnException},
       O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::TxnAbortedException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_latest_txn_in_conflict_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    TXNID = 1
+
+    FIELDS = {
+      TXNID => {:type => ::Thrift::Types::I64, :name => 'txnId'}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_latest_txn_in_conflict_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::I64, :name => 'success'},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

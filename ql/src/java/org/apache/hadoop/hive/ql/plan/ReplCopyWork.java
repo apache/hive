@@ -62,7 +62,7 @@ public class ReplCopyWork extends CopyWork {
 
   private boolean overWrite = false;
 
-  String dumpDirectory;
+  private String dumpDirectory;
 
   private transient ReplicationMetricCollector metricCollector;
 

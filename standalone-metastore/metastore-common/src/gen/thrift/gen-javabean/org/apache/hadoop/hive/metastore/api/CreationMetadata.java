@@ -768,13 +768,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 4: // TABLES_USED
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set206 = iprot.readSetBegin();
-                struct.tablesUsed = new java.util.HashSet<java.lang.String>(2*_set206.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem207;
-                for (int _i208 = 0; _i208 < _set206.size; ++_i208)
+                org.apache.thrift.protocol.TSet _set254 = iprot.readSetBegin();
+                struct.tablesUsed = new java.util.HashSet<java.lang.String>(2*_set254.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem255;
+                for (int _i256 = 0; _i256 < _set254.size; ++_i256)
                 {
-                  _elem207 = iprot.readString();
-                  struct.tablesUsed.add(_elem207);
+                  _elem255 = iprot.readString();
+                  struct.tablesUsed.add(_elem255);
                 }
                 iprot.readSetEnd();
               }
@@ -831,9 +831,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(TABLES_USED_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, struct.tablesUsed.size()));
-          for (java.lang.String _iter209 : struct.tablesUsed)
+          for (java.lang.String _iter257 : struct.tablesUsed)
           {
-            oprot.writeString(_iter209);
+            oprot.writeString(_iter257);
           }
           oprot.writeSetEnd();
         }
@@ -873,9 +873,9 @@ package org.apache.hadoop.hive.metastore.api;
       oprot.writeString(struct.tblName);
       {
         oprot.writeI32(struct.tablesUsed.size());
-        for (java.lang.String _iter210 : struct.tablesUsed)
+        for (java.lang.String _iter258 : struct.tablesUsed)
         {
-          oprot.writeString(_iter210);
+          oprot.writeString(_iter258);
         }
       }
       java.util.BitSet optionals = new java.util.BitSet();
@@ -904,13 +904,13 @@ package org.apache.hadoop.hive.metastore.api;
       struct.tblName = iprot.readString();
       struct.setTblNameIsSet(true);
       {
-        org.apache.thrift.protocol.TSet _set211 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.tablesUsed = new java.util.HashSet<java.lang.String>(2*_set211.size);
-        @org.apache.thrift.annotation.Nullable java.lang.String _elem212;
-        for (int _i213 = 0; _i213 < _set211.size; ++_i213)
+        org.apache.thrift.protocol.TSet _set259 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.tablesUsed = new java.util.HashSet<java.lang.String>(2*_set259.size);
+        @org.apache.thrift.annotation.Nullable java.lang.String _elem260;
+        for (int _i261 = 0; _i261 < _set259.size; ++_i261)
         {
-          _elem212 = iprot.readString();
-          struct.tablesUsed.add(_elem212);
+          _elem260 = iprot.readString();
+          struct.tablesUsed.add(_elem260);
         }
       }
       struct.setTablesUsedIsSet(true);

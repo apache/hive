@@ -40,8 +40,8 @@ public final class DDLWork implements Serializable {
   private Set<ReadEntity> inputs;
   /** List of WriteEntities that are passed to the hooks. */
   private Set<WriteEntity> outputs;
-  boolean isReplication;
-  String dumpDirectory;
+  private boolean isReplication;
+  private String dumpDirectory;
   private transient ReplicationMetricCollector metricCollector;
 
   public DDLWork(Set<ReadEntity> inputs, Set<WriteEntity> outputs, DDLDesc ddlDesc, boolean isReplication,
