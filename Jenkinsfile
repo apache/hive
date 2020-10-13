@@ -1,3 +1,5 @@
+// xmlstarlet ed -d 'testsuite/testcase/system-out[count(../failure)=0]' target/surefire-reports/TEST-com.sam.surefire.bug.ATests.xml | wc -l
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
