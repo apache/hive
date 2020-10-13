@@ -62,4 +62,4 @@ PREHOOK: query: ALTER TABLE ex1.exchange_part_test1 EXCHANGE PARTITION (ds='2013
 PREHOOK: type: ALTERTABLE_EXCHANGEPARTITION
 PREHOOK: Input: ex2@exchange_part_test2
 PREHOOK: Output: ex1@exchange_part_test1
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Exchanging partitions between temporary and non-temporary tables is not supported.)
+FAILED: Execution Error, return code 40000 from org.apache.hadoop.hive.ql.ddl.DDLTask. MetaException(message:Exchanging partitions between temporary and non-temporary tables is not supported.)

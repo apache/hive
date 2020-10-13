@@ -196,23 +196,15 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           LOG.info("Previous Dump is not yet loaded");
         }
       }
+    } catch (RuntimeException e) {
+      LOG.error("replication failed with run time exception", e);
+      ReplUtils.handleException(true, e, work.getCurrentDumpPath().toString(),
+              work.getMetricCollector(), getName(), conf);
+      throw e;
     } catch (Exception e) {
-      LOG.error("failed", e);
       setException(e);
-      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
-      try {
-        if (errorCode > 40000) {
-          Path nonRecoverableMarker = new Path(work.getCurrentDumpPath(),
-            ReplAck.NON_RECOVERABLE_MARKER.toString());
-          Utils.writeStackTrace(e, nonRecoverableMarker, conf);
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED_ADMIN, nonRecoverableMarker.toString());
-        } else {
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
-        }
-      } catch (SemanticException ex) {
-        LOG.error("Failed to collect Metrics", ex);
-      }
-      return errorCode;
+      return ReplUtils.handleException(true, e, work.getCurrentDumpPath().toString(),
+              work.getMetricCollector(), getName(), conf);
     }
     return 0;
   }

@@ -104,24 +104,17 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       replLogger.endLog(0L);
       work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
       return 0;
+    } catch (RuntimeException e) {
+      LOG.error("RuntimeException while dumping atlas metadata", e);
+      setException(e);
+      ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
+              getName(), conf);
+      throw e;
     } catch (Exception e) {
       LOG.error("Exception while dumping atlas metadata", e);
       setException(e);
-      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
-      try {
-        if (errorCode > 40000) {
-          //Create non recoverable marker at top level
-          Path nonRecoverableMarker = new Path(work.getStagingDir().getParent(),
-            ReplAck.NON_RECOVERABLE_MARKER.toString());
-          Utils.writeStackTrace(e, nonRecoverableMarker, conf);
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED_ADMIN, nonRecoverableMarker.toString());
-        } else {
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
-        }
-      } catch (SemanticException ex) {
-        LOG.error("Failed to collect Metrics ", ex);
-      }
-      return errorCode;
+      return ReplUtils.handleException(true, e, work.getStagingDir().getParent().toString(), work.getMetricCollector(),
+              getName(), conf);
     }
   }
 

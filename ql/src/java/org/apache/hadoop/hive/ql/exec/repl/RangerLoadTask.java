@@ -152,24 +152,17 @@ public class RangerLoadTask extends Task<RangerLoadWork> implements Serializable
       }
       work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
       return 0;
-    } catch (Exception e) {
-      LOG.error("Failed", e);
+    } catch (RuntimeException e) {
+      LOG.error("Runtime Excepton during RangerLoad", e);
       setException(e);
-      int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
-      try {
-        if (errorCode > 40000) {
-          //Create non recoverable marker at top level
-          Path nonRecoverableMarker = new Path(work.getCurrentDumpPath().getParent(),
-            ReplAck.NON_RECOVERABLE_MARKER.toString());
-          Utils.writeStackTrace(e, nonRecoverableMarker, conf);
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED_ADMIN, nonRecoverableMarker.toString());
-        } else {
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
-        }
-      } catch (SemanticException ex) {
-        LOG.error("Failed to collect Metrics ", ex);
-      }
-      return errorCode;
+      ReplUtils.handleException(true, e, work.getCurrentDumpPath().getParent().toString(), work.getMetricCollector(),
+              getName(), conf);
+      throw e;
+    } catch (Exception e) {
+      LOG.error("RangerLoad Failed", e);
+      setException(e);
+      return ReplUtils.handleException(true, e, work.getCurrentDumpPath().getParent().toString(), work.getMetricCollector(),
+              getName(), conf);
     }
   }
 

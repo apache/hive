@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -45,9 +46,10 @@ public class AckTask extends Task<AckWork> implements Serializable {
       Path ackPath = work.getAckFilePath();
       Utils.create(ackPath, conf);
       LOG.info("Created ack file : {} ", ackPath);
-    } catch (SemanticException e) {
+    } catch (Exception e) {
       setException(e);
-      return ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
+      return ReplUtils.handleException(true, e, work.getAckFilePath().getParent().getParent().toString(),
+              work.getMetricCollector(), getName(), conf);
     }
     return 0;
   }
