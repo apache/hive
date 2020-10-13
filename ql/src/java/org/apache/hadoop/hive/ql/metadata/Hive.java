@@ -71,13 +71,8 @@ import javax.jdo.JDODataStoreException;
 import com.google.common.collect.ImmutableList;
 
 import org.apache.calcite.plan.RelOptMaterialization;
-import org.apache.calcite.plan.hep.HepPlanner;
-import org.apache.calcite.plan.hep.HepProgramBuilder;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.RelVisitor;
 import org.apache.calcite.rel.core.Project;
-import org.apache.calcite.rel.core.TableScan;
-import org.apache.calcite.rex.RexBuilder;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -121,16 +116,22 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.BinaryColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.BooleanColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.CheckConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.CmRecycleRequest;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
+import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CompactionResponse;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.DecimalColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DefaultConstraintsRequest;
+import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FireEventRequest;
@@ -140,8 +141,6 @@ import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.GetOpenTxnsInfoResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
-import org.apache.hadoop.hive.metastore.api.GetPartitionRequest;
-import org.apache.hadoop.hive.metastore.api.GetPartitionResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsPsWithAuthResponse;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
@@ -152,14 +151,12 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
 import org.apache.hadoop.hive.metastore.api.InsertEventRequestData;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
+import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Materialization;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.MetadataPpdResult;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
-import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
-import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
@@ -175,6 +172,7 @@ import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.metastore.api.SetPartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMMapping;
@@ -202,7 +200,6 @@ import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveAugmentMaterializationRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -220,7 +217,6 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.HiveVersionInfo;
-import org.apache.hive.common.util.TxnIdUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -5300,7 +5296,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public AggrStats getAggrColStatsFor(String dbName, String tblName,
-     List<String> colNames, List<String> partNames, boolean checkTransactional) {
+      List<String> colNames, List<String> partNames, boolean checkTransactional) {
+    return getAggrColStatsFor(dbName, tblName, colNames, partNames,
+        checkTransactional, -1L, -1L);
+  }
+
+  public AggrStats getAggrColStatsFor(String dbName, String tblName,
+     List<String> colNames, List<String> partNames, boolean checkTransactional,
+      long originalRowCount, long prunedRowCount) {
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS);
     String writeIdList = null;
@@ -5319,6 +5322,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
         //       for FENG
         List<ColumnStatisticsObj> colStats = getMSC().getTableColumnStatistics(
             dbName, tblName, colNames, conf.getEngine().getStatsField());
+        // Adjust the stats based on supplied row counts if pruning actually reduced
+        // the row count:
+        double selectivity = originalRowCount == -1 ? 1.0 :
+            ((double) prunedRowCount)/originalRowCount;
+        if (selectivity != 1.0) {
+          List<ColumnStatisticsObj> adjustedColStats = new ArrayList<>();
+          for (ColumnStatisticsObj statsObj : colStats) {
+            adjustedColStats.add(getAdjustedColStats(statsObj, selectivity, prunedRowCount));
+          }
+          return new AggrStats(adjustedColStats, partNames.size());
+        }
         return new AggrStats(colStats, partNames.size());
       }
       return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partNames,
@@ -5329,6 +5343,85 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } finally {
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS, "HS2-cache");
     }
+  }
+
+  // Adjust the stats based on selectivity after partition pruning:
+  //   (a) null count is adjusted based on pruning selectivity
+  //   (b) ndv is adjusted by capping it at pruned row count (note:
+  //       boolean and binary types don't have associated ndv stats)
+  private ColumnStatisticsObj getAdjustedColStats(ColumnStatisticsObj statsObj,
+      double selectivity, long prunedRowCount) throws HiveException {
+    ColumnStatisticsData._Fields type = statsObj.getStatsData().getSetField();
+    // modify a copy of the statsObj
+    ColumnStatisticsObj statsObjCopy = new ColumnStatisticsObj(statsObj);
+    switch (type) {
+    case BOOLEAN_STATS:
+      BooleanColumnStatsData boolStats = statsObjCopy.getStatsData().getBooleanStats();
+      if (boolStats.isSetNumNulls()) {
+        boolStats.setNumNulls((long) (selectivity * boolStats.getNumNulls()));
+      }
+      if (boolStats.isSetNumFalses()) {
+        boolStats.setNumFalses((long) (selectivity * boolStats.getNumFalses()));
+      }
+      if (boolStats.isSetNumTrues()) {
+        boolStats.setNumTrues((long) (selectivity * boolStats.getNumTrues()));
+      }
+      break;
+    case LONG_STATS:
+      LongColumnStatsData longStats = statsObjCopy.getStatsData().getLongStats();
+      if (longStats.isSetNumNulls()) {
+        longStats.setNumNulls((long) (selectivity * longStats.getNumNulls()));
+      }
+      if (longStats.isSetNumDVs()) {
+        longStats.setNumDVs(Math.min(longStats.getNumDVs(), prunedRowCount));
+      }
+      break;
+    case DOUBLE_STATS:
+      DoubleColumnStatsData doubleStats = statsObjCopy.getStatsData().getDoubleStats();
+      if (doubleStats.isSetNumNulls()) {
+        doubleStats.setNumNulls((long) (selectivity * doubleStats.getNumNulls()));
+      }
+      if (doubleStats.isSetNumDVs()) {
+        doubleStats.setNumDVs(Math.min(doubleStats.getNumDVs(), prunedRowCount));
+      }
+      break;
+    case STRING_STATS:
+      StringColumnStatsData stringStats = statsObjCopy.getStatsData().getStringStats();
+      if (stringStats.isSetNumNulls()) {
+        stringStats.setNumNulls((long) (selectivity * stringStats.getNumNulls()));
+      }
+      if (stringStats.isSetNumDVs()) {
+        stringStats.setNumDVs(Math.min(stringStats.getNumDVs(), prunedRowCount));
+      }
+      break;
+    case BINARY_STATS:
+      BinaryColumnStatsData binaryStats = statsObjCopy.getStatsData().getBinaryStats();
+      if (binaryStats.isSetNumNulls()) {
+        binaryStats.setNumNulls((long) (selectivity * binaryStats.getNumNulls()));
+      }
+      break;
+    case DECIMAL_STATS:
+      DecimalColumnStatsData decimalStats = statsObjCopy.getStatsData().getDecimalStats();
+      if (decimalStats.isSetNumNulls()) {
+        decimalStats.setNumNulls((long) (selectivity * decimalStats.getNumNulls()));
+      }
+      if (decimalStats.isSetNumDVs()) {
+        decimalStats.setNumDVs(Math.min(decimalStats.getNumDVs(), prunedRowCount));
+      }
+      break;
+    case DATE_STATS:
+      DateColumnStatsData dateStats = statsObjCopy.getStatsData().getDateStats();
+      if (dateStats.isSetNumNulls()) {
+        dateStats.setNumNulls((long) (selectivity * dateStats.getNumNulls()));
+      }
+      if (dateStats.isSetNumDVs()) {
+        dateStats.setNumDVs(Math.min(dateStats.getNumDVs(), prunedRowCount));
+      }
+      break;
+    default:
+      throw new HiveException("Unsupported type");
+    }
+    return statsObjCopy;
   }
 
   public boolean deleteTableColumnStatistics(String dbName, String tableName, String colName)
