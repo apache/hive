@@ -1187,6 +1187,22 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   }
 
   @Override
+  public Map<String, String> listPartitionLocations(String catName, String dbName, String tblName,
+    short maxParts) throws TException {
+    org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);
+    if (table == null) {
+      return super.listPartitionLocations(catName, dbName, tblName, maxParts);
+    }
+    TempTable tt = getPartitionedTempTable(table);
+    List<Partition> partitions = tt.listPartitions();
+    Map<String, String> result = new HashMap<>();
+    for (int i = 0; i < ((maxParts < 0 || maxParts > partitions.size()) ? partitions.size() : maxParts); i++) {
+      result.put(makePartName(table.getPartitionKeys(), partitions.get(i).getValues()), partitions.get(i).getSd().getLocation());
+    }
+    return result;
+  }
+
+  @Override
   public List<Partition> listPartitions(String catName, String dbName, String tblName, int maxParts)
       throws TException {
     org.apache.hadoop.hive.metastore.api.Table table = getTempTable(dbName, tblName);

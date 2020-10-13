@@ -226,6 +226,12 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     super.testListPartitionNamesNoDb();
   }
 
+  @Test(expected = NoSuchObjectException.class)
+  @Override
+  public void testListPartitionLocationsNoDb() throws Exception {
+    super.testListPartitionNamesNoDb();
+  }
+
   @Test
   @Override
   public void testListPartitionsAllNoTable() throws Exception {
