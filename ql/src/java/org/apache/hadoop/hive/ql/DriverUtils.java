@@ -95,7 +95,7 @@ public final class DriverUtils {
     if (sessionState == null) {
       // Note: we assume that workers run on the same threads repeatedly, so we can set up
       //       the session here and it will be reused without explicitly storing in the worker.
-      sessionState = new SessionState(conf, user);
+      sessionState = new SessionState(conf, user, true);
       if (doStart) {
         // TODO: Required due to SessionState.getHDFSSessionPath. Why wasn't it required before?
         sessionState.setIsHiveServerQuery(true);
