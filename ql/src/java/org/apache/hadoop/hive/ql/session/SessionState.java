@@ -74,7 +74,9 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.cache.CachedStore;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.cleanup.CleanupService;
 import org.apache.hadoop.hive.ql.MapRedStats;
+import org.apache.hadoop.hive.ql.cleanup.SyncCleanupService;
 import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.Registry;
@@ -320,6 +322,8 @@ public class SessionState implements ISessionAuthState{
 
   private final Registry registry;
 
+  private final CleanupService cleanupService;
+
   /**
    * Used to cache functions in use for a query, during query planning
    * and is later used for function usage authorization.
@@ -432,6 +436,10 @@ public class SessionState implements ISessionAuthState{
   }
 
   public SessionState(HiveConf conf, String userName) {
+    this(conf, userName, SyncCleanupService.INSTANCE);
+  }
+
+  public SessionState(HiveConf conf, String userName, CleanupService cleanupService) {
     this.sessionConf = conf;
     this.userName = userName;
     this.registry = new Registry(false);
@@ -458,6 +466,7 @@ public class SessionState implements ISessionAuthState{
     resourceDownloader = new ResourceDownloader(conf,
         HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR));
     killQuery = new NullKillQuery();
+    this.cleanupService = cleanupService;
 
     ShimLoader.getHadoopShims().setHadoopSessionContext(getSessionId());
   }
@@ -909,6 +918,10 @@ public class SessionState implements ISessionAuthState{
     }
   }
 
+  public CleanupService getCleanupService() {
+    return cleanupService;
+  }
+
   private void dropSessionPaths(Configuration conf) throws IOException {
     if (hdfsSessionPath != null) {
       if (hdfsSessionPathLockFile != null) {
@@ -935,9 +948,7 @@ public class SessionState implements ISessionAuthState{
       } else {
         fs = path.getFileSystem(conf);
       }
-      fs.cancelDeleteOnExit(path);
-      fs.delete(path, true);
-      LOG.info("Deleted directory: {} on fs with scheme {}", path, fs.getScheme());
+      cleanupService.deleteRecursive(path, fs);
     } catch (IllegalArgumentException | UnsupportedOperationException | IOException e) {
       LOG.error("Failed to delete path at {} on fs with scheme {}", path,
           (fs == null ? "Unknown-null" : fs.getScheme()), e);
