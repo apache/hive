@@ -161,6 +161,20 @@ public class SharedWorkOptimizer extends Transform {
 
     BaseSharedWorkOptimizer swo;
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
+      swo = new SchemaAwareSharedWorkOptimizer();
+      swo.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables, Mode.SubtreeMerge);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("After SharedWorkOptimizer0:\n" + Operator.toString(pctx.getTopOps().values()));
+      }
+      if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
+        // Execute extended shared work optimization
+        sharedWorkExtendedOptimization(pctx, optimizerCache);
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("After SharedWorkExtendedOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
+        }
+      }
+
       swo = new BaseSharedWorkOptimizer();
     } else {
       swo = new SchemaAwareSharedWorkOptimizer();
@@ -295,8 +309,24 @@ public class SharedWorkOptimizer extends Transform {
     return pctx;
   }
 
+  /** SharedWorkOptimization strategy modes */
   public enum Mode {
-    RemoveSemijoin, SubtreeMerge, DPPUnion,
+    /**
+     * Merges two identical subtrees.
+     */
+    SubtreeMerge,
+    /**
+     * Merges a filtered scan into a non-filtered scan.
+     *
+     * In case we are already scanning the whole table - we should not scan it twice.
+     */
+    RemoveSemijoin,
+    /**
+     * Fuses two filtered table scans into a single one.
+     *
+     * Dynamic filter subtree is kept on both sides - but the table is onlt scanned once.
+     */
+    DPPUnion;
   }
 
   static class SharedWorkModel {
@@ -373,7 +403,6 @@ public class SharedWorkOptimizer extends Transform {
                 LOG.debug("{} and {} cannot be merged", retainableTsOp, discardableTsOp);
                 continue;
               }
-              // FIXME: I think this optimization is assymetric; but the check is symmetric
               boolean validMerge = areMergeableExcludeSemijoinsExtendedCheck(
                   pctx, optimizerCache, retainableTsOp, discardableTsOp);
               if (!validMerge) {
@@ -386,7 +415,7 @@ public class SharedWorkOptimizer extends Transform {
               // about the part of the tree that can be merged. We need to regenerate the
               // cache because semijoin operators have been removed
               sr = extractSharedOptimizationInfoForRoot(
-                  pctx, optimizerCache, retainableTsOp, discardableTsOp, true);
+                  pctx, optimizerCache, retainableTsOp, discardableTsOp, false);
             } else if (mode == Mode.DPPUnion) {
               boolean mergeable = areMergeable(pctx, retainableTsOp, discardableTsOp);
               if (!mergeable) {
@@ -421,7 +450,7 @@ public class SharedWorkOptimizer extends Transform {
               // as well as some structural information (memory consumption) that needs to be
               // used to determined whether the merge can happen
               sr = extractSharedOptimizationInfoForRoot(
-                  pctx, optimizerCache, retainableTsOp, discardableTsOp, true);
+                  pctx, optimizerCache, retainableTsOp, discardableTsOp, false);
 
               // It seems these two operators can be merged.
               // Check that plan meets some preconditions before doing it.
@@ -469,8 +498,6 @@ public class SharedWorkOptimizer extends Transform {
               pushFilterToTopOfTableScan(optimizerCache, retainableTsOp);
 
               if (mode == Mode.RemoveSemijoin || mode == Mode.SubtreeMerge) {
-                // FIXME: I think idea here is to clear the discardable's semijoin filter
-                // - by using the retainable's (which should be empty in case of this mode)
                 replaceSemijoinExpressions(discardableTsOp, modelR.getSemiJoinFilter());
               }
               // Push filter on top of children for discardable
@@ -596,36 +623,6 @@ public class SharedWorkOptimizer extends Transform {
           (Entry<String, TableScanOperator> e) -> e.getValue().getNumChild() == 0);
 
       return mergedExecuted;
-    }
-
-    private void downStreamMerge(Operator<?> op, SharedWorkOptimizerCache optimizerCache, ParseContext pctx)
-        throws SemanticException {
-      List<Operator<?>> childs = op.getChildOperators();
-      for (int i = 0; i < childs.size(); i++) {
-        Operator<?> cI = childs.get(i);
-        if (cI instanceof ReduceSinkOperator || cI instanceof JoinOperator || cI.getParentOperators().size() != 1) {
-          continue;
-        }
-        for (int j = i + 1; j < childs.size(); j++) {
-          Operator<?> cJ = childs.get(j);
-          if (cI.logicalEquals(cJ)) {
-            LOG.debug("downstream merge: from {} into {}", cJ, cI);
-            adoptChildren(cI, cJ);
-            op.removeChild(cJ);
-            optimizerCache.removeOp(cJ);
-            j--;
-            downStreamMerge(cI, optimizerCache, pctx);
-          }
-        }
-      }
-    }
-
-    private void adoptChildren(Operator<?> target, Operator<?> donor) {
-      List<Operator<?>> children = donor.getChildOperators();
-      for (Operator<?> c : children) {
-        c.replaceParent(donor, target);
-      }
-      target.getChildOperators().addAll(children);
     }
 
     private ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes) throws UDFArgumentException {
@@ -821,6 +818,38 @@ public class SharedWorkOptimizer extends Transform {
     }
   }
 
+  private static void downStreamMerge(Operator<?> op, SharedWorkOptimizerCache optimizerCache, ParseContext pctx)
+      throws SemanticException {
+    List<Operator<?>> childs = op.getChildOperators();
+    for (int i = 0; i < childs.size(); i++) {
+      Operator<?> cI = childs.get(i);
+      if (cI instanceof ReduceSinkOperator || cI instanceof JoinOperator || cI.getParentOperators().size() != 1) {
+        continue;
+      }
+      for (int j = i + 1; j < childs.size(); j++) {
+        Operator<?> cJ = childs.get(j);
+        if (cI.logicalEquals(cJ)) {
+          LOG.debug("downstream merge: from {} into {}", cJ, cI);
+          // FIXME move the operator?
+          adoptChildren(cI, cJ);
+          op.removeChild(cJ);
+          optimizerCache.removeOp(cJ);
+          j--;
+          downStreamMerge(cI, optimizerCache, pctx);
+        }
+      }
+    }
+  }
+
+  private static void adoptChildren(Operator<?> target, Operator<?> donor) {
+    List<Operator<?>> children = donor.getChildOperators();
+    for (Operator<?> c : children) {
+      c.replaceParent(donor, target);
+    }
+    target.getChildOperators().addAll(children);
+    children.clear();
+  }
+
   private static boolean isSemijoinExpr(ExprNodeDesc expr) {
     if (expr instanceof ExprNodeDynamicListDesc) {
       // DYNAMIC PARTITION PRUNING
@@ -994,6 +1023,12 @@ public class SharedWorkOptimizer extends Transform {
               optimizerCache.removeOp(op);
               removedOps.add(op);
               LOG.debug("Operator removed: {}", op);
+            }
+
+            if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DOWNSTREAM_MERGE)) {
+              if (sr.discardableOps.size() == 1) {
+                downStreamMerge(retainableRsOp, optimizerCache, pctx);
+              }
             }
 
             break;
