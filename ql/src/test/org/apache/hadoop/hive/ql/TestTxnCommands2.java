@@ -2340,7 +2340,7 @@ public class TestTxnCommands2 {
     verifyDeltaDirAndResult(1, Table.ACIDTBLPART.toString(), "p=p1", resultData);
     verifyBaseDir(1, Table.ACIDTBLPART.toString(), "p=p1");
 
-    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='x'");
     // We should have 1 row corresponding to the aborted transaction
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_COMPONENTS"), 1, count);
 
@@ -2379,7 +2379,7 @@ public class TestTxnCommands2 {
     r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
     Assert.assertEquals("4", r1.get(0));
 
-    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='x'");
     // We should have two rows corresponding to the two aborted transactions
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_COMPONENTS"), 2, count);
 
@@ -2418,7 +2418,7 @@ public class TestTxnCommands2 {
     verifyDeltaDirAndResult(3, Table.ACIDTBLPART.toString(), "p=p1", resultData1);
     verifyDeleteDeltaDir(1, Table.ACIDTBLPART.toString(), "p=p1");
 
-    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='x'");
     // We should have 1 row corresponding to the aborted transaction
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_COMPONENTS"), 1, count);
 
@@ -2459,7 +2459,7 @@ public class TestTxnCommands2 {
     r1 = runStatementOnDriver("select count(*) from " + Table.ACIDTBLPART);
     Assert.assertEquals("2", r1.get(0));
 
-    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    int count = TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='x'");
     // We should have 1 row corresponding to the aborted transaction
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_COMPONENTS"), 1, count);
 
