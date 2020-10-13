@@ -148,6 +148,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   private transient boolean[][] allGroupingSetsOverrideIsNulls;
 
   private transient int numEntriesHashTable;
+  private transient long numFlushedOutEntriesBeforeFinalFlush;
 
   private transient long maxHashTblMemory;
 
@@ -420,9 +421,32 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
       sumBatchSize = 0;
 
       mapKeysAggregationBuffers = new HashMap<KeyWrapper, VectorAggregationBufferRow>();
+      /*
+       * The grouping sets expand the hash sizes by producing intermediate keys. 3 grouping sets
+       * of (),(col1),(col1,col2), will turn 10 rows into 30 rows. If the col1 has an nDV of 2 and
+       * col2 has nDV of 5, then this turns into a maximum of 1+3+(2*5) or 14 keys into the
+       * hashtable.
+       *
+       * So you get 10 rows in and 14 rows out, which is a reduction of ~2x vs Streaming mode,
+       * but it is an increase if the grouping-set is not accounted for.
+       *
+       * For performance, it is definitely better to send 14 rows out to shuffle and not 30.
+       *
+       * Particularly if the same nDVs are repeated for a thousand rows, this would send a
+       * thousand rows via streaming to a single reducer which owns the empty grouping set,
+       * instead of sending 1 from the hash.
+       *
+       */
       if (groupingSets != null && groupingSets.length > 0) {
-        this.maxHtEntries = this.maxHtEntries / groupingSets.length;
-        LOG.info("New maxHtEntries: {}, groupingSets len: {}", maxHtEntries, groupingSets.length);
+        /**
+         * Adjust for grouping sets. For grouping sets, input records are processed 'n' number of times.
+         * Ref processBatch(). Ensure that reduction is super effective, otherwise they become
+         * memory intensive.
+         */
+        this.minReductionHashAggr = this.minReductionHashAggr / groupingSets.length;
+        LOG.info("New maxHtEntries: {}, groupingSets len: {}, numRowsCompareHashAggr: {}, "
+                + "minReductionHashAggr:{} ", maxHtEntries, groupingSets.length,
+            numRowsCompareHashAggr, minReductionHashAggr);
       }
       computeMemoryLimits();
       LOG.debug("using hash aggregation processing mode");
@@ -691,10 +715,15 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
         }
       }
 
+      if (!all) {
+        numFlushedOutEntriesBeforeFinalFlush += entriesFlushed;
+      }
+
       if (all) {
         mapKeysAggregationBuffers.clear();
         totalAccessCount = 0;
         numEntriesHashTable = 0;
+        numFlushedOutEntriesBeforeFinalFlush = 0;
       }
 
       if (all && LOG.isDebugEnabled()) {
@@ -756,27 +785,19 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
           LOG.debug(String.format("checkHashModeEfficiency: HT:%d RC:%d MIN:%d",
               numEntriesHashTable, sumBatchSize, (long)(sumBatchSize * minReductionHashAggr)));
         }
-        /*
-         * The grouping sets expand the hash sizes by producing intermediate keys. 3 grouping sets
-         * of (),(col1),(col1,col2), will turn 10 rows into 30 rows. If the col1 has an nDV of 2 and
-         * col2 has nDV of 5, then this turns into a maximum of 1+3+(2*5) or 14 keys into the
-         * hashtable.
-         * 
-         * So you get 10 rows in and 14 rows out, which is a reduction of ~2x vs Streaming mode,
-         * but it is an increase if the grouping-set is not accounted for.
-         * 
-         * For performance, it is definitely better to send 14 rows out to shuffle and not 30.
-         * 
-         * Particularly if the same nDVs are repeated for a thousand rows, this would send a
-         * thousand rows via streaming to a single reducer which owns the empty grouping set,
-         * instead of sending 1 from the hash.
-         * 
+        /**
+         * For grouping sets, incoming data is processed multiple times depending on
+         * grouping set length. sumBatchSize already accounts for this. Here we mainly check for
+         * hashtable efficiency.
          */
-        final int groupingExpansion = (groupingSets != null) ? groupingSets.length : 1;
-        final long intermediateKeyCount = sumBatchSize * groupingExpansion;
-        if (numEntriesHashTable > intermediateKeyCount * minReductionHashAggr) {
-          flush(true);
-          changeToStreamingMode();
+        final long inputRecords = sumBatchSize;
+        final long outputRecords = numEntriesHashTable + numFlushedOutEntriesBeforeFinalFlush;
+        final float ratio = (outputRecords) / (inputRecords * 1.0f);
+        if (ratio > minReductionHashAggr) {
+          if (inputRecords > maxHtEntries) { // Don't bail out too soon.
+            flush(true);
+            changeToStreamingMode();
+          }
         }
       }
     }
@@ -1241,7 +1262,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
   private void changeToStreamingMode() throws HiveException {
     processingMode = this.new ProcessingModeStreaming();
     processingMode.initialize(null);
-    LOG.trace("switched to streaming mode");
+    LOG.info("switched to streaming mode");
   }
 
   @Override
