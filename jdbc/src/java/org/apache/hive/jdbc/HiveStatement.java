@@ -364,7 +364,7 @@ public class HiveStatement implements java.sql.Statement {
       try {
         if (Thread.currentThread().isInterrupted()) {
           throw new SQLException(CLIENT_POLLING_OPSTATUS_INTERRUPTED.getMsg(),
-              CLIENT_POLLING_OPSTATUS_INTERRUPTED.getSQLState(), CLIENT_POLLING_OPSTATUS_INTERRUPTED.getErrorCode());
+              CLIENT_POLLING_OPSTATUS_INTERRUPTED.getSQLState());
         }
         /**
          * For an async SQLOperation, GetOperationStatus will use the long polling approach It will
