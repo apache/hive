@@ -1,5 +1,4 @@
 --! qt:dataset:part
-set hive.optimize.shared.work.dppunion=false;
 -- SORT_QUERY_RESULTS
 
 --empty table

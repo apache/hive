@@ -9,7 +9,6 @@
 --! qt:dataset:cbo_t1
 set hive.vectorized.execution.enabled=false;
 set hive.strict.checks.bucketing=false;
-set hive.optimize.shared.work.dppunion=false;
 
 set hive.mapred.mode=nonstrict;
 set hive.explain.user=true;

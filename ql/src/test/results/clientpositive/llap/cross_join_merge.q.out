@@ -20,7 +20,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (XPROD_EDGE), Map 4 (XPROD_EDGE)
-        Reducer 3 <- Map 1 (XPROD_EDGE), Reducer 2 (XPROD_EDGE)
+        Reducer 3 <- Map 4 (XPROD_EDGE), Reducer 2 (XPROD_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -37,12 +37,6 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string)
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
-                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -52,6 +46,10 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
@@ -463,7 +461,7 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Map 4 (CUSTOM_SIMPLE_EDGE)
-        Reducer 3 <- Map 1 (XPROD_EDGE), Reducer 2 (XPROD_EDGE)
+        Reducer 3 <- Map 4 (XPROD_EDGE), Reducer 2 (XPROD_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -480,12 +478,6 @@ STAGE PLANS:
                       sort order: 
                       Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: string)
-                  Select Operator
-                    Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      null sort order: 
-                      sort order: 
-                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Map 4 
@@ -495,6 +487,10 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 5312 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
+                    Reduce Output Operator
+                      null sort order: 
+                      sort order: 
+                      Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                     Reduce Output Operator
                       null sort order: 
                       sort order: 
