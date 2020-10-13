@@ -14942,10 +14942,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   /**
    * Generate the query string for this query (with fully resolved table references).
+   * @return The query string with resolved references. NULL if an error occurred.
    */
   protected String getQueryStringForCache(ASTNode ast) {
-    unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
-    return ctx.getTokenRewriteStream().toString(ast.getTokenStartIndex(), ast.getTokenStopIndex());
+    // Use the UnparseTranslator to resolve unqualified table names.
+    String queryString = getQueryStringFromAst(ast);
+
+    // Re-using the TokenRewriteStream map for views so we do not overwrite the current TokenRewriteStream
+    String rewriteStreamName = "__qualified_query_string__";
+    try {
+      ASTNode astNode = ParseUtils.parse(queryString, ctx, rewriteStreamName);
+      TokenRewriteStream tokenRewriteStream = ctx.getViewTokenRewriteStream(rewriteStreamName);
+      return rewriteQueryWithQualifiedNames(astNode, tokenRewriteStream);
+    } catch (Exception err) {
+      LOG.error("Unexpected error while reparsing the query string [" + queryString + "]", err);
+      // Don't fail the query - just return null (caller should skip cache lookup).
+      return null;
+    }
   }
 
   private ValidTxnWriteIdList getQueryValidTxnWriteIdList() throws SemanticException {
