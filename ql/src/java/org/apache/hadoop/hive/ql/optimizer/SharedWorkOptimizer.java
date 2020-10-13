@@ -123,7 +123,7 @@ import static org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils.*;
 public class SharedWorkOptimizer extends Transform {
 
   private final static Logger LOG = LoggerFactory.getLogger(SharedWorkOptimizer.class);
-  private static boolean doTSM = false;
+  private static boolean doTSM = true;
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -187,8 +187,7 @@ public class SharedWorkOptimizer extends Transform {
       swo0 = swo;
     }
     // Execute shared work optimization
-    swo0.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables,
-        Mode.SubtreeMerge);
+    swo0.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables, Mode.SubtreeMerge);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("After SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
@@ -224,25 +223,9 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
-    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
-      new BaseSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables,
-          Mode.SubtreeMerge);
-
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("After SharedWorkOptimizer merging TS schema:\n" + Operator.toString(pctx.getTopOps().values()));
-      }
-    }
-
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DPPUNION_OPTIMIZATION)) {
-      //      BaseSharedWorkOptimizer swo;
-      if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
-        swo = new BaseSharedWorkOptimizer();
-      } else {
-        swo = new SchemaAwareSharedWorkOptimizer();
-      }
 
       boolean optimized = swo.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables, Mode.DPPUnion);
-
       if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
         // If it was further optimized, do a round of extended shared work optimizer
         sharedWorkExtendedOptimization(pctx, optimizerCache);
