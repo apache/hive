@@ -500,13 +500,7 @@ public class SharedWorkOptimizer extends Transform {
               // Replace filter
               retainableTsOp.getConf().setFilterExpr((ExprNodeGenericFuncDesc) exprNode);
               // Replace table scan operator
-              List<Operator<? extends OperatorDesc>> allChildren =
-                  Lists.newArrayList(discardableTsOp.getChildOperators());
-              for (Operator<? extends OperatorDesc> op : allChildren) {
-                op.replaceParent(discardableTsOp, retainableTsOp);
-                retainableTsOp.getChildOperators().add(op);
-              }
-              discardableTsOp.getChildOperators().clear();
+              adoptChildren(retainableTsOp, discardableTsOp);
 
               LOG.debug("Merging {} into {}", discardableTsOp, retainableTsOp);
             }
@@ -711,6 +705,15 @@ public class SharedWorkOptimizer extends Transform {
         }
       }
     }
+  }
+
+  private static void adoptChildren(Operator<?> target, Operator<?> donor) {
+    List<Operator<?>> children = donor.getChildOperators();
+    for (Operator<?> c : children) {
+      c.replaceParent(donor, target);
+    }
+    target.getChildOperators().addAll(children);
+    children.clear();
   }
 
   private static boolean isSemijoinExpr(ExprNodeDesc expr) {
