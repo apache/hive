@@ -399,7 +399,7 @@ public class SQLAuthorizationUtils {
       if ((fileMatches != null ) && (fileMatches.length > 1)){
         LOG.debug("Checking fs privileges for multiple files that matched {}",
             filePath.toString());
-        addPrivilegesFromFS(userName, availPrivs, fs, fileMatches, true);
+        addPrivilegesFromFS(conf, userName, availPrivs, fs, fileMatches, true);
       } else {
         FileStatus fileStatus = FileUtils.getFileStatusOrNull(fs, filePath);
         boolean pickParent = (fileStatus == null); // did we find the file/dir itself?
@@ -410,11 +410,11 @@ public class SQLAuthorizationUtils {
         if (pickParent){
           LOG.debug("Checking fs privileges for parent path {} for nonexistent {}",
               path.toString(), filePath.toString());
-          addPrivilegesFromFS(userName, availPrivs, fs, fileStatus, false);
+          addPrivilegesFromFS(conf, userName, availPrivs, fs, fileStatus, false);
         } else {
           LOG.debug("Checking fs privileges for path itself {}, originally specified as {}",
               path.toString(), filePath.toString());
-          addPrivilegesFromFS(userName, availPrivs, fs, fileStatus, true);
+          addPrivilegesFromFS(conf, userName, availPrivs, fs, fileStatus, true);
         }
       }
     } catch (Exception e) {
@@ -425,28 +425,28 @@ public class SQLAuthorizationUtils {
   }
 
   private static void addPrivilegesFromFS(
-      String userName, RequiredPrivileges availPrivs, FileSystem fs,
+      HiveConf conf, String userName, RequiredPrivileges availPrivs, FileSystem fs,
       FileStatus[] fileStatuses, boolean recurse) throws Exception {
     // We need to obtain an intersection of all the privileges
     if (fileStatuses.length > 0){
-      Set<SQLPrivTypeGrant> privs = getPrivilegesFromFS(userName, fs, fileStatuses[0], recurse);
+      Set<SQLPrivTypeGrant> privs = getPrivilegesFromFS(conf, userName, fs, fileStatuses[0], recurse);
 
       for (int i = 1; (i < fileStatuses.length) && (privs.size() > 0); i++){
-        privs.retainAll(getPrivilegesFromFS(userName, fs, fileStatuses[i], recurse));
+        privs.retainAll(getPrivilegesFromFS(conf, userName, fs, fileStatuses[i], recurse));
       }
       availPrivs.addAll(privs.toArray(new SQLPrivTypeGrant[privs.size()]));
     }
   }
 
   private static void addPrivilegesFromFS(
-      String userName, RequiredPrivileges availPrivs, FileSystem fs,
+      HiveConf conf, String userName, RequiredPrivileges availPrivs, FileSystem fs,
       FileStatus fileStatus, boolean recurse) throws Exception {
-    Set<SQLPrivTypeGrant> privs = getPrivilegesFromFS(userName, fs, fileStatus, recurse);
+    Set<SQLPrivTypeGrant> privs = getPrivilegesFromFS(conf, userName, fs, fileStatus, recurse);
     availPrivs.addAll(privs.toArray(new SQLPrivTypeGrant[privs.size()]));
   }
 
   private static Set<SQLPrivTypeGrant> getPrivilegesFromFS(
-      String userName, FileSystem fs,
+      HiveConf conf, String userName, FileSystem fs,
       FileStatus fileStatus, boolean recurse) throws Exception {
     Set<SQLPrivTypeGrant> privs = new HashSet<SQLPrivTypeGrant>();
     LOG.info("Checking fs privileges of user {} for {} {} ",
@@ -454,11 +454,13 @@ public class SQLAuthorizationUtils {
     if (FileUtils.isOwnerOfFileHierarchy(fs, fileStatus, userName, recurse)) {
       privs.add(SQLPrivTypeGrant.OWNER_PRIV);
     }
-    if (FileUtils.isActionPermittedForFileHierarchy(fs, fileStatus, userName, FsAction.WRITE, recurse)) {
+    if (FileUtils.isActionPermittedForFileHierarchy(fs, fileStatus, userName, FsAction.WRITE, recurse,
+      conf.getBoolVar(ConfVars.HIVE_STORAGE_BASED_AUTHORIZATION_USING_FILESYSTEM_IMPLEMENTATION))) {
       privs.add(SQLPrivTypeGrant.INSERT_NOGRANT);
       privs.add(SQLPrivTypeGrant.DELETE_NOGRANT);
     }
-    if (FileUtils.isActionPermittedForFileHierarchy(fs, fileStatus, userName, FsAction.READ, recurse)) {
+    if (FileUtils.isActionPermittedForFileHierarchy(fs, fileStatus, userName, FsAction.READ, recurse,
+        conf.getBoolVar(ConfVars.HIVE_STORAGE_BASED_AUTHORIZATION_USING_FILESYSTEM_IMPLEMENTATION))) {
       privs.add(SQLPrivTypeGrant.SELECT_NOGRANT);
     }
     LOG.debug("addPrivilegesFromFS:[{}] asked for privileges on [{}] with recurse={} and obtained:[{}]",

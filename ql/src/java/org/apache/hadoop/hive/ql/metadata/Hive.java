@@ -4623,7 +4623,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
           // Check if owner has write permission, else it will have to copy
           if (!(isOwned &&
               FileUtils.isActionPermittedForFileHierarchy(
-                  srcFs, srcs, configuredOwner, FsAction.WRITE, false))) {
+                  srcFs, srcs, configuredOwner, FsAction.WRITE, false,
+                  conf.getBoolVar(ConfVars.HIVE_STORAGE_BASED_AUTHORIZATION_USING_FILESYSTEM_IMPLEMENTATION)))) {
             return true;
           }
         } else {

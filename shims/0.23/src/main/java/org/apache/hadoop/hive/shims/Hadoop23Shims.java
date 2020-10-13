@@ -941,10 +941,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
-  public void checkFileAccess(FileSystem fs, FileStatus stat, FsAction action)
+  public void checkFileAccess(FileSystem fs, FileStatus stat, FsAction action, boolean useFilesystemImplementation)
       throws IOException, AccessControlException, Exception {
     try {
-      if (accessMethod == null) {
+      if (useFilesystemImplementation) {
+        fs.access(stat.getPath(), action);
+      } else if (accessMethod == null) {
         // Have to rely on Hive implementation of filesystem permission checks.
         DefaultFileAccess.checkFileAccess(fs, stat, action);
       } else {

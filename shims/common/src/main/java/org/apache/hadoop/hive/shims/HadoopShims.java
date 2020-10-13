@@ -446,11 +446,12 @@ public interface HadoopShims {
    * @param fs
    * @param status
    * @param action
+   * @param useFilesystemImplementation
    * @throws IOException
    * @throws AccessControlException
    * @throws Exception
    */
-  public void checkFileAccess(FileSystem fs, FileStatus status, FsAction action)
+  public void checkFileAccess(FileSystem fs, FileStatus status, FsAction action, boolean useFilesystemImplementation)
       throws IOException, AccessControlException, Exception;
 
   /**

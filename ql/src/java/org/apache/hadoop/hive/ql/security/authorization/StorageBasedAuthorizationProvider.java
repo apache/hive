@@ -409,10 +409,12 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     }
 
     final FileSystem fs = path.getFileSystem(conf);
+    LOG.info("#Adesh Filesystem class is: " + fs.getClass().getName());
 
     FileStatus pathStatus = FileUtils.getFileStatusOrNull(fs, path);
     if (pathStatus != null) {
-      checkPermissions(fs, pathStatus, actions, authenticator.getUserName());
+      checkPermissions(fs, pathStatus, actions, authenticator.getUserName(),
+        conf.getBoolean(HiveConf.ConfVars.HIVE_STORAGE_BASED_AUTHORIZATION_USING_FILESYSTEM_IMPLEMENTATION.name(), false));
     } else if (path.getParent() != null) {
       // find the ancestor which exists to check its permissions
       Path par = path.getParent();
@@ -425,7 +427,8 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
         par = par.getParent();
       }
 
-      checkPermissions(fs, parStatus, actions, authenticator.getUserName());
+      checkPermissions(fs, parStatus, actions, authenticator.getUserName(),
+        conf.getBoolean(HiveConf.ConfVars.HIVE_STORAGE_BASED_AUTHORIZATION_USING_FILESYSTEM_IMPLEMENTATION.name(), false));
     }
   }
 
@@ -435,7 +438,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
    */
   @SuppressWarnings("deprecation")
   protected static void checkPermissions(final FileSystem fs, final FileStatus stat,
-      final EnumSet<FsAction> actions, String user) throws IOException,
+      final EnumSet<FsAction> actions, String user, boolean useFilesystemImplementation) throws IOException,
       AccessControlException, HiveException {
 
     if (stat == null) {
@@ -447,7 +450,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       checkActions = checkActions.or(action);
     }
     try {
-      FileUtils.checkFileAccessWithImpersonation(fs, stat, checkActions, user);
+      FileUtils.checkFileAccessWithImpersonation(fs, stat, checkActions, user, useFilesystemImplementation);
     } catch (Exception err) {
       // fs.permission.AccessControlException removed by HADOOP-11356, but Hive users on older
       // Hadoop versions may still see this exception .. have to reference by name.

@@ -2560,7 +2560,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // We just check for writing permissions. If it fails with AccessControException, then it
       // means the location may be read-only.
-      FileUtils.checkFileAccessWithImpersonation(fs, status, FsAction.WRITE, ugi.getUserName());
+      FileUtils.checkFileAccessWithImpersonation(fs, status, FsAction.WRITE, ugi.getUserName(),
+        conf.getBoolVar(ConfVars.HIVE_STORAGE_BASED_AUTHORIZATION_USING_FILESYSTEM_IMPLEMENTATION));
 
       // Path has writing permissions
       return false;

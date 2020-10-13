@@ -3350,6 +3350,11 @@ public class HiveConf extends Configuration {
     HIVE_AUTHORIZATION_TASK_FACTORY("hive.security.authorization.task.factory",
         "org.apache.hadoop.hive.ql.parse.authorization.HiveAuthorizationTaskFactoryImpl",
         "Authorization DDL task factory implementation"),
+    HIVE_STORAGE_BASED_AUTHORIZATION_USING_FILESYSTEM_IMPLEMENTATION(
+      "hive.storage.based.authorization.using.filesystem.implementation",
+      "false",
+      "Use specific filesystem implementation of 'access' method to check for permissions instead of relying " +
+        "on default access method defined in FileSystem class"),
 
     // if this is not set default value is set during config initialization
     // Default value can't be set in this constructor as it would refer names in other ConfVars

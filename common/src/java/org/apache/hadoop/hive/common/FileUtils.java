@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
 import java.security.AccessControlException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
@@ -393,9 +392,9 @@ public final class FileUtils {
   }
 
   public static void checkFileAccessWithImpersonation(final FileSystem fs, final FileStatus stat,
-      final FsAction action, final String user)
+      final FsAction action, final String user, boolean useFilesystemImplementation)
       throws IOException, AccessControlException, InterruptedException, Exception {
-    checkFileAccessWithImpersonation(fs, stat, action, user, null);
+    checkFileAccessWithImpersonation(fs, stat, action, user, null, useFilesystemImplementation);
   }
 
   /**
@@ -420,14 +419,15 @@ public final class FileUtils {
    * @throws Exception
    */
   public static void checkFileAccessWithImpersonation(final FileSystem fs,
-      final FileStatus stat, final FsAction action, final String user, final List<FileStatus> children)
+      final FileStatus stat, final FsAction action, final String user, final List<FileStatus> children,
+                                                      boolean useFilesystemImplementation)
           throws IOException, AccessControlException, InterruptedException, Exception {
     UserGroupInformation ugi = Utils.getUGI();
     String currentUser = ugi.getShortUserName();
 
     if (user == null || currentUser.equals(user)) {
       // No need to impersonate user, do the checks as the currently configured user.
-      ShimLoader.getHadoopShims().checkFileAccess(fs, stat, action);
+      ShimLoader.getHadoopShims().checkFileAccess(fs, stat, action, useFilesystemImplementation);
       addChildren(fs, stat.getPath(), children);
       return;
     }
@@ -440,7 +440,7 @@ public final class FileUtils {
         @Override
         public Object run() throws Exception {
           FileSystem fsAsUser = FileSystem.get(fs.getUri(), fs.getConf());
-          ShimLoader.getHadoopShims().checkFileAccess(fsAsUser, stat, action);
+          ShimLoader.getHadoopShims().checkFileAccess(fsAsUser, stat, action, useFilesystemImplementation);
           addChildren(fsAsUser, stat.getPath(), children);
           return null;
         }
@@ -476,13 +476,14 @@ public final class FileUtils {
    * @throws IOException
    */
   public static boolean isActionPermittedForFileHierarchy(FileSystem fs, FileStatus fileStatus,
-                                                          String userName, FsAction action) throws Exception {
-    return isActionPermittedForFileHierarchy(fs,fileStatus,userName, action, true);
+                                                          String userName, FsAction action,
+                                                          boolean useFilesystemImplementation) throws Exception {
+    return isActionPermittedForFileHierarchy(fs,fileStatus,userName, action, true, useFilesystemImplementation);
   }
 
   @SuppressFBWarnings(value = "DLS_DEAD_LOCAL_STORE", justification = "Intended, dir privilege all-around bug")
   public static boolean isActionPermittedForFileHierarchy(FileSystem fs, FileStatus fileStatus,
-      String userName, FsAction action, boolean recurse) throws Exception {
+      String userName, FsAction action, boolean recurse, boolean useFilesystemImplementation) throws Exception {
     boolean isDir = fileStatus.isDirectory();
 
     // for dirs user needs execute privileges as well
@@ -494,7 +495,7 @@ public final class FileUtils {
     }
 
     try {
-      checkFileAccessWithImpersonation(fs, fileStatus, action, userName, subDirsToCheck);
+      checkFileAccessWithImpersonation(fs, fileStatus, action, userName, subDirsToCheck, useFilesystemImplementation);
     } catch (AccessControlException err) {
       // Action not permitted for user
       LOG.warn("Action " + action + " denied on " + fileStatus.getPath() + " for user " + userName);
@@ -509,7 +510,7 @@ public final class FileUtils {
     // check all children
     for (FileStatus childStatus : subDirsToCheck) {
       // check children recursively - recurse is true if we're here.
-      if (!isActionPermittedForFileHierarchy(fs, childStatus, userName, action, true)) {
+      if (!isActionPermittedForFileHierarchy(fs, childStatus, userName, action, true, useFilesystemImplementation)) {
         return false;
       }
     }
@@ -794,7 +795,8 @@ public final class FileUtils {
       // no file/dir to be deleted
       return;
     }
-    FileUtils.checkFileAccessWithImpersonation(fs, stat, FsAction.WRITE, user);
+    FileUtils.checkFileAccessWithImpersonation(fs, stat, FsAction.WRITE, user,
+      conf.getBoolean(HiveConf.ConfVars.HIVE_STORAGE_BASED_AUTHORIZATION_USING_FILESYSTEM_IMPLEMENTATION.name(), false));
 
     HadoopShims shims = ShimLoader.getHadoopShims();
     if (!shims.supportStickyBit()) {
