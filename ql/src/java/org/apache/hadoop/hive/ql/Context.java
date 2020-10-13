@@ -336,6 +336,7 @@ public class Context {
     opContext = new CompilationOpContext();
 
     viewsTokenRewriteStreams = new HashMap<>();
+    enableUnparse = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_QUERY_RESULTS_CACHE_ENABLED);
   }
 
   protected Context(Context ctx) {
