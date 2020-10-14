@@ -1878,8 +1878,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_QUERY_TEXT) &&
               !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
-              getQB().hasTableDefined() &&
-              !ctx.isSkipTableMasking()) {
+              getQB().hasTableDefined()) {
         String expandedQueryText = QueryTextExpander.with(ctx.getTokenRewriteStream(), unparseTranslator)
                 .toString(ast.getTokenStartIndex(), ast.getTokenStopIndex());
         List<RelOptMaterialization> relOptMaterializationList = db.getMaterialization(expandedQueryText);
