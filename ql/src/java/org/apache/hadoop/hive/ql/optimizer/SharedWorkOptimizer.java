@@ -124,6 +124,12 @@ public class SharedWorkOptimizer extends Transform {
 
   private final static Logger LOG = LoggerFactory.getLogger(SharedWorkOptimizer.class);
   private static boolean doTSM = true;
+  private static boolean union_chk = true;
+  private static boolean chk_dummy = true;
+  private static boolean chk_asc = true;
+  private static boolean chk_w1 = true;
+  private static boolean chk_w2 = true;
+  private static boolean chk_dag_cycle = true;
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -1321,23 +1327,7 @@ public class SharedWorkOptimizer extends Transform {
       } else {
         return false;
       }
-      Set<Operator<?>> ascendants = findAscendantWorkOperators(pctx, cache, op);
-      if (ascendants.contains(tsOp2)) {
-        // This should not happen, we cannot merge
-        return false;
-      }
-
     }
-    final Set<Operator<?>> workOps1 = findWorkOperators(cache, tsOp1);
-    for (Operator<?> op : workOps1) {
-      if (op instanceof UnionOperator) {
-        return false;
-      }
-      if (op instanceof DummyStoreOperator) {
-        return false;
-      }
-    }
-
     return true;
   }
 
@@ -1736,16 +1726,33 @@ public class SharedWorkOptimizer extends Transform {
     intersection.addAll(workOps1);
     intersection.retainAll(workOps2);
 
-    for (Operator<?> op : intersection) {
-      if (op instanceof UnionOperator) {
-        // We cannot merge (1.1)
+      for (Operator<?> op : intersection) {
+      if (union_chk) {
+          if (op instanceof UnionOperator) {
+            // We cannot merge (1.1)
+            return false;
+          }
+        }
+      if (chk_dummy) {
+          if (op instanceof DummyStoreOperator) {
+            // We cannot merge (1.2)
+            return false;
+          }
+        }
+      }
+    if (chk_asc) {
+      Set<Operator<?>> ascendants = findAscendantWorkOperators(pctx, optimizerCache, op1);
+      if (ascendants.contains(op2)) {
+        // This should not happen, we cannot merge
         return false;
       }
-      if (op instanceof DummyStoreOperator) {
-        // We cannot merge (1.2)
+      Set<Operator<?>> ascendants2 = findAscendantWorkOperators(pctx, optimizerCache, op2);
+      if (ascendants2.contains(op1)) {
+        // This should not happen, we cannot merge
         return false;
       }
     }
+
     // 2) We check whether output works when we merge the operators will collide.
     //
     //   Work1   Work2    (merge TS in W1 & W2)        Work1
@@ -1757,9 +1764,11 @@ public class SharedWorkOptimizer extends Transform {
     // into same work y.
     final Set<Operator<?>> outputWorksOps1 = findChildWorkOperators(pctx, optimizerCache, op1);
     final Set<Operator<?>> outputWorksOps2 = findChildWorkOperators(pctx, optimizerCache, op2);
-    if (!Collections.disjoint(outputWorksOps1, outputWorksOps2)) {
-      // We cannot merge
-      return false;
+    if (chk_w1) {
+      if (!Collections.disjoint(outputWorksOps1, outputWorksOps2)) {
+        // We cannot merge
+        return false;
+      }
     }
     // 3) We check whether we will end up with same operators inputing on same work.
     //
@@ -1781,9 +1790,11 @@ public class SharedWorkOptimizer extends Transform {
             sr.discardableInputOps;
     final Set<Operator<?>> inputWorksOps2 =
         findParentWorkOperators(pctx, optimizerCache, op2, excludeOps2);
+    if (chk_w2) {
     if (!Collections.disjoint(inputWorksOps1, inputWorksOps2)) {
       // We cannot merge
       return false;
+    }
     }
     // 4) We check whether one of the operators is part of a work that is an input for
     // the work of the other operator.
@@ -1799,9 +1810,11 @@ public class SharedWorkOptimizer extends Transform {
             findDescendantWorkOperators(pctx, optimizerCache, op1, sr.discardableInputOps);
     final Set<Operator<?>> descendantWorksOps2 =
             findDescendantWorkOperators(pctx, optimizerCache, op2, sr.discardableInputOps);
-    if (!Collections.disjoint(descendantWorksOps1, workOps2)
-            || !Collections.disjoint(workOps1, descendantWorksOps2)) {
-      return false;
+    if (chk_dag_cycle) {
+      if (!Collections.disjoint(descendantWorksOps1, workOps2)
+              || !Collections.disjoint(workOps1, descendantWorksOps2)) {
+        return false;
+      }
     }
     return true;
   }
@@ -1877,7 +1890,6 @@ public class SharedWorkOptimizer extends Transform {
     }
     return result;
   }
-
   private static Set<Operator<?>> findChildWorkOperators(ParseContext pctx,
           SharedWorkOptimizerCache optimizerCache, Operator<?> start) {
     // Find operators in work
