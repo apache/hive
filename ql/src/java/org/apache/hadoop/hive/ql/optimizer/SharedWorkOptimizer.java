@@ -124,13 +124,13 @@ public class SharedWorkOptimizer extends Transform {
 
   private final static Logger LOG = LoggerFactory.getLogger(SharedWorkOptimizer.class);
   private static boolean doTSM = true;
-  private static boolean union_chk = true;
-  private static boolean chk_dummy = true;
-  private static boolean chk_asc = true;
-  private static boolean chk_w1 = true;
-  private static boolean chk_w2 = true;
-  private static boolean chk_dag_cycle = true;
-  private static boolean chk_og;
+  private static boolean union_chk = false;
+  private static boolean chk_dummy = false;
+  private static boolean chk_asc = false;
+  private static boolean chk_w1 = false;
+  private static boolean chk_w2 = false;
+  private static boolean chk_dag_cycle = false;
+  private static boolean chk_og = true;
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -1734,6 +1734,7 @@ public class SharedWorkOptimizer extends Transform {
     Set<Operator<?>> intersection = Sets.newIdentityHashSet();
     intersection.addAll(workOps1);
     intersection.retainAll(workOps2);
+
 
       for (Operator<?> op : intersection) {
       if (union_chk) {

@@ -1,14 +1,6 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
-Warning: Shuffle Join MERGEJOIN[405][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 23' is a cross product
-=======
-Warning: Shuffle Join MERGEJOIN[405][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 22' is a cross product
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
-=======
 Warning: Shuffle Join MERGEJOIN[405][tables = [$hdt$_4, $hdt$_5]] in Stage 'Reducer 14' is a cross product
 Warning: Shuffle Join MERGEJOIN[409][tables = [$hdt$_5, $hdt$_6]] in Stage 'Reducer 29' is a cross product
 Warning: Shuffle Join MERGEJOIN[413][tables = [$hdt$_6, $hdt$_7]] in Stage 'Reducer 44' is a cross product
->>>>>>> parent of cbd5bd9c10f... Revert "add changes"
 PREHOOK: query: explain
 with ss_items as
  (select i_item_id item_id
@@ -162,20 +154,6 @@ Reducer 14 <- Map 17 (CUSTOM_SIMPLE_EDGE), Reducer 13 (CUSTOM_SIMPLE_EDGE)
 Reducer 15 <- Map 18 (SIMPLE_EDGE), Reducer 14 (SIMPLE_EDGE)
 Reducer 16 <- Reducer 15 (SIMPLE_EDGE)
 Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 8 (SIMPLE_EDGE)
-<<<<<<< HEAD
-<<<<<<< HEAD
-Reducer 20 <- Map 15 (SIMPLE_EDGE), Reducer 23 (SIMPLE_EDGE)
-Reducer 21 <- Reducer 20 (SIMPLE_EDGE)
-Reducer 22 <- Map 15 (CUSTOM_SIMPLE_EDGE)
-Reducer 23 <- Map 15 (CUSTOM_SIMPLE_EDGE), Reducer 22 (CUSTOM_SIMPLE_EDGE)
-=======
-Reducer 20 <- Map 15 (SIMPLE_EDGE), Reducer 22 (SIMPLE_EDGE)
-Reducer 21 <- Reducer 20 (SIMPLE_EDGE)
-Reducer 22 <- Map 15 (CUSTOM_SIMPLE_EDGE), Reducer 23 (CUSTOM_SIMPLE_EDGE)
-Reducer 23 <- Map 15 (CUSTOM_SIMPLE_EDGE)
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
-Reducer 3 <- Reducer 16 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
-=======
 Reducer 20 <- Map 19 (SIMPLE_EDGE), Map 23 (SIMPLE_EDGE)
 Reducer 21 <- Reducer 20 (SIMPLE_EDGE), Reducer 25 (SIMPLE_EDGE)
 Reducer 22 <- Reducer 21 (SIMPLE_EDGE)
@@ -189,7 +167,6 @@ Reducer 31 <- Reducer 30 (SIMPLE_EDGE)
 Reducer 35 <- Map 34 (SIMPLE_EDGE), Map 38 (SIMPLE_EDGE)
 Reducer 36 <- Reducer 35 (SIMPLE_EDGE), Reducer 40 (SIMPLE_EDGE)
 Reducer 37 <- Reducer 36 (SIMPLE_EDGE)
->>>>>>> parent of cbd5bd9c10f... Revert "add changes"
 Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
 Reducer 40 <- Map 39 (SIMPLE_EDGE), Reducer 46 (SIMPLE_EDGE)
 Reducer 41 <- Reducer 40 (CUSTOM_SIMPLE_EDGE)
@@ -268,84 +245,34 @@ Stage-0
                                                     Output:["_col0","_col1"]
                                                     Filter Operator [FIL_495] (rows=73049 width=98)
                                                       predicate:(d_week_seq is not null and d_date is not null)
-<<<<<<< HEAD
-                                                       Please refer to the previous TableScan [TS_6]
-<<<<<<< HEAD
-                                              <-Reducer 23 [SIMPLE_EDGE]
-=======
-                                              <-Reducer 22 [SIMPLE_EDGE]
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
-                                                SHUFFLE [RS_27]
-=======
                                                       TableScan [TS_121] (rows=73049 width=98)
                                                         default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date","d_week_seq"]
                                               <-Reducer 44 [SIMPLE_EDGE]
                                                 SHUFFLE [RS_127]
->>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                                   PartitionCols:_col1
                                                   Merge Join Operator [MERGEJOIN_413] (rows=1 width=4)
                                                     Conds:(Inner),Output:["_col1"]
-<<<<<<< HEAD
-                                                  <-Map 15 [CUSTOM_SIMPLE_EDGE] vectorized
-<<<<<<< HEAD
-                                                    PARTITION_ONLY_SHUFFLE [RS_432]
-                                                      Select Operator [SEL_428] (rows=1 width=4)
-=======
                                                   <-Map 47 [CUSTOM_SIMPLE_EDGE] vectorized
                                                     PARTITION_ONLY_SHUFFLE [RS_494]
                                                       Select Operator [SEL_493] (rows=1 width=4)
->>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                                         Output:["_col0"]
                                                         Filter Operator [FIL_492] (rows=1 width=98)
                                                           predicate:((d_date = '1998-02-19') and d_week_seq is not null)
-<<<<<<< HEAD
-                                                           Please refer to the previous TableScan [TS_6]
-                                                  <-Reducer 22 [CUSTOM_SIMPLE_EDGE] vectorized
-=======
-                                                    PARTITION_ONLY_SHUFFLE [RS_431]
-                                                      Select Operator [SEL_427] (rows=1 width=4)
-                                                        Output:["_col0"]
-                                                        Filter Operator [FIL_423] (rows=1 width=98)
-                                                          predicate:((d_date = '1998-02-19') and d_week_seq is not null)
-                                                           Please refer to the previous TableScan [TS_6]
-                                                  <-Reducer 23 [CUSTOM_SIMPLE_EDGE] vectorized
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
-                                                    PARTITION_ONLY_SHUFFLE [RS_437]
-                                                      Select Operator [SEL_436] (rows=1 width=8)
-                                                        Filter Operator [FIL_435] (rows=1 width=8)
-=======
                                                           TableScan [TS_118] (rows=73049 width=98)
                                                             default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date","d_week_seq"]
                                                   <-Reducer 43 [CUSTOM_SIMPLE_EDGE] vectorized
                                                     PARTITION_ONLY_SHUFFLE [RS_491]
                                                       Select Operator [SEL_490] (rows=1 width=8)
                                                         Filter Operator [FIL_489] (rows=1 width=8)
->>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                                           predicate:(sq_count_check(_col0) <= 1)
                                                           Group By Operator [GBY_488] (rows=1 width=8)
                                                             Output:["_col0"],aggregations:["count(VALUE._col0)"]
-<<<<<<< HEAD
-                                                          <-Map 15 [CUSTOM_SIMPLE_EDGE] vectorized
-                                                            PARTITION_ONLY_SHUFFLE [RS_433]
-<<<<<<< HEAD
-                                                              Group By Operator [GBY_431] (rows=1 width=8)
-                                                                Output:["_col0"],aggregations:["count()"]
-                                                                Select Operator [SEL_427] (rows=1 width=94)
-                                                                  Filter Operator [FIL_423] (rows=1 width=94)
-=======
-                                                              Group By Operator [GBY_432] (rows=1 width=8)
-                                                                Output:["_col0"],aggregations:["count()"]
-                                                                Select Operator [SEL_428] (rows=1 width=94)
-                                                                  Filter Operator [FIL_424] (rows=1 width=94)
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
-=======
                                                           <-Map 42 [CUSTOM_SIMPLE_EDGE] vectorized
                                                             PARTITION_ONLY_SHUFFLE [RS_487]
                                                               Group By Operator [GBY_486] (rows=1 width=8)
                                                                 Output:["_col0"],aggregations:["count()"]
                                                                 Select Operator [SEL_485] (rows=1 width=94)
                                                                   Filter Operator [FIL_484] (rows=1 width=94)
->>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                                                     predicate:(d_date = '1998-02-19')
                                                                     TableScan [TS_109] (rows=73049 width=94)
                                                                       default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date"]

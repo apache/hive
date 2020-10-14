@@ -65,20 +65,6 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Map 1 <- Reducer 3 (BROADCAST_EDGE)
-<<<<<<< HEAD
-Map 16 <- Reducer 15 (BROADCAST_EDGE)
-Map 6 <- Map 1 (BROADCAST_EDGE), Reducer 17 (BROADCAST_EDGE)
-Reducer 10 <- Reducer 9 (SIMPLE_EDGE)
-Reducer 12 <- Map 11 (SIMPLE_EDGE), Map 13 (SIMPLE_EDGE)
-Reducer 15 <- Map 14 (SIMPLE_EDGE), Reducer 5 (BROADCAST_EDGE)
-Reducer 17 <- Map 16 (CUSTOM_SIMPLE_EDGE)
-Reducer 3 <- Map 2 (SIMPLE_EDGE)
-Reducer 4 <- Map 2 (SIMPLE_EDGE)
-Reducer 5 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
-Reducer 7 <- Map 6 (SIMPLE_EDGE), Reducer 12 (SIMPLE_EDGE)
-Reducer 8 <- Map 16 (SIMPLE_EDGE), Reducer 7 (SIMPLE_EDGE)
-Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
-=======
 Map 17 <- Reducer 13 (BROADCAST_EDGE)
 Map 4 <- Map 1 (BROADCAST_EDGE), Reducer 18 (BROADCAST_EDGE)
 Reducer 10 <- Map 11 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
@@ -91,7 +77,6 @@ Reducer 5 <- Map 4 (SIMPLE_EDGE), Reducer 10 (SIMPLE_EDGE)
 Reducer 6 <- Map 17 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
 Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
->>>>>>> parent of cbd5bd9c10f... Revert "add changes"
 
 Stage-0
   Fetch Operator
@@ -132,40 +117,20 @@ Stage-0
                                     PartitionCols:_col0
                                     Map Join Operator [MAPJOIN_209] (rows=10 width=202)
                                       Conds:(Inner),Output:["_col0","_col1"]
-<<<<<<< HEAD
-                                    <-Reducer 5 [BROADCAST_EDGE] vectorized
-=======
                                     <-Reducer 16 [BROADCAST_EDGE] vectorized
->>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                       BROADCAST [RS_205]
                                         Select Operator [SEL_204] (rows=1 width=8)
                                           Filter Operator [FIL_203] (rows=1 width=8)
                                             predicate:(sq_count_check(_col0) <= 1)
                                             Group By Operator [GBY_202] (rows=1 width=8)
                                               Output:["_col0"],aggregations:["count(VALUE._col0)"]
-<<<<<<< HEAD
-                                            <-Reducer 4 [CUSTOM_SIMPLE_EDGE] vectorized
-=======
                                             <-Reducer 15 [CUSTOM_SIMPLE_EDGE] vectorized
->>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                               PARTITION_ONLY_SHUFFLE [RS_201]
                                                 Group By Operator [GBY_200] (rows=1 width=8)
                                                   Output:["_col0"],aggregations:["count()"]
                                                   Select Operator [SEL_199] (rows=25 width=4)
                                                     Group By Operator [GBY_198] (rows=25 width=4)
                                                       Output:["_col0"],keys:KEY._col0
-<<<<<<< HEAD
-                                                    <-Map 2 [SIMPLE_EDGE] vectorized
-                                                      SHUFFLE [RS_188]
-                                                        PartitionCols:_col0
-                                                        Group By Operator [GBY_186] (rows=25 width=4)
-                                                          Output:["_col0"],keys:d_month_seq
-                                                          Select Operator [SEL_184] (rows=50 width=12)
-                                                            Output:["d_month_seq"]
-                                                            Filter Operator [FIL_182] (rows=50 width=12)
-                                                              predicate:((d_year = 2000) and (d_moy = 2))
-                                                              TableScan [TS_3] (rows=73049 width=12)
-=======
                                                     <-Map 14 [SIMPLE_EDGE] vectorized
                                                       SHUFFLE [RS_197]
                                                         PartitionCols:_col0
@@ -176,7 +141,6 @@ Stage-0
                                                             Filter Operator [FIL_194] (rows=50 width=12)
                                                               predicate:((d_year = 2000) and (d_moy = 2))
                                                               TableScan [TS_31] (rows=73049 width=12)
->>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_month_seq","d_year","d_moy"]
                                     <-Select Operator [SEL_208] (rows=10 width=202)
                                         Output:["_col0","_col1"]
@@ -208,30 +172,6 @@ Stage-0
                               SHUFFLE [RS_225]
                                 PartitionCols:_col5
                                 Map Join Operator [MAPJOIN_224] (rows=7192227 width=4)
-<<<<<<< HEAD
-                                  Conds:RS_194._col0=SEL_223._col0(Inner),Output:["_col4","_col5"]
-                                <-Map 1 [BROADCAST_EDGE] vectorized
-                                  BROADCAST [RS_194]
-                                    PartitionCols:_col0
-                                    Map Join Operator [MAPJOIN_193] (rows=660 width=4)
-                                      Conds:SEL_192._col1=RS_190._col0(Inner),Output:["_col0"]
-                                    <-Reducer 3 [BROADCAST_EDGE] vectorized
-                                      BROADCAST [RS_190]
-                                        PartitionCols:_col0
-                                        Group By Operator [GBY_189] (rows=25 width=4)
-                                          Output:["_col0"],keys:KEY._col0
-                                        <-Map 2 [SIMPLE_EDGE] vectorized
-                                          SHUFFLE [RS_187]
-                                            PartitionCols:_col0
-                                            Group By Operator [GBY_185] (rows=25 width=4)
-                                              Output:["_col0"],keys:d_month_seq
-                                              Select Operator [SEL_183] (rows=50 width=12)
-                                                Output:["d_month_seq"]
-                                                Filter Operator [FIL_181] (rows=50 width=12)
-                                                  predicate:((d_year = 2000) and (d_moy = 2) and d_month_seq is not null)
-                                                   Please refer to the previous TableScan [TS_3]
-                                    <-Select Operator [SEL_192] (rows=73049 width=8)
-=======
                                   Conds:RS_190._col0=SEL_223._col0(Inner),Output:["_col4","_col5"]
                                 <-Map 1 [BROADCAST_EDGE] vectorized
                                   BROADCAST [RS_190]
@@ -255,9 +195,8 @@ Stage-0
                                                   TableScan [TS_3] (rows=73049 width=12)
                                                     default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_month_seq","d_year","d_moy"]
                                     <-Select Operator [SEL_188] (rows=73049 width=8)
->>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                         Output:["_col0","_col1"]
-                                        Filter Operator [FIL_191] (rows=73049 width=8)
+                                        Filter Operator [FIL_187] (rows=73049 width=8)
                                           predicate:(d_date_sk is not null and d_month_seq is not null)
                                           TableScan [TS_0] (rows=73049 width=8)
                                             default@date_dim,d,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_month_seq"]
