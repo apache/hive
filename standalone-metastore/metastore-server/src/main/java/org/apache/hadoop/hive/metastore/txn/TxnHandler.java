@@ -2117,7 +2117,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           throw new MetaException(MessageFormat
               .format("Invalid txnId seed {}, the highWaterMark is {}", rqst.getSeedTxnId(), highWaterMark));
         }
-        TxnDbUtil.seedTxnSequence(dbConn, stmt, rqst.getSeedTxnId());
+        TxnDbUtil.seedTxnSequence(dbConn, conf, stmt, rqst.getSeedTxnId());
         dbConn.commit();
 
       } catch (SQLException e) {
@@ -4162,7 +4162,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (dbProduct != null) return;
     try {
       String s = conn.getMetaData().getDatabaseProductName();
-      dbProduct = DatabaseProduct.determineDatabaseProduct(s);
+      dbProduct = DatabaseProduct.determineDatabaseProduct(s, conf);
       if (dbProduct.isUNDEFINED()) {
         String msg = "Unrecognized database product name <" + s + ">";
         LOG.error(msg);

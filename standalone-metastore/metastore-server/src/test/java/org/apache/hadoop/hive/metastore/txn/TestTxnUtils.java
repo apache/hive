@@ -180,7 +180,7 @@ public class TestTxnUtils {
 
     DatabaseProduct.reset();
     SQLGenerator sqlGenerator =
-      new SQLGenerator(DatabaseProduct.determineDatabaseProduct(DatabaseProduct.ORACLE_NAME), conf);
+      new SQLGenerator(DatabaseProduct.determineDatabaseProduct(DatabaseProduct.ORACLE_NAME, conf), conf);
     List<String> rows = new ArrayList<>();
     rows.add("'yellow', 1");
     List<String> sql = sqlGenerator.createInsertValuesStmt("colors(name, category)", rows);
@@ -203,7 +203,7 @@ public class TestTxnUtils {
     
     DatabaseProduct.reset();
     sqlGenerator =
-      new SQLGenerator(DatabaseProduct.determineDatabaseProduct(DatabaseProduct.MYSQL_NAME), conf);
+      new SQLGenerator(DatabaseProduct.determineDatabaseProduct(DatabaseProduct.MYSQL_NAME, conf), conf);
     rows.clear();
     rows.add("'yellow', 1");
     sql = sqlGenerator.createInsertValuesStmt("colors(name, category)", rows);
@@ -223,7 +223,7 @@ public class TestTxnUtils {
     Assert.assertEquals("Wrong stmt", "insert into colors(name, category) values('G',997),('G',998),('G',999)", sql.get(1));
 
     DatabaseProduct.reset();
-    sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(DatabaseProduct.SQL_SERVER_NAME), conf);
+    sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(DatabaseProduct.SQL_SERVER_NAME, conf), conf);
     String modSql = sqlGenerator.addForUpdateClause("select nl_next from NEXT_LOCK_ID");
     Assert.assertEquals("select nl_next from NEXT_LOCK_ID with (updlock)", modSql);
     modSql = sqlGenerator.addForUpdateClause("select MT_COMMENT from AUX_TABLE where MT_KEY1='CheckLock' and MT_KEY2=0");

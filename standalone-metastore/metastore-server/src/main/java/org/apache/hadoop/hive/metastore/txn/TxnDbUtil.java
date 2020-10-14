@@ -93,7 +93,7 @@ public final class TxnDbUtil {
     try {
       conn = getConnection(conf);
       String s = conn.getMetaData().getDatabaseProductName();
-      DatabaseProduct dbProduct = DatabaseProduct.determineDatabaseProduct(s);
+      DatabaseProduct dbProduct = DatabaseProduct.determineDatabaseProduct(s, conf);
       stmt = conn.createStatement();
       if (checkDbPrepared(stmt)) {
         return;
@@ -218,22 +218,22 @@ public final class TxnDbUtil {
       }
 
       // We want to try these, whether they succeed or fail.
-      success &= truncateTable(conn, stmt, "TXN_COMPONENTS");
-      success &= truncateTable(conn, stmt, "COMPLETED_TXN_COMPONENTS");
-      success &= truncateTable(conn, stmt, "TXNS");
-      success &= truncateTable(conn, stmt, "TXN_TO_WRITE_ID");
-      success &= truncateTable(conn, stmt, "NEXT_WRITE_ID");
-      success &= truncateTable(conn, stmt, "HIVE_LOCKS");
-      success &= truncateTable(conn, stmt, "NEXT_LOCK_ID");
-      success &= truncateTable(conn, stmt, "COMPACTION_QUEUE");
-      success &= truncateTable(conn, stmt, "NEXT_COMPACTION_QUEUE_ID");
-      success &= truncateTable(conn, stmt, "COMPLETED_COMPACTIONS");
-      success &= truncateTable(conn, stmt, "AUX_TABLE");
-      success &= truncateTable(conn, stmt, "WRITE_SET");
-      success &= truncateTable(conn, stmt, "REPL_TXN_MAP");
-      success &= truncateTable(conn, stmt, "MATERIALIZATION_REBUILD_LOCKS");
+      success &= truncateTable(conn, conf, stmt, "TXN_COMPONENTS");
+      success &= truncateTable(conn, conf, stmt, "COMPLETED_TXN_COMPONENTS");
+      success &= truncateTable(conn, conf, stmt, "TXNS");
+      success &= truncateTable(conn, conf, stmt, "TXN_TO_WRITE_ID");
+      success &= truncateTable(conn, conf, stmt, "NEXT_WRITE_ID");
+      success &= truncateTable(conn, conf, stmt, "HIVE_LOCKS");
+      success &= truncateTable(conn, conf, stmt, "NEXT_LOCK_ID");
+      success &= truncateTable(conn, conf, stmt, "COMPACTION_QUEUE");
+      success &= truncateTable(conn, conf, stmt, "NEXT_COMPACTION_QUEUE_ID");
+      success &= truncateTable(conn, conf, stmt, "COMPLETED_COMPACTIONS");
+      success &= truncateTable(conn, conf, stmt, "AUX_TABLE");
+      success &= truncateTable(conn, conf, stmt, "WRITE_SET");
+      success &= truncateTable(conn, conf, stmt, "REPL_TXN_MAP");
+      success &= truncateTable(conn, conf, stmt, "MATERIALIZATION_REBUILD_LOCKS");
       try {
-        resetTxnSequence(conn, stmt);
+        resetTxnSequence(conn, conf, stmt);
         stmt.executeUpdate("INSERT INTO \"NEXT_LOCK_ID\" VALUES(1)");
         stmt.executeUpdate("INSERT INTO \"NEXT_COMPACTION_QUEUE_ID\" VALUES(1)");
       } catch (SQLException e) {
@@ -257,9 +257,10 @@ public final class TxnDbUtil {
     throw new RuntimeException("Failed to clean up txn tables");
   }
 
-  private static void resetTxnSequence(Connection conn, Statement stmt) throws SQLException, MetaException{
+  private static void resetTxnSequence(Connection conn, Configuration conf,
+      Statement stmt) throws SQLException, MetaException {
     String dbProduct = conn.getMetaData().getDatabaseProductName();
-    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct);
+    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);
     List<String> stmts = databaseProduct.getResetTxnSequenceStmts();
     
     for (String s : stmts ) {
@@ -275,17 +276,17 @@ public final class TxnDbUtil {
    * @param seedTxnId the seed value for the sequence
    * @throws SQLException ex
    */
-  public static void seedTxnSequence(Connection conn, Statement stmt, long seedTxnId) throws SQLException {
+  public static void seedTxnSequence(Connection conn, Configuration conf, Statement stmt, long seedTxnId) throws SQLException {
     String dbProduct = conn.getMetaData().getDatabaseProductName();
-    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct);
+    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);
     stmt.execute(databaseProduct.getTxnSeedFn(seedTxnId));
   }
 
-  private static boolean truncateTable(Connection conn, Statement stmt, String name) {
+  private static boolean truncateTable(Connection conn, Configuration conf, Statement stmt, String name) {
     try {
       // We can not use actual truncate due to some foreign keys, but we don't expect much data during tests
       String dbProduct = conn.getMetaData().getDatabaseProductName();
-      DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct);
+      DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);
       String s = databaseProduct.getTruncateStatement(name);
       stmt.execute(s);
 

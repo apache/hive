@@ -171,7 +171,7 @@ class MetaStoreDirectSql {
     this.schema = schema;
     DatabaseProduct dbType = null;
 
-    dbType = DatabaseProduct.determineDatabaseProduct(getProductName(pm));
+    dbType = DatabaseProduct.determineDatabaseProduct(getProductName(pm), conf);
 
     this.dbType = dbType;
     int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_PARTITION_BATCH_SIZE);

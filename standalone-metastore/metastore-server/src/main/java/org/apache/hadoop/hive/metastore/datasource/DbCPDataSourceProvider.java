@@ -17,10 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.datasource;
 
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
-
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -74,7 +71,7 @@ public class DbCPDataSourceProvider implements DataSourceProvider {
     dbcpDs.setDefaultReadOnly(false);
     dbcpDs.setDefaultAutoCommit(true);
 
-    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
+    DatabaseProduct dbProduct =  DatabaseProduct.determineDatabaseProduct(driverUrl, hdpConfig);
     Map<String, String> props = dbProduct.getDataSourceProperties();
     for (Map.Entry<String, String> kv : props.entrySet()) {
       dbcpDs.setConnectionProperties(kv.getKey() + "=" + kv.getValue());

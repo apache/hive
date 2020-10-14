@@ -32,8 +32,6 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
-
 /**
  * DataSourceProvider for the HikariCP connection pool.
  */
@@ -73,7 +71,7 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);
 
-    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
+    DatabaseProduct dbProduct =  DatabaseProduct.determineDatabaseProduct(driverUrl, hdpConfig);
     
     String s = dbProduct.getPrepareTxnStmt();
     if (s!= null) {

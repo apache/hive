@@ -57,7 +57,6 @@ public class DatabaseProduct implements Configurable {
   Configuration myConf;
   /**
    * Protected constructor for singleton class
-   * @param id
    */
   protected DatabaseProduct() {}
 
@@ -73,7 +72,8 @@ public class DatabaseProduct implements Configurable {
    * @param productName string to defer database connection
    * @return database product type
    */
-  public static DatabaseProduct determineDatabaseProduct(String productName, Configuration c) {
+  public static DatabaseProduct determineDatabaseProduct(String productName,
+      Configuration conf) {
     DbType dbt;
 
     if (theDatabaseProduct != null) {
@@ -92,7 +92,7 @@ public class DatabaseProduct implements Configurable {
 
       // Check for null again in case of race condition
       if (theDatabaseProduct == null) {
-        final Configuration conf = c!= null ? c : MetastoreConf.newMetastoreConf();
+        Preconditions.checkNotNull(conf, "Configuration is null");
         // Check if we are using an external database product
         boolean isExternal = MetastoreConf.getBoolVar(conf, ConfVars.USE_CUSTOM_RDBMS);
 
@@ -100,29 +100,31 @@ public class DatabaseProduct implements Configurable {
           // The DatabaseProduct will be created by instantiating an external class via
           // reflection. The external class can override any method in the current class
           String className = MetastoreConf.getVar(conf, ConfVars.CUSTOM_RDBMS_CLASSNAME);
-          
+
           if (className != null) {
             try {
               theDatabaseProduct = (DatabaseProduct)
                   ReflectionUtils.newInstance(Class.forName(className), conf);
-  
+
               LOG.info(String.format("Using custom RDBMS %s", className));
               dbt = DbType.CUSTOM;
-            }catch (Exception e) {
-              throw new RuntimeException("Caught exception instantiating custom database product", e);
+            } catch (Exception e) {
+              throw new RuntimeException(
+                  "Caught exception instantiating custom database product", e);
             }
           } else {
-            throw new RuntimeException("Unexpected: metastore.use.custom.database.product was set, " +
-                                    "but metastore.custom.database.product.classname was not");
+            throw new RuntimeException(
+                "Unexpected: metastore.use.custom.database.product was set, " +
+                    "but metastore.custom.database.product.classname was not");
           }
         }
 
         if (theDatabaseProduct == null) {
           theDatabaseProduct = new DatabaseProduct();
         }
+
+        theDatabaseProduct.dbType = dbt;
       }
-  
-      theDatabaseProduct.dbType = dbt;
     }
     return theDatabaseProduct;
   }
@@ -145,10 +147,6 @@ public class DatabaseProduct implements Configurable {
       dbt = DbType.UNDEFINED;
     }
     return dbt;
-  }
-
-  public static DatabaseProduct determineDatabaseProduct(String productName) {
-    return determineDatabaseProduct(productName, null);
   }
   
   public final boolean isDERBY() {
@@ -234,7 +232,6 @@ public class DatabaseProduct implements Configurable {
   /**
    * Returns db-specific logic to be executed at the beginning of a transaction.
    * Used in pooled connections.
-   * @return
    */
   public String getPrepareTxnStmt() {
     if (isMYSQL()) {
@@ -274,7 +271,6 @@ public class DatabaseProduct implements Configurable {
 
   /**
    * Get database specific function which returns the milliseconds value after the epoch.
-   * @param dbProduct The type of the db which is used
    * @throws MetaException For unknown database type.
    */
   public String getMillisAfterEpochFn() throws MetaException {
@@ -290,8 +286,7 @@ public class DatabaseProduct implements Configurable {
 
   /**
    * Returns the query to fetch the current timestamp in milliseconds in the database
-   * @return
-   * @throws MetaException
+   * @throws MetaException when the dbType is unknown.
    */
   public String getDBTime() throws MetaException {
     String s;
@@ -503,7 +498,6 @@ public class DatabaseProduct implements Configurable {
 
   /**
    * Checks if the dbms supports the getGeneratedKeys for multiline insert statements.
-   * @param dbProduct DBMS type
    * @return true if supports
    * @throws MetaException
    */

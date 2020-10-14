@@ -1338,12 +1338,11 @@ public class MetastoreConf {
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
 
     // External RDBMS support
-    // Use an external RDBMS which is not in the list of natively supported databases (e.g. Derby,
-    // Mysql, Oracle, Postgres, MSSQL), as defined by hive.metastore.db.type. If this configuration
-    // is true, the metastore.custom.database.product.classname must be set to a valid class name
     USE_CUSTOM_RDBMS("metastore.use.custom.database.product",
-            "hive.metastore.use.custom.database.product", false,
-            "Use an external RDBMS for the metastore"),
+        "hive.metastore.use.custom.database.product", false,
+        "Use an external RDBMS which is not in the list of natively supported databases (Derby,\n"
+            + "Mysql, Oracle, Postgres, MSSQL), as defined by hive.metastore.db.type. If this configuration\n"
+            + "is true, the metastore.custom.database.product.classname must be set to a valid class name"),
     CUSTOM_RDBMS_CLASSNAME("metastore.custom.database.product.classname",
         "hive.metastore.custom.database.product.classname", "none",
           "Hook for external RDBMS. This class will be instantiated only when " +
