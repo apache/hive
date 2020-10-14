@@ -138,7 +138,9 @@ public class OperatorGraph {
   boolean mayMerge(Operator<?> opA, Operator<?> opB) {
     try {
       g.putEdgeValue(opA, opB, new OpEdge(EdgeType.TEST));
+      g.removeEdge(opA, opB);
       g.putEdgeValue(opB, opA, new OpEdge(EdgeType.TEST));
+      g.removeEdge(opB, opA);
       return true;
     } catch (IllegalArgumentException iae) {
       return false;
