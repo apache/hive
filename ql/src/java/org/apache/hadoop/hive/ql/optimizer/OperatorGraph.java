@@ -18,11 +18,18 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule.DiGraph;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -79,7 +86,7 @@ public class OperatorGraph {
   DagGraph<Operator<?>, OpEdge> g;
 
   enum EdgeType {
-    FLOW, SEMIJOIN, DPP, TEST,
+    FLOW, SEMIJOIN, DPP, CLUSTER, TEST,
   }
 
   static class OpEdge {
@@ -98,6 +105,28 @@ public class OperatorGraph {
 
   }
 
+
+  Map<Operator<?>, Cluster> nodeCluster = new HashMap<>();
+
+  public class Cluster {
+
+    Set<Operator<?>> members = new LinkedHashSet<>();
+
+    public void merge(Cluster o) {
+      for (Operator<?> node : o.members) {
+        add(node);
+      }
+      o.members.clear();
+    }
+
+    public void add(Operator<?> curr) {
+      nodeCluster.put(curr, this);
+      members.add(curr);
+    }
+
+  }
+
+
   public OperatorGraph(ParseContext pctx) {
     g = new DagGraph<Operator<?>, OperatorGraph.OpEdge>();
     Set<Operator<?>> visited = Sets.newIdentityHashSet();
@@ -113,19 +142,38 @@ public class OperatorGraph {
 
       visited.add(curr);
 
+      Cluster currentCluster = null;
       List<Operator<?>> parents = curr.getParentOperators();
       for (int i = 0; i < parents.size(); i++) {
-        g.putEdgeValue(parents.get(i), curr, new OpEdge(EdgeType.FLOW, i));
+        Operator<?> p = parents.get(i);
+        g.putEdgeValue(p, curr, new OpEdge(EdgeType.FLOW, i));
+        if (p instanceof ReduceSinkOperator) {
+          // ignore cluster of parent RS
+          continue;
+        }
+        Cluster cluster = nodeCluster.get(p);
+        if (currentCluster == null) {
+          currentCluster = cluster;
+        } else {
+          currentCluster.merge(cluster);
+        }
       }
+
+      if (currentCluster == null) {
+        currentCluster = new Cluster();
+      }
+      currentCluster.add(curr);
 
       SemiJoinBranchInfo sji = pctx.getRsToSemiJoinBranchInfo().get(curr);
       if (sji != null) {
         g.putEdgeValue(curr, sji.getTsOp(), new OpEdge(EdgeType.SEMIJOIN));
+        seen.add(sji.getTsOp());
       }
       if (curr instanceof AppMasterEventOperator) {
         DynamicPruningEventDesc dped = (DynamicPruningEventDesc) curr.getConf();
         TableScanOperator ts = dped.getTableScan();
         g.putEdgeValue(curr, ts, new OpEdge(EdgeType.DPP));
+        seen.add(ts);
       }
 
       List<Operator<?>> ccc = curr.getChildOperators();
@@ -133,6 +181,38 @@ public class OperatorGraph {
         seen.add(operator);
       }
     }
+  }
+
+  public void toDot(File outFile) throws Exception {
+    PrintWriter writer = new PrintWriter(outFile);
+    writer.println("digraph G");
+    writer.println("{");
+    HashSet<Cluster> clusters = new HashSet<>(nodeCluster.values());
+    int idx = 0;
+    for (Cluster cluster : clusters) {
+      idx++;
+      writer.printf("subgraph cluster_%d {", idx);
+      for (Operator<?> member : cluster.members) {
+        writer.printf("%s;", nodeName(member));
+      }
+      writer.printf("label = \"cluster %d\";", idx);
+      writer.printf("}");
+    }
+    Set<Operator<?>> nodes = g.nodes();
+    for (Operator<?> n : nodes) {
+      Set<Operator<?>> succ = g.successors(n);
+      for (Operator<?> s : succ) {
+        writer.printf("%s->%s;", nodeName(n), nodeName(s));
+      }
+    }
+
+    writer.println("}");
+    writer.close();
+  }
+
+
+  private String nodeName(Operator<?> member) {
+    return String.format("\"%s\"", member);
   }
 
   boolean mayMerge(Operator<?> opA, Operator<?> opB) {

@@ -23,12 +23,18 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.OperatorGraph;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -57,6 +63,17 @@ public class TestOperatorSignature {
 
     checkEquals(op7, op7b);
     checkNotEquals(op7, op8);
+  }
+
+  @Test
+  public void tx() throws Exception {
+    ParseContext pctx = new ParseContext();
+    Map<String, TableScanOperator> rootOps=new HashMap<String, TableScanOperator>();
+    rootOps.put("x", (TableScanOperator) getFilTsOp(3, 7).getParentOperators().get(0));
+    rootOps.put("y", (TableScanOperator) getTsOp(7));
+    pctx.setTopOps(rootOps);
+    OperatorGraph og = new OperatorGraph(pctx);
+    og.toDot(new File("/tmp/a.dot"));
   }
 
   @Test
