@@ -350,6 +350,7 @@ import static java.util.Collections.singletonList;
 
 public class CalcitePlanner extends SemanticAnalyzer {
 
+  public static final String EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM = "EXPANDED_QUERY_PROGRAM";
   private final AtomicInteger noColsMissingStats = new AtomicInteger(0);
   private SemanticException semanticException;
   private boolean runCBO = true;
@@ -1879,8 +1880,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_QUERY_TEXT) &&
               !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
               getQB().hasTableDefined()) {
-        String expandedQueryText = QueryTextExpander.with(ctx.getTokenRewriteStream(), unparseTranslator)
-                .toString(ast.getTokenStartIndex(), ast.getTokenStopIndex());
+        unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
+        String expandedQueryText = ctx.getTokenRewriteStream()
+                .toString(EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
         List<RelOptMaterialization> relOptMaterializationList = db.getMaterialization(expandedQueryText);
         for (RelOptMaterialization relOptMaterialization : relOptMaterializationList) {
           try {
