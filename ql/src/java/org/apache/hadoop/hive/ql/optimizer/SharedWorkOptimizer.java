@@ -33,6 +33,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
@@ -120,7 +121,7 @@ import static org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils.*;
 public class SharedWorkOptimizer extends Transform {
 
   private final static Logger LOG = LoggerFactory.getLogger(SharedWorkOptimizer.class);
-  private static boolean doTSM = true;
+  private static boolean doTSM = false;
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -217,6 +218,14 @@ public class SharedWorkOptimizer extends Transform {
       if (LOG.isDebugEnabled()) {
         LOG.debug("After SharedWorkSJOptimizer:\n"
             + Operator.toString(pctx.getTopOps().values()));
+      }
+    }
+
+    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
+      new BaseSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables,
+          Mode.SubtreeMerge);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("After SharedWorkOptimizer merging TS schema:\n" + Operator.toString(pctx.getTopOps().values()));
       }
     }
 
@@ -1030,15 +1039,35 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   private static ArrayListMultimap<String, TableScanOperator> splitTableScanOpsByTable(
-          ParseContext pctx) {
+      ParseContext pctx) {
     ArrayListMultimap<String, TableScanOperator> tableNameToOps = ArrayListMultimap.create();
     // Sort by operator ID so we get deterministic results
     Map<String, TableScanOperator> sortedTopOps = new TreeMap<>(pctx.getTopOps());
     for (Entry<String, TableScanOperator> e : sortedTopOps.entrySet()) {
       TableScanOperator tsOp = e.getValue();
       tableNameToOps.put(
-              tsOp.getConf().getTableMetadata().getDbName() + "."
-                      + tsOp.getConf().getTableMetadata().getTableName(), tsOp);
+          tsOp.getConf().getTableMetadata().getDbName() + "." + tsOp.getConf().getTableMetadata().getTableName(), tsOp);
+    }
+    return tableNameToOps;
+  }
+
+  private static ArrayListMultimap<String, TableScanOperator> splitTableScanOpsByTable0(ParseContext pctx) {
+    ArrayListMultimap<String, TableScanOperator> tableNameToOps = ArrayListMultimap.create();
+    List<TableScanOperator> orderedTS = new ArrayList<TableScanOperator>(pctx.getTopOps().values());
+    orderedTS.sort(new Comparator<TableScanOperator>() {
+      @Override
+      public int compare(TableScanOperator o1, TableScanOperator o2) {
+        // prioritize scans without filters
+        if (o1.getConf().getFilterExpr() == null ^ o2.getConf().getFilterExpr() == null) {
+          return (o1.getConf().getFilterExpr() == null) ? -1 : 1;
+    }
+        return o1.toString().compareTo(o2.toString());
+  }
+    });
+    // Sort by operator ID so we get deterministic results
+    for (TableScanOperator tsOp : orderedTS) {
+      tableNameToOps.put(
+          tsOp.getConf().getTableMetadata().getDbName() + "." + tsOp.getConf().getTableMetadata().getTableName(), tsOp);
     }
     return tableNameToOps;
   }

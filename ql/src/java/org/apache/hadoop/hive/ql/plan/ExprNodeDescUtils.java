@@ -1115,6 +1115,9 @@ public class ExprNodeDescUtils {
 
   public static ExprNodeDesc conjunction(List<ExprNodeDesc> nodes, ExprNodeDesc exprNode)
       throws UDFArgumentException {
+    if (nodes == null) {
+      return exprNode;
+    }
     List<ExprNodeDesc> operands = new ArrayList<ExprNodeDesc>(nodes);
     operands.add(exprNode);
     return conjunction(operands);
