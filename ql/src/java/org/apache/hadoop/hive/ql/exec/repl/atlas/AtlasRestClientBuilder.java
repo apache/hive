@@ -46,7 +46,6 @@ public class AtlasRestClientBuilder {
   private UserGroupInformation userGroupInformation;
   protected String incomingUrl;
   protected String[] baseUrls;
-  private HiveConf hiveConf;
 
   public AtlasRestClientBuilder(String urls) {
     this.incomingUrl = urls;
@@ -61,10 +60,10 @@ public class AtlasRestClientBuilder {
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)) {
       return new NoOpAtlasRestClient();
     }
-    return create();
+    return create(conf);
   }
 
-  private AtlasRestClient create() throws SemanticException {
+  private AtlasRestClient create(HiveConf conf) throws SemanticException {
     if (baseUrls == null || baseUrls.length == 0) {
       throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format("baseUrls is not set.",
         ReplUtils.REPL_ATLAS_SERVICE));
@@ -73,7 +72,7 @@ public class AtlasRestClientBuilder {
     initializeAtlasApplicationProperties();
     AtlasClientV2 clientV2 = new AtlasClientV2(this.userGroupInformation,
             this.userGroupInformation.getShortUserName(), baseUrls);
-    return new AtlasRestClientImpl(clientV2, hiveConf);
+    return new AtlasRestClientImpl(clientV2, conf);
   }
 
   private AtlasRestClientBuilder setUGInfo() throws SemanticException {

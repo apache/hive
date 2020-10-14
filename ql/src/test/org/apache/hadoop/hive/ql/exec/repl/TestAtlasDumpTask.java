@@ -23,9 +23,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasReplInfo;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRequestBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClient;
+import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClientBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,11 +41,17 @@ import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
+import static org.mockito.Mockito.mock;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.when;
+
 /**
  * Unit test class for testing Atlas metadata Dump.
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({LoggerFactory.class})
+@PrepareForTest({LoggerFactory.class, UserGroupInformation.class})
 public class TestAtlasDumpTask {
 
   @Mock
@@ -94,5 +103,14 @@ public class TestAtlasDumpTask {
         .toString().contains("{\"dbName\":\"srcDB\",\"dumpStartTime"));
     Assert.assertTrue(eventDetailsCaptor
         .getAllValues().get(1).toString().contains("{\"dbName\":\"srcDB\",\"dumpEndTime\""));
+  }
+
+  @Test
+  public void testAtlasRestClientBuilder() throws SemanticException, IOException {
+    mockStatic(UserGroupInformation.class);
+    when(UserGroupInformation.getLoginUser()).thenReturn(mock(UserGroupInformation.class));
+    AtlasRestClientBuilder atlasRestCleintBuilder = new AtlasRestClientBuilder("http://localhost:31000");
+    AtlasRestClient atlasClient = atlasRestCleintBuilder.getClient(conf);
+    Assert.assertTrue(atlasClient != null);
   }
 }
