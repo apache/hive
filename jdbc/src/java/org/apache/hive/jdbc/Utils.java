@@ -105,6 +105,8 @@ public class Utils {
     public static final String USE_SSL = "ssl";
     public static final String SSL_TRUST_STORE = "sslTrustStore";
     public static final String SSL_TRUST_STORE_PASSWORD = "trustStorePassword";
+    public static final String SSL_TRUST_STORE_TYPE = "trustStoreType";
+    public static final String SSL_TRUST_MANAGER_FACTORY_ALGORITHM = "trustManagerFactoryAlgorithm";
     // We're deprecating the name and placement of this in the parsed map (from hive conf vars to
     // hive session vars).
     static final String TRANSPORT_MODE_DEPRECATED = "hive.server2.transport.mode";
@@ -164,10 +166,6 @@ public class Utils {
     static final String SUNX509_ALGORITHM_STRING = "SunX509";
     static final String SUNJSSE_ALGORITHM_STRING = "SunJSSE";
    // --------------- End 2 way ssl options ----------------------------
-
-    // Non-configurable params:
-    // Currently supports JKS keystore format
-    static final String SSL_TRUST_STORE_TYPE = "JKS";
 
     private static final String HIVE_VAR_PREFIX = "hivevar:";
     public static final String HIVE_CONF_PREFIX = "hiveconf:";

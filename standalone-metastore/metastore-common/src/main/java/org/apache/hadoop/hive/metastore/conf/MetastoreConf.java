@@ -518,7 +518,7 @@ public class MetastoreConf {
             + "metastore.dbaccess.ssl.use.SSL must be set to true for this property to take effect. \n"
             + "This directly maps to the javax.net.ssl.trustStore Java system property. Defaults to the default Java truststore file. \n"),
     DBACCESS_SSL_TRUSTSTORE_TYPE("metastore.dbaccess.ssl.truststore.type", "hive.metastore.dbaccess.ssl.truststore.type", "jks",
-        new StringSetValidator("jceks", "jks", "dks", "pkcs11", "pkcs12"),
+        new StringSetValidator("jceks", "jks", "dks", "pkcs11", "pkcs12", "bcfks"),
         "File type for the Java truststore file that is used when encrypting the connection to the database store. \n"
             + "metastore.dbaccess.ssl.use.SSL must be set to true for this property to take effect. \n"
             + "This directly maps to the javax.net.ssl.trustStoreType Java system property. \n"
@@ -1049,12 +1049,20 @@ public class MetastoreConf {
         "Metastore SSL certificate keystore password."),
     SSL_KEYSTORE_PATH("metastore.keystore.path", "hive.metastore.keystore.path", "",
         "Metastore SSL certificate keystore location."),
+    SSL_KEYSTORE_TYPE("metastore.keystore.type", "hive.metastore.keystore.type", "",
+            "Metastore SSL certificate keystore type."),
+    SSL_KEYMANAGERFACTORY_ALGORITHM("metastore.keymanagerfactory.algorithm", "hive.metastore.keymanagerfactory.algorithm", "",
+            "Metastore SSL certificate keystore algorithm."),
     SSL_PROTOCOL_BLACKLIST("metastore.ssl.protocol.blacklist", "hive.ssl.protocol.blacklist",
         "SSLv2,SSLv3", "SSL Versions to disable for all Hive Servers"),
     SSL_TRUSTSTORE_PATH("metastore.truststore.path", "hive.metastore.truststore.path", "",
         "Metastore SSL certificate truststore location."),
     SSL_TRUSTSTORE_PASSWORD("metastore.truststore.password", "hive.metastore.truststore.password", "",
         "Metastore SSL certificate truststore password."),
+    SSL_TRUSTSTORE_TYPE("metastore.truststore.type", "hive.metastore.truststore.type", "",
+            "Metastore SSL certificate truststore type."),
+    SSL_TRUSTMANAGERFACTORY_ALGORITHM("metastore.trustmanagerfactory.algorithm", "hive.metastore.trustmanagerfactory.algorithm", "",
+            "Metastore SSL certificate truststore algorithm."),
     STATS_AUTO_GATHER("metastore.stats.autogather", "hive.stats.autogather", true,
         "A flag to gather statistics (only basic) automatically during the INSERT OVERWRITE command."),
     STATS_FETCH_BITVECTOR("metastore.stats.fetch.bitvector", "hive.stats.fetch.bitvector", false,

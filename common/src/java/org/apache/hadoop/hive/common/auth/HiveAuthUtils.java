@@ -57,11 +57,14 @@ public class HiveAuthUtils {
   }
 
   public static TTransport getSSLSocket(String host, int port, int loginTimeout,
-    String trustStorePath, String trustStorePassWord) throws TTransportException {
+      String trustStorePath, String trustStorePassWord, String trustStoreType,
+      String trustStoreAlgorithm) throws TTransportException {
     TSSLTransportFactory.TSSLTransportParameters params =
       new TSSLTransportFactory.TSSLTransportParameters();
-    params.setTrustStore(trustStorePath, trustStorePassWord,
-        TrustManagerFactory.getDefaultAlgorithm(), KeyStore.getDefaultType());
+    String tStoreType = trustStoreType.isEmpty()? KeyStore.getDefaultType() : trustStoreType;
+    String tStoreAlgorithm = trustStoreAlgorithm.isEmpty()?
+            TrustManagerFactory.getDefaultAlgorithm() : trustStoreAlgorithm;
+    params.setTrustStore(trustStorePath, trustStorePassWord, tStoreAlgorithm, tStoreType);
     params.requireClientAuth(true);
     // The underlying SSLSocket object is bound to host:port with the given SO_TIMEOUT and
     // SSLContext created with the given params
@@ -92,12 +95,16 @@ public class HiveAuthUtils {
   }
 
   public static TServerSocket getServerSSLSocket(String hiveHost, int portNum, String keyStorePath,
-      String keyStorePassWord, List<String> sslVersionBlacklist) throws TTransportException,
+      String keyStorePassWord, String keyStoreType, String keyStoreAlgorithm,
+      List<String> sslVersionBlacklist) throws TTransportException,
       UnknownHostException {
     TSSLTransportFactory.TSSLTransportParameters params =
         new TSSLTransportFactory.TSSLTransportParameters();
+    String kStoreType = keyStoreType.isEmpty()? KeyStore.getDefaultType() : keyStoreType;
+    String kStoreAlgorithm = keyStoreAlgorithm.isEmpty()?
+            KeyManagerFactory.getDefaultAlgorithm() : keyStoreAlgorithm;
     params.setKeyStore(keyStorePath, keyStorePassWord,
-        KeyManagerFactory.getDefaultAlgorithm(), KeyStore.getDefaultType());
+        kStoreAlgorithm, kStoreType);
     InetSocketAddress serverAddress;
     if (hiveHost == null || hiveHost.isEmpty()) {
       // Wildcard bind
