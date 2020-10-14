@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.Base64;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -1682,5 +1683,33 @@ public class TestJdbcWithMiniHS2 {
       stmt.execute("CREATE TABLE emp_mm_table like emp_view STORED AS ORC LOCATION '" + mndPath + "'");
       assertTrue(getDetailedTableDescription(stmt, "emp_mm_table").contains(mndPath));
     }
+  }
+
+  @Test
+  public void testInterruptPollingState() throws Exception {
+    ExecutorService pool = Executors.newFixedThreadPool(1);
+    final CountDownLatch latch = new CountDownLatch(1);
+    final Object[] results = new Object[2];
+    results[0] = false;
+    Future future = pool.submit(new Callable<Void>() {
+      @Override
+      public Void call() {
+        try (Statement stmt = conTestDb.createStatement()) {
+          stmt.execute("create temporary function sleepMsUDF as '" + SleepMsUDF.class.getName() + "'");
+          stmt.execute("SELECT sleepMsUDF(1, 10000)");
+          results[0] = true;
+        } catch (Exception e) {
+          results[1] = e;
+        } finally {
+          latch.countDown();
+        }
+        return null;
+      }
+    });
+    Thread.sleep(2000);
+    future.cancel(true);
+    latch.await();
+    assertEquals(false, results[0]);
+    assertEquals("Interrupted while polling on the operation status", ((Exception)results[1]).getMessage());
   }
 }
