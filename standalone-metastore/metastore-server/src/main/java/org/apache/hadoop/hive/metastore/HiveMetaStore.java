@@ -66,6 +66,8 @@ import java.util.regex.Pattern;
 import javax.jdo.JDOException;
 
 import com.codahale.metrics.Counter;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.cli.OptionBuilder;
@@ -351,7 +353,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         address = "unknown-ip-addr";
       }
 
-      auditLog.info("ugi={}	ip={}	cmd={}	", ugi.getUserName(), address, cmd);
+      ObjectMapper mapper = new ObjectMapper();
+      ObjectNode metricNode = mapper.createObjectNode();
+      metricNode.put("ugi", ugi.getUserName());
+      metricNode.put("ip", address);
+      metricNode.put("cmd", cmd);
+      auditLog.info(metricNode.toString());
+      // auditLog.info("ugi={}	ip={}	cmd={}	", ugi.getUserName(), address, cmd);
     }
 
     private static String getIPAddress() {
