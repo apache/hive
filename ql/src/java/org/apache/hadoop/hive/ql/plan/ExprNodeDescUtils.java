@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.plan;
 
 import com.google.common.collect.Multimap;
 
+import avro.shaded.com.google.common.collect.Lists;
+
 import java.util.Arrays;
 import java.util.Collection;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
@@ -1106,19 +1108,16 @@ public class ExprNodeDescUtils {
     return false;
   }
 
-  public static ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes, ExprNodeDesc exprNode)
+  public static ExprNodeDesc conjunction(ExprNodeDesc node1, ExprNodeDesc node2) throws UDFArgumentException {
+    List<ExprNodeDesc> operands = Lists.newArrayList(node1, node2);
+    return conjunction(operands);
+  }
+
+  public static ExprNodeDesc conjunction(List<ExprNodeDesc> nodes, ExprNodeDesc exprNode)
       throws UDFArgumentException {
-    if (semijoinExprNodes != null && !semijoinExprNodes.isEmpty()) {
-      if (exprNode != null) {
-        semijoinExprNodes.add(0, exprNode);
-      }
-      if (semijoinExprNodes.size() > 1) {
-        exprNode = ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), semijoinExprNodes);
-      } else {
-        exprNode = semijoinExprNodes.get(0);
-      }
-    }
-    return exprNode;
+    List<ExprNodeDesc> operands = new ArrayList<ExprNodeDesc>(nodes);
+    operands.add(exprNode);
+    return conjunction(operands);
   }
 
   public static ExprNodeDesc disjunction(ExprNodeDesc e1, ExprNodeDesc e2) throws UDFArgumentException {

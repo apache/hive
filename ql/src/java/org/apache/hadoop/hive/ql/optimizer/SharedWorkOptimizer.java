@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -34,7 +33,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
@@ -72,7 +70,6 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
@@ -504,16 +501,15 @@ public class SharedWorkOptimizer extends Transform {
               DecomposedTs modelD = new DecomposedTs(discardableTsOp);
 
               // Push filter on top of children for retainable
-              pushFilterToTopOfTableScan(optimizerCache, retainableTsOp);
+              pushFilterToTopOfTableScan(optimizerCache, modelR);
 
               if (mode == Mode.RemoveSemijoin || mode == Mode.SubtreeMerge) {
                 // For RemoveSemiJoin; this will clear the discardable's semijoin filters
                 replaceSemijoinExpressions(discardableTsOp, modelR.getSemiJoinFilter());
-
-                modelD.replaceTabAlias(discardableTsOp.getConf().getAlias(), retainableTsOp.getConf().getAlias());
               }
+              modelD.replaceTabAlias(discardableTsOp.getConf().getAlias(), retainableTsOp.getConf().getAlias());
               // Push filter on top of children for discardable
-              pushFilterToTopOfTableScan(optimizerCache, discardableTsOp);
+              pushFilterToTopOfTableScan(optimizerCache, modelD);
 
               // Obtain filter for shared TS operator
               ExprNodeDesc exprNode = null;
@@ -2001,14 +1997,15 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   private static void pushFilterToTopOfTableScan(
-          SharedWorkOptimizerCache optimizerCache, TableScanOperator tsOp)
+      SharedWorkOptimizerCache optimizerCache, DecomposedTs tsModel)
                   throws UDFArgumentException {
-    if (tsOp.getConf().getFilterExpr() == null) {
+    TableScanOperator tsOp = tsModel.ts;
+    if (tsModel.normalFilterExpr == null) {
       return;
     }
-    ExprNodeGenericFuncDesc tableScanExprNode = tsOp.getConf().getFilterExpr();
+    ExprNodeGenericFuncDesc tableScanExprNode = (ExprNodeGenericFuncDesc) tsModel.normalFilterExpr;
     List<Operator<? extends OperatorDesc>> allChildren =
-            Lists.newArrayList(tsOp.getChildOperators());
+        Lists.newArrayList(tsOp.getChildOperators());
     for (Operator<? extends OperatorDesc> op : allChildren) {
       if (op instanceof FilterOperator) {
         FilterOperator filterOp = (FilterOperator) op;
@@ -2026,42 +2023,14 @@ public class SharedWorkOptimizer extends Transform {
             }
           }
         }
-        // Combine filters trying to remove any duplicate nodes
-        boolean isOpAndFilter = FunctionRegistry.isOpAnd(filterExprNode);
-        boolean isOpAndTS = FunctionRegistry.isOpAnd(tableScanExprNode);
-        if (isOpAndFilter && isOpAndTS) {
-          Set<String> visitedExprs = filterExprNode.getChildren()
-              .stream()
-              .map(ExprNodeDesc::getExprString)
-              .collect(Collectors.toSet());
-          ExprNodeGenericFuncDesc genericFuncDesc = (ExprNodeGenericFuncDesc) filterExprNode;
-          List<ExprNodeDesc> newChildren = new ArrayList<>(
-              filterExprNode.getChildren().size() + tableScanExprNode.getChildren().size());
-          newChildren.addAll(filterExprNode.getChildren());
-          for (ExprNodeDesc e : tableScanExprNode.getChildren()) {
-            if (visitedExprs.add(e.getExprString())) {
-              newChildren.add(e.clone());
-            }
-          }
-          genericFuncDesc.setChildren(newChildren);
-        } else if (isOpAndFilter) {
-          Set<String> visitedExprs = filterExprNode.getChildren()
-              .stream()
-              .map(ExprNodeDesc::getExprString)
-              .collect(Collectors.toSet());
-          if (visitedExprs.add(tableScanExprNode.getExprString())) {
-            filterExprNode.getChildren().add(tableScanExprNode.clone());
-          }
-        } else {
-          ExprNodeGenericFuncDesc newPred = ExprNodeGenericFuncDesc.newInstance(
-              new GenericUDFOPAnd(),
-              Arrays.asList(tableScanExprNode.clone(), filterExprNode));
-          filterOp.getConf().setPredicate(newPred);
+        ExprNodeDesc newFilterExpr = conjunction(filterExprNode, tableScanExprNode);
+        if (!isSame(filterOp.getConf().getPredicate(), newFilterExpr)) {
+          filterOp.getConf().setPredicate(newFilterExpr);
         }
       } else {
         Operator<FilterDesc> newOp = OperatorFactory.get(tsOp.getCompilationOpContext(),
                 new FilterDesc(tableScanExprNode.clone(), false),
-                new RowSchema(tsOp.getSchema().getSignature()));
+            new RowSchema(tsOp.getSchema().getSignature()));
         tsOp.replaceChild(op, newOp);
         newOp.getParentOperators().add(tsOp);
         op.replaceParent(tsOp, newOp);
