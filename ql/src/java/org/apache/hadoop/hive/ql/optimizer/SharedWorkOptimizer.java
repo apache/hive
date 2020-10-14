@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -129,8 +130,9 @@ public class SharedWorkOptimizer extends Transform {
   private static boolean chk_asc = false;
   private static boolean chk_w1 = false;
   private static boolean chk_w2 = false;
-  private static boolean chk_dag_cycle = false;
+  private static boolean chk_dag_cycle = true;
   private static boolean chk_og = true;
+  private static boolean writeDot = false;
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -377,7 +379,9 @@ public class SharedWorkOptimizer extends Transform {
    * {@link TableScanDesc#getNeededColumns()} and {@link TableScanDesc#getNeededColumnIDs()}
    * from both {@link TableScanOperator}s.
    */
+  static int xx = 0;
   private static class BaseSharedWorkOptimizer {
+
 
     public boolean sharedWorkOptimization(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,
                                            ArrayListMultimap<String, TableScanOperator> tableNameToOps, List<Entry<String, Long>> sortedTables,
@@ -402,6 +406,13 @@ public class SharedWorkOptimizer extends Transform {
             }
             LOG.debug("Can we merge {} into {} to remove a scan on {}?", discardableTsOp, retainableTsOp, tableName);
 
+            try {
+              if (writeDot) {
+              new OperatorGraph(pctx).toDot(new File("/tmp/out." + xx++));
+              }
+            } catch (Exception e1) {
+              throw new SemanticException(e1);
+            }
             SharedResult sr;
             if (mode == Mode.RemoveSemijoin) {
               // We check if the two table scan operators can actually be merged modulo SJs.
