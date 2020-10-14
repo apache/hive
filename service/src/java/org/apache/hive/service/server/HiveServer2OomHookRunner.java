@@ -16,29 +16,32 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.hooks;
+package org.apache.hive.service.server;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
+import org.apache.hadoop.hive.ql.hooks.HookUtils;
 
 import java.util.List;
 
-public class HookUtils {
+public class HiveServer2OomHookRunner implements Runnable {
+  private final HiveServer2 hiveServer2;
 
-  public static String redactLogString(HiveConf conf, String logString) {
+  HiveServer2OomHookRunner(HiveServer2 hiveServer2) {
+    this.hiveServer2 = hiveServer2;
+  }
 
-    String redactedString = logString;
-
-    if (conf != null && logString != null) {
-      List<Redactor> queryRedactors = readHooksFromConf(conf, HookContext.HookType.QUERY_REDACTOR_HOOKS);
-      for (Redactor redactor : queryRedactors) {
-        redactor.setConf(conf);
-        redactedString = redactor.redactQuery(redactedString);
+  @Override
+  public synchronized void run() {
+    try {
+      HiveConf hiveConf = hiveServer2.getHiveConf();
+      List<Runnable> hooks = HookUtils.readHooksFromConf(hiveConf, HookType.HIVE_SERVER2_OOM_HOOKS);
+      for (Runnable runnable : hooks) {
+        runnable.run();
       }
+    } finally {
+      hiveServer2.stop();
     }
-    return redactedString;
   }
 
-  public static <T> List<T> readHooksFromConf(HiveConf conf, HookContext.HookType type) {
-    return new HiveHooks(conf).getHooks(type);
-  }
 }
