@@ -360,6 +360,13 @@ public class SharedWorkOptimizer extends Transform {
       return semijoinExprNodes;
     }
 
+    public void replaceTabAlias(String oldAlias, String newAlias) {
+      ExprNodeDescUtils.replaceTabAlias(normalFilterExpr, oldAlias, newAlias);
+      for (ExprNodeDesc expr : semijoinExprNodes) {
+        ExprNodeDescUtils.replaceTabAlias(expr, oldAlias, newAlias);
+      }
+    }
+
   }
 
   /**
@@ -502,6 +509,8 @@ public class SharedWorkOptimizer extends Transform {
               if (mode == Mode.RemoveSemijoin || mode == Mode.SubtreeMerge) {
                 // For RemoveSemiJoin; this will clear the discardable's semijoin filters
                 replaceSemijoinExpressions(discardableTsOp, modelR.getSemiJoinFilter());
+
+                modelD.replaceTabAlias(discardableTsOp.getConf().getAlias(), retainableTsOp.getConf().getAlias());
               }
               // Push filter on top of children for discardable
               pushFilterToTopOfTableScan(optimizerCache, discardableTsOp);
@@ -515,7 +524,8 @@ public class SharedWorkOptimizer extends Transform {
               if (mode == Mode.DPPUnion) {
                 assert modelR.semijoinExprNodes != null;
                 assert modelD.semijoinExprNodes != null;
-                ExprNodeDesc disjunction = disjunction(conjunction(modelR.semijoinExprNodes), conjunction(modelD.semijoinExprNodes));
+                ExprNodeDesc disjunction =
+                    disjunction(conjunction(modelR.semijoinExprNodes), conjunction(modelD.semijoinExprNodes));
                 semiJoinExpr = disjunction == null ? null : Lists.newArrayList(disjunction);
               } else {
                 semiJoinExpr = modelR.semijoinExprNodes;
@@ -523,6 +533,7 @@ public class SharedWorkOptimizer extends Transform {
 
               // Create expression node that will be used for the retainable table scan
               exprNode = conjunction(semiJoinExpr, exprNode);
+
               // Replace filter
               retainableTsOp.getConf().setFilterExpr((ExprNodeGenericFuncDesc) exprNode);
               // Replace table scan operator

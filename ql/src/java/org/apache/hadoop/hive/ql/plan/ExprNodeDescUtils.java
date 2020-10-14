@@ -1061,15 +1061,49 @@ public class ExprNodeDescUtils {
     return false;
   }
 
-  public static ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes) throws UDFArgumentException {
-    if (semijoinExprNodes.isEmpty()) {
+  public static ExprNodeDesc conjunction(List<ExprNodeDesc> inputExpr) throws UDFArgumentException {
+    List<ExprNodeDesc> operands=new ArrayList<ExprNodeDesc>();
+    for (ExprNodeDesc e : inputExpr) {
+      conjunctiveDecomposition(e, operands);
+    }
+
+    if (operands.isEmpty()) {
       return null;
     }
-    if (semijoinExprNodes.size() > 1) {
-      return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), semijoinExprNodes);
+    if (operands.size() > 1) {
+      return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), operands);
     } else {
-      return semijoinExprNodes.get(0);
+      return operands.get(0);
     }
+  }
+
+  private static void conjunctiveDecomposition(ExprNodeDesc expr, List<ExprNodeDesc> operands) {
+    if (isAnd(expr)) {
+      for (ExprNodeDesc c : expr.getChildren()) {
+        conjunctiveDecomposition(c, operands);
+      }
+    } else {
+      if (isTrue(expr)) {
+        return;
+      }
+      for (ExprNodeDesc o : operands) {
+        if (o.isSame(expr)) {
+          return;
+        }
+      }
+      operands.add(expr);
+    }
+
+  }
+
+  private static boolean isTrue(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeConstantDesc) {
+      ExprNodeConstantDesc c = (ExprNodeConstantDesc) expr;
+      if (Boolean.TRUE.equals(c.getValue())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public static ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes, ExprNodeDesc exprNode)
@@ -1134,6 +1168,32 @@ public class ExprNodeDescUtils {
       return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFOPOr);
     }
     return false;
+  }
+
+  public static boolean isAnd(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) expr;
+      return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFOPAnd);
+    }
+    return false;
+  }
+
+  public static ExprNodeDesc replaceTabAlias(ExprNodeDesc expr, String oldAlias, String newAlias) {
+    if (expr == null) {
+      return null;
+    }
+    if (expr.getChildren() != null) {
+      for (ExprNodeDesc c : expr.getChildren()) {
+        replaceTabAlias(c, oldAlias, newAlias);
+      }
+    }
+    if (expr instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc exprNodeColumnDesc = (ExprNodeColumnDesc) expr;
+      if (exprNodeColumnDesc.getTabAlias() != null && exprNodeColumnDesc.getTabAlias().equals(oldAlias)) {
+        exprNodeColumnDesc.setTabAlias(newAlias);
+      }
+    }
+    return expr;
   }
 
 }
