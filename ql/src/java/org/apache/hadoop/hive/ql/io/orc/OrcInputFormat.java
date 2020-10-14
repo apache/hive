@@ -1159,7 +1159,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
             for (Map.Entry<Long, BlockLocation> entry : blockOffsets.entrySet()) {
               long blockOffset = entry.getKey();
               long blockLength = entry.getValue().getLength();
-              if(blockOffset > logicalLen) {
+              if (blockOffset > logicalLen) {
                 //don't create splits for anything past logical EOF
                 //map is ordered, thus any possible entry in the iteration after this is bound to be > logicalLen
                 break;
@@ -1175,12 +1175,16 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
                 // This is the last block but it ends before logicalLen
                 // This can happen with HDFS if hflush was called and blocks are not persisted to disk yet, but content
                 // is otherwise available for readers, as DNs have these buffers in memory at this time.
-                // -> we should read more than (persisted) block end, but surely not more than the whole block
+                // -> we should read more than (persisted) block end, but only within the block
                 if (fileStatus instanceof HdfsLocatedFileStatus) {
                   HdfsLocatedFileStatus hdfsFileStatus = (HdfsLocatedFileStatus)fileStatus;
                   if (hdfsFileStatus.getLocatedBlocks().isUnderConstruction()) {
+                    // sanity check
+                    if (logicalLen > blockOffset + hdfsFileStatus.getBlockSize()) {
+                      throw new IOException("Side file indicates more data available after the last known block!");
+                    }
                     // blockEndOvershoot is negative here...
-                    splitLength = Math.min(splitLength - blockEndOvershoot, hdfsFileStatus.getBlockSize());
+                    splitLength -= blockEndOvershoot;
                   }
                 }
               }
