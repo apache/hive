@@ -76,15 +76,27 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 <<<<<<< HEAD
+<<<<<<< HEAD
 Map 15 <- Reducer 9 (BROADCAST_EDGE)
 Map 17 <- Reducer 9 (BROADCAST_EDGE)
 Reducer 10 <- Map 1 (SIMPLE_EDGE), Reducer 11 (SIMPLE_EDGE)
 Reducer 11 <- Map 1 (SIMPLE_EDGE), Map 18 (SIMPLE_EDGE)
+=======
+Map 1 <- Reducer 13 (BROADCAST_EDGE)
+Map 15 <- Reducer 10 (BROADCAST_EDGE)
+Map 17 <- Reducer 10 (BROADCAST_EDGE)
+Map 18 <- Reducer 9 (BROADCAST_EDGE)
+Reducer 10 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
+Reducer 13 <- Map 12 (CUSTOM_SIMPLE_EDGE)
+>>>>>>> parent of cbd5bd9c10f... Revert "add changes"
 Reducer 16 <- Map 15 (SIMPLE_EDGE), Map 17 (SIMPLE_EDGE)
-Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 12 (SIMPLE_EDGE)
-Reducer 3 <- Map 13 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
+Reducer 19 <- Map 18 (SIMPLE_EDGE), Map 21 (SIMPLE_EDGE)
+Reducer 2 <- Map 1 (SIMPLE_EDGE), Map 11 (SIMPLE_EDGE)
+Reducer 20 <- Map 22 (SIMPLE_EDGE), Reducer 19 (SIMPLE_EDGE)
+Reducer 3 <- Map 12 (SIMPLE_EDGE), Reducer 2 (SIMPLE_EDGE)
 Reducer 4 <- Map 14 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 16 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
+<<<<<<< HEAD
 Reducer 6 <- Reducer 10 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
 =======
 Map 1 <- Reducer 12 (BROADCAST_EDGE)
@@ -99,23 +111,26 @@ Reducer 4 <- Map 13 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
 Reducer 5 <- Reducer 15 (SIMPLE_EDGE), Reducer 4 (SIMPLE_EDGE)
 Reducer 6 <- Reducer 16 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
 >>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
+=======
+Reducer 6 <- Reducer 20 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
+>>>>>>> parent of cbd5bd9c10f... Revert "add changes"
 Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
 Reducer 8 <- Reducer 7 (CUSTOM_SIMPLE_EDGE)
-Reducer 9 <- Reducer 4 (CUSTOM_SIMPLE_EDGE)
+Reducer 9 <- Reducer 5 (CUSTOM_SIMPLE_EDGE)
 
 Stage-0
   Fetch Operator
     limit:-1
     Stage-1
       Reducer 8 vectorized
-      File Output Operator [FS_251]
-        Group By Operator [GBY_250] (rows=1 width=232)
+      File Output Operator [FS_258]
+        Group By Operator [GBY_257] (rows=1 width=232)
           Output:["_col0","_col1","_col2"],aggregations:["count(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)"]
         <-Reducer 7 [CUSTOM_SIMPLE_EDGE] vectorized
-          PARTITION_ONLY_SHUFFLE [RS_249]
-            Group By Operator [GBY_248] (rows=1 width=232)
+          PARTITION_ONLY_SHUFFLE [RS_256]
+            Group By Operator [GBY_255] (rows=1 width=232)
               Output:["_col0","_col1","_col2"],aggregations:["count(_col0)","sum(_col1)","sum(_col2)"]
-              Group By Operator [GBY_247] (rows=5022875 width=228)
+              Group By Operator [GBY_254] (rows=5022875 width=228)
                 Output:["_col0","_col1","_col2"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0
               <-Reducer 6 [SIMPLE_EDGE]
                 SHUFFLE [RS_107]
@@ -124,6 +139,7 @@ Stage-0
                     Output:["_col0","_col2","_col3"],aggregations:["sum(_col1)","sum(_col2)"],keys:_col0
                     Merge Join Operator [MERGEJOIN_216] (rows=5022875 width=227)
                       Conds:RS_57._col0=RS_58._col0(Left Semi),Output:["_col0","_col1","_col2"]
+<<<<<<< HEAD
                     <-Reducer 16 [SIMPLE_EDGE]
                       SHUFFLE [RS_58]
                         PartitionCols:_col0
@@ -185,19 +201,25 @@ Stage-0
                                           predicate:wr_order_number is not null
                                           TableScan [TS_36] (rows=14398467 width=4)
                                             default@web_returns,web_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["wr_order_number"]
+=======
+>>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                     <-Reducer 5 [SIMPLE_EDGE]
-                      SHUFFLE [RS_57]
+                      PARTITION_ONLY_SHUFFLE [RS_57]
                         PartitionCols:_col0
                         Merge Join Operator [MERGEJOIN_215] (rows=5022875 width=227)
                           Conds:RS_52._col0=RS_53._col0(Left Semi),Output:["_col0","_col1","_col2"]
                         <-Reducer 4 [SIMPLE_EDGE]
-                          PARTITION_ONLY_SHUFFLE [RS_52]
+                          SHUFFLE [RS_52]
                             PartitionCols:_col0
                             Select Operator [SEL_21] (rows=5022875 width=227)
                               Output:["_col0","_col1","_col2"]
                               Merge Join Operator [MERGEJOIN_211] (rows=5022875 width=227)
                                 Conds:RS_18._col2=RS_233._col0(Inner),Output:["_col3","_col4","_col5"]
+<<<<<<< HEAD
                               <-Map 13 [SIMPLE_EDGE] vectorized
+=======
+                              <-Map 14 [SIMPLE_EDGE] vectorized
+>>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                 SHUFFLE [RS_233]
                                   PartitionCols:_col0
                                   Select Operator [SEL_232] (rows=12 width=4)
@@ -211,7 +233,11 @@ Stage-0
                                   PartitionCols:_col2
                                   Merge Join Operator [MERGEJOIN_210] (rows=15673790 width=231)
                                     Conds:RS_15._col1=RS_219._col0(Inner),Output:["_col2","_col3","_col4","_col5"]
+<<<<<<< HEAD
                                   <-Map 11 [SIMPLE_EDGE] vectorized
+=======
+                                  <-Map 12 [SIMPLE_EDGE] vectorized
+>>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                     SHUFFLE [RS_219]
                                       PartitionCols:_col0
                                       Select Operator [SEL_218] (rows=784314 width=4)
@@ -234,18 +260,30 @@ Stage-0
                                               predicate:(ws_web_site_sk is not null and ws_ship_addr_sk is not null and ws_ship_date_sk is not null and ws_order_number is not null and ws_ship_addr_sk BETWEEN DynamicValue(RS_16_customer_address_ca_address_sk_min) AND DynamicValue(RS_16_customer_address_ca_address_sk_max) and in_bloom_filter(ws_ship_addr_sk, DynamicValue(RS_16_customer_address_ca_address_sk_bloom_filter)))
                                               TableScan [TS_0] (rows=144002668 width=239)
                                                 default@web_sales,ws1,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_ship_date_sk","ws_ship_addr_sk","ws_web_site_sk","ws_order_number","ws_ext_ship_cost","ws_net_profit"]
+<<<<<<< HEAD
                                               <-Reducer 12 [BROADCAST_EDGE] vectorized
                                                 BROADCAST [RS_224]
                                                   Group By Operator [GBY_223] (rows=1 width=12)
                                                     Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
                                                   <-Map 11 [CUSTOM_SIMPLE_EDGE] vectorized
+=======
+                                              <-Reducer 13 [BROADCAST_EDGE] vectorized
+                                                BROADCAST [RS_224]
+                                                  Group By Operator [GBY_223] (rows=1 width=12)
+                                                    Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                  <-Map 12 [CUSTOM_SIMPLE_EDGE] vectorized
+>>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                                     SHUFFLE [RS_222]
                                                       Group By Operator [GBY_221] (rows=1 width=12)
                                                         Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
                                                         Select Operator [SEL_220] (rows=784314 width=4)
                                                           Output:["_col0"]
                                                            Please refer to the previous Select Operator [SEL_218]
+<<<<<<< HEAD
                                       <-Map 10 [SIMPLE_EDGE] vectorized
+=======
+                                      <-Map 11 [SIMPLE_EDGE] vectorized
+>>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                         SHUFFLE [RS_230]
                                           PartitionCols:_col0
                                           Select Operator [SEL_229] (rows=8116 width=98)
@@ -265,16 +303,21 @@ Stage-0
                                   predicate:(_col0 <> _col2)
                                   Merge Join Operator [MERGEJOIN_212] (rows=1411940834 width=11)
 <<<<<<< HEAD
+<<<<<<< HEAD
                                     Conds:RS_240._col1=RS_243._col1(Inner),Output:["_col0","_col1","_col2"]
 =======
 <<<<<<< HEAD
                                     Conds:RS_240._col1=RS_240._col1(Inner),Output:["_col0","_col1","_col2"]
 >>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
+=======
+                                    Conds:RS_239._col1=RS_242._col1(Inner),Output:["_col0","_col1","_col2"]
+>>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                   <-Map 15 [SIMPLE_EDGE] vectorized
-                                    SHUFFLE [RS_240]
+                                    SHUFFLE [RS_239]
                                       PartitionCols:_col1
-                                      Select Operator [SEL_239] (rows=144002668 width=7)
+                                      Select Operator [SEL_238] (rows=144002668 width=7)
                                         Output:["_col0","_col1"]
+<<<<<<< HEAD
                                         Filter Operator [FIL_238] (rows=144002668 width=7)
 =======
                                     Conds:RS_236._col1=RS_243._col1(Inner),Output:["_col0","_col1","_col2"]
@@ -300,9 +343,18 @@ Stage-0
                                             BROADCAST [RS_240]
                                               Group By Operator [GBY_239] (rows=1 width=12)
 >>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
+=======
+                                        Filter Operator [FIL_237] (rows=144002668 width=7)
+                                          predicate:(ws_order_number is not null and ws_order_number BETWEEN DynamicValue(RS_52_ws1_ws_order_number_min) AND DynamicValue(RS_52_ws1_ws_order_number_max) and in_bloom_filter(ws_order_number, DynamicValue(RS_52_ws1_ws_order_number_bloom_filter)))
+                                          TableScan [TS_22] (rows=144002668 width=7)
+                                            default@web_sales,ws1,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_warehouse_sk","ws_order_number"]
+                                          <-Reducer 10 [BROADCAST_EDGE] vectorized
+                                            BROADCAST [RS_235]
+                                              Group By Operator [GBY_234] (rows=1 width=12)
+>>>>>>> parent of cbd5bd9c10f... Revert "add changes"
                                                 Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
                                               <-Reducer 4 [CUSTOM_SIMPLE_EDGE]
-                                                PARTITION_ONLY_SHUFFLE [RS_165]
+                                                SHUFFLE [RS_165]
                                                   Group By Operator [GBY_164] (rows=1 width=12)
                                                     Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
                                                     Select Operator [SEL_163] (rows=5022875 width=4)
@@ -310,15 +362,53 @@ Stage-0
                                                        Please refer to the previous Select Operator [SEL_21]
 <<<<<<< HEAD
                                   <-Map 17 [SIMPLE_EDGE] vectorized
-                                    SHUFFLE [RS_243]
+                                    SHUFFLE [RS_242]
                                       PartitionCols:_col1
-                                      Select Operator [SEL_242] (rows=144002668 width=7)
+                                      Select Operator [SEL_241] (rows=144002668 width=7)
                                         Output:["_col0","_col1"]
-                                        Filter Operator [FIL_241] (rows=144002668 width=7)
+                                        Filter Operator [FIL_240] (rows=144002668 width=7)
                                           predicate:(ws_order_number is not null and ws_order_number BETWEEN DynamicValue(RS_52_ws1_ws_order_number_min) AND DynamicValue(RS_52_ws1_ws_order_number_max) and in_bloom_filter(ws_order_number, DynamicValue(RS_52_ws1_ws_order_number_bloom_filter)))
                                           TableScan [TS_25] (rows=144002668 width=7)
                                             default@web_sales,ws2,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_warehouse_sk","ws_order_number"]
+                                          <-Reducer 10 [BROADCAST_EDGE] vectorized
+                                            BROADCAST [RS_236]
+                                               Please refer to the previous Group By Operator [GBY_234]
+                    <-Reducer 20 [SIMPLE_EDGE]
+                      SHUFFLE [RS_58]
+                        PartitionCols:_col0
+                        Group By Operator [GBY_56] (rows=1384229733 width=4)
+                          Output:["_col0"],keys:_col0
+                          Select Operator [SEL_49] (rows=1384229733 width=4)
+                            Output:["_col0"]
+                            Filter Operator [FIL_48] (rows=1384229733 width=11)
+                              predicate:(_col0 <> _col3)
+                              Merge Join Operator [MERGEJOIN_214] (rows=1384229733 width=11)
+                                Conds:RS_45._col1=RS_253._col1(Inner),Output:["_col0","_col2","_col3"]
+                              <-Map 22 [SIMPLE_EDGE] vectorized
+                                SHUFFLE [RS_253]
+                                  PartitionCols:_col1
+                                  Select Operator [SEL_252] (rows=144002668 width=7)
+                                    Output:["_col0","_col1"]
+                                    Filter Operator [FIL_251] (rows=144002668 width=7)
+                                      predicate:ws_order_number is not null
+                                      TableScan [TS_39] (rows=144002668 width=7)
+                                        default@web_sales,ws2,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_warehouse_sk","ws_order_number"]
+                              <-Reducer 19 [SIMPLE_EDGE]
+                                SHUFFLE [RS_45]
+                                  PartitionCols:_col1
+                                  Merge Join Operator [MERGEJOIN_213] (rows=141176436 width=11)
+                                    Conds:RS_247._col1=RS_250._col0(Inner),Output:["_col0","_col1","_col2"]
+                                  <-Map 18 [SIMPLE_EDGE] vectorized
+                                    SHUFFLE [RS_247]
+                                      PartitionCols:_col1
+                                      Select Operator [SEL_246] (rows=144002668 width=7)
+                                        Output:["_col0","_col1"]
+                                        Filter Operator [FIL_245] (rows=144002668 width=7)
+                                          predicate:(ws_order_number is not null and ws_order_number BETWEEN DynamicValue(RS_57_ws1_ws_order_number_min) AND DynamicValue(RS_57_ws1_ws_order_number_max) and in_bloom_filter(ws_order_number, DynamicValue(RS_57_ws1_ws_order_number_bloom_filter)))
+                                          TableScan [TS_33] (rows=144002668 width=7)
+                                            default@web_sales,ws1,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_warehouse_sk","ws_order_number"]
                                           <-Reducer 9 [BROADCAST_EDGE] vectorized
+<<<<<<< HEAD
                                             BROADCAST [RS_237]
                                                Please refer to the previous Group By Operator [GBY_235]
 =======
@@ -330,4 +420,25 @@ Stage-0
 =======
 >>>>>>> kgyrtkirk/HIVE-swo-dppunion
 >>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
+=======
+                                            BROADCAST [RS_244]
+                                              Group By Operator [GBY_243] (rows=1 width=12)
+                                                Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                              <-Reducer 5 [CUSTOM_SIMPLE_EDGE]
+                                                PARTITION_ONLY_SHUFFLE [RS_184]
+                                                  Group By Operator [GBY_183] (rows=1 width=12)
+                                                    Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                    Select Operator [SEL_182] (rows=5022875 width=4)
+                                                      Output:["_col0"]
+                                                       Please refer to the previous Merge Join Operator [MERGEJOIN_215]
+                                  <-Map 21 [SIMPLE_EDGE] vectorized
+                                    SHUFFLE [RS_250]
+                                      PartitionCols:_col0
+                                      Select Operator [SEL_249] (rows=14398467 width=4)
+                                        Output:["_col0"]
+                                        Filter Operator [FIL_248] (rows=14398467 width=4)
+                                          predicate:wr_order_number is not null
+                                          TableScan [TS_36] (rows=14398467 width=4)
+                                            default@web_returns,web_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["wr_order_number"]
+>>>>>>> parent of cbd5bd9c10f... Revert "add changes"
 

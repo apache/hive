@@ -130,6 +130,7 @@ public class SharedWorkOptimizer extends Transform {
   private static boolean chk_w1 = true;
   private static boolean chk_w2 = true;
   private static boolean chk_dag_cycle = true;
+  private static boolean chk_og;
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -166,6 +167,8 @@ public class SharedWorkOptimizer extends Transform {
 
     // Gather information about the DPP table scans and store it in the cache
     gatherDPPTableScanOps(pctx, optimizerCache);
+
+    OperatorGraph og = new OperatorGraph(pctx);
 
     BaseSharedWorkOptimizer swo;
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
@@ -1709,6 +1712,12 @@ public class SharedWorkOptimizer extends Transform {
     Operator<?> op1 = sr.retainableOps.get(0);
     Operator<?> op2 = sr.discardableOps.get(0);
 
+    if (chk_og) {
+    OperatorGraph og = new OperatorGraph(pctx);
+    if (!og.mayMerge(op1, op2)) {
+      return false;
+    }
+    }
     // 1) The set of operators in the works that we are merging need to meet
     // some requirements. In particular:
     // 1.1. None of the works that we are merging can contain a Union
