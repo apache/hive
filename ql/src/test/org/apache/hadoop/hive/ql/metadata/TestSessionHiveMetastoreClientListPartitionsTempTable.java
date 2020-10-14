@@ -79,7 +79,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     SessionState.start(conf);
     // setup metastore client cache
     if (conf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
-      HiveMetaStoreClientWithLocalCache.init();
+      HiveMetaStoreClientWithLocalCache.init(conf);
     }
     setClient(Hive.get(conf).getMSC());
     getClient().dropDatabase(DB_NAME, true, true, true);
@@ -283,19 +283,19 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
         null, (short)-1, new ArrayList<>());
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   public void testListPartitionsByExprNoTbl() throws Exception {
     getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, new byte[] {'f', 'o', 'o'},
         null, (short)-1, new ArrayList<>());
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   public void testListPartitionsByExprEmptyDbName() throws Exception {
     getClient().listPartitionsByExpr("", TABLE_NAME, new byte[] {'f', 'o', 'o'},
         null, (short)-1, new ArrayList<>());
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   public void testListPartitionsByExprEmptyTblName() throws Exception {
     createTable3PartCols1Part(getClient());
     getClient().listPartitionsByExpr(DB_NAME, "", new byte[] {'f', 'o', 'o'},
@@ -396,7 +396,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     getClient().listPartitionsSpecByExpr(req, null);
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   public void testListPartitionsSpecByExprNoTbl() throws Exception {
     PartitionsByExprRequest req = new PartitionsByExprRequest(DB_NAME, TABLE_NAME,
             ByteBuffer.wrap(new byte[] {'f', 'o', 'o'}));
@@ -405,7 +405,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     getClient().listPartitionsSpecByExpr(req, new ArrayList<>());
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   public void testListPartitionsSpecByExprEmptyDbName() throws Exception {
     PartitionsByExprRequest req = new PartitionsByExprRequest("", TABLE_NAME,
             ByteBuffer.wrap(new byte[] {'f', 'o', 'o'}));
@@ -414,7 +414,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     getClient().listPartitionsSpecByExpr(req, new ArrayList<>());
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   public void testListPartitionsSpecByExprEmptyTblName() throws Exception {
     Table t = createTable3PartCols1Part(getClient());
 
@@ -462,5 +462,11 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
       partSpecSize = partSpec.iterator().next().getSharedSDPartitionSpec().getPartitionsSize();
     }
     assertEquals("Partition Spec check failed: " + expr.getExprString(), numParts, partSpecSize);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  @Override
+  public void testListPartitionNamesNoTable() throws Exception {
+    super.testListPartitionNamesNoTable();
   }
 }

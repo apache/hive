@@ -1869,7 +1869,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(GetPartitionsPsWithAuthRequest req)
       throws MetaException, TException, NoSuchObjectException {
     if (req.getValidWriteIdList() == null) {
-      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName())));
+      req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
     }
     if(req.getCatName() == null) {
       req.setCatName(getDefaultCatalog(conf));
@@ -2009,7 +2009,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (max_parts >= 0) {
       req.setMaxParts(shrinkMaxtoShort(max_parts));
     }
-    req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(db_name, tbl_name)));
+    req.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
     return req;
   }
 
@@ -2145,7 +2145,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public GetPartitionResponse getPartitionRequest(GetPartitionRequest req)
       throws NoSuchObjectException, MetaException, TException {
     if (req.getValidWriteIdList() == null) {
-      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName())));
+      req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
     }
     GetPartitionResponse res = client.get_partition_req(req);
     res.setPartition(deepCopy(
@@ -2171,7 +2171,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       throws NoSuchObjectException, MetaException, TException {
 
     if (req.getValidWriteIdList() == null) {
-      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName())));
+      req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
     }
     PartitionsResponse res = client.get_partitions_req(req);
     List<Partition> parts = deepCopyPartitions(
@@ -2202,7 +2202,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
                     tbl_name);
     gpbnr.setNames(part_names);
     gpbnr.setGet_col_stats(getColStats);
-    gpbnr.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(db_name, tbl_name)));
+    gpbnr.setValidWriteIdList(getValidWriteIdList(db_name, tbl_name));
     if (getColStats) {
       gpbnr.setEngine(engine);
     }
@@ -2275,8 +2275,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       req.setCatName(catName);
       req.setCapabilities(version);
       req.setGetColumnStats(getColumnStats);
-      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
-
       if (getColumnStats) {
         req.setEngine(engine);
       }
@@ -2317,11 +2315,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       GetTableRequest req = new GetTableRequest(dbName, tableName);
       req.setCatName(catName);
       req.setCapabilities(version);
-      if (validWriteIdList != null) {
-        req.setValidWriteIdList(validWriteIdList);
-      } else {
-        req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
-      }
+      req.setValidWriteIdList(validWriteIdList);
       req.setGetColumnStats(getColumnStats);
       if (getColumnStats) {
         req.setEngine(engine);
@@ -2558,7 +2552,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public GetPartitionNamesPsResponse listPartitionNamesRequest(GetPartitionNamesPsRequest req)
           throws NoSuchObjectException, MetaException, TException {
     if (req.getValidWriteIdList() == null) {
-      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName())));
+      req.setValidWriteIdList(getValidWriteIdList(req.getDbName(), req.getTblName()));
     }
     if( req.getCatName() == null ) {
       req.setCatName(getDefaultCatalog(conf));
@@ -2874,6 +2868,32 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   /**
+   * Api to fetch all table constraints at once
+   * @param req request info
+   * @return all constraints attached to given table
+   * @throws MetaException
+   * @throws TException
+   */
+  @Override
+  public SQLAllTableConstraints getAllTableConstraints(AllTableConstraintsRequest req)
+      throws MetaException, TException {
+    long t1 = 0;
+
+    if (LOG.isDebugEnabled()) {
+      t1 = System.currentTimeMillis();
+    }
+
+    try {
+      return client.get_all_table_constraints(req).getAllTableConstraints();
+    } finally {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("class={}, method={}, duration={}, comments={}", CLASS_NAME, "getAllTableConstraints",
+            System.currentTimeMillis() - t1, "HMS client");
+      }
+    }
+  }
+
+  /**
    * {@inheritDoc}
    */
   @Override
@@ -2941,8 +2961,6 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       TableStatsRequest rqst = new TableStatsRequest(dbName, tableName, colNames, engine);
       rqst.setCatName(catName);
       rqst.setEngine(engine);
-      rqst.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
-
       return getTableColumnStatisticsInternal(rqst).getTableStats();
     } finally {
       long diff = System.currentTimeMillis() - t1;
@@ -3002,7 +3020,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     PartitionsStatsRequest rqst = new PartitionsStatsRequest(dbName, tableName, colNames,
         partNames, engine);
     rqst.setCatName(catName);
-    rqst.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tableName)));
+    rqst.setValidWriteIdList(getValidWriteIdList(dbName, tableName));
     return client.get_partitions_statistics_req(rqst).getPartStats();
   }
 
@@ -3847,6 +3865,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
   }
 
+  @Override
+  public long getLatestTxnInConflict(long txnId) throws TException {
+    return client.get_latest_txn_in_conflict(txnId);
+  }
+
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
   @Override
   public NotificationEventResponse getNextNotification(long lastEventId, int maxEvents,
@@ -4078,7 +4101,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       }
       PartitionsStatsRequest req = new PartitionsStatsRequest(dbName, tblName, colNames, partNames, engine);
       req.setCatName(catName);
-      req.setValidWriteIdList(getValidWriteIdList(TableName.getDbTable(dbName, tblName)));
+      req.setValidWriteIdList(getValidWriteIdList(dbName, tblName));
 
       return getAggrStatsForInternal(req);
     } finally {
@@ -4489,18 +4512,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    * ( DriverTxnHandler.acquireLocks -> recordValidWriteIds -> setValidWriteIds ),
    * this only covers a subset of cases, where we invoke get_* APIs after query compilation,
    * if the validWriteIdList is not explicitly passed (as a method argument) to the HMS APIs.
-   *
-   * @param fullTableName
-   * @return
    */
-  protected String getValidWriteIdList(String fullTableName) {
+  protected String getValidWriteIdList(String dbName, String tblName) {
     if (conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY) == null) {
       return null;
     }
 
     ValidTxnWriteIdList validTxnWriteIdList = new ValidTxnWriteIdList(
         conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY));
-    ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(fullTableName);
+    ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(
+        TableName.getDbTable(dbName, tblName));
     return writeIdList!=null?writeIdList.toString():null;
   }
 

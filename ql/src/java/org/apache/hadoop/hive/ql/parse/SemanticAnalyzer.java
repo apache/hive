@@ -388,6 +388,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected volatile boolean disableJoinMerge = false;
   protected final boolean defaultJoinMerge;
 
+  /**
+   * This is required by prepare/execute statement
+   * Original operator tree { @link topOps} shape is changed when going through transformations
+   * and task generation, as a result original operator tree can not be used later to
+   * e.g. regenerate tasks or re-running physical transformations.
+   * Therefore we need to make a copy and cache it after operator tree is generated.
+   */
+  protected Map<String, TableScanOperator> topOpsCopy = null;
+
   /*
    * Capture the CTE definitions in a Query.
    */
@@ -2498,7 +2507,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private boolean isPathEncrypted(Path path) throws HiveException {
 
     try {
-      HadoopShims.HdfsEncryptionShim hdfsEncryptionShim = SessionState.get().getHdfsEncryptionShim(path.getFileSystem(conf));
+      HadoopShims.HdfsEncryptionShim hdfsEncryptionShim =
+          SessionState.get().getHdfsEncryptionShim(path.getFileSystem(conf), conf);
       if (hdfsEncryptionShim != null) {
         if (hdfsEncryptionShim.isPathEncrypted(path)) {
           return true;
@@ -12463,6 +12473,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         });
   }
 
+  protected void compilePlan(ParseContext pCtx) throws SemanticException{
+    if (!ctx.getExplainLogical()) {
+      TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf, pCtx);
+      compiler.init(queryState, console, db);
+      compiler.compile(pCtx, rootTasks, inputs, outputs);
+      fetchTask = pCtx.getFetchTask();
+    }
+  }
+
   @SuppressWarnings("checkstyle:methodlength")
   void analyzeInternal(ASTNode ast, Supplier<PlannerContext> pcf) throws SemanticException {
     LOG.info("Starting Semantic Analysis");
@@ -12661,12 +12680,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // 9. Optimize Physical op tree & Translate to target execution engine (MR,
     // TEZ..)
-    if (!ctx.getExplainLogical()) {
-      TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf, pCtx);
-      compiler.init(queryState, console, db);
-      compiler.compile(pCtx, rootTasks, inputs, outputs);
-      fetchTask = pCtx.getFetchTask();
-    }
+    compilePlan(pCtx);
+
     //find all Acid FileSinkOperatorS
     new QueryPlanPostProcessor(rootTasks, acidFileSinks, ctx.getExecutionId());
 
@@ -13576,7 +13591,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       Table likeTable = getTable(likeTableName, false);
       if (likeTable != null) {
-        if (isTemporary) {
+        if (isTemporary || isExt) {
           updateDefaultTblProps(likeTable.getParameters(), tblProps,
               new ArrayList<>(Arrays.asList(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL,
                   hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES)));
@@ -14853,6 +14868,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public List<LoadFileDesc> getLoadFileWork() {
     return loadFileWork;
+  }
+
+  public List<LoadTableDesc> getLoadTableWork() {
+    return loadTableWork;
+  }
+
+  public void setLoadFileWork(List<LoadFileDesc> loadFileWork) {
+    this.loadFileWork = loadFileWork;
+  }
+
+  public void setLoadTableWork(List<LoadTableDesc> tblWork) {
+    this.loadTableWork = tblWork;
   }
 
   private String getQueryStringFromAst(ASTNode ast) {

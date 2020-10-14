@@ -166,7 +166,7 @@ abstract class Rows implements Iterator {
         } else if (o instanceof byte[]) {
           value = convertBinaryArrayToString ? new String((byte[])o, StandardCharsets.UTF_8) : Base64.getEncoder().withoutPadding().encodeToString((byte[])o);
         } else {
-          value = o.toString();
+          value = rs.getString(i + 1);
         }
 
         if (beeLine.getOpts().getEscapeCRLF()) {

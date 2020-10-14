@@ -69,14 +69,14 @@ class PartitionsResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->partitions = array();
-                        $_size1085 = 0;
-                        $_etype1088 = 0;
-                        $xfer += $input->readListBegin($_etype1088, $_size1085);
-                        for ($_i1089 = 0; $_i1089 < $_size1085; ++$_i1089) {
-                            $elem1090 = null;
-                            $elem1090 = new \metastore\Partition();
-                            $xfer += $elem1090->read($input);
-                            $this->partitions []= $elem1090;
+                        $_size1127 = 0;
+                        $_etype1130 = 0;
+                        $xfer += $input->readListBegin($_etype1130, $_size1127);
+                        for ($_i1131 = 0; $_i1131 < $_size1127; ++$_i1131) {
+                            $elem1132 = null;
+                            $elem1132 = new \metastore\Partition();
+                            $xfer += $elem1132->read($input);
+                            $this->partitions []= $elem1132;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -103,8 +103,8 @@ class PartitionsResponse
             }
             $xfer += $output->writeFieldBegin('partitions', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->partitions));
-            foreach ($this->partitions as $iter1091) {
-                $xfer += $iter1091->write($output);
+            foreach ($this->partitions as $iter1133) {
+                $xfer += $iter1133->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

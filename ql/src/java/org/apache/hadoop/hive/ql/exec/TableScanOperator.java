@@ -63,19 +63,19 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   private VectorizationContext taskVectorizationContext;
 
-  protected transient JobConf jc;
-  private transient boolean inputFileChanged = false;
+  protected JobConf jc;
+  private boolean inputFileChanged = false;
   private TableDesc tableDesc;
 
-  private transient Stat currentStat;
-  private transient Map<String, Stat> stats;
+  private Stat currentStat;
+  private Map<String, Stat> stats;
 
-  private transient int rowLimit = -1;
-  private transient int currCount = 0;
+  private int rowLimit = -1;
+  private int currCount = 0;
   // insiderView will tell this TableScan is inside a view or not.
-  private transient boolean insideView;
+  private boolean insideView;
 
-  private transient boolean vectorized;
+  private boolean vectorized;
 
   private String defaultPartitionName;
 

@@ -115,6 +115,7 @@ public class TestIncrementalRows {
     initNrOfResultSetCalls(10);
 
     when(mockResultSet.getObject(1)).thenReturn("Hello World");
+    when(mockResultSet.getString(1)).thenReturn("Hello World");
 
     // IncrementalRows constructor should buffer the first "incrementalBufferRows" rows
     IncrementalRowsWithNormalization incrementalRowsWithNormalization = new IncrementalRowsWithNormalization(

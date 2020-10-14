@@ -22,9 +22,9 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.metastore.api.PartitionsSpecByExprResult;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysResponse;
-import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableStatsResult;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
@@ -65,6 +64,8 @@ import org.apache.thrift.TException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Objects;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
 
@@ -75,25 +76,29 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
  * It helps to reduce the time spent in compilation by using HS2 memory more effectively, and it allows to
  * improve HMS throughput for multi-tenant workloads by reducing the number of calls it needs to serve.
  */
-public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
+public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient implements IMetaStoreClient {
+
+  private static final Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClientWithLocalCache.class);
+
+  private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
 
   private static Cache<CacheKey, Object> mscLocalCache = null;
-  private static boolean IS_CACHE_ENABLED;
-  private static long MAX_SIZE;
-  private static boolean RECORD_STATS;
+  private static long maxSize;
+  private static boolean recordStats;
   private static HashMap<Class<?>, ObjectEstimator> sizeEstimator = null;
   private static String cacheObjName = null;
 
-  public static synchronized void init() {
-    if (mscLocalCache != null) return; // init cache only once
-    Configuration metaConf = MetastoreConf.newMetastoreConf();
-    LOG.debug("Initializing local cache in HiveMetaStoreClient...");
-    MAX_SIZE = MetastoreConf.getSizeVar(metaConf, MetastoreConf.ConfVars.MSC_CACHE_MAX_SIZE);
-    IS_CACHE_ENABLED = MetastoreConf.getBoolVar(metaConf, MetastoreConf.ConfVars.MSC_CACHE_ENABLED);
-    RECORD_STATS = MetastoreConf.getBoolVar(metaConf, MetastoreConf.ConfVars.MSC_CACHE_RECORD_STATS);
-    initSizeEstimator();
-    initCache();
-    LOG.debug("Local cache initialized in HiveMetaStoreClient: " + mscLocalCache);
+  public static synchronized void init(Configuration conf) {
+    // init cache only once
+    if (!INITIALIZED.get()) {
+      LOG.info("Initializing local cache in HiveMetaStoreClient...");
+      maxSize = MetastoreConf.getSizeVar(conf, MetastoreConf.ConfVars.MSC_CACHE_MAX_SIZE);
+      recordStats = MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.MSC_CACHE_RECORD_STATS);
+      initSizeEstimator();
+      initCache();
+      LOG.info("Local cache initialized in HiveMetaStoreClient: {}", mscLocalCache);
+      INITIALIZED.set(true);
+    }
   }
 
   public HiveMetaStoreClientWithLocalCache(Configuration conf) throws MetaException {
@@ -112,7 +117,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     sizeEstimator = new HashMap<>();
     IncrementalObjectSizeEstimator.createEstimators(CacheKey.class, sizeEstimator);
     for (KeyType e : KeyType.values()) {
-      for (Class<?> c : e.keyClass) {
+      for (Class<?> c : e.keyClasses) {
         IncrementalObjectSizeEstimator.createEstimators(c, sizeEstimator);
       }
       IncrementalObjectSizeEstimator.createEstimators(e.valueClass, sizeEstimator);
@@ -121,10 +126,14 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
 
   /**
    * KeyType is used to differentiate the request types. More types can be added in future.
+   * We added the unique classes that are part of the key for each request as well as the
+   * class of the value stored in the cache: At initialization time, they will be registered
+   * within the size estimator, which will be used to estimate the size of the objects
+   * within the cache.
    */
   public enum KeyType {
     // String <-- getConfigValueInternal(String name, String defaultValue)
-    CONFIG_VALUE(String.class, String.class, String.class),
+    CONFIG_VALUE(String.class),
     // Database <-- getDatabaseInternal(GetDatabaseRequest request)
     DATABASE(Database.class, GetDatabaseRequest.class),
     // GetTableResult <-- getTableInternal(GetTableRequest req)
@@ -141,49 +150,45 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     // Stored individually as:
     // ColumnStatisticsObj <-- String dbName, String tblName, List<string> colNames,
     //      String catName, String validWriteIdList, String engine, long id, (TableWatermark tw ?)
-    TABLE_COLUMN_STATS(ColumnStatisticsObj.class, String.class, String.class, List.class,
-        String.class, String.class, String.class, long.class, TableWatermark.class),
+    TABLE_COLUMN_STATS(ColumnStatisticsObj.class, String.class, long.class, TableWatermark.class),
     // AggrStats <-- getAggrStatsForInternal(PartitionsStatsRequest req), (TableWatermark tw ?)
     AGGR_COL_STATS(AggrStats.class, PartitionsStatsRequest.class, TableWatermark.class),
     // PartitionsByExprResult <-- getPartitionsByExprInternal(PartitionsByExprRequest req), (TableWatermark tw ?)
     PARTITIONS_BY_EXPR(PartitionsByExprResult.class, PartitionsByExprRequest.class, TableWatermark.class),
     // PartitionsSpecByExprResult <-- getPartitionsSpecByExprInternal(PartitionsByExprRequest req), (TableWatermark tw ?)
     PARTITIONS_SPEC_BY_EXPR(PartitionsSpecByExprResult.class, PartitionsByExprRequest.class, TableWatermark.class),
-    // List<String> <-- listPartitionNamesInternal(String catName, String dbName, String tableName,
-    //       int maxParts)
-    LIST_PARTITIONS_ALL(List.class, String.class, String.class, String.class, int.class),
+    // PartitionNamesWrapper <-- listPartitionNamesInternal(String catName, String dbName, String tableName,
+    //       int maxParts), (TableWatermark tw ?)
+    LIST_PARTITIONS_ALL(PartitionNamesWrapper.class, String.class, int.class, TableWatermark.class),
     // List<String> <-- listPartitionNamesInternal(String catName, String dbName, String tableName,
     //       List<String> partVals, int maxParts)
-    LIST_PARTITIONS(List.class, String.class, String.class, String.class, List.class, int.class),
+    LIST_PARTITIONS(String.class, int.class),
     // GetPartitionNamesPsResponse <-- listPartitionNamesRequestInternal(GetPartitionNamesPsRequest req)
     LIST_PARTITIONS_REQ(GetPartitionNamesPsResponse.class, GetPartitionNamesPsRequest.class),
     // List<Partition> <- listPartitionsWithAuthInfoInternal(String catName, String dbName, String tableName,
     //      int maxParts, String userName, List<String> groupNames)
-    LIST_PARTITIONS_AUTH_INFO_ALL(List.class, String.class, String.class, String.class, int.class,
-        String.class, List.class),
+    LIST_PARTITIONS_AUTH_INFO_ALL(Partition.class, String.class, int.class),
     // List<Partition> <- listPartitionsWithAuthInfoInternal(String catName, String dbName, String tableName,
     //      List<String> partialPvals, int maxParts, String userName, List<String> groupNames)
-    LIST_PARTITIONS_AUTH_INFO(List.class, String.class, String.class, String.class, List.class, int.class,
-        String.class, List.class),
+    LIST_PARTITIONS_AUTH_INFO(Partition.class, String.class, int.class),
     // GetPartitionsPsWithAuthResponse <- listPartitionsWithAuthInfoRequestInternal(GetPartitionsPsWithAuthRequest req)
     LIST_PARTITIONS_AUTH_INFO_REQ(GetPartitionsPsWithAuthResponse.class, GetPartitionsPsWithAuthRequest.class),
     // GetPartitionsByNamesResult <-- getPartitionsByNamesInternal(GetPartitionsByNamesRequest gpbnr)
     // Stored individually as:
     // Partition <-- String db_name, String tbl_name, List<String> partValues, boolean get_col_stats,
-    //      List<string> processorCapabilities, String processorIdentifier, String engine,
+    //      List<String> processorCapabilities, String processorIdentifier, String engine,
     //      String validWriteIdList, (TableWatermark tw ?)
-    PARTITIONS_BY_NAMES(Partition.class, String.class, String.class, List.class, boolean.class,
-        List.class, String.class, String.class, String.class, TableWatermark.class),
+    PARTITIONS_BY_NAMES(Partition.class, String.class, boolean.class, TableWatermark.class),
     // GetValidWriteIdsResponse <-- getValidWriteIdsInternal(GetValidWriteIdsRequest rqst)
     // Stored individually as:
-    // TableValidWriteIds <-- String fullTableName, String validTxnList, long writeId, (long tableId ?)
-    VALID_WRITE_IDS(TableValidWriteIds.class, String.class, String.class, long.class, long.class);
+    // TableValidWriteIds <-- String fullTableName, String validTxnList, long writeId
+    VALID_WRITE_IDS(TableValidWriteIds.class, String.class, long.class);
 
-    private final List<Class<?>> keyClass;
+    private final List<Class<?>> keyClasses;
     private final Class<?> valueClass;
 
     KeyType(Class<?> valueClass, Class<?>... keyClasses) {
-      this.keyClass = Collections.unmodifiableList(Arrays.asList(keyClasses));
+      this.keyClasses = Collections.unmodifiableList(Arrays.asList(keyClasses));
       this.valueClass = valueClass;
     }
   }
@@ -217,6 +222,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     public int hashCode() {
       return Objects.hash(IDENTIFIER, obj);
     }
+
+    @Override
+    public String toString() {
+      return "CacheKey {" + IDENTIFIER.name() + " @@ " + obj.toString() + "}";
+    }
   }
 
   private static int getWeight(CacheKey key, Object val) {
@@ -237,77 +247,152 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     int initSize = 100;
     Caffeine<CacheKey, Object> cacheBuilder = Caffeine.newBuilder()
         .initialCapacity(initSize)
-        .maximumWeight(MAX_SIZE)
+        .maximumWeight(maxSize)
         .weigher(HiveMetaStoreClientWithLocalCache::getWeight)
         .removalListener((key, val, cause) -> {
           if (LOG.isDebugEnabled()) {
             LOG.debug("Caffeine - ({}, {}) was removed ({})", key, val, cause);
           }});
-    if (RECORD_STATS) {
+    if (recordStats) {
       cacheBuilder.recordStats();
     }
     mscLocalCache = cacheBuilder.build();
-    cacheObjName = mscLocalCache.toString().substring(mscLocalCache.toString().indexOf("Cache@"));
+    cacheObjName = cacheBuilder.toString();
+  }
+
+  @Override
+  protected GetTableResult getTableInternal(GetTableRequest req) throws TException {
+    if (isCacheEnabledAndInitialized()) {
+      // table should be transactional to get responses from the cache
+      TableWatermark watermark = new TableWatermark(
+          req.getValidWriteIdList(), req.getId());
+      if (watermark.isValid()) {
+        CacheKey cacheKey = new CacheKey(KeyType.TABLE, req);
+        GetTableResult r = (GetTableResult) mscLocalCache.getIfPresent(cacheKey);
+        if (r == null) {
+          r = super.getTableInternal(req);
+          mscLocalCache.put(cacheKey, r);
+        } else {
+          LOG.debug(
+              "HS2 level HMS cache: method=getTableInternal, dbName={}, tblName={}, columnStats={}",
+              req.getDbName(), req.getTblName(), req.isGetColumnStats());
+        }
+
+        if (LOG.isDebugEnabled() && recordStats) {
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        }
+
+        return r;
+      }
+    }
+    return super.getTableInternal(req);
   }
 
   @Override
   protected PartitionsByExprResult getPartitionsByExprInternal(PartitionsByExprRequest req) throws TException {
-    PartitionsByExprResult r;
+    if (isCacheEnabledAndInitialized()) {
+      // table should be transactional to get responses from the cache
+      TableWatermark watermark = new TableWatermark(
+          req.getValidWriteIdList(), getTable(req.getDbName(), req.getTblName()).getId());
+      if (watermark.isValid()) {
+        CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, watermark, req);
+        PartitionsByExprResult r = (PartitionsByExprResult) mscLocalCache.getIfPresent(cacheKey);
+        if (r == null) {
+          r = super.getPartitionsByExprInternal(req);
+          mscLocalCache.put(cacheKey, r);
+        } else {
+          LOG.debug(
+              "HS2 level HMS cache: method=getPartitionsByExprInternal, dbName={}, tblName={}",
+              req.getDbName(), req.getTblName());
+        }
 
-    // table should be transactional to get responses from the cache
-    TableWatermark watermark = new TableWatermark(
-        req.getValidWriteIdList(), req.getId());
-    if (isCacheEnabledAndInitialized() && watermark.isValid()) {
-      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, req);
-      r = (PartitionsByExprResult) mscLocalCache.getIfPresent(cacheKey);
-      if (r == null) {
-        r = super.getPartitionsByExprInternal(req);
-        mscLocalCache.put(cacheKey, r);
-      }
+        if (LOG.isDebugEnabled() && recordStats) {
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        }
 
-      if (LOG.isDebugEnabled() && RECORD_STATS) {
-        LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        return r;
       }
-    } else {
-      r = super.getPartitionsByExprInternal(req);
     }
 
-    return r;
+    return super.getPartitionsByExprInternal(req);
+  }
+
+  @Override
+  protected List<String> listPartitionNamesInternal(String catName, String dbName, String tableName,
+      int maxParts) throws TException {
+    if (isCacheEnabledAndInitialized()) {
+      TableWatermark watermark = new TableWatermark(
+          getValidWriteIdList(dbName, tableName),
+          getTable(dbName, tableName).getId());
+      if (watermark.isValid()) {
+        CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_ALL, watermark,
+            catName, dbName, tableName, maxParts);
+        PartitionNamesWrapper r = (PartitionNamesWrapper) mscLocalCache.getIfPresent(cacheKey);
+        if (r == null) {
+          r = new PartitionNamesWrapper(
+              super.listPartitionNamesInternal(catName, dbName, tableName, maxParts));
+          mscLocalCache.put(cacheKey, r);
+        } else {
+          LOG.debug(
+              "HS2 level HMS cache: method=listPartitionNamesInternal, dbName={}, tblName={}",
+              dbName, tableName);
+        }
+
+        if (LOG.isDebugEnabled() && recordStats) {
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        }
+
+        return r.partitionNames;
+      }
+    }
+    return super.listPartitionNamesInternal(catName, dbName, tableName, maxParts);
+  }
+
+  /* This class is needed so the size estimator can work properly. */
+  private static class PartitionNamesWrapper {
+    private final List<String> partitionNames;
+
+    private PartitionNamesWrapper(List<String> partitionNames) {
+      this.partitionNames = partitionNames;
+    }
   }
 
   @Override
   protected PartitionsSpecByExprResult getPartitionsSpecByExprInternal(PartitionsByExprRequest req) throws TException {
-    PartitionsSpecByExprResult r;
+    if (isCacheEnabledAndInitialized()) {
+      // table should be transactional to get responses from the cache
+      TableWatermark watermark = new TableWatermark(
+          getValidWriteIdList(req.getDbName(), req.getTblName()),
+          getTable(req.getDbName(), req.getTblName()).getId());
+      if (watermark.isValid()) {
+        CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, watermark, req);
+        PartitionsSpecByExprResult r = (PartitionsSpecByExprResult) mscLocalCache.getIfPresent(cacheKey);
+        if (r == null) {
+          r = super.getPartitionsSpecByExprInternal(req);
+          mscLocalCache.put(cacheKey, r);
+        } else {
+          LOG.debug(
+              "HS2 level HMS cache: method=getPartitionsSpecByExprInternal, dbName={}, tblName={}",
+              req.getDbName(), req.getTblName());
+        }
 
-    // table should be transactional to get responses from the cache
-    TableWatermark watermark = new TableWatermark(
-        req.getValidWriteIdList(), req.getId());
-    if (isCacheEnabledAndInitialized() && watermark.isValid()) {
-      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_SPEC_BY_EXPR, req);
-      r = (PartitionsSpecByExprResult) mscLocalCache.getIfPresent(cacheKey);
-      if (r == null) {
-        r = super.getPartitionsSpecByExprInternal(req);
-        mscLocalCache.put(cacheKey, r);
-      }
+        if (LOG.isDebugEnabled() && recordStats) {
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        }
 
-      if (LOG.isDebugEnabled() && RECORD_STATS) {
-        LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        return r;
       }
-    } else {
-      r = super.getPartitionsSpecByExprInternal(req);
     }
 
-    return r;
+    return super.getPartitionsSpecByExprInternal(req);
   }
 
   @Override
   protected TableStatsResult getTableColumnStatisticsInternal(TableStatsRequest req) throws TException {
     if (isCacheEnabledAndInitialized()) {
-      Table tbl = getTable(req.getDbName(), req.getTblName());
-      String validWriteIdList = getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName()));
-      long tableId = tbl.getId();
       TableWatermark watermark = new TableWatermark(
-          validWriteIdList, tableId);
+          getValidWriteIdList(req.getDbName(), req.getTblName()),
+          getTable(req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         // 1) Retrieve from the cache those ids present, gather the rest
@@ -329,7 +414,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
         // 5) Sort result (in case there is any assumption) and return
         TableStatsResult result = computeTableColumnStatisticsFinal(req, colStats, newColStats);
 
-        if (LOG.isDebugEnabled() && RECORD_STATS) {
+        if (LOG.isDebugEnabled() && recordStats) {
           LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
         }
 
@@ -342,44 +427,38 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
 
   @Override
   protected AggrStats getAggrStatsForInternal(PartitionsStatsRequest req) throws TException {
-    AggrStats r;
-
     if (isCacheEnabledAndInitialized()) {
-      Table tbl = getTable(req.getDbName(), req.getTblName());
-      String validWriteIdList = getValidWriteIdList(TableName.getDbTable(req.getDbName(), req.getTblName()));
-      long tableId = tbl.getId();
       TableWatermark watermark = new TableWatermark(
-          validWriteIdList, tableId);
+          req.getValidWriteIdList(), getTable(req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
-        CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, req, watermark);
-        r = (AggrStats) mscLocalCache.getIfPresent(cacheKey);
+        CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, watermark, req);
+        AggrStats r = (AggrStats) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
           r = super.getAggrStatsForInternal(req);
           mscLocalCache.put(cacheKey, r);
+        } else {
+          LOG.debug(
+              "HS2 level HMS cache: method=getAggrStatsForInternal, dbName={}, tblName={}, partNames={}",
+              req.getDbName(), req.getTblName(), req.getPartNames());
         }
 
-        if (LOG.isDebugEnabled() && RECORD_STATS) {
+        if (LOG.isDebugEnabled() && recordStats) {
           LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
         }
-      } else {
-        r = super.getAggrStatsForInternal(req);
+
+        return r;
       }
-    } else {
-      r = super.getAggrStatsForInternal(req);
     }
 
-    return r;
+    return super.getAggrStatsForInternal(req);
   }
 
   @Override
   protected GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest rqst) throws TException {
     if (isCacheEnabledAndInitialized()) {
       String dbName = parseDbName(rqst.getDb_name(), conf)[1];
-      Table tbl = getTable(dbName, rqst.getTbl_name());
-      String validWriteIdList = getValidWriteIdList(TableName.getDbTable(dbName, rqst.getTbl_name()));
-      long tableId = tbl.getId();
       TableWatermark watermark = new TableWatermark(
-          validWriteIdList, tableId);
+          rqst.getValidWriteIdList(), getTable(dbName, rqst.getTbl_name()).getId());
       if (watermark.isValid()) {
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         // 1) Retrieve from the cache those ids present, gather the rest
@@ -401,7 +480,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
         // 5) Sort result (in case there is any assumption) and return
         GetPartitionsByNamesResult result = computePartitionsByNamesFinal(rqst, partitions, newPartitions);
 
-        if (LOG.isDebugEnabled() && RECORD_STATS) {
+        if (LOG.isDebugEnabled() && recordStats) {
           LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
         }
 
@@ -419,7 +498,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
    * @return boolean
    */
   private boolean isCacheEnabledAndInitialized() {
-    return IS_CACHE_ENABLED && mscLocalCache != null;
+    return INITIALIZED.get();
   }
 
 
@@ -428,18 +507,22 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     List<String> colStatsMissing = new ArrayList<>();
     List<ColumnStatisticsObj> colStats = new ArrayList<>();
     for (String colName : rqst.getColNames()) {
-      CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS,
+      CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS, watermark,
           rqst.getDbName(), rqst.getTblName(), colName,
           rqst.getCatName(), rqst.getValidWriteIdList(),
-          rqst.getEngine(), rqst.getId(), watermark);
+          rqst.getEngine(), rqst.getId());
       ColumnStatisticsObj v = (ColumnStatisticsObj) cache.get(cacheKey);
       if (v == null) {
         colStatsMissing.add(colName);
       } else {
         if (watermark == null) {
-          LOG.debug("Query level HMS cache: method=getTableColumnStatisticsInternal");
+          LOG.debug(
+              "Query level HMS cache: method=getTableColumnStatisticsInternal, dbName={}, tblName={}, colName={}",
+              rqst.getDbName(), rqst.getTblName(), colName);
         } else {
-          LOG.debug("HS2 level HMS cache: method=getTableColumnStatisticsInternal");
+          LOG.debug(
+              "HS2 level HMS cache: method=getTableColumnStatisticsInternal, dbName={}, tblName={}, colName={}",
+              rqst.getDbName(), rqst.getTblName(), colName);
         }
         colStats.add(v);
       }
@@ -451,10 +534,10 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
       TableStatsResult r, TableStatsRequest rqst, TableWatermark watermark) {
     List<ColumnStatisticsObj> newColStats = new ArrayList<>();
     for (ColumnStatisticsObj colStat : r.getTableStats()) {
-      CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS,
+      CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS, watermark,
           rqst.getDbName(), rqst.getTblName(), colStat.getColName(),
           rqst.getCatName(), rqst.getValidWriteIdList(),
-          rqst.getEngine(), rqst.getId(), watermark);
+          rqst.getEngine(), rqst.getId());
       cache.put(cacheKey, colStat);
       newColStats.add(colStat);
     }
@@ -494,18 +577,22 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     List<String> partitionsMissing = new ArrayList<>();
     List<Partition> partitions = new ArrayList<>();
     for (String partitionName : rqst.getNames()) {
-      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES,
+      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES, watermark,
           rqst.getDb_name(), rqst.getTbl_name(), Warehouse.getPartValuesFromPartName(partitionName),
           rqst.isGet_col_stats(), rqst.getProcessorCapabilities(), rqst.getProcessorIdentifier(),
-          rqst.getEngine(), rqst.getValidWriteIdList(), watermark);
+          rqst.getEngine(), rqst.getValidWriteIdList());
       Partition v = (Partition) cache.get(cacheKey);
       if (v == null) {
         partitionsMissing.add(partitionName);
       } else {
         if (watermark == null) {
-          LOG.debug("Query level HMS cache: method=getPartitionsByNamesInternal");
+          LOG.debug(
+              "Query level HMS cache: method=getPartitionsByNamesInternal, dbName={}, tblName={}, partitionName={}",
+              rqst.getDb_name(), rqst.getTbl_name(), partitionName);
         } else {
-          LOG.debug("HS2 level HMS cache: method=getPartitionsByNamesInternal");
+          LOG.debug(
+              "HS2 level HMS cache: method=getPartitionsByNamesInternal, dbName={}, tblName={}, partitionName={}",
+              rqst.getDb_name(), rqst.getTbl_name(), partitionName);
         }
         partitions.add(v);
       }
@@ -517,10 +604,10 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
       GetPartitionsByNamesResult r, GetPartitionsByNamesRequest rqst, TableWatermark watermark) {
     List<Partition> newPartitions = new ArrayList<>();
     for (Partition partition : r.getPartitions()) {
-      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES,
+      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES, watermark,
           rqst.getDb_name(), rqst.getTbl_name(), partition.getValues(),
           rqst.isGet_col_stats(), rqst.getProcessorCapabilities(), rqst.getProcessorIdentifier(),
-          rqst.getEngine(), rqst.getValidWriteIdList(), watermark);
+          rqst.getEngine(), rqst.getValidWriteIdList());
       cache.put(cacheKey, partition);
       newPartitions.add(partition);
     }
@@ -562,12 +649,14 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     List<TableValidWriteIds> tblValidWriteIds = new ArrayList<>();
     for (String fullTableName : rqst.getFullTableNames()) {
       CacheKey cacheKey = new CacheKey(KeyType.VALID_WRITE_IDS,
-          fullTableName, rqst.getValidTxnList(), rqst.getWriteId(), -1);
+          fullTableName, rqst.getValidTxnList(), rqst.getWriteId());
       TableValidWriteIds v = (TableValidWriteIds) cache.get(cacheKey);
       if (v == null) {
         fullTableNamesMissing.add(fullTableName);
       } else {
-        LOG.debug("Query level HMS cache: method=getValidWriteIdsInternal");
+        LOG.debug(
+            "Query level HMS cache: method=getValidWriteIdsInternal, fullTableName={}",
+            fullTableName);
         tblValidWriteIds.add(v);
       }
     }
@@ -582,7 +671,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
       newTblValidWriteIds.add(tableValidWriteIds);
       // Add to the cache
       CacheKey cacheKey = new CacheKey(KeyType.VALID_WRITE_IDS,
-          tableValidWriteIds.getFullTableName(), rqst.getValidTxnList(), rqst.getWriteId(), -1);
+          tableValidWriteIds.getFullTableName(), rqst.getValidTxnList(), rqst.getWriteId());
       cache.put(cacheKey, tableValidWriteIds);
     }
     return newTblValidWriteIds;
@@ -679,6 +768,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient {
     @Override
     public int hashCode() {
       return Objects.hash(validWriteIdList, tableId);
+    }
+
+    @Override
+    public String toString() {
+      return "TableWatermark {" + tableId + " @@ " + (validWriteIdList != null ? validWriteIdList : "null") + "}";
     }
   }
 

@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import static org.apache.hadoop.hive.common.AcidConstants.BASE_PREFIX;
+import static org.apache.hadoop.hive.common.AcidConstants.DELETE_DELTA_PREFIX;
+import static org.apache.hadoop.hive.common.AcidConstants.DELTA_PREFIX;
+import static org.apache.hadoop.hive.common.AcidConstants.VISIBILITY_PREFIX;
 import static org.apache.hadoop.hive.metastore.PartFilterExprUtil.createExpressionProxy;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getAllPartitionsOf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils.getDataLocation;
@@ -80,11 +84,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 public class HiveMetaStoreChecker {
 
   public static final Logger LOG = LoggerFactory.getLogger(HiveMetaStoreChecker.class);
-  // These constants must be the same as in AcidUtils
-  public static final String BASE_PREFIX = "base_";
-  public static final String DELTA_PREFIX = "delta_";
-  public static final String DELETE_DELTA_PREFIX = "delete_delta_";
-  public static final String VISIBILITY_PREFIX = "_v";
 
   private final IMetaStoreClient msc;
   private final Configuration conf;

@@ -163,14 +163,14 @@ class AlterPartitionsRequest
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->partitions = array();
-                        $_size1008 = 0;
-                        $_etype1011 = 0;
-                        $xfer += $input->readListBegin($_etype1011, $_size1008);
-                        for ($_i1012 = 0; $_i1012 < $_size1008; ++$_i1012) {
-                            $elem1013 = null;
-                            $elem1013 = new \metastore\Partition();
-                            $xfer += $elem1013->read($input);
-                            $this->partitions []= $elem1013;
+                        $_size1050 = 0;
+                        $_etype1053 = 0;
+                        $xfer += $input->readListBegin($_etype1053, $_size1050);
+                        for ($_i1054 = 0; $_i1054 < $_size1050; ++$_i1054) {
+                            $elem1055 = null;
+                            $elem1055 = new \metastore\Partition();
+                            $xfer += $elem1055->read($input);
+                            $this->partitions []= $elem1055;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -234,8 +234,8 @@ class AlterPartitionsRequest
             }
             $xfer += $output->writeFieldBegin('partitions', TType::LST, 4);
             $output->writeListBegin(TType::STRUCT, count($this->partitions));
-            foreach ($this->partitions as $iter1014) {
-                $xfer += $iter1014->write($output);
+            foreach ($this->partitions as $iter1056) {
+                $xfer += $iter1056->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

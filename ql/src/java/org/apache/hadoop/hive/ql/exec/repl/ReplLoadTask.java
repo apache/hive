@@ -147,7 +147,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         } else {
           work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
         }
-      } catch (SemanticException ex) {
+      } catch (Exception ex) {
         LOG.error("Failed to collect Metrics ", ex);
       }
       return errorCode;
@@ -162,7 +162,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     if (RANGER_AUTHORIZER.equalsIgnoreCase(conf.getVar(HiveConf.ConfVars.REPL_AUTHORIZATION_PROVIDER_SERVICE))) {
       Path rangerLoadRoot = new Path(new Path(work.dumpDirectory).getParent(), ReplUtils.REPL_RANGER_BASE_DIR);
       LOG.info("Adding Import Ranger Metadata Task from {} ", rangerLoadRoot);
-      RangerLoadWork rangerLoadWork = new RangerLoadWork(rangerLoadRoot, work.getSourceDbName(), work.dbNameToLoadIn,
+      String targetDbName = StringUtils.isEmpty(work.dbNameToLoadIn) ? work.getSourceDbName() : work.dbNameToLoadIn;
+      RangerLoadWork rangerLoadWork = new RangerLoadWork(rangerLoadRoot, work.getSourceDbName(), targetDbName,
           work.getMetricCollector());
       Task<RangerLoadWork> rangerLoadTask = TaskFactory.get(rangerLoadWork, conf);
       if (childTasks == null) {

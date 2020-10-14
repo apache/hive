@@ -33,12 +33,14 @@ import java.util.Stack;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StringInternUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.NullScanFileSystem;
 import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
@@ -96,18 +98,40 @@ public class NullScanTaskDispatcher implements SemanticDispatcher {
     if (desc == null) {
       return null;
     }
-    boolean isEmpty = false;
+    FileStatus[] filesFoundInPartitionDir = null;
     try {
-      isEmpty = Utilities.isEmptyPath(physicalContext.getConf(), path);
+      filesFoundInPartitionDir = Utilities.listNonHiddenFileStatus(physicalContext.getConf(), path);
     } catch (IOException e) {
       LOG.error("Cannot determine if the table is empty", e);
     }
-    desc.setInputFileFormatClass(
-        isEmpty ? ZeroRowsInputFormat.class : OneNullRowInputFormat.class);
+    if (!isMetadataOnlyAllowed(filesFoundInPartitionDir)) {
+      return desc;
+    }
+
+    boolean isEmpty = filesFoundInPartitionDir == null || filesFoundInPartitionDir.length == 0;
+    desc.setInputFileFormatClass(isEmpty ? ZeroRowsInputFormat.class : OneNullRowInputFormat.class);
     desc.setOutputFileFormatClass(HiveIgnoreKeyTextOutputFormat.class);
     desc.getProperties().setProperty(serdeConstants.SERIALIZATION_LIB,
         NullStructSerDe.class.getName());
     return desc;
+  }
+
+  private boolean isMetadataOnlyAllowed(FileStatus[] filesFoundInPartitionDir) {
+    if (filesFoundInPartitionDir == null || filesFoundInPartitionDir.length == 0) {
+      return true; // empty folders are safe to convert to metadata-only
+    }
+    for (FileStatus f : filesFoundInPartitionDir) {
+      if (AcidUtils.isDeleteDelta(f.getPath())) {
+        /*
+         * as described in HIVE-23712, an acid partition is not a safe subject of metadata-only
+         * optimization, because there is a chance that it contains no data but contains folders
+         * (e.g: delta_0000002_0000002_0000, delete_delta_0000003_0000003_0000), without scanning
+         * the underlying file contents, we cannot tell whether this partition contains data or not
+         */
+        return false;
+      }
+    }
+    return true;
   }
 
   private void processAlias(MapWork work, Path path,

@@ -758,7 +758,14 @@ public class DagUtils {
       Vertex mergeVx = createVertexFromMapWork(
           conf, mapWork, mrScratchDir, vertexType);
 
-      conf.setClass("mapred.input.format.class", HiveInputFormat.class, InputFormat.class);
+      Class<?> inputFormatClass = conf.getClass("mapred.input.format.class",
+              HiveInputFormat.class);
+      if (inputFormatClass != BucketizedHiveInputFormat.class &&
+              inputFormatClass != HiveInputFormat.class) {
+        // As of now only these two formats are supported.
+        inputFormatClass = HiveInputFormat.class;
+      }
+      conf.setClass("mapred.input.format.class", inputFormatClass, InputFormat.class);
       // mapreduce.tez.input.initializer.serialize.event.payload should be set
       // to false when using this plug-in to avoid getting a serialized event at run-time.
       conf.setBoolean("mapreduce.tez.input.initializer.serialize.event.payload", false);
@@ -769,7 +776,7 @@ public class DagUtils {
         conf.set(Utilities.INPUT_NAME, mapWork.getName());
         LOG.info("Going through each work and adding MultiMRInput");
         mergeVx.addDataSource(mapWork.getName(),
-            MultiMRInput.createConfigBuilder(conf, HiveInputFormat.class).build());
+            MultiMRInput.createConfigBuilder(conf, inputFormatClass).build());
       }
 
       // To be populated for SMB joins only for all the small tables
@@ -835,8 +842,12 @@ public class DagUtils {
       groupSplitsInInputInitializer = false;
       // grouping happens in execution phase. The input payload should not enable grouping here,
       // it will be enabled in the CustomVertex.
-      inputFormatClass = HiveInputFormat.class;
-      conf.setClass("mapred.input.format.class", HiveInputFormat.class, InputFormat.class);
+      if (inputFormatClass != BucketizedHiveInputFormat.class &&
+              inputFormatClass != HiveInputFormat.class) {
+        // As of now only these two formats are supported.
+        inputFormatClass = HiveInputFormat.class;
+      }
+      conf.setClass("mapred.input.format.class", inputFormatClass, InputFormat.class);
       // mapreduce.tez.input.initializer.serialize.event.payload should be set to false when using
       // this plug-in to avoid getting a serialized event at run-time.
       conf.setBoolean("mapreduce.tez.input.initializer.serialize.event.payload", false);
