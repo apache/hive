@@ -85,7 +85,16 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
@@ -956,7 +965,7 @@ public class TestObjectStore {
     Table tbl2 = buildTable(conf, db1, "t" + i++, false, TableType.EXTERNAL_TABLE.name());
     tables.add(tbl2);
     expectedValues.put(tbl2.getTableName(), true);
-    // Case 3: EXTERNAL = false, tableType == EXTERNAL_TABLE
+    // Case 3: EXTERNAL = true, tableType == EXTERNAL_TABLE
     // The result should be external table
     Table tbl3 = buildTable(conf, db1, "t" + i++, true, TableType.EXTERNAL_TABLE.name());
     tables.add(tbl3);

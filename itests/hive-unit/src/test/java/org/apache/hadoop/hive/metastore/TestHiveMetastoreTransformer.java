@@ -759,8 +759,10 @@ public class TestHiveMetastoreTransformer {
       LOG.debug("Return list size=" + extTables.size() + ",bitValue=" + requestedFields);
       assertEquals("Return list size does not match expected size:extTables", count, extTables.size());
       for (ExtendedTableInfo tableInfo : extTables) {
-        assertNull("Return object should not have read capabilities", tableInfo.getRequiredReadCapabilities());
-        assertNull("Return object should not have write capabilities", tableInfo.getRequiredWriteCapabilities());
+        assertEquals("Return object should have read capabilities", 1, tableInfo.getRequiredReadCapabilities().size());
+        assertEquals("EXTREAD", tableInfo.getRequiredReadCapabilities().get(0));
+        assertEquals("Return object should have write capabilities", 1, tableInfo.getRequiredWriteCapabilities().size());
+        assertEquals("EXTWRITE", tableInfo.getRequiredWriteCapabilities().get(0));
         assertEquals("AccessType not expected to be set", 0, tableInfo.getAccessType());
       }
 
@@ -897,8 +899,6 @@ public class TestHiveMetastoreTransformer {
 
       tblName = "test_parts_mgd_insert_wc";
       properties = new StringBuilder();
-      properties.append("transactional=true");
-      properties.append(";");
       properties.append(CAPABILITIES_KEY).append("=").append("HIVEMANAGEDINSERTREAD,HIVEMANAGEDINSERTWRITE,HIVECACHEINVALIDATE,")
                 .append("HIVEMANAGEDSTATS,CONNECTORREAD,CONNECTORWRITE");
       properties.append(";");
