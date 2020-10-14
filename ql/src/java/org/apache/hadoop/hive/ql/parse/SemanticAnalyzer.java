@@ -13194,9 +13194,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    boolean makeInsertOnly = !isTemporaryTable && HiveConf.getBoolVar(
-        conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
-    boolean makeAcid = !isTemporaryTable && makeAcid();
+    boolean makeInsertOnly = !isTemporaryTable && (isManaged && HiveConf.getBoolVar(
+        conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY));
+    boolean makeAcid = !isTemporaryTable && !makeInsertOnly && makeAcid();
     // if not specify managed table and create.table.as.external is true
     // ignore makeInsertOnly and makeAcid.
     if (!isManaged && HiveConf.getBoolVar(conf, ConfVars.CREATE_TABLE_AS_EXTERNAL)) {
