@@ -1,5 +1,3 @@
---! qt:disabled:Disabled in HIVE-19509
-
 set hive.stats.column.autogather=false;
 set hive.strict.checks.bucketing=false;
 

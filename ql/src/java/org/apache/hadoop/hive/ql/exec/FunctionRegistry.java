@@ -463,10 +463,7 @@ public final class FunctionRegistry {
     system.registerGenericUDAF("compute_stats", new GenericUDAFComputeStats());
     system.registerGenericUDAF("bloom_filter", new GenericUDAFBloomFilter());
     system.registerUDAF("percentile", UDAFPercentile.class);
-    system.registerGenericUDAF("percentile_cont", new GenericUDAFPercentileCont());
-    system.registerGenericUDAF("percentile_disc", new GenericUDAFPercentileDisc());
 
-    system.registerUDFPlugin(DataSketchesFunctions.INSTANCE);
 
     // Generic UDFs
     system.registerGenericUDF("reflect", GenericUDFReflect.class);
@@ -1860,13 +1857,5 @@ public final class FunctionRegistry {
   public static void setupPermissionsForBuiltinUDFs(String whiteListStr,
       String blackListStr) {
     system.setupPermissionsForUDFs(whiteListStr, blackListStr);
-  }
-
-  public static boolean isOrderedAggregate(String functionName) throws SemanticException {
-    WindowFunctionInfo windowInfo = getWindowFunctionInfo(functionName);
-    if (windowInfo != null) {
-      return windowInfo.isOrderedAggregate();
-    }
-    return false;
   }
 }

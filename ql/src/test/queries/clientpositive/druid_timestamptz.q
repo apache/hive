@@ -1,5 +1,3 @@
---! qt:disabled:Disabled in HIVE-20322
-
 set hive.fetch.task.conversion=more;
 SET hive.ctas.external.tables=true;
 SET hive.external.table.purge.default = true;

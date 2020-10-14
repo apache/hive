@@ -13,7 +13,6 @@ PREHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c) select 'Col1', 1, null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
@@ -63,7 +62,6 @@ PREHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c) select 'Col1', 1, null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
@@ -105,7 +103,6 @@ PREHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col1', 1, null, null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
@@ -116,7 +113,6 @@ PREHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col2', 2, null, 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=2
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=2).a SIMPLE []
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=2).b SIMPLE []
@@ -127,7 +123,6 @@ PREHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col3', 3, 'Uganda', null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: Output: default@ptestfilter_n2_temp@c=Uganda/d=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=Uganda,d=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=Uganda,d=__HIVE_DEFAULT_PARTITION__).b SIMPLE []
@@ -187,7 +182,6 @@ PREHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col2', 2, null, 2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=2
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=2).a SIMPLE []
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=2).b SIMPLE []
@@ -198,7 +192,6 @@ PREHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col2', 2, null, 3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: Output: default@ptestfilter_n2_temp@c=__HIVE_DEFAULT_PARTITION__/d=3
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=3).a SIMPLE []
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=__HIVE_DEFAULT_PARTITION__,d=3).b SIMPLE []
@@ -209,7 +202,6 @@ PREHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: query: INSERT OVERWRITE TABLE ptestfilter_n2_temp PARTITION (c,d) select 'Col3', 3, 'Uganda', null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
-POSTHOOK: Output: default@ptestfilter_n2_temp
 POSTHOOK: Output: default@ptestfilter_n2_temp@c=Uganda/d=__HIVE_DEFAULT_PARTITION__
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=Uganda,d=__HIVE_DEFAULT_PARTITION__).a SIMPLE []
 POSTHOOK: Lineage: ptestfilter_n2_temp PARTITION(c=Uganda,d=__HIVE_DEFAULT_PARTITION__).b SIMPLE []

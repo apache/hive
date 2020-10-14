@@ -31,7 +31,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.internal.AssumptionViolatedException;
 
 public class CoreAccumuloCliDriver extends CliAdapter {
 
@@ -123,8 +122,6 @@ public class CoreAccumuloCliDriver extends CliAdapter {
       }
       qt.clearPostTestEffects();
 
-    } catch (AssumptionViolatedException e) {
-      throw e;
     } catch (Exception e) {
       qt.failed(e, fname, null);
     }

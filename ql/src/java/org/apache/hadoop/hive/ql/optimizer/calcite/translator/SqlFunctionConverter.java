@@ -20,10 +20,9 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.translator;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+
 import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.sql.SqlAggFunction;
-import org.apache.calcite.sql.SqlFunction;
 import org.apache.calcite.sql.SqlFunctionCategory;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
@@ -38,7 +37,6 @@ import org.apache.calcite.sql.type.SqlReturnTypeInference;
 import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.util.Util;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.hadoop.hive.ql.exec.DataSketchesFunctions;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -80,8 +78,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.hive.plugin.api.HiveUDFPlugin;
-import org.apache.hive.plugin.api.HiveUDFPlugin.UDFDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -387,11 +383,10 @@ public class SqlFunctionConverter {
       registerFunction("istrue", SqlStdOperatorTable.IS_TRUE, hToken(HiveParser.Identifier, "istrue"));
       registerFunction("isnotfalse", SqlStdOperatorTable.IS_NOT_FALSE, hToken(HiveParser.Identifier, "isnotfalse"));
       registerFunction("isfalse", SqlStdOperatorTable.IS_FALSE, hToken(HiveParser.Identifier, "isfalse"));
-      registerFunction("<=>", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, hToken(HiveParser.EQUAL_NS, "<=>"));
+      registerFunction("is not distinct from", SqlStdOperatorTable.IS_NOT_DISTINCT_FROM, hToken(HiveParser.EQUAL_NS, "<=>"));
       registerFunction("when", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerDuplicateFunction("case", SqlStdOperatorTable.CASE, hToken(HiveParser.Identifier, "when"));
       registerFunction("coalesce", SqlStdOperatorTable.COALESCE, hToken(HiveParser.Identifier, "coalesce"));
-
       // timebased
       registerFunction("year", HiveExtractDate.YEAR,
           hToken(HiveParser.Identifier, "year"));
@@ -473,19 +468,6 @@ public class SqlFunctionConverter {
       );
       registerFunction("date_add", HiveDateAddSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "date_add"));
       registerFunction("date_sub", HiveDateSubSqlOperator.INSTANCE, hToken(HiveParser.Identifier, "date_sub"));
-
-      registerPlugin(DataSketchesFunctions.INSTANCE);
-    }
-
-    private void registerPlugin(HiveUDFPlugin plugin) {
-      for (UDFDescriptor udfDesc : plugin.getDescriptors()) {
-        Optional<SqlFunction> calciteFunction = udfDesc.getCalciteFunction();
-        if (calciteFunction.isPresent()) {
-          registerDuplicateFunction(udfDesc.getFunctionName(), calciteFunction.get(),
-              hToken(HiveParser.Identifier, udfDesc.getFunctionName()));
-        }
-      }
-
     }
 
     private void registerFunction(String name, SqlOperator calciteFn, HiveToken hiveToken) {
@@ -543,7 +525,7 @@ public class SqlFunctionConverter {
   }
 
   private static CalciteUDFInfo getUDFInfo(String hiveUdfName,
-      List<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
+      ImmutableList<RelDataType> calciteArgTypes, RelDataType calciteRetType) {
     CalciteUDFInfo udfInfo = new CalciteUDFInfo();
     udfInfo.udfName = hiveUdfName;
     udfInfo.returnTypeInference = ReturnTypes.explicit(calciteRetType);

@@ -2429,7 +2429,7 @@ public final class HiveRelDecorrelator implements ReflectiveVisitor {
               operand(LogicalCorrelate.class,
                       operand(RelNode.class, any()),
                       operand(Project.class,
-                              operandJ(Aggregate.class, null, Aggregate::isSimple,
+                              operand(Aggregate.class, null, Aggregate.IS_SIMPLE,
                                       operand(Project.class,
                                               operand(RelNode.class, any()))))));
     }

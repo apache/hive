@@ -469,15 +469,15 @@ public class ExprNodeConverter extends RexVisitorImpl<ExprNodeDesc> {
   private WindowFrameSpec getWindowRange(RexWindow window) {
     // NOTE: in Hive AST Rows->Range(Physical) & Range -> Values (logical)
     BoundarySpec start = null;
-    RexWindowBound lb = window.getLowerBound();
-    if (lb != null) {
-      start = getWindowBound(lb);
+    RexWindowBound ub = window.getUpperBound();
+    if (ub != null) {
+      start = getWindowBound(ub);
     }
 
     BoundarySpec end = null;
-    RexWindowBound ub = window.getUpperBound();
-    if (ub != null) {
-      end = getWindowBound(ub);
+    RexWindowBound lb = window.getLowerBound();
+    if (lb != null) {
+      end = getWindowBound(lb);
     }
 
     return new WindowFrameSpec(window.isRows() ? WindowType.ROWS : WindowType.RANGE, start, end);

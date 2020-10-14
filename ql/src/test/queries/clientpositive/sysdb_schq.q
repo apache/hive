@@ -1,4 +1,3 @@
---! qt:disabled:CDPD-6501
 --! qt:authorizer
 --! qt:scheduledqueryservice
 --! qt:dataset:src

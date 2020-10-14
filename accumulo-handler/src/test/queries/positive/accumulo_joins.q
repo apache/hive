@@ -1,4 +1,3 @@
---! qt:disabled:disabled for a long time now...dont know why
 DROP TABLE users;
 DROP TABLE states;
 DROP TABLE countries;

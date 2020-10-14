@@ -1,4 +1,3 @@
---! qt:disabled:Disabled in HIVE-19509
 set hive.mapred.mode=nonstrict;
 set hive.optimize.ppd=true;
 

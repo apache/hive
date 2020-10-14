@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -35,9 +34,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.BooleanWritable;
 
 @UDFType(deterministic = false)
-@Description(name = "assert_true_oom",
-        value = "_FUNC_(condition) - " +
-                "Throw an MapJoinMemoryExhaustionError if 'condition' is not true.")
 public class GenericUDFAssertTrueOOM extends GenericUDF {
   private ObjectInspectorConverters.Converter conditionConverter = null;
 

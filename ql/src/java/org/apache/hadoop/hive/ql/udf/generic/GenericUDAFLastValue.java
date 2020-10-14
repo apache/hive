@@ -37,8 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
-@Description(name = "last_value", value = "_FUNC_(x)")
-@WindowFunctionDescription(
+@WindowFunctionDescription(description = @Description(name = "last_value", value = "_FUNC_(x)"),
   supportsWindow = true, pivotResult = false, impliesOrder = true)
 public class GenericUDAFLastValue extends AbstractGenericUDAFResolver {
 

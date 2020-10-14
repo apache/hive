@@ -1,4 +1,3 @@
---! qt:disabled:disabled by 7e64114ddca5 in 2018
 set hive.cbo.enable=true;
 set hive.cbo.returnpath.hiveop=true;
 

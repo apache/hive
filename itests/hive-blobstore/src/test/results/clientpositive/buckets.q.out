@@ -61,7 +61,6 @@ PARTITION (b)
 SELECT a, c, b FROM source
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source
-POSTHOOK: Output: default@buckets
 POSTHOOK: Output: default@buckets@b=abc
 POSTHOOK: Output: default@buckets@b=ajss
 POSTHOOK: Output: default@buckets@b=data
@@ -123,7 +122,6 @@ PARTITION (b)
 SELECT a, c, b FROM source
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source
-POSTHOOK: Output: default@buckets
 POSTHOOK: Output: default@buckets@b=abc
 POSTHOOK: Output: default@buckets@b=ajss
 POSTHOOK: Output: default@buckets@b=data

@@ -652,15 +652,15 @@ public class ASTConverter {
       ASTNode wRangeAst = null;
 
       ASTNode startAST = null;
-      RexWindowBound lb = window.getLowerBound();
-      if (lb != null) {
-        startAST = getWindowBound(lb);
+      RexWindowBound ub = window.getUpperBound();
+      if (ub != null) {
+        startAST = getWindowBound(ub);
       }
 
       ASTNode endAST = null;
-      RexWindowBound ub = window.getUpperBound();
-      if (ub != null) {
-        endAST = getWindowBound(ub);
+      RexWindowBound lb = window.getLowerBound();
+      if (lb != null) {
+        endAST = getWindowBound(lb);
       }
 
       if (startAST != null || endAST != null) {

@@ -230,7 +230,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelDecorrelator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRelFieldTrimmer;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveGBYSemiJoinRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRemoveSqCountCheck;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRewriteToDataSketchesRules;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinProjectTransposeRule;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveSemiJoinRule;
@@ -2182,41 +2181,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           "Calcite: HiveExceptRewrite rule");
 
       //1. Distinct aggregate rewrite
-
-      if (!isMaterializedViewMaintenance() && conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_ENABLED)) {
-        // Rewrite to datasketches if enabled
-        List<RelOptRule> rules = Lists.newArrayList();
-        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNTDISTINCT_ENABLED)) {
-          String countDistinctSketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_COUNT_DISTINCT_SKETCH);
-          RelOptRule rule = new HiveRewriteToDataSketchesRules.CountDistinctRewrite(countDistinctSketchType);
-          rules.add(rule);
-        }
-        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_ENABLED)) {
-          String percentileDiscSketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_PERCENTILE_DISC_SKETCH);
-          RelOptRule rule = new HiveRewriteToDataSketchesRules.PercentileDiscRewrite(percentileDiscSketchType);
-          rules.add(rule);
-        }
-        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_CUME_DIST_ENABLED)) {
-          String sketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_CUME_DIST_SKETCH);
-          RelOptRule rule = new HiveRewriteToDataSketchesRules.CumeDistRewriteRule(sketchType);
-          rules.add(rule);
-        }
-        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_NTILE_ENABLED)) {
-          String sketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_NTILE_SKETCH);
-          RelOptRule rule = new HiveRewriteToDataSketchesRules.NTileRewrite(sketchType);
-          rules.add(rule);
-        }
-        if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_RANK_ENABLED)) {
-          String sketchType = conf.getVar(ConfVars.HIVE_OPTIMIZE_BI_REWRITE_RANK_SKETCH);
-          RelOptRule rule = new HiveRewriteToDataSketchesRules.RankRewriteRule(sketchType);
-          rules.add(rule);
-        }
-
-        if (rules.size() > 0) {
-          basePlan = hepPlan(basePlan, true, mdProvider, executorProvider, HepMatchOrder.BOTTOM_UP,
-              rules.toArray(new RelOptRule[rules.size()]));
-        }
-      }
       // Run this optimization early, since it is expanding the operator pipeline.
       if (!conf.getVar(HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("mr") &&
           conf.getBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEDISTINCTREWRITE)) {
@@ -2346,15 +2310,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
         "Calcite: Prejoin ordering transformation, Rerun PPD");
 
       return basePlan;
-    }
-
-    /**
-     * Returns true if MV is being loaded, constructed or being rebuilt.
-     */
-    private boolean isMaterializedViewMaintenance() {
-      return mvRebuildMode != MaterializationRebuildMode.NONE
-          || ctx.isLoadingMaterializedView()
-          || getQB().isMaterializedView();
     }
 
     private RelNode applyMaterializedViewRewriting(RelOptPlanner planner, RelNode basePlan,
@@ -2538,7 +2493,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
         RelMetadataQuery mq = RelMetadataQuery.instance();
         RelOptCost costOriginalPlan = mq.getCumulativeCost(calcitePreMVRewritingPlan);
-        final double factorSelectivity = HiveConf.getFloatVar(
+        final double factorSelectivity = (double) HiveConf.getFloatVar(
             conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REBUILD_INCREMENTAL_FACTOR);
         RelOptCost costRebuildPlan = mq.getCumulativeCost(basePlan).multiplyBy(factorSelectivity);
         if (costOriginalPlan.isLe(costRebuildPlan)) {
@@ -3805,7 +3760,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       // 3.2 Rank functions type is 'int'/'double'
       if (FunctionRegistry.isRankingFunction(aggName)) {
-        if (aggName.equalsIgnoreCase("percent_rank") || aggName.equalsIgnoreCase("cume_dist")) {
+        if (aggName.equalsIgnoreCase("percent_rank")) {
           udafRetType = TypeInfoFactory.doubleTypeInfo;
         } else {
           udafRetType = TypeInfoFactory.intTypeInfo;
@@ -4392,9 +4347,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
       if (bs != null) {
         SqlParserPos pos = new SqlParserPos(1, 1);
-        SqlNode amt = bs.getAmt() == 0 || bs.getAmt() == BoundarySpec.UNBOUNDED_AMOUNT
-            ? null
-            : SqlLiteral.createExactNumeric(String.valueOf(bs.getAmt()), new SqlParserPos(2, 2));
+        SqlNode amt = bs.getAmt() == 0 ? null : SqlLiteral.createExactNumeric(
+            String.valueOf(bs.getAmt()), new SqlParserPos(2, 2));
         RexNode amtLiteral = null;
         SqlCall sc = null;
 
@@ -4485,8 +4439,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         WindowSpec wndSpec = ((WindowFunctionSpec) wExpSpec).getWindowSpec();
         List<RexNode> partitionKeys = getPartitionKeys(wndSpec.getPartition(), converter, inputRR);
         List<RexFieldCollation> orderKeys = getOrderKeys(wndSpec.getOrder(), converter, inputRR);
-        RexWindowBound lowerBound = getBound(wndSpec.getWindowFrame().getStart());
-        RexWindowBound upperBound = getBound(wndSpec.getWindowFrame().getEnd());
+        RexWindowBound upperBound = getBound(wndSpec.getWindowFrame().getStart());
+        RexWindowBound lowerBound = getBound(wndSpec.getWindowFrame().getEnd());
         boolean isRows = wndSpec.getWindowFrame().getWindowType() == WindowType.ROWS;
 
         w = cluster.getRexBuilder().makeOver(calciteAggFnRetType, calciteAggFn, calciteAggFnArgs,
@@ -4837,7 +4791,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
           // 6.4 Build ExprNode corresponding to colums
           if (expr.getType() == HiveParser.TOK_ALLCOLREF) {
-            pos = genColListRegex(".*", expr.getChildCount() == 0 ? null :
+            pos = genColListRegex(".*", expr.getChildCount() == 0 ? null : 
                             getUnescapedName((ASTNode) expr.getChild(0)).toLowerCase(), expr, col_list,
                     excludedColumns, inputRR, starRR, pos, out_rwsch, qb.getAliases(), true);
             selectStar = true;

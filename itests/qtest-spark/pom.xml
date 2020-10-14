@@ -121,7 +121,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-exec</artifactId>
+      <artifactId>hive-standalone-metastore</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
@@ -136,12 +136,6 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-it-custom-serde</artifactId>
       <version>${project.version}</version>
-      <exclusions>
-        <exclusion>
-          <groupId>org.apache.calcite</groupId>
-          <artifactId>calcite-core</artifactId>
-        </exclusion>
-      </exclusions>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -150,6 +144,13 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-exec</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
     <!-- test inter-project -->
     <dependency>
       <groupId>com.sun.jersey</groupId>

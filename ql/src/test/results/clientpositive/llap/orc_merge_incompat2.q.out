@@ -29,7 +29,6 @@ PREHOOK: Output: default@orc_merge5a
 POSTHOOK: query: explain insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -147,7 +146,6 @@ PREHOOK: Output: default@orc_merge5a
 POSTHOOK: query: insert overwrite table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5 order by userid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
 POSTHOOK: Output: default@orc_merge5a@st=1.8
 POSTHOOK: Output: default@orc_merge5a@st=8.0
@@ -179,7 +177,6 @@ PREHOOK: Output: default@orc_merge5a
 POSTHOOK: query: insert into table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5 order by userid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
 POSTHOOK: Output: default@orc_merge5a@st=1.8
 POSTHOOK: Output: default@orc_merge5a@st=8.0
@@ -211,7 +208,6 @@ PREHOOK: Output: default@orc_merge5a
 POSTHOOK: query: insert into table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5 order by userid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
 POSTHOOK: Output: default@orc_merge5a@st=1.8
 POSTHOOK: Output: default@orc_merge5a@st=8.0
@@ -243,7 +239,6 @@ PREHOOK: Output: default@orc_merge5a
 POSTHOOK: query: insert into table orc_merge5a partition (st) select userid,string1,subtype,decimal1,ts,subtype from orc_merge5 order by userid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_merge5
-POSTHOOK: Output: default@orc_merge5a
 POSTHOOK: Output: default@orc_merge5a@st=0.8
 POSTHOOK: Output: default@orc_merge5a@st=1.8
 POSTHOOK: Output: default@orc_merge5a@st=8.0

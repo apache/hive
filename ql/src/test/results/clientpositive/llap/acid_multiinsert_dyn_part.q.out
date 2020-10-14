@@ -113,7 +113,6 @@ where a.c is null
 sort by a.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_text
-POSTHOOK: Output: default@multiinsert_test_acid
 POSTHOOK: Output: default@multiinsert_test_acid@c=1111
 POSTHOOK: Output: default@multiinsert_test_acid@c=2222
 POSTHOOK: Output: default@multiinsert_test_acid@c=__HIVE_DEFAULT_PARTITION__
@@ -175,7 +174,6 @@ where a.c is null
 sort by a.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_text
-POSTHOOK: Output: default@multiinsert_test_mm
 POSTHOOK: Output: default@multiinsert_test_mm@c=1111
 POSTHOOK: Output: default@multiinsert_test_mm@c=2222
 POSTHOOK: Output: default@multiinsert_test_mm@c=__HIVE_DEFAULT_PARTITION__
@@ -237,7 +235,6 @@ where a.c is null
 sort by a.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_text
-POSTHOOK: Output: default@multiinsert_test_acid_nondi
 POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=1111
 POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=2222
 POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=__HIVE_DEFAULT_PARTITION__
@@ -347,7 +344,6 @@ where a.c is null
 sort by a.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_text_2
-POSTHOOK: Output: default@multiinsert_test_acid
 POSTHOOK: Output: default@multiinsert_test_acid@c=1111
 POSTHOOK: Output: default@multiinsert_test_acid@c=2222
 POSTHOOK: Output: default@multiinsert_test_acid@c=4444
@@ -409,7 +405,6 @@ where a.c is null
 sort by a.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_text_2
-POSTHOOK: Output: default@multiinsert_test_mm
 POSTHOOK: Output: default@multiinsert_test_mm@c=1111
 POSTHOOK: Output: default@multiinsert_test_mm@c=2222
 POSTHOOK: Output: default@multiinsert_test_mm@c=4444
@@ -471,7 +466,6 @@ where a.c is null
 sort by a.c
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_text_2
-POSTHOOK: Output: default@multiinsert_test_acid_nondi
 POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=1111
 POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=2222
 POSTHOOK: Output: default@multiinsert_test_acid_nondi@c=4444

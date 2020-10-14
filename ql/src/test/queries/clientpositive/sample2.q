@@ -1,4 +1,3 @@
---! qt:disabled:disabled by 38f7a7f3839e in 2018
 --! qt:dataset:srcbucket
 CREATE TABLE dest1_n29(key INT, value STRING) STORED AS TEXTFILE;
 

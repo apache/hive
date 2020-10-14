@@ -56,6 +56,7 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "encrypted.query.files");
         excludesFrom(testConfigProps, "spark.only.query.files");
         excludesFrom(testConfigProps, "miniSparkOnYarn.only.query.files");
+        excludesFrom(testConfigProps, "disabled.query.files");
         excludesFrom(testConfigProps, "localSpark.only.query.files");
         excludesFrom(testConfigProps, "druid.query.files");
         excludesFrom(testConfigProps, "druid.kafka.query.files");
@@ -63,6 +64,8 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "erasurecoding.only.query.files");
         excludesFrom(testConfigProps, "erasurecoding.shared.query.files");
         excludesFrom(testConfigProps, "beeline.positive.include");
+
+        excludeQuery("fouter_join_ppr.q"); // Disabled in HIVE-19509
 
         setResultsDir("ql/src/test/results/clientpositive");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -178,6 +181,10 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientpositive");
 
         includesFrom(testConfigProps, "druid.query.files");
+        excludeQuery("druid_timestamptz.q"); // Disabled in HIVE-20322
+        excludeQuery("druidmini_joins.q"); // Disabled in HIVE-20322
+        excludeQuery("druidmini_masking.q"); // Disabled in HIVE-20322
+        //excludeQuery("druidmini_test1.q"); // Disabled in HIVE-20322
 
         setResultsDir("ql/src/test/results/clientpositive/druid");
         setLogDir("itests/qtest/target/tmp/log");
@@ -242,6 +249,12 @@ public class CliConfigs {
 
         includesFrom(testConfigProps, "minillaplocal.query.files");
         includesFrom(testConfigProps, "minillaplocal.shared.query.files");
+        excludeQuery("bucket_map_join_tez1.q"); // Disabled in HIVE-19509
+        excludeQuery("tez_smb_1.q"); // Disabled in HIVE-19509
+        excludeQuery("union_fast_stats.q"); // Disabled in HIVE-19509
+        excludeQuery("schema_evol_orc_acidvec_part.q"); // Disabled in HIVE-19509
+        excludeQuery("schema_evol_orc_vec_part_llap_io.q"); // Disabled in HIVE-19509
+	excludeQuery("rfc5424_parser_file_pruning.q"); // Disabled in HIVE-21427
 
         setResultsDir("ql/src/test/results/clientpositive/llap");
         setLogDir("itests/qtest/target/qfile-results/clientpositive");
@@ -324,6 +337,12 @@ public class CliConfigs {
         excludesFrom(testConfigProps, "encrypted.query.files");
         excludesFrom(testConfigProps, "erasurecoding.only.query.files");
 
+        excludeQuery("cbo_query44.q"); // TODO: Enable when we move to Calcite 1.18
+        excludeQuery("cbo_query45.q"); // TODO: Enable when we move to Calcite 1.18
+        excludeQuery("cbo_query67.q"); // TODO: Enable when we move to Calcite 1.18
+        excludeQuery("cbo_query70.q"); // TODO: Enable when we move to Calcite 1.18
+        excludeQuery("cbo_query86.q"); // TODO: Enable when we move to Calcite 1.18
+
         setLogDir("itests/qtest/target/qfile-results/clientpositive/tez");
 
         if (useConstraints) {
@@ -392,6 +411,9 @@ public class CliConfigs {
         setQueryDir("ql/src/test/queries/clientnegative");
 
         excludesFrom(testConfigProps, "minimr.query.negative.files");
+        excludeQuery("authorization_uri_import.q");
+        excludeQuery("spark_job_max_tasks.q");
+        excludeQuery("spark_stage_max_tasks.q");
 
         setResultsDir("ql/src/test/results/clientnegative");
         setLogDir("itests/qtest/target/qfile-results/clientnegative");
@@ -536,6 +558,7 @@ public class CliConfigs {
       super(CoreAccumuloCliDriver.class);
       try {
         setQueryDir("accumulo-handler/src/test/queries/positive");
+        excludeQuery("accumulo_joins.q");
 
         setResultsDir("accumulo-handler/src/test/results/positive");
         setLogDir("itests/qtest/target/qfile-results/accumulo-handler/positive");

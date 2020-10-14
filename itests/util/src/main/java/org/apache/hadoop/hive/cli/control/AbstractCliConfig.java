@@ -131,7 +131,7 @@ public abstract class AbstractCliConfig {
     }
   }
 
-  private void excludeQuery(String qFile) {
+  protected void excludeQuery(String qFile) {
     excludedQueryFileNames.add(qFile);
   }
 

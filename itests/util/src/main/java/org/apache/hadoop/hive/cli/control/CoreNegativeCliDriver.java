@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.internal.AssumptionViolatedException;
 
 public class CoreNegativeCliDriver extends CliAdapter{
 
@@ -145,8 +144,6 @@ public class CoreNegativeCliDriver extends CliAdapter{
             debugHint : "\r\n" + result.getCapturedOutput();
         qt.failedDiff(result.getReturnCode(), fname, message);
       }
-    } catch (AssumptionViolatedException e) {
-      throw e;
     } catch (Error error) {
       QTestProcessExecResult qTestProcessExecResult = qt.checkNegativeResults(fname, error);
       if (qTestProcessExecResult.getReturnCode() != 0) {

@@ -265,7 +265,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFSurrogateKey;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTFInline;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
-import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -913,8 +912,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         || exprTokenType == HiveParser.TOK_FUNCTIONDI
         || exprTokenType == HiveParser.TOK_FUNCTIONSTAR) {
       assert (expressionTree.getChildCount() != 0);
-      Tree lastChild = expressionTree.getChild(expressionTree.getChildCount() - 1);
-      if (lastChild.getType() == HiveParser.TOK_WINDOWSPEC) {
+      if (expressionTree.getChild(expressionTree.getChildCount()-1).getType()
+          == HiveParser.TOK_WINDOWSPEC) {
         // If it is a windowing spec, we include it in the list
         // Further, we will examine its children AST nodes to check whether
         // there are aggregation functions within
@@ -923,8 +922,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           doPhase1GetAllAggregations((ASTNode) child, aggregations, wdwFns, expressionTree);
         }
         return;
-      } else if (lastChild.getType() == HiveParser.TOK_WITHIN_GROUP) {
-        transformWithinGroup(expressionTree, lastChild);
       }
       if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
         String functionName = unescapeIdentifier(expressionTree.getChild(0)
@@ -953,39 +950,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     for (int i = 0; i < expressionTree.getChildCount(); i++) {
       doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(i),
           aggregations, wdwFns, wndParent);
-    }
-  }
-
-  private void transformWithinGroup(ASTNode expressionTree, Tree withinGroupNode) throws SemanticException {
-    Tree functionNameNode = expressionTree.getChild(0);
-    if (!FunctionRegistry.isOrderedAggregate(functionNameNode.getText())) {
-      throw new SemanticException(ErrorMsg.WITHIN_GROUP_NOT_ALLOWED, functionNameNode.getText());
-    }
-
-    List<Tree> parameters = new ArrayList<>(expressionTree.getChildCount() - 2);
-    for (int i = 1; i < expressionTree.getChildCount() - 1; ++i) {
-      parameters.add(expressionTree.getChild(i));
-    }
-    while (expressionTree.getChildCount() > 1) {
-      expressionTree.deleteChild(1);
-    }
-
-    Tree orderByNode = withinGroupNode.getChild(0);
-    if (parameters.size() != orderByNode.getChildCount()) {
-      throw new SemanticException(ErrorMsg.WITHIN_GROUP_PARAMETER_MISMATCH,
-              Integer.toString(parameters.size()), Integer.toString(orderByNode.getChildCount()));
-    }
-
-    for (int i = 0; i < orderByNode.getChildCount(); ++i) {
-      expressionTree.addChild(parameters.get(i));
-      Tree tabSortColNameNode = orderByNode.getChild(i);
-      Tree nullsNode = tabSortColNameNode.getChild(0);
-      ASTNode sortKey = (ASTNode) tabSortColNameNode.getChild(0).getChild(0);
-      expressionTree.addChild(sortKey);
-      expressionTree.addChild(ASTBuilder.createAST(HiveParser.NumberLiteral,
-              Integer.toString(DirectionUtils.tokenToCode(tabSortColNameNode.getType()))));
-      expressionTree.addChild(ASTBuilder.createAST(HiveParser.NumberLiteral,
-              Integer.toString(NullOrdering.fromToken(nullsNode.getType()).getCode())));
     }
   }
 
@@ -8380,7 +8344,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if ((dpCtx != null) && (dpCtx.getNumDPCols() >= 0)) {
       // No static partition specified
       if (dpCtx.getNumSPCols() == 0) {
-        output = new WriteEntity(dest_tab, determineWriteType(ltd, isNonNativeTable, dest), true);
+        output = new WriteEntity(dest_tab, determineWriteType(ltd, isNonNativeTable, dest), false);
         outputs.add(output);
         output.setDynamicPartitionWrite(true);
       }

@@ -77,12 +77,12 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
   @Override
   protected RelDataType deriveRowType() {
     return deriveRowType(getCluster().getTypeFactory(), getInput().getRowType(),
-        indicator, groupSet, aggCalls);
+        indicator, groupSet, groupSets, aggCalls);
   }
 
   public static RelDataType deriveRowType(RelDataTypeFactory typeFactory,
       final RelDataType inputRowType, boolean indicator,
-      ImmutableBitSet groupSet,
+      ImmutableBitSet groupSet, List<ImmutableBitSet> groupSets,
       final List<AggregateCall> aggCalls) {
     final List<Integer> groupList = groupSet.asList();
     assert groupList.size() == groupSet.cardinality();
@@ -100,11 +100,10 @@ public class HiveAggregate extends Aggregate implements HiveRelNode {
                 typeFactory.createSqlType(SqlTypeName.BOOLEAN), false);
         String name = "i$" + fieldList.get(groupKey).getName();
         int i = 0;
-        StringBuilder nameBuilder = new StringBuilder(name);
         while (containedNames.contains(name)) {
-          nameBuilder.append('_').append(i++);
+          name += "_" + i++;
         }
-        containedNames.add(nameBuilder.toString());
+        containedNames.add(name);
         builder.add(name, booleanType);
       }
     }
