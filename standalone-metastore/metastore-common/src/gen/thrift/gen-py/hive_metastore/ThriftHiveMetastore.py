@@ -57291,7 +57291,7 @@ class get_stored_procedure_args(object):
             (fname, ftype, fid) = iprot.readFieldBegin()
             if ftype == TType.STOP:
                 break
-            if fid == -1:
+            if fid == 1:
                 if ftype == TType.STRUCT:
                     self.request = StoredProcedureRequest()
                     self.request.read(iprot)
@@ -57308,7 +57308,7 @@ class get_stored_procedure_args(object):
             return
         oprot.writeStructBegin('get_stored_procedure_args')
         if self.request is not None:
-            oprot.writeFieldBegin('request', TType.STRUCT, -1)
+            oprot.writeFieldBegin('request', TType.STRUCT, 1)
             self.request.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -57328,7 +57328,10 @@ class get_stored_procedure_args(object):
     def __ne__(self, other):
         return not (self == other)
 all_structs.append(get_stored_procedure_args)
-get_stored_procedure_args.thrift_spec = ()
+get_stored_procedure_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'request', [StoredProcedureRequest, None], None, ),  # 1
+)
 
 
 class get_stored_procedure_result(object):
@@ -57439,7 +57442,7 @@ class drop_stored_procedure_args(object):
             (fname, ftype, fid) = iprot.readFieldBegin()
             if ftype == TType.STOP:
                 break
-            if fid == -1:
+            if fid == 1:
                 if ftype == TType.STRUCT:
                     self.request = StoredProcedureRequest()
                     self.request.read(iprot)
@@ -57456,7 +57459,7 @@ class drop_stored_procedure_args(object):
             return
         oprot.writeStructBegin('drop_stored_procedure_args')
         if self.request is not None:
-            oprot.writeFieldBegin('request', TType.STRUCT, -1)
+            oprot.writeFieldBegin('request', TType.STRUCT, 1)
             self.request.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
@@ -57476,7 +57479,10 @@ class drop_stored_procedure_args(object):
     def __ne__(self, other):
         return not (self == other)
 all_structs.append(drop_stored_procedure_args)
-drop_stored_procedure_args.thrift_spec = ()
+drop_stored_procedure_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'request', [StoredProcedureRequest, None], None, ),  # 1
+)
 
 
 class drop_stored_procedure_result(object):

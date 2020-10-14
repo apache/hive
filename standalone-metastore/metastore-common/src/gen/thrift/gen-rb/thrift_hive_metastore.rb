@@ -16403,7 +16403,7 @@ module ThriftHiveMetastore
 
   class Get_stored_procedure_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    REQUEST = -1
+    REQUEST = 1
 
     FIELDS = {
       REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::StoredProcedureRequest}
@@ -16439,7 +16439,7 @@ module ThriftHiveMetastore
 
   class Drop_stored_procedure_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
-    REQUEST = -1
+    REQUEST = 1
 
     FIELDS = {
       REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::StoredProcedureRequest}

@@ -21,7 +21,7 @@ class ThriftHiveMetastore_drop_stored_procedure_args
     static public $isValidate = false;
 
     static public $_TSPEC = array(
-        -1 => array(
+        1 => array(
             'var' => 'request',
             'isRequired' => false,
             'type' => TType::STRUCT,
@@ -62,7 +62,7 @@ class ThriftHiveMetastore_drop_stored_procedure_args
                 break;
             }
             switch ($fid) {
-                case -1:
+                case 1:
                     if ($ftype == TType::STRUCT) {
                         $this->request = new \metastore\StoredProcedureRequest();
                         $xfer += $this->request->read($input);
@@ -88,7 +88,7 @@ class ThriftHiveMetastore_drop_stored_procedure_args
             if (!is_object($this->request)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
-            $xfer += $output->writeFieldBegin('request', TType::STRUCT, -1);
+            $xfer += $output->writeFieldBegin('request', TType::STRUCT, 1);
             $xfer += $this->request->write($output);
             $xfer += $output->writeFieldEnd();
         }
