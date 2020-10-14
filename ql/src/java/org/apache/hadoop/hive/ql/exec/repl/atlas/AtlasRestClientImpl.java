@@ -95,7 +95,7 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
         SecurityUtils.reloginExpiringKeytabUser();
         return clientV2.exportData(request);
       }
-    }, null);
+    });
   }
 
   public AtlasImportResult importData(AtlasImportRequest request, AtlasReplInfo atlasReplInfo) throws Exception {
@@ -103,6 +103,7 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
     Path exportFilePath = new Path(atlasReplInfo.getStagingDir(), ReplUtils.REPL_ATLAS_EXPORT_FILE_NAME);
     FileSystem fs = FileSystem.get(exportFilePath.toUri(), atlasReplInfo.getConf());
     if (!fs.exists(exportFilePath)) {
+      LOG.info("There is nothing to load, returning the default result.");
       return defaultResult;
     }
     LOG.debug("Atlas import data request: {}" + request);
@@ -120,7 +121,7 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
           }
         }
       }
-    }, defaultResult);
+    });
   }
 
   private AtlasImportResult getDefaultAtlasImportResult(AtlasImportRequest request) {
