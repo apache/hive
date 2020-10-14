@@ -13693,7 +13693,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       makeInsertOnly = false;
       makeAcid = false;
     }
-    if ((makeInsertOnly || makeAcid || isTransactional)
+    if ((makeInsertOnly || makeAcid || isTransactional || isManaged)
         && !isExt  && !isMaterialization && StringUtils.isBlank(storageFormat.getStorageHandler())
         //don't overwrite user choice if transactional attribute is explicitly set
         && !retValue.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)) {
@@ -13702,7 +13702,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
             TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
       }
-      if (makeAcid || isTransactional) {
+      if (makeAcid || isTransactional || (isManaged && !makeInsertOnly)) {
         retValue = convertToAcidByDefault(storageFormat, qualifiedTableName, sortCols, retValue);
       }
     }
