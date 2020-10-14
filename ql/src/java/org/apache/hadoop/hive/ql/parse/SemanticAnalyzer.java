@@ -13912,9 +13912,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(msg);
         }
         if (!isValidAutomaticRewritingMaterialization()) {
-          LOG.warn("Cannot enable automatic rewriting for materialized view. " +
-                  getInvalidAutomaticRewritingMaterializationReason() +
-                  " Only query text based rewriting is available.");
+          String errorMessage = "Only query text based automatic rewriting is available for materialized view. " +
+                  getInvalidAutomaticRewritingMaterializationReason();
+          console.printError(errorMessage);
+          LOG.warn(errorMessage);
         }
       }
     } catch (HiveException e) {
@@ -14944,7 +14945,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Generate the query string for this query (with fully resolved table references).
    * @return The query string with resolved references. NULL if an error occurred.
    */
-  protected String getQueryStringForCache(ASTNode ast) {
+  private String getQueryStringForCache(ASTNode ast) {
     // Use the UnparseTranslator to resolve unqualified table names.
     String queryString = getQueryStringFromAst(ast);
 
