@@ -142,7 +142,11 @@ public class OperatorGraph {
 
       visited.add(curr);
 
-      Cluster currentCluster = null;
+      Cluster currentCluster = nodeCluster.get(curr);
+      if (currentCluster == null) {
+        currentCluster=new Cluster();
+        currentCluster.add(curr);
+      }
       List<Operator<?>> parents = curr.getParentOperators();
       for (int i = 0; i < parents.size(); i++) {
         Operator<?> p = parents.get(i);
@@ -152,17 +156,12 @@ public class OperatorGraph {
           continue;
         }
         Cluster cluster = nodeCluster.get(p);
-        if (currentCluster == null) {
-          currentCluster = cluster;
-        } else {
+        if (cluster != null) {
           currentCluster.merge(cluster);
+        } else {
+          currentCluster.add(p);
         }
       }
-
-      if (currentCluster == null) {
-        currentCluster = new Cluster();
-      }
-      currentCluster.add(curr);
 
       SemiJoinBranchInfo sji = pctx.getRsToSemiJoinBranchInfo().get(curr);
       if (sji != null) {

@@ -132,7 +132,7 @@ public class SharedWorkOptimizer extends Transform {
   private static boolean chk_w2 = false;
   private static boolean chk_dag_cycle = true;
   private static boolean chk_og = true;
-  private static boolean writeDot = false;
+  private static boolean writeDot = true;
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
