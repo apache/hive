@@ -618,7 +618,11 @@ public class HiveConnection implements java.sql.Connection {
           socketFactory = SSLConnectionSocketFactory.getSocketFactory();
         } else {
           // Pick trust store config from the given path
-          sslTrustStore = KeyStore.getInstance(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
+          String trustStoreType = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
+          if (trustStoreType == null || trustStoreType.isEmpty()) {
+            trustStoreType = KeyStore.getDefaultType();
+          }
+          sslTrustStore = KeyStore.getInstance(trustStoreType);
           try (FileInputStream fis = new FileInputStream(sslTrustStorePath)) {
             sslTrustStore.load(fis, sslTrustStorePassword.toCharArray());
           }
@@ -661,8 +665,18 @@ public class HiveConnection implements java.sql.Connection {
       if (sslTrustStore == null || sslTrustStore.isEmpty()) {
         transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout);
       } else {
+        String trustStoreType =
+                sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
+        if (trustStoreType == null) {
+          trustStoreType = "";
+        }
+        String trustStoreAlgorithm =
+                sessConfMap.get(JdbcConnectionParams.SSL_TRUST_MANAGER_FACTORY_ALGORITHM);
+        if (trustStoreAlgorithm == null) {
+          trustStoreAlgorithm = "";
+        }
         transport = HiveAuthUtils.getSSLSocket(host, port, loginTimeout,
-            sslTrustStore, sslTrustStorePassword);
+            sslTrustStore, sslTrustStorePassword, trustStoreType, trustStoreAlgorithm);
       }
     } else {
       // get non-SSL socket transport
@@ -760,7 +774,11 @@ public class HiveConnection implements java.sql.Connection {
       String trustStorePath = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE);
       String trustStorePassword = sessConfMap.get(
         JdbcConnectionParams.SSL_TRUST_STORE_PASSWORD);
-      KeyStore sslTrustStore = KeyStore.getInstance(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
+      String trustStoreType = sessConfMap.get(JdbcConnectionParams.SSL_TRUST_STORE_TYPE);
+      if (trustStoreType == null || trustStoreType.isEmpty()) {
+        trustStoreType = KeyStore.getDefaultType();
+      }
+      KeyStore sslTrustStore = KeyStore.getInstance(trustStoreType);
 
       if (trustStorePath == null || trustStorePath.isEmpty()) {
         throw new IllegalArgumentException(JdbcConnectionParams.SSL_TRUST_STORE
