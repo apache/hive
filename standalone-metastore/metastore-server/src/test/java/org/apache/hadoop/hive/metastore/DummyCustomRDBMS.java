@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * Dummy custom database product - companion class to enable testing by TestTxnUtils
  */
 public class DummyCustomRDBMS extends DatabaseProduct {
-  static final private Logger LOG = LoggerFactory.getLogger(DatabaseProduct.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(DummyCustomRDBMS.class.getName());
   
   public DummyCustomRDBMS() {
     LOG.info("Instantiating custom RDBMS");
@@ -91,7 +91,7 @@ public class DummyCustomRDBMS extends DatabaseProduct {
   }
   @Override
   public String getTruncateStatement(String name) {
-    return "DummyTruncate";
+    return super.getTruncateStatement(name);
   }
   @Override
   public boolean supportsGetGeneratedKeys() {

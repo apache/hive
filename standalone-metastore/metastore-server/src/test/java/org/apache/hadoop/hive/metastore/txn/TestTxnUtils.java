@@ -242,6 +242,9 @@ public class TestTxnUtils {
 
     Configuration c = db.getConf();
     Assert.assertEquals(c.get("DummyKey"), "DummyValue");
+    //Cleanup conf
+    MetastoreConf.setBoolVar(conf, ConfVars.USE_CUSTOM_RDBMS, false);
+    MetastoreConf.setVar(conf, ConfVars.CUSTOM_RDBMS_CLASSNAME, "");
   }
 
   @Before
