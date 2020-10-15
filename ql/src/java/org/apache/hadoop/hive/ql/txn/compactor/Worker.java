@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.common.util.Ref;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -141,6 +142,16 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         msc.close();
       }
     }  }
+
+  private void verifyTableIdHasNotChanged(CompactionInfo ci, Table originalTable) throws HiveException, MetaException {
+    Table currentTable = resolveTable(ci);
+    if (originalTable.getId() != currentTable.getId()) {
+      throw new HiveException("Table " + originalTable.getDbName() + "." + originalTable.getTableName()
+          + " id (" + currentTable.getId() + ") is not equal to its id when compaction started ("
+          + originalTable.getId() + "). The table might have been dropped and recreated while compaction was running."
+          + " Marking compaction as failed.");
+    }
+  }
 
   private void commitTxnIfSet(long compactorTxnId) {
     if (compactorTxnId != TXN_ID_NOT_SET) {
@@ -557,6 +568,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           }
         }
         heartbeater.cancel();
+
+        verifyTableIdHasNotChanged(ci, t1);
+
         LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in txn "
             + JavaUtils.txnIdToString(compactorTxnId) + ", marking as compacted.");
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
