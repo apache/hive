@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.repl.ReplScope;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -48,15 +47,12 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 
 import java.io.IOException;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.Base64;
 import java.util.List;
 import java.util.Collections;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_MOVE_OPTIMIZED_FILE_SCHEMES;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
@@ -363,17 +359,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
     try {
       assert(sourceDbNameOrPattern != null);
       Path loadPath = getCurrentLoadPath();
-      // Ths config is set to make sure that in case of s3 replication, move is skipped.
-      try {
-        Warehouse wh = new Warehouse(conf);
-        Path filePath = wh.getWhRoot();
-        if (ifEnableMoveOptimization(filePath, conf)) {
-          conf.setBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION, true);
-          LOG.info(" Set move optimization to true for warehouse " + filePath.toString());
-        }
-      } catch (Exception e) {
-        throw new SemanticException(e.getMessage(), e);
-      }
 
       // Now, the dumped path can be one of three things:
       // a) It can be a db dump, in which case we expect a set of dirs, each with a

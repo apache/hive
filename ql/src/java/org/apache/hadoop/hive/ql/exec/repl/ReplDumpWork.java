@@ -51,6 +51,7 @@ public class ReplDumpWork implements Serializable {
   final String dbNameOrPattern, astRepresentationForErrorMsg, resultTempPath;
   Long eventTo;
   Long eventFrom;
+  private boolean isBootstrap;
   private static String testInjectDumpDir = null;
   private static boolean testInjectDumpDirAutoIncrement = false;
   static boolean testDeletePreviousDumpMetaPath = false;
@@ -134,6 +135,10 @@ public class ReplDumpWork implements Serializable {
     }
   }
 
+  void setBootstrap(boolean bootstrap) {
+    isBootstrap = bootstrap;
+  }
+
   public void setExternalTblCopyPathIterator(Iterator<String> externalTblCopyPathIterator) {
     if (this.externalTblCopyPathIterator != null) {
       throw new IllegalStateException("External table copy path iterator has already been initialized");
@@ -204,10 +209,10 @@ public class ReplDumpWork implements Serializable {
       replSpec.setInReplicationScope(true);
       EximUtil.DataCopyPath managedTableCopyPath = new EximUtil.DataCopyPath(replSpec);
       managedTableCopyPath.loadFromString(managedTblCopyPathIterator.next());
-      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+      Task<?> copyTask = ReplCopyTask.getDumpCopyTask(
               managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
-              managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite,
-              getCurrentDumpPath().toString(), getMetricCollector());
+              managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite, !isBootstrap,
+        getCurrentDumpPath().toString(), getMetricCollector());
       tasks.add(copyTask);
       tracker.addTask(copyTask);
       LOG.debug("added task for {}", managedTableCopyPath);
@@ -220,9 +225,9 @@ public class ReplDumpWork implements Serializable {
     if (functionCopyPathIterator != null) {
       while (functionCopyPathIterator.hasNext() && tracker.canAddMoreTasks()) {
         EximUtil.DataCopyPath binaryCopyPath = functionCopyPathIterator.next();
-        Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+        Task<?> copyTask = ReplCopyTask.getDumpCopyTask(
                 binaryCopyPath.getReplicationSpec(), binaryCopyPath.getSrcPath(), binaryCopyPath.getTargetPath(), conf,
-                getCurrentDumpPath().toString(), getMetricCollector()
+          getCurrentDumpPath().toString(), getMetricCollector()
         );
         tasks.add(copyTask);
         tracker.addTask(copyTask);

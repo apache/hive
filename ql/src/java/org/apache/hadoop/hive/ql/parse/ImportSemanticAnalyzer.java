@@ -89,7 +89,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 
 /**
  * ImportSemanticAnalyzer.
@@ -437,8 +436,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean isSkipTrash = false;
     boolean needRecycle = false;
 
-    if (replicationSpec.isInReplicationScope() && (x.getCtx().getConf().getBoolean(
-      REPL_ENABLE_MOVE_OPTIMIZATION.varname, false))) {
+    if (replicationSpec.isInReplicationScope()) {
       lft = LoadFileType.IGNORE;
       destPath = loadPath = tgtPath;
       isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
@@ -649,8 +647,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
       LoadFileType loadFileType;
       Path destPath;
-      if (replicationSpec.isInReplicationScope() && (x.getCtx().getConf().getBoolean(
-        REPL_ENABLE_MOVE_OPTIMIZATION.varname, false))) {
+      if (replicationSpec.isInReplicationScope()) {
         loadFileType = LoadFileType.IGNORE;
         destPath = tgtLocation;
         isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());

@@ -1449,21 +1449,19 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   @Test
   public void testMoveOptimizationIncrementalFailureAfterCopyReplace() throws Throwable {
-    List<String> withConfigs =
-        Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
     String replicatedDbName_CM = replicatedDbName + "_CM";
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
             .run("create table t2 (place string) partitioned by (country string)")
             .run("insert into table t2 partition(country='india') values ('bangalore')")
             .run("create table t1 (place string) partitioned by (country string)")
             .dump(primaryDbName);
-    replica.load(replicatedDbName, primaryDbName, withConfigs);
+    replica.load(replicatedDbName, primaryDbName);
     //delete load ack to reuse the dump
     new Path(tuple.dumpLocation).getFileSystem(conf).delete(new Path(tuple.dumpLocation
             + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR
             + LOAD_ACKNOWLEDGEMENT.toString()), true);
 
-    replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
+    replica.load(replicatedDbName_CM, primaryDbName);
     replica.run("alter database " + replicatedDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("alter database " + replicatedDbName_CM + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
 
@@ -1477,18 +1475,16 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   @Test
   public void testMoveOptimizationIncrementalFailureAfterCopy() throws Throwable {
-    List<String> withConfigs =
-        Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
     String replicatedDbName_CM = replicatedDbName + "_CM";
     WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
             .run("create table t2 (place string) partitioned by (country string)")
             .run("ALTER TABLE t2 ADD PARTITION (country='india')")
             .dump(primaryDbName);
-    replica.load(replicatedDbName, primaryDbName, withConfigs);
+    replica.load(replicatedDbName, primaryDbName);
     //delete load ack to reuse the dump
     new Path(bootstrapDump.dumpLocation).getFileSystem(conf).delete(new Path(bootstrapDump.dumpLocation
             + Path.SEPARATOR + ReplUtils.REPL_HIVE_BASE_DIR + Path.SEPARATOR + LOAD_ACKNOWLEDGEMENT.toString()), true);
-    replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
+    replica.load(replicatedDbName_CM, primaryDbName);
     replica.run("alter database " + replicatedDbName + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')")
         .run("alter database " + replicatedDbName_CM + " set DBPROPERTIES ('" + SOURCE_OF_REPLICATION + "' = '1,2,3')");
 
@@ -1501,9 +1497,6 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
   private void testMoveOptimization(String primaryDb, String replicaDb, String replicatedDbName_CM,
                                     String tbl,  String eventType, WarehouseInstance.Tuple tuple) throws Throwable {
-    List<String> withConfigs =
-        Collections.singletonList("'hive.repl.enable.move.optimization'='true'");
-
     // fail add notification for given event type.
     BehaviourInjection<NotificationEvent, Boolean> callerVerifier
             = new BehaviourInjection<NotificationEvent, Boolean>() {
@@ -1522,13 +1515,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
     try {
-      replica.loadFailure(replicaDb, primaryDbName, withConfigs);
+      replica.loadFailure(replicaDb, primaryDbName);
     } finally {
       InjectableBehaviourObjectStore.resetAddNotificationModifier();
     }
 
     callerVerifier.assertInjectionsPerformed(true, false);
-    replica.load(replicaDb, primaryDbName, withConfigs);
+    replica.load(replicaDb, primaryDbName);
 
     replica.run("use " + replicaDb)
             .run("select country from " + tbl + " where country == 'india'")
@@ -1545,13 +1538,13 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
 
     InjectableBehaviourObjectStore.setAddNotificationModifier(callerVerifier);
     try {
-      replica.loadFailure(replicatedDbName_CM, primaryDbName, withConfigs);
+      replica.loadFailure(replicatedDbName_CM, primaryDbName);
     } finally {
       InjectableBehaviourObjectStore.resetAddNotificationModifier();
     }
 
     callerVerifier.assertInjectionsPerformed(true, false);
-    replica.load(replicatedDbName_CM, primaryDbName, withConfigs);
+    replica.load(replicatedDbName_CM, primaryDbName);
 
     replica.run("use " + replicatedDbName_CM)
             .run("select country from " + tbl + " where country == 'india'")
