@@ -10589,7 +10589,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       String keyStorePassword =
           MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_KEYSTORE_PASSWORD);
-
+      String keyStoreType =
+              MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_TYPE).trim();
+      String keyStoreAlgorithm =
+              MetastoreConf.getVar(conf, ConfVars.SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
       // enable SSL support for HMS
       List<String> sslVersionBlacklist = new ArrayList<>();
       for (String sslVersion : MetastoreConf.getVar(conf, ConfVars.SSL_PROTOCOL_BLACKLIST).split(",")) {
@@ -10597,7 +10600,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       serverSocket = SecurityUtils.getServerSSLSocket(msHost, port, keyStorePath,
-          keyStorePassword, sslVersionBlacklist);
+          keyStorePassword, keyStoreType, keyStoreAlgorithm, sslVersionBlacklist);
     }
 
     if (tcpKeepAlive) {
