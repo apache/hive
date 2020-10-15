@@ -19,7 +19,6 @@
 package org.apache.hive.jdbc;
 
 import com.google.common.annotations.VisibleForTesting;
-import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
