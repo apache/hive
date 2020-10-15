@@ -13194,16 +13194,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    boolean makeInsertOnly = !isTemporaryTable && (isManaged && HiveConf.getBoolVar(
-        conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY));
-    boolean makeAcid = !isTemporaryTable && !makeInsertOnly && makeAcid();
+    boolean makeInsertOnly = !isTemporaryTable && HiveConf.getBoolVar(
+        conf, ConfVars.HIVE_CREATE_TABLES_AS_INSERT_ONLY);
+    boolean makeAcid = !isTemporaryTable && makeAcid();
     // if not specify managed table and create.table.as.external is true
     // ignore makeInsertOnly and makeAcid.
     if (!isManaged && HiveConf.getBoolVar(conf, ConfVars.CREATE_TABLE_AS_EXTERNAL)) {
       makeInsertOnly = false;
       makeAcid = false;
     }
-    if ((makeInsertOnly || makeAcid || isTransactional)
+    if ((makeInsertOnly || makeAcid || isTransactional || isManaged)
         && !isExt  && !isMaterialization && StringUtils.isBlank(storageFormat.getStorageHandler())
         //don't overwrite user choice if transactional attribute is explicitly set
         && !retValue.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)) {
@@ -13212,7 +13212,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
             TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
       }
-      if (makeAcid || isTransactional) {
+      if (makeAcid || isTransactional || (isManaged && !makeInsertOnly)) {
         retValue = convertToAcidByDefault(storageFormat, qualifiedTableName, sortCols, retValue);
       }
     }
