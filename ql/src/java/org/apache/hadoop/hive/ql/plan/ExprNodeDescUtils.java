@@ -18,9 +18,8 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
-
-import avro.shaded.com.google.common.collect.Lists;
 
 import java.util.Arrays;
 import java.util.Collection;
