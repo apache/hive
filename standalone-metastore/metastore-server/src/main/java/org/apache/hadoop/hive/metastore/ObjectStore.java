@@ -2805,7 +2805,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public Map<String, String> getPartitionLocations(String catName, String dbName, String tblName,
-                                                   String baseLocationToNotShow, int max) {
+      String baseLocationToNotShow, int max) {
     catName = normalizeIdentifier(catName);
     dbName = normalizeIdentifier(dbName);
     tblName = normalizeIdentifier(tblName);
@@ -3052,7 +3052,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public Map<String, String> listPartitionLocations(String catName, String dbName, String tblName,
-                                                          short max_parts) throws MetaException, NoSuchObjectException {
+      short max_parts) throws MetaException, NoSuchObjectException {
 
     Map<String, String> partLocations;
     boolean success = false;

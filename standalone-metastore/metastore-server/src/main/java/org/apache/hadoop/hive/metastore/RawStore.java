@@ -509,7 +509,7 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException no such table.
    */
   Map<String, String> listPartitionLocations(String catName, String dbName, String tblName,
-                                  short maxParts) throws MetaException, NoSuchObjectException;
+      short maxParts) throws MetaException, NoSuchObjectException;
 
   /**
    * Get a list of partition values as one big struct.

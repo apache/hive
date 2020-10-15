@@ -374,7 +374,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
 
   @Override
   public Map<String, String> listPartitionLocations(String catName, String dbName, String tblName,
-                                                    short maxParts) throws MetaException, NoSuchObjectException {
+      short maxParts) throws MetaException, NoSuchObjectException {
     return Collections.emptyMap();
   }
 

@@ -2001,7 +2001,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public Map<String, String> listPartitionLocations(String catName, String dbName, String tblName,
-                                                     short maxParts) throws MetaException, NoSuchObjectException {
+      short maxParts) throws MetaException, NoSuchObjectException {
     catName = StringUtils.normalizeIdentifier(catName);
     dbName = StringUtils.normalizeIdentifier(dbName);
     tblName = StringUtils.normalizeIdentifier(tblName);
