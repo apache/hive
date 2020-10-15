@@ -1629,15 +1629,9 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@src_null_n4
 POSTHOOK: Lineage: src_null_n4.key SCRIPT []
 POSTHOOK: Lineage: src_null_n4.value EXPRESSION []
-<<<<<<< HEAD
-Warning: Map Join MAPJOIN[128][bigTable=?] in task 'Map 3' is a cross product
-Warning: Map Join MAPJOIN[127][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[129][bigTable=?] in task 'Reducer 4' is a cross product
-=======
 Warning: Map Join MAPJOIN[127][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[128][bigTable=?] in task 'Map 4' is a cross product
 Warning: Map Join MAPJOIN[129][bigTable=?] in task 'Reducer 5' is a cross product
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
 PREHOOK: query: explain
 select key, value, count(*)
 from src_null_n4 b
@@ -1666,21 +1660,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Map 3 (BROADCAST_EDGE)
-<<<<<<< HEAD
-        Map 3 <- Map 8 (BROADCAST_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 5 (BROADCAST_EDGE), Reducer 7 (BROADCAST_EDGE)
-        Reducer 4 <- Map 1 (BROADCAST_EDGE), Map 3 (SIMPLE_EDGE)
-        Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 4 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
-=======
         Map 4 <- Map 3 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (BROADCAST_EDGE), Reducer 8 (BROADCAST_EDGE)
         Reducer 5 <- Map 1 (BROADCAST_EDGE), Map 4 (SIMPLE_EDGE)
         Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
         Reducer 7 <- Reducer 5 (SIMPLE_EDGE)
         Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -1739,11 +1724,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_null_n4
-<<<<<<< HEAD
-                  filterExpr: (value is not null or value is not null) (type: boolean)
-=======
                   filterExpr: value is not null (type: boolean)
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -1758,14 +1739,11 @@ STAGE PLANS:
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-<<<<<<< HEAD
-=======
                         Reduce Output Operator
                           null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                           value expressions: _col0 (type: string)
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
                         Reduce Output Operator
                           null sort order: 
                           sort order: 
@@ -1794,11 +1772,7 @@ STAGE PLANS:
                           1 
                         outputColumnNames: _col0, _col1, _col2
                         input vertices:
-<<<<<<< HEAD
-                          1 Map 8
-=======
                           1 Map 3
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
                         residual filter predicates: {(_col2 <> _col1)}
                         Statistics: Num rows: 1 Data size: 553 Basic stats: COMPLETE Column stats: NONE
                         Select Operator
@@ -1819,35 +1793,6 @@ STAGE PLANS:
                               Statistics: Num rows: 1 Data size: 553 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: all inputs
-<<<<<<< HEAD
-        Map 8 
-            Map Operator Tree:
-                TableScan
-                  alias: src_null_n4
-                  filterExpr: value is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                    Select Operator
-                      expressions: value (type: string)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      Group By Operator
-                        keys: _col0 (type: string)
-                        minReductionHashAggr: 0.99
-                        mode: hash
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                        Reduce Output Operator
-                          null sort order: 
-                          sort order: 
-                          Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                          value expressions: _col0 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-=======
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1879,7 +1824,7 @@ STAGE PLANS:
                         1 _col2 (type: string), _col0 (type: bigint)
                       outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col7
                       input vertices:
-                        1 Reducer 7
+                        1 Reducer 8
                       Statistics: Num rows: 1 Data size: 668 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: (_col4 is null or (_col4 = 0L) or (_col7 is not null or _col2 is null or (_col5 < _col4)) is not true) (type: boolean)
@@ -1948,11 +1893,7 @@ STAGE PLANS:
                             Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                             Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col2 (type: bigint)
-<<<<<<< HEAD
-        Reducer 5 
-=======
         Reducer 6 
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -1978,11 +1919,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: bigint), _col2 (type: bigint)
-<<<<<<< HEAD
-        Reducer 6 
-=======
         Reducer 7 
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -2014,7 +1951,7 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
-        Reducer 7 
+        Reducer 8 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -2040,15 +1977,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-<<<<<<< HEAD
-Warning: Map Join MAPJOIN[134][bigTable=?] in task 'Map 3' is a cross product
-Warning: Map Join MAPJOIN[133][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[135][bigTable=?] in task 'Reducer 5' is a cross product
-=======
 Warning: Map Join MAPJOIN[133][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[134][bigTable=?] in task 'Map 5' is a cross product
 Warning: Map Join MAPJOIN[135][bigTable=?] in task 'Reducer 6' is a cross product
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
 PREHOOK: query: select key, value, count(*)
 from src_null_n4 b
 where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value)
@@ -2066,15 +1997,9 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_null_n4
 #### A masked pattern was here ####
 5444	NULL	1
-<<<<<<< HEAD
-Warning: Map Join MAPJOIN[134][bigTable=?] in task 'Map 3' is a cross product
-Warning: Map Join MAPJOIN[133][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[135][bigTable=?] in task 'Reducer 5' is a cross product
-=======
 Warning: Map Join MAPJOIN[133][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[134][bigTable=?] in task 'Map 5' is a cross product
 Warning: Map Join MAPJOIN[135][bigTable=?] in task 'Reducer 6' is a cross product
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
 PREHOOK: query: explain
 select key, value, count(*)
 from src_null_n4 b
@@ -2103,16 +2028,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Reducer 4 (BROADCAST_EDGE)
-<<<<<<< HEAD
-        Map 3 <- Reducer 10 (BROADCAST_EDGE)
-        Reducer 10 <- Map 9 (SIMPLE_EDGE)
-        Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 6 (BROADCAST_EDGE), Reducer 8 (BROADCAST_EDGE)
-        Reducer 4 <- Map 3 (SIMPLE_EDGE)
-        Reducer 5 <- Map 1 (BROADCAST_EDGE), Map 3 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 5 (SIMPLE_EDGE)
-        Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
-=======
         Map 5 <- Reducer 4 (BROADCAST_EDGE)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Reducer 7 (BROADCAST_EDGE), Reducer 9 (BROADCAST_EDGE)
         Reducer 4 <- Map 3 (SIMPLE_EDGE)
@@ -2120,7 +2035,6 @@ STAGE PLANS:
         Reducer 7 <- Reducer 6 (SIMPLE_EDGE)
         Reducer 8 <- Reducer 6 (SIMPLE_EDGE)
         Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2179,28 +2093,6 @@ STAGE PLANS:
             Execution mode: llap
             LLAP IO: all inputs
         Map 3 
-<<<<<<< HEAD
-            Map Operator Tree:
-                TableScan
-                  alias: src_null_n4
-                  filterExpr: (value is not null or value is not null) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: value (type: string)
-                      minReductionHashAggr: 0.99
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-=======
             Map Operator Tree:
                 TableScan
                   alias: src_null_n4
@@ -2229,7 +2121,6 @@ STAGE PLANS:
                   alias: b
                   filterExpr: value is not null (type: boolean)
                   Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
                   Filter Operator
                     predicate: value is not null (type: boolean)
                     Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
@@ -2245,11 +2136,7 @@ STAGE PLANS:
                           1 
                         outputColumnNames: _col0, _col1, _col2, _col3
                         input vertices:
-<<<<<<< HEAD
-                          1 Reducer 10
-=======
                           1 Reducer 4
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
                         residual filter predicates: {(_col3 <> _col1)}
                         Statistics: Num rows: 1 Data size: 553 Basic stats: COMPLETE Column stats: NONE
                         Filter Operator
@@ -2273,49 +2160,6 @@ STAGE PLANS:
                                 Statistics: Num rows: 1 Data size: 553 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
             LLAP IO: all inputs
-<<<<<<< HEAD
-        Map 9 
-            Map Operator Tree:
-                TableScan
-                  alias: src_null_n4
-                  filterExpr: value is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Filter Operator
-                    predicate: value is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                    Group By Operator
-                      keys: value (type: string)
-                      minReductionHashAggr: 0.99
-                      mode: hash
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-            Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Reducer 10 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0
-                Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                Select Operator
-                  expressions: true (type: boolean), _col0 (type: string)
-                  outputColumnNames: _col0, _col1
-                  Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                  Reduce Output Operator
-                    null sort order: 
-                    sort order: 
-                    Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
-                    value expressions: _col0 (type: boolean), _col1 (type: string)
-=======
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -2347,7 +2191,7 @@ STAGE PLANS:
                         1 _col2 (type: string), _col0 (type: bigint)
                       outputColumnNames: _col0, _col1, _col2, _col4, _col5, _col7
                       input vertices:
-                        1 Reducer 8
+                        1 Reducer 9
                       Statistics: Num rows: 1 Data size: 668 Basic stats: COMPLETE Column stats: NONE
                       Filter Operator
                         predicate: (_col4 is null or (_col4 = 0L) or (_col7 is not null or _col2 is null or (_col5 < _col4)) is not true) (type: boolean)
@@ -2438,11 +2282,7 @@ STAGE PLANS:
                             Map-reduce partition columns: _col0 (type: string), _col1 (type: string)
                             Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
                             value expressions: _col2 (type: bigint)
-<<<<<<< HEAD
-        Reducer 6 
-=======
         Reducer 7 
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -2468,11 +2308,7 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
                       value expressions: _col1 (type: bigint), _col2 (type: bigint)
-<<<<<<< HEAD
-        Reducer 7 
-=======
         Reducer 8 
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -2504,7 +2340,7 @@ STAGE PLANS:
                           sort order: ++
                           Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                           Statistics: Num rows: 1 Data size: 922 Basic stats: COMPLETE Column stats: NONE
-        Reducer 8 
+        Reducer 9 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -2530,15 +2366,9 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-<<<<<<< HEAD
-Warning: Map Join MAPJOIN[134][bigTable=?] in task 'Map 3' is a cross product
-Warning: Map Join MAPJOIN[133][bigTable=?] in task 'Map 1' is a cross product
-Warning: Map Join MAPJOIN[135][bigTable=?] in task 'Reducer 5' is a cross product
-=======
 Warning: Map Join MAPJOIN[133][bigTable=?] in task 'Map 1' is a cross product
 Warning: Map Join MAPJOIN[134][bigTable=?] in task 'Map 5' is a cross product
 Warning: Map Join MAPJOIN[135][bigTable=?] in task 'Reducer 6' is a cross product
->>>>>>> kgyrtkirk/HIVE-swo-dppunion
 PREHOOK: query: select key, value, count(*)
 from src_null_n4 b
 where NOT EXISTS (select key from src_null_n4 where src_null_n4.value <> b.value)

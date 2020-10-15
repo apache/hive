@@ -342,7 +342,7 @@ Stage-0
                                                                                     Select Operator [SEL_305] (rows=50 width=4)
                                                                                       Output:["_col0"]
                                                                                       Filter Operator [FIL_301] (rows=50 width=12)
-                                                                                        predicate:((d_year = 1999) and (d_moy = 3) and d_date_sk is not null and ((d_date_sk is not null and d_month_seq is not null) or ((d_year = 1999) and (d_moy = 3) and d_date_sk is not null)) and ((d_date_sk is not null and d_month_seq is not null) or ((d_year = 1999) and (d_moy = 3) and d_date_sk is not null) or ((d_year = 1999) and (d_moy = 3))) and ((d_date_sk is not null and d_month_seq is not null) or ((d_year = 1999) and (d_moy = 3) and d_date_sk is not null) or ((d_year = 1999) and (d_moy = 3)) or ((d_year = 1999) and (d_moy = 3) and d_month_seq is not null)))
+                                                                                        predicate:((d_year = 1999) and (d_moy = 3) and d_date_sk is not null)
                                                                                          Please refer to the previous TableScan [TS_3]
                                                                                 <-Union 28 [SIMPLE_EDGE]
                                                                                   <-Map 27 [CONTAINS] vectorized
@@ -411,7 +411,7 @@ Stage-0
                                                                 Select Operator [SEL_304] (rows=73049 width=8)
                                                                   Output:["_col0","_col1"]
                                                                   Filter Operator [FIL_300] (rows=73049 width=8)
-                                                                    predicate:(d_date_sk is not null and d_month_seq is not null and ((d_date_sk is not null and d_month_seq is not null) or ((d_year = 1999) and (d_moy = 3) and d_date_sk is not null)) and ((d_date_sk is not null and d_month_seq is not null) or ((d_year = 1999) and (d_moy = 3) and d_date_sk is not null) or ((d_year = 1999) and (d_moy = 3))) and ((d_date_sk is not null and d_month_seq is not null) or ((d_year = 1999) and (d_moy = 3) and d_date_sk is not null) or ((d_year = 1999) and (d_moy = 3)) or ((d_year = 1999) and (d_moy = 3) and d_month_seq is not null)))
+                                                                    predicate:(d_date_sk is not null and d_month_seq is not null)
                                                                      Please refer to the previous TableScan [TS_3]
                                                             <-Map 1 [SIMPLE_EDGE] vectorized
                                                               SHUFFLE [RS_299]
