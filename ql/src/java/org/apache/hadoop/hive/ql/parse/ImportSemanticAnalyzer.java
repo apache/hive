@@ -437,9 +437,17 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean needRecycle = false;
 
     if (replicationSpec.isInReplicationScope()) {
-      lft = LoadFileType.IGNORE;
-      destPath = loadPath = tgtPath;
-      isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
+      if (AcidUtils.isTransactionalTable(table)) {
+        String mmSubdir = replace ? AcidUtils.baseDir(writeId)
+          : AcidUtils.deltaSubdir(writeId, writeId, stmtId);
+        destPath = new Path(tgtPath, mmSubdir);
+        loadPath = tgtPath;
+        lft = LoadFileType.KEEP_EXISTING;
+      } else {
+        lft = LoadFileType.IGNORE;
+        destPath = loadPath = tgtPath;
+        isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
+      }
       if (table.isTemporary()) {
         needRecycle = false;
       } else {

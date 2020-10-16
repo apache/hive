@@ -2427,10 +2427,11 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
       .verifyResults(new String[]{"name=Harry", "name=Jerry", "name=Tom_del"});
   }
 
+  @Test
   public void testTableWithPartitionsInBatch() throws Throwable {
 
     List<String> withClause = new ArrayList<>();
-    withClause.add("'" + HiveConf.ConfVars.REPL_LOAD_PARTITIONS_BATCH_SIZE.varname + "'='" + 1 + "'");
+    withClause.add("'" + HiveConf.ConfVars.REPL_LOAD_PARTITIONS_WITH_DATA_COPY_BATCH_SIZE.varname + "'='" + 1 + "'");
 
     primary.run("use " + primaryDbName)
       .run("create table t2 (place string) partitioned by (country string)")
