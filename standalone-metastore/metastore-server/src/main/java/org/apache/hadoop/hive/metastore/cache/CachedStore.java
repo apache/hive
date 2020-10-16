@@ -1025,7 +1025,7 @@ public class CachedStore implements RawStore, Configurable {
           catName, dbName, tblName);
       List<SQLCheckConstraint> cc = null;
       try {
-        Deadline.startTimer("getCheckConstraint");
+        Deadline.startTimer("getCheckConstraints");
         cc = rawStore.getCheckConstraints(catName, dbName, tblName);
         Deadline.stopTimer();
       } catch (MetaException e) {

@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -809,7 +810,7 @@ public class SharedCache {
             return;
           }
           newConstraints.put(constraint.getDc_name().toLowerCase(), constraint);
-          size += getObjectSize(SQLUniqueConstraint.class, constraint);
+          size += getObjectSize(SQLDefaultConstraint.class, constraint);
         }
         defaultConstraintCache = newConstraints;
         updateMemberSize(MemberName.DEFAULT_CONSTRAINT_CACHE, size, SizeMode.Snapshot);
@@ -836,7 +837,7 @@ public class SharedCache {
         }
         checkConstraintCache = newConstraints;
         updateMemberSize(MemberName.CHECK_CONSTRAINT_CACHE, size, SizeMode.Snapshot);
-        LOG.debug("Unique constraints refresh in cache was successful for {}.{}.{}", this.getTable().getCatName(),
+        LOG.debug("check constraints refresh in cache was successful for {}.{}.{}", this.getTable().getCatName(),
             this.getTable().getDbName(), this.getTable().getTableName());
       } finally {
         tableLock.writeLock().unlock();
@@ -1724,6 +1725,7 @@ public class SharedCache {
     String catName = StringUtils.normalizeIdentifier(table.getCatName());
     String dbName = StringUtils.normalizeIdentifier(table.getDbName());
     String tableName = StringUtils.normalizeIdentifier(table.getTableName());
+    SQLAllTableConstraints constraints = cacheObjects.getTableConstraints();
     // Since we allow write operations on cache while prewarm is happening:
     // 1. Don't add tables that were deleted while we were preparing list for prewarm
     if (tablesDeletedDuringPrewarm.contains(CacheUtils.buildTableKey(catName, dbName, tableName))) {
@@ -1763,43 +1765,43 @@ public class SharedCache {
     tblWrapper.setMemberCacheUpdated(MemberName.PARTITION_COL_STATS_CACHE, false);
     tblWrapper.setMemberCacheUpdated(MemberName.AGGR_COL_STATS_CACHE, false);
 
-    if (CollectionUtils.isNotEmpty(cacheObjects.getTableConstraints().getPrimaryKeys())) {
-      if (!tblWrapper.cachePrimaryKeys(cacheObjects.getTableConstraints().getPrimaryKeys(), true)) {
+    if (CollectionUtils.isNotEmpty(constraints.getPrimaryKeys())) {
+      if (!tblWrapper.cachePrimaryKeys(constraints.getPrimaryKeys(), true)) {
         return false;
       }
     }
     tblWrapper.setMemberCacheUpdated(MemberName.PRIMARY_KEY_CACHE, false);
 
-    if (CollectionUtils.isNotEmpty(cacheObjects.getTableConstraints().getForeignKeys())) {
-      if (!tblWrapper.cacheForeignKeys(cacheObjects.getTableConstraints().getForeignKeys(), true)) {
+    if (CollectionUtils.isNotEmpty(constraints.getForeignKeys())) {
+      if (!tblWrapper.cacheForeignKeys(constraints.getForeignKeys(), true)) {
         return false;
       }
     }
     tblWrapper.setMemberCacheUpdated(MemberName.FOREIGN_KEY_CACHE, false);
 
-    if (CollectionUtils.isNotEmpty(cacheObjects.getTableConstraints().getNotNullConstraints())) {
-      if (!tblWrapper.cacheNotNullConstraints(cacheObjects.getTableConstraints().getNotNullConstraints(), true)) {
+    if (CollectionUtils.isNotEmpty(constraints.getNotNullConstraints())) {
+      if (!tblWrapper.cacheNotNullConstraints(constraints.getNotNullConstraints(), true)) {
         return false;
       }
     }
     tblWrapper.setMemberCacheUpdated(MemberName.NOTNULL_CONSTRAINT_CACHE, false);
 
-    if (CollectionUtils.isNotEmpty(cacheObjects.getTableConstraints().getUniqueConstraints())) {
-      if (!tblWrapper.cacheUniqueConstraints(cacheObjects.getTableConstraints().getUniqueConstraints(), true)) {
+    if (CollectionUtils.isNotEmpty(constraints.getUniqueConstraints())) {
+      if (!tblWrapper.cacheUniqueConstraints(constraints.getUniqueConstraints(), true)) {
         return false;
       }
     }
     tblWrapper.setMemberCacheUpdated(MemberName.UNIQUE_CONSTRAINT_CACHE, false);
 
-    if (CollectionUtils.isNotEmpty(cacheObjects.getTableConstraints().getDefaultConstraints())) {
-      if (!tblWrapper.cacheDefaultConstraints(cacheObjects.getTableConstraints().getDefaultConstraints(), true)) {
+    if (CollectionUtils.isNotEmpty(constraints.getDefaultConstraints())) {
+      if (!tblWrapper.cacheDefaultConstraints(constraints.getDefaultConstraints(), true)) {
         return false;
       }
     }
     tblWrapper.setMemberCacheUpdated(MemberName.DEFAULT_CONSTRAINT_CACHE, false);
 
-    if (CollectionUtils.isNotEmpty(cacheObjects.getTableConstraints().getCheckConstraints())) {
-      if (!tblWrapper.cacheCheckConstraints(cacheObjects.getTableConstraints().getCheckConstraints(), true)) {
+    if (CollectionUtils.isNotEmpty(constraints.getCheckConstraints())) {
+      if (!tblWrapper.cacheCheckConstraints(constraints.getCheckConstraints(), true)) {
         return false;
       }
     }
@@ -1807,7 +1809,7 @@ public class SharedCache {
 
     try {
       cacheLock.writeLock().lock();
-      // 2. Skip overwriting exisiting table object
+      // 2. Skip overwriting existing table object
       // (which is present because it was added after prewarm started)
       tableCache.put(CacheUtils.buildTableKey(catName, dbName, tableName), tblWrapper);
       return true;
