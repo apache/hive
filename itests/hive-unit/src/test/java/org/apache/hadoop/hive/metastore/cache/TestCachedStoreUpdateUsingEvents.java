@@ -425,12 +425,12 @@ public class TestCachedStoreUpdateUsingEvents {
     List<SQLDefaultConstraint> defaultConstraints = sharedCache.listCachedDefaultConstraint(catName, dbName, tblName);
     List<SQLCheckConstraint> checkConstraints = sharedCache.listCachedCheckConstraint(catName, dbName, tblName);
     List<SQLForeignKey> foreignKeys = sharedCache.listCachedForeignKeys(catName, dbName, tblName, null, null);
-    Assert.assertEquals(rawStoreConstraints.getPrimaryKeys(),primaryKeys);
-    Assert.assertEquals(rawStoreConstraints.getNotNullConstraints(),notNullConstraints);
-    Assert.assertEquals(rawStoreConstraints.getUniqueConstraints(),uniqueConstraints);
-    Assert.assertEquals(rawStoreConstraints.getDefaultConstraints(),defaultConstraints);
-    Assert.assertEquals(rawStoreConstraints.getCheckConstraints(),checkConstraints);
-    Assert.assertEquals(rawStoreConstraints.getForeignKeys(),foreignKeys);
+    Assert.assertEquals(rawStoreConstraints.getPrimaryKeys(), primaryKeys);
+    Assert.assertEquals(rawStoreConstraints.getNotNullConstraints(), notNullConstraints);
+    Assert.assertEquals(rawStoreConstraints.getUniqueConstraints(), uniqueConstraints);
+    Assert.assertEquals(rawStoreConstraints.getDefaultConstraints(), defaultConstraints);
+    Assert.assertEquals(rawStoreConstraints.getCheckConstraints(), checkConstraints);
+    Assert.assertEquals(rawStoreConstraints.getForeignKeys(), foreignKeys);
   }
 
   @Test
