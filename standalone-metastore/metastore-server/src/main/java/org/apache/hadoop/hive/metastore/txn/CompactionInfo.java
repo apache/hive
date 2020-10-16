@@ -63,6 +63,8 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   String hadoopJobId;
   public String errorMessage;
 
+  long endTime;
+  long currentDbTime;
   private String fullPartitionName = null;
   private String fullTableName = null;
 
@@ -104,6 +106,22 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
   }
   public boolean isMajorCompaction() {
     return CompactionType.MAJOR == type;
+  }
+
+  public void setCurrentDbTime(long t){
+    this.currentDbTime = t;
+  }
+
+  public long getCurrentDbTime() {
+    return currentDbTime;
+  }
+
+  public void setEndTime(long t) {
+    this.endTime = t;
+  }
+
+  public long getEndTime() {
+    return endTime;
   }
 
   @Override

@@ -3058,6 +3058,11 @@ public class HiveConf extends Configuration {
 
     HIVE_COMPACTOR_CLEANER_RUN_INTERVAL("hive.compactor.cleaner.run.interval", "5000ms",
         new TimeValidator(TimeUnit.MILLISECONDS), "Time between runs of the cleaner thread"),
+    HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED("hive.compactor.delayed.cleanup.enabled", false,
+        "When enabled, cleanup of obsolete files/dirs after compaction can be delayed. This delay \n" +
+            " can be configured by hive configuration hive.compactor.cleaner.retention.time.seconds"),
+    HIVE_COMPACTOR_CLEANER_RETENTION_TIME_SECONDS("hive.compactor.cleaner.retention.time.seconds", "300s",
+        new TimeValidator(TimeUnit.SECONDS), "Time to wait before cleanup of obsolete files/dirs after compaction"),
     HIVE_COMPACTOR_CLEANER_THREADS_NUM("hive.compactor.cleaner.threads.num", 1,
       "Enables parallelization of the cleaning directories after compaction, that includes many file \n" +
       "related checks and may be expensive"),

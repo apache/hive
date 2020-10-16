@@ -33,6 +33,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -237,10 +238,22 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_STATE\" = '" + READY_FOR_CLEANING + "', "
+        long now = getDbTime(dbConn);
+        String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_META_INFO\" = " + now + ", \"CQ_STATE\" = '" + READY_FOR_CLEANING + "', "
             + "\"CQ_WORKER_ID\" = NULL, \"CQ_NEXT_TXN_ID\" = "
             + "(SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\")"
             + " WHERE \"CQ_ID\" = " + info.id;
+
+        if (MetastoreConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST)) {
+          // HIVE-4840: Derby DB doesn't support implicit conversion from BIGINT to 'VARCHAR(2048) for bit data',
+          // we need to explicitly pass value as hex, and add an extra 0 to make it even size. Same we can do for mysql
+          // also, but explicit padding can cause some undesired effects so it's better to go with implicit conversion
+          // for mysql.
+          s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_META_INFO\" = x'0" + now + "', \"CQ_STATE\" = '" + READY_FOR_CLEANING + "', "
+              + "\"CQ_WORKER_ID\" = NULL, \"CQ_NEXT_TXN_ID\" = "
+              + "(SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\")"
+              + " WHERE \"CQ_ID\" = " + info.id;
+        }
         LOG.debug("Going to execute update <" + s + ">");
         int updCnt = stmt.executeUpdate(s);
         if (updCnt != 1) {
@@ -282,9 +295,10 @@ class CompactionTxnHandler extends TxnHandler {
     try {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        long currentDbTime = getDbTime(dbConn);
         stmt = dbConn.createStatement();
         String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
-                + "\"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '"
+                + "\"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '"
                 + READY_FOR_CLEANING + "'";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
@@ -301,6 +315,11 @@ class CompactionTxnHandler extends TxnHandler {
           }
           info.runAs = rs.getString(6);
           info.highestWriteId = rs.getLong(7);
+          info.setEndTime(Long.parseLong(rs.getString(8)));
+          info.setCurrentDbTime(currentDbTime);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Found ready to clean: " + info.toString());
+          }
           rc.add(info);
         }
         LOG.debug("Going to rollback");

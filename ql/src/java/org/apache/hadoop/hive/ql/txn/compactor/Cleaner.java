@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -96,6 +97,9 @@ public class Cleaner extends MetaStoreCompactorThread {
           long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
           List<CompletableFuture> cleanerList = new ArrayList<>();
           for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
+            if (!isReadyToCleanWithRetentionPolicy(compactionInfo)) {
+              continue;
+            }
             cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
                     clean(compactionInfo, minOpenTxnId)), cleanerExecutor));
           }
@@ -229,6 +233,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   private void removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
       throws IOException, NoSuchObjectException, MetaException {
     Path locPath = new Path(location);
+    FileSystem fs = locPath.getFileSystem(conf);
     AcidUtils.Directory dir = AcidUtils.getAcidState(locPath.getFileSystem(conf), locPath, conf, writeIdList, Ref.from(
         false), false);
     List<Path> obsoleteDirs = dir.getObsolete();
@@ -244,7 +249,32 @@ public class Cleaner extends MetaStoreCompactorThread {
     obsoleteDirs.addAll(dir.getAbortedDirectories());
     List<Path> filesToDelete = new ArrayList<>(obsoleteDirs.size());
     StringBuilder extraDebugInfo = new StringBuilder("[");
+    boolean delayedCleanupEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED);
+
     for (Path stat : obsoleteDirs) {
+      if (delayedCleanupEnabled) {
+        String filename = stat.toString();
+        if (filename.startsWith(AcidUtils.BASE_PREFIX)) {
+          long writeId = AcidUtils.ParsedBase.parseBase(stat).getWriteId();
+          if (ci.type == CompactionType.MINOR) {
+            LOG.info("Skipping base dir " + stat + " as this cleanup is for minor compaction"
+                + ", compaction id " + ci.id);
+            continue;
+          } else if (writeId > writeIdList.getHighWatermark()) {
+            LOG.info("Skipping base dir " + stat + " deletion as WriteId of this base dir is"
+                + " greater than highWaterMark for compaction id " + ci.id);
+            continue;
+          }
+        }
+        else if (filename.startsWith(AcidUtils.DELTA_PREFIX) || filename.startsWith(AcidUtils.DELETE_DELTA_PREFIX)) {
+          AcidUtils.ParsedDelta delta = AcidUtils.parsedDelta(stat, fs);
+          if (delta.getMaxWriteId() > writeIdList.getHighWatermark()) {
+            LOG.info("Skipping delta dir " + stat + " deletion as maxWriteId of this delta dir is"
+                + " greater than highWaterMark for compaction id " + ci.id);
+            continue;
+          }
+        }
+      }
       filesToDelete.add(stat);
       extraDebugInfo.append(stat.getName()).append(",");
       if(!FileUtils.isPathWithinSubtree(stat, locPath)) {
@@ -260,7 +290,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       return;
     }
 
-    FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
+    fs = filesToDelete.get(0).getFileSystem(conf);
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
     Table table = getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
 
@@ -271,5 +301,23 @@ public class Cleaner extends MetaStoreCompactorThread {
       }
       fs.delete(dead, true);
     }
+  }
+
+  /**
+   * Check if user configured retention time for the cleanup of obsolete directories/files for the table
+   * has passed or not
+   *
+   * @param ci CompactionInfo
+   * @return True, if retention time has passed and it is ok to clean, else false
+   */
+  public boolean isReadyToCleanWithRetentionPolicy(CompactionInfo ci) {
+    if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED)) {
+      return true;
+    }
+    long retentionTime =
+        conf.getTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME_SECONDS, TimeUnit.SECONDS);
+    long validEndTime = ci.getCurrentDbTime() - (retentionTime * 1000);
+    long compactionEndTime = ci.getEndTime();
+    return compactionEndTime < validEndTime ? true : false;
   }
 }

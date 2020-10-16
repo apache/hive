@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
+import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -34,6 +35,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Tests for the compactor Cleaner thread
@@ -328,6 +330,104 @@ public class TestCleaner extends CompactorTest {
       Assert.assertTrue(sawBase);
       Assert.assertTrue(sawDelta);
     }
+  }
+
+  @Test
+  public void delayedCleanupAfterMajorCompaction() throws Exception {
+    Table t = newTable("default", "dcamc", false);
+
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
+    addBaseFile(t, null, 25L, 25);
+
+    burnThroughTransactions("default", "dcamc", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "dcamc", CompactionType.MAJOR);
+    txnHandler.compact(rqst);
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    txnHandler.markCompacted(ci);
+
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, true);
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME_SECONDS, 5, TimeUnit.SECONDS);
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, 1000, TimeUnit.MILLISECONDS);
+
+    startCleaner();
+
+    // Check there are no compactions requests left.
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+    Assert.assertEquals("dcamc", compacts.get(0).getTablename());
+    Assert.assertEquals(CompactionType.MAJOR, compacts.get(0).getType());
+
+    // putting current thread to sleep to get pass the retention time
+    Thread.currentThread().sleep(20000);
+
+    startCleaner();
+    // Check there are no compactions requests left.
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertTrue(TxnStore.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
+
+    // Check that the files are removed
+    List<Path> paths = getDirectories(conf, t, null);
+    Assert.assertEquals(1, paths.size());
+    Assert.assertEquals("base_25", paths.get(0).getName());
+  }
+
+  @Test
+  public void delayedCleanupAfterMinorCompactionOnPartition() throws Exception {
+    Table t = newTable("default", "dcamicop", true);
+    Partition p = newPartition(t, "today");
+
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 22L, 2);
+    addDeltaFile(t, p, 23L, 24L, 2);
+    addDeltaFile(t, p, 21L, 24L, 4);
+
+    burnThroughTransactions("default", "dcamicop", 25);
+
+    CompactionRequest rqst = new CompactionRequest("default", "dcamicop", CompactionType.MINOR);
+    rqst.setPartitionname("ds=today");
+    txnHandler.compact(rqst);
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    txnHandler.markCompacted(ci);
+
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED, true);
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME_SECONDS, 5, TimeUnit.SECONDS);
+    conf.setTimeVar(HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RUN_INTERVAL, 1000, TimeUnit.MILLISECONDS);
+
+    startCleaner();
+
+    // Check there are no compactions requests left.
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("ready for cleaning", compacts.get(0).getState());
+    Assert.assertEquals("dcamicop", compacts.get(0).getTablename());
+    Assert.assertEquals(CompactionType.MINOR, compacts.get(0).getType());
+
+    // putting current thread to sleep to get pass the retention time
+    Thread.currentThread().sleep(10000);
+
+    // Check there are no compactions requests left.
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertTrue(TxnStore.SUCCEEDED_RESPONSE.equals(rsp.getCompacts().get(0).getState()));
+
+    // Check that the files are removed
+    List<Path> paths = getDirectories(conf, t, p);
+    Assert.assertEquals(2, paths.size());
+    boolean sawBase = false, sawDelta = false;
+    for (Path path : paths) {
+      if (path.getName().equals("base_20")) sawBase = true;
+      else if (path.getName().equals(makeDeltaDirNameCompacted(21, 24))) sawDelta = true;
+      else Assert.fail("Unexpected file " + path.getName());
+    }
+    Assert.assertTrue(sawBase);
+    Assert.assertTrue(sawDelta);
   }
 
   @Override
