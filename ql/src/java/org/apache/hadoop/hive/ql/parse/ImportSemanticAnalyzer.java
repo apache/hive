@@ -437,44 +437,33 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean needRecycle = false;
 
     if (replicationSpec.isInReplicationScope()) {
-      if (AcidUtils.isTransactionalTable(table)) {
-        String mmSubdir = replace ? AcidUtils.baseDir(writeId)
-          : AcidUtils.deltaSubdir(writeId, writeId, stmtId);
-        destPath = new Path(tgtPath, mmSubdir);
-        loadPath = tgtPath;
-        lft = LoadFileType.KEEP_EXISTING;
-      } else {
-        lft = LoadFileType.IGNORE;
-        destPath = loadPath = tgtPath;
-        isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
-      }
+      isSkipTrash = MetaStoreUtils.isSkipTrash(table.getParameters());
       if (table.isTemporary()) {
         needRecycle = false;
       } else {
         org.apache.hadoop.hive.metastore.api.Database db = x.getHive().getDatabase(table.getDbName());
         needRecycle = db != null && ReplChangeManager.shouldEnableCm(db, table.getTTable());
       }
+    }
+    if (AcidUtils.isTransactionalTable(table)) {
+      String mmSubdir = replace ? AcidUtils.baseDir(writeId)
+              : AcidUtils.deltaSubdir(writeId, writeId, stmtId);
+      destPath = new Path(tgtPath, mmSubdir);
+      /**
+       * CopyTask below will copy files from the 'archive' to a delta_x_x in the table/partition
+       * directory, i.e. the final destination for these files.  This has to be a copy to preserve
+       * the archive.  MoveTask is optimized to do a 'rename' if files are on the same FileSystem.
+       * So setting 'loadPath' this way will make
+       * {@link Hive#loadTable(Path, String, LoadFileType, boolean, boolean, boolean,
+       * boolean, Long, int)}
+       * skip the unnecessary file (rename) operation but it will perform other things.
+       */
+      loadPath = tgtPath;
+      lft = LoadFileType.KEEP_EXISTING;
     } else {
-      if (AcidUtils.isTransactionalTable(table) && !replicationSpec.isInReplicationScope()) {
-        String mmSubdir = replace ? AcidUtils.baseDir(writeId)
-                : AcidUtils.deltaSubdir(writeId, writeId, stmtId);
-        destPath = new Path(tgtPath, mmSubdir);
-        /**
-         * CopyTask below will copy files from the 'archive' to a delta_x_x in the table/partition
-         * directory, i.e. the final destination for these files.  This has to be a copy to preserve
-         * the archive.  MoveTask is optimized to do a 'rename' if files are on the same FileSystem.
-         * So setting 'loadPath' this way will make
-         * {@link Hive#loadTable(Path, String, LoadFileType, boolean, boolean, boolean,
-         * boolean, Long, int)}
-         * skip the unnecessary file (rename) operation but it will perform other things.
-         */
-        loadPath = tgtPath;
-        lft = LoadFileType.KEEP_EXISTING;
-      } else {
-        destPath = loadPath = x.getCtx().getExternalTmpPath(tgtPath);
-        lft = replace ? LoadFileType.REPLACE_ALL :
-                LoadFileType.OVERWRITE_EXISTING;
-      }
+      destPath = loadPath = x.getCtx().getExternalTmpPath(tgtPath);
+      lft = replace ? LoadFileType.REPLACE_ALL :
+              LoadFileType.OVERWRITE_EXISTING;
     }
 
     if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
