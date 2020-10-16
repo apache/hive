@@ -1118,7 +1118,9 @@ public class ExprNodeDescUtils {
       return exprNode;
     }
     List<ExprNodeDesc> operands = new ArrayList<ExprNodeDesc>(nodes);
-    operands.add(exprNode);
+    if (exprNode != null) {
+      operands.add(exprNode);
+    }
     return conjunction(operands);
   }
 
