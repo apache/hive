@@ -138,7 +138,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
 
       LOG.debug("ReplCopyTask numFiles: {}", srcFiles.size());
 
-      // in case of move optimization, file is directly copied to destination. So we need to clear the old content, if
+      // in case of acid tables, file is directly copied to destination. So we need to clear the old content, if
       // its a replace (insert overwrite ) operation.
       if (work.getDeleteDestIfExist() && dstFs.exists(toPath)) {
         LOG.debug(" path " + toPath + " is cleaned before renaming");

@@ -162,22 +162,6 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
-  public void testAcidTablesMoveOptimizationBootStrap() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
-    replica.load(replicatedDbName, primaryDbName);
-    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, true);
-  }
-
-  @Test
-  public void testAcidTablesMoveOptimizationIncremental() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName);
-    replica.load(replicatedDbName, primaryDbName);
-    WarehouseInstance.Tuple incrDump = prepareDataAndDump(primaryDbName, null);
-    replica.load(replicatedDbName, primaryDbName);
-    verifyLoadExecution(replicatedDbName, incrDump.lastReplicationId, true);
-  }
-
-  @Test
   /**
    * Testcase for getting immutable dataset dump, and its corresponding repl load.
    */

@@ -53,7 +53,6 @@ import java.util.Collections;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEQUERYID;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_MOVE_OPTIMIZED_FILE_SCHEMES;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_DBNAME;
 import static org.apache.hadoop.hive.ql.parse.HiveParser.TOK_REPLACE;
@@ -258,29 +257,6 @@ public class ReplicationSemanticAnalyzer extends BaseSemanticAnalyzer {
       LOG.warn("Error during analyzeReplDump", e);
       throw new SemanticException(e);
     }
-  }
-
-  private boolean ifEnableMoveOptimization(Path filePath, org.apache.hadoop.conf.Configuration conf) throws Exception {
-    if (filePath == null) {
-      throw new HiveException("filePath cannot be null");
-    }
-
-    URI uri = filePath.toUri();
-    String scheme = uri.getScheme();
-    scheme = StringUtils.isBlank(scheme) ? FileSystem.get(uri, conf).getScheme() : scheme;
-    if (StringUtils.isBlank(scheme)) {
-      throw new HiveException("Cannot get valid scheme for " + filePath);
-    }
-
-    LOG.info("scheme is " + scheme);
-
-    String[] schmeList = conf.get(REPL_MOVE_OPTIMIZED_FILE_SCHEMES.varname).toLowerCase().split(",");
-    for (String schemeIter : schmeList) {
-      if (schemeIter.trim().equalsIgnoreCase(scheme.trim())) {
-        return true;
-      }
-    }
-    return false;
   }
 
   // REPL LOAD

@@ -269,9 +269,9 @@ public class LoadTable {
     Path dataPath = fromURI;
     Path tmpPath = tgtPath;
 
-    // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
+    // if acid tables, copy the files directly to the target path. No need to create the staging dir.
     LoadFileType loadFileType;
-    if (replicationSpec.isInReplicationScope()) {
+    if (replicationSpec.isInReplicationScope() && AcidUtils.isTransactionalTable(table)) {
       loadFileType = LoadFileType.IGNORE;
     } else {
       loadFileType = (replicationSpec.isReplace())
