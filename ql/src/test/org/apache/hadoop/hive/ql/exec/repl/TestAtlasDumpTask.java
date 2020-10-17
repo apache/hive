@@ -166,6 +166,7 @@ public class TestAtlasDumpTask {
       Assert.fail("Should have thrown SemanticException.");
     } catch (SemanticException ex) {
       Assert.assertTrue(ex.getMessage().contains("Retry exhausted for retryable error code"));
+      Assert.assertTrue(atlasServiceException == ex.getCause());
     }
     ArgumentCaptor<AtlasExportRequest> expReqCaptor = ArgumentCaptor.forClass(AtlasExportRequest.class);
     Mockito.verify(atlasClientV2, Mockito.times(3)).exportData(expReqCaptor.capture());
