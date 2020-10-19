@@ -194,9 +194,13 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       AtlasExportRequest exportRequest = atlasRequestBuilder.createExportRequest(atlasReplInfo,
               atlasReplInfo.getSrcCluster());
       inputStream = atlasRestClient.exportData(exportRequest);
-      FileSystem fs = atlasReplInfo.getStagingDir().getFileSystem(atlasReplInfo.getConf());
-      Path exportFilePath = new Path(atlasReplInfo.getStagingDir(), ReplUtils.REPL_ATLAS_EXPORT_FILE_NAME);
-      numBytesWritten = Utils.writeFile(fs, exportFilePath, inputStream, conf);
+      if (inputStream == null) {
+        LOG.info("There is no Atlas metadata to be exported");
+      } else {
+        FileSystem fs = atlasReplInfo.getStagingDir().getFileSystem(atlasReplInfo.getConf());
+        Path exportFilePath = new Path(atlasReplInfo.getStagingDir(), ReplUtils.REPL_ATLAS_EXPORT_FILE_NAME);
+        numBytesWritten = Utils.writeFile(fs, exportFilePath, inputStream, conf);
+      }
     } catch (SemanticException ex) {
       throw ex;
     } catch (Exception ex) {
