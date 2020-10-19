@@ -35,9 +35,9 @@ PREHOOK: Input: default@shcol_test
 POSTHOOK: query: SHOW COLUMNS from shcol_test
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: default@shcol_test
-ds                  
 key                 
 value               
+ds                  
 PREHOOK: query: CREATE DATABASE test_db
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:test_db
@@ -91,15 +91,15 @@ PREHOOK: Input: test_db@foo_n7
 POSTHOOK: query: SHOW COLUMNS from foo_n7
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo_n7
-a                   
-b                   
-c                   
 col1                
 col2                
 col3                
 cola                
 colb                
 colc                
+a                   
+b                   
+c                   
 PREHOOK: query: EXPLAIN SHOW COLUMNS in foo_n7
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: test_db@foo_n7
@@ -127,15 +127,15 @@ PREHOOK: Input: test_db@foo_n7
 POSTHOOK: query: SHOW COLUMNS in foo_n7
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo_n7
-a                   
-b                   
-c                   
 col1                
 col2                
 col3                
 cola                
 colb                
 colc                
+a                   
+b                   
+c                   
 PREHOOK: query: SHOW COLUMNS in foo_n7 'col*'
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: test_db@foo_n7
@@ -240,15 +240,15 @@ PREHOOK: Input: database@foo_n7
 POSTHOOK: query: SHOW COLUMNS from foo_n7
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: database@foo_n7
-a                   
-b                   
-c                   
 col1                
 col2                
 col3                
 cola                
 colb                
 colc                
+a                   
+b                   
+c                   
 PREHOOK: query: SHOW COLUMNS in foo_n7 "col*"
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: database@foo_n7
@@ -312,30 +312,30 @@ PREHOOK: Input: test_db@foo_n7
 POSTHOOK: query: SHOW COLUMNS from test_db.foo_n7
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo_n7
-a                   
-b                   
-c                   
 col1                
 col2                
 col3                
 cola                
 colb                
 colc                
+a                   
+b                   
+c                   
 PREHOOK: query: SHOW COLUMNS from foo_n7 from test_db
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: test_db@foo_n7
 POSTHOOK: query: SHOW COLUMNS from foo_n7 from test_db
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo_n7
-a                   
-b                   
-c                   
 col1                
 col2                
 col3                
 cola                
 colb                
 colc                
+a                   
+b                   
+c                   
 PREHOOK: query: SHOW COLUMNS from foo_n7 from test_db "col*"
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: test_db@foo_n7
@@ -376,6 +376,75 @@ PREHOOK: Input: test_db@foo_n7
 POSTHOOK: query: SHOW COLUMNS from foo_n7 from test_db like 'col*'
 POSTHOOK: type: SHOWCOLUMNS
 POSTHOOK: Input: test_db@foo_n7
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW SORTED COLUMNS from test_db.foo_n7
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW SORTED COLUMNS from test_db.foo_n7
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+a                   
+b                   
+c                   
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW SORTED COLUMNS FROM foo_n7 in `database`
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: database@foo_n7
+POSTHOOK: query: SHOW SORTED COLUMNS FROM foo_n7 in `database`
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: database@foo_n7
+a                   
+b                   
+c                   
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW SORTED COLUMNS in foo_n7 from test_db "col+"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW SORTED COLUMNS in foo_n7 from test_db "col+"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+PREHOOK: query: SHOW SORTED COLUMNS in foo_n7 from test_db "c"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW SORTED COLUMNS in foo_n7 from test_db "c"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+c                   
+PREHOOK: query: SHOW SORTED COLUMNS from foo_n7 from test_db "c*"
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW SORTED COLUMNS from foo_n7 from test_db "c*"
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+c                   
+col1                
+col2                
+col3                
+cola                
+colb                
+colc                
+PREHOOK: query: SHOW SORTED COLUMNS from foo_n7 from test_db like 'c*'
+PREHOOK: type: SHOWCOLUMNS
+PREHOOK: Input: test_db@foo_n7
+POSTHOOK: query: SHOW SORTED COLUMNS from foo_n7 from test_db like 'c*'
+POSTHOOK: type: SHOWCOLUMNS
+POSTHOOK: Input: test_db@foo_n7
+c                   
 col1                
 col2                
 col3                
