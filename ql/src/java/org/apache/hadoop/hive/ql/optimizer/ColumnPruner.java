@@ -178,8 +178,8 @@ public class ColumnPruner extends Transform {
         return;
       }
       // move all the children to the front of queue
-      toWalk.removeAll(nd.getChildren());
-      toWalk.addAll(0, nd.getChildren());
+      //      toWalk.removeAll(nd.getChildren());
+      toWalk.addAll(nd.getChildren());
       // add self to the end of the queue
       toWalk.add(nd);
       opStack.pop();

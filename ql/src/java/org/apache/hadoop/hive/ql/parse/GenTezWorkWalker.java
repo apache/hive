@@ -67,7 +67,8 @@ public class GenTezWorkWalker extends DefaultGraphWalker {
       HashMap<Node, Object> nodeOutput) throws SemanticException {
     toWalk.addAll(startNodes);
     while (toWalk.size() > 0) {
-      Node nd = toWalk.remove(0);
+      Node nd = toWalk.iterator().next();
+      toWalk.remove(nd);
       setRoot(nd);
       walk(nd);
       if (nodeOutput != null) {

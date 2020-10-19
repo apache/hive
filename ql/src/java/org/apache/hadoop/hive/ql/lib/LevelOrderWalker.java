@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -91,6 +92,8 @@ public class LevelOrderWalker extends DefaultGraphWalker {
   @Override
   public void startWalking(Collection<Node> startNodes,
       HashMap<Node, Object> nodeOutput) throws SemanticException {
+    //FIXME
+    List<Node> toWalk = new ArrayList();
     toWalk.addAll(startNodes);
 
     // Starting from the startNodes, add the children whose parents have been

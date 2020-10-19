@@ -18,12 +18,11 @@
 
 package org.apache.hadoop.hive.ql.lib;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.Stack;
@@ -53,7 +52,7 @@ public class DefaultGraphWalker implements SemanticGraphWalker {
    * toWalk stores the starting nodes for the graph that needs to be
    * traversed
    */
-  protected final List<Node> toWalk = new ArrayList<Node>();
+  protected final LinkedHashSet<Node> toWalk = new LinkedHashSet<Node>();
   protected final IdentityHashMap<Node, Object> retMap = new  IdentityHashMap<Node, Object>();
   protected final SemanticDispatcher dispatcher;
 
@@ -116,7 +115,8 @@ public class DefaultGraphWalker implements SemanticGraphWalker {
       HashMap<Node, Object> nodeOutput) throws SemanticException {
     toWalk.addAll(startNodes);
     while (toWalk.size() > 0) {
-      Node nd = toWalk.remove(0);
+      Node nd = toWalk.iterator().next();
+      toWalk.remove(nd);
       walk(nd);
       // Some walkers extending DefaultGraphWalker e.g. ForwardWalker
       // do not use opQueue and rely uniquely in the toWalk structure,

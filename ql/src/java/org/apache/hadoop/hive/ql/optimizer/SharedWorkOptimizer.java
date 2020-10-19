@@ -124,7 +124,7 @@ public class SharedWorkOptimizer extends Transform {
   private final static Logger LOG = LoggerFactory.getLogger(SharedWorkOptimizer.class);
   private static boolean doTSM = true;
   private static boolean union_chk = false;
-  private static boolean chk_dummy = false;
+  private static boolean chk_dummy = true;
   private static boolean chk_asc = false;
   private static boolean chk_w1 = false;
   private static boolean chk_w2 = false;

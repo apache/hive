@@ -151,16 +151,15 @@ public class ConstantPropagate extends Transform {
         dispatch(nd, opStack);
         opStack.pop();
       } else {
-        toWalk.removeAll(parents);
-        toWalk.add(0, nd);
-        toWalk.addAll(0, parents);
+        //        toWalk.removeAll(parents);
+        toWalk.addAll(parents);
+        toWalk.add(nd);
         return;
       }
 
       // move all the children to the end of queue
       List<? extends Node> children = nd.getChildren();
       if (children != null) {
-        toWalk.removeAll(children);
         toWalk.addAll(children);
       }
     }

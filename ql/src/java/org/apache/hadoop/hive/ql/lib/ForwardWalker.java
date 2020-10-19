@@ -51,8 +51,8 @@ public class ForwardWalker extends DefaultGraphWalker {
   @SuppressWarnings("unchecked")
   protected void addAllParents(Node nd) {
     Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
-    toWalk.removeAll(op.getParentOperators());
-    toWalk.addAll(0, op.getParentOperators());
+    //    toWalk.removeAll(op.getParentOperators());
+    toWalk.addAll(op.getParentOperators());
   }
 
   /**
@@ -77,7 +77,7 @@ public class ForwardWalker extends DefaultGraphWalker {
       return;
     }
     // add children, self to the front of the queue in that order
-    toWalk.add(0, nd);
+    toWalk.add(nd);
     addAllParents(nd);
   }
 }

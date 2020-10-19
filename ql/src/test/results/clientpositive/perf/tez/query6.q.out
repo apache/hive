@@ -182,7 +182,7 @@ Stage-0
                         <-Reducer 7 [SIMPLE_EDGE]
                           SHUFFLE [RS_65]
                             PartitionCols:_col4
-                            Merge Join Operator [MERGEJOIN_175] (rows=7192227 width=90)
+                            Merge Join Operator [MERGEJOIN_174] (rows=7192227 width=90)
                               Conds:RS_225._col5=RS_63._col0(Inner),Output:["_col4","_col9"]
                             <-Map 6 [SIMPLE_EDGE] vectorized
                               SHUFFLE [RS_225]
@@ -220,7 +220,7 @@ Stage-0
                             <-Reducer 12 [SIMPLE_EDGE]
                               SHUFFLE [RS_63]
                                 PartitionCols:_col0
-                                Merge Join Operator [MERGEJOIN_172] (rows=80000000 width=90)
+                                Merge Join Operator [MERGEJOIN_170] (rows=80000000 width=90)
                                   Conds:RS_228._col1=RS_231._col0(Inner),Output:["_col0","_col3"]
                                 <-Map 11 [SIMPLE_EDGE] vectorized
                                   SHUFFLE [RS_228]

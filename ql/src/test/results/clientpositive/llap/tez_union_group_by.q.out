@@ -158,19 +158,19 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Map 1 <- Union 2 (CONTAINS)
-        Map 5 <- Union 2 (CONTAINS)
-        Map 6 <- Union 2 (CONTAINS)
+        Map 7 <- Union 2 (CONTAINS)
+        Map 8 <- Union 2 (CONTAINS)
         Reducer 3 <- Union 2 (SIMPLE_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 9 (SIMPLE_EDGE)
-        Reducer 8 <- Map 10 (SIMPLE_EDGE), Map 7 (SIMPLE_EDGE)
-        Reducer 9 <- Reducer 8 (SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
+        Reducer 5 <- Map 1 (SIMPLE_EDGE), Map 9 (SIMPLE_EDGE)
+        Reducer 6 <- Reducer 5 (SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
             Map Operator Tree:
                 TableScan
                   alias: x_n3
-                  filterExpr: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
+                  filterExpr: (((date < '2014-09-02') and (u <> 0L)) or (t is not null and (date >= '2014-03-04') and (date < '2014-09-03') and (u <> 0L))) (type: boolean)
                   Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                   Filter Operator
                     predicate: ((date < '2014-09-02') and (u <> 0L)) (type: boolean)
@@ -193,26 +193,19 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: bigint)
                           Statistics: Num rows: 1 Data size: 192 Basic stats: COMPLETE Column stats: PARTIAL
                           value expressions: _col1 (type: string)
-            Execution mode: vectorized, llap
-            LLAP IO: unknown
-        Map 10 
-            Map Operator Tree:
-                TableScan
-                  alias: v_n15
-                  filterExpr: t is not null (type: boolean)
-                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: t is not null (type: boolean)
-                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                    predicate: (t is not null and (date >= '2014-03-04') and (date < '2014-09-03') and (u <> 0L)) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: PARTIAL
                     Reduce Output Operator
                       key expressions: t (type: string), st (type: string)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: t (type: string), st (type: string)
-                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
+                      Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: PARTIAL
+                      value expressions: u (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: all inputs
-        Map 5 
+            LLAP IO: unknown
+        Map 7 
             Map Operator Tree:
                 TableScan
                   alias: y_n1
@@ -241,7 +234,7 @@ STAGE PLANS:
                           value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: unknown
-        Map 6 
+        Map 8 
             Map Operator Tree:
                 TableScan
                   alias: z_n0
@@ -270,24 +263,23 @@ STAGE PLANS:
                           value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
             LLAP IO: unknown
-        Map 7 
+        Map 9 
             Map Operator Tree:
                 TableScan
-                  alias: x_n3
-                  filterExpr: (t is not null and (date >= '2014-03-04') and (date < '2014-09-03') and (u <> 0L)) (type: boolean)
-                  Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: PARTIAL
+                  alias: v_n15
+                  filterExpr: t is not null (type: boolean)
+                  Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (t is not null and (date >= '2014-03-04') and (date < '2014-09-03') and (u <> 0L)) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: PARTIAL
+                    predicate: t is not null (type: boolean)
+                    Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                     Reduce Output Operator
                       key expressions: t (type: string), st (type: string)
                       null sort order: zz
                       sort order: ++
                       Map-reduce partition columns: t (type: string), st (type: string)
-                      Statistics: Num rows: 1 Data size: 560 Basic stats: COMPLETE Column stats: PARTIAL
-                      value expressions: u (type: bigint)
+                      Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
             Execution mode: vectorized, llap
-            LLAP IO: unknown
+            LLAP IO: all inputs
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -332,7 +324,7 @@ STAGE PLANS:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 8 
+        Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
               Merge Join Operator
@@ -356,7 +348,7 @@ STAGE PLANS:
                     sort order: +
                     Map-reduce partition columns: _col0 (type: bigint)
                     Statistics: Num rows: 1 Data size: 616 Basic stats: COMPLETE Column stats: NONE
-        Reducer 9 
+        Reducer 6 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
