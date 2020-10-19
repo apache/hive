@@ -6,9 +6,9 @@ create table t1(col0 int) STORED AS ORC
                           TBLPROPERTIES ('transactional'='true');
 
 create materialized view mat1 as
-select * from t1 where col0 = 1
+SELECT * FROM t1 WHERE col0 = 1
 union
-select * from t1 where col0 = 2;
+SELECT * FROM t1 WHERE col0 = 2;
 
 explain cbo
 select * from t1 where col0 = 1

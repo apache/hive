@@ -78,7 +78,7 @@ class TestMaterializedViewsCache {
   void setUp() {
     defaultMV1 = getTable("default", "mat1", "select col0 from t1");
     defaultRelOptMaterialization1 = createRelOptMaterialization(defaultMV1);
-    defaultMV2 = getTable("default", "mat2", "select col0 from t1");
+    defaultMV2 = getTable("default", "mat2", "SELECT Col0 fRom T1");
     defaultRelOptMaterialization2 = createRelOptMaterialization(defaultMV2);
     db1MV1 = getTable("db1", "mat1", "select col0 from t1");
     db1RelOptMaterialization1 = createRelOptMaterialization(db1MV1);
@@ -107,6 +107,15 @@ class TestMaterializedViewsCache {
 
     assertThat(materializedViewsCache.get("select 'not found'").isEmpty(), is(true));
     assertThat(materializedViewsCache.values().size(), is(1));
+  }
+
+  @Test
+  void testLookupIsCaseInsensitive() {
+    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
+
+    String queryText = "SELECT Col0 From T1";
+    assertThat(materializedViewsCache.get(queryText).size(), is(1));
+    assertThat(materializedViewsCache.get(queryText).get(0), is(defaultRelOptMaterialization1));
   }
 
   @Test
@@ -248,7 +257,7 @@ class TestMaterializedViewsCache {
     assertThat(materializedViewsCache.values(), hasItem(defaultRelOptMaterialization2));
   }
 
-  @Disabled("Testing parallelism only")
+//  @Disabled("Testing parallelism only")
   @Test
   void testParallelism() {
     int ITERATIONS = 1000000;

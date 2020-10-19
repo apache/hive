@@ -60,7 +60,7 @@ public class MaterializedViewsCache {
     // You store the materialized view
     dbMap.compute(materializedViewTable.getTableName(), (mvTableName, relOptMaterialization) -> {
       List<RelOptMaterialization> materializationList = sqlToMaterializedView.computeIfAbsent(
-              materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
+              materializedViewTable.getViewExpandedText().toLowerCase(), s -> new ArrayList<>());
       materializationList.add(materialization);
       return materialization;
     });
@@ -88,7 +88,7 @@ public class MaterializedViewsCache {
 
     dbMap.compute(materializedViewTable.getTableName(), (mvTableName, existingMaterialization) -> {
       List<RelOptMaterialization> optMaterializationList = sqlToMaterializedView.computeIfAbsent(
-              materializedViewTable.getViewExpandedText(), s -> new ArrayList<>());
+              materializedViewTable.getViewExpandedText().toLowerCase(), s -> new ArrayList<>());
 
       if (existingMaterialization == null) {
         // If it was not existing, we just create it
@@ -119,7 +119,7 @@ public class MaterializedViewsCache {
       dbMap.computeIfPresent(materializedViewTable.getTableName(), (mvTableName, oldMaterialization) -> {
         if (HiveMaterializedViewUtils.extractTable(oldMaterialization).equals(materializedViewTable)) {
           List<RelOptMaterialization> materializationList =
-                  sqlToMaterializedView.get(materializedViewTable.getViewExpandedText());
+                  sqlToMaterializedView.get(materializedViewTable.getViewExpandedText().toLowerCase());
           materializationList.remove(oldMaterialization);
           return null;
         }
@@ -136,7 +136,7 @@ public class MaterializedViewsCache {
     if (dbMap != null) {
       dbMap.computeIfPresent(tableName, (mvTableName, relOptMaterialization) -> {
         String queryText = HiveMaterializedViewUtils.extractTable(relOptMaterialization).getViewExpandedText();
-        List<RelOptMaterialization> materializationList = sqlToMaterializedView.get(queryText);
+        List<RelOptMaterialization> materializationList = sqlToMaterializedView.get(queryText.toLowerCase());
         materializationList.remove(relOptMaterialization);
         return null;
       });
@@ -161,7 +161,7 @@ public class MaterializedViewsCache {
   }
 
   public List<RelOptMaterialization> get(String queryText) {
-    List<RelOptMaterialization> relOptMaterializationList = sqlToMaterializedView.get(queryText);
+    List<RelOptMaterialization> relOptMaterializationList = sqlToMaterializedView.get(queryText.toLowerCase());
     if (relOptMaterializationList == null) {
       LOG.debug("No materialized view with query text '{}' found in registry", queryText);
       return emptyList();

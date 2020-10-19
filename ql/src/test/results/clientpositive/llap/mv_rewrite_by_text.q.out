@@ -10,17 +10,17 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
 Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
 PREHOOK: query: create materialized view mat1 as
-select * from t1 where col0 = 1
+SELECT * FROM t1 WHERE col0 = 1
 union
-select * from t1 where col0 = 2
+SELECT * FROM t1 WHERE col0 = 2
 PREHOOK: type: CREATE_MATERIALIZED_VIEW
 PREHOOK: Input: default@t1
 PREHOOK: Output: database:default
 PREHOOK: Output: default@mat1
 POSTHOOK: query: create materialized view mat1 as
-select * from t1 where col0 = 1
+SELECT * FROM t1 WHERE col0 = 1
 union
-select * from t1 where col0 = 2
+SELECT * FROM t1 WHERE col0 = 2
 POSTHOOK: type: CREATE_MATERIALIZED_VIEW
 POSTHOOK: Input: default@t1
 POSTHOOK: Output: database:default
