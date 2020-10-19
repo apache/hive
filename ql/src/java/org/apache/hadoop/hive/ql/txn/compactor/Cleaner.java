@@ -128,14 +128,6 @@ public class Cleaner extends MetaStoreCompactorThread {
   }
 
   private void clean(CompactionInfo ci, long minOpenTxnGLB) throws MetaException {
-    if (!ci.isCleanAbortedCompaction()) {
-      cleanRegular(ci, minOpenTxnGLB);
-    } else {
-      cleanAborted(ci);
-    }
-  }
-
-  private void cleanRegular(CompactionInfo ci, long minOpenTxnGLB) throws MetaException {
     LOG.info("Starting cleaning for " + ci);
     try {
       Table t = resolveTable(ci);
@@ -240,52 +232,6 @@ public class Cleaner extends MetaStoreCompactorThread {
   private static String idWatermark(CompactionInfo ci) {
     return " id=" + ci.id;
   }
-
-  private void cleanAborted(CompactionInfo ci) throws MetaException {
-    if (ci.writeIds == null || ci.writeIds.size() == 0) {
-      LOG.warn("Attempted cleaning aborted transaction with empty writeId list");
-      txnHandler.markCleaned(ci);
-      return;
-    }
-    LOG.info("Starting aborted cleaning for table " + ci.getFullTableName()
-        + ". This will scan all the partition directories.");
-    try {
-      Table t = resolveTable(ci);
-      if (t == null) {
-        // The table was dropped before we got around to cleaning it.
-        LOG.info("Unable to find table " + ci.getFullTableName() + ", assuming it was dropped." +
-            idWatermark(ci));
-        txnHandler.markCleaned(ci);
-        return;
-      }
-      StorageDescriptor sd = resolveStorageDescriptor(t, null);
-
-      if (runJobAsSelf(ci.runAs)) {
-        removeAborted(sd.getLocation(), ci);
-      } else {
-        LOG.info("Cleaning as user " + ci.runAs + " for " + ci.getFullPartitionName());
-        UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
-            UserGroupInformation.getLoginUser());
-        ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
-          removeAborted(sd.getLocation(), ci);
-          return null;
-        });
-        try {
-          FileSystem.closeAllForUGI(ugi);
-        } catch (IOException exception) {
-          LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " +
-              ci.getFullPartitionName() + idWatermark(ci), exception);
-        }
-      }
-      txnHandler.markCleaned(ci);
-      LOG.info("Finished abort cleaning for table " + ci.getFullTableName());
-    } catch (Exception e) {
-      LOG.error("Caught exception when cleaning, unable to complete cleaning of " + ci + " " +
-          StringUtils.stringifyException(e));
-      txnHandler.markFailed(ci);
-    }
-  }
-
   private void removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
       throws IOException, NoSuchObjectException, MetaException {
     Path locPath = new Path(location);
@@ -330,23 +276,6 @@ public class Cleaner extends MetaStoreCompactorThread {
         replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
       }
       fs.delete(dead, true);
-    }
-  }
-
-  private void removeAborted(String rootLocation, CompactionInfo ci) throws IOException, MetaException, NoSuchObjectException {
-    List<Path> deleted = AcidUtils.deleteDeltaDirectories(new Path(rootLocation), conf, ci.writeIds);
-    if (deleted.size() == 0) {
-      LOG.info("No files were deleted in the clean abort compaction: " + idWatermark(ci));
-      return;
-    }
-    Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
-    Table table = getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
-
-    for (Path dead : deleted) {
-      LOG.info("Deleted path " + dead.toString());
-      if (ReplChangeManager.shouldEnableCm(db, table)) {
-        replChangeManager.recycle(dead, ReplChangeManager.RecycleType.MOVE, true);
-      }
     }
   }
 }

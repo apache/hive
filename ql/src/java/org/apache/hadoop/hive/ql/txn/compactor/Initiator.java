@@ -143,7 +143,7 @@ public class Initiator extends MetaStoreCompactorThread {
             try {
               Table t = resolveTable(ci);
               Partition p = resolvePartition(ci);
-              if (!ci.isCleanAbortedCompaction() && p == null && ci.partName != null) {
+              if (p == null && ci.partName != null) {
                 LOG.info("Can't find partition " + ci.getFullPartitionName() +
                     ", assuming it has been dropped and moving on.");
                 continue;
@@ -250,14 +250,11 @@ public class Initiator extends MetaStoreCompactorThread {
                                             CompactionInfo ci) {
     if (compactions.getCompacts() != null) {
       for (ShowCompactResponseElement e : compactions.getCompacts()) {
-        if ((e.getState().equals(TxnStore.WORKING_RESPONSE) || e.getState().equals(TxnStore.INITIATED_RESPONSE)) &&
+         if ((e.getState().equals(TxnStore.WORKING_RESPONSE) || e.getState().equals(TxnStore.INITIATED_RESPONSE)) &&
             e.getDbname().equals(ci.dbname) &&
             e.getTablename().equals(ci.tableName) &&
             (e.getPartitionname() == null && ci.partName == null ||
                   e.getPartitionname().equals(ci.partName))) {
-          return true;
-        } else if (ci.isCleanAbortedCompaction() && e.getState().equals(TxnStore.CLEANING_RESPONSE) &&
-            e.getDbname().equals(ci.dbname) && e.getTablename().equals(ci.tableName)) {
           return true;
         }
       }
@@ -275,11 +272,7 @@ public class Initiator extends MetaStoreCompactorThread {
     if (ci.tooManyAborts) {
       LOG.debug("Found too many aborted transactions for " + ci.getFullPartitionName() + ", " +
           "initiating major compaction");
-      if (ci.isCleanAbortedCompaction()) {
-        return CompactionType.CLEAN_ABORTED;
-      } else {
-        return CompactionType.MAJOR;
-      }
+      return CompactionType.MAJOR;
     }
 
     if (ci.hasOldAbort) {
@@ -321,10 +314,6 @@ public class Initiator extends MetaStoreCompactorThread {
   private CompactionType determineCompactionType(CompactionInfo ci, ValidWriteIdList writeIds,
                                                  StorageDescriptor sd, Map<String, String> tblproperties)
       throws IOException {
-
-    if (ci.isCleanAbortedCompaction()) {
-      return CompactionType.CLEAN_ABORTED;
-    }
 
     boolean noBase = false;
     Path location = new Path(sd.getLocation());
@@ -450,11 +439,10 @@ public class Initiator extends MetaStoreCompactorThread {
     return noAutoCompact != null && noAutoCompact.equalsIgnoreCase("true");
   }
 
-  // Check to see if this is a table level request on a partitioned table.  If so,
-  // then it's a dynamic partitioning case and we shouldn't check the table itself.
-  private static boolean checkDynPartitioning(Table t, CompactionInfo ci){
-    if (!ci.isCleanAbortedCompaction() && t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0 &&
-            ci.partName  == null) {
+  // Check if it's a dynamic partitioning case. If so, do not initiate compaction for streaming ingest, only for aborts.
+  private static boolean isDynPartIngest(Table t, CompactionInfo ci){
+    if (t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0 &&
+            ci.partName  == null && !ci.hasOldAbort) {
       LOG.info("Skipping entry for " + ci.getFullTableName() + " as it is from dynamic" +
               " partitioning");
       return  true;
@@ -463,7 +451,7 @@ public class Initiator extends MetaStoreCompactorThread {
   }
 
   private boolean isEligibleForCompaction(CompactionInfo ci, ShowCompactResponse currentCompactions) {
-    LOG.info("Checking to see if we should compact " + ci.getFullPartitionName() + " with type " + ci.type);
+    LOG.info("Checking to see if we should compact " + ci.getFullPartitionName());
 
     // Check if we already have initiated or are working on a compaction for this partition
     // or table. If so, skip it. If we are just waiting on cleaning we can still check,
@@ -493,7 +481,7 @@ public class Initiator extends MetaStoreCompactorThread {
             "=true so we will not compact it.");
         return false;
       }
-      if (checkDynPartitioning(t, ci)) {
+      if (isDynPartIngest(t, ci)) {
         return false;
       }
 

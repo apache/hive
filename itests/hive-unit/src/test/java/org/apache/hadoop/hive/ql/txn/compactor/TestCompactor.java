@@ -907,6 +907,9 @@ public class TestCompactor {
     HiveStreamingConnection connection1 = prepareTableTwoPartitionsAndConnection(dbName, tblName, 1);
     HiveStreamingConnection connection2 = prepareTableTwoPartitionsAndConnection(dbName, tblName, 1);
 
+    // to skip optimization introduced in HIVE-22122
+    executeStatementOnDriver("truncate " + tblName, driver);
+
     connection1.beginTransaction();
     connection1.write("1,1".getBytes());
     connection1.write("2,2".getBytes());
@@ -932,6 +935,9 @@ public class TestCompactor {
     // Create three folders with two different transactions
     HiveStreamingConnection connection1 = prepareTableAndConnection(dbName, tblName, 1);
     HiveStreamingConnection connection2 = prepareTableAndConnection(dbName, tblName, 1);
+
+    // to skip optimization introduced in HIVE-22122
+    executeStatementOnDriver("truncate " + tblName, driver);
 
     connection1.beginTransaction();
     connection1.write("1,1".getBytes());
@@ -961,22 +967,22 @@ public class TestCompactor {
       Assert.fail("Expecting three directories corresponding to three partitions, FileStatus[] stat " + Arrays.toString(stat));
     }
 
-    int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='i'");
     // We should have two rows corresponding to the two aborted transactions
     Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), allAborted ? 2 : 1, count);
 
     runInitiator(conf);
-    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_TYPE='p'");
+    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
     // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
     // with rows in TXN_COMPONENTS
     Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 1, count);
+    runWorker(conf);
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(1, rsp.getCompacts().size());
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
     Assert.assertEquals("cws", rsp.getCompacts().get(0).getTablename());
-    Assert.assertEquals(CompactionType.CLEAN_ABORTED,
-        rsp.getCompacts().get(0).getType());
+    Assert.assertEquals(CompactionType.MINOR, rsp.getCompacts().get(0).getType());
 
     runCleaner(conf);
 
@@ -997,8 +1003,7 @@ public class TestCompactor {
     Assert.assertEquals(1, rsp.getCompacts().size());
     Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
     Assert.assertEquals("cws", rsp.getCompacts().get(0).getTablename());
-    Assert.assertEquals(CompactionType.CLEAN_ABORTED,
-        rsp.getCompacts().get(0).getType());
+    Assert.assertEquals(CompactionType.MINOR, rsp.getCompacts().get(0).getType());
   }
 
   @Test
@@ -1034,18 +1039,20 @@ public class TestCompactor {
       Assert.fail("Expecting two directories corresponding to two partitions, FileStatus[] stat " + Arrays.toString(stat));
     }
 
-    int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='i'");
     // We should have two rows corresponding to the two aborted transactions
     Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 2, count);
 
     runInitiator(conf);
-    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE where CQ_TYPE='p'");
+    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
     // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
     // with rows in TXN_COMPONENTS
     Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 2, count);
 
-    runCleaner(conf);
+    runWorker(conf);
+    runWorker(conf);
 
+    runCleaner(conf);
     // After the cleaner runs TXN_COMPONENTS and COMPACTION_QUEUE should have zero rows, also the folders should have been deleted.
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
     Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
@@ -1073,14 +1080,14 @@ public class TestCompactor {
     connection.write("1,1".getBytes());
     connection.write("2,2".getBytes());
 
-    int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='i'");
     // We should have 1 row corresponding to the aborted transaction
     Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 1, count);
 
     connection.commitTransaction();
 
     // After commit the row should have been deleted
-    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='p'");
+    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='i'");
     Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
   }
 
@@ -1101,10 +1108,13 @@ public class TestCompactor {
 
     conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
     runInitiator(conf);
-    runWorker(conf);
 
     int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
     Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 2, count);
+
+    runWorker(conf);
+    runWorker(conf);
+
     // Cleaning should happen in threads concurrently for the minor compaction and the clean abort one.
     runCleaner(conf);
 

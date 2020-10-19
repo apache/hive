@@ -2803,25 +2803,24 @@ public class AcidUtils {
     }
   }
 
+
   public static Long extractWriteId(Path file) {
     String fileName = file.getName();
-    if (Stream.of(BASE_PREFIX, DELTA_PREFIX, DELETE_DELTA_PREFIX)
-          .noneMatch(fileName::startsWith)) {
-      LOG.trace("Cannot extract write ID for an ACID table: {}", file);
+    if (!fileName.startsWith(DELTA_PREFIX) && !fileName.startsWith(BASE_PREFIX)) {
+      LOG.trace("Cannot extract write ID for a MM table: {}", file);
       return null;
     }
     String[] parts = fileName.split("_", 4);  // e.g. delta_0000001_0000001_0000 or base_0000022
     if (parts.length < 2) {
-      LOG.debug("Cannot extract write ID for an ACID table: " + file
+      LOG.debug("Cannot extract write ID for a MM table: " + file
           + " (" + Arrays.toString(parts) + ")");
       return null;
     }
-    long writeId;
+    long writeId = -1;
     try {
-      writeId = Long.parseLong(isDeleteDelta(file) ?
-          parts[2] : parts[1]);
+      writeId = Long.parseLong(parts[1]);
     } catch (NumberFormatException ex) {
-      LOG.debug("Cannot extract write ID for an ACID table: " + file
+      LOG.debug("Cannot extract write ID for a MM table: " + file
           + "; parsing " + parts[1] + " got " + ex.getMessage());
       return null;
     }
@@ -2831,30 +2830,6 @@ public class AcidUtils {
   public static void setNonTransactional(Map<String, String> tblProps) {
     tblProps.put(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL, "false");
     tblProps.remove(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES);
-  }
-
-  /**
-   * Look for delta directories matching the list of writeIds and deletes them.
-   * @param root path to look for the delta directories
-   * @param conf configuration
-   * @param writeIds list of writeIds to look for in the delta directories
-   * @return list of deleted directories.
-   * @throws IOException
-   */
-  public static List<Path> deleteDeltaDirectories(Path root, Configuration conf, Set<Long> writeIds)
-      throws IOException {
-    FileSystem fs = root.getFileSystem(conf);
-    Map<Path, HdfsDirSnapshot> hdfsDirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, root);
-
-    List<Path> deleted = hdfsDirSnapshots.values().stream()
-      .map(HdfsDirSnapshot::getPath)
-      .filter(p -> writeIds.contains(extractWriteId(p)))
-      .collect(Collectors.toList());
-
-    for (Path toDelete : deleted) {
-      fs.delete(toDelete, true);
-    }
-    return deleted;
   }
 
   private static boolean needsLock(Entity entity) {

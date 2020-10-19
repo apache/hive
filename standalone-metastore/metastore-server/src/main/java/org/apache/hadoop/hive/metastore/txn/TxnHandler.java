@@ -230,7 +230,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   // Compactor types
   static final protected char MAJOR_TYPE = 'a';
   static final protected char MINOR_TYPE = 'i';
-  static final protected char CLEAN_ABORTED = 'p';
 
 
   private static final String TXN_TMP_STATE = "_";
@@ -1270,7 +1269,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
 
         String conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN (" +
-                OperationType.UPDATE + ", " + OperationType.DELETE + ")";
+                OperationType.UPDATE + "," + OperationType.DELETE + ")";
 
         long tempCommitId = generateTemporaryId();
         if (txnType.get() != TxnType.READ_ONLY
@@ -1436,8 +1435,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         "SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\" " +
         " FROM \"TXN_COMPONENTS\"  " +
         "   WHERE \"TC_TXNID\" = " + txnid +
-        "     AND \"TC_OPERATION_TYPE\" IN (" + OperationType.UPDATE + "," + OperationType.DELETE + "," +
-        OperationType.DP_UPDATE + ")) \"CUR\" " + // handle DP update/delete scenario
+        "     AND \"TC_OPERATION_TYPE\" IN (" + OperationType.UPDATE + "," + OperationType.DELETE + ")) \"CUR\" " +
         "   ON \"COMMITTED\".\"WS_DATABASE\" = \"CUR\".\"TC_DATABASE\" " +
         "     AND \"COMMITTED\".\"WS_TABLE\" = \"CUR\".\"TC_TABLE\" " +
         //For partitioned table we always track writes at partition level (never at table)
@@ -2710,7 +2708,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             if (writeIdCache.containsKey(groupKey.apply(lc))) {
               continue;
             }
-            opType = isDynPartUpdate.contains(groupKey.apply(lc)) ? OperationType.DP_UPDATE : OperationType.DP_INSERT;
+            opType = isDynPartUpdate.contains(groupKey.apply(lc)) ? OperationType.UPDATE : OperationType.INSERT;
           }
           Optional<Long> writeId = getWriteId(writeIdCache, dbName, tblName, txnid, dbConn);
 
@@ -3321,15 +3319,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         long id = generateCompactionQueueId(stmt);
 
         List<String> params = new ArrayList<>();
-        // There could a clean abort compaction for the same database, table and with null
-        // partition but in this case it would be in READY_FOR_CLEANING state.
         StringBuilder sb = new StringBuilder("SELECT \"CQ_ID\", \"CQ_STATE\" FROM \"COMPACTION_QUEUE\" WHERE").
           append(" \"CQ_STATE\" IN(").append(quoteChar(INITIATED_STATE)).
-            append(",").append(quoteChar(WORKING_STATE));
-        if (rqst.getType().equals(CompactionType.CLEAN_ABORTED)) {
-          sb.append(",").append(quoteChar(READY_FOR_CLEANING));
-        }
-        sb.append(") AND \"CQ_DATABASE\"=?").
+            append(",").append(quoteChar(WORKING_STATE)).
+          append(") AND \"CQ_DATABASE\"=?").
           append(" AND \"CQ_TABLE\"=?").append(" AND ");
         params.add(rqst.getDbname());
         params.add(rqst.getTablename());
@@ -3338,12 +3331,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         } else {
           sb.append("\"CQ_PARTITION\"=?");
           params.add(rqst.getPartitionname());
-        }
-
-        // This means even if we have several writeIds for the same table
-        // only one entry will be inserted in COMPACTION_QUEUE
-        if (rqst.getType().equals(CompactionType.CLEAN_ABORTED)) {
-          sb.append(" AND cq_type=").append(quoteChar(CLEAN_ABORTED));
         }
 
         pst = sqlGenerator.prepareStmtWithParameters(dbConn, sb.toString(), params);
@@ -3382,14 +3369,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         } else {
           buf.append("'");
         }
-        char state = INITIATED_STATE;
-        // We send the work directly to the cleaning stage because
-        // the worker doesn't have to do anything, we only have to delete
-        // files that may have been written.
-        if (rqst.getType().equals(CompactionType.CLEAN_ABORTED)) {
-          state = READY_FOR_CLEANING;
-        }
-        buf.append(state);
+        buf.append(INITIATED_STATE);
         buf.append("', '");
         buf.append(thriftCompactionType2DbType(rqst.getType()));
         buf.append("',");
@@ -5239,8 +5219,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         return CompactionType.MAJOR;
       case MINOR_TYPE:
         return CompactionType.MINOR;
-      case CLEAN_ABORTED:
-        return CompactionType.CLEAN_ABORTED;
       default:
         throw new MetaException("Unexpected compaction type " + dbValue);
     }
@@ -5251,8 +5229,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         return MAJOR_TYPE;
       case MINOR:
         return MINOR_TYPE;
-      case CLEAN_ABORTED:
-        return CLEAN_ABORTED;
       default:
         throw new MetaException("Unexpected compaction type " + ct);
     }

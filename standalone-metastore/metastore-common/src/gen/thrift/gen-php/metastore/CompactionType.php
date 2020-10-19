@@ -22,12 +22,9 @@ final class CompactionType
 
     const MAJOR = 2;
 
-    const CLEAN_ABORTED = 3;
-
     static public $__names = array(
         1 => 'MINOR',
         2 => 'MAJOR',
-        3 => 'CLEAN_ABORTED',
     );
 }
 
