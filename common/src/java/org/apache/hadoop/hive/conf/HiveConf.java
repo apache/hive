@@ -2650,6 +2650,8 @@ public class HiveConf extends Configuration {
     // Statistics
     HIVE_STATS_ESTIMATE_STATS("hive.stats.estimate", true,
         "Estimate statistics in absence of statistics."),
+    HIVE_STATS_FILE_BASED_ESTIMATE_STATS("hive.stats.filesystem.estimate", true,
+        "Estimate data size statistics in absence of statistics by accessing the file system."),
     HIVE_STATS_NDV_ESTIMATE_PERC("hive.stats.ndv.estimate.percent", (float)20,
         "This many percentage of rows will be estimated as count distinct in absence of statistics."),
     HIVE_STATS_NUM_NULLS_ESTIMATE_PERC("hive.stats.num.nulls.estimate.percent", (float)5,
@@ -6361,6 +6363,14 @@ public class HiveConf extends Configuration {
       return false;
     }
     return getBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER);
+  }
+
+  public boolean isFileSystemStatsEnabled() {
+    if (getEngine() == Engine.IMPALA) {
+      // Currently we do not use filesystem-based stats during Impala planning
+      return false;
+    }
+    return getBoolVar(ConfVars.HIVE_STATS_FILE_BASED_ESTIMATE_STATS);
   }
 
   /**

@@ -176,6 +176,9 @@ public class StatsUtils {
    */
   public static long getNumRows(HiveConf conf, List<ColumnInfo> schema, Table table, PrunedPartitionList partitionList, AtomicInteger noColsMissingStats) {
 
+    boolean estimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
+    boolean estimateStatsUsingFileSystem = conf.isFileSystemStatsEnabled();
+
     List<Partish> inputs = new ArrayList<>();
     if (table.isPartitioned()) {
       for (Partition part : partitionList.getNotDeniedPartns()) {
@@ -187,12 +190,13 @@ public class StatsUtils {
 
     Factory basicStatsFactory = new BasicStats.Factory();
 
-    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS)) {
-      basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
+    if (estimateStats) {
+      if (estimateStatsUsingFileSystem) {
+        basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
+      }
       basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
     }
 
-    List<BasicStats> results = new ArrayList<>();
     for (Partish pi : inputs) {
       BasicStats bStats = new BasicStats(pi);
       long nr = bStats.getNumRows();
@@ -203,7 +207,7 @@ public class StatsUtils {
       }
     }
 
-    results = basicStatsFactory.buildAll(conf, inputs);
+    List<BasicStats> results = basicStatsFactory.buildAll(conf, inputs);
 
     BasicStats aggregateStat = BasicStats.buildFrom(results);
 
@@ -226,9 +230,7 @@ public class StatsUtils {
 
     if(missingColStats.size() > 0) {
       List<ColStatistics> estimatedColStats = estimateStats(table, schema, missingColStats, conf, nr);
-      for (ColStatistics estColStats : estimatedColStats) {
-        columnStats.add(estColStats);
-      }
+      columnStats.addAll(estimatedColStats);
     }
   }
 
@@ -249,22 +251,22 @@ public class StatsUtils {
     boolean fetchColStats =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
     boolean estimateStats = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_ESTIMATE_STATS);
+    boolean estimateStatsUsingFileSystem = conf.isFileSystemStatsEnabled();
 
     if (!table.isPartitioned()) {
 
       Factory basicStatsFactory = new BasicStats.Factory();
 
       if (estimateStats) {
-        basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
+        if (estimateStatsUsingFileSystem) {
+          basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
+        }
+        basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
       }
-
-      //      long ds = shouldEstimateStats? getDataSize(conf, table): getRawDataSize(table);
-      basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
       basicStatsFactory.addEnhancer(new BasicStats.SetMinRowNumber01());
 
       BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table));
 
-      //      long nr = getNumRows(conf, schema, neededColumns, table, ds);
       long ds = basicStats.getDataSize();
       long nr = basicStats.getNumRows();
       long fs = basicStats.getTotalFileSize();
@@ -288,17 +290,17 @@ public class StatsUtils {
       stats.setColumnStatsState(deriveStatType(colStats, neededColumns));
       stats.addToColumnStats(colStats);
     } else if (partList != null) {
-
       // For partitioned tables, get the size of all the partitions after pruning
       // the partitions that are not required
-
       Factory basicStatsFactory = new Factory();
-      if (estimateStats) {
-        // FIXME: misses parallel
-        basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
-      }
 
-      basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
+      if (estimateStats) {
+        if (estimateStatsUsingFileSystem) {
+          // FIXME: misses parallel
+          basicStatsFactory.addEnhancer(new BasicStats.DataSizeEstimator(conf));
+        }
+        basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
+      }
 
       List<BasicStats> partStats = new ArrayList<>();
 
