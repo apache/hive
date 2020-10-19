@@ -151,7 +151,6 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatch;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatchNoCount;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.getEpochFn;
@@ -634,7 +633,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
        * If the getGeneratedKeys are not supported first we insert a random batchId in the TXN_META_INFO field,
        * then the keys are selected beck with that batchid.
        */
-      boolean genKeySupport = TxnDbUtil.supportsGetGeneratedKeys(dbProduct);
+      boolean genKeySupport = dbProduct.supportsGetGeneratedKeys();
       genKeySupport = genKeySupport || (numTxns == 1);
 
       String insertQuery = String.format(TXNS_INSERT_QRY, TxnDbUtil.getEpochFn(dbProduct),
@@ -1036,8 +1035,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     try {
       stmt = dbConn.createStatement();
 
-      if (sqlGenerator.getDbProduct() == MYSQL) {
-        stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+      String s = sqlGenerator.getDbProduct().getPrepareTxnStmt();
+      if (s != null) {
+        stmt.execute(s);
       }
 
       String query = "select \"DB_ID\" from \"DBS\" where \"NAME\" = ?  and \"CTLG_NAME\" = ?";
@@ -2167,7 +2167,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           throw new MetaException(MessageFormat
               .format("Invalid txnId seed {}, the highWaterMark is {}", rqst.getSeedTxnId(), highWaterMark));
         }
-        TxnDbUtil.seedTxnSequence(dbConn, stmt, rqst.getSeedTxnId());
+        TxnDbUtil.seedTxnSequence(dbConn, conf, stmt, rqst.getSeedTxnId());
         dbConn.commit();
 
       } catch (SQLException e) {
@@ -4132,7 +4132,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if(dbProduct == null) {
         throw new IllegalStateException("DB Type not determined yet.");
       }
-      if (DatabaseProduct.isDeadlock(dbProduct, e)) {
+      if (dbProduct.isDeadlock(e)) {
         if (deadlockCnt++ < ALLOWED_REPEATED_DEADLOCKS) {
           long waitInterval = deadlockRetryInterval * deadlockCnt;
           LOG.warn("Deadlock detected in " + caller + ". Will wait " + waitInterval +
@@ -4181,27 +4181,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     Statement stmt = null;
     try {
       stmt = conn.createStatement();
-      String s;
-      switch (dbProduct) {
-        case DERBY:
-          s = "values current_timestamp";
-          break;
+      String s = dbProduct.getDBTime();
 
-        case MYSQL:
-        case POSTGRES:
-        case SQLSERVER:
-          s = "select current_timestamp";
-          break;
-
-        case ORACLE:
-          s = "select current_timestamp from dual";
-          break;
-
-        default:
-          String msg = "Unknown database product: " + dbProduct.toString();
-          LOG.error(msg);
-          throw new MetaException(msg);
-      }
       LOG.debug("Going to execute query <" + s + ">");
       ResultSet rs = stmt.executeQuery(s);
       if (!rs.next()) throw new MetaException("No results from date query");
@@ -4216,27 +4197,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   protected String isWithinCheckInterval(String expr, long interval) throws MetaException {
-    String condition;
-    switch (dbProduct) {
-      case DERBY:
-        condition = " {fn TIMESTAMPDIFF(sql_tsi_second, " + expr + ", current_timestamp)} <= " + interval;
-        break;
-      case MYSQL:
-      case POSTGRES:
-        condition = expr + " >= current_timestamp - interval '" + interval + "' second";
-        break;
-      case SQLSERVER:
-        condition = "DATEDIFF(second, " + expr + ", current_timestamp) <= " + interval;
-        break;
-      case ORACLE:
-        condition = expr + " >= current_timestamp - numtodsinterval(" + interval + " , 'second')";
-        break;
-      default:
-        String msg = "Unknown database product: " + dbProduct.toString();
-        LOG.error(msg);
-        throw new MetaException(msg);
-    }
-    return condition;
+    return dbProduct.isWithinCheckInterval(expr, interval);
   }
 
   /**
@@ -4257,8 +4218,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (dbProduct != null) return;
     try {
       String s = conn.getMetaData().getDatabaseProductName();
-      dbProduct = DatabaseProduct.determineDatabaseProduct(s);
-      if (dbProduct == DatabaseProduct.OTHER) {
+      dbProduct = DatabaseProduct.determineDatabaseProduct(s, conf);
+      if (dbProduct.isUNDEFINED()) {
         String msg = "Unrecognized database product name <" + s + ">";
         LOG.error(msg);
         throw new IllegalStateException(msg);
@@ -5173,42 +5134,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     return false;
   }
+
   private boolean isDuplicateKeyError(SQLException ex) {
-    switch (dbProduct) {
-      case DERBY:
-        if("23505".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      case MYSQL:
-        //https://dev.mysql.com/doc/refman/5.5/en/error-messages-server.html
-        if((ex.getErrorCode() == 1022 || ex.getErrorCode() == 1062 || ex.getErrorCode() == 1586)
-          && "23000".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      case SQLSERVER:
-        //2627 is unique constaint violation incl PK, 2601 - unique key
-        if ((ex.getErrorCode() == 2627 || ex.getErrorCode() == 2601) && "23000".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      case ORACLE:
-        if(ex.getErrorCode() == 1 && "23000".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      case POSTGRES:
-        //http://www.postgresql.org/docs/8.1/static/errcodes-appendix.html
-        if("23505".equals(ex.getSQLState())) {
-          return true;
-        }
-        break;
-      default:
-        throw new IllegalArgumentException("Unexpected DB type: " + dbProduct + "; " + getMessage(ex));
-    }
-    return false;
+    return dbProduct.isDuplicateKeyError(ex);
   }
+  
   private static String getMessage(SQLException ex) {
     return ex.getMessage() + " (SQLState=" + ex.getSQLState() + ", ErrorCode=" + ex.getErrorCode() + ")";
   }
@@ -5247,12 +5177,12 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * with Derby database.  See more notes at class level.
    */
   private void lockInternal() {
-    if(dbProduct == DatabaseProduct.DERBY) {
+    if(dbProduct.isDERBY()) {
       derbyLock.lock();
     }
   }
   private void unlockInternal() {
-    if(dbProduct == DatabaseProduct.DERBY) {
+    if(dbProduct.isDERBY()) {
       derbyLock.unlock();
     }
   }
@@ -5307,7 +5237,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
         }
         Semaphore derbySemaphore = null;
-        if(dbProduct == DatabaseProduct.DERBY) {
+        if(dbProduct.isDERBY()) {
           derbyKey2Lock.putIfAbsent(key, new Semaphore(1));
           derbySemaphore =  derbyKey2Lock.get(key);
           derbySemaphore.acquire();
