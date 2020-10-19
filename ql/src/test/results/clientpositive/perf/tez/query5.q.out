@@ -278,6 +278,7 @@ Plan optimized by CBO.
 
 Vertex dependency in root stage
 Map 1 <- Reducer 11 (BROADCAST_EDGE), Union 2 (CONTAINS)
+<<<<<<< HEAD
 Map 13 <- Reducer 20 (BROADCAST_EDGE), Union 14 (CONTAINS)
 Map 18 <- Union 14 (CONTAINS)
 Map 22 <- Reducer 32 (BROADCAST_EDGE), Union 23 (CONTAINS)
@@ -296,6 +297,24 @@ Reducer 3 <- Map 10 (SIMPLE_EDGE), Union 2 (SIMPLE_EDGE)
 Reducer 30 <- Map 29 (CUSTOM_SIMPLE_EDGE)
 Reducer 32 <- Map 31 (CUSTOM_SIMPLE_EDGE)
 Reducer 4 <- Map 12 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+=======
+Map 19 <- Reducer 11 (BROADCAST_EDGE), Union 20 (CONTAINS)
+Map 21 <- Union 20 (CONTAINS)
+Map 23 <- Reducer 11 (BROADCAST_EDGE), Union 24 (CONTAINS)
+Map 25 <- Reducer 28 (BROADCAST_EDGE)
+Map 9 <- Union 2 (CONTAINS)
+Reducer 11 <- Map 10 (CUSTOM_SIMPLE_EDGE)
+Reducer 12 <- Map 10 (SIMPLE_EDGE), Union 20 (SIMPLE_EDGE)
+Reducer 13 <- Map 22 (SIMPLE_EDGE), Reducer 12 (SIMPLE_EDGE)
+Reducer 14 <- Reducer 13 (SIMPLE_EDGE), Union 6 (CONTAINS)
+Reducer 15 <- Map 10 (SIMPLE_EDGE), Union 24 (SIMPLE_EDGE)
+Reducer 16 <- Map 29 (SIMPLE_EDGE), Reducer 15 (SIMPLE_EDGE)
+Reducer 17 <- Reducer 16 (SIMPLE_EDGE), Union 6 (CONTAINS)
+Reducer 26 <- Map 25 (SIMPLE_EDGE), Map 27 (SIMPLE_EDGE), Union 24 (CONTAINS)
+Reducer 28 <- Map 27 (CUSTOM_SIMPLE_EDGE)
+Reducer 3 <- Map 10 (SIMPLE_EDGE), Union 2 (SIMPLE_EDGE)
+Reducer 4 <- Map 18 (SIMPLE_EDGE), Reducer 3 (SIMPLE_EDGE)
+>>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
 Reducer 5 <- Reducer 4 (SIMPLE_EDGE), Union 6 (CONTAINS)
 Reducer 7 <- Union 6 (SIMPLE_EDGE)
 Reducer 8 <- Reducer 7 (SIMPLE_EDGE)
@@ -305,6 +324,7 @@ Stage-0
     limit:100
     Stage-1
       Reducer 8 vectorized
+<<<<<<< HEAD
       File Output Operator [FS_311]
         Limit [LIM_310] (rows=100 width=619)
           Number of rows:100
@@ -327,6 +347,30 @@ Stage-0
                           Select Operator [SEL_330] (rows=38846 width=619)
                             Output:["_col0","_col1","_col2","_col3","_col4"]
                             Group By Operator [GBY_329] (rows=38846 width=548)
+=======
+      File Output Operator [FS_315]
+        Limit [LIM_314] (rows=100 width=619)
+          Number of rows:100
+          Select Operator [SEL_313] (rows=59581 width=619)
+            Output:["_col0","_col1","_col2","_col3","_col4"]
+          <-Reducer 7 [SIMPLE_EDGE] vectorized
+            SHUFFLE [RS_312]
+              Select Operator [SEL_311] (rows=59581 width=619)
+                Output:["_col0","_col1","_col2","_col3","_col4"]
+                Group By Operator [GBY_310] (rows=59581 width=627)
+                  Output:["_col0","_col1","_col3","_col4","_col5"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)"],keys:KEY._col0, KEY._col1, KEY._col2
+                <-Union 6 [SIMPLE_EDGE]
+                  <-Reducer 14 [CONTAINS] vectorized
+                    Reduce Output Operator [RS_326]
+                      PartitionCols:_col0, _col1, _col2
+                      Group By Operator [GBY_325] (rows=59581 width=627)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["sum(_col2)","sum(_col3)","sum(_col4)"],keys:_col0, _col1, 0L
+                        Top N Key Operator [TNK_324] (rows=39721 width=618)
+                          keys:_col0, _col1,top n:100
+                          Select Operator [SEL_323] (rows=38846 width=619)
+                            Output:["_col0","_col1","_col2","_col3","_col4"]
+                            Group By Operator [GBY_322] (rows=38846 width=548)
+>>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
                               Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)"],keys:KEY._col0
                             <-Reducer 16 [SIMPLE_EDGE]
                               SHUFFLE [RS_47]
@@ -334,6 +378,7 @@ Stage-0
                                 Group By Operator [GBY_46] (rows=2835758 width=548)
                                   Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(_col2)","sum(_col4)","sum(_col3)","sum(_col5)"],keys:_col8
                                   Merge Join Operator [MERGEJOIN_237] (rows=34813117 width=535)
+<<<<<<< HEAD
                                     Conds:RS_42._col0=RS_328._col0(Inner),Output:["_col2","_col3","_col4","_col5","_col8"]
                                   <-Map 21 [SIMPLE_EDGE] vectorized
                                     SHUFFLE [RS_328]
@@ -341,6 +386,15 @@ Stage-0
                                       Select Operator [SEL_327] (rows=46000 width=104)
                                         Output:["_col0","_col1"]
                                         Filter Operator [FIL_326] (rows=46000 width=104)
+=======
+                                    Conds:RS_42._col0=RS_321._col0(Inner),Output:["_col2","_col3","_col4","_col5","_col8"]
+                                  <-Map 22 [SIMPLE_EDGE] vectorized
+                                    SHUFFLE [RS_321]
+                                      PartitionCols:_col0
+                                      Select Operator [SEL_320] (rows=46000 width=104)
+                                        Output:["_col0","_col1"]
+                                        Filter Operator [FIL_319] (rows=46000 width=104)
+>>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
                                           predicate:cp_catalog_page_sk is not null
                                           TableScan [TS_36] (rows=46000 width=104)
                                             default@catalog_page,catalog_page,Tbl:COMPLETE,Col:COMPLETE,Output:["cp_catalog_page_sk","cp_catalog_page_id"]
@@ -348,9 +402,15 @@ Stage-0
                                     SHUFFLE [RS_42]
                                       PartitionCols:_col0
                                       Merge Join Operator [MERGEJOIN_236] (rows=34813117 width=438)
+<<<<<<< HEAD
                                         Conds:Union 14._col1=RS_317._col0(Inner),Output:["_col0","_col2","_col3","_col4","_col5"]
                                       <-Map 19 [SIMPLE_EDGE] vectorized
                                         PARTITION_ONLY_SHUFFLE [RS_317]
+=======
+                                        Conds:Union 20._col1=RS_291._col0(Inner),Output:["_col0","_col2","_col3","_col4","_col5"]
+                                      <-Map 10 [SIMPLE_EDGE] vectorized
+                                        SHUFFLE [RS_291]
+>>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
                                           PartitionCols:_col0
                                           Select Operator [SEL_316] (rows=8116 width=4)
                                             Output:["_col0"]
@@ -358,6 +418,7 @@ Stage-0
                                               predicate:(CAST( d_date AS TIMESTAMP) BETWEEN TIMESTAMP'1998-08-04 00:00:00' AND TIMESTAMP'1998-08-18 00:00:00' and d_date_sk is not null)
                                               TableScan [TS_33] (rows=73049 width=98)
                                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_date"]
+<<<<<<< HEAD
                                       <-Union 14 [SIMPLE_EDGE]
                                         <-Map 13 [CONTAINS] vectorized
                                           Reduce Output Operator [RS_325]
@@ -365,9 +426,19 @@ Stage-0
                                             Select Operator [SEL_324] (rows=285117694 width=455)
                                               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
                                               Filter Operator [FIL_323] (rows=285117694 width=231)
+=======
+                                      <-Union 20 [SIMPLE_EDGE]
+                                        <-Map 19 [CONTAINS] vectorized
+                                          Reduce Output Operator [RS_337]
+                                            PartitionCols:_col1
+                                            Select Operator [SEL_336] (rows=285117694 width=455)
+                                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                                              Filter Operator [FIL_335] (rows=285117694 width=231)
+>>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
                                                 predicate:(cs_sold_date_sk is not null and cs_catalog_page_sk is not null and cs_sold_date_sk BETWEEN DynamicValue(RS_40_date_dim_d_date_sk_min) AND DynamicValue(RS_40_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_40_date_dim_d_date_sk_bloom_filter)))
                                                 TableScan [TS_256] (rows=287989836 width=231)
                                                   default@catalog_sales,catalog_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["cs_sold_date_sk","cs_catalog_page_sk","cs_ext_sales_price","cs_net_profit"]
+<<<<<<< HEAD
                                                 <-Reducer 20 [BROADCAST_EDGE] vectorized
                                                   BROADCAST [RS_322]
                                                     Group By Operator [GBY_321] (rows=1 width=12)
@@ -385,9 +456,29 @@ Stage-0
                                             Select Operator [SEL_335] (rows=28221805 width=451)
                                               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
                                               Filter Operator [FIL_334] (rows=28221805 width=227)
+=======
+                                                <-Reducer 11 [BROADCAST_EDGE] vectorized
+                                                  BROADCAST [RS_297]
+                                                    Group By Operator [GBY_295] (rows=1 width=12)
+                                                      Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
+                                                    <-Map 10 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                      SHUFFLE [RS_294]
+                                                        Group By Operator [GBY_293] (rows=1 width=12)
+                                                          Output:["_col0","_col1","_col2"],aggregations:["min(_col0)","max(_col0)","bloom_filter(_col0, expectedEntries=1000000)"]
+                                                          Select Operator [SEL_290] (rows=8116 width=4)
+                                                            Output:["_col0"]
+                                                             Please refer to the previous Select Operator [SEL_288]
+                                        <-Map 21 [CONTAINS] vectorized
+                                          Reduce Output Operator [RS_340]
+                                            PartitionCols:_col1
+                                            Select Operator [SEL_339] (rows=28221805 width=451)
+                                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                                              Filter Operator [FIL_338] (rows=28221805 width=227)
+>>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
                                                 predicate:(cr_catalog_page_sk is not null and cr_returned_date_sk is not null)
                                                 TableScan [TS_267] (rows=28798881 width=227)
                                                   default@catalog_returns,catalog_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["cr_returned_date_sk","cr_catalog_page_sk","cr_return_amount","cr_net_loss"]
+<<<<<<< HEAD
                   <-Reducer 26 [CONTAINS] vectorized
                     Reduce Output Operator [RS_355]
                       PartitionCols:_col0, _col1, _col2
@@ -400,11 +491,26 @@ Stage-0
                             Group By Operator [GBY_351] (rows=53 width=548)
                               Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)"],keys:KEY._col0
                             <-Reducer 25 [SIMPLE_EDGE]
+=======
+                  <-Reducer 17 [CONTAINS] vectorized
+                    Reduce Output Operator [RS_334]
+                      PartitionCols:_col0, _col1, _col2
+                      Group By Operator [GBY_333] (rows=59581 width=627)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["sum(_col2)","sum(_col3)","sum(_col4)"],keys:_col0, _col1, 0L
+                        Top N Key Operator [TNK_332] (rows=39721 width=618)
+                          keys:_col0, _col1,top n:100
+                          Select Operator [SEL_331] (rows=53 width=615)
+                            Output:["_col0","_col1","_col2","_col3","_col4"]
+                            Group By Operator [GBY_330] (rows=53 width=548)
+                              Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)"],keys:KEY._col0
+                            <-Reducer 16 [SIMPLE_EDGE]
+>>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
                               SHUFFLE [RS_80]
                                 PartitionCols:_col0
                                 Group By Operator [GBY_79] (rows=3498 width=548)
                                   Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(_col2)","sum(_col4)","sum(_col3)","sum(_col5)"],keys:_col8
                                   Merge Join Operator [MERGEJOIN_239] (rows=30966059 width=543)
+<<<<<<< HEAD
                                     Conds:RS_75._col0=RS_350._col0(Inner),Output:["_col2","_col3","_col4","_col5","_col8"]
                                   <-Map 33 [SIMPLE_EDGE] vectorized
                                     SHUFFLE [RS_350]
@@ -436,9 +542,38 @@ Stage-0
                                             Select Operator [SEL_346] (rows=143930874 width=455)
                                               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
                                               Filter Operator [FIL_345] (rows=143930874 width=231)
+=======
+                                    Conds:RS_75._col0=RS_329._col0(Inner),Output:["_col2","_col3","_col4","_col5","_col8"]
+                                  <-Map 29 [SIMPLE_EDGE] vectorized
+                                    SHUFFLE [RS_329]
+                                      PartitionCols:_col0
+                                      Select Operator [SEL_328] (rows=84 width=104)
+                                        Output:["_col0","_col1"]
+                                        Filter Operator [FIL_327] (rows=84 width=104)
+                                          predicate:web_site_sk is not null
+                                          TableScan [TS_69] (rows=84 width=104)
+                                            default@web_site,web_site,Tbl:COMPLETE,Col:COMPLETE,Output:["web_site_sk","web_site_id"]
+                                  <-Reducer 15 [SIMPLE_EDGE]
+                                    SHUFFLE [RS_75]
+                                      PartitionCols:_col0
+                                      Merge Join Operator [MERGEJOIN_238] (rows=30966059 width=447)
+                                        Conds:Union 24._col1=RS_292._col0(Inner),Output:["_col0","_col2","_col3","_col4","_col5"]
+                                      <-Map 10 [SIMPLE_EDGE] vectorized
+                                        SHUFFLE [RS_292]
+                                          PartitionCols:_col0
+                                           Please refer to the previous Select Operator [SEL_288]
+                                      <-Union 24 [SIMPLE_EDGE]
+                                        <-Map 23 [CONTAINS] vectorized
+                                          Reduce Output Operator [RS_343]
+                                            PartitionCols:_col1
+                                            Select Operator [SEL_342] (rows=143930874 width=455)
+                                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                                              Filter Operator [FIL_341] (rows=143930874 width=231)
+>>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
                                                 predicate:(ws_web_site_sk is not null and ws_sold_date_sk is not null and ws_sold_date_sk BETWEEN DynamicValue(RS_73_date_dim_d_date_sk_min) AND DynamicValue(RS_73_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_73_date_dim_d_date_sk_bloom_filter)))
                                                 TableScan [TS_272] (rows=144002668 width=231)
                                                   default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_sold_date_sk","ws_web_site_sk","ws_ext_sales_price","ws_net_profit"]
+<<<<<<< HEAD
                                                 <-Reducer 32 [BROADCAST_EDGE] vectorized
                                                   BROADCAST [RS_344]
                                                     Group By Operator [GBY_343] (rows=1 width=12)
@@ -451,11 +586,18 @@ Stage-0
                                                             Output:["_col0"]
                                                              Please refer to the previous Select Operator [SEL_338]
                                         <-Reducer 28 [CONTAINS]
+=======
+                                                <-Reducer 11 [BROADCAST_EDGE] vectorized
+                                                  BROADCAST [RS_298]
+                                                     Please refer to the previous Group By Operator [GBY_295]
+                                        <-Reducer 26 [CONTAINS]
+>>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
                                           Reduce Output Operator [RS_286]
                                             PartitionCols:_col1
                                             Select Operator [SEL_284] (rows=134782734 width=454)
                                               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
                                               Merge Join Operator [MERGEJOIN_283] (rows=134782734 width=230)
+<<<<<<< HEAD
                                                 Conds:RS_366._col0, _col2=RS_358._col1, _col2(Inner),Output:["_col1","_col3","_col6","_col7"]
                                               <-Map 29 [SIMPLE_EDGE] vectorized
                                                 PARTITION_ONLY_SHUFFLE [RS_358]
@@ -496,6 +638,48 @@ Stage-0
                           Select Operator [SEL_302] (rows=822 width=617)
                             Output:["_col0","_col1","_col2","_col3","_col4"]
                             Group By Operator [GBY_301] (rows=822 width=548)
+=======
+                                                Conds:RS_354._col0, _col2=RS_346._col1, _col2(Inner),Output:["_col1","_col3","_col6","_col7"]
+                                              <-Map 27 [SIMPLE_EDGE] vectorized
+                                                PARTITION_ONLY_SHUFFLE [RS_346]
+                                                  PartitionCols:_col1, _col2
+                                                  Select Operator [SEL_345] (rows=13749816 width=225)
+                                                    Output:["_col0","_col1","_col2","_col3","_col4"]
+                                                    Filter Operator [FIL_344] (rows=13749816 width=225)
+                                                      predicate:(wr_returned_date_sk is not null and wr_item_sk is not null and wr_order_number is not null)
+                                                      TableScan [TS_57] (rows=14398467 width=225)
+                                                        default@web_returns,web_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["wr_returned_date_sk","wr_item_sk","wr_order_number","wr_return_amt","wr_net_loss"]
+                                              <-Map 25 [SIMPLE_EDGE] vectorized
+                                                SHUFFLE [RS_354]
+                                                  PartitionCols:_col0, _col2
+                                                  Select Operator [SEL_353] (rows=143966669 width=11)
+                                                    Output:["_col0","_col1","_col2"]
+                                                    Filter Operator [FIL_352] (rows=143966669 width=11)
+                                                      predicate:(ws_web_site_sk is not null and ws_item_sk is not null and ws_order_number is not null and ws_item_sk BETWEEN DynamicValue(RS[227]_col0) AND DynamicValue(RS[227]_col1) and ws_order_number BETWEEN DynamicValue(RS[227]_col2) AND DynamicValue(RS[227]_col3) and in_bloom_filter(hash(ws_item_sk,ws_order_number), DynamicValue(RS[227]_col4)))
+                                                      TableScan [TS_54] (rows=144002668 width=11)
+                                                        default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_item_sk","ws_web_site_sk","ws_order_number"]
+                                                      <-Reducer 28 [BROADCAST_EDGE] vectorized
+                                                        BROADCAST [RS_351]
+                                                          Group By Operator [GBY_350] (rows=1 width=160)
+                                                            Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","min(VALUE._col2)","max(VALUE._col3)","bloom_filter(VALUE._col4, expectedEntries=8007986)"]
+                                                          <-Map 27 [CUSTOM_SIMPLE_EDGE] vectorized
+                                                            PARTITION_ONLY_SHUFFLE [RS_349]
+                                                              Group By Operator [GBY_348] (rows=1 width=160)
+                                                                Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["min(_col0)","max(_col0)","min(_col1)","max(_col1)","bloom_filter(_col3, expectedEntries=8007986)"]
+                                                                Select Operator [SEL_347] (rows=13749816 width=12)
+                                                                  Output:["_col0","_col1","_col3"]
+                                                                   Please refer to the previous Select Operator [SEL_345]
+                  <-Reducer 5 [CONTAINS] vectorized
+                    Reduce Output Operator [RS_309]
+                      PartitionCols:_col0, _col1, _col2
+                      Group By Operator [GBY_308] (rows=59581 width=627)
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5"],aggregations:["sum(_col2)","sum(_col3)","sum(_col4)"],keys:_col0, _col1, 0L
+                        Top N Key Operator [TNK_307] (rows=39721 width=618)
+                          keys:_col0, _col1,top n:100
+                          Select Operator [SEL_306] (rows=822 width=617)
+                            Output:["_col0","_col1","_col2","_col3","_col4"]
+                            Group By Operator [GBY_305] (rows=822 width=548)
+>>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
                               Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)","sum(VALUE._col2)","sum(VALUE._col3)"],keys:KEY._col0
                             <-Reducer 4 [SIMPLE_EDGE]
                               SHUFFLE [RS_22]
@@ -503,6 +687,7 @@ Stage-0
                                 Group By Operator [GBY_21] (rows=78090 width=548)
                                   Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(_col2)","sum(_col4)","sum(_col3)","sum(_col5)"],keys:_col8
                                   Merge Join Operator [MERGEJOIN_235] (rows=64325014 width=376)
+<<<<<<< HEAD
                                     Conds:RS_17._col0=RS_300._col0(Inner),Output:["_col2","_col3","_col4","_col5","_col8"]
                                   <-Map 12 [SIMPLE_EDGE] vectorized
                                     SHUFFLE [RS_300]
@@ -510,6 +695,15 @@ Stage-0
                                       Select Operator [SEL_299] (rows=1704 width=104)
                                         Output:["_col0","_col1"]
                                         Filter Operator [FIL_298] (rows=1704 width=104)
+=======
+                                    Conds:RS_17._col0=RS_304._col0(Inner),Output:["_col2","_col3","_col4","_col5","_col8"]
+                                  <-Map 18 [SIMPLE_EDGE] vectorized
+                                    SHUFFLE [RS_304]
+                                      PartitionCols:_col0
+                                      Select Operator [SEL_303] (rows=1704 width=104)
+                                        Output:["_col0","_col1"]
+                                        Filter Operator [FIL_302] (rows=1704 width=104)
+>>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
                                           predicate:s_store_sk is not null
                                           TableScan [TS_11] (rows=1704 width=104)
                                             default@store,store,Tbl:COMPLETE,Col:COMPLETE,Output:["s_store_sk","s_store_id"]
@@ -529,15 +723,24 @@ Stage-0
                                                 default@date_dim,date_dim,Tbl:COMPLETE,Col:COMPLETE,Output:["d_date_sk","d_date"]
                                       <-Union 2 [SIMPLE_EDGE]
                                         <-Map 1 [CONTAINS] vectorized
+<<<<<<< HEAD
                                           Reduce Output Operator [RS_297]
                                             PartitionCols:_col1
                                             Select Operator [SEL_296] (rows=525329897 width=445)
                                               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
                                               Filter Operator [FIL_295] (rows=525329897 width=221)
+=======
+                                          Reduce Output Operator [RS_301]
+                                            PartitionCols:_col1
+                                            Select Operator [SEL_300] (rows=525329897 width=445)
+                                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                                              Filter Operator [FIL_299] (rows=525329897 width=221)
+>>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
                                                 predicate:(ss_sold_date_sk is not null and ss_store_sk is not null and ss_sold_date_sk BETWEEN DynamicValue(RS_15_date_dim_d_date_sk_min) AND DynamicValue(RS_15_date_dim_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_15_date_dim_d_date_sk_bloom_filter)))
                                                 TableScan [TS_240] (rows=575995635 width=221)
                                                   default@store_sales,store_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ss_sold_date_sk","ss_store_sk","ss_ext_sales_price","ss_net_profit"]
                                                 <-Reducer 11 [BROADCAST_EDGE] vectorized
+<<<<<<< HEAD
                                                   BROADCAST [RS_294]
                                                     Group By Operator [GBY_293] (rows=1 width=12)
                                                       Output:["_col0","_col1","_col2"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","bloom_filter(VALUE._col2, expectedEntries=1000000)"]
@@ -554,6 +757,16 @@ Stage-0
                                             Select Operator [SEL_313] (rows=53634860 width=447)
                                               Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
                                               Filter Operator [FIL_312] (rows=53634860 width=223)
+=======
+                                                  BROADCAST [RS_296]
+                                                     Please refer to the previous Group By Operator [GBY_295]
+                                        <-Map 9 [CONTAINS] vectorized
+                                          Reduce Output Operator [RS_318]
+                                            PartitionCols:_col1
+                                            Select Operator [SEL_317] (rows=53634860 width=447)
+                                              Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                                              Filter Operator [FIL_316] (rows=53634860 width=223)
+>>>>>>> kgyrtkirk/HIVE-24241-downstream-merge
                                                 predicate:(sr_store_sk is not null and sr_returned_date_sk is not null)
                                                 TableScan [TS_251] (rows=57591150 width=223)
                                                   default@store_returns,store_returns,Tbl:COMPLETE,Col:COMPLETE,Output:["sr_returned_date_sk","sr_store_sk","sr_return_amt","sr_net_loss"]
