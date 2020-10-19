@@ -12318,7 +12318,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       try {
         // We pass a new empty context with our HiveConf so the lexer can
         // detect if allowQuotedId is enabled.
-        rewrittenTree = ParseUtils.parse(rewrittenQuery, new Context(conf));
+        Context rewriteCtx = new Context(conf);
+        ctx.addSubContext(rewriteCtx);
+        rewrittenTree = ParseUtils.parse(rewrittenQuery, rewriteCtx);
+        ctx.setTokenRewriteStream(rewriteCtx.getTokenRewriteStream());
       } catch (ParseException | IOException e) {
         throw new SemanticException(e);
       }
