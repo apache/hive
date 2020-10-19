@@ -328,6 +328,15 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
+    if (writeDot) {
+      try {
+        new OperatorGraph(pctx).toDot(new File("/tmp/out.final." + xx++));
+      } catch (Exception e1) {
+        throw new RuntimeException("e", e1);
+
+      }
+    }
+
     return pctx;
   }
 
