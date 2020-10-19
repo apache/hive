@@ -28,6 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.StringWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -40,6 +42,7 @@ class RenderStrategy {
 
   private abstract static class BaseUpdateFunction implements UpdateFunction {
     private static final int PRINT_INTERVAL = 3000;
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss,SSS");
 
     final TezJobMonitor monitor;
     private final PerfLogger perfLogger;
@@ -57,7 +60,8 @@ class RenderStrategy {
       renderProgress(monitor.progressMonitor(status, vertexProgressMap));
       String report = getReport(vertexProgressMap);
       if (showReport(report)) {
-        renderReport(report);
+        String time = FORMATTER.format(LocalDateTime.now());
+        renderReport(time + "\t" + report);
         lastReport = report;
         lastPrintTime = System.currentTimeMillis();
       }
