@@ -8,7 +8,7 @@ POSTHOOK: query: create table t1(col0 int) STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@t1
-Only query text based automatic rewriting is available for materialized view.Statement has unsupported operator: union.
+Only query text based automatic rewriting is available for materialized view. Statement has unsupported operator: union.
 PREHOOK: query: create materialized view mat1 as
 select * from t1 where col0 = 1
 union
