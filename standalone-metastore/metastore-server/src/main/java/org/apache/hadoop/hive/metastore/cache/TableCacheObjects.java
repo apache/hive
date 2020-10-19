@@ -3,10 +3,7 @@ package org.apache.hadoop.hive.metastore.cache;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 
 import java.util.List;
 
@@ -14,47 +11,12 @@ import java.util.List;
  * Holder class for table objects like partitions, statistics, constraints etc.
  */
 public class TableCacheObjects {
-  private List<SQLPrimaryKey> primaryKeys;
-  private List<SQLForeignKey> foreignKeys;
-  private List<SQLNotNullConstraint> notNullConstraints;
-  private List<SQLUniqueConstraint> uniqueConstraints;
+  private SQLAllTableConstraints tableConstraints;
   private ColumnStatistics tableColStats;
   private List<Partition> partitions;
   private List<ColumnStatistics> partitionColStats;
   private AggrStats aggrStatsAllPartitions;
   private AggrStats aggrStatsAllButDefaultPartition;
-
-  public List<SQLPrimaryKey> getPrimaryKeys() {
-    return primaryKeys;
-  }
-
-  public void setPrimaryKeys(List<SQLPrimaryKey> primaryKeys) {
-    this.primaryKeys = primaryKeys;
-  }
-
-  public List<SQLForeignKey> getForeignKeys() {
-    return foreignKeys;
-  }
-
-  public void setForeignKeys(List<SQLForeignKey> foreignKeys) {
-    this.foreignKeys = foreignKeys;
-  }
-
-  public List<SQLNotNullConstraint> getNotNullConstraints() {
-    return notNullConstraints;
-  }
-
-  public void setNotNullConstraints(List<SQLNotNullConstraint> notNullConstraints) {
-    this.notNullConstraints = notNullConstraints;
-  }
-
-  public List<SQLUniqueConstraint> getUniqueConstraints() {
-    return uniqueConstraints;
-  }
-
-  public void setUniqueConstraints(List<SQLUniqueConstraint> uniqueConstraints) {
-    this.uniqueConstraints = uniqueConstraints;
-  }
 
   public ColumnStatistics getTableColStats() {
     return tableColStats;
@@ -94,5 +56,13 @@ public class TableCacheObjects {
 
   public void setAggrStatsAllButDefaultPartition(AggrStats aggrStatsAllButDefaultPartition) {
     this.aggrStatsAllButDefaultPartition = aggrStatsAllButDefaultPartition;
+  }
+
+  public SQLAllTableConstraints getTableConstraints() {
+    return tableConstraints;
+  }
+
+  public void setTableConstraints(SQLAllTableConstraints tableConstraints) {
+    this.tableConstraints = tableConstraints;
   }
 }
