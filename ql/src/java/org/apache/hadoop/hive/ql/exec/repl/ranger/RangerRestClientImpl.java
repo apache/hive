@@ -202,9 +202,13 @@ public class RangerRestClientImpl implements RangerRestClient {
     Retryable retryable = Retryable.builder()
       .withHiveConf(hiveConf)
       .withRetryOnException(Exception.class).build();
-    return retryable.executeCallable(() -> importRangerPoliciesPlain(jsonRangerExportPolicyList,
-      rangerPoliciesJsonFileName,
-      serviceMapJsonFileName, jsonServiceMap, finalUrl, rangerExportPolicyList));
+    try {
+      return retryable.executeCallable(() -> importRangerPoliciesPlain(jsonRangerExportPolicyList,
+              rangerPoliciesJsonFileName,
+              serviceMapJsonFileName, jsonServiceMap, finalUrl, rangerExportPolicyList));
+    } catch (Exception e) {
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
+    }
   }
 
   private RangerExportPolicyList importRangerPoliciesPlain(String jsonRangerExportPolicyList,
