@@ -238,13 +238,13 @@ where exists (select 1 from web_sales ws2 where ws2.ws_order_number = 2 limit 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
-NULL	NULL
-2	2
-2	1
-NULL	NULL
-NULL	NULL
-1	2
 1	1
+1	2
+2	1
+2	2
+NULL	NULL
+NULL	NULL
+NULL	NULL
 NULL	NULL
 Warning: Shuffle Join MERGEJOIN[13][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: explain cbo
@@ -398,8 +398,8 @@ where ws1.ws_order_number not in (select ws2.ws_order_number from web_sales ws2 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
-2	2
 2	1
+2	2
 Warning: Shuffle Join MERGEJOIN[36][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
 PREHOOK: query: explain cbo
 select * from web_sales ws1
@@ -490,5 +490,5 @@ where ws1.ws_order_number not in (select ws2.ws_order_number from web_sales ws2 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@web_sales
 #### A masked pattern was here ####
-1	2
 1	1
+1	2

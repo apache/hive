@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.orc.ExternalCache;
 import org.apache.hadoop.hive.ql.lockmgr.DbLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
@@ -193,23 +194,27 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           LOG.info("Previous Dump is not yet loaded");
         }
       }
+    } catch (RuntimeException e) {
+      LOG.error("replication failed with run time exception", e);
+      setException(e);
+      try{
+        ReplUtils.handleException(true, e, work.getCurrentDumpPath().toString(),
+                work.getMetricCollector(), getName(), conf);
+      } catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+      }
+      throw e;
     } catch (Exception e) {
-      LOG.error("failed", e);
       setException(e);
       int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
-      try {
-        if (errorCode > 40000) {
-          Path nonRecoverableMarker = new Path(work.getCurrentDumpPath(),
-            ReplAck.NON_RECOVERABLE_MARKER.toString());
-          Utils.writeStackTrace(e, nonRecoverableMarker, conf);
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED_ADMIN, nonRecoverableMarker.toString());
-        } else {
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
-        }
-      } catch (Exception ex) {
-        LOG.error("Failed to collect Metrics", ex);
+      try{
+        return ReplUtils.handleException(true, e, work.getCurrentDumpPath().toString(),
+                work.getMetricCollector(), getName(), conf);
       }
-      return errorCode;
+      catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+        return errorCode;        
+      }
     }
     return 0;
   }

@@ -170,16 +170,13 @@ class MetaStoreDirectSql {
     this.conf = conf;
     this.schema = schema;
     DatabaseProduct dbType = null;
-    try {
-      dbType = DatabaseProduct.determineDatabaseProduct(getProductName(pm));
-    } catch (SQLException e) {
-      LOG.warn("Cannot determine database product; assuming OTHER", e);
-      dbType = DatabaseProduct.OTHER;
-    }
+
+    dbType = DatabaseProduct.determineDatabaseProduct(getProductName(pm), conf);
+
     this.dbType = dbType;
     int batchSize = MetastoreConf.getIntVar(conf, ConfVars.DIRECT_SQL_PARTITION_BATCH_SIZE);
     if (batchSize == DETECT_BATCHING) {
-      batchSize = DatabaseProduct.needsInBatching(dbType) ? 1000 : NO_BATCHING;
+      batchSize = dbType.needsInBatching() ? 1000 : NO_BATCHING;
     }
     this.batchSize = batchSize;
     ImmutableMap.Builder<String, String> fieldNameToTableNameBuilder =
@@ -528,7 +525,7 @@ class MetaStoreDirectSql {
     StringBuilder orderColumns = new StringBuilder(), orderClause = new StringBuilder();
     int i = 0;
     List<Object> paramsForOrder = new ArrayList<Object>();
-    boolean dbHasJoinCastBug = DatabaseProduct.hasJoinOperationOrderBug(dbType);
+    boolean dbHasJoinCastBug = dbType.hasJoinOperationOrderBug();
     for (Object[] orderSpec: orderSpecs) {
       int partColIndex = (int)orderSpec[0];
       String orderAlias = "ODR" + (i++);
@@ -549,11 +546,7 @@ class MetaStoreDirectSql {
       PartitionFilterGenerator.FilterType type =
           PartitionFilterGenerator.FilterType.fromType(colType);
       if (type == PartitionFilterGenerator.FilterType.Date) {
-        if (dbType == DatabaseProduct.ORACLE) {
-          tableValue = "TO_DATE(" + tableValue + ", 'YYYY-MM-DD')";
-        } else {
-          tableValue = "cast(" + tableValue + " as date)";
-        }
+      	tableValue = dbType.toDate(tableValue);
       } else if (type == PartitionFilterGenerator.FilterType.Integral) {
         tableValue = "CAST(" + tableColumn + " AS decimal(21,0))";
       }
@@ -799,7 +792,7 @@ class MetaStoreDirectSql {
       SqlFilterForPushdown result) throws MetaException {
     // Derby and Oracle do not interpret filters ANSI-properly in some cases and need a workaround.
     assert partitionKeys != null;
-    boolean dbHasJoinCastBug = DatabaseProduct.hasJoinOperationOrderBug(dbType);
+    boolean dbHasJoinCastBug = dbType.hasJoinOperationOrderBug();
     result.tableName = tableName;
     result.dbName = dbName;
     result.catName = catName;
@@ -1358,12 +1351,7 @@ class MetaStoreDirectSql {
         if (colType == FilterType.Integral) {
           tableValue = "cast(" + tableValue + " as decimal(21,0))";
         } else if (colType == FilterType.Date) {
-          if (dbType == DatabaseProduct.ORACLE) {
-            // Oracle requires special treatment... as usual.
-            tableValue = "TO_DATE(" + tableValue + ", 'YYYY-MM-DD')";
-          } else {
-            tableValue = "cast(" + tableValue + " as date)";
-          }
+        	tableValue = dbType.toDate(tableValue);
         }
 
         // Workaround for HIVE_DEFAULT_PARTITION - ignore it like JDO does, for now.
@@ -1384,12 +1372,7 @@ class MetaStoreDirectSql {
         tableValue += " then " + tableValue0 + " else null end)";
 
         if (valType == FilterType.Date) {
-          if (dbType == DatabaseProduct.ORACLE) {
-            // Oracle requires special treatment... as usual.
-            nodeValue0 = "TO_DATE(" + nodeValue0 + ", 'YYYY-MM-DD')";
-          } else {
-            nodeValue0 = "cast(" + nodeValue0 + " as date)";
-          }
+        	tableValue = dbType.toDate(tableValue);
         }
       }
       if (!node.isReverseOrder) {
@@ -2179,12 +2162,13 @@ class MetaStoreDirectSql {
    * effect will apply to the connection that is executing the queries otherwise.
    */
   public void prepareTxn() throws MetaException {
-    if (dbType != DatabaseProduct.MYSQL) {
+  	String stmt = dbType.getPrepareTxnStmt();
+    if (stmt == null) {
       return;
     }
     try {
       assert pm.currentTransaction().isActive(); // must be inside tx together with queries
-      executeNoResult("SET @@session.sql_mode=ANSI_QUOTES");
+      executeNoResult(stmt);
     } catch (SQLException sqlEx) {
       throw new MetaException("Error setting ansi quotes: " + sqlEx.getMessage());
     }

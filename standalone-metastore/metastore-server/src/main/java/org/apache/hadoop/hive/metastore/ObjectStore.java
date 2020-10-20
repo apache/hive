@@ -374,13 +374,10 @@ public class ObjectStore implements RawStore, Configurable {
     pm = PersistenceManagerProvider.getPersistenceManager();
     LOG.info("RawStore: {}, with PersistenceManager: {}" +
         " created in the thread with id: {}", this, pm, Thread.currentThread().getId());
-    try {
-      String productName = MetaStoreDirectSql.getProductName(pm);
-      sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(productName), conf);
-    } catch (SQLException e) {
-      LOG.error("error trying to figure out the database product", e);
-      throw new RuntimeException(e);
-    }
+
+    String productName = MetaStoreDirectSql.getProductName(pm);
+    sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(productName, conf), conf);
+
     isInitialized = pm != null;
     if (isInitialized) {
       dbType = determineDatabaseProduct();
@@ -394,12 +391,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private DatabaseProduct determineDatabaseProduct() {
-    try {
-      return DatabaseProduct.determineDatabaseProduct(getProductName(pm));
-    } catch (SQLException e) {
-      LOG.warn("Cannot determine database product; assuming OTHER", e);
-      return DatabaseProduct.OTHER;
-    }
+      return DatabaseProduct.determineDatabaseProduct(getProductName(pm), conf);
   }
 
   private static String getProductName(PersistenceManager pm) {
@@ -8779,7 +8771,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (oldStats != null) {
       StatObjectConverter.setFieldsIntoOldStats(mStatsObj, oldStats);
     } else {
-      if (sqlGenerator.getDbProduct().equals(DatabaseProduct.POSTGRES) && mStatsObj.getBitVector() == null) {
+      if (sqlGenerator.getDbProduct().isPOSTGRES() && mStatsObj.getBitVector() == null) {
         // workaround for DN bug in persisting nulls in pg bytea column
         // instead set empty bit vector with header.
         mStatsObj.setBitVector(new byte[] { 'H', 'L' });
@@ -8818,7 +8810,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (oldStats != null) {
       StatObjectConverter.setFieldsIntoOldStats(mStatsObj, oldStats);
     } else {
-      if (sqlGenerator.getDbProduct().equals(DatabaseProduct.POSTGRES) && mStatsObj.getBitVector() == null) {
+      if (sqlGenerator.getDbProduct().isPOSTGRES() && mStatsObj.getBitVector() == null) {
         // workaround for DN bug in persisting nulls in pg bytea column
         // instead set empty bit vector with header.
         mStatsObj.setBitVector(new byte[] { 'H', 'L' });
@@ -10509,11 +10501,12 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void prepareQuotes() throws SQLException {
-    if (dbType == DatabaseProduct.MYSQL) {
+    String s = dbType.getPrepareTxnStmt();
+    if (s != null) {
       assert pm.currentTransaction().isActive();
       JDOConnection jdoConn = pm.getDataStoreConnection();
       try (Statement statement = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
-        statement.execute("SET @@session.sql_mode=ANSI_QUOTES");
+        statement.execute(s);
       } finally {
         jdoConn.close();
       }
@@ -10521,7 +10514,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void lockNotificationSequenceForUpdate() throws MetaException {
-    if (sqlGenerator.getDbProduct() == DatabaseProduct.DERBY && directSql != null) {
+    if (sqlGenerator.getDbProduct().isDERBY() && directSql != null) {
       // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
       // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
       // only one row in the table, this shouldn't cause any performance degradation.
