@@ -31,7 +31,7 @@
     <hive.path.to.root>..</hive.path.to.root>
     <powermock.version>1.6.6</powermock.version>
     <reflections.version>0.9.10</reflections.version>
-    <atlas.client.version>2.0.0</atlas.client.version>
+    <atlas.version>2.1.0</atlas.version>
     <commons-configuration.version>1.10</commons-configuration.version>
   </properties>
 
@@ -42,7 +42,7 @@
     <dependency>
       <groupId>org.apache.atlas</groupId>
       <artifactId>atlas-client-v2</artifactId>
-      <version>${atlas.client.version}</version>
+      <version>${atlas.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -57,7 +57,7 @@
     <dependency>
       <groupId>org.apache.atlas</groupId>
       <artifactId>atlas-client-common</artifactId>
-      <version>${atlas.client.version}</version>
+      <version>${atlas.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
@@ -72,7 +72,7 @@
     <dependency>
       <groupId>org.apache.atlas</groupId>
       <artifactId>atlas-intg</artifactId>
-      <version>${atlas.client.version}</version>
+      <version>${atlas.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.slf4j</groupId>
