@@ -12322,7 +12322,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         Context rewriteCtx = new Context(conf);
         ctx.addSubContext(rewriteCtx);
         rewrittenTree = ParseUtils.parse(rewrittenQuery, rewriteCtx);
-        ctx.setTokenRewriteStream(rewriteCtx.getTokenRewriteStream());
         return new ParseResult(rewrittenTree, rewriteCtx.getTokenRewriteStream());
       } catch (ParseException | IOException e) {
         throw new SemanticException(e);
