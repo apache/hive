@@ -164,7 +164,7 @@ Stage-0
                                     Select Operator [SEL_115] (rows=143966864 width=119)
                                       Output:["_col0","_col1","_col2"]
                                       Filter Operator [FIL_113] (rows=143966864 width=119)
-                                        predicate:(ws_sold_date_sk is not null and ws_item_sk is not null and ws_item_sk BETWEEN DynamicValue(RS_28_item_i_item_sk_min) AND DynamicValue(RS_28_item_i_item_sk_max) and in_bloom_filter(ws_item_sk, DynamicValue(RS_28_item_i_item_sk_bloom_filter)))
+                                        predicate:(ws_sold_date_sk is not null and ws_item_sk is not null)
                                          Please refer to the previous TableScan [TS_0]
                                 <-Map 8 [SIMPLE_EDGE] vectorized
                                   SHUFFLE [RS_121]
