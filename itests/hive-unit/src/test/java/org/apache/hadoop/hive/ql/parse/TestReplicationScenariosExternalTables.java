@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.parse.TestReplicationScenarios;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe;
@@ -909,6 +910,12 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
       InjectableBehaviourObjectStore.resetAlterTableModifier();
     }
 
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path nonRecoverablePath = TestReplicationScenarios.getNonRecoverablePath(baseDumpDir, primaryDbName, primary.hiveConf);
+    if(nonRecoverablePath != null){
+      baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
+    }
+
     replica.load(replicatedDbName, primaryDbName)
             .run("use " + replicatedDbName)
             .run("show tables like 't1'")
@@ -1324,5 +1331,4 @@ public class TestReplicationScenariosExternalTables extends BaseReplicationAcros
       return File.separator + dbName.toLowerCase() + File.separator + FILE_NAME;
     }
   }
-
 }

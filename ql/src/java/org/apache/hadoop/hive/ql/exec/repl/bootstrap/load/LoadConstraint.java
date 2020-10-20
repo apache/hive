@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.parse.repl.load.message.AddNotNullConstraintHan
 import org.apache.hadoop.hive.ql.parse.repl.load.message.AddPrimaryKeyHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.AddUniqueConstraintHandler;
 import org.apache.hadoop.hive.ql.parse.repl.load.message.MessageHandler;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +72,8 @@ public class LoadConstraint {
   private final String dbNameToLoadIn;
   private final TaskTracker tracker;
   private final MessageDeserializer deserializer = JSONMessageEncoder.getInstance().getDeserializer();
+  String dumpDirectory;
+  private transient ReplicationMetricCollector metricCollector;
 
   public LoadConstraint(Context context, ConstraintEvent event, String dbNameToLoadIn,
       TaskTracker existingTracker) {
@@ -78,6 +81,17 @@ public class LoadConstraint {
     this.event = event;
     this.dbNameToLoadIn = dbNameToLoadIn;
     this.tracker = new TaskTracker(existingTracker);
+  }
+
+  public LoadConstraint(Context context, ConstraintEvent event, String dbNameToLoadIn,
+                        TaskTracker existingTracker, String dumpDirectory,
+                        ReplicationMetricCollector metricCollector) {
+    this.context = context;
+    this.event = event;
+    this.dbNameToLoadIn = dbNameToLoadIn;
+    this.tracker = new TaskTracker(existingTracker);
+    this.dumpDirectory = dumpDirectory;
+    this.metricCollector = metricCollector;
   }
 
   public TaskTracker tasks() throws IOException, SemanticException {
@@ -104,7 +118,7 @@ public class LoadConstraint {
         tasks.addAll(pkHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, fromPath.toString(), null, pkDumpMetaData, context.hiveConf,
-                context.hiveDb, context.nestedContext, LOG)));
+                context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)));
       }
 
       if (StringUtils.isNotEmpty(StringUtils.trim(uksString)) && !isUniqueConstraintsAlreadyLoaded(uksString)) {
@@ -115,7 +129,7 @@ public class LoadConstraint {
         tasks.addAll(ukHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, fromPath.toString(), null, ukDumpMetaData, context.hiveConf,
-                context.hiveDb, context.nestedContext, LOG)));
+                context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)));
       }
 
       if (StringUtils.isNotEmpty(StringUtils.trim(nnsString)) && !isNotNullConstraintsAlreadyLoaded(nnsString)) {
@@ -126,7 +140,7 @@ public class LoadConstraint {
         tasks.addAll(nnHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, fromPath.toString(), null, nnDumpMetaData, context.hiveConf,
-                context.hiveDb, context.nestedContext, LOG)));
+                context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)));
       }
 
       if (StringUtils.isNotEmpty(StringUtils.trim(dksString)) && !isDefaultConstraintsAlreadyLoaded(dksString)) {
@@ -137,7 +151,7 @@ public class LoadConstraint {
         tasks.addAll(dkHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, fromPath.toString(), null, dkDumpMetaData, context.hiveConf,
-                context.hiveDb, context.nestedContext, LOG)));
+                context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)));
       }
 
       if (StringUtils.isNotEmpty(StringUtils.trim(cksString))  && !isCheckConstraintsAlreadyLoaded(cksString)) {
@@ -148,7 +162,7 @@ public class LoadConstraint {
         tasks.addAll(ckHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, fromPath.toString(), null, dkDumpMetaData, context.hiveConf,
-                context.hiveDb, context.nestedContext, LOG)));
+                context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)));
       }
 
       if (StringUtils.isNotEmpty(StringUtils.trim(fksString)) && !isForeignKeysAlreadyLoaded(fksString)) {
@@ -159,7 +173,7 @@ public class LoadConstraint {
         tasks.addAll(fkHandler.handle(
             new MessageHandler.Context(
                 dbNameToLoadIn, fromPath.toString(), null, fkDumpMetaData, context.hiveConf,
-                context.hiveDb, context.nestedContext, LOG)));
+                context.hiveDb, context.nestedContext, LOG, dumpDirectory, metricCollector)));
       }
 
       tasks.forEach(tracker::addTask);

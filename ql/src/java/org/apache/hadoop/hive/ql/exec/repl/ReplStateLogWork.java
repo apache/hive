@@ -48,6 +48,7 @@ public class ReplStateLogWork implements Serializable {
   private TableType tableType;
   private String functionName;
   private String lastReplId;
+  String dumpDirectory;
   private final transient ReplicationMetricCollector metricCollector;
 
   private enum LOG_TYPE {
@@ -67,12 +68,32 @@ public class ReplStateLogWork implements Serializable {
   }
 
   public ReplStateLogWork(ReplLogger replLogger, ReplicationMetricCollector metricCollector,
+                          String eventId, String eventType, String dumpDirectory) {
+    this.logType = LOG_TYPE.EVENT;
+    this.replLogger = replLogger;
+    this.eventId = eventId;
+    this.eventType = eventType;
+    this.metricCollector = metricCollector;
+    this.dumpDirectory = dumpDirectory;
+  }
+
+  public ReplStateLogWork(ReplLogger replLogger, ReplicationMetricCollector metricCollector,
                           String tableName, TableType tableType) {
     this.logType = LOG_TYPE.TABLE;
     this.replLogger = replLogger;
     this.tableName = tableName;
     this.tableType = tableType;
     this.metricCollector = metricCollector;
+  }
+
+  public ReplStateLogWork(ReplLogger replLogger, ReplicationMetricCollector metricCollector,
+                          String tableName, TableType tableType, String dumpDirectory) {
+    this.logType = LOG_TYPE.TABLE;
+    this.replLogger = replLogger;
+    this.tableName = tableName;
+    this.tableType = tableType;
+    this.metricCollector = metricCollector;
+    this.dumpDirectory = dumpDirectory;
   }
 
   public ReplStateLogWork(ReplLogger replLogger, String functionName, ReplicationMetricCollector metricCollector) {
@@ -82,12 +103,33 @@ public class ReplStateLogWork implements Serializable {
     this.metricCollector = metricCollector;
   }
 
+  public ReplStateLogWork(ReplLogger replLogger, String functionName, String dumpDirectory, ReplicationMetricCollector metricCollector) {
+    this.logType = LOG_TYPE.FUNCTION;
+    this.replLogger = replLogger;
+    this.functionName = functionName;
+    this.dumpDirectory = dumpDirectory;
+    this.metricCollector = metricCollector;
+  }
+
   public ReplStateLogWork(ReplLogger replLogger, Map<String, String> dbProps, ReplicationMetricCollector collector) {
     this.logType = LOG_TYPE.END;
     this.replLogger = replLogger;
     this.lastReplId = ReplicationSpec.getLastReplicatedStateFromParameters(dbProps);
     this.metricCollector = collector;
   }
+
+  public ReplStateLogWork(ReplLogger replLogger, Map<String, String> dbProps, String dumpDirectory, ReplicationMetricCollector collector) {
+    this.logType = LOG_TYPE.END;
+    this.replLogger = replLogger;
+    this.lastReplId = ReplicationSpec.getLastReplicatedStateFromParameters(dbProps);
+    this.dumpDirectory = dumpDirectory;
+    this.metricCollector = collector;
+  }
+
+
+  public ReplicationMetricCollector getMetricCollector() { return metricCollector; }
+
+  public String getDumpDirectory() { return dumpDirectory; }
 
   public void replStateLog() throws SemanticException {
     switch (logType) {

@@ -1571,6 +1571,14 @@ public class TestReplicationScenariosAcrossInstances extends BaseReplicationAcro
     // Retry with same dump with which it was already loaded should resume the bootstrap load. Make sure that table t1,
     // is loaded before t2. So that scope is set to table in first iteration for table t1. In the next iteration, it
     // loads only remaining partitions of t2, so that the table tracker has no tasks.
+
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path nonRecoverablePath = getNonRecoverablePath(baseDumpDir, primaryDbName);
+    if(nonRecoverablePath != null){
+      baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
+    }
+
+
     List<String> withConfigs = Arrays.asList("'hive.in.repl.test.files.sorted'='true'");
     replica.load(replicatedDbName, primaryDbName, withConfigs);
 
