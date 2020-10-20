@@ -625,7 +625,9 @@ public enum ErrorMsg {
   REPL_INVALID_INTERNAL_CONFIG_FOR_SERVICE(40009, "Invalid internal config error : {0} for {1} service.", true),
   REPL_RETRY_EXHAUSTED(40010, "Retry exhausted for retryable error code {0}.", true),
   REPL_FAILED_WITH_NON_RECOVERABLE_ERROR(40011, "Replication failed with non recoverable error. Needs manual intervention"),
-  REPL_INVALID_ARGUMENTS(40012, "Invalid arguments error : {0}.", true)
+  REPL_INVALID_ARGUMENTS(40012, "Invalid arguments error : {0}.", true),
+  REPL_INVALID_ALTER_TABLE(40013, "{0}Unable to alter table{1}", true),
+  REPL_PERMISSION_DENIED(40014, "{0}org.apache.hadoop.security.AccessControlException{1}", true)
   ;
 
   private int errorCode;
@@ -645,7 +647,7 @@ public enum ErrorMsg {
     for (ErrorMsg errorMsg : values()) {
       if (errorMsg.format != null) {
         String pattern = errorMsg.mesg.replaceAll("\\{[0-9]+\\}", ".*");
-        formatToErrorMsgMap.put(Pattern.compile("^" + pattern + "$"), errorMsg);
+        formatToErrorMsgMap.put(Pattern.compile("^" + pattern + "$", Pattern.DOTALL), errorMsg);
       } else {
         mesgToErrorMsgMap.put(errorMsg.getMsg().trim(), errorMsg);
         int length = errorMsg.getMsg().trim().length();

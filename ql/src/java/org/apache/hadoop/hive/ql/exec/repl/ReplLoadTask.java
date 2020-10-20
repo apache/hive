@@ -64,6 +64,7 @@ import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.ReplLogger;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.apache.hadoop.hive.ql.parse.repl.load.MetaData;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 
@@ -84,6 +85,7 @@ import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_AUTHORIZ
 public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private final static int ZERO_TASKS = 0;
+  private final String STAGE_NAME = "REPL_LOAD";
 
   @Override
   public String getName() {
@@ -128,29 +130,25 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       }
     } catch (RuntimeException e) {
       LOG.error("replication failed with run time exception", e);
+      setException(e);
       try {
-        work.getMetricCollector().reportEnd(Status.FAILED);
-      } catch (SemanticException ex) {
-        LOG.error("Failed to collect Metrics ", ex);
+        ReplUtils.handleException(true, e, new Path(work.getDumpDirectory()).getParent().toString(),
+                work.getMetricCollector(), STAGE_NAME, conf);
+      } catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
       }
       throw e;
     } catch (Exception e) {
-      LOG.error("replication failed", e);
       setException(e);
       int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
       try {
-        if (errorCode > 40000) {
-          Path nonRecoverableMarker = new Path(new Path(work.dumpDirectory).getParent(),
-            ReplAck.NON_RECOVERABLE_MARKER.toString());
-          Utils.writeStackTrace(e, nonRecoverableMarker, conf);
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED_ADMIN, nonRecoverableMarker.toString());
-        } else {
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
-        }
-      } catch (Exception ex) {
-        LOG.error("Failed to collect Metrics ", ex);
+        return ReplUtils.handleException(true, e, new Path(work.getDumpDirectory()).getParent().toString(),
+                work.getMetricCollector(), STAGE_NAME, conf);
       }
-      return errorCode;
+      catch (Exception ex) {
+        LOG.error("Failed to collect replication metrics: ", ex);
+        return errorCode;
+      }
     }
   }
 
@@ -230,7 +228,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       switch (next.eventType()) {
       case Database:
         DatabaseEvent dbEvent = (DatabaseEvent) next;
-        dbTracker = new LoadDatabase(loadContext, dbEvent, work.dbNameToLoadIn, loadTaskTracker).tasks();
+        dbTracker = new LoadDatabase(loadContext, dbEvent, work.dbNameToLoadIn, loadTaskTracker,
+                work.getMetricCollector()).tasks();
         loadTaskTracker.update(dbTracker);
         if (work.hasDbState()) {
           loadTaskTracker.update(updateDatabaseLastReplID(maxTasks, loadContext, scope));
@@ -257,7 +256,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         FSTableEvent tableEvent = (FSTableEvent) next;
         if (TableType.VIRTUAL_VIEW.name().equals(tableEvent.getMetaData().getTable().getTableType())) {
           tableTracker = new TaskTracker(1);
-          tableTracker.addTask(createViewTask(tableEvent.getMetaData(), work.dbNameToLoadIn, conf));
+          tableTracker.addTask(createViewTask(tableEvent.getMetaData(), work.dbNameToLoadIn, conf,
+                  (new Path(work.dumpDirectory).getParent()).toString(), work.getMetricCollector()));
         } else {
           LoadTable loadTable = new LoadTable(tableEvent, loadContext, iterator.replLogger(), tableContext,
               loadTaskTracker, work.getMetricCollector());
@@ -388,7 +388,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
                                               TaskTracker dbTracker,
                                               Scope scope) throws IOException, SemanticException {
     LoadConstraint loadConstraint =
-        new LoadConstraint(loadContext, (ConstraintEvent) next, work.dbNameToLoadIn, dbTracker);
+        new LoadConstraint(loadContext, (ConstraintEvent) next, work.dbNameToLoadIn, dbTracker,
+                (new Path(work.dumpDirectory)).getParent().toString(), work.getMetricCollector());
     TaskTracker constraintTracker = loadConstraint.tasks();
     scope.rootTasks.addAll(constraintTracker.tasks());
     constraintTracker.debugLog("constraints");
@@ -398,7 +399,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
   private TaskTracker addLoadFunctionTasks(Context loadContext, BootstrapEventsIterator iterator, BootstrapEvent next,
                                     TaskTracker dbTracker, Scope scope) throws IOException, SemanticException {
     LoadFunction loadFunction = new LoadFunction(loadContext, iterator.replLogger(),
-        (FunctionEvent) next, work.dbNameToLoadIn, dbTracker, work.getMetricCollector());
+            (FunctionEvent) next, work.dbNameToLoadIn, dbTracker, (new Path(work.dumpDirectory)).getParent().toString(),
+            work.getMetricCollector());
     TaskTracker functionsTracker = loadFunction.tasks();
     if (!scope.database) {
       scope.rootTasks.addAll(functionsTracker.tasks());
@@ -430,6 +432,31 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
     desc.setOwnerName(table.getOwner());
 
     return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), desc), conf);
+  }
+
+  public static Task<?> createViewTask(MetaData metaData, String dbNameToLoadIn, HiveConf conf,
+                                       String dumpDirectory, ReplicationMetricCollector metricCollector)
+          throws SemanticException {
+    Table table = new Table(metaData.getTable());
+    String dbName = dbNameToLoadIn == null ? table.getDbName() : dbNameToLoadIn;
+    TableName tableName = HiveTableName.ofNullable(table.getTableName(), dbName);
+    String dbDotView = tableName.getNotEmptyDbTable();
+
+    String viewOriginalText = table.getViewOriginalText();
+    String viewExpandedText = table.getViewExpandedText();
+    if (!dbName.equals(table.getDbName())) {
+      // TODO: If the DB name doesn't match with the metadata from dump, then need to rewrite the original and expanded
+      // texts using new DB name. Currently it refers to the source database name.
+    }
+
+    CreateViewDesc desc = new CreateViewDesc(dbDotView, table.getAllCols(), null, table.getParameters(),
+            table.getPartColNames(), false, false, viewOriginalText, viewExpandedText, table.getPartCols());
+
+    desc.setReplicationSpec(metaData.getReplicationSpec());
+    desc.setOwnerName(table.getOwner());
+
+    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), desc, true,
+            dumpDirectory, metricCollector), conf);
   }
 
   /**
@@ -467,7 +494,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
         || (!work.isIncrementalLoad() && !work.hasBootstrapLoadTasks())) {
       //All repl load tasks are executed and status is 0, create the task to add the acknowledgement
       AckWork replLoadAckWork = new AckWork(
-          new Path(work.dumpDirectory, LOAD_ACKNOWLEDGEMENT.toString()));
+              new Path(work.dumpDirectory, LOAD_ACKNOWLEDGEMENT.toString()), work.getMetricCollector());
       Task<AckWork> loadAckWorkTask = TaskFactory.get(replLoadAckWork, conf);
       if (childTasks.isEmpty()) {
         childTasks.add(loadAckWorkTask);
@@ -488,7 +515,9 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
       Database dbInMetadata = work.databaseEvent(context.hiveConf).dbInMetadata(work.dbNameToLoadIn);
       dbProps = dbInMetadata.getParameters();
     }
-    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbProps, work.getMetricCollector());
+    ReplStateLogWork replLogWork = new ReplStateLogWork(replLogger, dbProps,
+                                                        (new Path(work.dumpDirectory).getParent()).toString(),
+                                                        work.getMetricCollector());
     Task<ReplStateLogWork> replLogTask = TaskFactory.get(replLogWork, conf);
     if (scope.rootTasks.isEmpty()) {
       scope.rootTasks.add(replLogTask);
@@ -514,7 +543,7 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
    */
     TaskTracker taskTracker =
         new AlterDatabase(context, work.databaseEvent(context.hiveConf), work.dbNameToLoadIn,
-            new TaskTracker(maxTasks)).tasks();
+            new TaskTracker(maxTasks), work.getMetricCollector()).tasks();
 
     AddDependencyToLeaves function = new AddDependencyToLeaves(taskTracker.tasks());
     DAGTraversal.traverse(scope.rootTasks, function);
@@ -604,7 +633,8 @@ public class ReplLoadTask extends Task<ReplLoadWork> implements Serializable {
             new AlterDatabaseSetPropertiesDesc(dbName, mapProp,
                 new ReplicationSpec(lastEventid, lastEventid));
         Task<?> updateReplIdTask =
-            TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc), conf);
+            TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc, true,
+                    (new Path(work.dumpDirectory).getParent()).toString(), work.getMetricCollector()), conf);
         DAGTraversal.traverse(childTasks, new AddDependencyToLeaves(updateReplIdTask));
         work.setLastReplIDUpdated(true);
         LOG.debug("Added task to set last repl id of db " + dbName + " to " + lastEventid);
