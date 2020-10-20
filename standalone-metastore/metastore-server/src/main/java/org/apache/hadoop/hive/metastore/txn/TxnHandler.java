@@ -256,7 +256,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "\"TC_TXNID\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_OPERATION_TYPE\", \"TC_WRITEID\")" +
       " VALUES (?, ?, ?, ?, ?, ?)";
   private static final String TXN_COMPONENTS_DP_DELETE_QUERY = "DELETE FROM \"TXN_COMPONENTS\" " +
-      "WHERE \"TC_TXNID\" = ? AND \"TC_PARTITION\" IS NULL";
+      "WHERE \"TC_TXNID\" = ? AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ? AND \"TC_PARTITION\" IS NULL";
   private static final String INCREMENT_NEXT_LOCK_ID_QUERY = "UPDATE \"NEXT_LOCK_ID\" SET \"NL_NEXT\" = %s";
   private static final String UPDATE_HIVE_LOCKS_EXT_ID_QUERY = "UPDATE \"HIVE_LOCKS\" SET \"HL_LOCK_EXT_ID\" = %s " +
       "WHERE \"HL_LOCK_EXT_ID\" = %s";
@@ -3555,6 +3555,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         try (PreparedStatement pstmt = dbConn.prepareStatement(TXN_COMPONENTS_DP_DELETE_QUERY)) {
           pstmt.setLong(1, rqst.getTxnid());
+          pstmt.setString(2, normalizeCase(rqst.getDbname()));
+          pstmt.setString(3, normalizeCase(rqst.getTablename()));
           pstmt.execute();
         }
         LOG.debug("Going to commit");
