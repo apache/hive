@@ -282,8 +282,8 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
-          "\"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\" FROM \"COMPACTION_QUEUE\" " +
-          "WHERE \"CQ_STATE\" = '" + READY_FOR_CLEANING + "'";
+            "\"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\" FROM \"COMPACTION_QUEUE\" " +
+            "WHERE \"CQ_STATE\" = '" + READY_FOR_CLEANING + "'";
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
 
@@ -405,12 +405,9 @@ class CompactionTxnHandler extends TxnHandler {
          */
         s = "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN (" +
             "   SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED + ") " +
-            "AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ?";
+            "AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ? AND \"TC_PARTITION\" = ?";
         if (info.highestWriteId != 0) {
           s += " AND \"TC_WRITEID\" <= ?";
-        }
-        if (info.partName != null) {
-          s += " AND \"TC_PARTITION\" = ?";
         }
         LOG.debug("Going to execute update <" + s + ">");
         pStmt = dbConn.prepareStatement(s);
@@ -418,11 +415,10 @@ class CompactionTxnHandler extends TxnHandler {
 
         pStmt.setString(paramCount++, info.dbname);
         pStmt.setString(paramCount++, info.tableName);
+        pStmt.setString(paramCount++, info.partName);
+
         if (info.highestWriteId != 0) {
-          pStmt.setLong(paramCount++, info.highestWriteId);
-        }
-        if (info.partName != null) {
-          pStmt.setString(paramCount, info.partName);
+          pStmt.setLong(paramCount, info.highestWriteId);
         }
         int rc = pStmt.executeUpdate();
         LOG.debug("Removed " + rc + " records from txn_components");
