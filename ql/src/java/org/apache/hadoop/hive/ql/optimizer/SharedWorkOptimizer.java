@@ -335,7 +335,7 @@ public class SharedWorkOptimizer extends Transform {
     /**
      * Fuses two filtered table scans into a single one.
      *
-     * Dynamic filter subtree is kept on both sides - but the table is onlt scanned once.
+     * Dynamic filter subtree is kept on both sides - but the table is only scanned once.
      */
     DPPUnion;
   }
