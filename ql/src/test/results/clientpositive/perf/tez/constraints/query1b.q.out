@@ -176,7 +176,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: store_returns
-                  filterExpr: (sr_store_sk BETWEEN DynamicValue(RS_40_store_s_store_sk_min) AND DynamicValue(RS_40_store_s_store_sk_max) and in_bloom_filter(sr_store_sk, DynamicValue(RS_40_store_s_store_sk_bloom_filter)) and ((sr_customer_sk is not null and sr_store_sk is not null and sr_returned_date_sk is not null) or (sr_store_sk is not null and sr_returned_date_sk is not null))) (type: boolean)
+                  filterExpr: (((sr_customer_sk is not null and sr_store_sk is not null and sr_returned_date_sk is not null) or (sr_store_sk is not null and sr_returned_date_sk is not null)) and sr_store_sk BETWEEN DynamicValue(RS_40_store_s_store_sk_min) AND DynamicValue(RS_40_store_s_store_sk_max) and in_bloom_filter(sr_store_sk, DynamicValue(RS_40_store_s_store_sk_bloom_filter))) (type: boolean)
                   Statistics: Num rows: 57591150 Data size: 6891360020 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (sr_customer_sk is not null and sr_store_sk is not null and sr_returned_date_sk is not null and sr_store_sk BETWEEN DynamicValue(RS_40_store_s_store_sk_min) AND DynamicValue(RS_40_store_s_store_sk_max) and in_bloom_filter(sr_store_sk, DynamicValue(RS_40_store_s_store_sk_bloom_filter))) (type: boolean)
@@ -210,7 +210,7 @@ STAGE PLANS:
                             Statistics: Num rows: 16855704 Data size: 2008197920 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col2 (type: decimal(17,2))
                   Filter Operator
-                    predicate: (sr_store_sk is not null and sr_returned_date_sk is not null) (type: boolean)
+                    predicate: (sr_store_sk is not null and sr_returned_date_sk is not null and sr_store_sk BETWEEN DynamicValue(RS_40_store_s_store_sk_min) AND DynamicValue(RS_40_store_s_store_sk_max) and in_bloom_filter(sr_store_sk, DynamicValue(RS_40_store_s_store_sk_bloom_filter))) (type: boolean)
                     Statistics: Num rows: 53634860 Data size: 6417950124 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: sr_returned_date_sk (type: int), sr_customer_sk (type: int), sr_store_sk (type: int), sr_fee (type: decimal(7,2))

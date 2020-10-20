@@ -60,8 +60,4 @@ public class SemiJoinBranchInfo {
       this.shouldRemove = shouldRemove;
     }
   }
-
-  public void setTableScan(TableScanOperator newTs) {
-    ts = newTs;
-  }
 }
