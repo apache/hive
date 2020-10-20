@@ -2070,8 +2070,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
           mdProvider.getMetadataProvider(), executorProvider);
       markEvent("Calcite - Post-join order optimization");
 
-      // XXX: CDPD-18190, this logging should be after the generateEnginePlan
-      // code below.
       if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
         LOG.debug("CBO Planning details:\n");
         LOG.debug("Original Plan:\n" + RelOptUtil.toString(calciteGenPlan));
@@ -2094,6 +2092,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
               executeProgram(calciteOptimizedPlan, hepProgram, mdProvider.getMetadataProvider(),
                   executorProvider, null, true, null);
           perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Impala transformation rules");
+
+          if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+            LOG.debug("Impala plan:\n"
+                + RelOptUtil.toString(calciteOptimizedPlan));
+          }
         default:
           // Nothing to do for other engines for the time being
         }
