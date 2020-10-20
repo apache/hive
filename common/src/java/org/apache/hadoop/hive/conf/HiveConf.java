@@ -3570,6 +3570,9 @@ public class HiveConf extends Configuration {
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
     HIVE_SERVER2_ZOOKEEPER_PUBLISH_CONFIGS("hive.server2.zookeeper.publish.configs", true,
         "Whether we should publish HiveServer2's configs to ZooKeeper."),
+    HIVE_SERVER2_OOM_HOOKS("hive.server2.oom.hooks", null,
+        "A comma separated list of hooks which implement Runnable. Will be run in the order specified \n" +
+        "before HiveServer2 stops due to OutOfMemoryError."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
@@ -3977,6 +3980,10 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore location."),
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "",
         "SSL certificate keystore password."),
+    HIVE_SERVER2_SSL_KEYSTORE_TYPE("hive.server2.keystore.type", "",
+            "SSL certificate keystore type."),
+    HIVE_SERVER2_SSL_KEYMANAGERFACTORY_ALGORITHM("hive.server2.keymanagerfactory.algorithm", "",
+            "SSL certificate keystore algorithm."),
     HIVE_SERVER2_BUILTIN_UDF_WHITELIST("hive.server2.builtin.udf.whitelist", "",
         "Comma separated list of builtin udf names allowed in queries.\n" +
         "An empty whitelist allows all builtin udfs to be executed. " +

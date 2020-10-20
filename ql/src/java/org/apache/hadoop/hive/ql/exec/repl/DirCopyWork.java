@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.repl.util.StringConvertibleObject;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import java.io.Serializable;
 
@@ -33,8 +34,12 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
   private static final long serialVersionUID = 1L;
   private Path fullyQualifiedSourcePath;
   private Path fullyQualifiedTargetPath;
+  private String dumpDirectory;
+  private transient ReplicationMetricCollector metricCollector;
 
-  public DirCopyWork() {
+  public DirCopyWork(ReplicationMetricCollector metricCollector, String dumpDirectory) {
+    this.metricCollector = metricCollector;
+    this.dumpDirectory = dumpDirectory;
   }
 
   public DirCopyWork(Path fullyQualifiedSourcePath, Path fullyQualifiedTargetPath) {
@@ -55,6 +60,14 @@ public class DirCopyWork implements Serializable, StringConvertibleObject {
 
   public Path getFullyQualifiedTargetPath() {
     return fullyQualifiedTargetPath;
+  }
+
+  public ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
+  }
+
+  public String getDumpDirectory() {
+    return dumpDirectory;
   }
 
   @Override

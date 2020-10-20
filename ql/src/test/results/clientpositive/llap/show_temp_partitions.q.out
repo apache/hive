@@ -1,0 +1,138 @@
+PREHOOK: query: CREATE TEMPORARY TABLE temptable (key1 INT, value1 STRING) PARTITIONED BY (ds STRING, hr STRING)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@temptable
+POSTHOOK: query: CREATE TEMPORARY TABLE temptable (key1 INT, value1 STRING) PARTITIONED BY (ds STRING, hr STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@temptable
+PREHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-08', hr='3')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@temptable
+POSTHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-08', hr='3')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@temptable
+POSTHOOK: Output: default@temptable@ds=2008-04-08/hr=3
+PREHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-08', hr='4')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@temptable
+POSTHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-08', hr='4')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@temptable
+POSTHOOK: Output: default@temptable@ds=2008-04-08/hr=4
+PREHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-08', hr='5')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@temptable
+POSTHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-08', hr='5')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@temptable
+POSTHOOK: Output: default@temptable@ds=2008-04-08/hr=5
+PREHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-09', hr='5')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@temptable
+POSTHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-09', hr='5')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@temptable
+POSTHOOK: Output: default@temptable@ds=2008-04-09/hr=5
+PREHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-09', hr='6')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@temptable
+POSTHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-09', hr='6')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@temptable
+POSTHOOK: Output: default@temptable@ds=2008-04-09/hr=6
+PREHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-10', hr='5')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@temptable
+POSTHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-10', hr='5')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@temptable
+POSTHOOK: Output: default@temptable@ds=2008-04-10/hr=5
+PREHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-11', hr='5')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Output: default@temptable
+POSTHOOK: query: ALTER TABLE temptable ADD PARTITION (ds='2008-04-11', hr='5')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Output: default@temptable
+POSTHOOK: Output: default@temptable@ds=2008-04-11/hr=5
+PREHOOK: query: SHOW PARTITIONS temptable LIMIT 2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@temptable
+POSTHOOK: query: SHOW PARTITIONS temptable LIMIT 2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@temptable
+ds=2008-04-08/hr=3
+ds=2008-04-08/hr=4
+PREHOOK: query: SHOW PARTITIONS temptable PARTITION(ds='2008-04-08') LIMIT 2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@temptable
+POSTHOOK: query: SHOW PARTITIONS temptable PARTITION(ds='2008-04-08') LIMIT 2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@temptable
+ds=2008-04-08/hr=3
+ds=2008-04-08/hr=4
+PREHOOK: query: SHOW PARTITIONS temptable ORDER BY ds DESC, hr DESC
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@temptable
+POSTHOOK: query: SHOW PARTITIONS temptable ORDER BY ds DESC, hr DESC
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@temptable
+ds=2008-04-11/hr=5
+ds=2008-04-10/hr=5
+ds=2008-04-09/hr=6
+ds=2008-04-09/hr=5
+ds=2008-04-08/hr=5
+ds=2008-04-08/hr=4
+ds=2008-04-08/hr=3
+PREHOOK: query: SHOW PARTITIONS temptable ORDER BY ds DESC, hr DESC LIMIT 2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@temptable
+POSTHOOK: query: SHOW PARTITIONS temptable ORDER BY ds DESC, hr DESC LIMIT 2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@temptable
+ds=2008-04-11/hr=5
+ds=2008-04-10/hr=5
+PREHOOK: query: SHOW PARTITIONS temptable WHERE ds > '2008-04-08' AND hr = '5'
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@temptable
+POSTHOOK: query: SHOW PARTITIONS temptable WHERE ds > '2008-04-08' AND hr = '5'
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@temptable
+ds=2008-04-09/hr=5
+ds=2008-04-10/hr=5
+ds=2008-04-11/hr=5
+PREHOOK: query: SHOW PARTITIONS temptable WHERE ds > '2008-04-08' AND hr = '5' ORDER BY ds DESC
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@temptable
+POSTHOOK: query: SHOW PARTITIONS temptable WHERE ds > '2008-04-08' AND hr = '5' ORDER BY ds DESC
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@temptable
+ds=2008-04-11/hr=5
+ds=2008-04-10/hr=5
+ds=2008-04-09/hr=5
+PREHOOK: query: SHOW PARTITIONS temptable WHERE ds > '2008-04-08' AND hr = '5' ORDER BY ds DESC LIMIT 2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@temptable
+POSTHOOK: query: SHOW PARTITIONS temptable WHERE ds > '2008-04-08' AND hr = '5' ORDER BY ds DESC LIMIT 2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@temptable
+ds=2008-04-11/hr=5
+ds=2008-04-10/hr=5
+PREHOOK: query: SHOW PARTITIONS temptable WHERE ds > '2008-04-08' AND hr >= '5' ORDER BY ds DESC, hr ASC
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@temptable
+POSTHOOK: query: SHOW PARTITIONS temptable WHERE ds > '2008-04-08' AND hr >= '5' ORDER BY ds DESC, hr ASC
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@temptable
+ds=2008-04-11/hr=5
+ds=2008-04-10/hr=5
+ds=2008-04-09/hr=5
+ds=2008-04-09/hr=6
+PREHOOK: query: SHOW PARTITIONS temptable WHERE ds > '2008-04-08' AND hr >= '5' ORDER BY ds DESC, hr ASC LIMIT 2
+PREHOOK: type: SHOWPARTITIONS
+PREHOOK: Input: default@temptable
+POSTHOOK: query: SHOW PARTITIONS temptable WHERE ds > '2008-04-08' AND hr >= '5' ORDER BY ds DESC, hr ASC LIMIT 2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Input: default@temptable
+ds=2008-04-11/hr=5
+ds=2008-04-10/hr=5
