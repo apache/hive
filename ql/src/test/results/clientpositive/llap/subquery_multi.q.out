@@ -1840,7 +1840,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  filterExpr: ((p_type is not null and p_name is not null) or ((p_type is not null and p_brand is not null) or (p_type is not null and p_brand is not null and p_container is not null))) (type: boolean)
+                  filterExpr: ((p_type is not null and p_name is not null) or (p_type is not null and p_brand is not null) or (p_type is not null and p_brand is not null and p_container is not null)) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_type is not null and p_name is not null) (type: boolean)
@@ -2350,7 +2350,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  filterExpr: ((p_type is not null and p_container is not null and p_name is not null) or ((p_type is not null and p_brand is not null) or (p_type is not null and p_brand is not null and p_container is not null))) (type: boolean)
+                  filterExpr: ((p_type is not null and p_container is not null and p_name is not null) or (p_type is not null and p_brand is not null) or (p_type is not null and p_brand is not null and p_container is not null)) (type: boolean)
                   Statistics: Num rows: 26 Data size: 8242 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_type is not null and p_container is not null and p_name is not null) (type: boolean)
@@ -2640,7 +2640,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: part
-                  filterExpr: ((p_type is not null and p_name is not null) or (p_size is not null or (p_size is not null and p_type is not null))) (type: boolean)
+                  filterExpr: ((p_type is not null and p_name is not null) or p_size is not null or (p_size is not null and p_type is not null)) (type: boolean)
                   Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (p_type is not null and p_name is not null) (type: boolean)

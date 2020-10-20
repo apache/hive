@@ -4264,11 +4264,11 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 11 <- Map 10 (CUSTOM_SIMPLE_EDGE), Union 9 (CONTAINS)
+        Reducer 10 <- Map 9 (CUSTOM_SIMPLE_EDGE), Union 8 (CONTAINS)
         Reducer 2 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 4 <- Union 3 (SIMPLE_EDGE), Union 9 (SIMPLE_EDGE)
-        Reducer 6 <- Map 5 (SIMPLE_EDGE), Union 3 (CONTAINS)
-        Reducer 8 <- Map 7 (CUSTOM_SIMPLE_EDGE), Union 9 (CONTAINS)
+        Reducer 4 <- Union 3 (SIMPLE_EDGE), Union 8 (SIMPLE_EDGE)
+        Reducer 5 <- Map 1 (SIMPLE_EDGE), Union 3 (CONTAINS)
+        Reducer 7 <- Map 6 (CUSTOM_SIMPLE_EDGE), Union 8 (CONTAINS)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -4277,63 +4277,37 @@ STAGE PLANS:
                   alias: srcpart
                   filterExpr: ds is not null (type: boolean)
                   Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    keys: ds (type: string)
-                    minReductionHashAggr: 0.99
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
-                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-            Execution mode: llap
-            LLAP IO: all inputs
-        Map 10 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: ds (type: string)
-                    outputColumnNames: ds
-                    Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ds is not null (type: boolean)
                     Group By Operator
-                      aggregations: min(ds)
+                      keys: ds (type: string)
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0
-                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        null sort order: 
-                        sort order: 
-                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: string)
-            Execution mode: llap
-            LLAP IO: all inputs
-        Map 5 
-            Map Operator Tree:
-                TableScan
-                  alias: srcpart
-                  filterExpr: ds is not null (type: boolean)
-                  Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
-                  Group By Operator
-                    keys: ds (type: string)
-                    minReductionHashAggr: 0.99
-                    mode: hash
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
-                    Reduce Output Operator
-                      key expressions: _col0 (type: string)
-                      null sort order: z
-                      sort order: +
-                      Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    predicate: ds is not null (type: boolean)
+                    Group By Operator
+                      keys: ds (type: string)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 2 Data size: 368 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
             LLAP IO: all inputs
-        Map 7 
+        Map 6 
             Map Operator Tree:
                 TableScan
                   alias: srcpart
@@ -4355,7 +4329,29 @@ STAGE PLANS:
                         value expressions: _col0 (type: string)
             Execution mode: llap
             LLAP IO: all inputs
-        Reducer 11 
+        Map 9 
+            Map Operator Tree:
+                TableScan
+                  alias: srcpart
+                  Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: ds (type: string)
+                    outputColumnNames: ds
+                    Statistics: Num rows: 2000 Data size: 389248 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: min(ds)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        null sort order: 
+                        sort order: 
+                        Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col0 (type: string)
+            Execution mode: llap
+            LLAP IO: all inputs
+        Reducer 10 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -4409,7 +4405,7 @@ STAGE PLANS:
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                          Target Vertex: Map 5
+                          Target Vertex: Map 1
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -4442,7 +4438,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-        Reducer 6 
+        Reducer 5 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -4456,7 +4452,7 @@ STAGE PLANS:
                   sort order: +
                   Map-reduce partition columns: _col0 (type: string)
                   Statistics: Num rows: 4 Data size: 736 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 8 
+        Reducer 7 
             Execution mode: llap
             Reduce Operator Tree:
               Group By Operator
@@ -4510,11 +4506,11 @@ STAGE PLANS:
                           Target Input: srcpart
                           Partition key expr: ds
                           Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
-                          Target Vertex: Map 5
+                          Target Vertex: Map 1
         Union 3 
             Vertex: Union 3
-        Union 9 
-            Vertex: Union 9
+        Union 8 
+            Vertex: Union 8
 
   Stage: Stage-0
     Fetch Operator
