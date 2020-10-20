@@ -3307,7 +3307,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: li
-                  filterExpr: ((l_linenumber = 1) or ((l_shipmode = 'AIR') or ((l_shipmode = 'AIR') and l_orderkey is null))) (type: boolean)
+                  filterExpr: ((l_linenumber = 1) or (l_shipmode = 'AIR') or ((l_shipmode = 'AIR') and l_orderkey is null)) (type: boolean)
                   Statistics: Num rows: 100 Data size: 1200 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (l_linenumber = 1) (type: boolean)
