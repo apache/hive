@@ -2664,9 +2664,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       viewTree = ParseUtils.parse(viewText, ctx, tab.getCompleteName());
       if (!unparseTranslator.isEnabled() &&
           (viewMask.isEnabled() && analyzeRewrite == null)) {
-        viewTree = rewriteASTWithMaskAndFilter(viewMask, viewTree,
+        ParseResult parseResult = rewriteASTWithMaskAndFilter(viewMask, viewTree,
             ctx.getViewTokenRewriteStream(viewFullyQualifiedName),
             ctx, db, tabNameToTabObject);
+        viewTree = parseResult.getTree();
       }
       SemanticDispatcher nodeOriginDispatcher = new SemanticDispatcher() {
         @Override
@@ -12271,7 +12272,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   // the table needs to be masked or filtered.
   // For the replacement, we leverage the methods that are used for
   // unparseTranslator.
-  private ASTNode rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
+  private ParseResult rewriteASTWithMaskAndFilter(TableMask tableMask, ASTNode ast, TokenRewriteStream tokenRewriteStream,
                                                 Context ctx, Hive db, Map<String, Table> tabNameToTabObject)
       throws SemanticException {
     // 1. collect information about CTE if there is any.
@@ -12322,12 +12323,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ctx.addSubContext(rewriteCtx);
         rewrittenTree = ParseUtils.parse(rewrittenQuery, rewriteCtx);
         ctx.setTokenRewriteStream(rewriteCtx.getTokenRewriteStream());
+        return new ParseResult(rewrittenTree, rewriteCtx.getTokenRewriteStream());
       } catch (ParseException | IOException e) {
         throw new SemanticException(e);
       }
-      return rewrittenTree;
     } else {
-      return ast;
+      return new ParseResult(ast, ctx.getTokenRewriteStream());
     }
   }
 
@@ -12559,8 +12560,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!forViewCreation && ast.getToken().getType() != HiveParser.TOK_CREATE_MATERIALIZED_VIEW &&
         (tableMask.isEnabled() && analyzeRewrite == null)) {
       // Here we rewrite the * and also the masking table
-      ASTNode rewrittenAST = rewriteASTWithMaskAndFilter(tableMask, astForMasking, ctx.getTokenRewriteStream(),
+      ParseResult rewrittenResult = rewriteASTWithMaskAndFilter(tableMask, astForMasking, ctx.getTokenRewriteStream(),
           ctx, db, tabNameToTabObject);
+      ctx.setTokenRewriteStream(rewrittenResult.getTokenRewriteStream());
+      ASTNode rewrittenAST = rewrittenResult.getTree();
       if (astForMasking != rewrittenAST) {
         usesMasking = true;
         plannerCtx = pcf.get();
