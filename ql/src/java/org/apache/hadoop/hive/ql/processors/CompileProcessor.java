@@ -23,13 +23,20 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.compress.archivers.jar.JarArchiveEntry;
 import org.apache.commons.compress.archivers.jar.JarArchiveOutputStream;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.hive.conf.HiveVariableSource;
 import org.apache.hadoop.hive.conf.VariableSubstitution;
@@ -46,7 +53,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.io.Files;
 
 /**
  * Processor allows users to build code inside a hive session, then
@@ -205,6 +211,7 @@ public class CompileProcessor implements CommandProcessor {
    * @throws CompileProcessorException
    */
   CommandProcessorResponse compile(SessionState ss) throws CompileProcessorException {
+    String lockout = "rwx------";
     Project proj = new Project();
     String ioTempDir = System.getProperty(IO_TMP_DIR);
     File ioTempFile = new File(ioTempDir);
@@ -214,21 +221,27 @@ public class CompileProcessor implements CommandProcessor {
     if (!ioTempFile.isDirectory() || !ioTempFile.canWrite()){
       throw new CompileProcessorException(ioTempDir + " is not a writable directory");
     }
-    Groovyc g = new Groovyc();
     long runStamp = System.currentTimeMillis();
+    String user = (ss != null) ? ss.getUserName() : "anonymous";
+    File sessionTempFile = new File(ioTempDir, user + "_" + runStamp);
+    if (!sessionTempFile.exists()) {
+      sessionTempFile.mkdir();
+      setPosixFilePermissions(sessionTempFile, lockout, true);
+    }
+    Groovyc g = new Groovyc();
     String jarId = myId + "_" + runStamp;
     g.setProject(proj);
     Path sourcePath = new Path(proj);
-    File destination = new File(ioTempFile, jarId + "out");
+    File destination = new File(sessionTempFile, jarId + "out");
     g.setDestdir(destination);
-    File input = new File(ioTempFile, jarId + "in");
+    File input = new File(sessionTempFile, jarId + "in");
     sourcePath.setLocation(input);
     g.setSrcdir(sourcePath);
     input.mkdir();
 
     File fileToWrite = new File(input, this.named);
     try {
-      Files.write(this.code, fileToWrite, Charset.forName("UTF-8"));
+      Files.write(Paths.get(fileToWrite.toURI()), code.getBytes(Charset.forName("UTF-8")), StandardOpenOption.CREATE_NEW);
     } catch (IOException e1) {
       throw new CompileProcessorException("writing file", e1);
     }
@@ -238,7 +251,7 @@ public class CompileProcessor implements CommandProcessor {
     } catch (BuildException ex){
       throw new CompileProcessorException("Problem compiling", ex);
     }
-    File testArchive = new File(ioTempFile, jarId + ".jar");
+    File testArchive = new File(sessionTempFile, jarId + ".jar");
     JarArchiveOutputStream out = null;
     try {
       out = new JarArchiveOutputStream(new FileOutputStream(testArchive));
@@ -251,14 +264,26 @@ public class CompileProcessor implements CommandProcessor {
         out.closeArchiveEntry();
       }
       out.finish();
+      setPosixFilePermissions(testArchive, lockout, false);
     } catch (IOException e) {
       throw new CompileProcessorException("Exception while writing jar", e);
     } finally {
       if (out!=null){
         try {
           out.close();
-        } catch (IOException WhatCanYouDo) {
-        }
+        } catch (IOException WhatCanYouDo) { }
+        try {
+          if (input.exists())
+            FileUtils.forceDeleteOnExit(input);
+        } catch (IOException WhatCanYouDo) { /* ignore */ }
+        try {
+          if (destination.exists())
+            FileUtils.forceDeleteOnExit(destination);
+        } catch (IOException WhatCanYouDo) { /* ignore */ }
+        try {
+          if (testArchive != null && testArchive.exists())
+            testArchive.deleteOnExit();
+        } catch (Exception WhatCanYouDo) { /* ignore */ }
       }
     }
 
@@ -313,4 +338,16 @@ public class CompileProcessor implements CommandProcessor {
   @Override
   public void close() throws Exception {
   }
+
+  private static synchronized void setPosixFilePermissions(File file, String permsAsString, boolean warnOnly) {
+      Set<PosixFilePermission> perms = PosixFilePermissions.fromString(permsAsString);
+      try {
+        Files.setPosixFilePermissions(Paths.get(file.toURI()), perms);
+      } catch (IOException ioe) {
+        LOG.warn("Failed to set file permissions on " + file.getAbsolutePath());
+        if (!warnOnly) {
+          throw new RuntimeException("Exception setting file permissions on " + file.getAbsolutePath());
+        }
+      }
+    }
 }
