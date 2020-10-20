@@ -91,11 +91,11 @@ fi
 
 if [[ "$SERVICE" == "cli" && "$USE_BEELINE_FOR_HIVE_CLI" == "true" ]] ; then
   CLIUSER=`whoami`
-  if [[ -z "$BEELINE_URL_LEGACY" ]] ; then
-    SERVICE="beeline"
-  else
-    SERVICE="beeline -c $BEELINE_URL_LEGACY"
-  fi
+  SERVICE="beeline"
+fi
+
+if [[ "$SERVICE" == "beeline" && ! -z "$BEELINE_URL_LEGACY" ]] ; then
+  SERVICE="beeline -c $BEELINE_URL_LEGACY"
 fi
 
 if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus|llap)$ ]] ; then
