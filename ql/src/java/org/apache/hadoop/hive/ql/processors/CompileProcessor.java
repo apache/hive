@@ -23,8 +23,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -45,7 +51,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.io.Files;
 
 /**
  * Processor allows users to build code inside a hive session, then
@@ -218,7 +223,7 @@ public class CompileProcessor implements CommandProcessor {
 
     File fileToWrite = new File(input, this.named);
     try {
-      Files.write(this.code, fileToWrite, Charset.forName("UTF-8"));
+      Files.write(Paths.get(fileToWrite.toURI()), code.getBytes(Charset.forName("UTF-8")), StandardOpenOption.CREATE_NEW);
     } catch (IOException e1) {
       throw new CommandProcessorException("writing file", e1);
     }
@@ -227,6 +232,15 @@ public class CompileProcessor implements CommandProcessor {
       g.execute();
     } catch (BuildException ex){
       throw new CommandProcessorException("Problem compiling", ex);
+    } finally {
+      // delete the source files
+      try {
+        fileToWrite.delete();
+      } catch (Exception e) {
+        try {
+          fileToWrite.deleteOnExit();
+        } catch(Exception ex) { /* ignore */ }
+      }
     }
     File testArchive = new File(ioTempFile, jarId + ".jar");
     JarArchiveOutputStream out = null;
@@ -241,6 +255,14 @@ public class CompileProcessor implements CommandProcessor {
         out.closeArchiveEntry();
       }
       out.finish();
+      try {
+        Set<PosixFilePermission> perms = EnumSet.of(
+              PosixFilePermission.OWNER_READ,
+              PosixFilePermission.OWNER_WRITE);
+        Files.setPosixFilePermissions(Paths.get(testArchive.toURI()), perms);
+      } catch (IOException ioe) {
+        LOG.warn("Lockdown permissions could not be set for the jar archive. JAR file could be open to other users depending on default FS permissions");
+      }
     } catch (IOException e) {
       throw new CommandProcessorException("Exception while writing jar", e);
     } finally {
@@ -254,6 +276,9 @@ public class CompileProcessor implements CommandProcessor {
 
     if (ss != null){
       ss.add_resource(ResourceType.JAR, testArchive.getAbsolutePath());
+      try {
+        testArchive.deleteOnExit();
+      } catch (Exception e) { /* ignore */ }
     }
     CommandProcessorResponse good = new CommandProcessorResponse(null, testArchive.getAbsolutePath());
     return good;
