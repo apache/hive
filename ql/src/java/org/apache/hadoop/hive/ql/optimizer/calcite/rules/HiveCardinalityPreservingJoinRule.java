@@ -21,6 +21,7 @@ import org.apache.calcite.plan.RelOptCost;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Sort;
 import org.apache.calcite.rel.metadata.JaninoRelMetadataProvider;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelShuttleImpl;
@@ -29,6 +30,8 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveDefaultCostModel;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static java.util.Collections.singletonList;
 
 /**
  * Rule to trigger {@link HiveCardinalityPreservingJoinOptimization} on top of the plan.
@@ -44,13 +47,29 @@ public class HiveCardinalityPreservingJoinRule extends HiveFieldTrimmerRule {
   }
 
   @Override
-  protected RelNode trim(RelOptRuleCall call, RelNode node) {
-    RelNode optimized = new HiveCardinalityPreservingJoinOptimization().trim(call.builder(), node);
-    if (optimized == node) {
-      return node;
+  protected RelNode trim(RelOptRuleCall call, RelNode root, RelNode input) {
+    final HiveCardinalityPreservingJoinOptimization optimizer =
+        new HiveCardinalityPreservingJoinOptimization();
+    final RelNode optimized;
+    if (input instanceof Sort) {
+      // If the input is a sort-limit, we need to target that node instead of the root.
+      // Otherwise, we can end up rewriting the join on top of the sort, which could lead
+      // to incorrect results
+      RelNode optimizedInput = optimizer.trim(call.builder(), input);
+      if (optimizedInput == input) {
+        // Not possible to apply optimization
+        return root;
+      }
+      optimized = root.copy(root.getTraitSet(), singletonList(optimizedInput));
+    } else {
+      optimized = optimizer.trim(call.builder(), root);
+      if (optimized == root) {
+        // Not possible to apply optimization
+        return root;
+      }
     }
 
-    RelNode chosen = choosePlan(node, optimized);
+    RelNode chosen = choosePlan(root, optimized);
     new JoinAlgorithmSetter().visit(chosen);
     return chosen;
   }
@@ -69,6 +88,7 @@ public class HiveCardinalityPreservingJoinRule extends HiveFieldTrimmerRule {
       LOG.debug("Original plan cost {} vs Optimized plan cost {}", originalCost, optimizedCost);
       if (optimizedCost.isLt(originalCost)) {
         if (LOG.isDebugEnabled()) {
+          LOG.debug("Plan before:\n" + RelOptUtil.toString(node));
           LOG.debug("Plan after:\n" + RelOptUtil.toString(optimized));
         }
         return optimized;

@@ -44,7 +44,8 @@ public class HiveFieldTrimmerRule  extends RelOptRule {
   }
 
   protected HiveFieldTrimmerRule(boolean fetchStats, String description) {
-    super(operand(RelNode.class, any()),
+    super(operand(RelNode.class,
+        operand(RelNode.class, any())),
         HiveRelFactories.HIVE_BUILDER, description);
     this.fetchStats = fetchStats;
     this.triggered = false;
@@ -67,12 +68,12 @@ public class HiveFieldTrimmerRule  extends RelOptRule {
     final HepPlanner tmpPlanner = new HepPlanner(PROGRAM);
     tmpPlanner.setRoot(node);
     node = tmpPlanner.findBestExp();
-    call.transformTo(trim(call, node));
+    call.transformTo(trim(call, node, call.rel(1)));
     triggered = true;
   }
 
-  protected RelNode trim(RelOptRuleCall call, RelNode node) {
-    return HiveRelFieldTrimmer.get(fetchStats).trim(call.builder(), node);
+  protected RelNode trim(RelOptRuleCall call, RelNode root, RelNode input) {
+    return HiveRelFieldTrimmer.get(fetchStats).trim(call.builder(), root);
   }
 
   /**

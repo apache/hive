@@ -2575,6 +2575,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
       if (factor > 0.0) {
         generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN,
             new HiveCardinalityPreservingJoinRule(factor));
+        // Rerun PPD through Project as column pruning would have introduced
+        // DT above scans (similar to pre-join ordering transform)
+        generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
+            HiveFilterProjectTSTransposeRule.INSTANCE, HiveFilterProjectTSTransposeRule.INSTANCE_DRUID,
+            HiveProjectFilterPullUpConstantsRule.INSTANCE, HiveProjectMergeRule.INSTANCE,
+            ProjectRemoveRule.INSTANCE);
       }
 
       // 1. Run other optimizations that do not need stats

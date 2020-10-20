@@ -32,9 +32,9 @@ import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
+import org.apache.calcite.rel.type.RelDataType;
 import org.apache.calcite.rel.type.RelDataTypeField;
 import org.apache.calcite.rex.RexBuilder;
 import org.apache.calcite.rex.RexInputRef;
@@ -50,9 +50,11 @@ import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.calcite.util.mapping.Mapping;
 import org.apache.calcite.util.mapping.MappingType;
 import org.apache.calcite.util.mapping.Mappings;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
+import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,10 +180,26 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
         LOG.debug("Joining back table {}", tableToJoinBack.joinedBackFields.relOptHiveTable.getName());
 
         // 3.1. Create new TableScan of tables to join back
-        RelOptHiveTable relOptTable = tableToJoinBack.joinedBackFields.relOptHiveTable;
-        RelOptCluster cluster = relBuilder.getCluster();
+        RelOptCluster cluster = root.getCluster();
+        RelDataType rowType = tableToJoinBack.joinedBackFields.relOptHiveTable.getRowType();
+        // There is an expectation that when a plan is translated into the engine specific plan,
+        // e.g., Impala, partition pruning for all the TS operators that are part of the plan
+        // should have already been performed. Since we are creating a new copy of the table
+        // and the scan, we execute partition pruning for the new operator. Note that there
+        // will be no filter on top of the scan copy, while there could be a filter operator
+        // on top of the original scan. Thus, the pruned list associated with the new copy
+        // of the table could be different compared to the original table. In particular,
+        // this new scan will always read all the partitions.
+        FunctionHelper functionHelper = cluster.getPlanner().getContext().unwrap(FunctionHelper.class);
+        PartitionPruneRuleHelper ruleHelper =
+            functionHelper.getPartitionPruneRuleHelper();
+        RelOptHiveTable relOptTable = tableToJoinBack.joinedBackFields.relOptHiveTable.copy(
+            rowType, ruleHelper, true);
         HiveTableScan tableScan = new HiveTableScan(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION),
             relOptTable, relOptTable.getHiveTableMD().getTableName(), null, false, false);
+        RulePartitionPruner pruner = ruleHelper.createRulePartitionPruner(tableScan, relOptTable, null);
+        relOptTable.computePartitionList(pruner);
+
         // 3.2. Create Project with the required fields from this table
         RelNode projectTableAccessRel = tableScan.project(
             tableToJoinBack.joinedBackFields.fieldsInSourceTable, new HashSet<>(0), REL_BUILDER.get());
@@ -236,6 +254,9 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
       relBuilder.project(rexNodeList, newColumnNames);
 
       return root.copy(root.getTraitSet(), singletonList(relBuilder.build()));
+    } catch (HiveException e) {
+      LOG.error("Exception in rewriting join based on constraints", e);
+      return root;
     } finally {
       REL_BUILDER.remove();
     }
