@@ -12561,12 +12561,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Here we rewrite the * and also the masking table
       ParseResult rewrittenResult = rewriteASTWithMaskAndFilter(tableMask, astForMasking, ctx.getTokenRewriteStream(),
           ctx, db, tabNameToTabObject);
-      ctx.setTokenRewriteStream(rewrittenResult.getTokenRewriteStream());
       ASTNode rewrittenAST = rewrittenResult.getTree();
       if (astForMasking != rewrittenAST) {
         usesMasking = true;
         plannerCtx = pcf.get();
         ctx.setSkipTableMasking(true);
+        ctx.setTokenRewriteStream(rewrittenResult.getTokenRewriteStream());
         init(true);
         //change the location of position alias process here
         processPositionAlias(rewrittenAST);
