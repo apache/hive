@@ -44,7 +44,7 @@ public class CreateDatabaseHandler extends AbstractMessageHandler {
 
   @Override
   public List<Task<?>> handle(Context context)
-      throws SemanticException {
+          throws SemanticException {
     MetaData metaData;
     try {
       FileSystem fs = FileSystem.get(new Path(context.location).toUri(), context.hiveConf);
@@ -60,20 +60,23 @@ public class CreateDatabaseHandler extends AbstractMessageHandler {
     CreateDatabaseDesc createDatabaseDesc =
         new CreateDatabaseDesc(destinationDBName, db.getDescription(), null, null, true, db.getParameters());
     Task<DDLWork> createDBTask = TaskFactory.get(
-        new DDLWork(new HashSet<>(), new HashSet<>(), createDatabaseDesc), context.hiveConf);
+        new DDLWork(new HashSet<>(), new HashSet<>(), createDatabaseDesc, true,
+                context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf);
     if (!db.getParameters().isEmpty()) {
       AlterDatabaseSetPropertiesDesc alterDbDesc = new AlterDatabaseSetPropertiesDesc(destinationDBName,
           db.getParameters(), context.eventOnlyReplicationSpec());
-      Task<DDLWork> alterDbProperties = TaskFactory
-          .get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbDesc), context.hiveConf);
+      Task<DDLWork> alterDbProperties = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(),
+                                        alterDbDesc, true, context.getDumpDirectory(),
+                                        context.getMetricCollector()), context.hiveConf);
       createDBTask.addDependentTask(alterDbProperties);
     }
     if (StringUtils.isNotEmpty(db.getOwnerName())) {
       AlterDatabaseSetOwnerDesc alterDbOwner = new AlterDatabaseSetOwnerDesc(destinationDBName,
           new PrincipalDesc(db.getOwnerName(), db.getOwnerType()),
           context.eventOnlyReplicationSpec());
-      Task<DDLWork> alterDbTask = TaskFactory
-          .get(new DDLWork(new HashSet<>(), new HashSet<>(), alterDbOwner), context.hiveConf);
+      Task<DDLWork> alterDbTask = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(),
+              alterDbOwner, true, context.getDumpDirectory(), context.getMetricCollector()),
+              context.hiveConf);
       createDBTask.addDependentTask(alterDbTask);
     }
     updatedMetadata

@@ -47,7 +47,8 @@ public class DropFunctionHandler extends AbstractMessageHandler {
     DropFunctionDesc desc = new DropFunctionDesc(
             qualifiedFunctionName, false, context.eventOnlyReplicationSpec());
     Task<DDLWork> dropFunctionTask =
-        TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet, desc), context.hiveConf);
+        TaskFactory.get(new DDLWork(readEntitySet, writeEntitySet, desc, true,
+                context.getDumpDirectory(), context.getMetricCollector()), context.hiveConf);
     context.log.debug(
         "Added drop function task : {}:{}", dropFunctionTask.getId(), desc.getName()
     );

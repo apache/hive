@@ -189,7 +189,7 @@ public class TestMetastoreAuthorizationProvider {
       driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName));
       assert false;
     } catch (CommandProcessorException e) {
-      assertEquals(1, e.getResponseCode());
+      assertEquals(40000, e.getResponseCode());
     }
 
     // Even if table location is specified table creation should fail
@@ -202,7 +202,7 @@ public class TestMetastoreAuthorizationProvider {
         driver.run(String.format(
             "create table %s (a string) partitioned by (b string) location '" +tblLocation + "'", tblNameLoc));
       } catch (CommandProcessorException e) {
-        assertEquals(1, e.getResponseCode());
+        assertEquals(40000, e.getResponseCode());
       }
     }
 
@@ -265,7 +265,7 @@ public class TestMetastoreAuthorizationProvider {
     try {
       driver.run(String.format("create table %s (a string) partitioned by (b string)", tblName+"mal"));
     } catch (CommandProcessorException e) {
-      assertEquals(1, e.getResponseCode());
+      assertEquals(40000, e.getResponseCode());
     }
 
     ttbl.setTableName(tblName+"mal");
@@ -282,7 +282,7 @@ public class TestMetastoreAuthorizationProvider {
     try {
       driver.run("alter table "+tblName+" add partition (b='2011')");
     } catch (CommandProcessorException e) {
-      assertEquals(1, e.getResponseCode());
+      assertEquals(40000, e.getResponseCode());
     }
 
     List<String> ptnVals = new ArrayList<String>();
@@ -341,7 +341,7 @@ public class TestMetastoreAuthorizationProvider {
     try {
       driver.run("drop table "+tbl.getTableName());
     } catch (CommandProcessorException e) {
-      assertEquals(1, e.getResponseCode());
+      assertEquals(40000, e.getResponseCode());
     }
   }
 

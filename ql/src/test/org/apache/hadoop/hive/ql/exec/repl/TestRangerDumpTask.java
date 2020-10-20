@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import com.google.gson.Gson;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
@@ -78,14 +79,19 @@ public class TestRangerDumpTask {
   @Test
   public void testFailureInvalidAuthProviderEndpoint() throws Exception {
     Mockito.when(conf.get(RANGER_REST_URL)).thenReturn(null);
+    Mockito.when(work.getDbName()).thenReturn("testdb");
+    Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("/tmp"));
+    Mockito.when(work.getRangerConfigResource()).thenReturn(new URL("file://ranger.xml"));
     int status = task.execute();
-    Assert.assertEquals(40000, status);
+    Assert.assertEquals(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.getErrorCode(), status);
   }
 
   @Test
   public void testFailureInvalidRangerConfig() throws Exception {
+    Mockito.when(work.getDbName()).thenReturn("testdb");
+    Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("/tmp"));
     int status = task.execute();
-    Assert.assertEquals(40000, status);
+    Assert.assertEquals(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.getErrorCode(), status);
   }
 
   @Test

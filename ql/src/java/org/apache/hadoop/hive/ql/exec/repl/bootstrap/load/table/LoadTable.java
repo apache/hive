@@ -147,11 +147,13 @@ public class LoadTable {
             tableDesc,
             null,
             context.dumpDirectory,
+            this.metricCollector,
             context.hiveConf
     );
     if (!isPartitioned(tableDesc)) {
       Task<?> replLogTask
-              = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf, metricCollector);
+              = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf, metricCollector,
+                                              (new Path(context.dumpDirectory)).getParent().toString());
       ckptTask.addDependentTask(replLogTask);
     }
     tracker.addDependentTask(ckptTask);
@@ -187,7 +189,8 @@ public class LoadTable {
       tblDesc.setLocation(null);
     }
     Task<?> createTableTask =
-        tblDesc.getCreateTableTask(new HashSet<>(), new HashSet<>(), context.hiveConf);
+        tblDesc.getCreateTableTask(new HashSet<>(), new HashSet<>(), context.hiveConf, true,
+                (new Path(context.dumpDirectory)).getParent().toString(), metricCollector);
     if (tblRootTask == null) {
       tblRootTask = createTableTask;
     } else {
@@ -202,7 +205,8 @@ public class LoadTable {
     if (replicationSpec.isTransactionalTableDump()) {
       List<String> partNames = isPartitioned(tblDesc) ? event.partitions(tblDesc) : null;
       ReplTxnWork replTxnWork = new ReplTxnWork(tblDesc.getDatabaseName(), tblDesc.getTableName(), partNames,
-              replicationSpec.getValidWriteIdList(), ReplTxnWork.OperationType.REPL_WRITEID_STATE);
+              replicationSpec.getValidWriteIdList(), ReplTxnWork.OperationType.REPL_WRITEID_STATE,
+              (new Path(context.dumpDirectory)).getParent().toString(), metricCollector);
       Task<?> replTxnTask = TaskFactory.get(replTxnWork, context.hiveConf);
       parentTask.addDependentTask(replTxnTask);
       parentTask = replTxnTask;
@@ -283,9 +287,11 @@ public class LoadTable {
 
     boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf,
-            copyAtLoad, false);
+            copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(), metricCollector);
 
-    MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
+    MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false,
+                                     (new Path(context.dumpDirectory)).getParent().toString(), metricCollector,
+                                      true);
     if (AcidUtils.isTransactionalTable(table)) {
       LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
         Collections.singletonList(tmpPath),
@@ -308,6 +314,8 @@ public class LoadTable {
   private Task<?> dropTableTask(Table table) {
     assert(table != null);
     DropTableDesc dropTblDesc = new DropTableDesc(table.getFullyQualifiedName(), true, false, event.replicationSpec());
-    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc), context.hiveConf);
+    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc,
+                                      true, (new Path(context.dumpDirectory)).getParent().toString(),
+                                      this.metricCollector), context.hiveConf);
   }
 }
