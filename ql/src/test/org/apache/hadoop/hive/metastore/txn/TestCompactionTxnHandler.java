@@ -506,6 +506,7 @@ public class TestCompactionTxnHandler {
     assertNotNull(ci);
     txnHandler.markCompacted(ci);
 
+    Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
     List<CompactionInfo> toClean = txnHandler.findReadyToClean();
     assertEquals(1, toClean.size());
     txnHandler.markCleaned(ci);
@@ -516,11 +517,10 @@ public class TestCompactionTxnHandler {
     // Create one aborted for low water mark
     txnid = openTxn();
     txnHandler.abortTxn(new AbortTxnRequest(txnid));
-    txnHandler.setOpenTxnTimeOutMillis(1);
+    Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
     txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnList = txnHandler.getOpenTxns();
     assertEquals(3, txnList.getOpen_txnsSize());
-    txnHandler.setOpenTxnTimeOutMillis(1000);
 
     rqst = new CompactionRequest("mydb", "foo", CompactionType.MAJOR);
     rqst.setPartitionname("bar");

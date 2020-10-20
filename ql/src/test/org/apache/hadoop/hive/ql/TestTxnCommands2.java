@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -2110,19 +2111,23 @@ public class TestTxnCommands2 {
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID" + acidTblPartWhereClause),
             0, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID" + acidTblPartWhereClause));
 
-    // The cleaner will removed aborted txns data/metadata but cannot remove aborted txn2 from TXN_TO_WRITE_ID
-    // as there is a open txn < aborted txn2. The aborted txn1 < open txn and will be removed.
-    // Also, committed txn > open txn is retained.
+    // The cleaner after the compaction will not run, since the open txnId < compaction commit txnId
+    // Since aborted txns data/metadata was not removed, all data in TXN_TO_WRITE_ID should remain
     txnHandler.compact(new CompactionRequest("default", Table.ACIDTBL.name().toLowerCase(), CompactionType.MAJOR));
     runWorker(hiveConf);
     runCleaner(hiveConf);
     txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnHandler.cleanTxnToWriteIdTable();
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
-            2, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
+            3, TxnDbUtil.countQueryAgent(hiveConf, "select count(*) from TXN_TO_WRITE_ID"));
 
     // Commit the open txn, which lets the cleanup on TXN_TO_WRITE_ID.
     txnMgr.commitTxn();
+    txnMgr.openTxn(ctx, "u1");
+    txnMgr.getValidTxns();
+    // The txn opened after the compaction commit should not effect the Cleaner
+    runCleaner(hiveConf);
+    txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnHandler.cleanTxnToWriteIdTable();
 
     Assert.assertEquals(TxnDbUtil.queryToString(hiveConf, "select * from TXN_TO_WRITE_ID"),
