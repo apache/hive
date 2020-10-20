@@ -443,6 +443,10 @@ public class RelOptHiveTable implements RelOptTable {
   public double getRowCount() {
     PrunedPartitionList ppList = partitionList;
     if (rowCount == -1) {
+      if (isDummyTable()) {
+        rowCount = SemanticAnalyzer.DUMMY_TABLE_ROW_COUNT;
+        return rowCount;
+      }
       if (null == ppList) {
         // we are here either unpartitioned table or partitioned table with no
         // predicates

@@ -311,6 +311,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
   public static final String DUMMY_DATABASE = "_dummy_database";
   public static final String DUMMY_TABLE = "_dummy_table";
+  public static final int DUMMY_TABLE_ROW_COUNT = 1;
   public static final String SUBQUERY_TAG_1 = "-subquery1";
   public static final String SUBQUERY_TAG_2 = "-subquery2";
 
