@@ -21844,6 +21844,10 @@ class ShowLocksRequest {
    * @var bool
    */
   public $isExtended = false;
+  /**
+   * @var int
+   */
+  public $txnid = null;
 
   public function __construct($vals=null) {
     if (!isset(self::$_TSPEC)) {
@@ -21864,6 +21868,10 @@ class ShowLocksRequest {
           'var' => 'isExtended',
           'type' => TType::BOOL,
           ),
+        5 => array(
+          'var' => 'txnid',
+          'type' => TType::I64,
+          ),
         );
     }
     if (is_array($vals)) {
@@ -21878,6 +21886,9 @@ class ShowLocksRequest {
       }
       if (isset($vals['isExtended'])) {
         $this->isExtended = $vals['isExtended'];
+      }
+      if (isset($vals['txnid'])) {
+        $this->txnid = $vals['txnid'];
       }
     }
   }
@@ -21929,6 +21940,13 @@ class ShowLocksRequest {
             $xfer += $input->skip($ftype);
           }
           break;
+        case 5:
+          if ($ftype == TType::I64) {
+            $xfer += $input->readI64($this->txnid);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
         default:
           $xfer += $input->skip($ftype);
           break;
@@ -21960,6 +21978,11 @@ class ShowLocksRequest {
     if ($this->isExtended !== null) {
       $xfer += $output->writeFieldBegin('isExtended', TType::BOOL, 4);
       $xfer += $output->writeBool($this->isExtended);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->txnid !== null) {
+      $xfer += $output->writeFieldBegin('txnid', TType::I64, 5);
+      $xfer += $output->writeI64($this->txnid);
       $xfer += $output->writeFieldEnd();
     }
     $xfer += $output->writeFieldStop();

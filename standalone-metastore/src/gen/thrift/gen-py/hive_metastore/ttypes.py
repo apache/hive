@@ -15193,6 +15193,7 @@ class ShowLocksRequest:
    - tablename
    - partname
    - isExtended
+   - txnid
   """
 
   thrift_spec = (
@@ -15201,13 +15202,15 @@ class ShowLocksRequest:
     (2, TType.STRING, 'tablename', None, None, ), # 2
     (3, TType.STRING, 'partname', None, None, ), # 3
     (4, TType.BOOL, 'isExtended', None, False, ), # 4
+    (5, TType.I64, 'txnid', None, None, ), # 5
   )
 
-  def __init__(self, dbname=None, tablename=None, partname=None, isExtended=thrift_spec[4][4],):
+  def __init__(self, dbname=None, tablename=None, partname=None, isExtended=thrift_spec[4][4], txnid=None,):
     self.dbname = dbname
     self.tablename = tablename
     self.partname = partname
     self.isExtended = isExtended
+    self.txnid = txnid
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -15238,6 +15241,11 @@ class ShowLocksRequest:
           self.isExtended = iprot.readBool()
         else:
           iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I64:
+          self.txnid = iprot.readI64()
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -15264,6 +15272,10 @@ class ShowLocksRequest:
       oprot.writeFieldBegin('isExtended', TType.BOOL, 4)
       oprot.writeBool(self.isExtended)
       oprot.writeFieldEnd()
+    if self.txnid is not None:
+      oprot.writeFieldBegin('txnid', TType.I64, 5)
+      oprot.writeI64(self.txnid)
+      oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()
 
@@ -15277,6 +15289,7 @@ class ShowLocksRequest:
     value = (value * 31) ^ hash(self.tablename)
     value = (value * 31) ^ hash(self.partname)
     value = (value * 31) ^ hash(self.isExtended)
+    value = (value * 31) ^ hash(self.txnid)
     return value
 
   def __repr__(self):
