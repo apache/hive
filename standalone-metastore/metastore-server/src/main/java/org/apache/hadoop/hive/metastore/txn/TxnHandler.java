@@ -1587,7 +1587,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         // Check if this txn state is already replicated for this given table. If yes, then it is
         // idempotent case and just return.
-        String sql = "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = ? AND NWI_TABLE = ?";
+        String sql = "SELECT \"NWI_NEXT\" FROM \"NEXT_WRITE_ID\" WHERE \"NWI_DATABASE\" = ? AND \"NWI_TABLE\" = ?";
         pStmt = sqlGenerator.prepareStmtWithParameters(dbConn, sql, params);
         LOG.debug("Going to execute query <" + sql.replaceAll("\\?", "{}") + ">",
                 quoteString(dbName), quoteString(tblName));
