@@ -16,35 +16,48 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class ThriftHiveMetastore_get_latest_txnid_in_conflict_args
+class ThriftHiveMetastore_get_latest_txn_in_conflict_result
 {
     static public $isValidate = false;
 
     static public $_TSPEC = array(
-        1 => array(
-            'var' => 'txnId',
+        0 => array(
+            'var' => 'success',
             'isRequired' => false,
             'type' => TType::I64,
+        ),
+        1 => array(
+            'var' => 'o1',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\MetaException',
         ),
     );
 
     /**
      * @var int
      */
-    public $txnId = null;
+    public $success = null;
+    /**
+     * @var \metastore\MetaException
+     */
+    public $o1 = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
-            if (isset($vals['txnId'])) {
-                $this->txnId = $vals['txnId'];
+            if (isset($vals['success'])) {
+                $this->success = $vals['success'];
+            }
+            if (isset($vals['o1'])) {
+                $this->o1 = $vals['o1'];
             }
         }
     }
 
     public function getName()
     {
-        return 'ThriftHiveMetastore_get_latest_txnid_in_conflict_args';
+        return 'ThriftHiveMetastore_get_latest_txn_in_conflict_result';
     }
 
 
@@ -61,9 +74,17 @@ class ThriftHiveMetastore_get_latest_txnid_in_conflict_args
                 break;
             }
             switch ($fid) {
-                case 1:
+                case 0:
                     if ($ftype == TType::I64) {
-                        $xfer += $input->readI64($this->txnId);
+                        $xfer += $input->readI64($this->success);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 1:
+                    if ($ftype == TType::STRUCT) {
+                        $this->o1 = new \metastore\MetaException();
+                        $xfer += $this->o1->read($input);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -81,10 +102,15 @@ class ThriftHiveMetastore_get_latest_txnid_in_conflict_args
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_latest_txnid_in_conflict_args');
-        if ($this->txnId !== null) {
-            $xfer += $output->writeFieldBegin('txnId', TType::I64, 1);
-            $xfer += $output->writeI64($this->txnId);
+        $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_latest_txn_in_conflict_result');
+        if ($this->success !== null) {
+            $xfer += $output->writeFieldBegin('success', TType::I64, 0);
+            $xfer += $output->writeI64($this->success);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->o1 !== null) {
+            $xfer += $output->writeFieldBegin('o1', TType::STRUCT, 1);
+            $xfer += $this->o1->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

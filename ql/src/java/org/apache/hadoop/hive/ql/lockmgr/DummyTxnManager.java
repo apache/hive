@@ -89,7 +89,7 @@ class DummyTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public long getLatestTxnIdInConflict() throws LockException {
+  public long getLatestTxnInConflict() throws LockException {
     return 0;
   }
 

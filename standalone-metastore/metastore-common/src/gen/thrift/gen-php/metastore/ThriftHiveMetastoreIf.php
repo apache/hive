@@ -1322,7 +1322,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @return int
      * @throws \metastore\MetaException
      */
-    public function get_latest_txnid_in_conflict($txnId);
+    public function get_latest_txn_in_conflict($txnId);
     /**
      * @param \metastore\ReplTblWriteIdStateRequest $rqst
      */
