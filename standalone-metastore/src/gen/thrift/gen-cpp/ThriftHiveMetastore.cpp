@@ -40012,11 +40012,11 @@ uint32_t ThriftHiveMetastore_commit_txn_presult::read(::apache::thrift::protocol
 }
 
 
-ThriftHiveMetastore_get_latest_txn_in_conflict_args::~ThriftHiveMetastore_get_latest_txn_in_conflict_args() throw() {
+ThriftHiveMetastore_get_latest_txnid_in_conflict_args::~ThriftHiveMetastore_get_latest_txnid_in_conflict_args() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_get_latest_txn_in_conflict_args::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_latest_txnid_in_conflict_args::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -40057,10 +40057,10 @@ uint32_t ThriftHiveMetastore_get_latest_txn_in_conflict_args::read(::apache::thr
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_get_latest_txn_in_conflict_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_latest_txnid_in_conflict_args::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_latest_txn_in_conflict_args");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_latest_txnid_in_conflict_args");
 
   xfer += oprot->writeFieldBegin("txnId", ::apache::thrift::protocol::T_I64, 1);
   xfer += oprot->writeI64(this->txnId);
@@ -40072,14 +40072,14 @@ uint32_t ThriftHiveMetastore_get_latest_txn_in_conflict_args::write(::apache::th
 }
 
 
-ThriftHiveMetastore_get_latest_txn_in_conflict_pargs::~ThriftHiveMetastore_get_latest_txn_in_conflict_pargs() throw() {
+ThriftHiveMetastore_get_latest_txnid_in_conflict_pargs::~ThriftHiveMetastore_get_latest_txnid_in_conflict_pargs() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_get_latest_txn_in_conflict_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_latest_txnid_in_conflict_pargs::write(::apache::thrift::protocol::TProtocol* oprot) const {
   uint32_t xfer = 0;
   apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_latest_txn_in_conflict_pargs");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_latest_txnid_in_conflict_pargs");
 
   xfer += oprot->writeFieldBegin("txnId", ::apache::thrift::protocol::T_I64, 1);
   xfer += oprot->writeI64((*(this->txnId)));
@@ -40091,11 +40091,11 @@ uint32_t ThriftHiveMetastore_get_latest_txn_in_conflict_pargs::write(::apache::t
 }
 
 
-ThriftHiveMetastore_get_latest_txn_in_conflict_result::~ThriftHiveMetastore_get_latest_txn_in_conflict_result() throw() {
+ThriftHiveMetastore_get_latest_txnid_in_conflict_result::~ThriftHiveMetastore_get_latest_txnid_in_conflict_result() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_get_latest_txn_in_conflict_result::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_latest_txnid_in_conflict_result::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -40144,11 +40144,11 @@ uint32_t ThriftHiveMetastore_get_latest_txn_in_conflict_result::read(::apache::t
   return xfer;
 }
 
-uint32_t ThriftHiveMetastore_get_latest_txn_in_conflict_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
+uint32_t ThriftHiveMetastore_get_latest_txnid_in_conflict_result::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   uint32_t xfer = 0;
 
-  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_latest_txn_in_conflict_result");
+  xfer += oprot->writeStructBegin("ThriftHiveMetastore_get_latest_txnid_in_conflict_result");
 
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_I64, 0);
@@ -40165,11 +40165,11 @@ uint32_t ThriftHiveMetastore_get_latest_txn_in_conflict_result::write(::apache::
 }
 
 
-ThriftHiveMetastore_get_latest_txn_in_conflict_presult::~ThriftHiveMetastore_get_latest_txn_in_conflict_presult() throw() {
+ThriftHiveMetastore_get_latest_txnid_in_conflict_presult::~ThriftHiveMetastore_get_latest_txnid_in_conflict_presult() throw() {
 }
 
 
-uint32_t ThriftHiveMetastore_get_latest_txn_in_conflict_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
+uint32_t ThriftHiveMetastore_get_latest_txnid_in_conflict_presult::read(::apache::thrift::protocol::TProtocol* iprot) {
 
   apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
   uint32_t xfer = 0;
@@ -66919,18 +66919,18 @@ void ThriftHiveMetastoreClient::recv_commit_txn()
   return;
 }
 
-int64_t ThriftHiveMetastoreClient::get_latest_txn_in_conflict(const int64_t txnId)
+int64_t ThriftHiveMetastoreClient::get_latest_txnid_in_conflict(const int64_t txnId)
 {
-  send_get_latest_txn_in_conflict(txnId);
-  return recv_get_latest_txn_in_conflict();
+  send_get_latest_txnid_in_conflict(txnId);
+  return recv_get_latest_txnid_in_conflict();
 }
 
-void ThriftHiveMetastoreClient::send_get_latest_txn_in_conflict(const int64_t txnId)
+void ThriftHiveMetastoreClient::send_get_latest_txnid_in_conflict(const int64_t txnId)
 {
   int32_t cseqid = 0;
-  oprot_->writeMessageBegin("get_latest_txn_in_conflict", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("get_latest_txnid_in_conflict", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_get_latest_txn_in_conflict_pargs args;
+  ThriftHiveMetastore_get_latest_txnid_in_conflict_pargs args;
   args.txnId = &txnId;
   args.write(oprot_);
 
@@ -66939,7 +66939,7 @@ void ThriftHiveMetastoreClient::send_get_latest_txn_in_conflict(const int64_t tx
   oprot_->getTransport()->flush();
 }
 
-int64_t ThriftHiveMetastoreClient::recv_get_latest_txn_in_conflict()
+int64_t ThriftHiveMetastoreClient::recv_get_latest_txnid_in_conflict()
 {
 
   int32_t rseqid = 0;
@@ -66959,13 +66959,13 @@ int64_t ThriftHiveMetastoreClient::recv_get_latest_txn_in_conflict()
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
-  if (fname.compare("get_latest_txn_in_conflict") != 0) {
+  if (fname.compare("get_latest_txnid_in_conflict") != 0) {
     iprot_->skip(::apache::thrift::protocol::T_STRUCT);
     iprot_->readMessageEnd();
     iprot_->getTransport()->readEnd();
   }
   int64_t _return;
-  ThriftHiveMetastore_get_latest_txn_in_conflict_presult result;
+  ThriftHiveMetastore_get_latest_txnid_in_conflict_presult result;
   result.success = &_return;
   result.read(iprot_);
   iprot_->readMessageEnd();
@@ -66977,7 +66977,7 @@ int64_t ThriftHiveMetastoreClient::recv_get_latest_txn_in_conflict()
   if (result.__isset.o1) {
     throw result.o1;
   }
-  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_latest_txn_in_conflict failed: unknown result");
+  throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_latest_txnid_in_conflict failed: unknown result");
 }
 
 void ThriftHiveMetastoreClient::repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst)
@@ -81250,41 +81250,41 @@ void ThriftHiveMetastoreProcessor::process_commit_txn(int32_t seqid, ::apache::t
   }
 }
 
-void ThriftHiveMetastoreProcessor::process_get_latest_txn_in_conflict(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
+void ThriftHiveMetastoreProcessor::process_get_latest_txnid_in_conflict(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext)
 {
   void* ctx = NULL;
   if (this->eventHandler_.get() != NULL) {
-    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.get_latest_txn_in_conflict", callContext);
+    ctx = this->eventHandler_->getContext("ThriftHiveMetastore.get_latest_txnid_in_conflict", callContext);
   }
-  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.get_latest_txn_in_conflict");
+  ::apache::thrift::TProcessorContextFreer freer(this->eventHandler_.get(), ctx, "ThriftHiveMetastore.get_latest_txnid_in_conflict");
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.get_latest_txn_in_conflict");
+    this->eventHandler_->preRead(ctx, "ThriftHiveMetastore.get_latest_txnid_in_conflict");
   }
 
-  ThriftHiveMetastore_get_latest_txn_in_conflict_args args;
+  ThriftHiveMetastore_get_latest_txnid_in_conflict_args args;
   args.read(iprot);
   iprot->readMessageEnd();
   uint32_t bytes = iprot->getTransport()->readEnd();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.get_latest_txn_in_conflict", bytes);
+    this->eventHandler_->postRead(ctx, "ThriftHiveMetastore.get_latest_txnid_in_conflict", bytes);
   }
 
-  ThriftHiveMetastore_get_latest_txn_in_conflict_result result;
+  ThriftHiveMetastore_get_latest_txnid_in_conflict_result result;
   try {
-    result.success = iface_->get_latest_txn_in_conflict(args.txnId);
+    result.success = iface_->get_latest_txnid_in_conflict(args.txnId);
     result.__isset.success = true;
   } catch (MetaException &o1) {
     result.o1 = o1;
     result.__isset.o1 = true;
   } catch (const std::exception& e) {
     if (this->eventHandler_.get() != NULL) {
-      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.get_latest_txn_in_conflict");
+      this->eventHandler_->handlerError(ctx, "ThriftHiveMetastore.get_latest_txnid_in_conflict");
     }
 
     ::apache::thrift::TApplicationException x(e.what());
-    oprot->writeMessageBegin("get_latest_txn_in_conflict", ::apache::thrift::protocol::T_EXCEPTION, seqid);
+    oprot->writeMessageBegin("get_latest_txnid_in_conflict", ::apache::thrift::protocol::T_EXCEPTION, seqid);
     x.write(oprot);
     oprot->writeMessageEnd();
     oprot->getTransport()->writeEnd();
@@ -81293,17 +81293,17 @@ void ThriftHiveMetastoreProcessor::process_get_latest_txn_in_conflict(int32_t se
   }
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.get_latest_txn_in_conflict");
+    this->eventHandler_->preWrite(ctx, "ThriftHiveMetastore.get_latest_txnid_in_conflict");
   }
 
-  oprot->writeMessageBegin("get_latest_txn_in_conflict", ::apache::thrift::protocol::T_REPLY, seqid);
+  oprot->writeMessageBegin("get_latest_txnid_in_conflict", ::apache::thrift::protocol::T_REPLY, seqid);
   result.write(oprot);
   oprot->writeMessageEnd();
   bytes = oprot->getTransport()->writeEnd();
   oprot->getTransport()->flush();
 
   if (this->eventHandler_.get() != NULL) {
-    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.get_latest_txn_in_conflict", bytes);
+    this->eventHandler_->postWrite(ctx, "ThriftHiveMetastore.get_latest_txnid_in_conflict", bytes);
   }
 }
 
@@ -100414,19 +100414,19 @@ void ThriftHiveMetastoreConcurrentClient::recv_commit_txn(const int32_t seqid)
   } // end while(true)
 }
 
-int64_t ThriftHiveMetastoreConcurrentClient::get_latest_txn_in_conflict(const int64_t txnId)
+int64_t ThriftHiveMetastoreConcurrentClient::get_latest_txnid_in_conflict(const int64_t txnId)
 {
-  int32_t seqid = send_get_latest_txn_in_conflict(txnId);
-  return recv_get_latest_txn_in_conflict(seqid);
+  int32_t seqid = send_get_latest_txnid_in_conflict(txnId);
+  return recv_get_latest_txnid_in_conflict(seqid);
 }
 
-int32_t ThriftHiveMetastoreConcurrentClient::send_get_latest_txn_in_conflict(const int64_t txnId)
+int32_t ThriftHiveMetastoreConcurrentClient::send_get_latest_txnid_in_conflict(const int64_t txnId)
 {
   int32_t cseqid = this->sync_.generateSeqId();
   ::apache::thrift::async::TConcurrentSendSentry sentry(&this->sync_);
-  oprot_->writeMessageBegin("get_latest_txn_in_conflict", ::apache::thrift::protocol::T_CALL, cseqid);
+  oprot_->writeMessageBegin("get_latest_txnid_in_conflict", ::apache::thrift::protocol::T_CALL, cseqid);
 
-  ThriftHiveMetastore_get_latest_txn_in_conflict_pargs args;
+  ThriftHiveMetastore_get_latest_txnid_in_conflict_pargs args;
   args.txnId = &txnId;
   args.write(oprot_);
 
@@ -100438,7 +100438,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_get_latest_txn_in_conflict(con
   return cseqid;
 }
 
-int64_t ThriftHiveMetastoreConcurrentClient::recv_get_latest_txn_in_conflict(const int32_t seqid)
+int64_t ThriftHiveMetastoreConcurrentClient::recv_get_latest_txnid_in_conflict(const int32_t seqid)
 {
 
   int32_t rseqid = 0;
@@ -100467,7 +100467,7 @@ int64_t ThriftHiveMetastoreConcurrentClient::recv_get_latest_txn_in_conflict(con
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
       }
-      if (fname.compare("get_latest_txn_in_conflict") != 0) {
+      if (fname.compare("get_latest_txnid_in_conflict") != 0) {
         iprot_->skip(::apache::thrift::protocol::T_STRUCT);
         iprot_->readMessageEnd();
         iprot_->getTransport()->readEnd();
@@ -100477,7 +100477,7 @@ int64_t ThriftHiveMetastoreConcurrentClient::recv_get_latest_txn_in_conflict(con
         throw TProtocolException(TProtocolException::INVALID_DATA);
       }
       int64_t _return;
-      ThriftHiveMetastore_get_latest_txn_in_conflict_presult result;
+      ThriftHiveMetastore_get_latest_txnid_in_conflict_presult result;
       result.success = &_return;
       result.read(iprot_);
       iprot_->readMessageEnd();
@@ -100492,7 +100492,7 @@ int64_t ThriftHiveMetastoreConcurrentClient::recv_get_latest_txn_in_conflict(con
         throw result.o1;
       }
       // in a bad state, don't commit
-      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_latest_txn_in_conflict failed: unknown result");
+      throw ::apache::thrift::TApplicationException(::apache::thrift::TApplicationException::MISSING_RESULT, "get_latest_txnid_in_conflict failed: unknown result");
     }
     // seqid != rseqid
     this->sync_.updatePending(fname, mtype, rseqid);

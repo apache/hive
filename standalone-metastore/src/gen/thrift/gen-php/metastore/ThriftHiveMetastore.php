@@ -1261,7 +1261,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf {
    * @return int
    * @throws \metastore\MetaException
    */
-  public function get_latest_txn_in_conflict($txnId);
+  public function get_latest_txnid_in_conflict($txnId);
   /**
    * @param \metastore\ReplTblWriteIdStateRequest $rqst
    */
@@ -10863,34 +10863,34 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     return;
   }
 
-  public function get_latest_txn_in_conflict($txnId)
+  public function get_latest_txnid_in_conflict($txnId)
   {
-    $this->send_get_latest_txn_in_conflict($txnId);
-    return $this->recv_get_latest_txn_in_conflict();
+    $this->send_get_latest_txnid_in_conflict($txnId);
+    return $this->recv_get_latest_txnid_in_conflict();
   }
 
-  public function send_get_latest_txn_in_conflict($txnId)
+  public function send_get_latest_txnid_in_conflict($txnId)
   {
-    $args = new \metastore\ThriftHiveMetastore_get_latest_txn_in_conflict_args();
+    $args = new \metastore\ThriftHiveMetastore_get_latest_txnid_in_conflict_args();
     $args->txnId = $txnId;
     $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
     if ($bin_accel)
     {
-      thrift_protocol_write_binary($this->output_, 'get_latest_txn_in_conflict', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
+      thrift_protocol_write_binary($this->output_, 'get_latest_txnid_in_conflict', TMessageType::CALL, $args, $this->seqid_, $this->output_->isStrictWrite());
     }
     else
     {
-      $this->output_->writeMessageBegin('get_latest_txn_in_conflict', TMessageType::CALL, $this->seqid_);
+      $this->output_->writeMessageBegin('get_latest_txnid_in_conflict', TMessageType::CALL, $this->seqid_);
       $args->write($this->output_);
       $this->output_->writeMessageEnd();
       $this->output_->getTransport()->flush();
     }
   }
 
-  public function recv_get_latest_txn_in_conflict()
+  public function recv_get_latest_txnid_in_conflict()
   {
     $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
-    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_get_latest_txn_in_conflict_result', $this->input_->isStrictRead());
+    if ($bin_accel) $result = thrift_protocol_read_binary($this->input_, '\metastore\ThriftHiveMetastore_get_latest_txnid_in_conflict_result', $this->input_->isStrictRead());
     else
     {
       $rseqid = 0;
@@ -10904,7 +10904,7 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         $this->input_->readMessageEnd();
         throw $x;
       }
-      $result = new \metastore\ThriftHiveMetastore_get_latest_txn_in_conflict_result();
+      $result = new \metastore\ThriftHiveMetastore_get_latest_txnid_in_conflict_result();
       $result->read($this->input_);
       $this->input_->readMessageEnd();
     }
@@ -10914,7 +10914,7 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
     if ($result->o1 !== null) {
       throw $result->o1;
     }
-    throw new \Exception("get_latest_txn_in_conflict failed: unknown result");
+    throw new \Exception("get_latest_txnid_in_conflict failed: unknown result");
   }
 
   public function repl_tbl_writeid_state(\metastore\ReplTblWriteIdStateRequest $rqst)
@@ -52402,7 +52402,7 @@ class ThriftHiveMetastore_commit_txn_result {
 
 }
 
-class ThriftHiveMetastore_get_latest_txn_in_conflict_args {
+class ThriftHiveMetastore_get_latest_txnid_in_conflict_args {
   static $_TSPEC;
 
   /**
@@ -52427,7 +52427,7 @@ class ThriftHiveMetastore_get_latest_txn_in_conflict_args {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_get_latest_txn_in_conflict_args';
+    return 'ThriftHiveMetastore_get_latest_txnid_in_conflict_args';
   }
 
   public function read($input)
@@ -52464,7 +52464,7 @@ class ThriftHiveMetastore_get_latest_txn_in_conflict_args {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_latest_txn_in_conflict_args');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_latest_txnid_in_conflict_args');
     if ($this->txnId !== null) {
       $xfer += $output->writeFieldBegin('txnId', TType::I64, 1);
       $xfer += $output->writeI64($this->txnId);
@@ -52477,7 +52477,7 @@ class ThriftHiveMetastore_get_latest_txn_in_conflict_args {
 
 }
 
-class ThriftHiveMetastore_get_latest_txn_in_conflict_result {
+class ThriftHiveMetastore_get_latest_txnid_in_conflict_result {
   static $_TSPEC;
 
   /**
@@ -52514,7 +52514,7 @@ class ThriftHiveMetastore_get_latest_txn_in_conflict_result {
   }
 
   public function getName() {
-    return 'ThriftHiveMetastore_get_latest_txn_in_conflict_result';
+    return 'ThriftHiveMetastore_get_latest_txnid_in_conflict_result';
   }
 
   public function read($input)
@@ -52559,7 +52559,7 @@ class ThriftHiveMetastore_get_latest_txn_in_conflict_result {
 
   public function write($output) {
     $xfer = 0;
-    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_latest_txn_in_conflict_result');
+    $xfer += $output->writeStructBegin('ThriftHiveMetastore_get_latest_txnid_in_conflict_result');
     if ($this->success !== null) {
       $xfer += $output->writeFieldBegin('success', TType::I64, 0);
       $xfer += $output->writeI64($this->success);

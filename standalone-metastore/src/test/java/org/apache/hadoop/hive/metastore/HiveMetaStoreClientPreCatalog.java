@@ -2550,7 +2550,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public long getLatestTxnInConflict(long txnId) throws MetaException {
+  public long getLatestTxnIdInConflict(long txnId) throws MetaException {
     return 0;
   }
 

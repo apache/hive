@@ -2505,7 +2505,7 @@ service ThriftHiveMetastore extends fb303.FacebookService
   void abort_txn(1:AbortTxnRequest rqst) throws (1:NoSuchTxnException o1)
   void abort_txns(1:AbortTxnsRequest rqst) throws (1:NoSuchTxnException o1)
   void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
-  i64 get_latest_txn_in_conflict(1:i64 txnId) throws (1:MetaException o1)
+  i64 get_latest_txnid_in_conflict(1:i64 txnId) throws (1:MetaException o1)
   void repl_tbl_writeid_state(1: ReplTblWriteIdStateRequest rqst)
   GetValidWriteIdsResponse get_valid_write_ids(1:GetValidWriteIdsRequest rqst)
       throws (1:NoSuchTxnException o1, 2:MetaException o2)

@@ -1358,7 +1358,7 @@ public class AcidUtils {
       original.clear();
       originalDirectories.clear();
     } else {
-      // Okay, we're going to need these originals.  
+      // Okay, we're going to need these originals.
       // Recurse through them and figure out what we really need.
       // If we already have the original list, do nothing
       // If childrenWithId != null, we would have already populated "original"
@@ -1515,7 +1515,7 @@ public class AcidUtils {
   }
 
   /**
-   * DFS dir listing. 
+   * DFS dir listing.
    * Captures a dir and the corresponding list of files it contains,
    * with additional properties about the dir (like isBase etc)
    *
@@ -1801,6 +1801,11 @@ public class AcidUtils {
       // keep track for error reporting
       bestBase.oldestBase = baseDir;
       bestBase.oldestBaseWriteId = writeId;
+    }
+    // Handle aborted IOW base.
+    if (writeIdList.isWriteIdAborted(writeId) && !isCompactedBase(parsedBase, fs, dirSnapshot)) {
+      aborted.add(baseDir);
+      return;
     }
     if (bestBase.basePath == null) {
       if (isValidBase(parsedBase, writeIdList, fs, dirSnapshot)) {

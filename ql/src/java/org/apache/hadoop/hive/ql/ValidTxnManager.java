@@ -94,7 +94,7 @@ class ValidTxnManager {
     }
 
     // 4) Check if there is conflict
-    long txnId = driverContext.getTxnManager().getLatestTxnInConflict();
+    long txnId = driverContext.getTxnManager().getLatestTxnIdInConflict();
     if (txnId <= 0) {
       return true;
     }

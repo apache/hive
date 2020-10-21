@@ -8302,8 +8302,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public long get_latest_txn_in_conflict(long txnId) throws MetaException {
-      return getTxnHandler().getLatestTxnInConflict(txnId);
+    public long get_latest_txnid_in_conflict(long txnId) throws MetaException {
+      return getTxnHandler().getLatestTxnIdInConflict(txnId);
     }
 
     @Override
