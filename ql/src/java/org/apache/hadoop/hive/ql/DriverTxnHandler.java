@@ -403,7 +403,7 @@ class DriverTxnHandler {
     }
 
     // 4) Check if there is conflict
-    long txnId = driverContext.getTxnManager().getLatestTxnIdInConflict();
+    long txnId = driverContext.getTxnManager().getLatestTxnInConflict();
     if (txnId <= 0) {
       return true;
     }

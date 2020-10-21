@@ -1488,7 +1488,7 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def get_latest_txnid_in_conflict(self, txnId):
+    def get_latest_txn_in_conflict(self, txnId):
         """
         Parameters:
          - txnId
@@ -8358,24 +8358,24 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o2
         return
 
-    def get_latest_txnid_in_conflict(self, txnId):
+    def get_latest_txn_in_conflict(self, txnId):
         """
         Parameters:
          - txnId
 
         """
-        self.send_get_latest_txnid_in_conflict(txnId)
-        return self.recv_get_latest_txnid_in_conflict()
+        self.send_get_latest_txn_in_conflict(txnId)
+        return self.recv_get_latest_txn_in_conflict()
 
-    def send_get_latest_txnid_in_conflict(self, txnId):
-        self._oprot.writeMessageBegin('get_latest_txnid_in_conflict', TMessageType.CALL, self._seqid)
-        args = get_latest_txnid_in_conflict_args()
+    def send_get_latest_txn_in_conflict(self, txnId):
+        self._oprot.writeMessageBegin('get_latest_txn_in_conflict', TMessageType.CALL, self._seqid)
+        args = get_latest_txn_in_conflict_args()
         args.txnId = txnId
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_get_latest_txnid_in_conflict(self):
+    def recv_get_latest_txn_in_conflict(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -8383,14 +8383,14 @@ class Client(fb303.FacebookService.Client, Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = get_latest_txnid_in_conflict_result()
+        result = get_latest_txn_in_conflict_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
         if result.o1 is not None:
             raise result.o1
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_latest_txnid_in_conflict failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_latest_txn_in_conflict failed: unknown result")
 
     def repl_tbl_writeid_state(self, rqst):
         """
@@ -11275,7 +11275,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["abort_txn"] = Processor.process_abort_txn
         self._processMap["abort_txns"] = Processor.process_abort_txns
         self._processMap["commit_txn"] = Processor.process_commit_txn
-        self._processMap["get_latest_txnid_in_conflict"] = Processor.process_get_latest_txnid_in_conflict
+        self._processMap["get_latest_txn_in_conflict"] = Processor.process_get_latest_txn_in_conflict
         self._processMap["repl_tbl_writeid_state"] = Processor.process_repl_tbl_writeid_state
         self._processMap["get_valid_write_ids"] = Processor.process_get_valid_write_ids
         self._processMap["allocate_table_write_ids"] = Processor.process_allocate_table_write_ids
@@ -16226,13 +16226,13 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_get_latest_txnid_in_conflict(self, seqid, iprot, oprot):
-        args = get_latest_txnid_in_conflict_args()
+    def process_get_latest_txn_in_conflict(self, seqid, iprot, oprot):
+        args = get_latest_txn_in_conflict_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = get_latest_txnid_in_conflict_result()
+        result = get_latest_txn_in_conflict_result()
         try:
-            result.success = self._handler.get_latest_txnid_in_conflict(args.txnId)
+            result.success = self._handler.get_latest_txn_in_conflict(args.txnId)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -16247,7 +16247,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             logging.exception('Unexpected exception in handler')
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("get_latest_txnid_in_conflict", msg_type, seqid)
+        oprot.writeMessageBegin("get_latest_txn_in_conflict", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -45580,7 +45580,7 @@ commit_txn_result.thrift_spec = (
 )
 
 
-class get_latest_txnid_in_conflict_args(object):
+class get_latest_txn_in_conflict_args(object):
     """
     Attributes:
      - txnId
@@ -45614,7 +45614,7 @@ class get_latest_txnid_in_conflict_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('get_latest_txnid_in_conflict_args')
+        oprot.writeStructBegin('get_latest_txn_in_conflict_args')
         if self.txnId is not None:
             oprot.writeFieldBegin('txnId', TType.I64, 1)
             oprot.writeI64(self.txnId)
@@ -45635,14 +45635,14 @@ class get_latest_txnid_in_conflict_args(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(get_latest_txnid_in_conflict_args)
-get_latest_txnid_in_conflict_args.thrift_spec = (
+all_structs.append(get_latest_txn_in_conflict_args)
+get_latest_txn_in_conflict_args.thrift_spec = (
     None,  # 0
     (1, TType.I64, 'txnId', None, None, ),  # 1
 )
 
 
-class get_latest_txnid_in_conflict_result(object):
+class get_latest_txn_in_conflict_result(object):
     """
     Attributes:
      - success
@@ -45684,7 +45684,7 @@ class get_latest_txnid_in_conflict_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('get_latest_txnid_in_conflict_result')
+        oprot.writeStructBegin('get_latest_txn_in_conflict_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.I64, 0)
             oprot.writeI64(self.success)
@@ -45709,8 +45709,8 @@ class get_latest_txnid_in_conflict_result(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(get_latest_txnid_in_conflict_result)
-get_latest_txnid_in_conflict_result.thrift_spec = (
+all_structs.append(get_latest_txn_in_conflict_result)
+get_latest_txn_in_conflict_result.thrift_spec = (
     (0, TType.I64, 'success', None, None, ),  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )

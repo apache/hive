@@ -1006,9 +1006,9 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   }
 
   @Override
-  public long getLatestTxnIdInConflict() throws LockException {
+  public long getLatestTxnInConflict() throws LockException {
     try {
-      return getMS().getLatestTxnIdInConflict(txnId);
+      return getMS().getLatestTxnInConflict(txnId);
     } catch (TException e) {
       throw new LockException(e);
     }

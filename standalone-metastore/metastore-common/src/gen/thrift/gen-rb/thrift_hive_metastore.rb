@@ -2814,20 +2814,20 @@ module ThriftHiveMetastore
       return
     end
 
-    def get_latest_txnid_in_conflict(txnId)
-      send_get_latest_txnid_in_conflict(txnId)
-      return recv_get_latest_txnid_in_conflict()
+    def get_latest_txn_in_conflict(txnId)
+      send_get_latest_txn_in_conflict(txnId)
+      return recv_get_latest_txn_in_conflict()
     end
 
-    def send_get_latest_txnid_in_conflict(txnId)
-      send_message('get_latest_txnid_in_conflict', Get_latest_txnid_in_conflict_args, :txnId => txnId)
+    def send_get_latest_txn_in_conflict(txnId)
+      send_message('get_latest_txn_in_conflict', Get_latest_txn_in_conflict_args, :txnId => txnId)
     end
 
-    def recv_get_latest_txnid_in_conflict()
-      result = receive_message(Get_latest_txnid_in_conflict_result)
+    def recv_get_latest_txn_in_conflict()
+      result = receive_message(Get_latest_txn_in_conflict_result)
       return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_latest_txnid_in_conflict failed: unknown result')
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_latest_txn_in_conflict failed: unknown result')
     end
 
     def repl_tbl_writeid_state(rqst)
@@ -6270,15 +6270,15 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'commit_txn', seqid)
     end
 
-    def process_get_latest_txnid_in_conflict(seqid, iprot, oprot)
-      args = read_args(iprot, Get_latest_txnid_in_conflict_args)
-      result = Get_latest_txnid_in_conflict_result.new()
+    def process_get_latest_txn_in_conflict(seqid, iprot, oprot)
+      args = read_args(iprot, Get_latest_txn_in_conflict_args)
+      result = Get_latest_txn_in_conflict_result.new()
       begin
-        result.success = @handler.get_latest_txnid_in_conflict(args.txnId)
+        result.success = @handler.get_latest_txn_in_conflict(args.txnId)
       rescue ::MetaException => o1
         result.o1 = o1
       end
-      write_result(result, oprot, 'get_latest_txnid_in_conflict', seqid)
+      write_result(result, oprot, 'get_latest_txn_in_conflict', seqid)
     end
 
     def process_repl_tbl_writeid_state(seqid, iprot, oprot)
@@ -13486,7 +13486,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Get_latest_txnid_in_conflict_args
+  class Get_latest_txn_in_conflict_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     TXNID = 1
 
@@ -13502,7 +13502,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Get_latest_txnid_in_conflict_result
+  class Get_latest_txn_in_conflict_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1
