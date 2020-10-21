@@ -25,6 +25,10 @@ bin=`cd "$bin"; pwd`
 
 . "$bin"/hive-config.sh
 
+if [ -f "${HIVE_CONF_DIR}/hive-env.sh" ]; then
+  . "${HIVE_CONF_DIR}/hive-env.sh"
+fi
+
 SERVICE=""
 HELP=""
 SKIP_HBASECP=false
@@ -90,16 +94,16 @@ if [[ "$SERVICE" == "cli" && "$USE_BEELINE_FOR_HIVE_CLI" == "true" ]] ; then
   SERVICE="beeline"
 fi
 
+if [[ "$SERVICE" == "beeline" && ! -z "$BEELINE_URL_LEGACY" ]] ; then
+  SERVICE="beeline -c $BEELINE_URL_LEGACY"
+fi
+
 if [[ "$SERVICE" =~ ^(help|version|orcfiledump|rcfilecat|schemaTool|cleardanglingscratchdir|metastore|beeline|llapstatus|llap)$ ]] ; then
   SKIP_HBASECP=true
 fi
 
 if [[ "$SERVICE" =~ ^(help|schemaTool)$ ]] ; then
   SKIP_HADOOPVERSION=true
-fi
-
-if [ -f "${HIVE_CONF_DIR}/hive-env.sh" ]; then
-  . "${HIVE_CONF_DIR}/hive-env.sh"
 fi
 
 if [[ -z "$SPARK_HOME" ]]
@@ -331,6 +335,10 @@ if [ "$DEBUG" ]; then
 fi
 
 TORUN=""
+if [[ "$SERVICE" = "beeline -c"* ]] ; then
+  TORUN=$SERVICE$HELP
+fi
+
 for j in $SERVICE_LIST ; do
   if [ "$j" = "$SERVICE" ] ; then
     TORUN=${j}$HELP
