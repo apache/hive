@@ -3870,8 +3870,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public long getLatestTxnIdInConflict(long txnId) throws TException {
-    return client.get_latest_txnid_in_conflict(txnId);
+  public long getLatestTxnInConflict(long txnId) throws TException {
+    return client.get_latest_txn_in_conflict(txnId);
   }
 
   @InterfaceAudience.LimitedPrivate({"HCatalog"})

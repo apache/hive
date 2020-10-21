@@ -51,8 +51,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -252,21 +250,20 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       "\"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_LAST_HEARTBEAT\", \"HL_USER\", \"HL_HOST\", \"HL_AGENT_INFO\") " +
       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, %s, ?, ?, ?)";
   private static final String TXN_COMPONENTS_INSERT_QUERY = "INSERT INTO \"TXN_COMPONENTS\" (" +
-      "\"TC_TXNID\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_OPERATION_TYPE\", \"TC_WRITEID\")" +
-      " VALUES (?, ?, ?, ?, ?, ?)";
+          "\"TC_TXNID\", \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_OPERATION_TYPE\", \"TC_WRITEID\")" +
+          " VALUES (?, ?, ?, ?, ?, ?)";
   private static final String TXN_COMPONENTS_DP_DELETE_QUERY = "DELETE FROM \"TXN_COMPONENTS\" " +
-      "WHERE \"TC_TXNID\" = ? AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ? AND \"TC_PARTITION\" IS NULL";
+      "WHERE \"TC_TXNID\" = ? AND \"TC_PARTITION\" IS NULL";
   private static final String INCREMENT_NEXT_LOCK_ID_QUERY = "UPDATE \"NEXT_LOCK_ID\" SET \"NL_NEXT\" = %s";
-  private static final String UPDATE_HIVE_LOCKS_EXT_ID_QUERY = "UPDATE \"HIVE_LOCKS\" SET \"HL_LOCK_EXT_ID\" = %s " +
-      "WHERE \"HL_LOCK_EXT_ID\" = %s";
-  private static final String SELECT_WRITE_ID_QUERY = "SELECT \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" WHERE" +
-      " \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND \"T2W_TXNID\" = ?";
+  private static final String UPDATE_HIVE_LOCKS_EXT_ID_QUERY = "UPDATE \"HIVE_LOCKS\" SET \"HL_LOCK_EXT_ID\" = %s WHERE \"HL_LOCK_EXT_ID\" = %s";
+  private static final String SELECT_WRITE_ID_QUERY = "SELECT \"T2W_WRITEID\" FROM \"TXN_TO_WRITE_ID\" WHERE"
+          + " \"T2W_DATABASE\" = ? AND \"T2W_TABLE\" = ? AND \"T2W_TXNID\" = ?";
   private static final String COMPL_TXN_COMPONENTS_INSERT_QUERY = "INSERT INTO \"COMPLETED_TXN_COMPONENTS\" " +
-      "(\"CTC_TXNID\"," + " \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\")" +
-      " VALUES (%s, ?, ?, ?, ?, %s)";
+          "(\"CTC_TXNID\"," + " \"CTC_DATABASE\", \"CTC_TABLE\", \"CTC_PARTITION\", \"CTC_WRITEID\", \"CTC_UPDATE_DELETE\")" +
+          " VALUES (%s, ?, ?, ?, ?, %s)";
   private static final String TXNS_INSERT_QRY = "INSERT INTO \"TXNS\" " +
-      "(\"TXN_STATE\", \"TXN_STARTED\", \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\", \"TXN_TYPE\") " +
-      "VALUES(?,%s,%s,?,?,?)";
+      "(\"TXN_STATE\", \"TXN_STARTED\", \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\", \"TXN_TYPE\") "
+      + "VALUES(?,%s,%s,?,?,?)";
   private static final String SELECT_LOCKS_FOR_LOCK_ID_QUERY = "SELECT \"HL_LOCK_EXT_ID\", \"HL_LOCK_INT_ID\", " +
       "\"HL_DB\", \"HL_TABLE\", \"HL_PARTITION\", \"HL_LOCK_STATE\", \"HL_LOCK_TYPE\", \"HL_TXNID\" " +
       "FROM \"HIVE_LOCKS\" WHERE \"HL_LOCK_EXT_ID\" = ?";
@@ -1268,7 +1265,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           raiseTxnUnexpectedState(actualTxnStatus, txnid);
         }
 
-        String conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN (" +
+        String conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN(" +
                 OperationType.UPDATE + "," + OperationType.DELETE + ")";
 
         long tempCommitId = generateTemporaryId();
@@ -1421,7 +1418,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * @return max Id for the conflicting transaction, if any, otherwise -1
    * @throws MetaException
    */
-  public long getLatestTxnIdInConflict(long txnid) throws MetaException {
+  public long getLatestTxnInConflict(long txnid) throws MetaException {
     Connection dbConn = null;
     Statement stmt = null;
 
@@ -1435,7 +1432,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         "SELECT DISTINCT \"TC_DATABASE\", \"TC_TABLE\", \"TC_PARTITION\", \"TC_TXNID\" " +
         " FROM \"TXN_COMPONENTS\"  " +
         "   WHERE \"TC_TXNID\" = " + txnid +
-        "     AND \"TC_OPERATION_TYPE\" IN (" + OperationType.UPDATE + "," + OperationType.DELETE + ")) \"CUR\" " +
+        "     AND \"TC_OPERATION_TYPE\" IN (" + OperationType.UPDATE + ", " + OperationType.DELETE + ")) \"CUR\" " +
         "   ON \"COMMITTED\".\"WS_DATABASE\" = \"CUR\".\"TC_DATABASE\" " +
         "     AND \"COMMITTED\".\"WS_TABLE\" = \"CUR\".\"TC_TABLE\" " +
         //For partitioned table we always track writes at partition level (never at table)
@@ -2680,16 +2677,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         // For each component in this lock request,
         // add an entry to the txn_components table
         int insertCounter = 0;
-
-        Predicate<LockComponent> isDynPart = lc -> lc.isSetIsDynamicPartitionWrite() && lc.isIsDynamicPartitionWrite();
-        Function<LockComponent, Pair<String, String>> groupKey = lc ->
-            Pair.of(normalizeCase(lc.getDbname()), normalizeCase(lc.getTablename()));
-
-        Set<Pair<String, String>> isDynPartUpdate = rqst.getComponent().stream().filter(isDynPart)
-          .filter(lc -> lc.getOperationType() == DataOperationType.UPDATE || lc.getOperationType() == DataOperationType.DELETE)
-          .map(groupKey)
-        .collect(Collectors.toSet());
-
         for (LockComponent lc : rqst.getComponent()) {
           if (lc.isSetIsTransactional() && !lc.isIsTransactional()) {
             //we don't prevent using non-acid resources in a txn but we do lock them
@@ -2698,17 +2685,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           if (!shouldUpdateTxnComponent(txnid, rqst, lc)) {
             continue;
           }
+
           String dbName = normalizeCase(lc.getDbname());
           String tblName = normalizeCase(lc.getTablename());
           String partName = normalizeCase(lc.getPartitionname());
-          OperationType opType = OperationType.fromDataOperationType(lc.getOperationType());
 
-          if (isDynPart.test(lc)) {
+          if (lc.isSetIsDynamicPartitionWrite() && lc.isIsDynamicPartitionWrite()) {
             partName = null;
-            if (writeIdCache.containsKey(groupKey.apply(lc))) {
+            if (writeIdCache.containsKey(Pair.of(dbName, tblName))) {
               continue;
             }
-            opType = isDynPartUpdate.contains(groupKey.apply(lc)) ? OperationType.UPDATE : OperationType.INSERT;
           }
           Optional<Long> writeId = getWriteId(writeIdCache, dbName, tblName, txnid, dbConn);
 
@@ -2716,7 +2702,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           pstmt.setString(2, dbName);
           pstmt.setString(3, tblName);
           pstmt.setString(4, partName);
-          pstmt.setString(5, opType.getSqlConst());
+          pstmt.setString(5, OperationType.fromDataOperationType(lc.getOperationType()).getSqlConst());
           pstmt.setObject(6, writeId.orElse(null));
 
           pstmt.addBatch();
@@ -2776,9 +2762,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     else {
       switch (lc.getOperationType()) {
         case INSERT:
+            /**
+             * we know this is part of DP operation and so we'll get
+             * {@link #addDynamicPartitions(AddDynamicPartitions)} call with the list
+             * of partitions actually changed.
+             */
+            return !lc.isSetIsDynamicPartitionWrite() || !lc.isIsDynamicPartitionWrite();
         case UPDATE:
         case DELETE:
-          return true;
+            return true;
         case SELECT:
           return false;
         case NO_TXN:
@@ -3371,7 +3363,20 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         buf.append(INITIATED_STATE);
         buf.append("', '");
-        buf.append(thriftCompactionType2DbType(rqst.getType()));
+        switch (rqst.getType()) {
+          case MAJOR:
+            buf.append(MAJOR_TYPE);
+            break;
+
+          case MINOR:
+            buf.append(MINOR_TYPE);
+            break;
+
+          default:
+            LOG.debug("Going to rollback");
+            dbConn.rollback();
+            throw new MetaException("Unexpected compaction type " + rqst.getType().toString());
+        }
         buf.append("',");
         buf.append(getEpochFn(dbProduct));
         if (rqst.getProperties() != null) {
@@ -3452,10 +3457,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           e.setTablename(rs.getString(2));
           e.setPartitionname(rs.getString(3));
           e.setState(compactorStateToResponse(rs.getString(4).charAt(0)));
-          try {
-            e.setType(dbCompactionType2ThriftType(rs.getString(5).charAt(0)));
-          } catch (MetaException ex) {
-            //do nothing to handle RU/D if we add another status
+          switch (rs.getString(5).charAt(0)) {
+            case MAJOR_TYPE: e.setType(CompactionType.MAJOR); break;
+            case MINOR_TYPE: e.setType(CompactionType.MINOR); break;
+            default:
+              //do nothing to handle RU/D if we add another status
           }
           e.setWorkerid(rs.getString(6));
           long start = rs.getLong(7);
@@ -3555,8 +3561,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         }
         try (PreparedStatement pstmt = dbConn.prepareStatement(TXN_COMPONENTS_DP_DELETE_QUERY)) {
           pstmt.setLong(1, rqst.getTxnid());
-          pstmt.setString(2, normalizeCase(rqst.getDbname()));
-          pstmt.setString(3, normalizeCase(rqst.getTablename()));
           pstmt.execute();
         }
         LOG.debug("Going to commit");
@@ -5144,25 +5148,26 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   static String quoteChar(char c) {
     return "'" + c + "'";
   }
-
-  static CompactionType dbCompactionType2ThriftType(char dbValue) throws MetaException {
+  static CompactionType dbCompactionType2ThriftType(char dbValue) {
     switch (dbValue) {
       case MAJOR_TYPE:
         return CompactionType.MAJOR;
       case MINOR_TYPE:
         return CompactionType.MINOR;
       default:
-        throw new MetaException("Unexpected compaction type " + dbValue);
+        LOG.warn("Unexpected compaction type " + dbValue);
+        return null;
     }
   }
-  static Character thriftCompactionType2DbType(CompactionType ct) throws MetaException {
+  static Character thriftCompactionType2DbType(CompactionType ct) {
     switch (ct) {
       case MAJOR:
         return MAJOR_TYPE;
       case MINOR:
         return MINOR_TYPE;
       default:
-        throw new MetaException("Unexpected compaction type " + ct);
+        LOG.warn("Unexpected compaction type " + ct);
+        return null;
     }
   }
 
