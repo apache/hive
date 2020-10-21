@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 
@@ -151,7 +152,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
    * @param rs ResultSet after call to rs.next()
    * @throws SQLException
    */
-  static CompactionInfo loadFullFromCompactionQueue(ResultSet rs) throws SQLException {
+  static CompactionInfo loadFullFromCompactionQueue(ResultSet rs) throws SQLException, MetaException {
     CompactionInfo fullCi = new CompactionInfo();
     fullCi.id = rs.getLong(1);
     fullCi.dbname = rs.getString(2);
@@ -170,7 +171,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.enqueueTime = rs.getLong(15);
     return fullCi;
   }
-  static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException {
+  static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException, MetaException {
     pStmt.setLong(1, ci.id);
     pStmt.setString(2, ci.dbname);
     pStmt.setString(3, ci.tableName);
