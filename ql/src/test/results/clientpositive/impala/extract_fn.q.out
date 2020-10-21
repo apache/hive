@@ -1,0 +1,444 @@
+PREHOOK: query: drop table if exists table_single_ts_n0
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists table_single_ts_n0
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table table_single_ts_n0(
+  tt_timestamp timestamp
+) stored as parquet
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@table_single_ts_n0
+POSTHOOK: query: create table table_single_ts_n0(
+  tt_timestamp timestamp
+) stored as parquet
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@table_single_ts_n0
+PREHOOK: query: explain
+select extract(year from tt_timestamp) as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(year from tt_timestamp)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_single_ts_n0
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select extract(year from tt_timestamp) as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(year from tt_timestamp)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_single_ts_n0
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+PLAN-ROOT SINK
+04:EXCHANGE [UNPARTITIONED]
+03:AGGREGATE [FINALIZE]
+02:EXCHANGE [HASH(year(default.table_single_ts_n0.tt_timestamp))]
+01:AGGREGATE [STREAMING]
+00:SCAN HDFS [default.table_single_ts_n0]
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select extract(month from tt_timestamp) as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(month from tt_timestamp)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_single_ts_n0
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select extract(month from tt_timestamp) as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(month from tt_timestamp)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_single_ts_n0
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+PLAN-ROOT SINK
+04:EXCHANGE [UNPARTITIONED]
+03:AGGREGATE [FINALIZE]
+02:EXCHANGE [HASH(month(default.table_single_ts_n0.tt_timestamp))]
+01:AGGREGATE [STREAMING]
+00:SCAN HDFS [default.table_single_ts_n0]
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select extract(day from tt_timestamp) as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(day from tt_timestamp)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_single_ts_n0
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select extract(day from tt_timestamp) as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(day from tt_timestamp)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_single_ts_n0
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+PLAN-ROOT SINK
+04:EXCHANGE [UNPARTITIONED]
+03:AGGREGATE [FINALIZE]
+02:EXCHANGE [HASH(day(default.table_single_ts_n0.tt_timestamp))]
+01:AGGREGATE [STREAMING]
+00:SCAN HDFS [default.table_single_ts_n0]
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select extract(hour from tt_timestamp) as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(hour from tt_timestamp)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_single_ts_n0
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select extract(hour from tt_timestamp) as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(hour from tt_timestamp)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_single_ts_n0
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+PLAN-ROOT SINK
+04:EXCHANGE [UNPARTITIONED]
+03:AGGREGATE [FINALIZE]
+02:EXCHANGE [HASH(hour(default.table_single_ts_n0.tt_timestamp))]
+01:AGGREGATE [STREAMING]
+00:SCAN HDFS [default.table_single_ts_n0]
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select extract(minute from tt_timestamp) as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(minute from tt_timestamp)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_single_ts_n0
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select extract(minute from tt_timestamp) as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(minute from tt_timestamp)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_single_ts_n0
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+PLAN-ROOT SINK
+04:EXCHANGE [UNPARTITIONED]
+03:AGGREGATE [FINALIZE]
+02:EXCHANGE [HASH(minute(default.table_single_ts_n0.tt_timestamp))]
+01:AGGREGATE [STREAMING]
+00:SCAN HDFS [default.table_single_ts_n0]
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select extract(second from tt_timestamp) as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(second from tt_timestamp)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_single_ts_n0
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select extract(second from tt_timestamp) as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(second from tt_timestamp)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_single_ts_n0
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+PLAN-ROOT SINK
+04:EXCHANGE [UNPARTITIONED]
+03:AGGREGATE [FINALIZE]
+02:EXCHANGE [HASH(second(default.table_single_ts_n0.tt_timestamp))]
+01:AGGREGATE [STREAMING]
+00:SCAN HDFS [default.table_single_ts_n0]
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select extract(tt_timestamp, 'year') as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(tt_timestamp, 'year')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_single_ts_n0
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select extract(tt_timestamp, 'year') as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(tt_timestamp, 'year')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_single_ts_n0
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+PLAN-ROOT SINK
+04:EXCHANGE [UNPARTITIONED]
+03:AGGREGATE [FINALIZE]
+02:EXCHANGE [HASH(year(default.table_single_ts_n0.tt_timestamp))]
+01:AGGREGATE [STREAMING]
+00:SCAN HDFS [default.table_single_ts_n0]
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select extract(tt_timestamp, 'month') as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(tt_timestamp, 'month')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_single_ts_n0
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select extract(tt_timestamp, 'month') as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(tt_timestamp, 'month')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_single_ts_n0
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+PLAN-ROOT SINK
+04:EXCHANGE [UNPARTITIONED]
+03:AGGREGATE [FINALIZE]
+02:EXCHANGE [HASH(month(default.table_single_ts_n0.tt_timestamp))]
+01:AGGREGATE [STREAMING]
+00:SCAN HDFS [default.table_single_ts_n0]
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select extract(tt_timestamp, 'day') as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(tt_timestamp, 'day')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_single_ts_n0
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select extract(tt_timestamp, 'day') as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(tt_timestamp, 'day')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_single_ts_n0
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+PLAN-ROOT SINK
+04:EXCHANGE [UNPARTITIONED]
+03:AGGREGATE [FINALIZE]
+02:EXCHANGE [HASH(day(default.table_single_ts_n0.tt_timestamp))]
+01:AGGREGATE [STREAMING]
+00:SCAN HDFS [default.table_single_ts_n0]
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select extract(tt_timestamp, 'hour') as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(tt_timestamp, 'hour')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_single_ts_n0
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select extract(tt_timestamp, 'hour') as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(tt_timestamp, 'hour')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_single_ts_n0
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+PLAN-ROOT SINK
+04:EXCHANGE [UNPARTITIONED]
+03:AGGREGATE [FINALIZE]
+02:EXCHANGE [HASH(hour(default.table_single_ts_n0.tt_timestamp))]
+01:AGGREGATE [STREAMING]
+00:SCAN HDFS [default.table_single_ts_n0]
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select extract(tt_timestamp, 'minute') as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(tt_timestamp, 'minute')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_single_ts_n0
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select extract(tt_timestamp, 'minute') as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(tt_timestamp, 'minute')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_single_ts_n0
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+PLAN-ROOT SINK
+04:EXCHANGE [UNPARTITIONED]
+03:AGGREGATE [FINALIZE]
+02:EXCHANGE [HASH(minute(default.table_single_ts_n0.tt_timestamp))]
+01:AGGREGATE [STREAMING]
+00:SCAN HDFS [default.table_single_ts_n0]
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain
+select extract(tt_timestamp, 'second') as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(tt_timestamp, 'second')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@table_single_ts_n0
+PREHOOK: Output: streaming
+POSTHOOK: query: explain
+select extract(tt_timestamp, 'second') as year_from_ts, count(*)
+from table_single_ts_n0
+group by extract(tt_timestamp, 'second')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@table_single_ts_n0
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+PLAN-ROOT SINK
+04:EXCHANGE [UNPARTITIONED]
+03:AGGREGATE [FINALIZE]
+02:EXCHANGE [HASH(second(default.table_single_ts_n0.tt_timestamp))]
+01:AGGREGATE [STREAMING]
+00:SCAN HDFS [default.table_single_ts_n0]
+
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: drop table table_single_ts_n0
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@table_single_ts_n0
+PREHOOK: Output: default@table_single_ts_n0
+POSTHOOK: query: drop table table_single_ts_n0
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@table_single_ts_n0
+POSTHOOK: Output: default@table_single_ts_n0

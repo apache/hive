@@ -313,10 +313,14 @@ extractExpression
     :
     KW_EXTRACT
     LPAREN
-          (timeUnit=timeQualifiers)
-          KW_FROM
-          expression
-    RPAREN -> ^(TOK_FUNCTION $timeUnit expression)
+    (
+      ( (timeUnit=timeQualifiers) KW_FROM expression )
+      |
+      ( expression COMMA (fn=StringLiteral) )
+    )
+    RPAREN
+    -> {timeUnit != null}? ^(TOK_FUNCTION $timeUnit expression)
+    -> ^(TOK_FUNCTION Identifier[$fn.text.substring(1, $fn.text.length() -1)] expression)
     ;
 
 timeQualifiers
