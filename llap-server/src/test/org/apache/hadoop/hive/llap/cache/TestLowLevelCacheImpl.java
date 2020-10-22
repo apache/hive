@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
+import java.util.stream.IntStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -204,6 +205,28 @@ Example code to test specific scenarios:
       }
       iter = iter.next;
     }
+  }
+
+  @Test
+  public void testBitmaskHandling() {
+    LowLevelCacheImpl cache = new LowLevelCacheImpl(
+            LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+            new DummyAllocator(), true, -1); // no cleanup thread
+    long fn1 = 1;
+
+    LlapDataBuffer[] buffs1 = IntStream.range(0, 5).mapToObj(i -> fb()).toArray(LlapDataBuffer[]::new);
+    DiskRange[] drs1 = drs(1, 2, 31, 32, 33);
+
+    LlapDataBuffer[] buffs2 = IntStream.range(0, 41).mapToObj(i -> fb()).toArray(LlapDataBuffer[]::new);
+    DiskRange[] drs2 = drs(IntStream.range(1, 42).toArray());
+
+
+    assertNull(cache.putFileData(fn1, drs1, buffs1, 0, Priority.NORMAL, null, null));
+
+    long[] mask = cache.putFileData(fn1, drs2, buffs2, 0, Priority.NORMAL, null, null);
+    assertEquals(1, mask.length);
+    long expected = Long.parseLong("111000000000000000000000000000011", 2);
+    assertEquals(expected, mask[0]);
   }
 
   @Test
