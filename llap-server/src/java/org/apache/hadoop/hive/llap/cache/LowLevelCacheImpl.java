@@ -343,7 +343,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
             if (result == null) {
               result = new long[align64(buffers.length) >>> 6];
             }
-            result[i >>> 6] |= (1 << (i & 63)); // indicate that we've replaced the value
+            result[i >>> 6] |= (1L << (i & 63)); // indicate that we've replaced the value
             break;
           }
           // We found some old value but couldn't incRef it; remove it.
