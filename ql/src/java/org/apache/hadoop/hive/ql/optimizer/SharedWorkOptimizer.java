@@ -429,7 +429,7 @@ public class SharedWorkOptimizer extends Transform {
               // about the part of the tree that can be merged. We need to regenerate the
               // cache because semijoin operators have been removed
               sr = extractSharedOptimizationInfoForRoot(pctx, optimizerCache, retainableTsOp, discardableTsOp, false);
-              if (!validPreConditions(pctx, optimizerCache, sr)) {
+              if (!isResultValid(sr)) {
                 LOG.debug("{} and {} do not meet preconditions", retainableTsOp, discardableTsOp);
                 continue;
               }
@@ -1315,6 +1315,20 @@ public class SharedWorkOptimizer extends Transform {
         return false;
       }
     }
+    Set<Operator<?>> ascendants = findAscendantWorkOperators(pctx, cache, tsOp1);
+    if (ascendants.contains(tsOp2)) {
+      // This should not happen, we cannot merge
+      return false;
+    }
+    final Set<Operator<?>> workOps1 = findWorkOperators(cache, tsOp1);
+    for (Operator<?> op : workOps1) {
+      if (op instanceof UnionOperator) {
+        return false;
+      }
+      if (op instanceof DummyStoreOperator) {
+        return false;
+      }
+    }
     return true;
   }
 
@@ -1689,6 +1703,10 @@ public class SharedWorkOptimizer extends Transform {
   private static boolean validPreConditions(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,
           SharedResult sr) {
 
+    if (!isResultValid(sr)) {
+      return false;
+    }
+
     Operator<?> op1 = sr.retainableOps.get(0);
     Operator<?> op2 = sr.discardableOps.get(0);
 
@@ -1779,6 +1797,18 @@ public class SharedWorkOptimizer extends Transform {
             findDescendantWorkOperators(pctx, optimizerCache, op2, sr.discardableInputOps);
     if (!Collections.disjoint(descendantWorksOps1, workOps2)
             || !Collections.disjoint(workOps1, descendantWorksOps2)) {
+      return false;
+    }
+    return true;
+  }
+
+  private static boolean isResultValid(SharedResult sr) {
+    // We check whether merging the works would cause the size of
+    // the data in memory grow too large.
+    // TODO: Currently ignores GBY and PTF which may also buffer data in memory.
+    if (sr.dataSize > sr.maxDataSize) {
+      // Size surpasses limit, we cannot convert
+      LOG.debug("accumulated data size: {} / max size: {}", sr.dataSize, sr.maxDataSize);
       return false;
     }
     return true;
