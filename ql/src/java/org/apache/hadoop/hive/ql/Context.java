@@ -686,14 +686,8 @@ public class Context {
           // delete only the paths which aren't result cache dir path
           // because that will be taken care by removeResultCacheDir
           FileSystem fs = p.getFileSystem(conf);
-          if (sessionState.isSyncContextCleanup()) {
-            LOG.info("Deleting scratch dir: {}", p);
-            fs.delete(p, true);
-            fs.cancelDeleteOnExit(p);
-          } else {
-            PathCleaner pathCleaner = sessionState.getPathCleaner();
-            pathCleaner.deleteAsync(p, fs);
-          }
+          LOG.info("Deleting scratch dir: {}", p);
+          sessionState.getCleanupService().deleteRecursive(p, fs);
         }
       } catch (Exception e) {
         LOG.warn("Error Removing Scratch: "
