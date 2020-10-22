@@ -44,6 +44,8 @@ import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.slf4j.Logger;
@@ -122,8 +124,13 @@ public class ParallelEdgeFixer extends Transform {
         OperatorFactory.getAndMakeChild(p.getCompilationOpContext(), newConf, new ArrayList<>());
 
     // alter old RS conf to forward only
+    conf.setOutputName("forward_to_" + newRS);
     conf.setForwarding(true);
     conf.setTag(0);
+
+    newConf.setKeyCols(createColumnRefs(conf.getKeyCols(), conf.getOutputKeyColumnNames()));
+    newConf.setValueCols(createColumnRefs(conf.getValueCols(), conf.getOutputValueColumnNames()));
+    //    newConf.setPartitionCols(partitionCols);
 
     newRS.setParentOperators(Lists.newArrayList(p));
     newRS.setChildOperators(Lists.newArrayList(o));
@@ -131,6 +138,19 @@ public class ParallelEdgeFixer extends Transform {
     p.replaceChild(o, newRS);
     o.replaceParent(p, newRS);
 
+  }
+
+  private List<ExprNodeDesc> createColumnRefs(List<ExprNodeDesc> oldExprs, List<String> newColumnNames) {
+    List<ExprNodeDesc> newExprs = new ArrayList<ExprNodeDesc>();
+    for (int i = 0; i < newColumnNames.size(); i++) {
+      ExprNodeDesc expr = oldExprs.get(i);
+      String name = newColumnNames.get(i);
+
+      ExprNodeDesc colRef = new ExprNodeColumnDesc(expr.getTypeInfo(), name, name, false);
+      newExprs.add(colRef);
+
+    }
+    return newExprs;
   }
 
   private void assignGroupVersions(Set<OpGroup> groups) {

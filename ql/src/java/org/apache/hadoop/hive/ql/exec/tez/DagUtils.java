@@ -1007,7 +1007,7 @@ public class DagUtils {
     Operator<?> reducer = reduceWork.getReducer();
     if (reducer.getConf() instanceof ReduceSinkDesc) {
       // this will be a single-RS forward reducer - numTasks should be -1 for one-to-one edge to work
-      return -1;
+      return 1;
     }
     if (reduceWork.isAutoReduceParallelism()) {
       return reduceWork.getMaxReduceTasks();
