@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,14 +65,19 @@ import com.google.common.collect.Sets;
  * In case a bucketed table is read from the table location; the data should be threated as described by the table's bucketing_version property.
  *
  */
-public class BucketVersionPopulator extends Transform {
+public class ParallelEdgeFixer extends Transform {
 
-  protected static final Logger LOG = LoggerFactory.getLogger(BucketVersionPopulator.class);
+  protected static final Logger LOG = LoggerFactory.getLogger(ParallelEdgeFixer.class);
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
     Set<OpGroup> groups = findOpGroups(pctx);
-    assignGroupVersions(groups);
+    fixParallelEdges(groups);
+    try {
+      new OperatorGraph(pctx).toDot(new File("/tmp/last_para"));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
     return pctx;
   }
 
@@ -110,22 +116,20 @@ public class BucketVersionPopulator extends Transform {
     LOG.info("Fixing parallel by adding RS between {} -> {}", p, o);
 
     ReduceSinkDesc conf = (ReduceSinkDesc) p.getConf();
-    ReduceSinkDesc newConf=(ReduceSinkDesc) conf.clone();
-
+    ReduceSinkDesc newConf = (ReduceSinkDesc) conf.clone();
 
     Operator<ReduceSinkDesc> newRS =
         OperatorFactory.getAndMakeChild(p.getCompilationOpContext(), newConf, new ArrayList<>());
 
     // alter old RS conf to forward only
     conf.setForwarding(true);
+    conf.setTag(0);
 
     newRS.setParentOperators(Lists.newArrayList(p));
     newRS.setChildOperators(Lists.newArrayList(o));
 
     p.replaceChild(o, newRS);
     o.replaceParent(p, newRS);
-
-
 
   }
 
@@ -166,7 +170,7 @@ public class BucketVersionPopulator extends Transform {
         throws SemanticException {
       Operator<?> o = (Operator<?>) nd;
       OpGroup g;
-      if (nodeOutputs.length == 0) {
+      if (nodeOutputs.length == 0 || o instanceof ReduceSinkOperator) {
         g = newGroup(procCtx);
       } else {
         g = (OpGroup) nodeOutputs[0];
@@ -175,12 +179,7 @@ public class BucketVersionPopulator extends Transform {
         g.merge((OpGroup) nodeOutputs[i]);
       }
       g.add(o);
-      if (o instanceof ReduceSinkOperator) {
-        // start a new group before the reduceSinkOperator
-        return newGroup(procCtx);
-      } else {
         return g;
-      }
     }
 
     private OpGroup newGroup(NodeProcessorCtx procCtx) {

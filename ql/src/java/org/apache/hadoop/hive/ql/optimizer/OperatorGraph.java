@@ -86,7 +86,7 @@ public class OperatorGraph {
   DagGraph<Operator<?>, OpEdge> g;
 
   enum EdgeType {
-    FLOW, SEMIJOIN, DPP, CLUSTER, TEST,
+    FLOW, SEMIJOIN, DPP, TEST,
   }
 
   static class OpEdge {

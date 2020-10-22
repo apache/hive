@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MergeJoinWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TezEdgeProperty;
@@ -996,12 +997,23 @@ public class DagUtils {
     Vertex reducer = Vertex.create(reduceWork.getName(),
         ProcessorDescriptor.create(ReduceTezProcessor.class.getName()).
             setUserPayload(TezUtils.createUserPayloadFromConf(conf)),
-        reduceWork.isAutoReduceParallelism() ?
-            reduceWork.getMaxReduceTasks() :
-            reduceWork.getNumReduceTasks(), getContainerResource(conf));
+        getNumTasksForWork(reduceWork), getContainerResource(conf));
 
     reducer.setTaskEnvironment(getContainerEnvironment(conf, false));
     return reducer;
+  }
+
+  private int getNumTasksForWork(ReduceWork reduceWork) {
+    Operator<?> reducer = reduceWork.getReducer();
+    if (reducer.getConf() instanceof ReduceSinkDesc) {
+      // this will be a single-RS forward reducer - numTasks should be -1 for one-to-one edge to work
+      return -1;
+    }
+    if (reduceWork.isAutoReduceParallelism()) {
+      return reduceWork.getMaxReduceTasks();
+    } else {
+      return reduceWork.getNumReduceTasks();
+  }
   }
 
   public static Map<String, LocalResource> createTezLrMap(
@@ -1454,7 +1466,7 @@ public class DagUtils {
    * Creates and initializes a JobConf object that can be used to execute
    * the DAG. This can skip the configs which are already included in AM configs.
    * @param hiveConf Current conf for the execution
-   * @param skipAMConf Skip the configs where are already set across all DAGs 
+   * @param skipAMConf Skip the configs where are already set across all DAGs
    * @return JobConf base configuration for job execution
    * @throws IOException
    */
@@ -1489,7 +1501,7 @@ public class DagUtils {
     hiveConf.stripHiddenConfigurations(conf);
 
     // Remove hive configs which are used only in HS2 and not needed for execution
-    conf.unset(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname); 
+    conf.unset(ConfVars.HIVE_AUTHORIZATION_SQL_STD_AUTH_CONFIG_WHITELIST.varname);
     return conf;
   }
 
