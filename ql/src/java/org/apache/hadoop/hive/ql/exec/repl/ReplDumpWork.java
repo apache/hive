@@ -209,6 +209,8 @@ public class ReplDumpWork implements Serializable {
       replSpec.setInReplicationScope(true);
       EximUtil.DataCopyPath managedTableCopyPath = new EximUtil.DataCopyPath(replSpec);
       managedTableCopyPath.loadFromString(managedTblCopyPathIterator.next());
+      //If its incremental, in checkpointing case, dump dir may exist. We will delete the event dir.
+      //In case of bootstrap checkpointing we will not delete the entire dir and just do a sync
       Task<?> copyTask = ReplCopyTask.getDumpCopyTask(
               managedTableCopyPath.getReplicationSpec(), managedTableCopyPath.getSrcPath(),
               managedTableCopyPath.getTargetPath(), conf, false, shouldOverwrite, !isBootstrap,

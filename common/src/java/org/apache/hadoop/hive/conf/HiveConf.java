@@ -643,8 +643,7 @@ public class HiveConf extends Configuration {
       "Provide the maximum number of partitions of a table that will be batched together during  \n"
         + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
         + "The data for these partitions will be copied before copying the metadata batch. "),
-    REPL_LOAD_PARTITIONS_WITH_DATA_COPY_BATCH_SIZE("hive.repl.load.partitions.with.data.copy.batch.size",
-      1000,
+    REPL_LOAD_PARTITIONS_WITH_DATA_COPY_BATCH_SIZE("hive.repl.load.partitions.with.data.copy.batch.size",1000,
       "Provide the maximum number of partitions of a table that will be batched together during  \n"
         + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
         + "The data for these partitions will be copied before copying the metadata batch. "),

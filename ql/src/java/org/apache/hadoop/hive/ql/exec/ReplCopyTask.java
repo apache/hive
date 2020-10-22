@@ -232,7 +232,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
   private static Task<?> getLoadCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                          HiveConf conf, boolean isAutoPurge, boolean needRecycle,
                                          boolean readSourceAsFileList,
-                                         boolean overWrite, boolean autoPurge,
+                                         boolean overWrite, boolean deleteDestination,
                                          String dumpDirectory,
                                          ReplicationMetricCollector metricCollector) {
     Task<?> copyTask = null;
@@ -241,7 +241,7 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       ReplCopyWork rcwork = new ReplCopyWork(srcPath, dstPath, false, overWrite, dumpDirectory,
               metricCollector);
       rcwork.setReadSrcAsFilesList(readSourceAsFileList);
-      if (replicationSpec.isReplace() && autoPurge) {
+      if (replicationSpec.isReplace() && deleteDestination) {
         rcwork.setDeleteDestIfExist(true);
         rcwork.setAutoPurge(isAutoPurge);
         rcwork.setNeedRecycle(needRecycle);
@@ -284,10 +284,10 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
    */
   public static Task<?> getDumpCopyTask(ReplicationSpec replicationSpec, Path srcPath, Path dstPath,
                                         HiveConf conf, boolean readSourceAsFileList, boolean overWrite,
-                                        boolean autoPurge, String dumpDirectory,
+                                        boolean deleteDestination, String dumpDirectory,
                                         ReplicationMetricCollector metricCollector) {
     return getLoadCopyTask(replicationSpec, srcPath, dstPath, conf, false, false,
-      readSourceAsFileList, overWrite, autoPurge, dumpDirectory, metricCollector);
+      readSourceAsFileList, overWrite, deleteDestination, dumpDirectory, metricCollector);
   }
 
 

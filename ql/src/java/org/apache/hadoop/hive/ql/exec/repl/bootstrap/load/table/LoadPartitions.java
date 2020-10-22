@@ -27,7 +27,9 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionDesc;
 import org.apache.hadoop.hive.ql.ddl.table.partition.drop.AlterTableDropPartitionDesc;
-import org.apache.hadoop.hive.ql.exec.*;
+import org.apache.hadoop.hive.ql.exec.ReplCopyTask;
+import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.ReplLoadOpType;
@@ -238,9 +240,8 @@ public class LoadPartitions {
 
   private void addPartition(boolean hasMorePartitions, AlterTableAddPartitionDesc addPartitionDesc)
           throws Exception {
-    boolean processingComplete = addTasksForPartition(table, addPartitionDesc, null,
-      PartitionState.Stage.PARTITION);
-    //If processing is not complete, means replication state is already updated with copy or move tasks which need
+    boolean processingComplete = addTasksForPartition(table, addPartitionDesc, null);
+    //If processing is not complete, means replication state is already updated with copy tasks which need
     //to be processed
     if (processingComplete && hasMorePartitions && !tracker.canAddMoreTasks()) {
       ReplicationState currentReplicationState =
@@ -253,8 +254,7 @@ public class LoadPartitions {
    * returns the root task for adding all partitions in a batch
    */
   private boolean addTasksForPartition(Table table, AlterTableAddPartitionDesc addPartitionDesc,
-                                    AlterTableAddPartitionDesc.PartitionDesc lastPartSpec,
-                                    PartitionState.Stage lastStage)
+                                    AlterTableAddPartitionDesc.PartitionDesc lastPartSpec)
           throws MetaException, HiveException {
     Task<?> addPartTask = TaskFactory.get(
       new DDLWork(new HashSet<>(), new HashSet<>(), addPartitionDesc,
@@ -267,7 +267,6 @@ public class LoadPartitions {
       return true;
     }
     //Add Copy task for all partitions
-    //If last stage was move, that means all copy tasks processed, go to processing move tasks
     boolean lastProcessedStageFound = false;
     for (AlterTableAddPartitionDesc.PartitionDesc partSpec : addPartitionDesc.getPartitions()) {
       if (!tracker.canAddMoreTasks()) {
@@ -302,12 +301,6 @@ public class LoadPartitions {
     //add partition metadata task once all the copy tasks are added
     tracker.addDependentTask(addPartTask);
     return true;
-  }
-
-  private String getPartitionName(Path partitionMetadataFullPath) {
-    //Get partition name by removing the metadata base path.
-    //Needed for getting the data path
-    return partitionMetadataFullPath.toString().substring(event.metadataPath().toString().length());
   }
 
   /**
@@ -374,7 +367,7 @@ public class LoadPartitions {
     //Add Copy task pending for previous partition
     if (PartitionState.Stage.COPY.equals(lastReplicatedStage)) {
       addTasksForPartition(table, lastPartitionReplicated,
-        lastReplicatedPartitionDesc, lastReplicatedStage);
+        lastReplicatedPartitionDesc);
     }
     boolean pendingPartitions = false;
     while (partitionIterator.hasNext() && tracker.canAddMoreTasks()) {
