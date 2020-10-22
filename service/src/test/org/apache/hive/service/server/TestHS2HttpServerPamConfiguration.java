@@ -48,7 +48,7 @@ public class TestHS2HttpServerPamConfiguration {
   private static HiveConf hiveConf = null;
   private static String keyStorePassword = "123456";
   private static String keyFileName = "myKeyStore";
-  private static String keyStoreType = "jks";
+  private static String keyStoreType = KeyStore.getDefaultType();
   private static String testDataDir = new File(
       System.getProperty("java.io.tmpdir") + File.separator + TestHS2HttpServerPam.class.getCanonicalName() + "-"
           + System.currentTimeMillis()).getPath().replaceAll("\\\\", "/");
