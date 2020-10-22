@@ -307,8 +307,10 @@
       </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
-        <artifactId>spring-context</artifactId>
+        <artifactId>spring-framework-bom</artifactId>
         <version>${springframework.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
       </dependency>
       <dependency>
         <groupId>com.sun.jersey</groupId>
