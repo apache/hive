@@ -121,7 +121,6 @@ import static org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils.*;
 public class SharedWorkOptimizer extends Transform {
 
   private final static Logger LOG = LoggerFactory.getLogger(SharedWorkOptimizer.class);
-  private static boolean doTSM = false;
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -159,33 +158,9 @@ public class SharedWorkOptimizer extends Transform {
     // Gather information about the DPP table scans and store it in the cache
     gatherDPPTableScanOps(pctx, optimizerCache);
 
-    BaseSharedWorkOptimizer swo;
-    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
-      //      swo = new SchemaAwareSharedWorkOptimizer();
-      //      swo.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables, Mode.SubtreeMerge);
-      //      if (LOG.isDebugEnabled()) {
-      //        LOG.debug("After SharedWorkOptimizer0:\n" + Operator.toString(pctx.getTopOps().values()));
-      //      }
-      //      if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
-      //        // Execute extended shared work optimization
-      //        sharedWorkExtendedOptimization(pctx, optimizerCache);
-      //
-      //        if (LOG.isDebugEnabled()) {
-      //          LOG.debug("After SharedWorkExtendedOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
-      //        }
-      //      }
-
-      swo = new BaseSharedWorkOptimizer();
-    } else {
-      swo = new SchemaAwareSharedWorkOptimizer();
-    }
-
-    BaseSharedWorkOptimizer swo0 = new SchemaAwareSharedWorkOptimizer();
-    if (doTSM) {
-      swo0 = swo;
-    }
     // Execute shared work optimization
-    swo0.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables,        Mode.SubtreeMerge);
+    new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables,
+        Mode.SubtreeMerge);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("After SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
@@ -208,7 +183,7 @@ public class SharedWorkOptimizer extends Transform {
 
       // Execute shared work optimization with semijoin removal
       boolean optimized =
-          swo0.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps,
+          new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, tableNameToOps,
               sortedTables, Mode.RemoveSemijoin);
       if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
         // If it was further optimized, execute a second round of extended shared work optimizer
@@ -230,7 +205,12 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DPPUNION_OPTIMIZATION)) {
-
+      BaseSharedWorkOptimizer swo;
+      if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
+        swo = new BaseSharedWorkOptimizer();
+      } else {
+        swo = new SchemaAwareSharedWorkOptimizer();
+      }
       boolean optimized = swo.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables, Mode.DPPUnion);
       if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
         // If it was further optimized, do a round of extended shared work optimizer
@@ -430,7 +410,7 @@ public class SharedWorkOptimizer extends Transform {
               // about the part of the tree that can be merged. We need to regenerate the
               // cache because semijoin operators have been removed
               sr = extractSharedOptimizationInfoForRoot(
-                  pctx, optimizerCache, retainableTsOp, discardableTsOp, false);
+                  pctx, optimizerCache, retainableTsOp, discardableTsOp, true);
             } else if (mode == Mode.DPPUnion) {
               boolean mergeable = areMergeable(pctx, retainableTsOp, discardableTsOp);
               if (!mergeable) {
@@ -449,7 +429,8 @@ public class SharedWorkOptimizer extends Transform {
               // about the part of the tree that can be merged. We need to regenerate the
               // cache because semijoin operators have been removed
               sr = extractSharedOptimizationInfoForRoot(pctx, optimizerCache, retainableTsOp, discardableTsOp, false);
-              if (!isResultValid(sr)) {
+              if (!validPreConditions(pctx, optimizerCache, sr)) {
+                LOG.debug("{} and {} do not meet preconditions", retainableTsOp, discardableTsOp);
                 continue;
               }
             } else if (mode == Mode.SubtreeMerge) {
@@ -465,7 +446,7 @@ public class SharedWorkOptimizer extends Transform {
               // as well as some structural information (memory consumption) that needs to be
               // used to determined whether the merge can happen
               sr = extractSharedOptimizationInfoForRoot(
-                  pctx, optimizerCache, retainableTsOp, discardableTsOp, false);
+                  pctx, optimizerCache, retainableTsOp, discardableTsOp, true);
 
               // It seems these two operators can be merged.
               // Check that plan meets some preconditions before doing it.
@@ -768,7 +749,6 @@ public class SharedWorkOptimizer extends Transform {
         Operator<?> cJ = childs.get(j);
         if (cI.logicalEquals(cJ)) {
           LOG.debug("downstream merge: from {} into {}", cJ, cI);
-          // FIXME move the operator?
           adoptChildren(cI, cJ);
           op.removeChild(cJ);
           optimizerCache.removeOp(cJ);
@@ -1045,27 +1025,6 @@ public class SharedWorkOptimizer extends Transform {
     Map<String, TableScanOperator> sortedTopOps = new TreeMap<>(pctx.getTopOps());
     for (Entry<String, TableScanOperator> e : sortedTopOps.entrySet()) {
       TableScanOperator tsOp = e.getValue();
-      tableNameToOps.put(
-          tsOp.getConf().getTableMetadata().getDbName() + "." + tsOp.getConf().getTableMetadata().getTableName(), tsOp);
-    }
-    return tableNameToOps;
-  }
-
-  private static ArrayListMultimap<String, TableScanOperator> splitTableScanOpsByTable0(ParseContext pctx) {
-    ArrayListMultimap<String, TableScanOperator> tableNameToOps = ArrayListMultimap.create();
-    List<TableScanOperator> orderedTS = new ArrayList<TableScanOperator>(pctx.getTopOps().values());
-    orderedTS.sort(new Comparator<TableScanOperator>() {
-      @Override
-      public int compare(TableScanOperator o1, TableScanOperator o2) {
-        // prioritize scans without filters
-        if (o1.getConf().getFilterExpr() == null ^ o2.getConf().getFilterExpr() == null) {
-          return (o1.getConf().getFilterExpr() == null) ? -1 : 1;
-    }
-        return o1.toString().compareTo(o2.toString());
-  }
-    });
-    // Sort by operator ID so we get deterministic results
-    for (TableScanOperator tsOp : orderedTS) {
       tableNameToOps.put(
           tsOp.getConf().getTableMetadata().getDbName() + "." + tsOp.getConf().getTableMetadata().getTableName(), tsOp);
     }
@@ -1356,21 +1315,6 @@ public class SharedWorkOptimizer extends Transform {
         return false;
       }
     }
-    Set<Operator<?>> ascendants = findAscendantWorkOperators(pctx, cache, tsOp1);
-    if (ascendants.contains(tsOp2)) {
-      // This should not happen, we cannot merge
-      return false;
-    }
-    final Set<Operator<?>> workOps1 = findWorkOperators(cache, tsOp1);
-    for (Operator<?> op : workOps1) {
-      if (op instanceof UnionOperator) {
-        return false;
-      }
-      if (op instanceof DummyStoreOperator) {
-        return false;
-      }
-    }
-
     return true;
   }
 
@@ -1745,10 +1689,6 @@ public class SharedWorkOptimizer extends Transform {
   private static boolean validPreConditions(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,
           SharedResult sr) {
 
-    if (!isResultValid(sr)) {
-      return false;
-    }
-
     Operator<?> op1 = sr.retainableOps.get(0);
     Operator<?> op2 = sr.discardableOps.get(0);
 
@@ -1839,18 +1779,6 @@ public class SharedWorkOptimizer extends Transform {
             findDescendantWorkOperators(pctx, optimizerCache, op2, sr.discardableInputOps);
     if (!Collections.disjoint(descendantWorksOps1, workOps2)
             || !Collections.disjoint(workOps1, descendantWorksOps2)) {
-      return false;
-    }
-    return true;
-  }
-
-  private static boolean isResultValid(SharedResult sr) {
-    // We check whether merging the works would cause the size of
-    // the data in memory grow too large.
-    // TODO: Currently ignores GBY and PTF which may also buffer data in memory.
-    if (sr.dataSize > sr.maxDataSize) {
-      // Size surpasses limit, we cannot convert
-      LOG.debug("accumulated data size: {} / max size: {}", sr.dataSize, sr.maxDataSize);
       return false;
     }
     return true;
