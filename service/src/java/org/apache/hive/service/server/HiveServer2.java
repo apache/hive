@@ -360,6 +360,9 @@ public class HiveServer2 extends CompositeService {
             builder.setKeyStorePassword(ShimLoader.getHadoopShims().getPassword(
               hiveConf, ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD.varname));
             builder.setKeyStorePath(keyStorePath);
+            builder.setKeyStoreType(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE));
+            builder.setKeyManagerFactoryAlgorithm(
+                hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYMANAGERFACTORY_ALGORITHM));
             builder.setUseSSL(true);
           }
           if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SPNEGO)) {
