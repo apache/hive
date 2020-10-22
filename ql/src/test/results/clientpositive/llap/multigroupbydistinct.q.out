@@ -37,8 +37,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{2}], agg#0=[count($0)], agg#1=[count($1)])
-  HiveProject($f0=[CASE(AND(=($3, 1), IS NOT NULL($1)), 1, null:INTEGER)], $f1=[CASE(AND(=($3, 2), IS NOT NULL($2)), 1, null:INTEGER)], $f2=[$0])
+HiveAggregate(group=[{0}], agg#0=[count($1)], agg#1=[count($2)])
+  HiveProject($f0=[$0], $f1=[CASE(AND(=($3, 1), IS NOT NULL($1)), 1, null:INTEGER)], $f2=[CASE(AND(=($3, 2), IS NOT NULL($2)), 1, null:INTEGER)])
     HiveAggregate(group=[{0, 1, 2}], groups=[[{0, 1}, {0, 2}]], GROUPING__ID=[GROUPING__ID()])
       HiveProject($f0=[$2], $f1=[$1], $f2=[$3])
         HiveTableScan(table=[[default, tabw4intcols]], table:alias=[tabw4intcols])
@@ -74,8 +74,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 CBO PLAN:
-HiveAggregate(group=[{2, 3}], agg#0=[count($0)], agg#1=[count($1)])
-  HiveProject($f0=[CASE(AND(=($4, 1), IS NOT NULL($2)), 1, null:INTEGER)], $f1=[CASE(AND(=($4, 2), IS NOT NULL($3)), 1, null:INTEGER)], $f2=[$0], $f3=[$1])
+HiveAggregate(group=[{0, 1}], agg#0=[count($2)], agg#1=[count($3)])
+  HiveProject($f0=[$0], $f1=[$1], $f2=[CASE(AND(=($4, 1), IS NOT NULL($2)), 1, null:INTEGER)], $f3=[CASE(AND(=($4, 2), IS NOT NULL($3)), 1, null:INTEGER)])
     HiveAggregate(group=[{0, 1, 2, 3}], groups=[[{0, 1, 2}, {0, 1, 3}]], GROUPING__ID=[GROUPING__ID()])
       HiveProject($f0=[$2], $f1=[$0], $f2=[$1], $f3=[$3])
         HiveTableScan(table=[[default, tabw4intcols]], table:alias=[tabw4intcols])
@@ -114,8 +114,8 @@ POSTHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(x=[$1], z=[$0], _o__c2=[$2], _o__c3=[$3])
-  HiveAggregate(group=[{2, 3}], agg#0=[count($0)], agg#1=[count($1)])
-    HiveProject($f0=[CASE(AND(=($4, 1), IS NOT NULL($2)), 1, null:INTEGER)], $f1=[CASE(AND(=($4, 2), IS NOT NULL($3)), 1, null:INTEGER)], $f2=[$0], $f3=[$1])
+  HiveAggregate(group=[{0, 1}], agg#0=[count($2)], agg#1=[count($3)])
+    HiveProject($f0=[$0], $f1=[$1], $f2=[CASE(AND(=($4, 1), IS NOT NULL($2)), 1, null:INTEGER)], $f3=[CASE(AND(=($4, 2), IS NOT NULL($3)), 1, null:INTEGER)])
       HiveAggregate(group=[{0, 1, 2, 3}], groups=[[{0, 1, 2}, {0, 1, 3}]], GROUPING__ID=[GROUPING__ID()])
         HiveProject($f0=[$2], $f1=[$0], $f2=[$1], $f3=[$3])
           HiveTableScan(table=[[default, tabw4intcols]], table:alias=[tabw4intcols])
@@ -197,8 +197,8 @@ POSTHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(x=[$1], _o__c1=[$2], z=[$0], _o__c3=[$3])
-  HiveAggregate(group=[{2, 3}], agg#0=[count($0)], agg#1=[count($1)])
-    HiveProject($f0=[CASE(AND(=($4, 1), IS NOT NULL($2)), 1, null:INTEGER)], $f1=[CASE(AND(=($4, 2), IS NOT NULL($3)), 1, null:INTEGER)], $f2=[$0], $f3=[$1])
+  HiveAggregate(group=[{0, 1}], agg#0=[count($2)], agg#1=[count($3)])
+    HiveProject($f0=[$0], $f1=[$1], $f2=[CASE(AND(=($4, 1), IS NOT NULL($2)), 1, null:INTEGER)], $f3=[CASE(AND(=($4, 2), IS NOT NULL($3)), 1, null:INTEGER)])
       HiveAggregate(group=[{0, 1, 2, 3}], groups=[[{0, 1, 2}, {0, 1, 3}]], GROUPING__ID=[GROUPING__ID()])
         HiveProject($f0=[$2], $f1=[$0], $f2=[$1], $f3=[$3])
           HiveTableScan(table=[[default, tabw4intcols]], table:alias=[tabw4intcols])
@@ -237,8 +237,8 @@ POSTHOOK: Input: default@tabw4intcols
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(_o__c0=[$2], x=[$1], z=[$0], _o__c3=[$3])
-  HiveAggregate(group=[{2, 3}], agg#0=[count($0)], agg#1=[count($1)])
-    HiveProject($f0=[CASE(AND(=($4, 1), IS NOT NULL($2)), 1, null:INTEGER)], $f1=[CASE(AND(=($4, 2), IS NOT NULL($3)), 1, null:INTEGER)], $f2=[$0], $f3=[$1])
+  HiveAggregate(group=[{0, 1}], agg#0=[count($2)], agg#1=[count($3)])
+    HiveProject($f0=[$0], $f1=[$1], $f2=[CASE(AND(=($4, 1), IS NOT NULL($2)), 1, null:INTEGER)], $f3=[CASE(AND(=($4, 2), IS NOT NULL($3)), 1, null:INTEGER)])
       HiveAggregate(group=[{0, 1, 2, 3}], groups=[[{0, 1, 2}, {0, 1, 3}]], GROUPING__ID=[GROUPING__ID()])
         HiveProject($f0=[$2], $f1=[$0], $f2=[$1], $f3=[$3])
           HiveTableScan(table=[[default, tabw4intcols]], table:alias=[tabw4intcols])
@@ -269,3 +269,92 @@ POSTHOOK: query: drop table tabw4intcols
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tabw4intcols
 POSTHOOK: Output: default@tabw4intcols
+PREHOOK: query: CREATE TABLE test_multigroupbydistinct(
+ `device_id` string,
+ `level` string,
+ `site_id` string,
+ `user_id` string,
+ `first_date` string,
+ `last_date` string,
+ `dt` string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@test_multigroupbydistinct
+POSTHOOK: query: CREATE TABLE test_multigroupbydistinct(
+ `device_id` string,
+ `level` string,
+ `site_id` string,
+ `user_id` string,
+ `first_date` string,
+ `last_date` string,
+ `dt` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@test_multigroupbydistinct
+PREHOOK: query: explain cbo
+ select
+ dt,
+ site_id,
+ count(DISTINCT t1.device_id) as device_tol_cnt,
+ count(DISTINCT case when t1.first_date='2020-09-15' then t1.device_id else null end) as device_add_cnt
+ from test_multigroupbydistinct t1 where dt='2020-09-15'
+ group by
+ dt,
+ site_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_multigroupbydistinct
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo
+ select
+ dt,
+ site_id,
+ count(DISTINCT t1.device_id) as device_tol_cnt,
+ count(DISTINCT case when t1.first_date='2020-09-15' then t1.device_id else null end) as device_add_cnt
+ from test_multigroupbydistinct t1 where dt='2020-09-15'
+ group by
+ dt,
+ site_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_multigroupbydistinct
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(dt=[CAST(_UTF-16LE'2020-09-15':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], site_id=[$0], device_tol_cnt=[$1], device_add_cnt=[$2])
+  HiveAggregate(group=[{0}], agg#0=[count($1)], agg#1=[count($2)])
+    HiveProject($f1=[$1], $f2=[CASE(AND(=($4, 1), IS NOT NULL($2)), 1, null:INTEGER)], $f3=[CASE(AND(=($4, 2), IS NOT NULL($3)), 1, null:INTEGER)])
+      HiveAggregate(group=[{0, 1, 2, 3}], groups=[[{0, 1, 2}, {0, 1, 3}]], GROUPING__ID=[GROUPING__ID()])
+        HiveProject($f0=[CAST(_UTF-16LE'2020-09-15':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], $f1=[$2], $f2=[$0], $f3=[CASE(=($4, _UTF-16LE'2020-09-15'), $0, null:VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+          HiveFilter(condition=[=($6, _UTF-16LE'2020-09-15')])
+            HiveTableScan(table=[[default, test_multigroupbydistinct]], table:alias=[t1])
+
+PREHOOK: query: select
+ dt,
+ site_id,
+ count(DISTINCT t1.device_id) as device_tol_cnt,
+ count(DISTINCT case when t1.first_date='2020-09-15' then t1.device_id else null end) as device_add_cnt
+ from test_multigroupbydistinct t1 where dt='2020-09-15'
+ group by
+ dt,
+ site_id
+PREHOOK: type: QUERY
+PREHOOK: Input: default@test_multigroupbydistinct
+#### A masked pattern was here ####
+POSTHOOK: query: select
+ dt,
+ site_id,
+ count(DISTINCT t1.device_id) as device_tol_cnt,
+ count(DISTINCT case when t1.first_date='2020-09-15' then t1.device_id else null end) as device_add_cnt
+ from test_multigroupbydistinct t1 where dt='2020-09-15'
+ group by
+ dt,
+ site_id
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@test_multigroupbydistinct
+#### A masked pattern was here ####
+PREHOOK: query: drop table test_multigroupbydistinct
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@test_multigroupbydistinct
+PREHOOK: Output: default@test_multigroupbydistinct
+POSTHOOK: query: drop table test_multigroupbydistinct
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@test_multigroupbydistinct
+POSTHOOK: Output: default@test_multigroupbydistinct

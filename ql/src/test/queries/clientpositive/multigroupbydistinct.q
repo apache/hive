@@ -58,3 +58,37 @@ from tabw4intcols
 group by z, x;
 
 drop table tabw4intcols;
+
+CREATE TABLE test_multigroupbydistinct(
+ `device_id` string,
+ `level` string,
+ `site_id` string,
+ `user_id` string,
+ `first_date` string,
+ `last_date` string,
+ `dt` string) ;
+
+ explain cbo
+ select
+ dt,
+ site_id,
+ count(DISTINCT t1.device_id) as device_tol_cnt,
+ count(DISTINCT case when t1.first_date='2020-09-15' then t1.device_id else null end) as device_add_cnt
+ from test_multigroupbydistinct t1 where dt='2020-09-15'
+ group by
+ dt,
+ site_id
+ ;
+
+ select
+ dt,
+ site_id,
+ count(DISTINCT t1.device_id) as device_tol_cnt,
+ count(DISTINCT case when t1.first_date='2020-09-15' then t1.device_id else null end) as device_add_cnt
+ from test_multigroupbydistinct t1 where dt='2020-09-15'
+ group by
+ dt,
+ site_id
+ ;
+
+drop table test_multigroupbydistinct;

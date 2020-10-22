@@ -232,6 +232,11 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
         .map(input -> new RexInputRef(input.getIndex(), input.getType()))
         .collect(Collectors.toList());
     final List<RexNode> gbChildProjLst = Lists.newArrayList();
+    
+    for (int pos : originalGroupSet) {
+      gbChildProjLst.add(originalInputRefs.get(newGroupSet.indexOf(pos)));
+    }
+    
     // for singular arg, count should not include null
     // e.g., count(case when i=1 and department_id is not null then 1 else null end) as c0, 
     // for non-singular args, count can include null, i.e. (,) is counted as 1
@@ -255,10 +260,6 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
       gbChildProjLst.add(when);
     }
 
-    for (int pos : originalGroupSet) {
-      gbChildProjLst.add(originalInputRefs.get(newGroupSet.indexOf(pos)));
-    }
-
     // create the project before GB
     RelNode gbInputRel = HiveProject.create(aggr, gbChildProjLst, null);
 
@@ -268,11 +269,10 @@ public final class HiveExpandDistinctAggregatesRule extends RelOptRule {
         cluster.getTypeFactory());
     for (int i = 0; i < cleanArgList.size(); i++) {
       AggregateCall aggregateCall = HiveCalciteUtil.createSingleArgAggCall("count", cluster,
-          TypeInfoFactory.longTypeInfo, i, aggFnRetType);
+          TypeInfoFactory.longTypeInfo, originalGroupSet.cardinality() + i, aggFnRetType);
       aggregateCalls.add(aggregateCall);
     }
-    ImmutableBitSet groupSet =
-        ImmutableBitSet.range(cleanArgList.size(), cleanArgList.size() + originalGroupSet.cardinality());
+    ImmutableBitSet groupSet = ImmutableBitSet.range(0, originalGroupSet.cardinality());
     Aggregate aggregate = new HiveAggregate(cluster, cluster.traitSetOf(HiveRelNode.CONVENTION), gbInputRel,
         groupSet, null, aggregateCalls);
 
