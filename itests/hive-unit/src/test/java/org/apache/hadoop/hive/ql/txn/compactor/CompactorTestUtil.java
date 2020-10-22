@@ -139,8 +139,6 @@ class CompactorTestUtil {
         t.run();
       }
     }
-    // Wait for the cooldown period so the Cleaner can see this txn as the highest committed watermark
-    Thread.sleep(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
   }
 
   /**
@@ -149,6 +147,9 @@ class CompactorTestUtil {
    * @throws Exception if cleaner cannot be started.
    */
   static void runCleaner(HiveConf hConf) throws Exception {
+    // Wait for the cooldown period so the Cleaner can see last committed txn as the highest committed watermark
+    Thread.sleep(MetastoreConf.getTimeVar(hConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
+
     HiveConf hiveConf = new HiveConf(hConf);
     Cleaner t = new Cleaner();
     t.setThreadId((int) t.getId());
