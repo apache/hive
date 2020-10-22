@@ -218,6 +218,7 @@
     <janino.version>3.0.11</janino.version>
     <datasketches.version>1.1.0-incubating</datasketches.version>
     <spotbugs.version>4.0.3</spotbugs.version>
+    <springframework.version>4.3.29.RELEASE</springframework.version>
   </properties>
 
   <repositories>
@@ -303,6 +304,11 @@
         <groupId>org.apache.parquet</groupId>
         <artifactId>parquet-hadoop-bundle</artifactId>
         <version>${parquet.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${springframework.version}</version>
       </dependency>
       <dependency>
         <groupId>com.sun.jersey</groupId>
