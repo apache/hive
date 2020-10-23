@@ -183,6 +183,19 @@ public class LoadPartitions {
     } else {
       maxTasks = context.hiveConf.getIntVar(HiveConf.ConfVars.REPL_LOAD_PARTITIONS_WITH_DATA_COPY_BATCH_SIZE);
     }
+    //Add copy task if not metadata only
+    if (!isMetaDataOp() && !TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+      Path replicaWarehousePartitionLocation = managedLocationOnReplicaWarehouse(table);
+      boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
+      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+        event.replicationSpec(),
+        event.dataPath(),
+        replicaWarehousePartitionLocation,
+        context.hiveConf, copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(),
+        this.metricCollector
+      );
+      tracker.addTask(copyTask);
+    }
     int currentPartitionCount = 0;
     Iterator<AlterTableAddPartitionDesc> partitionIterator = event.partitionDescriptions(tableDesc).iterator();
     //If already a set of partitions are processed as part of previous run, we skip those
@@ -262,42 +275,44 @@ public class LoadPartitions {
       context.hiveConf
     );
     //checkpointing task already added as part of add batch of partition
-    if (isMetaDataOp() || TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
-      tracker.addTask(addPartTask);
-      return true;
-    }
+//    if (isMetaDataOp() || TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+//      tracker.addTask(addPartTask);
+//      return true;
+//    }
     //Add Copy task for all partitions
-    boolean lastProcessedStageFound = false;
-    for (AlterTableAddPartitionDesc.PartitionDesc partSpec : addPartitionDesc.getPartitions()) {
-      if (!tracker.canAddMoreTasks()) {
-        //update replication state with the copy task added with which it needs to proceed next
-        ReplicationState currentReplicationState =
-          new ReplicationState(new PartitionState(table.getTableName(), addPartitionDesc,
-            partSpec, PartitionState.Stage.COPY));
-        updateReplicationState(currentReplicationState);
-        return false;
-      }
-      Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, partSpec);
-      partSpec.setLocation(replicaWarehousePartitionLocation.toString());
-      LOG.debug("adding dependent CopyWork for partition "
-        + partSpecToString(partSpec.getPartSpec()) + " with source location: "
-        + partSpec.getLocation());
-      if (!lastProcessedStageFound && lastPartSpec != null &&
-        lastPartSpec.getLocation() != partSpec.getLocation()) {
-        //Don't process copy task if already processed as part of previous run
-        continue;
-      }
-      lastProcessedStageFound = true;
-      boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
-      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
-        event.replicationSpec(),
-        new Path(event.dataPath() + Path.SEPARATOR + Warehouse.makePartPath(partSpec.getPartSpec())),
-        replicaWarehousePartitionLocation,
-        context.hiveConf, copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(),
-        this.metricCollector
-      );
-      tracker.addTask(copyTask);
-    }
+//    boolean lastProcessedStageFound = false;
+//    for (AlterTableAddPartitionDesc.PartitionDesc partSpec : addPartitionDesc.getPartitions()) {
+//      if (!tracker.canAddMoreTasks()) {
+//        //update replication state with the copy task added with which it needs to proceed next
+//        ReplicationState currentReplicationState =
+//          new ReplicationState(new PartitionState(table.getTableName(), addPartitionDesc,
+//            partSpec, PartitionState.Stage.COPY));
+//        updateReplicationState(currentReplicationState);
+//        return false;
+//      }
+//      Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, partSpec);
+//      partSpec.setLocation(replicaWarehousePartitionLocation.toString());
+//      LOG.debug("adding dependent CopyWork for partition "
+//        + partSpecToString(partSpec.getPartSpec()) + " with source location: "
+//        + partSpec.getLocation());
+//      if (!lastProcessedStageFound && lastPartSpec != null &&
+//        lastPartSpec.getLocation() != partSpec.getLocation()) {
+//        //Don't process copy task if already processed as part of previous run
+//        continue;
+//      }
+//      lastProcessedStageFound = true;
+//      boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
+//      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+//        event.replicationSpec(),
+//        new Path(event.dataPath() + Path.SEPARATOR + Warehouse.makePartPath(partSpec.getPartSpec())),
+//        replicaWarehousePartitionLocation,
+//        context.hiveConf, copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(),
+//        this.metricCollector
+//      );
+//      tracker.addTask(copyTask);
+//    }
+
+
     //add partition metadata task once all the copy tasks are added
     tracker.addDependentTask(addPartTask);
     return true;
@@ -331,6 +346,20 @@ public class LoadPartitions {
       }
     } else {
       return new Path(tableDesc.getLocation(), child);
+    }
+  }
+
+  private Path managedLocationOnReplicaWarehouse(Table table)
+    throws MetaException, HiveException {
+    if (tableDesc.getLocation() == null) {
+      if (table.getDataLocation() == null) {
+        Database parentDb = context.hiveDb.getDatabase(tableDesc.getDatabaseName());
+        return context.warehouse.getDefaultTablePath(parentDb, tableDesc.getTableName(), tableDesc.isExternal());
+      } else {
+        return table.getDataLocation();
+      }
+    } else {
+      return new Path(tableDesc.getLocation());
     }
   }
 
