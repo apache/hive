@@ -2622,6 +2622,9 @@ public class HiveConf extends Configuration {
     HIVE_REMOVE_SQ_COUNT_CHECK("hive.optimize.remove.sq_count_check", true,
         "Whether to remove an extra join with sq_count_check for scalar subqueries "
             + "with constant group by keys."),
+    HIVE_BETWEEN_SELECTIVITY_LEGACY("hive.optimize.legacy.selectivity.between", false,
+        "Whether to infer BETWEEN selectivity in Calcite using legacy logic (similar to EQUALS). " +
+            "This is for debugging."),
 
     HIVE_OPTIMIZE_TABLE_PROPERTIES_FROM_SERDE("hive.optimize.update.table.properties.from.serde", false,
         "Whether to update table-properties by initializing tables' SerDe instances during logical-optimization. \n" +

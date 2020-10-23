@@ -39,6 +39,7 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.sql.type.SqlTypeUtil;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveConfPlannerContext;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.plan.ColStatistics;
@@ -47,12 +48,17 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
   private final RelNode childRel;
   private final double  childCardinality;
   private final RelMetadataQuery mq;
+  // For debugging purposes
+  private final boolean legacyBetweenSelectivity;
 
   public FilterSelectivityEstimator(RelNode childRel, RelMetadataQuery mq) {
     super(true);
     this.mq = mq;
     this.childRel = childRel;
     this.childCardinality = mq.getRowCount(childRel);
+    this.legacyBetweenSelectivity =
+        childRel.getCluster().getPlanner().getContext().unwrap(HiveConfPlannerContext.class)
+            .isLegacyBetweenSelectivity();
   }
 
   public Double estimateSelectivity(RexNode predicate) {
@@ -123,6 +129,19 @@ public class FilterSelectivityEstimator extends RexVisitorImpl<Double> {
     case LESS_THAN:
     case GREATER_THAN: {
       selectivity = ((double) 1 / (double) 3);
+      break;
+    }
+
+    case BETWEEN: {
+      if (legacyBetweenSelectivity) {
+        // Legacy way of computing BETWEEN selectivity. It uses default function
+        // (similar to EQUALS).
+        selectivity = computeFunctionSelectivity(call);
+      } else {
+        // This heuristic is based on the heuristic for comparison operators
+        // (selectivity = 1/3) and AND operation (selectivity op1 * selectivity op2).
+        selectivity = ((double) 1 / (double) 9);
+      }
       break;
     }
 

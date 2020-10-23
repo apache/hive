@@ -517,8 +517,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
     boolean isCorrelatedColumns = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_CBO_STATS_CORRELATED_MULTI_KEY_JOINS);
     boolean heuristicMaterializationStrategy = HiveConf.getVar(conf,
         HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_SELECTION_STRATEGY).equals("heuristic");
+    boolean legacyBetweenSelectivity = HiveConf.getBoolVar(conf, ConfVars.HIVE_BETWEEN_SELECTIVITY_LEGACY);
     HiveConfPlannerContext hiveConfPlannerContext =
-        new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy);
+        new HiveConfPlannerContext(isCorrelatedColumns, heuristicMaterializationStrategy, legacyBetweenSelectivity);
     HivePlannerContext confContext = new HivePlannerContext(algorithmsConf, registry, calciteConfig,
         corrScalarRexSQWithAgg, hiveConfPlannerContext, functionHelper, timeline);
     return HiveVolcanoPlanner.createPlanner(confContext);

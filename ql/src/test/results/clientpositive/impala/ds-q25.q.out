@@ -124,12 +124,12 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[
             ImpalaProjectPassthroughRel(sr_returned_date_sk=[$0], sr_item_sk=[$2], sr_customer_sk=[$3], sr_ticket_number=[$9], sr_net_loss=[$19])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(IS NOT NULL($0), IS NOT NULL($3), IS NOT NULL($2), IS NOT NULL($9))])
             ImpalaProjectPassthroughRel(d_date_sk=[$0])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2000), BETWEEN(false, $8, 4, 10), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, $8, 4, 10), =($6, 2000), IS NOT NULL($0))])
           ImpalaJoinRel(condition=[=($0, $4)], joinType=[inner])
             ImpalaProjectPassthroughRel(cs_sold_date_sk=[$0], cs_bill_customer_sk=[$3], cs_item_sk=[$15], cs_net_profit=[$33])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_sales]], condition=[AND(IS NOT NULL($0), IS NOT NULL($3), IS NOT NULL($15))])
             ImpalaProjectPassthroughRel(d_date_sk=[$0])
-              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2000), BETWEEN(false, $8, 4, 10), IS NOT NULL($0))])
+              ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, $8, 4, 10), =($6, 2000), IS NOT NULL($0))])
 
 PREHOOK: query: explain select  
  i_item_id
