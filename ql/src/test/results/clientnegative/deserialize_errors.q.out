@@ -1,0 +1,31 @@
+PREHOOK: query: drop table if exists deserialize_errors
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists deserialize_errors
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table deserialize_errors(col1 string, col2 int) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.BadRecordsSerDe'
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@deserialize_errors
+POSTHOOK: query: create table deserialize_errors(col1 string, col2 int) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.BadRecordsSerDe'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@deserialize_errors
+PREHOOK: query: insert into table deserialize_errors values ('foo', 1), ('bar', 2), ('hel', 3), ('wor', 4)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@deserialize_errors
+POSTHOOK: query: insert into table deserialize_errors values ('foo', 1), ('bar', 2), ('hel', 3), ('wor', 4)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@deserialize_errors
+POSTHOOK: Lineage: deserialize_errors.col1 SCRIPT []
+POSTHOOK: Lineage: deserialize_errors.col2 SCRIPT []
+PREHOOK: query: from deserialize_errors
+select col1, count(*)
+group by col1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@deserialize_errors
+#### A masked pattern was here ####
+[Fatal Error] total number of deserialize errors now is 3, which exceeds 2. Killing the job.
+#### A masked pattern was here ####
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask

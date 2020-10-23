@@ -61,7 +61,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.util.StringUtils;
 
 import com.google.common.annotations.VisibleForTesting;
 
@@ -553,24 +552,19 @@ public class MapOperator extends AbstractMapOperator {
           childrenDone++;
         }
       } catch (Exception e) {
-        // TODO: policy on deserialization errors
-        String message = null;
-        try {
-          message = toErrorMessage(value, row, current.rowObjectInspector);
-        } catch (Throwable t) {
-          message = "[" + row + ", " + value + "]: cannot get error message " + t.getMessage();
+        if (LOG.isTraceEnabled()) {
+          // Log the contents of the row that caused exception so that it's available for debugging. But
+          // when exposed through an error message it can leak sensitive information, even to the
+          // client application.
+          String message = toErrorMessage(value, row, current.rowObjectInspector);
+          LOG.trace("Hive Runtime Error while processing writable " + message);
         }
         if (row == null) {
-          deserialize_error_count.set(deserialize_error_count.get() + 1);
-          LOG.trace("Hive Runtime Error while processing writable " + message);
-          throw new HiveException("Hive Runtime Error while processing writable", e);
+          // Call policy on deserialization error
+          deserErrorPolicy.onDeserError(e);
+        } else {
+          throw new HiveException("Hive Runtime Error while processing row", e);
         }
-
-        // Log the contents of the row that caused exception so that it's available for debugging. But
-        // when exposed through an error message it can leak sensitive information, even to the
-        // client application.
-        LOG.trace("Hive Runtime Error while processing row " + message);
-        throw new HiveException("Hive Runtime Error while processing row", e);
       }
     }
     rowsForwarded(childrenDone, 1);
@@ -585,7 +579,9 @@ public class MapOperator extends AbstractMapOperator {
           cntr = 1;
           numRows = 0;
         }
-        LOG.info(toString() + ": records read - " + numRows);
+        long deserErrorCount = deserErrorPolicy.getErrorCount();
+        LOG.info("{}: records read - {}, deserialize errors - {}", toString(),
+            numRows, deserErrorCount);
       }
     }
     if (childrenDone == currentCtxs.length) {
@@ -599,8 +595,8 @@ public class MapOperator extends AbstractMapOperator {
         return SerDeUtils.getJSONString(row, inspector);
       }
       return String.valueOf(value);
-    } catch (Exception e) {
-      return "[Error getting row data with exception " + StringUtils.stringifyException(e) + " ]";
+    } catch (Throwable t) {
+       return  "[" + row + ", " + value + "]: cannot get error message " + t.getMessage();
     }
   }
 
@@ -682,7 +678,9 @@ public class MapOperator extends AbstractMapOperator {
   @Override
   public void closeOp(boolean abort) throws HiveException {
     super.closeOp(abort);
-    LOG.info("{}: Total records read - {}. abort - {}", this, numRows, abort);
+    long deserErrorCount = deserErrorPolicy.getErrorCount();
+    LOG.info("{}: Total records read - {}. abort - {}, deserialize errors - {}",
+        this, numRows, abort, deserErrorCount);
   }
 
   @Override

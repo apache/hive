@@ -59,6 +59,8 @@ import org.apache.tez.dag.api.client.DAGStatus;
 import org.apache.tez.dag.api.client.Progress;
 import org.apache.tez.dag.api.client.StatusGetOpts;
 import org.apache.tez.util.StopWatch;
+
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -141,6 +143,37 @@ public class TezJobMonitor {
       Utilities.isPerfOrAboveLogging(hiveConf);
   }
 
+  private WmContext getWmContext() {
+    WmContext wmContext = context.getWmContext();
+    long maxDesErrsAllowed = HiveConf.getLongVar(hiveConf, HiveConf.ConfVars.MAXDESERERRORS);
+    if (maxDesErrsAllowed > 0) {
+      if (wmContext == null) {
+        wmContext = new WmContext(System.currentTimeMillis(), HiveConf.getVar(hiveConf,
+            HiveConf.ConfVars.HIVEQUERYID));
+        context.setWmContext(wmContext);
+      }
+      wmContext.addSubscribedCounters(Sets.newHashSet("DESERIALIZE_ERRORS"));
+    }
+    return wmContext;
+  }
+
+  private boolean checkFatalErrors(Map<String, Long> counters, StringBuilder msgBuilder) {
+    long maxDesErrsAllowed = HiveConf.getLongVar(hiveConf, HiveConf.ConfVars.MAXDESERERRORS);
+    if (maxDesErrsAllowed > 0) {
+      long numDesErrs = counters == null ?
+          0 : counters.getOrDefault("DESERIALIZE_ERRORS", 0L);
+      if (numDesErrs > maxDesErrsAllowed) {
+        msgBuilder
+            .append("Total number of deserialize errors now is ")
+            .append(numDesErrs)
+            .append(", which exceeds ")
+            .append(maxDesErrsAllowed);
+        return true;
+      }
+    }
+    return false;
+  }
+
   public int monitorExecution() {
     boolean done = false;
     boolean success = false;
@@ -162,15 +195,13 @@ public class TezJobMonitor {
 
     long checkInterval = HiveConf.getTimeVar(hiveConf, HiveConf.ConfVars.TEZ_DAG_STATUS_CHECK_INTERVAL,
       TimeUnit.MILLISECONDS);
-    WmContext wmContext = null;
+    WmContext wmContext = getWmContext();
+    boolean fatal = false;
     while (true) {
 
       try {
-        if (context != null) {
-          context.checkHeartbeaterLockException();
-        }
+        context.checkHeartbeaterLockException();
 
-        wmContext = context.getWmContext();
         EnumSet<StatusGetOpts> opts = null;
         if (wmContext != null) {
           Set<String> desiredCounters = wmContext.getSubscribedCounters();
@@ -198,6 +229,10 @@ public class TezJobMonitor {
               LOG.debug("Requested DAG status. checkInterval: {}. currentCounters: {}", checkInterval, currentCounters);
             }
             wmContext.setCurrentCounters(currentCounters);
+            StringBuilder msgBuilder = new StringBuilder();
+            if (fatal = checkFatalErrors(currentCounters, msgBuilder)) {
+              throw new RuntimeException(msgBuilder.toString());
+            }
           }
         }
         DAGStatus.State state = status.getState();
@@ -267,7 +302,7 @@ public class TezJobMonitor {
           failureTimer.reset();
           failureTimer.start();
         }
-        if (isInterrupted
+        if (isInterrupted || fatal
             || (++failedCounter >= MAX_RETRY_FAILURES && failureTimer.now(TimeUnit.MILLISECONDS) > MAX_RETRY_INTERVAL)) {
           try {
             if (isInterrupted) {

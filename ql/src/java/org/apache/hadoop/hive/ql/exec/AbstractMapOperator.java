@@ -73,8 +73,8 @@ public abstract class AbstractMapOperator extends Operator<MapWork>
     RECORDS_IN
   }
 
-  protected final transient LongWritable deserialize_error_count = new LongWritable();
   protected final transient LongWritable recordCounter = new LongWritable();
+  protected transient DeserErrorPolicy.Policy deserErrorPolicy;
   protected transient long numRows = 0;
 
   private final Map<Integer, DummyStoreOperator> connectedOperators
@@ -141,9 +141,6 @@ public abstract class AbstractMapOperator extends Operator<MapWork>
   public void initializeMapOperator(Configuration hconf) throws HiveException {
     // set that parent initialization is done and call initialize on children
     state = State.INIT;
-
-    statsMap.put(Counter.DESERIALIZE_ERRORS.toString(), deserialize_error_count);
-
     numRows = 0;
 
     String context = hconf.get(Operator.CONTEXT_NAME_KEY, "");
@@ -151,6 +148,7 @@ public abstract class AbstractMapOperator extends Operator<MapWork>
       context = "_" + context.replace(" ","_");
     }
     statsMap.put(Counter.RECORDS_IN + context, recordCounter);
+    deserErrorPolicy = DeserErrorPolicy.createDeserErrorPolicy(this, hconf);
   }
 
   public abstract void initializeContexts() throws HiveException;
@@ -162,6 +160,7 @@ public abstract class AbstractMapOperator extends Operator<MapWork>
   @Override
   public void closeOp(boolean abort) throws HiveException {
     recordCounter.set(numRows);
+    deserErrorPolicy.close(abort);
     super.closeOp(abort);
   }
 

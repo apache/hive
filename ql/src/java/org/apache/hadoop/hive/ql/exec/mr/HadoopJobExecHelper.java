@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskHandle;
@@ -210,9 +211,21 @@ public class HadoopJobExecHelper {
     long numFiles = cntr != null ? cntr.getValue() : 0;
     long upperLimit = HiveConf.getLongVar(job, HiveConf.ConfVars.MAXCREATEDFILES);
     if (numFiles > upperLimit) {
-      errMsg.append("total number of created files now is " + numFiles + ", which exceeds ").append(upperLimit);
+      errMsg.append("total number of created files now is ").append(numFiles)
+          .append( ", which exceeds ").append(upperLimit);
       return true;
     }
+
+    cntr = ctrs.findCounter(HiveConf.getVar(job, ConfVars.HIVECOUNTERGROUP),
+        MapOperator.Counter.DESERIALIZE_ERRORS.toString());
+    long numDesErrs = cntr != null ? cntr.getValue() : 0;
+    long maxDesErrsAllowed = HiveConf.getLongVar(job, HiveConf.ConfVars.MAXDESERERRORS);
+    if (maxDesErrsAllowed > 0 && numDesErrs > maxDesErrsAllowed) {
+      errMsg.append("total number of deserialize errors now is ").append(numDesErrs)
+          .append( ", which exceeds ").append(maxDesErrsAllowed);
+      return true;
+    }
+
     return this.callBackObj.checkFatalErrors(ctrs, errMsg);
   }
 

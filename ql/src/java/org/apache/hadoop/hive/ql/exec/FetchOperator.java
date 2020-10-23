@@ -131,6 +131,8 @@ public class FetchOperator implements Serializable {
   private transient StructObjectInspector outputOI;
   private transient Object[] row;
 
+  private transient DeserErrorPolicy.Policy deserErrorPolicy;
+
   public FetchOperator(FetchWork work, JobConf job) throws HiveException {
     this(work, job, null, null);
   }
@@ -149,6 +151,7 @@ public class FetchOperator implements Serializable {
     this.isStatReader = work.getTblDesc() == null;
     this.isPartitioned = !isStatReader && work.isPartitioned();
     this.isNonNativeTable = !isStatReader && work.getTblDesc().isNonNative();
+    this.deserErrorPolicy = DeserErrorPolicy.createDeserErrorPolicy(null, job);
     initialize();
   }
 
@@ -616,7 +619,14 @@ public class FetchOperator implements Serializable {
             row[isPartitioned ? 2 : 1] =
                 MapOperator.populateVirtualColumnValues(context, vcCols, vcValues, currSerDe);
           }
-          Object deserialized = currSerDe.deserialize(value);
+          Object deserialized;
+          try {
+            deserialized = currSerDe.deserialize(value);
+          } catch (Exception e) {
+            deserErrorPolicy.onDeserError(e);
+            // if exception not happen, continue for next row
+            continue;
+          }
           if (ObjectConverter != null) {
             deserialized = ObjectConverter.convert(deserialized);
           }

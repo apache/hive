@@ -737,6 +737,11 @@ public class HiveConf extends Configuration {
         "this value is true, directory p=1 will be created; if false, p=001"),
     MAXCREATEDFILES("hive.exec.max.created.files", 100000L,
         "Maximum number of HDFS files created by all mappers/reducers in a MapReduce job."),
+    MAXDESERERRORS("hive.exec.max.deserialize.errors.pertask", 0L,
+        "Maximum number of deserialize errors allowed to be ignored in each task. \n" +
+        "This works only when the vectorized execution is turned off."),
+    HIVE_REPORT_DESERERRORS_INTERVAL("hive.report.deserialize.errors.interval", "60000ms",
+        new TimeValidator(TimeUnit.MILLISECONDS), "The interval length used for reporting deserialize errors in milliseconds."),
     DEFAULTPARTITIONNAME("hive.exec.default.partition.name", "__HIVE_DEFAULT_PARTITION__",
         "The default partition name in case the dynamic partition column value is null/empty string or any other values that cannot be escaped. \n" +
         "This value must not contain any special character used in HDFS URI (e.g., ':', '%', '/' etc). \n" +
