@@ -123,7 +123,8 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
     }
 
     if (timeZone == null) {
-      timeZone = SessionState.get().getConf().getLocalTimeZone();
+      timeZone = SessionState.get() == null ? new HiveConf().getLocalTimeZone() : SessionState.get().getConf()
+              .getLocalTimeZone();
       formatter.setTimeZone(TimeZone.getTimeZone(timeZone));
     }
   }
