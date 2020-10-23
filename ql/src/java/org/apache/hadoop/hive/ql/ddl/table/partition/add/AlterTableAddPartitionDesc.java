@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.ddl.table.partition.add;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -103,6 +104,12 @@ public class AlterTableAddPartitionDesc implements DDLDescWithWriteId, Serializa
 
     public Map<String, String> getPartParams() {
       return params;
+    }
+
+    public void addPartParams(Map<String, String> partParams) {
+      if (params != null) {
+        params.putAll(partParams);
+      }
     }
 
     @Explain(displayName = "params", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })

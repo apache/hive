@@ -93,6 +93,8 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
 
   private static com.google.common.base.Function<List<Partition>, Boolean> alterPartitionsModifier = null;
 
+  private static com.google.common.base.Function<List<Partition>, Boolean> addPartitionsModifier = null;
+
   // Methods to set/reset getTable modifier
   public static void setGetTableBehaviour(com.google.common.base.Function<Table, Table> modifier){
     getTableModifier = (modifier == null) ? com.google.common.base.Functions.identity() : modifier;
@@ -154,8 +156,16 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
     setAlterTableModifier(null);
   }
 
+  public static void resetAddPartitionModifier() {
+    setAddPartitionsBehaviour(null);
+  }
+
   public static void setAlterPartitionsBehaviour(com.google.common.base.Function<List<Partition>, Boolean> modifier){
     alterPartitionsModifier = modifier;
+  }
+
+  public static void setAddPartitionsBehaviour(com.google.common.base.Function<List<Partition>, Boolean> modifier){
+    addPartitionsModifier = modifier;
   }
 
 
@@ -316,5 +326,18 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
       }
     }
     return super.alterPartitions(catName, dbname, name, part_vals, newParts, writeId, queryWriteIdList);
+  }
+
+  @Override
+  public boolean addPartitions(String catName, String dbName, String tblName, List<Partition> parts)
+    throws InvalidObjectException, MetaException {
+    if (addPartitionsModifier != null) {
+      Boolean success = addPartitionsModifier.apply(parts);
+      if ((success != null) && !success) {
+        throw new MetaException("InjectableBehaviourObjectStore: Invalid addPartitions operation on Catalog : "
+          + catName + " DB: " + dbName + " table: " + tblName);
+      }
+    }
+    return super.addPartitions(catName, dbName, tblName, parts);
   }
 }
