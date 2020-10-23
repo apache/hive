@@ -559,11 +559,6 @@ public class MapJoinProcessor extends Transform {
     return true;
   }
 
-  public static boolean isFullOuterEnabledForDynamicPartitionHashJoin(HiveConf hiveConf, JoinOperator joinOp)
-      throws SemanticException {
-    return true;
-  }
-
   public static MapJoinOperator convertJoinOpMapJoinOp(HiveConf hconf,
       JoinOperator op, boolean leftInputJoin, String[] baseSrc, List<String> mapAliases,
       int mapJoinPos, boolean noCheckOuterJoin) throws SemanticException {

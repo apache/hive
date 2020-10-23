@@ -114,7 +114,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     fastHashTableAvailable = context.conf.getBoolVar(ConfVars.HIVE_VECTORIZATION_MAPJOIN_NATIVE_FAST_HASHTABLE_ENABLED);
 
     JoinOperator joinOp = (JoinOperator) nd;
-    // adjust noconditional task size threshold for LLAP
+    // Adjust noconditional task size threshold for LLAP
     LlapClusterStateForCompile llapInfo = null;
     if ("llap".equalsIgnoreCase(context.conf.getVar(ConfVars.HIVE_EXECUTION_MODE))) {
       llapInfo = LlapClusterStateForCompile.getClusterInfo(context.conf);
@@ -123,49 +123,27 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     MemoryMonitorInfo memoryMonitorInfo = getMemoryMonitorInfo(context.conf, llapInfo);
     joinOp.getConf().setMemoryMonitorInfo(memoryMonitorInfo);
     maxJoinMemory = memoryMonitorInfo.getAdjustedNoConditionalTaskSize();
+    hashMapDataStructure = HashMapDataStructureType.of(joinOp.getConf());
 
     LOG.info("maxJoinMemory: {}", maxJoinMemory);
 
-    hashMapDataStructure = HashMapDataStructureType.of(joinOp.getConf());
-
-
     TezBucketJoinProcCtx tezBucketJoinProcCtx = new TezBucketJoinProcCtx(context.conf);
-    boolean hiveConvertJoin = context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) &
-            !context.parseContext.getDisableMapJoin();
+    boolean hiveConvertJoin =
+        context.conf.getBoolVar(HiveConf.ConfVars.HIVECONVERTJOIN) & !context.parseContext.getDisableMapJoin();
     if (!hiveConvertJoin) {
-      // we are just converting to a common merge join operator. The shuffle
-      // join in map-reduce case.
-      Object retval = checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx);
-      if (retval == null) {
-        return retval;
-      } else {
-        fallbackToReduceSideJoin(joinOp, context);
-        return null;
-      }
+      // Convert to SMB join (CommonJoinOperator)
+      return checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx);
     }
 
-    // if we have traits, and table info is present in the traits, we know the
-    // exact number of buckets. Else choose the largest number of estimated
-    // reducers from the parent operators.
-    int numBuckets = -1;
-    if (context.conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ)) {
-      numBuckets = estimateNumBuckets(joinOp, true);
-    } else {
-      numBuckets = 1;
-    }
+    // If we have traits, and table info is present in the traits, we know the exact number of buckets.
+    // Else choose the largest number of estimated reducers from the parent operators.
+    int numBuckets = context.conf.getBoolVar(HiveConf.ConfVars.HIVE_CONVERT_JOIN_BUCKET_MAPJOIN_TEZ) ?
+      estimateNumBuckets(joinOp, true) : 1;
     LOG.info("Estimated number of buckets " + numBuckets);
-    MapJoinConversion mapJoinConversion =
-        getMapJoinConversion(joinOp, context, numBuckets, false, maxJoinMemory, true);
+    MapJoinConversion mapJoinConversion = getMapJoinConversion(joinOp, context, numBuckets, false, maxJoinMemory, true);
     if (mapJoinConversion == null) {
-      Object retval = checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx);
-      if (retval == null) {
-        return retval;
-      } else {
-        // only case is full outer join with SMB enabled which is not possible. Convert to regular
-        // join.
-        fallbackToReduceSideJoin(joinOp, context);
-        return null;
-      }
+      // Convert to SMB join (CommonJoinOperator)
+      return checkAndConvertSMBJoin(context, joinOp, tezBucketJoinProcCtx);
     }
 
     if (numBuckets > 1) {
@@ -181,36 +159,36 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       }
     }
 
-    // check if we can convert to map join no bucket scaling.
+    // Check if we can convert to MapJoin with no bucket scaling
     LOG.info("Convert to non-bucketed map join");
     if (numBuckets != 1) {
       mapJoinConversion = getMapJoinConversion(joinOp, context, 1, false, maxJoinMemory, true);
-    }
-    if (mapJoinConversion == null) {
-      // we are just converting to a common merge join operator. The shuffle
-      // join in map-reduce case.
-      fallbackToReduceSideJoin(joinOp, context);
-      return null;
-    }
-
-    // Currently, this is a MJ path and we don's support FULL OUTER MapJoin yet.
-    if (mapJoinConversion.getIsFullOuterJoin() &&
-        !mapJoinConversion.getIsFullOuterEnabledForMapJoin()) {
-      fallbackToReduceSideJoin(joinOp, context);
-      return null;
+      if (mapJoinConversion == null) {
+        // Convert to DPHJ or SMB (CommonJoinOperator) operator
+        fallbackToReduceSideJoin(joinOp, context);
+        return null;
+      }
     }
 
+//    // Bailout: this is a MapJoin path and we don's support FULL OUTER MapJoin yet!
+//    if (mapJoinConversion.getIsFullOuterJoin() && !mapJoinConversion.getIsFullOuterEnabledForMapJoin()) {
+//      // Convert to DPHJ or SMB (CommonJoinOperator) operator
+//      fallbackToReduceSideJoin(joinOp, context);
+//      return null;
+//    }
+
+    // Finally, perform the MapJoin tree transformation
     MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversion, true);
     if (mapJoinOp == null) {
+      // Convert to DPHJ or SMB (CommonJoinOperator) operator
       fallbackToReduceSideJoin(joinOp, context);
       return null;
     }
-    // map join operator by default has no bucket cols and num of reduce sinks
-    // reduced by 1
+    // MapJoin operator by default has no bucket cols and num of reduce sinks reduced by 1
     mapJoinOp.setOpTraits(new OpTraits(null, -1, null,
         joinOp.getOpTraits().getNumReduceSinks()));
     preserveOperatorInfos(mapJoinOp, joinOp, context);
-    // propagate this change till the next RS
+    // Propagate this change up to the next RS
     for (Operator<? extends OperatorDesc> childOp : mapJoinOp.getChildOperators()) {
       setAllChildrenTraits(childOp, mapJoinOp.getOpTraits());
     }
@@ -455,11 +433,19 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     return maxExecutorsPerQuery;
   }
 
-  @SuppressWarnings("unchecked")
+  /**
+   * Method converts Join to SMB (CommonJoinOperator) join while falling back for
+   * alternatives such as DPHJ (through fallbackToReduceSideJoin method).
+   * @param context OptimizeTezProcContext
+   * @param joinOp JoinOperator
+   * @param tezBucketJoinProcCtx TezBucketJoinProcCtx
+   * @return NULL
+   * @throws SemanticException
+   */
   private Object checkAndConvertSMBJoin(OptimizeTezProcContext context, JoinOperator joinOp,
     TezBucketJoinProcCtx tezBucketJoinProcCtx) throws SemanticException {
-    // we cannot convert to bucket map join, we cannot convert to
-    // map join either based on the size. Check if we can convert to SMB join.
+    // Cannot convert to bucket map join, we cannot convert to map join either based on the size.
+    // Check if we can convert to DPHJ or SMB join.
     if (!(HiveConf.getBoolVar(context.conf, ConfVars.HIVE_AUTO_SORTMERGE_JOIN))
       || ((!HiveConf.getBoolVar(context.conf, ConfVars.HIVE_AUTO_SORTMERGE_JOIN_REDUCE))
           && joinOp.getOpTraits().getNumReduceSinks() >= 2)) {
@@ -482,16 +468,15 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     JoinCondDesc[] joinCondns = joinDesc.getConds();
     Set<Integer> joinCandidates = MapJoinProcessor.getBigTableCandidates(joinCondns);
     if (joinCandidates.isEmpty()) {
-      // This is a full outer join. This can never be a map-join
-      // of any type. So return false.
-      return false;
+      // This is a full outer join. This can never be a map-join of any type.
+      // Convert to DPHJ or SMB (CommonJoinOperator) operator
+      fallbackToReduceSideJoin(joinOp, context);
+      return null;
     }
     int mapJoinConversionPos =
         bigTableMatcher.getBigTablePosition(context.parseContext, joinOp, joinCandidates);
     if (mapJoinConversionPos < 0) {
-      // contains aliases from sub-query
-      // we are just converting to a common merge join operator. The shuffle
-      // join in map-reduce case.
+      // Contains aliases from sub-query thus just convert to DPHJ or SMB (CommonJoinOperator) operator
       fallbackToReduceSideJoin(joinOp, context);
       return null;
     }
@@ -500,15 +485,13 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       convertJoinSMBJoin(joinOp, context, mapJoinConversionPos,
           tezBucketJoinProcCtx.getNumBuckets(), true);
     } else {
-      // we are just converting to a common merge join operator. The shuffle
-      // join in map-reduce case.
+      // Convert to DPHJ or SMB (CommonJoinOperator) operator
       fallbackToReduceSideJoin(joinOp, context);
     }
     return null;
   }
 
-  // replaces the join operator with a new CommonJoinOperator, removes the
-  // parent reduce sinks
+  // Replaces join operator with SMB (CommonJoinOperator), removing the parent reduce sinks
   private void convertJoinSMBJoin(JoinOperator joinOp, OptimizeTezProcContext context,
       int mapJoinConversionPos, int numBuckets, boolean adjustParentsChildren)
       throws SemanticException {
@@ -1062,16 +1045,12 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     boolean isFullOuterEnabledForDynamicPartitionHashJoin = false;
     boolean isFullOuterEnabledForMapJoin = false;
 
-    boolean isFullOuterJoin =
-        MapJoinProcessor.precheckFullOuter(context.conf, joinOp);
-    if (isFullOuterJoin) {
-
+    boolean isSupportedFullOuterJoin = MapJoinProcessor.precheckFullOuter(context.conf, joinOp);
+    if (isSupportedFullOuterJoin) {
       boolean isFullOuterEnabled = MapJoinProcessor.isFullOuterMapEnabled(context.conf, joinOp);
       if (isFullOuterEnabled) {
-
         // FUTURE: Currently, we only support DPHJ.
-        isFullOuterEnabledForDynamicPartitionHashJoin =
-            MapJoinProcessor.isFullOuterEnabledForDynamicPartitionHashJoin(context.conf, joinOp);
+        isFullOuterEnabledForDynamicPartitionHashJoin = true;
       }
     }
 
@@ -1226,7 +1205,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
     return
         new MapJoinConversion(
             bigTablePosition,
-            isFullOuterJoin,
+            isSupportedFullOuterJoin,
             isFullOuterEnabledForDynamicPartitionHashJoin,
             isFullOuterEnabledForMapJoin);
   }
@@ -1564,8 +1543,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       }
     }
 
-    // we are just converting to a common merge join operator. The shuffle
-    // join in map-reduce case.
+    // Convert to SMB (CommonJoinOperator) operator (shuffle join in map-reduce)
     fallbackToMergeJoin(joinOp, context);
   }
 
