@@ -1026,7 +1026,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
   }
 
   /**
-   * Obtain big table position for join.
+   * Obtain a MapJoinConversion result including the big table position for the join.
    *
    * @param joinOp join operator
    * @param context optimization context
@@ -1035,7 +1035,7 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
    * @param skipJoinTypeChecks whether to skip join type checking
    * @param maxSize size threshold for Map Join conversion
    * @param checkMapJoinThresholds whether to check thresholds to convert to Map Join
-   * @return returns big table position or -1 if it cannot be determined
+   * @return returns big table position or NULL if it cannot be determined
    * @throws SemanticException
    */
   public MapJoinConversion getMapJoinConversion(JoinOperator joinOp, OptimizeTezProcContext context,
@@ -1194,9 +1194,8 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       return null;
     }
 
-    // Check if size of data to shuffle (larger table) is less than given max size
-    if (checkMapJoinThresholds && convertDPHJ
-            && checkShuffleSizeForLargeTable(joinOp, bigTablePosition, context)) {
+    // If convertDPHJ -> cannot convert to MapJoin
+    if (checkMapJoinThresholds && convertDPHJ) {
       LOG.debug("Conditions to convert to MapJoin are not met");
       return null;
     }
@@ -1518,6 +1517,12 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       }
       final int bigTablePos = mapJoinConversion.getBigTablePos();
 
+      // Check if size of data to shuffle (larger table) is less than given max size
+      if (!checkDPHJShuffleSizeForLargeTable(joinOp, bigTablePos, context)) {
+        LOG.debug("Conditions to convert to DPHJ are NOT met");
+        return false;
+      }
+
       // Now that we have the big table index, get real numReducers value based on big table RS
       ReduceSinkOperator bigTableParentRS =
           (ReduceSinkOperator) (joinOp.getParentOperators().get(bigTablePos));
@@ -1621,13 +1626,13 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
   }
 
   /* Returns true if it passes the test, false otherwise. */
-  private boolean checkShuffleSizeForLargeTable(JoinOperator joinOp, int position,
+  private boolean checkDPHJShuffleSizeForLargeTable(JoinOperator joinOp, int position,
           OptimizeTezProcContext context) {
     long max = HiveConf.getLongVar(context.parseContext.getConf(),
             HiveConf.ConfVars.HIVECONVERTJOINMAXSHUFFLESIZE);
     if (max < 1) {
-      // Max is disabled, we can safely return false
-      return false;
+      // Max is disabled, we can safely return true
+      return true;
     }
     // Evaluate
     ReduceSinkOperator rsOp = (ReduceSinkOperator) joinOp.getParentOperators().get(position);
