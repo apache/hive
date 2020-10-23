@@ -56,3 +56,10 @@ select value from avro_dec1_n0;
 DROP TABLE `dec_n0`;
 DROP TABLE avro_dec_n0;
 DROP TABLE avro_dec1_n0;
+
+CREATE TABLE test_quoted_scale_precision
+STORED AS AVRO
+TBLPROPERTIES ('avro.schema.literal'='{"type":"record","name":"DecimalTest","namespace":"com.example.test","fields":[{"name":"Decimal24_6","type":["null",{"type":"bytes","logicalType":"decimal","precision":"24","scale":"6"}]}]}');
+show create table test_quoted_scale_precision;
+desc test_quoted_scale_precision;
+DROP TABLE test_quoted_scale_precision;
