@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.exec.impala;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
@@ -25,6 +26,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
@@ -130,13 +132,20 @@ public class ImpalaStreamingFetchOperator extends FetchOperator {
 
     @Override
     public void clearFetchContext() throws HiveException {
+        if (!HiveConf.getBoolVar(SessionState.get().getConf(), HiveConf.ConfVars.HIVE_IMPALA_ROW_FETCH_EARLY_CLOSE)) {
+
+          context.close();
+        }
     }
 
     @Override
     public void closeOperator() throws HiveException {
         // Fetch driver ends up calling closeOperator multiple times to flush results. In streaming mode we want to
         // only call close once.
-        context.close();
+        if (HiveConf.getBoolVar(SessionState.get().getConf(), HiveConf.ConfVars.HIVE_IMPALA_ROW_FETCH_EARLY_CLOSE)) {
+
+          context.close();
+        }
         rowSet = null;
     }
 

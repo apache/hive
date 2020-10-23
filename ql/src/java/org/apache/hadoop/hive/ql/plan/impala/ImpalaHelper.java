@@ -77,7 +77,7 @@ public class ImpalaHelper {
   private final ImpalaQueryContext queryContext;
 
   private static final Logger LOG = LoggerFactory.getLogger(ImpalaHelper.class);
-  private final EventSequence timeline = new EventSequence("Frontend Timeline");
+  private final EventSequence timeline;
 
   static {
     // ensure that the instance is created with the "true" parameter.
@@ -88,6 +88,8 @@ public class ImpalaHelper {
 
   public ImpalaHelper(HiveConf conf, String dbname, String username, HiveTxnManager txnMgr,
       Context ctx) throws SemanticException {
+    // Context may pass in a timeline that was started earlier (in Driver.compile)
+    timeline = (ctx.getTimeline() != null) ? ctx.getTimeline() : new EventSequence("Frontend Timeline");
     try {
       this.queryContext =
           new ImpalaQueryContext(conf, dbname, username, createQueryOptions(conf), txnMgr, ctx);

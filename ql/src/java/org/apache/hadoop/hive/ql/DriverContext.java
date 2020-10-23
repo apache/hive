@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
+import org.apache.impala.util.EventSequence;
 
 /**
  * Context for the procedure managed by the Driver.
@@ -51,6 +52,8 @@ public class DriverContext {
   // so as not to conflict with the outer Driver/query which is using the session
   // transaction manager.
   private final HiveTxnManager initTxnManager;
+
+  private EventSequence timeline;
 
   private QueryPlan plan;
   private Schema schema;
@@ -252,5 +255,13 @@ public class DriverContext {
 
   public void setOperationId(String operationId) {
     this.operationId = operationId;
+  }
+
+  public void setTimeline(EventSequence timeline) {
+    this.timeline = timeline;
+  }
+
+  public EventSequence getTimeline() {
+    return this.timeline;
   }
 }

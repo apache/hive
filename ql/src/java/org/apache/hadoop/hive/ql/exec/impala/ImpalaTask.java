@@ -48,6 +48,16 @@ public class ImpalaTask extends Task<ImpalaWork> implements Serializable {
         super.initialize(queryState, queryPlan, taskQueue, context);
     }
 
+    private void closeOperation(TOperationHandle opHandle) {
+      // Always close operation independently on whether
+      // it was successful or not
+      try {
+        session.closeOperation(opHandle);
+      } catch (HiveException e) {
+        LOG.warn("Could not close operation", e);
+      }
+    }
+
     @Override
     public int execute() {
         // zero is success, non-zero is failure
@@ -91,15 +101,11 @@ public class ImpalaTask extends Task<ImpalaWork> implements Serializable {
                 try {
                   session.fetch(opHandle, 1);
                 } finally {
-                  // Always close operation independently on whether
-                  // it was successful or not
-                  try {
-                    session.closeOperation(opHandle);
-                  } catch (HiveException e) {
-                    LOG.warn("Could not close operation", e);
-                  }
+                  closeOperation(opHandle);
                 }
               }
+            } else {
+              closeOperation(opHandle);
             }
 
         } catch (Throwable e) {

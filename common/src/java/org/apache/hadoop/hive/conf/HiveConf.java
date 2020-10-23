@@ -4194,6 +4194,10 @@ public class HiveConf extends Configuration {
     HIVE_IMPALA_ROW_FETCH_MAX_RETRY("hive.impala.fetch.retry.limit", -1,
         "Maximum number of retry attempts to fetch rows when streaming results from Impala. -1 " +
         "means retry forever"),
+    HIVE_IMPALA_ROW_FETCH_EARLY_CLOSE("hive.impala.fetch.early.close", false,
+        "Controls whether the Impala backend operation handle is closed at " +
+        "the end of fetch. Leaving the operation handle open allows the Impala " +
+        "profile to capture statement timing after row fetch has completed."),
     HIVE_IMPALA_RPC_TIMEOUT("hive.impala.rpc.timeout", 300000,
         "Timeout for Impala RPCs in milliseconds"),
     HIVE_IMPALA_RPC_RETRY_LIMIT("hive.impala.rpc.retry.limit", 200,

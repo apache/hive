@@ -307,8 +307,9 @@ public class ImpalaSession {
                 });
     }
 
-    private void PrepareForExecution() throws HiveException {
+    private long PrepareForExecution() throws HiveException {
           TPingImpalaHS2ServiceReq req = new TPingImpalaHS2ServiceReq(sessionHandle);
+          long ping_send_ts = System.nanoTime();
           TPingImpalaHS2ServiceResp resp = retryRPC("PingImpalaHS2Service", true,
                 (c, retryCount) -> {
                   req.setSessionHandle(sessionHandle); // Set latest session handle since Ping retry may reopen session
@@ -316,6 +317,9 @@ public class ImpalaSession {
                   checkThriftStatus(resp2.getStatus()); // Check errors on every iteration
                   return resp2;
                 });
+          // Move the coordinator timestamp forward by half of the RPC latency
+          // to compensate for overlap between the frontend and backend timelines.
+          return resp.timestamp + (System.nanoTime() - ping_send_ts) / 2;
     }
 
     /* Executes an Impala plan */
@@ -331,12 +335,12 @@ public class ImpalaSession {
         req.setStatementReq(statementRequest);
         req.setPlan(plan.getExecRequest());
 
-        PrepareForExecution();
+        req.plan.setRemote_submit_time(PrepareForExecution());
         // Don't retry the Execute itself in case the statment was DML or modified state
         TExecuteStatementResp resp;
         statementRequest.setSessionHandle(sessionHandle);
         try {
-          plan.getTimeline().markEvent("Submitted query");
+          plan.getTimeline().markEvent("Submit request");
           resp = client.ExecutePlannedStatement(req);
           checkThriftStatus(resp.getStatus());
         } catch (TException e) {

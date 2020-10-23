@@ -77,6 +77,10 @@ import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.hive.common.util.TxnIdUtils;
+import org.apache.impala.util.EventSequence;
+import org.apache.thrift.TException;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,7 +192,7 @@ public class Driver implements IDriver {
   // runInternal, which defers the close to the called in that method.
   @VisibleForTesting
   public void compile(String command, boolean resetTaskIds, boolean deferClose) throws CommandProcessorException {
-    preparForCompile(resetTaskIds);
+    prepareForCompile(resetTaskIds);
 
     Compiler compiler = new Compiler(context, driverContext, driverState);
     QueryPlan plan = compiler.compile(command, deferClose);
@@ -203,7 +207,10 @@ public class Driver implements IDriver {
     }
   }
 
-  private void preparForCompile(boolean resetTaskIds) throws CommandProcessorException {
+  private void prepareForCompile(boolean resetTaskIds) throws CommandProcessorException {
+    EventSequence timeline = new EventSequence("Frontend Timeline");
+    driverContext.setTimeline(timeline);
+
     createTransactionManager();
     DriverState.setDriverState(driverState);
     prepareContext();
@@ -225,6 +232,7 @@ public class Driver implements IDriver {
       }
       driverContext.setTxnManager(queryTxnManager);
       driverContext.getQueryState().setTxnManager(queryTxnManager);
+      driverContext.getTimeline().markEvent("Transaction Manager Initialized");
 
       // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
       // if compile is being called multiple times, clear the old shutdownhook
@@ -265,6 +273,7 @@ public class Driver implements IDriver {
       throw new CommandProcessorException(e);
     }
 
+    context.setTimeline(driverContext.getTimeline());
     context.setHiveTxnManager(driverContext.getTxnManager());
     context.setStatsSource(driverContext.getStatsSource());
     context.setHDFSCleanup(true);

@@ -69,6 +69,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.impala.util.EventSequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -175,6 +176,16 @@ public class Context {
    * After enabling unparsing before analysis - a valid query unparse can be done.
    */
   private boolean enableUnparse;
+
+  private EventSequence timeline;
+
+  public void setTimeline(EventSequence timeline) {
+    this.timeline = timeline;
+  }
+
+  public EventSequence getTimeline() {
+    return this.timeline;
+  }
 
   public void setOperation(Operation operation) {
     this.operation = operation;

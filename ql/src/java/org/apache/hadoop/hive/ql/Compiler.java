@@ -143,6 +143,7 @@ public class Compiler {
     } catch (Exception e) {
       LOG.warn("WARNING! Query command could not be redacted." + e);
     }
+    driverContext.getTimeline().markEvent("Command Redacted");
 
     DriverUtils.checkInterrupted(driverState, driverContext, "at beginning of compilation.", null, null);
 
@@ -171,6 +172,7 @@ public class Compiler {
     } finally {
       driverContext.getHookRunner().runAfterParseHook(context.getCmd(), !success);
     }
+    driverContext.getTimeline().markEvent("Query Parsed");
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
   }
 
@@ -182,12 +184,6 @@ public class Compiler {
     // clear CurrentFunctionsInUse set, to capture new set of functions
     // that SemanticAnalyzer finds are in use
     SessionState.get().getCurrentFunctionsInUse().clear();
-
-    // Flush the metastore cache.  This assures that we don't pick up objects from a previous
-    // query running in this same thread.  This has to be done after we get our semantic
-    // analyzer (this is when the connection to the metastore is made) but before we analyze,
-    // because at that point we need access to the objects.
-    Hive.get().getMSC().flushCache();
 
     driverContext.setBackupContext(new Context(context));
     boolean executeHooks = driverContext.getHookRunner().hasPreAnalyzeHooks();
@@ -215,6 +211,7 @@ public class Compiler {
       openTransaction(driverContext.getTxnType());
 
       generateValidTxnList();
+      driverContext.getTimeline().markEvent("Transaction Opened");
     }
 
     // Do semantic analysis and plan generation
