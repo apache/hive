@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdColumnUniqueness;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistinctRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistribution;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdExpressionLineage;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdMemory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdPredicates;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdRowCount;
@@ -48,6 +49,7 @@ public class HiveTezModelRelMetadataProvider {
                 HiveRelMdRowCount.SOURCE,
                 HiveRelMdUniqueKeys.SOURCE,
                 HiveRelMdColumnUniqueness.SOURCE,
+                HiveRelMdExpressionLineage.SOURCE,
                 HiveRelMdSize.SOURCE,
                 HiveRelMdMemory.SOURCE,
                 HiveRelMdDistribution.SOURCE,
