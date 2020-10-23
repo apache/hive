@@ -50,6 +50,13 @@ public final class HiveRelMdExpressionLineage
     return BuiltInMetadata.ExpressionLineage.DEF;
   }
 
+  // Union returns NULL instead of actually determining the lineage because
+  // Union may return multiple lineage expressions - one corresponding to each branch
+  // this could cause exponential possible combinations of lineage expressions
+  // as you go up in the operator tree.
+  // As the possible number of expressions increases it could lead to OOM.
+  // To prevent this UNION returns NULL.
+  // sample query could be found in union_lineage.q
   public Set<RexNode> getExpressionLineage(HiveUnion rel, RelMetadataQuery mq,
       RexNode outputExpression) {
     return null;
