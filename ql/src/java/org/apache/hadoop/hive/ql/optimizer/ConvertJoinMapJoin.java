@@ -170,12 +170,12 @@ public class ConvertJoinMapJoin implements SemanticNodeProcessor {
       }
     }
 
-//    // Bailout: this is a MapJoin path and we don's support FULL OUTER MapJoin yet!
-//    if (mapJoinConversion.getIsFullOuterJoin() && !mapJoinConversion.getIsFullOuterEnabledForMapJoin()) {
-//      // Convert to DPHJ or SMB (CommonJoinOperator) operator
-//      fallbackToReduceSideJoin(joinOp, context);
-//      return null;
-//    }
+    // Bailout: this is a MapJoin path and we don's support FULL OUTER MapJoin yet!
+    if (mapJoinConversion.getIsFullOuterJoin() && !mapJoinConversion.getIsFullOuterEnabledForMapJoin()) {
+      // Convert to DPHJ or SMB (CommonJoinOperator) operator
+      fallbackToReduceSideJoin(joinOp, context);
+      return null;
+    }
 
     // Finally, perform the MapJoin tree transformation
     MapJoinOperator mapJoinOp = convertJoinMapJoin(joinOp, context, mapJoinConversion, true);
