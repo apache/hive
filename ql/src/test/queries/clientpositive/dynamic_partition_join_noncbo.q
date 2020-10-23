@@ -465,6 +465,7 @@ set hive.explain.user=false;
 set hive.auto.convert.join=true;
 set hive.optimize.dynamic.partition.hashjoin=true;
 set hive.auto.convert.join.noconditionaltask.size=858783744;
+set hive.auto.convert.join.shuffle.max.size=80000000000;
 set hive.stats.fetch.column.stats=false;
 
 set hive.cbo.enable=false;
