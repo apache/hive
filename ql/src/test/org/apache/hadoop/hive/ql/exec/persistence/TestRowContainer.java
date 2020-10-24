@@ -29,10 +29,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritableV2;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.junit.Test;
@@ -72,4 +74,86 @@ public class TestRowContainer {
     }
     result.close();
   }
+
+  private static final String COL_NAMES = "x,y,z,a,b,v";
+  private static final String COL_TYPES = "int,string,double,int,string,string";
+
+  @Test
+  public void testRowcontainerContent() throws HiveException, SerDeException {
+    int blockSize = 10000;
+    Configuration cfg = new Configuration();
+    RowContainer r1 = new RowContainer(blockSize, cfg, null);
+    LazyBinarySerDe serde = new LazyBinarySerDe();
+    Properties props = new Properties();
+    props.put(serdeConstants.LIST_COLUMNS, COL_NAMES);
+    props.put(serdeConstants.LIST_COLUMN_TYPES, COL_TYPES);
+    SerDeUtils.initializeSerDe(serde, null, props, null);
+    r1.setSerDe(serde,
+        ObjectInspectorUtils.getStandardObjectInspector(serde.getObjectInspector()));
+    r1.setTableDesc(
+        PTFRowContainer.createTableDesc((StructObjectInspector) serde.getObjectInspector()));
+
+    List<Writable> row;
+    int sz = 0;
+    for (int i = 0; i <= blockSize * 2 + 11; i++) {
+      row = new ArrayList<Writable>();
+      row.add(new IntWritable(i));
+      row.add(new Text("abc " + i));
+      row.add(new DoubleWritable(i));
+      row.add(new IntWritable(i));
+      row.add(new Text("def " + i));
+      row.add(new Text("VALUE"));
+      r1.addRow(row);
+      sz++;
+    }
+
+    assertEquals(true, r1.getNumFlushedBlocks() == 2);
+    assertEquals(r1.rowCount(), sz);
+
+    checkEquals(r1.first(),"abc ", "def ", "VALUE", 0);
+    for (int i = 1; i < r1.rowCount(); i++) {
+      List<Writable> a = r1.next();
+      checkEquals(a, "abc ", "def ", "VALUE", i);
+    }
+    // end
+    assertEquals(null, r1.next());
+
+    // clear rows
+    r1.clearRows();
+    sz = 0;
+    for (int i = 0; i <= blockSize * 2 + 10; i++) {
+      row = new ArrayList<Writable>();
+      row.add(new IntWritable(i));
+      row.add(new Text("zzz " + i));
+      row.add(new DoubleWritable(i));
+      row.add(new IntWritable(i));
+      row.add(new Text("ddd " + i));
+      row.add(new Text("ddd"));
+      r1.addRow(row);
+      sz++;
+    }
+
+    assertEquals(true, r1.getNumFlushedBlocks() == 2);
+    assertEquals(r1.rowCount(), sz);
+
+    checkEquals(r1.first(), "zzz ", "ddd ", "ddd", 0);
+    for (int i = 1; i < r1.rowCount(); i++) {
+      List<Writable> a = r1.next();
+      checkEquals(a,  "zzz ", "ddd ", "ddd", i);
+    }
+    // end
+    assertEquals(null, r1.next());
+    r1.close();
+  }
+
+  private void checkEquals(List<Writable> a, String s1, String s2, String s3,
+      int i) {
+    assertEquals(a.get(0), new IntWritable(i));
+    assertEquals(a.get(1).toString(), s1 + i);
+    assertEquals(a.get(2), new DoubleWritable(i));
+    assertEquals(a.get(3), new IntWritable(i));
+    assertEquals(a.get(4).toString(), s2 + i);
+    assertEquals(a.get(5).toString(), s3);
+  }
+
 }

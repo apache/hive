@@ -434,7 +434,10 @@ public class RowContainer<ROW extends List<Object>>
     this.firstCalled = false;
     this.inputSplits = null;
     tempOutPath = null;
-    addCursor = 0;
+
+    // resetReadBlocks
+    currentReadBlock = currentWriteBlock;
+    firstReadBlockPointer = currentReadBlock;
 
     size = 0;
     try {
@@ -598,11 +601,6 @@ public class RowContainer<ROW extends List<Object>>
 
   protected void resetCurrentReadBlockToFirstReadBlock() {
     currentReadBlock = firstReadBlockPointer;
-  }
-
-  protected void resetReadBlocks() {
-    this.currentReadBlock = this.currentWriteBlock;
-    this.firstReadBlockPointer = currentReadBlock;
   }
 
   protected void close() throws HiveException {

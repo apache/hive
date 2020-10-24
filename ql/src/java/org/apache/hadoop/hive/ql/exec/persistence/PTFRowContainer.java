@@ -152,7 +152,6 @@ public class PTFRowContainer<Row extends List<Object>> extends RowContainer<Row>
   @Override
   public void clearRows() throws HiveException {
     super.clearRows();
-    resetReadBlocks();
     blockInfos = new ArrayList<PTFRowContainer.BlockInfo>();
   }
 
