@@ -163,21 +163,12 @@ public class TestPrimaryKey extends MetaStoreClientTest {
     rqst = new PrimaryKeysRequest(table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
     fetched = client.getPrimaryKeys(rqst);
-    Assert.assertEquals(1, fetched.size());
-    Assert.assertEquals(table.getDbName(), fetched.get(0).getTable_db());
-    Assert.assertEquals(table.getTableName(), fetched.get(0).getTable_name());
-    Assert.assertEquals("col1", fetched.get(0).getColumn_name());
-    Assert.assertEquals(1, fetched.get(0).getKey_seq());
-    Assert.assertEquals(table.getTableName() + "_primary_key", fetched.get(0).getPk_name());
-    String table0PkName = fetched.get(0).getPk_name();
-    Assert.assertTrue(fetched.get(0).isEnable_cstr());
-    Assert.assertFalse(fetched.get(0).isValidate_cstr());
-    Assert.assertFalse(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(table.getCatName(), fetched.get(0).getCatName());
+    pk.get(0).setPk_name(fetched.get(0).getPk_name());
+    Assert.assertEquals(pk, fetched);
 
     // Drop a primary key
     client.dropConstraint(table.getCatName(), table.getDbName(),
-        table.getTableName(), table0PkName);
+        table.getTableName(), pk.get(0).getPk_name());
     rqst = new PrimaryKeysRequest(table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
     fetched = client.getPrimaryKeys(rqst);
@@ -213,19 +204,7 @@ public class TestPrimaryKey extends MetaStoreClientTest {
     rqst = new PrimaryKeysRequest(table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
     fetched = client.getPrimaryKeys(rqst);
-    Assert.assertEquals(2, fetched.size());
-    Assert.assertEquals(table.getDbName(), fetched.get(0).getTable_db());
-    Assert.assertEquals(table.getTableName(), fetched.get(0).getTable_name());
-    Assert.assertEquals("col1", fetched.get(0).getColumn_name());
-    Assert.assertEquals("col2", fetched.get(1).getColumn_name());
-    Assert.assertEquals(1, fetched.get(0).getKey_seq());
-    Assert.assertEquals(2, fetched.get(1).getKey_seq());
-    Assert.assertEquals(constraintName, fetched.get(0).getPk_name());
-    Assert.assertEquals(fetched.get(0).getPk_name(), fetched.get(1).getPk_name());
-    Assert.assertFalse(fetched.get(0).isEnable_cstr());
-    Assert.assertTrue(fetched.get(0).isValidate_cstr());
-    Assert.assertTrue(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(table.getCatName(), fetched.get(0).getCatName());
+    Assert.assertEquals(pk, fetched);
 
     // Drop a named primary key
     client.dropConstraint(table.getCatName(), table.getDbName(), table.getTableName(), constraintName);
@@ -258,16 +237,7 @@ public class TestPrimaryKey extends MetaStoreClientTest {
     rqst = new PrimaryKeysRequest(testTables[2].getDbName(), testTables[2].getTableName());
     rqst.setCatName(testTables[2].getCatName());
     fetched = client.getPrimaryKeys(rqst);
-    Assert.assertEquals(1, fetched.size());
-    Assert.assertEquals(testTables[2].getDbName(), fetched.get(0).getTable_db());
-    Assert.assertEquals(testTables[2].getTableName(), fetched.get(0).getTable_name());
-    Assert.assertEquals("col1", fetched.get(0).getColumn_name());
-    Assert.assertEquals(1, fetched.get(0).getKey_seq());
-    Assert.assertEquals(constraintName, fetched.get(0).getPk_name());
-    Assert.assertTrue(fetched.get(0).isEnable_cstr());
-    Assert.assertFalse(fetched.get(0).isValidate_cstr());
-    Assert.assertFalse(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(testTables[2].getCatName(), fetched.get(0).getCatName());
+    Assert.assertEquals(pk, fetched);
 
     client.dropConstraint(testTables[2].getCatName(), testTables[2].getDbName(),
         testTables[2].getTableName(), constraintName);
@@ -296,16 +266,7 @@ public class TestPrimaryKey extends MetaStoreClientTest {
     PrimaryKeysRequest rqst = new PrimaryKeysRequest(table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
     List<SQLPrimaryKey> fetched = client.getPrimaryKeys(rqst);
-    Assert.assertEquals(1, fetched.size());
-    Assert.assertEquals(table.getDbName(), fetched.get(0).getTable_db());
-    Assert.assertEquals(table.getTableName(), fetched.get(0).getTable_name());
-    Assert.assertEquals("col1", fetched.get(0).getColumn_name());
-    Assert.assertEquals(1, fetched.get(0).getKey_seq());
-    Assert.assertEquals(constraintName, fetched.get(0).getPk_name());
-    Assert.assertTrue(fetched.get(0).isEnable_cstr());
-    Assert.assertFalse(fetched.get(0).isValidate_cstr());
-    Assert.assertFalse(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(table.getCatName(), fetched.get(0).getCatName());
+    Assert.assertEquals(pk, fetched);
 
     client.dropConstraint(table.getCatName(), table.getDbName(), table.getTableName(), constraintName);
     rqst = new PrimaryKeysRequest(table.getDbName(), table.getTableName());
@@ -333,19 +294,10 @@ public class TestPrimaryKey extends MetaStoreClientTest {
     PrimaryKeysRequest rqst = new PrimaryKeysRequest(table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
     List<SQLPrimaryKey> fetched = client.getPrimaryKeys(rqst);
-    Assert.assertEquals(1, fetched.size());
-    Assert.assertEquals(table.getDbName(), fetched.get(0).getTable_db());
-    Assert.assertEquals(table.getTableName(), fetched.get(0).getTable_name());
-    Assert.assertEquals("col1", fetched.get(0).getColumn_name());
-    Assert.assertEquals(1, fetched.get(0).getKey_seq());
-    Assert.assertEquals(table.getTableName() + "_primary_key", fetched.get(0).getPk_name());
-    String tablePkName = fetched.get(0).getPk_name();
-    Assert.assertTrue(fetched.get(0).isEnable_cstr());
-    Assert.assertFalse(fetched.get(0).isValidate_cstr());
-    Assert.assertFalse(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(table.getCatName(), fetched.get(0).getCatName());
+    pk.get(0).setPk_name(fetched.get(0).getPk_name());
+    Assert.assertEquals(pk, fetched);
 
-    client.dropConstraint(table.getCatName(), table.getDbName(), table.getTableName(), tablePkName);
+    client.dropConstraint(table.getCatName(), table.getDbName(), table.getTableName(), pk.get(0).getPk_name());
     rqst = new PrimaryKeysRequest(table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
     fetched = client.getPrimaryKeys(rqst);

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore.cache;
 import java.util.*;
 
 import com.google.common.collect.Lists;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
@@ -302,26 +301,25 @@ public class TestCachedStoreUpdateUsingEvents {
     CachedStore.prewarm(rawStore);
 
     // Add a db via rawStore
-    String dbName = "test_table_ops";
+    String dbName = "Test_Table_Ops";
     String dbOwner = "user1";
     Database db = createTestDb(dbName, dbOwner);
     hmsHandler.create_database(db);
     db = rawStore.getDatabase(DEFAULT_CATALOG_NAME, dbName);
 
     // Add a table via rawStore
-    String parentTableName = "ftbl";
-    String tblName = "tbl";
+    String parentTableName = "Ptbl";
+    String tblName = "Tbl";
     String tblOwner = "user1";
-    FieldSchema col1 = new FieldSchema("col1", "int", "integer column");
-    FieldSchema col2 = new FieldSchema("col2", "string", "string column");
-    FieldSchema col3 = new FieldSchema("col3", "int", "integer column");
-    List<FieldSchema> cols = new ArrayList<FieldSchema>();
+    FieldSchema col1 = new FieldSchema("Col1", "int", "integer column");
+    FieldSchema col2 = new FieldSchema("Col2", "string", "string column");
+    FieldSchema col3 = new FieldSchema("Col3", "int", "integer column");
+    List<FieldSchema> cols = new ArrayList<>();
     cols.add(col1);
     cols.add(col2);
     cols.add(col3);
-    List<FieldSchema> ptnCols = new ArrayList<FieldSchema>();
-    Table parentTable = createTestTbl(dbName, parentTableName, tblOwner, cols, ptnCols);
-    Table tbl = createTestTbl(dbName, tblName, tblOwner, cols, ptnCols);
+    Table parentTable = createTestTbl(dbName, parentTableName, tblOwner, cols, null);
+    Table tbl = createTestTbl(dbName, tblName, tblOwner, cols, null);
 
     // Constraints for parent Table
     List<SQLPrimaryKey> parentPkBase =
@@ -329,20 +327,20 @@ public class TestCachedStoreUpdateUsingEvents {
 
     // Constraints for table
     List<SQLPrimaryKey> pkBase =
-        Arrays.asList(new SQLPrimaryKey(dbName, tblName, col1.getName(), 1, "pk1", false, false, false));
+        Arrays.asList(new SQLPrimaryKey(dbName, tblName, col1.getName(), 1, "pK1", false, false, false));
     List<SQLUniqueConstraint> ucBase = Arrays.asList(
-        new SQLUniqueConstraint(DEFAULT_CATALOG_NAME, dbName, tblName, col1.getName(), 2, "uc1", false, false, false));
+        new SQLUniqueConstraint(DEFAULT_CATALOG_NAME, dbName, tblName, col1.getName(), 2, "uC1", false, false, false));
     List<SQLNotNullConstraint> nnBase = Arrays.asList(
-        new SQLNotNullConstraint(DEFAULT_CATALOG_NAME, dbName, tblName, col1.getName(), "nn1", false, false, false));
+        new SQLNotNullConstraint(DEFAULT_CATALOG_NAME, dbName, tblName, col1.getName(), "nN1", false, false, false));
     List<SQLDefaultConstraint> dcBase = Arrays.asList(
-        new SQLDefaultConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), col2.getName(), "1", "dc1",
+        new SQLDefaultConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), col2.getName(), "1", "dC1",
             false, false, false));
     List<SQLCheckConstraint> ccBase = Arrays.asList(
-        new SQLCheckConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), col2.getName(), "1", "cc1",
+        new SQLCheckConstraint(DEFAULT_CATALOG_NAME, tbl.getDbName(), tbl.getTableName(), col2.getName(), "1", "cC1",
             false, false, false));
     List<SQLForeignKey> fkBase = Arrays.asList(
         new SQLForeignKey(parentPkBase.get(0).getTable_db(), parentPkBase.get(0).getTable_name(),
-            parentPkBase.get(0).getColumn_name(), dbName, tblName, col3.getName(), 2, 1, 2, "fk1",
+            parentPkBase.get(0).getColumn_name(), dbName, tblName, col3.getName(), 2, 1, 2, "fK1",
             parentPkBase.get(0).getPk_name(), false, false, false));
 
     // Create table and parent table
@@ -386,18 +384,10 @@ public class TestCachedStoreUpdateUsingEvents {
     hmsHandler.drop_constraint(dropConstraintRequest);
 
     // Validate cache store constraint is dropped
-    Assert
-        .assertTrue(CollectionUtils.isEmpty(sharedCache.listCachedPrimaryKeys(DEFAULT_CATALOG_NAME, dbName, tblName)));
-    Assert.assertTrue(
-        CollectionUtils.isEmpty(sharedCache.listCachedNotNullConstraints(DEFAULT_CATALOG_NAME, dbName, tblName)));
-    Assert.assertTrue(
-        CollectionUtils.isEmpty(sharedCache.listCachedUniqueConstraint(DEFAULT_CATALOG_NAME, dbName, tblName)));
-    Assert.assertTrue(
-        CollectionUtils.isEmpty(sharedCache.listCachedDefaultConstraint(DEFAULT_CATALOG_NAME, dbName, tblName)));
-    Assert.assertTrue(
-        CollectionUtils.isEmpty(sharedCache.listCachedCheckConstraint(DEFAULT_CATALOG_NAME, dbName, tblName)));
-    Assert.assertTrue(
-        CollectionUtils.isEmpty(sharedCache.listCachedForeignKeys(DEFAULT_CATALOG_NAME, dbName, tblName, null, null)));
+    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, tblName);
+
+    // Validate cache store constraint is dropped
+    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, parentTableName);
 
     // Adding keys back
     hmsHandler.add_primary_key(new AddPrimaryKeyRequest(parentPkBase));
@@ -411,6 +401,9 @@ public class TestCachedStoreUpdateUsingEvents {
     // Validating constraint values from Cache with rawStore
     assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, tblName);
 
+    // Validating constraint values from Cache with rawStore
+    assertRawStoreAndCachedStoreConstraint(DEFAULT_CATALOG_NAME, dbName, parentTableName);
+
     sharedCache.getDatabaseCache().clear();
     sharedCache.clearTableCache();
     sharedCache.getSdCache().clear();
@@ -419,18 +412,14 @@ public class TestCachedStoreUpdateUsingEvents {
   public void assertRawStoreAndCachedStoreConstraint(String catName, String dbName, String tblName)
       throws MetaException, NoSuchObjectException {
     SQLAllTableConstraints rawStoreConstraints = rawStore.getAllTableConstraints(catName, dbName, tblName);
-    List<SQLPrimaryKey> primaryKeys = sharedCache.listCachedPrimaryKeys(catName, dbName, tblName);
-    List<SQLNotNullConstraint> notNullConstraints = sharedCache.listCachedNotNullConstraints(catName, dbName, tblName);
-    List<SQLUniqueConstraint> uniqueConstraints = sharedCache.listCachedUniqueConstraint(catName, dbName, tblName);
-    List<SQLDefaultConstraint> defaultConstraints = sharedCache.listCachedDefaultConstraint(catName, dbName, tblName);
-    List<SQLCheckConstraint> checkConstraints = sharedCache.listCachedCheckConstraint(catName, dbName, tblName);
-    List<SQLForeignKey> foreignKeys = sharedCache.listCachedForeignKeys(catName, dbName, tblName, null, null);
-    Assert.assertEquals(rawStoreConstraints.getPrimaryKeys(), primaryKeys);
-    Assert.assertEquals(rawStoreConstraints.getNotNullConstraints(), notNullConstraints);
-    Assert.assertEquals(rawStoreConstraints.getUniqueConstraints(), uniqueConstraints);
-    Assert.assertEquals(rawStoreConstraints.getDefaultConstraints(), defaultConstraints);
-    Assert.assertEquals(rawStoreConstraints.getCheckConstraints(), checkConstraints);
-    Assert.assertEquals(rawStoreConstraints.getForeignKeys(), foreignKeys);
+    SQLAllTableConstraints cachedStoreConstraints = new SQLAllTableConstraints();
+    cachedStoreConstraints.setPrimaryKeys(sharedCache.listCachedPrimaryKeys(catName, dbName, tblName));
+    cachedStoreConstraints.setForeignKeys(sharedCache.listCachedForeignKeys(catName, dbName, tblName, null, null));
+    cachedStoreConstraints.setNotNullConstraints(sharedCache.listCachedNotNullConstraints(catName, dbName, tblName));
+    cachedStoreConstraints.setDefaultConstraints(sharedCache.listCachedDefaultConstraint(catName, dbName, tblName));
+    cachedStoreConstraints.setCheckConstraints(sharedCache.listCachedCheckConstraint(catName, dbName, tblName));
+    cachedStoreConstraints.setUniqueConstraints(sharedCache.listCachedUniqueConstraint(catName, dbName, tblName));
+    Assert.assertEquals(rawStoreConstraints, cachedStoreConstraints);
   }
 
   @Test
@@ -443,7 +432,7 @@ public class TestCachedStoreUpdateUsingEvents {
     CachedStore.prewarm(rawStore);
 
     // Add a db via rawStore
-    String dbName = "test_partition_ops";
+    String dbName = "Test_Partition_ops";
     String dbOwner = "user1";
     Database db = createTestDb(dbName, dbOwner);
     hmsHandler.create_database(db);
