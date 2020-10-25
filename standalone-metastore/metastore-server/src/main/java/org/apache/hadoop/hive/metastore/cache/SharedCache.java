@@ -517,32 +517,38 @@ public class SharedCache {
           switch (mn) {
           case PRIMARY_KEY_CACHE:
             SQLPrimaryKey pk = (SQLPrimaryKey) constraint;
-            this.primaryKeyCache.put(pk.getPk_name().toLowerCase(), pk);
+            String pkName = normalizeIdentifier(pk.getPk_name());
+            this.primaryKeyCache.put(pkName, pk);
             size = getObjectSize(SQLPrimaryKey.class, constraint);
             break;
           case FOREIGN_KEY_CACHE:
             SQLForeignKey fk = (SQLForeignKey) constraint;
-            this.foreignKeyCache.put(fk.getFk_name().toLowerCase(), fk);
+            String fkName = normalizeIdentifier(fk.getFk_name());
+            this.foreignKeyCache.put(fkName, fk);
             size = getObjectSize(SQLForeignKey.class, constraint);
             break;
           case UNIQUE_CONSTRAINT_CACHE:
             SQLUniqueConstraint uc = (SQLUniqueConstraint) constraint;
-            this.uniqueConstraintCache.put(uc.getUk_name().toLowerCase(), uc);
+            String ucName = normalizeIdentifier(uc.getUk_name());
+            this.uniqueConstraintCache.put(ucName, uc);
             size = getObjectSize(SQLUniqueConstraint.class, constraint);
             break;
           case NOTNULL_CONSTRAINT_CACHE:
             SQLNotNullConstraint nn = (SQLNotNullConstraint) constraint;
-            this.notNullConstraintCache.put(nn.getNn_name().toLowerCase(), nn);
+            String nnName = normalizeIdentifier(nn.getNn_name());
+            this.notNullConstraintCache.put(nnName, nn);
             size = getObjectSize(SQLNotNullConstraint.class, constraint);
             break;
           case DEFAULT_CONSTRAINT_CACHE:
             SQLDefaultConstraint dc = (SQLDefaultConstraint) constraint;
-            this.defaultConstraintCache.put(dc.getDc_name().toLowerCase(), dc);
+            String dcName = normalizeIdentifier(dc.getDc_name());
+            this.defaultConstraintCache.put(dcName, dc);
             size = getObjectSize(SQLDefaultConstraint.class, constraint);
             break;
           case CHECK_CONSTRAINT_CACHE:
             SQLCheckConstraint cc = (SQLCheckConstraint) constraint;
-            this.checkConstraintCache.put(cc.getDc_name().toLowerCase(), cc);
+            String ccName = normalizeIdentifier(cc.getDc_name());
+            this.checkConstraintCache.put(ccName, cc);
             size = getObjectSize(SQLCheckConstraint.class, constraint);
             break;
           default:
@@ -717,7 +723,9 @@ public class SharedCache {
                     + "; the primary keys are already refreshed.");
             return;
           }
-          newKeys.put(key.getPk_name().toLowerCase(), key);
+          String pkName = StringUtils.normalizeIdentifier(key.getPk_name());
+          key.setPk_name(pkName);
+          newKeys.put(pkName, key);
           size += getObjectSize(SQLPrimaryKey.class, key);
         }
         primaryKeyCache = newKeys;
@@ -740,7 +748,9 @@ public class SharedCache {
                     + "; the foreign keys are already refreshed.");
             return;
           }
-          newKeys.put(key.getFk_name().toLowerCase(), key);
+          String fkName = StringUtils.normalizeIdentifier(key.getFk_name());
+          key.setFk_name(fkName);
+          newKeys.put(fkName, key);
           size += getObjectSize(SQLForeignKey.class, key);
         }
         foreignKeyCache = newKeys;
@@ -763,7 +773,9 @@ public class SharedCache {
                     + "; the not null constraints are already refreshed.");
             return;
           }
-          newConstraints.put(constraint.getNn_name().toLowerCase(), constraint);
+          String nnName = StringUtils.normalizeIdentifier(constraint.getNn_name());
+          constraint.setNn_name(nnName);
+          newConstraints.put(nnName, constraint);
           size += getObjectSize(SQLNotNullConstraint.class, constraint);
         }
         notNullConstraintCache = newConstraints;
@@ -783,10 +795,12 @@ public class SharedCache {
         for (SQLUniqueConstraint constraint : constraints) {
           if (compareAndSetMemberCacheUpdated(MemberName.UNIQUE_CONSTRAINT_CACHE, true, false)) {
             LOG.debug("Skipping unique constraints cache update for table: " + getTable().getTableName()
-                    + "; the unique costraints are already refreshed.");
+                    + "; the unique constraints are already refreshed.");
             return;
           }
-          newConstraints.put(constraint.getUk_name().toLowerCase(), constraint);
+          String ucName = StringUtils.normalizeIdentifier(constraint.getUk_name());
+          constraint.setUk_name(ucName);
+          newConstraints.put(ucName, constraint);
           size += getObjectSize(SQLUniqueConstraint.class, constraint);
         }
         uniqueConstraintCache = newConstraints;
@@ -809,7 +823,9 @@ public class SharedCache {
                 + "; the default constraint are already refreshed.");
             return;
           }
-          newConstraints.put(constraint.getDc_name().toLowerCase(), constraint);
+          String dcName = StringUtils.normalizeIdentifier(constraint.getDc_name());
+          constraint.setDc_name(dcName);
+          newConstraints.put(dcName, constraint);
           size += getObjectSize(SQLDefaultConstraint.class, constraint);
         }
         defaultConstraintCache = newConstraints;
@@ -832,7 +848,9 @@ public class SharedCache {
                 + "; the check constraint are already refreshed.");
             return;
           }
-          newConstraints.put(constraint.getDc_name().toLowerCase(), constraint);
+          String ccName = StringUtils.normalizeIdentifier(constraint.getDc_name());
+          constraint.setDc_name(ccName);
+          newConstraints.put(ccName, constraint);
           size += getObjectSize(SQLCheckConstraint.class, constraint);
         }
         checkConstraintCache = newConstraints;
@@ -1385,7 +1403,7 @@ public class SharedCache {
           fs.setName(StringUtils.normalizeIdentifier(fs.getName()));
         }
       }
-      setTable(tblCopy);
+
       if (tblCopy.getSd() != null) {
         sdHash = MetaStoreServerUtils.hashStorageDescriptor(tblCopy.getSd(), md);
         StorageDescriptor sd = tblCopy.getSd();
@@ -1399,6 +1417,8 @@ public class SharedCache {
         setLocation(null);
         setParameters(null);
       }
+      tblCopy.setTableName(tblCopy.getTableName().toLowerCase());
+      setTable(tblCopy);
     }
 
     private PartitionWrapper makePartitionWrapper(Partition part, SharedCache sharedCache) {
@@ -1909,9 +1929,7 @@ public class SharedCache {
       TableWrapper tblWrapper = tableCache.getIfPresent(CacheUtils.buildTableKey(catName, dbName, tblName));
       if (tblWrapper != null) {
         tblWrapper.updateTableObj(newTable, this);
-        String newDbName = StringUtils.normalizeIdentifier(newTable.getDbName());
-        String newTblName = StringUtils.normalizeIdentifier(newTable.getTableName());
-        tableCache.put(CacheUtils.buildTableKey(catName, newDbName, newTblName), tblWrapper);
+        tableCache.put(CacheUtils.buildTableKey(catName, newTable.getDbName(), newTable.getTableName()), tblWrapper);
         isTableCacheDirty.set(true);
       }
     } finally {
