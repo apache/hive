@@ -1016,12 +1016,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> createTableWithConstraints(Table tbl,
-    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
-    List<SQLUniqueConstraint> uniqueConstraints,
-    List<SQLNotNullConstraint> notNullConstraints,
-    List<SQLDefaultConstraint> defaultConstraints,
-    List<SQLCheckConstraint> checkConstraints)
+  public SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints )
     throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
     return null;
@@ -1034,40 +1029,40 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> addPrimaryKeys(List<SQLPrimaryKey> pks)
+  public List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks)
     throws InvalidObjectException, MetaException {
     return null;
   }
 
   @Override
-  public List<String> addForeignKeys(List<SQLForeignKey> fks)
+  public List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> fks)
     throws InvalidObjectException, MetaException {
     return null;
   }
 
   @Override
-  public List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks)
-    throws InvalidObjectException, MetaException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns)
+  public List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks)
     throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public List<String> addDefaultConstraints(List<SQLDefaultConstraint> nns)
+  public List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns)
+    throws InvalidObjectException, MetaException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> nns)
       throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public List<String> addCheckConstraints(List<SQLCheckConstraint> nns)
+  public List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> nns)
       throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
     return null;
