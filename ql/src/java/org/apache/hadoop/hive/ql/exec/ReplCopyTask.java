@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
@@ -45,6 +46,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.parse.LoadSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.util.StringUtils;
+
+import javax.security.auth.login.LoginException;
 
 import static org.apache.hadoop.hive.common.FileUtils.HIDDEN_FILES_PATH_FILTER;
 
@@ -98,6 +101,18 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           return 1;
         }
       }
+      // in case of acid tables, file is directly copied to destination. So we need to clear the old content, if
+      // its a replace (insert overwrite ) operation.
+      if (work.getDeleteDestIfExist() && dstFs.exists(toPath)) {
+        LOG.debug(" path " + toPath + " is cleaned before renaming");
+        getHive().cleanUpOneDirectoryForReplace(toPath, dstFs, HIDDEN_FILES_PATH_FILTER, conf, work.getNeedRecycle(),
+          work.getIsAutoPurge());
+      }
+
+      if (!FileUtils.mkdir(dstFs, toPath, conf)) {
+        console.printError("Cannot make target directory: " + toPath.toString());
+        return 2;
+      }
 
       List<ReplChangeManager.FileInfo> srcFiles = new ArrayList<>();
       if (rwork.readSrcAsFilesList()) {
@@ -108,13 +123,33 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           LOG.debug("ReplCopyTask _files contains: {}", (srcFiles == null ? "null" : srcFiles.size()));
         }
         if ((srcFiles == null) || (srcFiles.isEmpty())) {
-          if (work.isErrorOnSrcEmpty()) {
-            console.printError("No _files entry found on source: " + fromPath.toString());
-            return 5;
-          } else {
+          //For partitioned tables, search inside the top level path and launch distcp for each path
+          if (srcFs.exists(fromPath)) {
+            for (FileStatus fileStatus : srcFs.listStatus(fromPath)) {
+              List<ReplChangeManager.FileInfo> internalSrcFiles = filesInFileListing(srcFs, fileStatus.getPath());
+              //If still src files is null or empty return error
+              if ((internalSrcFiles == null) || (internalSrcFiles.isEmpty())) {
+                if (work.isErrorOnSrcEmpty()) {
+                  console.printError("No _files entry found on source: " + fromPath.toString());
+                  return 5;
+                } else {
+                  return 0;
+                }
+              }
+              //Launch copy task to the partition path
+              launchCopy(internalSrcFiles, dstFs, rwork, fromPath, new Path(toPath, fileStatus.getPath().getName()));
+            }
             return 0;
+          } else {
+            if (work.isErrorOnSrcEmpty()) {
+              console.printError("No _files entry found on source: " + fromPath.toString());
+              return 5;
+            } else {
+              return 0;
+            }
           }
         }
+        launchCopy(srcFiles, dstFs, rwork, fromPath, toPath);
       } else {
         // This flow is usually taken for IMPORT command
         FileStatus[] srcs = LoadSemanticAnalyzer.matchFilesOrDir(srcFs, fromPath);
@@ -134,30 +169,8 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
           LOG.debug("ReplCopyTask :cp:{}=>{}", oneSrc.getPath(), toPath);
           srcFiles.add(new ReplChangeManager.FileInfo(oneSrc.getPath().getFileSystem(conf), oneSrc.getPath(), null));
         }
+        launchCopy(srcFiles, dstFs, rwork, fromPath, toPath);
       }
-
-      LOG.debug("ReplCopyTask numFiles: {}", srcFiles.size());
-
-      // in case of acid tables, file is directly copied to destination. So we need to clear the old content, if
-      // its a replace (insert overwrite ) operation.
-      if (work.getDeleteDestIfExist() && dstFs.exists(toPath)) {
-        LOG.debug(" path " + toPath + " is cleaned before renaming");
-        getHive().cleanUpOneDirectoryForReplace(toPath, dstFs, HIDDEN_FILES_PATH_FILTER, conf, work.getNeedRecycle(),
-                                                          work.getIsAutoPurge());
-      }
-
-      if (!FileUtils.mkdir(dstFs, toPath, conf)) {
-        console.printError("Cannot make target directory: " + toPath.toString());
-        return 2;
-      }
-      // Copy the files from different source file systems to one destination directory
-      CopyUtils copyUtils = new CopyUtils(rwork.distCpDoAsUser(), conf, dstFs);
-      copyUtils.copyAndVerify(toPath, srcFiles, fromPath, work.readSrcAsFilesList(), work.isOverWrite());
-
-      // If a file is copied from CM path, then need to rename them using original source file name
-      // This is needed to avoid having duplicate files in target if same event is applied twice
-      // where the first event refers to source path and  second event refers to CM path
-      copyUtils.renameFileCopiedFromCmPath(toPath, dstFs, srcFiles);
       return 0;
     } catch (Exception e) {
       LOG.error(StringUtils.stringifyException(e));
@@ -165,6 +178,20 @@ public class ReplCopyTask extends Task<ReplCopyWork> implements Serializable {
       return ReplUtils.handleException(true, e, work.getDumpDirectory(), work.getMetricCollector(),
               getName(), conf);
     }
+  }
+
+  private void launchCopy(List<ReplChangeManager.FileInfo> srcFiles, FileSystem dstFs, ReplCopyWork rwork,
+                          Path fromPath, Path toPath) throws LoginException, HiveFatalException, IOException {
+    LOG.debug("ReplCopyTask numFiles: {}", srcFiles.size());
+
+    // Copy the files from different source file systems to one destination directory
+    CopyUtils copyUtils = new CopyUtils(rwork.distCpDoAsUser(), conf, dstFs);
+    copyUtils.copyAndVerify(toPath, srcFiles, fromPath, work.readSrcAsFilesList(), work.isOverWrite());
+
+    // If a file is copied from CM path, then need to rename them using original source file name
+    // This is needed to avoid having duplicate files in target if same event is applied twice
+    // where the first event refers to source path and  second event refers to CM path
+    copyUtils.renameFileCopiedFromCmPath(toPath, dstFs, srcFiles);
   }
 
   private List<ReplChangeManager.FileInfo> filesInFileListing(FileSystem fs, Path dataPath)

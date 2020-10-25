@@ -183,19 +183,6 @@ public class LoadPartitions {
     } else {
       maxTasks = context.hiveConf.getIntVar(HiveConf.ConfVars.REPL_LOAD_PARTITIONS_WITH_DATA_COPY_BATCH_SIZE);
     }
-    //Add copy task if not metadata only
-    if (!isMetaDataOp() && !TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
-      Path replicaWarehousePartitionLocation = managedLocationOnReplicaWarehouse(table);
-      boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
-      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
-        event.replicationSpec(),
-        event.dataPath(),
-        replicaWarehousePartitionLocation,
-        context.hiveConf, copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(),
-        this.metricCollector
-      );
-      tracker.addTask(copyTask);
-    }
     int currentPartitionCount = 0;
     Iterator<AlterTableAddPartitionDesc> partitionIterator = event.partitionDescriptions(tableDesc).iterator();
     //If already a set of partitions are processed as part of previous run, we skip those
@@ -246,17 +233,32 @@ public class LoadPartitions {
   }
 
   private TaskTracker forNewTable() throws Exception {
-    // Place all partitions in single task to reduce load on HMS.
+    // Create one copy task for all partitions in the table if not metadata only or external table
+    addSingleCopyTaskForAllPartitions();
+    // Place all partitions in a batch to reduce load on HMS. Add DDL task to add partition in a batch
     addConsolidatedPartitionDesc(null);
     return tracker;
   }
 
-  private void addPartition(boolean hasMorePartitions, AlterTableAddPartitionDesc addPartitionDesc)
-          throws Exception {
-    boolean processingComplete = addTasksForPartition(table, addPartitionDesc, null);
-    //If processing is not complete, means replication state is already updated with copy tasks which need
-    //to be processed
-    if (processingComplete && hasMorePartitions && !tracker.canAddMoreTasks()) {
+  private void addSingleCopyTaskForAllPartitions() throws MetaException, HiveException {
+    if (!isMetaDataOp() && !TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+      Path replicaWarehousePartitionLocation = managedLocationOnReplicaWarehouse(table);
+      boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
+      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
+        event.replicationSpec(),
+        event.dataPath(),
+        replicaWarehousePartitionLocation,
+        context.hiveConf, copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(),
+        this.metricCollector
+      );
+      tracker.addTask(copyTask);
+    }
+  }
+
+  private void addPartition(boolean hasMorePartitions, AlterTableAddPartitionDesc addPartitionDesc){
+    addTasksForPartition(table, addPartitionDesc);
+    //If processing is not complete, update replication state
+    if (hasMorePartitions && !tracker.canAddMoreTasks()) {
       ReplicationState currentReplicationState =
           new ReplicationState(new PartitionState(table.getTableName(), addPartitionDesc));
       updateReplicationState(currentReplicationState);
@@ -264,58 +266,21 @@ public class LoadPartitions {
   }
 
   /**
-   * returns the root task for adding all partitions in a batch
+   * returns the task for adding all partitions in a batch
    */
-  private boolean addTasksForPartition(Table table, AlterTableAddPartitionDesc addPartitionDesc,
-                                    AlterTableAddPartitionDesc.PartitionDesc lastPartSpec)
-          throws MetaException, HiveException {
+  private void addTasksForPartition(Table table, AlterTableAddPartitionDesc addPartitionDesc) {
     Task<?> addPartTask = TaskFactory.get(
       new DDLWork(new HashSet<>(), new HashSet<>(), addPartitionDesc,
               true, (new Path(context.dumpDirectory)).getParent().toString(), this.metricCollector),
       context.hiveConf
     );
     //checkpointing task already added as part of add batch of partition
-//    if (isMetaDataOp() || TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
-//      tracker.addTask(addPartTask);
-//      return true;
-//    }
-    //Add Copy task for all partitions
-//    boolean lastProcessedStageFound = false;
-//    for (AlterTableAddPartitionDesc.PartitionDesc partSpec : addPartitionDesc.getPartitions()) {
-//      if (!tracker.canAddMoreTasks()) {
-//        //update replication state with the copy task added with which it needs to proceed next
-//        ReplicationState currentReplicationState =
-//          new ReplicationState(new PartitionState(table.getTableName(), addPartitionDesc,
-//            partSpec, PartitionState.Stage.COPY));
-//        updateReplicationState(currentReplicationState);
-//        return false;
-//      }
-//      Path replicaWarehousePartitionLocation = locationOnReplicaWarehouse(table, partSpec);
-//      partSpec.setLocation(replicaWarehousePartitionLocation.toString());
-//      LOG.debug("adding dependent CopyWork for partition "
-//        + partSpecToString(partSpec.getPartSpec()) + " with source location: "
-//        + partSpec.getLocation());
-//      if (!lastProcessedStageFound && lastPartSpec != null &&
-//        lastPartSpec.getLocation() != partSpec.getLocation()) {
-//        //Don't process copy task if already processed as part of previous run
-//        continue;
-//      }
-//      lastProcessedStageFound = true;
-//      boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
-//      Task<?> copyTask = ReplCopyTask.getLoadCopyTask(
-//        event.replicationSpec(),
-//        new Path(event.dataPath() + Path.SEPARATOR + Warehouse.makePartPath(partSpec.getPartSpec())),
-//        replicaWarehousePartitionLocation,
-//        context.hiveConf, copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(),
-//        this.metricCollector
-//      );
-//      tracker.addTask(copyTask);
-//    }
-
-
-    //add partition metadata task once all the copy tasks are added
-    tracker.addDependentTask(addPartTask);
-    return true;
+    if (isMetaDataOp() || TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
+      tracker.addTask(addPartTask);
+    } else {
+      //add partition metadata task once the copy task is done
+      tracker.addDependentTask(addPartTask);
+    }
   }
 
   /**
@@ -393,11 +358,6 @@ public class LoadPartitions {
       Map<String, String> currentSpec = addPartitionDesc.getPartitions().get(0).getPartSpec();
       encounteredTheLastReplicatedPartition = lastReplicatedPartSpec.equals(currentSpec);
     }
-    //Add Copy task pending for previous partition
-    if (PartitionState.Stage.COPY.equals(lastReplicatedStage)) {
-      addTasksForPartition(table, lastPartitionReplicated,
-        lastReplicatedPartitionDesc);
-    }
     boolean pendingPartitions = false;
     while (partitionIterator.hasNext() && tracker.canAddMoreTasks()) {
       pendingPartitions = true;
@@ -425,6 +385,11 @@ public class LoadPartitions {
       }
     }
     if (pendingPartitions) {
+      if (lastPartitionReplicated == null) {
+        //Copy task not added yet
+        addSingleCopyTaskForAllPartitions();
+      }
+      //Add metadata tasks
       addConsolidatedPartitionDesc(lastPartitionReplicated);
     }
     return tracker;
