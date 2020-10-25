@@ -253,7 +253,7 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   }
 
   @Override
-  public List<String> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException,
+  public List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException,
           MetaException {
     if (callerVerifier != null) {
       CallerArguments args = new CallerArguments(pks.get(0).getTable_db());
@@ -268,7 +268,7 @@ public class InjectableBehaviourObjectStore extends ObjectStore {
   }
 
   @Override
-  public List<String> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException,
+  public List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> fks) throws InvalidObjectException,
           MetaException {
     if (callerVerifier != null) {
       CallerArguments args = new CallerArguments(fks.get(0).getFktable_db());
