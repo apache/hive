@@ -778,8 +778,6 @@ class ListStoredProcedureRequest; end
 
 class StoredProcedure; end
 
-class PosParam; end
-
 class MetaException < ::Thrift::Exception; end
 
 class UnknownTableException < ::Thrift::Exception; end
@@ -7110,43 +7108,13 @@ class StoredProcedure
   CATNAME = 3
   OWNERNAME = 4
   SOURCE = 5
-  LANGUAGE = 6
-  RETURNTYPE = 7
-  POSPARAMS = 8
 
   FIELDS = {
     NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
     OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
-    SOURCE => {:type => ::Thrift::Types::STRING, :name => 'source'},
-    LANGUAGE => {:type => ::Thrift::Types::STRING, :name => 'language'},
-    RETURNTYPE => {:type => ::Thrift::Types::STRING, :name => 'returnType'},
-    POSPARAMS => {:type => ::Thrift::Types::LIST, :name => 'posParams', :element => {:type => ::Thrift::Types::STRUCT, :class => ::PosParam}}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class PosParam
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  NAME = 1
-  TYPE = 2
-  ISOUT = 3
-  LENGTH = 4
-  SCALE = 5
-
-  FIELDS = {
-    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
-    TYPE => {:type => ::Thrift::Types::STRING, :name => 'type'},
-    ISOUT => {:type => ::Thrift::Types::BOOL, :name => 'isOut'},
-    LENGTH => {:type => ::Thrift::Types::I32, :name => 'length', :optional => true},
-    SCALE => {:type => ::Thrift::Types::I32, :name => 'scale', :optional => true}
+    SOURCE => {:type => ::Thrift::Types::STRING, :name => 'source'}
   }
 
   def struct_fields; FIELDS; end

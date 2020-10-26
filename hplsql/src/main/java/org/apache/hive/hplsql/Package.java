@@ -127,7 +127,7 @@ public class Package {
     }
     ArrayList<Var> actualParams = function.getActualCallParameters(ctx);
     exec.enterScope(Scope.Type.ROUTINE, this);
-    function.setCallParameters(ctx, actualParams, f.create_routine_params(), null);    
+    function.setCallParameters(ctx, actualParams, f.create_routine_params(), null, exec);
     visit(f.single_block_stmt());
     exec.leaveScope(); 
     return true;
@@ -155,7 +155,7 @@ public class Package {
       visit(p.declare_block_inplace());
     }
     if (p.create_routine_params() != null) {
-      function.setCallParameters(ctx, actualParams, p.create_routine_params(), out);
+      function.setCallParameters(ctx, actualParams, p.create_routine_params(), out, exec);
     }
     visit(p.proc_block());
     exec.callStackPop();

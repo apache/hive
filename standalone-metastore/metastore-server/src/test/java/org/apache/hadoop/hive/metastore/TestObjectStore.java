@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
 import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.PosParam;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
@@ -1162,21 +1161,12 @@ public class TestObjectStore {
     input.setOwnerName("user1");
     input.setName("toBeUpdated");
     input.setDbName(DB1);
-    input.setLanguage("HPL/SQL");
-    input.setPosParams(Arrays.asList(
-            new PosParam("a", "String", false),
-            new PosParam("b", "CURSOR", true)
-    ));
     objectStore.createOrUpdateStoredProcedure(input);
     input.setSource("print 'Hello world2'");
     objectStore.createOrUpdateStoredProcedure(input);
 
     StoredProcedure retrieved = objectStore.getStoredProcedure("hive", DB1, "toBeUpdated");
     Assert.assertEquals(input, retrieved);
-    List<PosParam> parameters = retrieved.getPosParams();
-    Assert.assertEquals(2, parameters.size());
-    Assert.assertEquals(new PosParam("a", "String", false), parameters.get(0));
-    Assert.assertEquals(new PosParam("b", "CURSOR", true), parameters.get(1));
   }
 
   @Test
@@ -1193,22 +1183,11 @@ public class TestObjectStore {
     input.setOwnerName("user1");
     input.setName("greetings");
     input.setDbName(DB1);
-    input.setLanguage("HPL/SQL");
-    PosParam p1 = new PosParam("a", "String", false);
-    PosParam p2 = new PosParam("b", "Number", false);
-    PosParam p3 = new PosParam("c", "CURSOR", true);
-    p3.setScale(3);
-    input.setPosParams(Arrays.asList(p1, p2, p3));
 
     objectStore.createOrUpdateStoredProcedure(input);
     StoredProcedure retrieved = objectStore.getStoredProcedure("hive", DB1, "greetings");
 
     Assert.assertEquals(input, retrieved);
-    List<PosParam> parameters = retrieved.getPosParams();
-    Assert.assertEquals(3, parameters.size());
-    Assert.assertEquals(p1, parameters.get(0));
-    Assert.assertEquals(p2, parameters.get(1));
-    Assert.assertEquals(p3, parameters.get(2));
   }
 
   @Test
@@ -1225,7 +1204,6 @@ public class TestObjectStore {
     toBeDeleted.setOwnerName("user1");
     toBeDeleted.setName("greetings");
     toBeDeleted.setDbName(DB1);
-    toBeDeleted.setLanguage("HPL/SQL");
     objectStore.createOrUpdateStoredProcedure(toBeDeleted);
     Assert.assertNotNull(objectStore.getStoredProcedure("hive", DB1, "greetings"));
     objectStore.dropStoredProcedure("hive", DB1, "greetings");
@@ -1246,8 +1224,6 @@ public class TestObjectStore {
     proc1.setOwnerName("user1");
     proc1.setName("proc1");
     proc1.setDbName(DB1);
-    proc1.setLanguage("HPL/SQL");
-    proc1.setPosParams(Collections.emptyList());
     objectStore.createOrUpdateStoredProcedure(proc1);
 
     StoredProcedure proc2 = new StoredProcedure();
@@ -1256,8 +1232,6 @@ public class TestObjectStore {
     proc2.setOwnerName("user2");
     proc2.setName("proc2");
     proc2.setDbName(DB1);
-    proc2.setLanguage("HPL/SQL");
-    proc2.setPosParams(Arrays.asList(new PosParam("p1", "String", false)));
     objectStore.createOrUpdateStoredProcedure(proc2);
 
     List<StoredProcedure> result = objectStore.getAllStoredProcedures(new ListStoredProcedureRequest("hive"));

@@ -20,9 +20,10 @@
 
 package org.apache.hive.hplsql.functions;
 
+import static org.apache.hive.hplsql.functions.InMemoryFunction.setCallParameters;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -32,10 +33,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.PosParam;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.StoredProcedureRequest;
 import org.apache.hive.hplsql.Exec;
+import org.apache.hive.hplsql.HplsqlBaseVisitor;
 import org.apache.hive.hplsql.HplsqlLexer;
 import org.apache.hive.hplsql.HplsqlParser;
 import org.apache.hive.hplsql.Scope;
@@ -43,12 +44,11 @@ import org.apache.hive.hplsql.Var;
 import org.apache.thrift.TException;
 
 public class HmsFunction implements Function {
-  public static final String LANGUAGE = "HPL/SQL";
   private Exec exec;
   private boolean trace;
   private IMetaStoreClient msc;
   private BuiltinFunctions builtinFunctions;
-  private Map<String, StoredProcedure> cache = new HashMap<>();
+  private Map<String, ParserRuleContext> cache = new HashMap<>();
 
   public HmsFunction(Exec e, IMetaStoreClient msc, BuiltinFunctions builtinFunctions) {
     this.exec = e;
@@ -69,14 +69,15 @@ public class HmsFunction implements Function {
     }
     if (cache.containsKey(name)) {
       trace(ctx, "EXEC CACHED FUNCTION " + name);
-      execProc(cache.get(name), ctx);
+      execProcOrFunc(ctx, cache.get(name), name);
       return true;
     }
     Optional<StoredProcedure> proc = getProcFromHMS(name);
     if (proc.isPresent()) {
       trace(ctx, "EXEC HMS FUNCTION " + name);
-      execProc(proc.get(), ctx);
-      cache.put(name, proc.get());
+      ParserRuleContext procCtx = parse(proc.get());
+      execProcOrFunc(ctx, procCtx, name);
+      cache.put(name, procCtx);
       return true;
     }
     return false;
@@ -85,18 +86,40 @@ public class HmsFunction implements Function {
   /**
    * Execute a stored procedure using CALL or EXEC statement passing parameters
    */
-  private void execProc(StoredProcedure proc, HplsqlParser.Expr_func_paramsContext ctx) {
-    exec.callStackPush(proc.getName());
+  private void execProcOrFunc(HplsqlParser.Expr_func_paramsContext ctx, ParserRuleContext procCtx, String name) {
+    exec.callStackPush(name);
     HashMap<String, Var> out = new HashMap<>();
     ArrayList<Var> actualParams = getActualCallParameters(ctx);
     exec.enterScope(Scope.Type.ROUTINE);
-    setCallParameters(ctx, actualParams, proc, out);
-    evalStoredProcedure(proc);
+    callWithParameters(ctx, procCtx, out, actualParams);
     exec.callStackPop();
     exec.leaveScope();
     for (Map.Entry<String, Var> i : out.entrySet()) { // Set OUT parameters
       exec.setVariable(i.getKey(), i.getValue());
     }
+  }
+
+  private void callWithParameters(HplsqlParser.Expr_func_paramsContext ctx, ParserRuleContext procCtx, HashMap<String, Var> out, ArrayList<Var> actualParams) {
+    if (procCtx instanceof HplsqlParser.Create_function_stmtContext) {
+      HplsqlParser.Create_function_stmtContext func = (HplsqlParser.Create_function_stmtContext) procCtx;
+      setCallParameters(ctx, actualParams, func.create_routine_params(), null, exec);
+      if (func.declare_block_inplace() != null)
+        exec.visit(func.declare_block_inplace());
+      exec.visit(func.single_block_stmt());
+    } else {
+      HplsqlParser.Create_procedure_stmtContext proc = (HplsqlParser.Create_procedure_stmtContext) procCtx;
+      setCallParameters(ctx, actualParams, proc.create_routine_params(), out, exec);
+      exec.visit(proc.proc_block());
+    }
+  }
+
+  public ParserRuleContext parse(StoredProcedure proc) {
+    HplsqlLexer lexer = new HplsqlLexer(new ANTLRInputStream(proc.getSource()));
+    CommonTokenStream tokens = new CommonTokenStream(lexer);
+    HplsqlParser parser = new HplsqlParser(tokens);
+    ProcVisitor visitor = new ProcVisitor();
+    parser.program().accept(visitor);
+    return visitor.func != null ? visitor.func : visitor.proc;
   }
 
   private Optional<StoredProcedure> getProcFromHMS(String name) {
@@ -108,55 +131,6 @@ public class HmsFunction implements Function {
     } catch (TException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private void evalStoredProcedure(StoredProcedure proc) {
-    HplsqlLexer lexer = new HplsqlLexer(new ANTLRInputStream(proc.getSource()));
-    CommonTokenStream tokens = new CommonTokenStream(lexer);
-    HplsqlParser parser = new HplsqlParser(tokens);
-    exec.visit(parser.program());
-  }
-
-  /**
-   * Set parameters for user-defined function call
-   */
-  private void setCallParameters(HplsqlParser.Expr_func_paramsContext actual, ArrayList<Var> actualValues,
-                                StoredProcedure procedure,
-                                HashMap<String, Var> out) {
-    if (actual == null || actual.func_param() == null || actualValues == null) {
-      return;
-    }
-    int actualCnt = actualValues.size();
-    int formalCnt = procedure.getPosParamsSize();
-    for (int i = 0; i < actualCnt; i++) {
-      if (i >= formalCnt) {
-        break;
-      }
-      PosParam formal = procedure.getPosParams().get(i);
-      Var var = setCallParameter(
-              formal.getName(),
-              formal.getType(),
-              formal.isSetLength() ? formal.getLength() : null,
-              formal.isSetScale() ? formal.getScale() : null,
-              actualValues.get(i));
-      if (trace) {
-        trace(actual, "SET PARAM " + formal.getName() + " = " + var.toString());
-      }
-      if (formal.isIsOut()) {
-        HplsqlParser.ExprContext a = actual.func_param(i).expr();
-        String actualName = a.expr_atom().ident().getText();
-        if (actualName != null) {
-          out.put(actualName, var);
-        }
-      }
-    }
-  }
-
-  private Var setCallParameter(String name, String type, Integer len, Integer scale, Var value) {
-    Var var = new Var(name, type, len, scale, null);
-    var.cast(value);
-    exec.addVariable(var);
-    return var;
   }
 
   private ArrayList<Var> getActualCallParameters(HplsqlParser.Expr_func_paramsContext actual) {
@@ -180,21 +154,9 @@ public class HmsFunction implements Function {
     }
     trace(ctx, "CREATE FUNCTION " + name);
     Database db = currentDatabase();
-    StoredProcedure proc = newStoredProc(name, formalParameters(ctx), returnType(ctx), body(ctx), db);
-    cache.put(name, proc);
+    StoredProcedure proc = newStoredProc(name, Exec.getFormattedText(ctx), db);
+    cache.put(name, ctx);
     saveStoredProcInHMS(proc);
-  }
-
-  private String body(HplsqlParser.Create_function_stmtContext ctx) {
-    if (ctx.declare_block_inplace() != null) {
-      return Exec.getFormattedText(ctx.declare_block_inplace()) + "\n" + Exec.getFormattedText(ctx.single_block_stmt());
-    } else {
-      return Exec.getFormattedText(ctx.single_block_stmt());
-    }
-  }
-
-  private String returnType(HplsqlParser.Create_function_stmtContext ctx) {
-    return ctx.create_function_return().dtype().getText();
   }
 
   @Override
@@ -206,8 +168,8 @@ public class HmsFunction implements Function {
     }
     trace(ctx, "CREATE PROCEDURE " + name);
     Database db = currentDatabase();
-    StoredProcedure proc = newStoredProc(name, formalParameters(ctx), null, Exec.getFormattedText(ctx.proc_block()), db);
-    cache.put(name, proc);
+    StoredProcedure proc = newStoredProc(name, Exec.getFormattedText(ctx), db);
+    cache.put(name, ctx);
     saveStoredProcInHMS(proc);
   }
 
@@ -227,59 +189,14 @@ public class HmsFunction implements Function {
     }
   }
 
-  private StoredProcedure newStoredProc(String name, List<PosParam> formalParams, String returnType, String source, Database db) {
+  private StoredProcedure newStoredProc(String name, String source, Database db) {
     StoredProcedure storedProcedure = new StoredProcedure();
     storedProcedure.setCatName(db.getCatalogName());
     storedProcedure.setName(name);
-    storedProcedure.setLanguage(LANGUAGE);
     storedProcedure.setOwnerName(db.getOwnerName()); // TODO
     storedProcedure.setDbName(db.getName());
-    storedProcedure.setPosParams(formalParams);
-    storedProcedure.setReturnType(returnType);
     storedProcedure.setSource(source);
     return storedProcedure;
-  }
-
-  private List<PosParam> formalParameters(ParserRuleContext ctx) {
-    HplsqlParser.Create_routine_paramsContext formal = formalParamContext(ctx);
-    List<PosParam> result = new ArrayList<>();
-    for (int i = 0; i < formal.create_routine_param_item().size(); i++) {
-      HplsqlParser.Create_routine_param_itemContext param = formal.create_routine_param_item(i);
-      result.add(convertToPosParam(param));
-    }
-    return result;
-  }
-
-  private PosParam convertToPosParam(HplsqlParser.Create_routine_param_itemContext param) {
-    PosParam posParam = new PosParam(
-            param.ident().getText(),
-            param.dtype().getText(),
-            param.T_OUT() != null || param.T_INOUT() != null);
-    setLenScale(param, posParam);
-    return posParam;
-  }
-
-  private void setLenScale(HplsqlParser.Create_routine_param_itemContext param, PosParam posParam) {
-    if (param.dtype_len() != null) {
-      String len = param.dtype_len().L_INT(0).getText();
-      posParam.setLength(Integer.parseInt(len));
-      if (param.dtype_len().L_INT(1) != null) {
-        String scale = param.dtype_len().L_INT(1).getText();
-        posParam.setScale(Integer.parseInt(scale));
-      }
-    }
-  }
-
-  private HplsqlParser.Create_routine_paramsContext formalParamContext(ParserRuleContext ctx) {
-    HplsqlParser.Create_routine_paramsContext formal;
-    if (ctx instanceof HplsqlParser.Create_procedure_stmtContext) {
-      formal = ((HplsqlParser.Create_procedure_stmtContext) ctx).create_routine_params();
-    } else if (ctx instanceof HplsqlParser.Create_function_stmtContext) {
-      formal = ((HplsqlParser.Create_function_stmtContext) ctx).create_routine_params();
-    } else {
-      throw new IllegalArgumentException("Expected function or procedure context");
-    }
-    return formal;
   }
 
   /**
@@ -293,6 +210,23 @@ public class HmsFunction implements Function {
   private void trace(ParserRuleContext ctx, String message) {
     if (trace) {
       exec.trace(ctx, message);
+    }
+  }
+
+  private static class ProcVisitor extends HplsqlBaseVisitor<Void> {
+    HplsqlParser.Create_function_stmtContext func;
+    HplsqlParser.Create_procedure_stmtContext proc;
+
+    @Override
+    public Void visitCreate_procedure_stmt(HplsqlParser.Create_procedure_stmtContext ctx) {
+      proc = ctx;
+      return null;
+    }
+
+    @Override
+    public Void visitCreate_function_stmt(HplsqlParser.Create_function_stmtContext ctx) {
+      func = ctx;
+      return null;
     }
   }
 }

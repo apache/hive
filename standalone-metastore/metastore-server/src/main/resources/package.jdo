@@ -1569,59 +1569,10 @@
       <field name="source">
         <column name="SOURCE" jdbc-type="CLOB" allows-null="false"/>
       </field>
-      <field name="language">
-        <column name="LANG" jdbc-type="varchar" length="128" allows-null="false"/>
-      </field>
-      <field name="returnType">
-        <column name="RET_TYPE" jdbc-type="varchar" length="128" allows-null="true"/>
-      </field>
-      <field name="parameters" table="SP_POS_ARGS" >
-        <collection element-type="MPosParam"/>
-        <join>
-            <column name="SP_ID"/>
-        </join>
-        <element>
-          <embedded>
-            <field name="name">
-              <column name="NAME" jdbc-type="varchar" length="256" allows-null="false"/>
-            </field>
-            <field name="type">
-              <column name="TYPE" jdbc-type="varchar" length="128" allows-null="false"/>
-            </field>
-            <field name="length">
-              <column name="length" jdbc-type="integer" allows-null="true"/>
-            </field>
-            <field name="scale">
-              <column name="scale" jdbc-type="integer" allows-null="true"/>
-            </field>
-            <field name="isOut">
-              <column name="OUT" allows-null="false"/>
-            </field>
-          </embedded>
-        </element>
-      </field>
       <index name="UniqueStoredProc" unique="true">
         <column name="NAME"/>
         <column name="DB_ID"/>
       </index>
-    </class>
-
-    <class name="MPosParam" embedded-only="true" table="SP_POS_ARGS" detachable="true">
-      <field name="name">
-        <column name="NAME" jdbc-type="varchar" length="256" allows-null="false"/>
-      </field>
-      <field name="type">
-        <column name="TYPE" jdbc-type="varchar" length="128" allows-null="false"/>
-      </field>
-      <field name="length">
-        <column name="length" jdbc-type="integer" allows-null="true"/>
-      </field>
-      <field name="scale">
-        <column name="scale" jdbc-type="integer" allows-null="true"/>
-      </field>
-      <field name="isOut">
-        <column name="OUT" allows-null="false"/>
-      </field>
     </class>
   </package>
 </jdo>

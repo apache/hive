@@ -117,7 +117,6 @@ import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.metastore.api.PartitionFilterMode;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionValuesRow;
-import org.apache.hadoop.hive.metastore.api.PosParam;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -10440,12 +10439,7 @@ public class ObjectStore implements RawStore, Configurable {
     result.setName(proc.getName());
     result.setOwner(proc.getOwnerName());
     result.setSource(proc.getSource());
-    result.setLanguage(proc.getLanguage());
-    result.setReturnType(result.getReturnType());
     result.setDatabase(mDatabase);
-    if (proc.isSetPosParams()) {
-      result.parametrize(proc.getPosParams());
-    }
   }
 
   @Override
@@ -10486,21 +10480,7 @@ public class ObjectStore implements RawStore, Configurable {
             proc.getDatabase().getName(),
             catName,
             proc.getOwner(),
-            proc.getSource(),
-            proc.getLanguage(),
-            proc.getReturnType(),
-            proc.getParameters().stream().map(this::convertParam).collect(Collectors.toList()));
-  }
-
-  private PosParam convertParam(org.apache.hadoop.hive.metastore.model.MPosParam mParam) {
-    PosParam result = new PosParam(mParam.getName(), mParam.getType(), mParam.isOut());
-    if (mParam.getLength() != null) {
-      result.setLength(mParam.getLength());
-    }
-    if (mParam.getScale() != null) {
-      result.setScale(mParam.getScale());
-    }
-    return result;
+            proc.getSource());
   }
 
   @Override

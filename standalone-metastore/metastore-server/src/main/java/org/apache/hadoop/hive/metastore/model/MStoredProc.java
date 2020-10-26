@@ -20,39 +20,17 @@
 
 package org.apache.hadoop.hive.metastore.model;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.PosParam;
 
 public class MStoredProc {
   private String name;
   private MDatabase database;
-  private List<MPosParam> parameters = new ArrayList<>();
   private String owner;
   private String source;
-  private String language = "HPL/SQL";
-  private String returnType = null;
   private int createTime = (int)(System.currentTimeMillis() / 1000);
   public static final int MAX_SOURCE_SIZE = 1073741823;
 
   public MStoredProc() {}
-
-  public void parametrize(List<PosParam> params) {
-    this.parameters = params.stream().map(this::convert).collect(Collectors.toList());
-  }
-
-  private MPosParam convert(PosParam each) {
-    return new MPosParam(
-            each.getName(),
-            each.getType(),
-            each.isIsOut(),
-            each.isSetLength() ? each.getLength() : null,
-            each.isSetScale() ? each.getScale() : null);
-  }
 
   public String getName() {
     return name;
@@ -87,25 +65,5 @@ public class MStoredProc {
       throw new MetaException("Source code is too long: " + source.length() + " max size: " + MAX_SOURCE_SIZE);
     }
     this.source = source;
-  }
-
-  public String getLanguage() {
-    return language;
-  }
-
-  public void setLanguage(String language) {
-    this.language = language;
-  }
-
-  public String getReturnType() {
-    return returnType;
-  }
-
-  public void setReturnType(String returnType) {
-    this.returnType = returnType;
-  }
-
-  public List<MPosParam> getParameters() {
-    return Collections.unmodifiableList(parameters);
   }
 }

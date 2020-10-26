@@ -2105,18 +2105,7 @@ struct StoredProcedure {
   2: string           dbName,
   3: string           catName,
   4: string           ownerName,
-  5: string           source,
-  6: string           language,
-  7: string           returnType,
-  8: list<PosParam>   posParams
-}
-
-struct PosParam {
-  1: string            name,
-  2: string            type,
-  3: bool              isOut,
-  4: optional i32      length,
-  5: optional i32      scale
+  5: string           source
 }
 
 // Exceptions.

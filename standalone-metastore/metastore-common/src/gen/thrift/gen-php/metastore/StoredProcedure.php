@@ -46,26 +46,6 @@ class StoredProcedure
             'isRequired' => false,
             'type' => TType::STRING,
         ),
-        6 => array(
-            'var' => 'language',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ),
-        7 => array(
-            'var' => 'returnType',
-            'isRequired' => false,
-            'type' => TType::STRING,
-        ),
-        8 => array(
-            'var' => 'posParams',
-            'isRequired' => false,
-            'type' => TType::LST,
-            'etype' => TType::STRUCT,
-            'elem' => array(
-                'type' => TType::STRUCT,
-                'class' => '\metastore\PosParam',
-                ),
-        ),
     );
 
     /**
@@ -88,18 +68,6 @@ class StoredProcedure
      * @var string
      */
     public $source = null;
-    /**
-     * @var string
-     */
-    public $language = null;
-    /**
-     * @var string
-     */
-    public $returnType = null;
-    /**
-     * @var \metastore\PosParam[]
-     */
-    public $posParams = null;
 
     public function __construct($vals = null)
     {
@@ -118,15 +86,6 @@ class StoredProcedure
             }
             if (isset($vals['source'])) {
                 $this->source = $vals['source'];
-            }
-            if (isset($vals['language'])) {
-                $this->language = $vals['language'];
-            }
-            if (isset($vals['returnType'])) {
-                $this->returnType = $vals['returnType'];
-            }
-            if (isset($vals['posParams'])) {
-                $this->posParams = $vals['posParams'];
             }
         }
     }
@@ -185,37 +144,6 @@ class StoredProcedure
                         $xfer += $input->skip($ftype);
                     }
                     break;
-                case 6:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->language);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
-                case 7:
-                    if ($ftype == TType::STRING) {
-                        $xfer += $input->readString($this->returnType);
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
-                case 8:
-                    if ($ftype == TType::LST) {
-                        $this->posParams = array();
-                        $_size1183 = 0;
-                        $_etype1186 = 0;
-                        $xfer += $input->readListBegin($_etype1186, $_size1183);
-                        for ($_i1187 = 0; $_i1187 < $_size1183; ++$_i1187) {
-                            $elem1188 = null;
-                            $elem1188 = new \metastore\PosParam();
-                            $xfer += $elem1188->read($input);
-                            $this->posParams []= $elem1188;
-                        }
-                        $xfer += $input->readListEnd();
-                    } else {
-                        $xfer += $input->skip($ftype);
-                    }
-                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -253,28 +181,6 @@ class StoredProcedure
         if ($this->source !== null) {
             $xfer += $output->writeFieldBegin('source', TType::STRING, 5);
             $xfer += $output->writeString($this->source);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->language !== null) {
-            $xfer += $output->writeFieldBegin('language', TType::STRING, 6);
-            $xfer += $output->writeString($this->language);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->returnType !== null) {
-            $xfer += $output->writeFieldBegin('returnType', TType::STRING, 7);
-            $xfer += $output->writeString($this->returnType);
-            $xfer += $output->writeFieldEnd();
-        }
-        if ($this->posParams !== null) {
-            if (!is_array($this->posParams)) {
-                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
-            }
-            $xfer += $output->writeFieldBegin('posParams', TType::LST, 8);
-            $output->writeListBegin(TType::STRUCT, count($this->posParams));
-            foreach ($this->posParams as $iter1189) {
-                $xfer += $iter1189->write($output);
-            }
-            $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

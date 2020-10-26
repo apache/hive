@@ -81,7 +81,7 @@ public class InMemoryFunction implements Function {
     }
     ArrayList<Var> actualParams = getActualCallParameters(ctx);
     exec.enterScope(Scope.Type.ROUTINE);
-    setCallParameters(ctx, actualParams, userCtx.create_routine_params(), null);
+    setCallParameters(ctx, actualParams, userCtx.create_routine_params(), null, exec);
     if (userCtx.declare_block_inplace() != null) {
       visit(userCtx.declare_block_inplace());
     }
@@ -120,7 +120,7 @@ public class InMemoryFunction implements Function {
       visit(procCtx.declare_block_inplace());
     }
     if (procCtx.create_routine_params() != null) {
-      setCallParameters(ctx, actualParams, procCtx.create_routine_params(), out);
+      setCallParameters(ctx, actualParams, procCtx.create_routine_params(), out, exec);
     }
     visit(procCtx.proc_block());
     exec.callStackPop();
@@ -134,9 +134,10 @@ public class InMemoryFunction implements Function {
   /**
    * Set parameters for user-defined function call
    */
-  public void setCallParameters(HplsqlParser.Expr_func_paramsContext actual, ArrayList<Var> actualValues,
+  public static void setCallParameters(HplsqlParser.Expr_func_paramsContext actual, ArrayList<Var> actualValues,
                          HplsqlParser.Create_routine_paramsContext formal,
-                         HashMap<String, Var> out) {
+                         HashMap<String, Var> out,
+                         Exec exec) {
     if (actual == null || actual.func_param() == null || actualValues == null) {
       return;
     }
@@ -158,10 +159,8 @@ public class InMemoryFunction implements Function {
           scale = p.dtype_len().L_INT(1).getText();
         }
       }
-      Var var = setCallParameter(name, type, len, scale, actualValues.get(i));
-      if (trace) {
-        trace(actual, "SET PARAM " + name + " = " + var.toString());      
-      } 
+      Var var = setCallParameter(name, type, len, scale, actualValues.get(i), exec);
+      exec.trace(actual, "SET PARAM " + name + " = " + var.toString());
       if (out != null && a.expr_atom() != null && a.expr_atom().ident() != null &&
           (p.T_OUT() != null || p.T_INOUT() != null)) {
         String actualName = a.expr_atom().ident().getText();
@@ -175,7 +174,7 @@ public class InMemoryFunction implements Function {
   /**
    * Create a function or procedure parameter and set its value
    */
-  Var setCallParameter(String name, String type, String len, String scale, Var value) {
+  static Var setCallParameter(String name, String type, String len, String scale, Var value, Exec exec) {
     Var var = new Var(name, type, len, scale, null);
     var.cast(value);
     exec.addVariable(var);    
@@ -185,7 +184,7 @@ public class InMemoryFunction implements Function {
   /**
    * Get call parameter definition by name (if specified) or position
    */
-  HplsqlParser.Create_routine_param_itemContext getCallParameter(HplsqlParser.Expr_func_paramsContext actual, 
+  static HplsqlParser.Create_routine_param_itemContext getCallParameter(HplsqlParser.Expr_func_paramsContext actual,
       HplsqlParser.Create_routine_paramsContext formal, int pos) {
     String named ;
     int out_pos = pos;
