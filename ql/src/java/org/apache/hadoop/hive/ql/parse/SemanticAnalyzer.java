@@ -335,7 +335,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private final Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext;
   private final List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting;
   private QB qb;
-  private ASTNode ast;
+  protected ASTNode ast;
   private int destTableId;
   private UnionProcContext uCtx;
   private List<AbstractMapJoinOperator<? extends MapJoinDesc>> listMapJoinOpsNoReducer;

@@ -475,7 +475,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
     profilesCBO = obtainCBOProfiles(queryProperties);
     disableJoinMerge = true;
-    final RelNode resPlan = logicalPlan(ast);
+    final RelNode resPlan = logicalPlan();
     LOG.info("Finished generating logical plan");
     return resPlan;
   }
@@ -549,7 +549,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
         try {
           // 0. Gen Optimized Plan
-          RelNode newPlan = logicalPlan(ast);
+          RelNode newPlan = logicalPlan();
 
           if (this.conf.getBoolVar(HiveConf.ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
             if (cboCtx.type == PreCboCtx.Type.VIEW && !materializedView) {
@@ -1557,7 +1557,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @return
    * @throws SemanticException
    */
-  RelNode logicalPlan(ASTNode ast) throws SemanticException {
+  RelNode logicalPlan() throws SemanticException {
     RelNode optimizedOptiqPlan = null;
 
     CalcitePlannerAction calcitePlannerAction = null;
@@ -1567,8 +1567,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     calcitePlannerAction = new CalcitePlannerAction(
         prunedPartitions,
         ctx.getStatsSource(),
-        this.columnAccessInfo,
-        ast);
+        this.columnAccessInfo);
 
     try {
       optimizedOptiqPlan = Frameworks.withPlanner(calcitePlannerAction, Frameworks
@@ -1626,8 +1625,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @return Optimized operator tree translated in to Hive AST
    * @throws SemanticException
    */
-  ASTNode getOptimizedAST(ASTNode ast) throws SemanticException {
-    return getOptimizedAST(logicalPlan(ast));
+  ASTNode getOptimizedAST() throws SemanticException {
+    return getOptimizedAST(logicalPlan());
   }
 
   /**
@@ -1818,7 +1817,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final Map<String, ColumnStatsList>            colStatsCache;
     private final ColumnAccessInfo columnAccessInfo;
     private Map<HiveProject, Table> viewProjectToTableSchema;
-    private final ASTNode ast;
 
     // correlated vars across subqueries within same query needs to have different ID
     private int subqueryId;
@@ -1836,10 +1834,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
     CalcitePlannerAction(
             java.util.Map<String, org.apache.hadoop.hive.ql.parse.PrunedPartitionList> partitionCache,
             org.apache.hadoop.hive.ql.plan.mapper.StatsSource statsSource,
-            org.apache.hadoop.hive.ql.parse.ColumnAccessInfo columnAccessInfo, org.apache.hadoop.hive.ql.parse.ASTNode ast) {
+            org.apache.hadoop.hive.ql.parse.ColumnAccessInfo columnAccessInfo) {
       this.partitionCache = partitionCache;
       this.statsSource = statsSource;
-      this.ast = ast;
       this.colStatsCache = ctx.getOpContext().getColStatsCache();
       this.columnAccessInfo = columnAccessInfo;
     }
