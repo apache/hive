@@ -1997,10 +1997,10 @@ public class SharedWorkOptimizer extends Transform {
       SharedWorkOptimizerCache optimizerCache, DecomposedTs tsModel)
                   throws UDFArgumentException {
     TableScanOperator tsOp = tsModel.ts;
-    if (tsModel.normalFilterExpr == null) {
+    if (tsOp.getConf().getFilterExpr() == null) {
       return;
     }
-    ExprNodeGenericFuncDesc tableScanExprNode = (ExprNodeGenericFuncDesc) tsModel.normalFilterExpr;
+    ExprNodeGenericFuncDesc tableScanExprNode = tsOp.getConf().getFilterExpr();
     List<Operator<? extends OperatorDesc>> allChildren =
         Lists.newArrayList(tsOp.getChildOperators());
     for (Operator<? extends OperatorDesc> op : allChildren) {
