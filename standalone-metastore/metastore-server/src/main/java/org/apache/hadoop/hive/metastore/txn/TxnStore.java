@@ -388,7 +388,7 @@ public interface TxnStore extends Configurable {
    * @return information on the entry in the queue.
    */
   @RetrySemantics.ReadOnly
-  List<CompactionInfo> findReadyToClean() throws MetaException;
+  List<CompactionInfo> findReadyToClean(long minOpenTxnId) throws MetaException;
 
   /**
    * This will remove an entry from the queue after
