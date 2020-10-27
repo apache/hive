@@ -2243,7 +2243,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
       GetTableResult result = getTableInternal(req);
       Table copiedTable = deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled,
           filterHook, result.getTable()));
-      GetTableResult copiedResult = new GetTableResult(result);
+      GetTableResult copiedResult =
+          (getHMSConverter() == null || getHMSConverter().getTableConverter(req) == null)
+              ? new GetTableResult(result)
+              : getHMSConverter().getTableConverter(req).cloneTableResult(result);
       copiedResult.setTable(copiedTable);
       return copiedResult;
     } finally {
@@ -4562,6 +4565,10 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
           + "mode.");
     }
     return (Client) client;
+  }
+
+  protected HMSConverter getHMSConverter() {
+    return null;
   }
 
   /**

@@ -151,7 +151,7 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
       LOG.info("Partition pruned expressions: " + ImpalaConjuncts.toString(pair.second));
 
       Set<Partition> msPartitions = impalaTable.fetchPartitions(table.getMSC(),
-          table.getHiveTableMD(), pair.first);
+          table.getHiveTableMD(), pair.first, conf);
 
       if (pair.second.size() < impalaConjuncts.getImpalaPartitionConjuncts().size()) {
         // This situation shouldn't happen. We calculated the expressions used for

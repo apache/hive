@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.io.HdfsUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
+import org.apache.hadoop.hive.metastore.HMSConverter;;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.PartFilterExprUtil;
 import org.apache.hadoop.hive.metastore.PartitionDropOptions;
@@ -109,6 +110,7 @@ import org.apache.hadoop.hive.metastore.api.UniqueConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.client.builder.PartitionBuilder;
+import org.apache.hadoop.hive.metastore.localcache.PartitionCacheHelper;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -1134,7 +1136,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     List<Partition> partitions = tt.listPartitionsWithAuthInfo(userName, groupNames);
     return getPartitionsForMaxParts(tableName, partitions, maxParts);
   }
- 
+
   @Override
   public GetPartitionsPsWithAuthResponse listPartitionsWithAuthInfoRequest(
       GetPartitionsPsWithAuthRequest req)
@@ -1260,8 +1262,12 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     }
     TempTable tt = getPartitionedTempTable(table);
     List<Partition> partitions = tt.getPartitionsByNames(request.getNames());
+    GetPartitionsByNamesResult requestedResp =
+        new GetPartitionsByNamesResult(deepCopyPartitions(partitions));
 
-    return new GetPartitionsByNamesResult(deepCopyPartitions(partitions));
+    PartitionCacheHelper cacheHelper = new PartitionCacheHelper(request,
+        getHMSConverter(), table, PartitionCacheHelper.Level.QUERY);
+    return cacheHelper.fetchRequestedResult(requestedResp);
   }
 
   @Override
@@ -1991,7 +1997,9 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.TABLE, req);
+      CacheKey cacheKey = new CacheKey(KeyType.TABLE, req.getDbName(),
+          req.getTblName(), null, req.isGetFileMetadata(), req.getEngine(), req.isGetColumnStats(),
+          req.getId());
       GetTableResult v = (GetTableResult) queryCache.get(cacheKey);
       if (v == null) {
         v = super.getTableInternal(req);
@@ -2285,31 +2293,48 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   @Override
   protected GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest rqst) throws TException {
     Map<Object, Object> queryCache = getQueryCache();
-    if (queryCache != null) {
-      MapWrapper cache = new MapWrapper(queryCache);
-      // 1) Retrieve from the cache those ids present, gather the rest
-      List<String> partitionNamesMissing = new ArrayList<>();
-      List<Partition> partitionsFound = new ArrayList<>();
-      ObjectDictionary od =
-          getPartitionsByNamesCache(cache, rqst, null, partitionNamesMissing, partitionsFound);
-      // 2) If they were all present in the cache, return
-      if (partitionNamesMissing.isEmpty()) {
-        GetPartitionsByNamesResult result = new GetPartitionsByNamesResult(partitionsFound);
-        result.setDictionary(od);
-        return result;
-      }
-      // 3) If they were not, gather the remaining
-      GetPartitionsByNamesRequest newRqst = new GetPartitionsByNamesRequest(rqst);
-      newRqst.setNames(partitionNamesMissing);
-      GetPartitionsByNamesResult r = super.getPartitionsByNamesInternal(newRqst);
-      // 4) Populate the cache
-      List<Partition> newPartitions = new ArrayList<>();
-      od = loadPartitionsByNamesCache(
-          cache, r, rqst, null, newPartitions);
-      // 5) Sort result (in case there is any assumption) and return
-      return computePartitionsByNamesFinal(rqst, partitionsFound, newPartitions, od);
+    // We don't use the query cache when there is file metadata. There are two main benefits of caching:
+    // 1) It saves the call to HMS - we already get this at the HS2 level for Acid tables. It could
+    // still provide benefit for non-acid tables, which leads us to #2...
+    // 2) If we cache the converted object (Impala specific), we avoid a conversion - Because the
+    // query cache is empty at the beginning of the query, we are always going to incur the
+    // conversion cost if we cache it. Caveat: We could make the logic a bit more complicated and
+    // use the converted object from the HS2 level, but there's just not a lot of benefit to add
+    // that code.
+    if (queryCache == null || rqst.isGetFileMetadata()) {
+      return super.getPartitionsByNamesInternal(rqst);
     }
-    return super.getPartitionsByNamesInternal(rqst);
+
+    // If we are at this point, we are using the query cache. If the query cache does not contain
+    // the data we need, we will need to issue an HMS query.
+    MapWrapper cache = new MapWrapper(queryCache);
+    String dbName = MetaStoreUtils.parseDbName(rqst.getDb_name(), conf)[1];
+    org.apache.hadoop.hive.metastore.api.Table table = getTable(dbName, rqst.getTbl_name());
+    CacheKey key = new CacheKey(KeyType.PARTITIONS_BY_NAMES, rqst.getDb_name(),
+        rqst.getTbl_name(), null, rqst.isGetFileMetadata());
+    PartitionCacheHelper.CacheValue cacheValue =
+        (PartitionCacheHelper.CacheValue) cache.get(key);
+    // First time with this key, so we create a fresh cache value.
+    if (cacheValue == null) {
+      cacheValue = PartitionCacheHelper.createCacheValue(rqst, getHMSConverter(), table, true);
+      cache.put(key, cacheValue);
+    }
+
+    PartitionCacheHelper cacheHelper = new PartitionCacheHelper(cacheValue,
+        rqst, getHMSConverter(), table, PartitionCacheHelper.Level.QUERY);
+    if (!cacheHelper.cacheContainsAllPartitions()) {
+      // The cache didn't contain all the partitions so we need to fetch the ones it didn't have.
+      GetPartitionsByNamesRequest missingNamesRqst = cacheHelper.getMissingNamesRequest();
+      GetPartitionsByNamesResult missingNamesResult
+          = super.getPartitionsByNamesInternal(missingNamesRqst);
+
+      // Add new data to the cache, potentially doing a conversion on the Partition object.
+      // The decision of whether a conversion is needed is coded within the engine. Currently,
+      // the ImpalaPartitionConverter  only does the conversion if there is file metadata.
+      cacheHelper.addToCache(missingNamesRqst, missingNamesResult, cacheValue);
+    }
+    // Fetch the final result by extracting only the requested partitions from the cache
+    return cacheHelper.fetchRequestedResultFromCache(cacheValue);
   }
 
   @Override
@@ -2337,6 +2362,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       return computeValidWriteIdsFinal(rqst, tblValidWriteIds, newTblValidWriteIds);
     }
     return super.getValidWriteIdsInternal(rqst);
+  }
+
+  @Override
+  protected HMSConverter getHMSConverter() {
+    return SessionState.getHMSConverter();
   }
 
   /**

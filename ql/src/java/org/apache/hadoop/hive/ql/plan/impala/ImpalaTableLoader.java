@@ -97,8 +97,8 @@ public class ImpalaTableLoader {
           // Lets get this specific table's write id list
           validWriteIdList = txnWriteIdList.getTableValidWriteIdList(basicTable.getFullName());
         }
-        tableMap.put(basicTable.getMetaStoreTable(), new ImpalaHdfsTable(basicTable, db.getMSC(),
-              validWriteIdList));
+        tableMap.put(basicTable.getMetaStoreTable(), ImpalaHdfsTable.create(queryContext.getConf(),
+            basicTable, db.getMSC(), validWriteIdList));
       } catch (ImpalaException|MetaException e) {
         timeline.markEvent("Metadata load failed for table " + basicTable.getName() + ". Completed" +
             " for " + tableMap.entrySet().size() + " tables.");

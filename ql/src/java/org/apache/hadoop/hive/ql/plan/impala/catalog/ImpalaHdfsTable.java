@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaPartitionConverter.PartitionInfo;
 import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable;
 import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicPartition;
 import org.apache.impala.analysis.LiteralExpr;
@@ -44,8 +45,10 @@ import org.apache.impala.catalog.FeCatalogUtils;
 import org.apache.impala.catalog.FeFsPartition;
 import org.apache.impala.catalog.HdfsTable;
 import org.apache.impala.catalog.HdfsPartition;
+import org.apache.impala.catalog.HdfsPartitionLocationCompressor;
 import org.apache.impala.catalog.HdfsPartition.FileDescriptor;
 import org.apache.impala.catalog.HdfsStorageDescriptor;
+import org.apache.impala.catalog.PrunablePartition;
 import org.apache.impala.catalog.metastore.CatalogHMSClientUtils;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.util.ListMap;
@@ -56,6 +59,9 @@ import org.apache.thrift.TException;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -66,8 +72,8 @@ public class ImpalaHdfsTable extends HdfsTable {
 
   private final String nullPartitionKeyValue;
 
-  // a dummy partition needed for an unparttiioned table.
-  private final FeFsPartition dummyPartition;
+  private final Map<String, FeFsPartition> namePartitionMap = new HashMap<>();
+
   // This is a "compile time" ValidWriteIdList. Typically HMS clients will auto-set this
   // for a variety of HMS calls automatically - but only after compilation (this is
   // usualy setup via Driver#recordValidWriteIds). Since we are making HMS calls
@@ -78,7 +84,6 @@ public class ImpalaHdfsTable extends HdfsTable {
       throws HiveException {
     super(msTbl, db, name, owner);
     this.conf = conf;
-    this.dummyPartition = null;
     this.compileTimeWriteIdList = null;
     try {
       loadSchema(msTbl);
@@ -90,12 +95,16 @@ public class ImpalaHdfsTable extends HdfsTable {
     }
   }
 
-  public ImpalaHdfsTable(ImpalaBasicHdfsTable basicHdfsTable,
-      IMetaStoreClient client, ValidWriteIdList compileTimeWriteIdList) throws HiveException, ImpalaException, MetaException {
+  private ImpalaHdfsTable(ImpalaBasicHdfsTable basicHdfsTable,
+      IMetaStoreClient client, ValidWriteIdList compileTimeWriteIdList,
+      PartitionInfo partitionInfo, HiveConf conf)
+      throws HiveException, ImpalaException, MetaException {
     super(basicHdfsTable.getMetaStoreTable(), basicHdfsTable.getDb(),
         basicHdfsTable.getName(), basicHdfsTable.getOwnerUser());
+    // host indexes are populated by the partitions fetched from HMS.
+    getHostIndex().populate(partitionInfo.hostIndex);
     try {
-      this.conf = basicHdfsTable.getConf();
+      this.conf = conf;
       this.compileTimeWriteIdList = compileTimeWriteIdList;
       Table msTbl = getMetaStoreTable();
       // initialize variables needed in parent HdfsTable
@@ -104,21 +113,29 @@ public class ImpalaHdfsTable extends HdfsTable {
       // there should be no need to refetch these.
       loadAllColumnStats(client);
       loadConstraintsInfo(client, msTbl);
-      // CDPD-16964: Is this the proper way to get valid writeIds?
-      loadValidWriteIdList(client);
+      validWriteIds_ = compileTimeWriteIdList;
       initializePartitionMetadata(msTbl);
       updateMdFromHmsTable(msTbl);
-      nullPartitionKeyValue = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+      this.nullPartitionKeyValue = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+
+      List<HdfsPartition> partitions = new ArrayList<>();
+      for (String name : basicHdfsTable.getPartitionNames()) {
+        if (partitionInfo.hdfsPartitions.containsKey(name)) {
+          partitions.add(partitionInfo.hdfsPartitions.get(name));
+        } else {
+          partitions.add(basicHdfsTable.getPartition(name));
+        }
+      }
 
       // load in partition data from HMS
-      HdfsPartition tmpDummyPartition = null;
-      if (getNumClusteringCols() > 0) {
-        loadPartitionedTable(basicHdfsTable, client);
-      } else {
-        tmpDummyPartition = loadNoPartitionData(client);
-        addPartition(tmpDummyPartition);
+      for (HdfsPartition partition : partitions) {
+        addPartition(partition);
+        namePartitionMap.put(partition.getPartitionName(), partition);
       }
-      dummyPartition = tmpDummyPartition;
+      // Locations are populated by the partitions fetched from HMS.
+      this.partitionLocationCompressor_ = new HdfsPartitionLocationCompressor(
+          basicHdfsTable.getNumClusteringCols(), partitionInfo.locationPrefixes);
+
       setTableStats(msTable_);
     } catch (IOException|ImpalaException e) {
       throw new HiveException(e);
@@ -132,14 +149,14 @@ public class ImpalaHdfsTable extends HdfsTable {
   public List<FeFsPartition> getPartitions(List<ImpalaBasicPartition> partitions)
       throws HiveException {
     if (getNumClusteringCols() == 0) {
-      return Lists.newArrayList(dummyPartition);
+      Preconditions.checkState(getPartitions().size() == 1);
+      return Lists.newArrayList(
+          (FeFsPartition) namePartitionMap.get(ImpalaHdfsPartition.DUMMY_PARTITION));
     }
 
     List<FeFsPartition> impalaPartitions = Lists.newArrayList();
-    // The "id" for both this table object and the wrapped table object containing the
-    // partition and filemetadata use the same partition ids.
     for (ImpalaBasicPartition p : partitions) {
-      impalaPartitions.add((FeFsPartition) getPartitionMap().get(p.getId()));
+      impalaPartitions.add(namePartitionMap.get(p.getPartitionName()));
     }
     return impalaPartitions;
   }
@@ -157,118 +174,11 @@ public class ImpalaHdfsTable extends HdfsTable {
     return true;
   }
 
-  /**
-   * load the partition and file metadata from HMS for a partitioned table
-   */
-  private void loadPartitionedTable(ImpalaBasicHdfsTable basicHdfsTable, IMetaStoreClient client
-      ) throws HiveException {
-    Preconditions.checkState(getNumClusteringCols() > 0);
-    try {
-      GetPartitionsByNamesRequest request = getPartitionsByNamesRequest(
-          basicHdfsTable.getNamesToLoad(), msTable_, conf, true, compileTimeWriteIdList);
-      // CDPD-16617: HIVE_IN_TEST mode, we avoid the call to HMS and return
-      // an empty partition list.
-      GetPartitionsByNamesResult result = conf.getBoolVar(ConfVars.HIVE_IN_TEST)
-        ? new GetPartitionsByNamesResult()
-        : client.getPartitionsByNames(request);
-
-      Map<Partition, List<FileDescriptor>> partitionFds = conf.getBoolVar(ConfVars.HIVE_IN_TEST)
-          ? Maps.newHashMap()
-          : CatalogHMSClientUtils.extractFileDescriptors(result, getHostIndex());
-
-      if (result.getPartitions() != null) {
-        for (Partition p : result.getPartitions()) {
-          // Need to call "transformPartition" to convert Partition to HdfsPartition.
-          addPartition(transformPartition(basicHdfsTable, p, partitionFds.get(p)));
-        }
-        for (HdfsPartition p : basicHdfsTable.getPartitionsNotToLoad()) {
-          addPartition(p);
-        }
-      }
-    } catch (CatalogException|TException e) {
-      throw new HiveException(e);
-    }
-  }
-
-  /**
-   * load and return the dummy partition for an unpartitioned table.
-   */
-  private HdfsPartition loadNoPartitionData(IMetaStoreClient client) throws HiveException {
-    Preconditions.checkState(getNumClusteringCols() == 0);
-    try {
-      GetTableRequest request = getTableRequest();
-      // CDPD-16617: HIVE_IN_TEST mode, we avoid the call to HMS and return an empty table.
-      Table result = conf.getBoolVar(ConfVars.HIVE_IN_TEST)
-        ? new Table()
-        : client.getTable(request).getTable();
-
-      HdfsStorageDescriptor fileFormatDescriptor =
-          HdfsStorageDescriptor.fromStorageDescriptor(this.getName(), msTable_.getSd());
-      List<LiteralExpr> keyValues = Lists.newArrayList();
-      List<FileDescriptor> fds = conf.getBoolVar(ConfVars.HIVE_IN_TEST)
-          ? Lists.newArrayList()
-          : CatalogHMSClientUtils.extractFileDescriptors(result, getHostIndex());
-
-      return new HdfsPartition(this, null, keyValues, fileFormatDescriptor, fds, 1,
-          getPartitionLocationCompressor().new Location(msTable_.getSd().getLocation()),
-          TAccessLevel.READ_ONLY);
-    } catch (CatalogException|TException e) {
-      throw new HiveException(e);
-    }
-  }
-
-  public static GetPartitionsByNamesRequest getPartitionsByNamesRequest(Set<String> names,
-      Table msTbl, HiveConf conf, boolean fetchFileMetadata, ValidWriteIdList writeIdList) {
-    //TODO: CDPD-17400: Need to populate tableId once it is a field in the request structure.
-    GetPartitionsByNamesRequest request = new GetPartitionsByNamesRequest();
-    request.setDb_name(MetaStoreUtils.prependCatalogToDbName(msTbl.getDbName(), conf));
-    request.setTbl_name(msTbl.getTableName());
-    request.setNames(Lists.newArrayList(names));
-    Preconditions.checkState(
-        !AcidUtils.isTransactionalTable(msTbl) || writeIdList != null,
-        "Transaction tables must provide a ValidWriteIdList");
-    if (writeIdList != null) {
-      request.setValidWriteIdList(writeIdList.toString());
-    }
-    if (fetchFileMetadata) {
-      request.setGetFileMetadata(true);
-    }
-    return request;
-  }
-
-  private GetTableRequest getTableRequest() {
-    GetTableRequest request = new GetTableRequest();
-    request.setDbName(msTable_.getDbName());
-    request.setTblName(msTable_.getTableName());
-    request.setGetFileMetadata(true);
-    request.setId(msTable_.getId());
-    Preconditions.checkState(
-        !AcidUtils.isTransactionalTable(msTable_) || compileTimeWriteIdList != null,
-        "Transaction tables must provide a ValidWriteIdList");
-    if (compileTimeWriteIdList != null) {
-      request.setValidWriteIdList(compileTimeWriteIdList.toString());
-    }
-    return request;
-  }
-
-  /**
-   * Convert Partition to HdfsPartition.
-   */
-  private HdfsPartition transformPartition(ImpalaBasicHdfsTable basicHdfsTable,
-      Partition partition, List<FileDescriptor> fds) throws CatalogException {
-    HdfsStorageDescriptor fileFormatDescriptor =
-        HdfsStorageDescriptor.fromStorageDescriptor(this.getName(), partition.getSd());
-    List<LiteralExpr> keyValues = FeCatalogUtils.parsePartitionKeyValues(this, partition.getValues());
-
-    String partitionName = MetaStoreUtils.getPartitionName(msTable_, partition);
-    // need to reuse the same id for the newly created partition.
-    Long id = basicHdfsTable.getIdFromName(partitionName);
-    Preconditions.checkNotNull(id);
-    HdfsPartition newPartition =  new HdfsPartition(this, partition, keyValues,
-        fileFormatDescriptor, fds, id,
-        getPartitionLocationCompressor().new Location(partition.getSd().getLocation()),
-        TAccessLevel.READ_ONLY);
-    newPartition.setNumRows(FeCatalogUtils.getRowCount(partition.getParameters()));
-    return newPartition;
+  public static ImpalaHdfsTable create(HiveConf conf, ImpalaBasicHdfsTable basicHdfsTable,
+      IMetaStoreClient client, ValidWriteIdList compileTimeWriteIdList)
+      throws HiveException, ImpalaException, MetaException {
+    PartitionInfo partitionInfo = ImpalaHdfsPartitionLoader.fetchPartitionInfoFromHMS(conf,
+        basicHdfsTable, client, compileTimeWriteIdList);
+    return new ImpalaHdfsTable(basicHdfsTable, client, compileTimeWriteIdList, partitionInfo, conf);
   }
 }

@@ -54,12 +54,14 @@ import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
 import org.apache.hadoop.hive.metastore.api.PartitionsStatsRequest;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysRequest;
 import org.apache.hadoop.hive.metastore.api.PrimaryKeysResponse;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableStatsResult;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.localcache.PartitionCacheHelper;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
 import org.apache.thrift.TException;
@@ -140,7 +142,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     // Database <-- getDatabaseInternal(GetDatabaseRequest request)
     DATABASE(Database.class, GetDatabaseRequest.class),
     // GetTableResult <-- getTableInternal(GetTableRequest req)
-    TABLE(GetTableResult.class, GetTableRequest.class),
+    TABLE(GetTableResult.class, TableWatermark.class, String.class, boolean.class, long.class),
     // PrimaryKeysResponse <-- getPrimaryKeysInternal(PrimaryKeysRequest req)
     PRIMARY_KEYS(PrimaryKeysResponse.class, PrimaryKeysRequest.class),
     // ForeignKeysResponse <-- getForeignKeysInternal(ForeignKeysRequest req)
@@ -176,10 +178,10 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     LIST_PARTITIONS_AUTH_INFO_REQ(GetPartitionsPsWithAuthResponse.class, GetPartitionsPsWithAuthRequest.class),
     // GetPartitionsByNamesResult <-- getPartitionsByNamesInternal(GetPartitionsByNamesRequest gpbnr)
     // Stored individually as:
-    // Pair<Partition, ObjectDictionary> <-- String db_name, String tbl_name, List<String> partValues, boolean get_col_stats,
-    //      List<String> processorCapabilities, String processorIdentifier, String engine,
-    //      String validWriteIdList, (TableWatermark tw ?)
-    PARTITIONS_BY_NAMES(Pair.class, Partition.class, ObjectDictionary.class, String.class, boolean.class, TableWatermark.class),
+    // Key: String db_name, String tbl_name, TableWatermark tw, boolean isGetFileMetadata
+    // Value: CacheValue cacheValue
+    PARTITIONS_BY_NAMES(PartitionCacheHelper.CacheValue.class, ConcurrentHashMap.class, String.class,
+        Partition.class, String.class, String.class, TableWatermark.class, boolean.class),
     // GetValidWriteIdsResponse <-- getValidWriteIdsInternal(GetValidWriteIdsRequest rqst)
     // Stored individually as:
     // TableValidWriteIds <-- String fullTableName, String validTxnList, long writeId
@@ -268,10 +270,12 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
       TableWatermark watermark = new TableWatermark(
           req.getValidWriteIdList(), req.getId());
       if (watermark.isValid()) {
-        CacheKey cacheKey = new CacheKey(KeyType.TABLE, req);
+        CacheKey cacheKey = new CacheKey(KeyType.TABLE, req.getDbName(),
+            req.getTblName(), watermark, req.isGetFileMetadata(), req.getEngine(),
+            req.isGetColumnStats(), req.getId());
         GetTableResult r = (GetTableResult) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
-          r = super.getTableInternal(req);
+          r = convertTableRequest(req, super.getTableInternal(req));
           mscLocalCache.put(cacheKey, r);
         } else {
           LOG.debug(
@@ -286,7 +290,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
         return r;
       }
     }
-    return super.getTableInternal(req);
+    return convertTableRequest(req, super.getTableInternal(req));
   }
 
   @Override
@@ -542,42 +546,42 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
 
   @Override
   protected GetPartitionsByNamesResult getPartitionsByNamesInternal(GetPartitionsByNamesRequest rqst) throws TException {
+    String dbName = parseDbName(rqst.getDb_name(), conf)[1];
+    Table table = getTable(dbName, rqst.getTbl_name());
     if (isCacheEnabledAndInitialized()) {
-      String dbName = parseDbName(rqst.getDb_name(), conf)[1];
       TableWatermark watermark = new TableWatermark(
-          rqst.getValidWriteIdList(), getTable(dbName, rqst.getTbl_name()).getId());
+          rqst.getValidWriteIdList(), table.getId());
       if (watermark.isValid()) {
-        CacheWrapper cache = new CacheWrapper(mscLocalCache);
-        List<String> partitionNamesMissing = new ArrayList<>();
-        List<Partition> partitionsFound = new ArrayList<>();
-        // 1) Retrieve from the cache those ids present, gather the rest
-        ObjectDictionary od = getPartitionsByNamesCache(cache, rqst, watermark,
-            partitionNamesMissing,partitionsFound);
-        // 2) If they were all present in the cache, return
-        if (partitionNamesMissing.isEmpty()) {
-          GetPartitionsByNamesResult result = new GetPartitionsByNamesResult(partitionsFound);
-          result.setDictionary(od);
-          return result;
+        CacheKey key = new CacheKey(KeyType.PARTITIONS_BY_NAMES, rqst.getDb_name(),
+            rqst.getTbl_name(), watermark, rqst.isGetFileMetadata());
+        // check cache for value
+        PartitionCacheHelper.CacheValue cacheValue =
+            (PartitionCacheHelper.CacheValue) mscLocalCache.get(key,
+            k -> PartitionCacheHelper.createCacheValue(rqst, getHMSConverter(), table, true));
+        PartitionCacheHelper cacheHelper = new PartitionCacheHelper(cacheValue,
+            rqst, getHMSConverter(),  table, PartitionCacheHelper.Level.HS2);
+        if (!cacheHelper.cacheContainsAllPartitions()) {
+          // The cache didn't contain all the partitions so we need to fetch the ones it didn't have.
+          GetPartitionsByNamesRequest missingNamesRqst = cacheHelper.getMissingNamesRequest();
+          GetPartitionsByNamesResult missingNamesResult
+              = super.getPartitionsByNamesInternal(missingNamesRqst);
+
+          cacheHelper.addToCache(missingNamesRqst, missingNamesResult, cacheValue);
+
+          if (LOG.isDebugEnabled() && recordStats) {
+            LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+          }
         }
-        // 3) If they were not, gather the remaining
-        GetPartitionsByNamesRequest newRqst = new GetPartitionsByNamesRequest(rqst);
-        newRqst.setNames(partitionNamesMissing);
-        GetPartitionsByNamesResult r = super.getPartitionsByNamesInternal(newRqst);
-        // 4) Populate the cache
-        List<Partition> newPartitions = new ArrayList<>();
-        od = loadPartitionsByNamesCache(
-            cache, r, rqst, watermark, newPartitions);
-        // 5) Sort result (in case there is any assumption) and return
-        GetPartitionsByNamesResult result =
-             computePartitionsByNamesFinal(rqst, partitionsFound, newPartitions, od);
-        if (LOG.isDebugEnabled() && recordStats) {
-          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
-        }
-        return result;
+        return cacheHelper.fetchRequestedResultFromCache(cacheValue);
       }
     }
+    // retrieve the partitions from HMS and (potentially) convert them into its
+    // final response (if the converter exists).
+    GetPartitionsByNamesResult requestedResult = super.getPartitionsByNamesInternal(rqst);
 
-    return super.getPartitionsByNamesInternal(rqst);
+    PartitionCacheHelper cacheHelper =
+        new PartitionCacheHelper(rqst, getHMSConverter(), table, PartitionCacheHelper.Level.HS2);
+    return cacheHelper.fetchRequestedResult(requestedResult);
   }
 
   /**
@@ -677,118 +681,18 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     return new TableStatsResult(result);
   }
 
-  // Partitions_by_names is a 2 level cache: 1st level key is {db, table, watermark, isFileMetadata}
-  // and value is a concurrent hash map for the partitions.
-  // 2nd level is the concurrent hash map whose key is list of partition 'values' and the
-  // value is the actual Partition object itself
-  protected final ObjectDictionary getPartitionsByNamesCache(CacheI cache, GetPartitionsByNamesRequest rqst,
-      TableWatermark watermark, List<String> partitionNamesMissing,
-      List<Partition> partitionsFound) throws MetaException {
-    CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES, rqst.getDb_name(),
-        rqst.getTbl_name(), watermark, rqst.isGetFileMetadata());
-    ObjectDictionary od = null;
-    Pair<Map<List<String>, Partition>, ObjectDictionary> cacheEntry =
-        (Pair<Map<List<String>, Partition>, ObjectDictionary>) cache.get(cacheKey);
-    if (cacheEntry == null) {
-      // no cached partitions exist, so all requested partitions are missing
-      partitionNamesMissing.addAll(rqst.getNames());
-      return od;
-    }
-    Map<List<String>, Partition> cacheValue = cacheEntry.getLeft();
-    od = cacheEntry.getRight();
-    List<String> partitionNamesFound = new ArrayList<>();
-    for (String partitionName : rqst.getNames()) {
-      List<String> partitionValues = Warehouse.getPartValuesFromPartName(partitionName);
-      Partition cachedPartition = cacheValue.get(partitionValues);
-      if (cachedPartition == null) {
-        partitionNamesMissing.add(partitionName);
-      } else {
-        partitionsFound.add(cachedPartition);
-        partitionNamesFound.add(partitionName);
-      }
-    }
-
-    if (partitionNamesFound.size() > 0) {
-      if (watermark == null) {
-        LOG.debug(
-            "Query level HMS cache: method=getPartitionsByNamesInternal, dbName={}, tblName={}, fileMetadata={}, partitionNames={}",
-            rqst.getDb_name(), rqst.getTbl_name(), rqst.isGetFileMetadata(), partitionNamesFound);
-      } else {
-        LOG.debug(
-            "HS2 level HMS cache: method=getPartitionsByNamesInternal, dbName={}, tblName={}, fileMetadata={}, partitionNames={}",
-            rqst.getDb_name(), rqst.getTbl_name(), rqst.isGetFileMetadata(), partitionNamesFound);
-      }
-    }
-
-    return od;
+  @Override
+  protected HMSConverter getHMSConverter() {
+    return null;
   }
 
-  protected final ObjectDictionary loadPartitionsByNamesCache(CacheI cache,
-      GetPartitionsByNamesResult r, GetPartitionsByNamesRequest rqst,
-      TableWatermark watermark, List<Partition> newPartitions) {
-    CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_NAMES, rqst.getDb_name(),
-        rqst.getTbl_name(), watermark, rqst.isGetFileMetadata());
-    ObjectDictionary od = r.getDictionary();
-
-    // List<String> represents the list of values for a partition
-    // Map<List<String>, Partition> allows probing based on partition values
-    Pair<Map<List<String>, Partition>, ObjectDictionary> cacheEntry;
-    if (cache instanceof CacheWrapper) {
-      cacheEntry = (Pair<Map<List<String>, Partition>, ObjectDictionary>)
-          ((CacheWrapper) cache).cache.get(cacheKey,
-              k -> Pair.of(new ConcurrentHashMap<>(), od));
-    } else {
-      cacheEntry = (Pair<Map<List<String>, Partition>, ObjectDictionary>) cache.get(cacheKey);
-      if (cacheEntry == null) {
-        // missing partitions may be fetched by different queries, hence use a
-        // concurrent structure and we keep these in a map to allow efficient probing
-        cacheEntry = Pair.of(new ConcurrentHashMap<>(), od);
-        cache.put(cacheKey, cacheEntry);
-      }
+  protected final GetTableResult convertTableRequest(
+      GetTableRequest rqst, GetTableResult result) {
+    if (getHMSConverter() == null || getHMSConverter().getTableConverter(rqst) == null) {
+      return result;
     }
 
-    Map<List<String>, Partition> partitionsMap = cacheEntry.getLeft();
-    for (Partition partition : r.getPartitions()) {
-      partitionsMap.put(partition.getValues(), partition);
-      newPartitions.add(partition);
-    }
-    return od;
-  }
-
-  protected final GetPartitionsByNamesResult computePartitionsByNamesFinal(GetPartitionsByNamesRequest rqst,
-      List<Partition> partitions, List<Partition> newPartitions, ObjectDictionary od)
-      throws MetaException {
-    List<Partition> resultPartitions = new ArrayList<>();
-    int i = 0, j = 0;
-    for (String partitionName : rqst.getNames()) {
-      if (i >= partitions.size() || j >= newPartitions.size()) {
-        break;
-      }
-      List<String> pv = Warehouse.getPartValuesFromPartName(partitionName);
-      Partition pi = partitions.get(i);
-      Partition pj = newPartitions.get(j);
-      if (pi.getValues().equals(pv)) {
-        resultPartitions.add(pi);
-        i++;
-      } else if (pj.getValues().equals(pv)) {
-        resultPartitions.add(pj);
-        j++;
-      }
-    }
-    while (i < partitions.size()) {
-      resultPartitions.add(partitions.get(i));
-      i++;
-    }
-    while (j < newPartitions.size()) {
-      resultPartitions.add(newPartitions.get(j));
-      j++;
-    }
-
-    GetPartitionsByNamesResult result = new GetPartitionsByNamesResult(resultPartitions);
-    if (rqst.isGetFileMetadata()) {
-      result.setDictionary(od);
-    }
-    return result;
+    return getHMSConverter().getTableConverter(rqst).convertTable(result);
   }
 
   protected final Pair<List<TableValidWriteIds>, List<String>> getValidWriteIdsCache(CacheI cache,

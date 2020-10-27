@@ -62,7 +62,9 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.common.type.TimestampTZUtil;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.conf.HiveConf.Engine;
 import org.apache.hadoop.hive.conf.HiveConfUtil;
+import org.apache.hadoop.hive.metastore.HMSConverter;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -98,6 +100,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.TempTable;
+import org.apache.hadoop.hive.ql.plan.impala.ImpalaHMSConverter;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook;
@@ -345,6 +348,8 @@ public class SessionState {
 
   private List<Closeable> cleanupItems = new LinkedList<Closeable>();
 
+  private HMSConverter impalaHmsConverter;
+
   private volatile long waitingTezSession;
 
   public HiveConf getConf() {
@@ -469,6 +474,7 @@ public class SessionState {
         HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR), udfCacheMap, udfCacheDir);
     killQuery = new NullKillQuery();
     this.cleanupService = cleanupService;
+    impalaHmsConverter = new ImpalaHMSConverter();
   }
 
   public Map<String, String> getHiveVariables() {
@@ -1982,6 +1988,12 @@ public class SessionState {
    */
   public static PerfLogger getPerfLogger() {
     return getPerfLogger(false);
+  }
+
+  public static HMSConverter getHMSConverter() {
+    SessionState ss = get();
+    return (ss == null || ss.getConf() == null || ss.getConf().getEngine() != Engine.IMPALA)
+        ? null : ss.impalaHmsConverter;
   }
 
   /**
