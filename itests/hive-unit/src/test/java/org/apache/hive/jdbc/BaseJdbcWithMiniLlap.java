@@ -109,6 +109,7 @@ public abstract class BaseJdbcWithMiniLlap {
 
   private static HiveConf conf = null;
   private static Connection hs2Conn = null;
+  protected static Connection hs2Conn = null;
 
   // This method should be called by sub-classes in a @BeforeClass initializer
   public static MiniHS2 beforeTest(HiveConf inputConf) throws Exception {
