@@ -1117,10 +1117,11 @@ public class ExprNodeDescUtils {
     if (nodes == null) {
       return exprNode;
     }
-    List<ExprNodeDesc> operands = new ArrayList<ExprNodeDesc>(nodes);
+    List<ExprNodeDesc> operands = new ArrayList<ExprNodeDesc>();
     if (exprNode != null) {
       operands.add(exprNode);
     }
+    operands.addAll(nodes);
     return conjunction(operands);
   }
 
