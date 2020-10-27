@@ -26,18 +26,30 @@ class ListStoredProcedureRequest
             'isRequired' => true,
             'type' => TType::STRING,
         ),
+        2 => array(
+            'var' => 'dbName',
+            'isRequired' => false,
+            'type' => TType::STRING,
+        ),
     );
 
     /**
      * @var string
      */
     public $catName = null;
+    /**
+     * @var string
+     */
+    public $dbName = null;
 
     public function __construct($vals = null)
     {
         if (is_array($vals)) {
             if (isset($vals['catName'])) {
                 $this->catName = $vals['catName'];
+            }
+            if (isset($vals['dbName'])) {
+                $this->dbName = $vals['dbName'];
             }
         }
     }
@@ -68,6 +80,13 @@ class ListStoredProcedureRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 2:
+                    if ($ftype == TType::STRING) {
+                        $xfer += $input->readString($this->dbName);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -85,6 +104,11 @@ class ListStoredProcedureRequest
         if ($this->catName !== null) {
             $xfer += $output->writeFieldBegin('catName', TType::STRING, 1);
             $xfer += $output->writeString($this->catName);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->dbName !== null) {
+            $xfer += $output->writeFieldBegin('dbName', TType::STRING, 2);
+            $xfer += $output->writeString($this->dbName);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

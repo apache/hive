@@ -1217,6 +1217,11 @@ public class TestObjectStore {
             .setDescription("description")
             .setLocation("locationurl")
             .build(conf));
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB2)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
 
     StoredProcedure proc1 = new StoredProcedure();
     proc1.setSource("print 'Hello world'");
@@ -1231,12 +1236,18 @@ public class TestObjectStore {
     proc2.setCatName("hive");
     proc2.setOwnerName("user2");
     proc2.setName("proc2");
-    proc2.setDbName(DB1);
+    proc2.setDbName(DB2);
     objectStore.createOrUpdateStoredProcedure(proc2);
 
-    List<StoredProcedure> result = objectStore.getAllStoredProcedures(new ListStoredProcedureRequest("hive"));
+    List<String> result = objectStore.getAllStoredProcedures(new ListStoredProcedureRequest("hive"));
     Assert.assertEquals(2, result.size());
-    assertThat(result, hasItems(proc1, proc2));
+    assertThat(result, hasItems("proc1", "proc2"));
+
+    ListStoredProcedureRequest req = new ListStoredProcedureRequest("hive");
+    req.setDbName(DB1);
+    result = objectStore.getAllStoredProcedures(req);
+    Assert.assertEquals(1, result.size());
+    assertThat(result, hasItems("proc1"));
   }
 
   /**

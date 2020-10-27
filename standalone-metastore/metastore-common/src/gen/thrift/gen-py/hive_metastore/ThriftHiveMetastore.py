@@ -57651,8 +57651,7 @@ class get_all_stored_procedures_result(object):
                     self.success = []
                     (_etype1713, _size1710) = iprot.readListBegin()
                     for _i1714 in range(_size1710):
-                        _elem1715 = StoredProcedure()
-                        _elem1715.read(iprot)
+                        _elem1715 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                         self.success.append(_elem1715)
                     iprot.readListEnd()
                 else:
@@ -57675,9 +57674,9 @@ class get_all_stored_procedures_result(object):
         oprot.writeStructBegin('get_all_stored_procedures_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
-            oprot.writeListBegin(TType.STRUCT, len(self.success))
+            oprot.writeListBegin(TType.STRING, len(self.success))
             for iter1716 in self.success:
-                iter1716.write(oprot)
+                oprot.writeString(iter1716.encode('utf-8') if sys.version_info[0] == 2 else iter1716)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.o1 is not None:
@@ -57702,7 +57701,7 @@ class get_all_stored_procedures_result(object):
         return not (self == other)
 all_structs.append(get_all_stored_procedures_result)
 get_all_stored_procedures_result.thrift_spec = (
-    (0, TType.LIST, 'success', (TType.STRUCT, [StoredProcedure, None], False), None, ),  # 0
+    (0, TType.LIST, 'success', (TType.STRING, 'UTF8', False), None, ),  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )
 fix_spec(all_structs)

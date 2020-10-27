@@ -2098,6 +2098,7 @@ struct StoredProcedureRequest {
 
 struct ListStoredProcedureRequest {
   1: required string catName
+  2: optional string dbName
 }
 
 struct StoredProcedure {
@@ -2854,7 +2855,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void create_stored_procedure(1: StoredProcedure proc) throws(1:NoSuchObjectException o1, 2:MetaException o2)
   StoredProcedure get_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
   void drop_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
-  list<StoredProcedure> get_all_stored_procedures(1: ListStoredProcedureRequest request) throws (1:MetaException o1)
+  list<string> get_all_stored_procedures(1: ListStoredProcedureRequest request) throws (1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

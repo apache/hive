@@ -25,10 +25,9 @@ class ThriftHiveMetastore_get_all_stored_procedures_result
             'var' => 'success',
             'isRequired' => false,
             'type' => TType::LST,
-            'etype' => TType::STRUCT,
+            'etype' => TType::STRING,
             'elem' => array(
-                'type' => TType::STRUCT,
-                'class' => '\metastore\StoredProcedure',
+                'type' => TType::STRING,
                 ),
         ),
         1 => array(
@@ -40,7 +39,7 @@ class ThriftHiveMetastore_get_all_stored_procedures_result
     );
 
     /**
-     * @var \metastore\StoredProcedure[]
+     * @var string[]
      */
     public $success = null;
     /**
@@ -87,8 +86,7 @@ class ThriftHiveMetastore_get_all_stored_procedures_result
                         $xfer += $input->readListBegin($_etype1716, $_size1713);
                         for ($_i1717 = 0; $_i1717 < $_size1713; ++$_i1717) {
                             $elem1718 = null;
-                            $elem1718 = new \metastore\StoredProcedure();
-                            $xfer += $elem1718->read($input);
+                            $xfer += $input->readString($elem1718);
                             $this->success []= $elem1718;
                         }
                         $xfer += $input->readListEnd();
@@ -123,9 +121,9 @@ class ThriftHiveMetastore_get_all_stored_procedures_result
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
             }
             $xfer += $output->writeFieldBegin('success', TType::LST, 0);
-            $output->writeListBegin(TType::STRUCT, count($this->success));
+            $output->writeListBegin(TType::STRING, count($this->success));
             foreach ($this->success as $iter1719) {
-                $xfer += $iter1719->write($output);
+                $xfer += $output->writeString($iter1719);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

@@ -12,15 +12,18 @@ package org.apache.hadoop.hive.metastore.api;
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("ListStoredProcedureRequest");
 
   private static final org.apache.thrift.protocol.TField CAT_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("catName", org.apache.thrift.protocol.TType.STRING, (short)1);
+  private static final org.apache.thrift.protocol.TField DB_NAME_FIELD_DESC = new org.apache.thrift.protocol.TField("dbName", org.apache.thrift.protocol.TType.STRING, (short)2);
 
   private static final org.apache.thrift.scheme.SchemeFactory STANDARD_SCHEME_FACTORY = new ListStoredProcedureRequestStandardSchemeFactory();
   private static final org.apache.thrift.scheme.SchemeFactory TUPLE_SCHEME_FACTORY = new ListStoredProcedureRequestTupleSchemeFactory();
 
   private @org.apache.thrift.annotation.Nullable java.lang.String catName; // required
+  private @org.apache.thrift.annotation.Nullable java.lang.String dbName; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    CAT_NAME((short)1, "catName");
+    CAT_NAME((short)1, "catName"),
+    DB_NAME((short)2, "dbName");
 
     private static final java.util.Map<java.lang.String, _Fields> byName = new java.util.HashMap<java.lang.String, _Fields>();
 
@@ -38,6 +41,8 @@ package org.apache.hadoop.hive.metastore.api;
       switch(fieldId) {
         case 1: // CAT_NAME
           return CAT_NAME;
+        case 2: // DB_NAME
+          return DB_NAME;
         default:
           return null;
       }
@@ -79,10 +84,13 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   // isset id assignments
+  private static final _Fields optionals[] = {_Fields.DB_NAME};
   public static final java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     java.util.Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new java.util.EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.CAT_NAME, new org.apache.thrift.meta_data.FieldMetaData("catName", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+    tmpMap.put(_Fields.DB_NAME, new org.apache.thrift.meta_data.FieldMetaData("dbName", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
     metaDataMap = java.util.Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(ListStoredProcedureRequest.class, metaDataMap);
@@ -105,6 +113,9 @@ package org.apache.hadoop.hive.metastore.api;
     if (other.isSetCatName()) {
       this.catName = other.catName;
     }
+    if (other.isSetDbName()) {
+      this.dbName = other.dbName;
+    }
   }
 
   public ListStoredProcedureRequest deepCopy() {
@@ -114,6 +125,7 @@ package org.apache.hadoop.hive.metastore.api;
   @Override
   public void clear() {
     this.catName = null;
+    this.dbName = null;
   }
 
   @org.apache.thrift.annotation.Nullable
@@ -140,6 +152,30 @@ package org.apache.hadoop.hive.metastore.api;
     }
   }
 
+  @org.apache.thrift.annotation.Nullable
+  public java.lang.String getDbName() {
+    return this.dbName;
+  }
+
+  public void setDbName(@org.apache.thrift.annotation.Nullable java.lang.String dbName) {
+    this.dbName = dbName;
+  }
+
+  public void unsetDbName() {
+    this.dbName = null;
+  }
+
+  /** Returns true if field dbName is set (has been assigned a value) and false otherwise */
+  public boolean isSetDbName() {
+    return this.dbName != null;
+  }
+
+  public void setDbNameIsSet(boolean value) {
+    if (!value) {
+      this.dbName = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, @org.apache.thrift.annotation.Nullable java.lang.Object value) {
     switch (field) {
     case CAT_NAME:
@@ -147,6 +183,14 @@ package org.apache.hadoop.hive.metastore.api;
         unsetCatName();
       } else {
         setCatName((java.lang.String)value);
+      }
+      break;
+
+    case DB_NAME:
+      if (value == null) {
+        unsetDbName();
+      } else {
+        setDbName((java.lang.String)value);
       }
       break;
 
@@ -158,6 +202,9 @@ package org.apache.hadoop.hive.metastore.api;
     switch (field) {
     case CAT_NAME:
       return getCatName();
+
+    case DB_NAME:
+      return getDbName();
 
     }
     throw new java.lang.IllegalStateException();
@@ -172,6 +219,8 @@ package org.apache.hadoop.hive.metastore.api;
     switch (field) {
     case CAT_NAME:
       return isSetCatName();
+    case DB_NAME:
+      return isSetDbName();
     }
     throw new java.lang.IllegalStateException();
   }
@@ -200,6 +249,15 @@ package org.apache.hadoop.hive.metastore.api;
         return false;
     }
 
+    boolean this_present_dbName = true && this.isSetDbName();
+    boolean that_present_dbName = true && that.isSetDbName();
+    if (this_present_dbName || that_present_dbName) {
+      if (!(this_present_dbName && that_present_dbName))
+        return false;
+      if (!this.dbName.equals(that.dbName))
+        return false;
+    }
+
     return true;
   }
 
@@ -210,6 +268,10 @@ package org.apache.hadoop.hive.metastore.api;
     hashCode = hashCode * 8191 + ((isSetCatName()) ? 131071 : 524287);
     if (isSetCatName())
       hashCode = hashCode * 8191 + catName.hashCode();
+
+    hashCode = hashCode * 8191 + ((isSetDbName()) ? 131071 : 524287);
+    if (isSetDbName())
+      hashCode = hashCode * 8191 + dbName.hashCode();
 
     return hashCode;
   }
@@ -228,6 +290,16 @@ package org.apache.hadoop.hive.metastore.api;
     }
     if (isSetCatName()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.catName, other.catName);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = java.lang.Boolean.valueOf(isSetDbName()).compareTo(other.isSetDbName());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetDbName()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.dbName, other.dbName);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -260,6 +332,16 @@ package org.apache.hadoop.hive.metastore.api;
       sb.append(this.catName);
     }
     first = false;
+    if (isSetDbName()) {
+      if (!first) sb.append(", ");
+      sb.append("dbName:");
+      if (this.dbName == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.dbName);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -315,6 +397,14 @@ package org.apache.hadoop.hive.metastore.api;
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 2: // DB_NAME
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+              struct.dbName = iprot.readString();
+              struct.setDbNameIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -332,6 +422,13 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(CAT_NAME_FIELD_DESC);
         oprot.writeString(struct.catName);
         oprot.writeFieldEnd();
+      }
+      if (struct.dbName != null) {
+        if (struct.isSetDbName()) {
+          oprot.writeFieldBegin(DB_NAME_FIELD_DESC);
+          oprot.writeString(struct.dbName);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -351,6 +448,14 @@ package org.apache.hadoop.hive.metastore.api;
     public void write(org.apache.thrift.protocol.TProtocol prot, ListStoredProcedureRequest struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       oprot.writeString(struct.catName);
+      java.util.BitSet optionals = new java.util.BitSet();
+      if (struct.isSetDbName()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetDbName()) {
+        oprot.writeString(struct.dbName);
+      }
     }
 
     @Override
@@ -358,6 +463,11 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       struct.catName = iprot.readString();
       struct.setCatNameIsSet(true);
+      java.util.BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.dbName = iprot.readString();
+        struct.setDbNameIsSet(true);
+      }
     }
   }
 

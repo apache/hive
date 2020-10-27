@@ -273,7 +273,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void create_stored_procedure(const StoredProcedure& proc) = 0;
   virtual void get_stored_procedure(StoredProcedure& _return, const StoredProcedureRequest& request) = 0;
   virtual void drop_stored_procedure(const StoredProcedureRequest& request) = 0;
-  virtual void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const ListStoredProcedureRequest& request) = 0;
+  virtual void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -1082,7 +1082,7 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
   void drop_stored_procedure(const StoredProcedureRequest& /* request */) {
     return;
   }
-  void get_all_stored_procedures(std::vector<StoredProcedure> & /* _return */, const ListStoredProcedureRequest& /* request */) {
+  void get_all_stored_procedures(std::vector<std::string> & /* _return */, const ListStoredProcedureRequest& /* request */) {
     return;
   }
 };
@@ -31386,12 +31386,12 @@ class ThriftHiveMetastore_get_all_stored_procedures_result {
   }
 
   virtual ~ThriftHiveMetastore_get_all_stored_procedures_result() noexcept;
-  std::vector<StoredProcedure>  success;
+  std::vector<std::string>  success;
   MetaException o1;
 
   _ThriftHiveMetastore_get_all_stored_procedures_result__isset __isset;
 
-  void __set_success(const std::vector<StoredProcedure> & val);
+  void __set_success(const std::vector<std::string> & val);
 
   void __set_o1(const MetaException& val);
 
@@ -31425,7 +31425,7 @@ class ThriftHiveMetastore_get_all_stored_procedures_presult {
 
 
   virtual ~ThriftHiveMetastore_get_all_stored_procedures_presult() noexcept;
-  std::vector<StoredProcedure> * success;
+  std::vector<std::string> * success;
   MetaException o1;
 
   _ThriftHiveMetastore_get_all_stored_procedures_presult__isset __isset;
@@ -32195,9 +32195,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void drop_stored_procedure(const StoredProcedureRequest& request);
   void send_drop_stored_procedure(const StoredProcedureRequest& request);
   void recv_drop_stored_procedure();
-  void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const ListStoredProcedureRequest& request);
+  void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request);
   void send_get_all_stored_procedures(const ListStoredProcedureRequest& request);
-  void recv_get_all_stored_procedures(std::vector<StoredProcedure> & _return);
+  void recv_get_all_stored_procedures(std::vector<std::string> & _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -35152,7 +35152,7 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     ifaces_[i]->drop_stored_procedure(request);
   }
 
-  void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const ListStoredProcedureRequest& request) {
+  void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request) {
     size_t sz = ifaces_.size();
     size_t i = 0;
     for (; i < (sz - 1); ++i) {
@@ -35928,9 +35928,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void drop_stored_procedure(const StoredProcedureRequest& request);
   int32_t send_drop_stored_procedure(const StoredProcedureRequest& request);
   void recv_drop_stored_procedure(const int32_t seqid);
-  void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const ListStoredProcedureRequest& request);
+  void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request);
   int32_t send_get_all_stored_procedures(const ListStoredProcedureRequest& request);
-  void recv_get_all_stored_procedures(std::vector<StoredProcedure> & _return, const int32_t seqid);
+  void recv_get_all_stored_procedures(std::vector<std::string> & _return, const int32_t seqid);
 };
 
 #ifdef _MSC_VER

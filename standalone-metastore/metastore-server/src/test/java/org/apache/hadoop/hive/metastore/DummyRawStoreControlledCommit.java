@@ -1382,7 +1382,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<StoredProcedure> getAllStoredProcedures(ListStoredProcedureRequest request) {
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) {
     return getAllStoredProcedures(request);
   }
 }

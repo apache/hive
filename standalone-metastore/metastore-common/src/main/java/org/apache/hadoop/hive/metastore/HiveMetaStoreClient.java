@@ -4660,7 +4660,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public List<StoredProcedure> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException {
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException {
     return client.get_all_stored_procedures(request);
   }
 

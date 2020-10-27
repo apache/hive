@@ -1774,6 +1774,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         Set<String> uniqueTableNames = new HashSet<>(get_all_tables(catPrependedName));
         List<String> allFunctions = get_functions(catPrependedName, "*");
+        ListStoredProcedureRequest request = new ListStoredProcedureRequest(catName);
+        request.setDbName(name);
+        List<String> allProcedures = get_all_stored_procedures(request);
 
         if (!cascade) {
           if (!uniqueTableNames.isEmpty()) {
@@ -1783,6 +1786,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           if (!allFunctions.isEmpty()) {
             throw new InvalidOperationException(
                 "Database " + db.getName() + " is not empty. One or more functions exist.");
+          }
+          if (!allProcedures.isEmpty()) {
+            throw new InvalidOperationException(
+                    "Database " + db.getName() + " is not empty. One or more stored procedures exist.");
           }
         }
         Path path = new Path(db.getLocationUri()).getParent();
@@ -1797,6 +1804,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         // drop any functions before dropping db
         for (String funcName : allFunctions) {
           drop_function(catPrependedName, funcName);
+        }
+
+        for (String procName : allProcedures) {
+          drop_stored_procedure(new StoredProcedureRequest(catName, name, procName));
         }
 
         final int tableBatchSize = MetastoreConf.getIntVar(conf,
@@ -10209,7 +10220,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
-    public List<StoredProcedure> get_all_stored_procedures(ListStoredProcedureRequest request) throws MetaException {
+    public List<String> get_all_stored_procedures(ListStoredProcedureRequest request) throws MetaException {
       startFunction("get_all_stored_procedures");
       Exception ex = null;
       try {

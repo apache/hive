@@ -25767,12 +25767,14 @@ class ListStoredProcedureRequest(object):
     """
     Attributes:
      - catName
+     - dbName
 
     """
 
 
-    def __init__(self, catName=None,):
+    def __init__(self, catName=None, dbName=None,):
         self.catName = catName
+        self.dbName = dbName
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -25788,6 +25790,11 @@ class ListStoredProcedureRequest(object):
                     self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -25801,6 +25808,10 @@ class ListStoredProcedureRequest(object):
         if self.catName is not None:
             oprot.writeFieldBegin('catName', TType.STRING, 1)
             oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 2)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -28878,6 +28889,7 @@ all_structs.append(ListStoredProcedureRequest)
 ListStoredProcedureRequest.thrift_spec = (
     None,  # 0
     (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
 )
 all_structs.append(StoredProcedure)
 StoredProcedure.thrift_spec = (

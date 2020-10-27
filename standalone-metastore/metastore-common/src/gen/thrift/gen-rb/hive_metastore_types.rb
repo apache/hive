@@ -7087,9 +7087,11 @@ end
 class ListStoredProcedureRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   CATNAME = 1
+  DBNAME = 2
 
   FIELDS = {
-    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'}
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true}
   }
 
   def struct_fields; FIELDS; end

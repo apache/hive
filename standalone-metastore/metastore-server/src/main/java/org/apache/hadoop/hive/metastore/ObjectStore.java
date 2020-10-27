@@ -10502,21 +10502,32 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<StoredProcedure> getAllStoredProcedures(ListStoredProcedureRequest request) {
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) {
     boolean committed = false;
     Query query = null;
     final String catName = normalizeIdentifier(request.getCatName());
+    final String dbName = request.isSetDbName() ? normalizeIdentifier(request.getDbName()) : null;
+    List<String> names;
     try {
       openTransaction();
-      query = pm.newQuery(MStoredProc.class, "database.catalogName == catName");
-      query.declareParameters("java.lang.String catName");
-      List<MStoredProc> allProcedures = (List<MStoredProc>) query.execute(catName);
-      pm.retrieveAll(allProcedures);
+      if (request.isSetDbName()) {
+        query = pm.newQuery("SELECT name FROM org.apache.hadoop.hive.metastore.model.MStoredProc " +
+                "WHERE database.catalogName == catName && database.name == db");
+        query.declareParameters("java.lang.String catName, java.lang.String db");
+        query.setResult("name");
+        names = new ArrayList<>((Collection<String>) query.execute(catName, dbName));
+      } else {
+        query = pm.newQuery("SELECT name FROM org.apache.hadoop.hive.metastore.model.MStoredProc " +
+                "WHERE database.catalogName == catName");
+        query.declareParameters("java.lang.String catName");
+        query.setResult("name");
+        names = new ArrayList<>((Collection<String>) query.execute(catName));
+      }
       committed = commitTransaction();
-      return allProcedures.stream().map(each -> convertToStoredProc(catName, each)).collect(Collectors.toList());
     } finally {
       rollbackAndCleanup(committed, query);
     }
+    return names;
   }
 
   @Override

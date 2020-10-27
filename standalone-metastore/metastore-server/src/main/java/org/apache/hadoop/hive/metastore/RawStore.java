@@ -1874,5 +1874,5 @@ public interface RawStore extends Configurable {
 
   void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException;
 
-  List<StoredProcedure> getAllStoredProcedures(ListStoredProcedureRequest request);
+  List<String> getAllStoredProcedures(ListStoredProcedureRequest request);
 }

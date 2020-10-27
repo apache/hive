@@ -3330,7 +3330,7 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<StoredProcedure> getAllStoredProcedures(ListStoredProcedureRequest request) {
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) {
     return rawStore.getAllStoredProcedures(request);
   }
 

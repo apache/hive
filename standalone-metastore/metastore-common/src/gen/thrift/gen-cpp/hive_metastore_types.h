@@ -16749,23 +16749,36 @@ void swap(StoredProcedureRequest &a, StoredProcedureRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const StoredProcedureRequest& obj);
 
+typedef struct _ListStoredProcedureRequest__isset {
+  _ListStoredProcedureRequest__isset() : dbName(false) {}
+  bool dbName :1;
+} _ListStoredProcedureRequest__isset;
 
 class ListStoredProcedureRequest : public virtual ::apache::thrift::TBase {
  public:
 
   ListStoredProcedureRequest(const ListStoredProcedureRequest&);
   ListStoredProcedureRequest& operator=(const ListStoredProcedureRequest&);
-  ListStoredProcedureRequest() : catName() {
+  ListStoredProcedureRequest() : catName(), dbName() {
   }
 
   virtual ~ListStoredProcedureRequest() noexcept;
   std::string catName;
+  std::string dbName;
+
+  _ListStoredProcedureRequest__isset __isset;
 
   void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
 
   bool operator == (const ListStoredProcedureRequest & rhs) const
   {
     if (!(catName == rhs.catName))
+      return false;
+    if (__isset.dbName != rhs.__isset.dbName)
+      return false;
+    else if (__isset.dbName && !(dbName == rhs.dbName))
       return false;
     return true;
   }

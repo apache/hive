@@ -1270,7 +1270,7 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("drop_stored_procedure\n");
   }
 
-  void get_all_stored_procedures(std::vector<StoredProcedure> & _return, const ListStoredProcedureRequest& request) {
+  void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request) {
     // Your implementation goes here
     printf("get_all_stored_procedures\n");
   }

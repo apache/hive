@@ -1837,7 +1837,7 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
     public function drop_stored_procedure(\metastore\StoredProcedureRequest $request);
     /**
      * @param \metastore\ListStoredProcedureRequest $request
-     * @return \metastore\StoredProcedure[]
+     * @return string[]
      * @throws \metastore\MetaException
      */
     public function get_all_stored_procedures(\metastore\ListStoredProcedureRequest $request);

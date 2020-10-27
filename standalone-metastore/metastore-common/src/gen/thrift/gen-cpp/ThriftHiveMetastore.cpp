@@ -59651,7 +59651,7 @@ uint32_t ThriftHiveMetastore_get_all_stored_procedures_result::read(::apache::th
             uint32_t _i2346;
             for (_i2346 = 0; _i2346 < _size2342; ++_i2346)
             {
-              xfer += this->success[_i2346].read(iprot);
+              xfer += iprot->readString(this->success[_i2346]);
             }
             xfer += iprot->readListEnd();
           }
@@ -59689,11 +59689,11 @@ uint32_t ThriftHiveMetastore_get_all_stored_procedures_result::write(::apache::t
   if (this->__isset.success) {
     xfer += oprot->writeFieldBegin("success", ::apache::thrift::protocol::T_LIST, 0);
     {
-      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->success.size()));
-      std::vector<StoredProcedure> ::const_iterator _iter2347;
+      xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->success.size()));
+      std::vector<std::string> ::const_iterator _iter2347;
       for (_iter2347 = this->success.begin(); _iter2347 != this->success.end(); ++_iter2347)
       {
-        xfer += (*_iter2347).write(oprot);
+        xfer += oprot->writeString((*_iter2347));
       }
       xfer += oprot->writeListEnd();
     }
@@ -59745,7 +59745,7 @@ uint32_t ThriftHiveMetastore_get_all_stored_procedures_presult::read(::apache::t
             uint32_t _i2352;
             for (_i2352 = 0; _i2352 < _size2348; ++_i2352)
             {
-              xfer += (*(this->success))[_i2352].read(iprot);
+              xfer += iprot->readString((*(this->success))[_i2352]);
             }
             xfer += iprot->readListEnd();
           }
@@ -75500,7 +75500,7 @@ void ThriftHiveMetastoreClient::recv_drop_stored_procedure()
   return;
 }
 
-void ThriftHiveMetastoreClient::get_all_stored_procedures(std::vector<StoredProcedure> & _return, const ListStoredProcedureRequest& request)
+void ThriftHiveMetastoreClient::get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request)
 {
   send_get_all_stored_procedures(request);
   recv_get_all_stored_procedures(_return);
@@ -75520,7 +75520,7 @@ void ThriftHiveMetastoreClient::send_get_all_stored_procedures(const ListStoredP
   oprot_->getTransport()->flush();
 }
 
-void ThriftHiveMetastoreClient::recv_get_all_stored_procedures(std::vector<StoredProcedure> & _return)
+void ThriftHiveMetastoreClient::recv_get_all_stored_procedures(std::vector<std::string> & _return)
 {
 
   int32_t rseqid = 0;
@@ -113081,7 +113081,7 @@ void ThriftHiveMetastoreConcurrentClient::recv_drop_stored_procedure(const int32
   } // end while(true)
 }
 
-void ThriftHiveMetastoreConcurrentClient::get_all_stored_procedures(std::vector<StoredProcedure> & _return, const ListStoredProcedureRequest& request)
+void ThriftHiveMetastoreConcurrentClient::get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request)
 {
   int32_t seqid = send_get_all_stored_procedures(request);
   recv_get_all_stored_procedures(_return, seqid);
@@ -113105,7 +113105,7 @@ int32_t ThriftHiveMetastoreConcurrentClient::send_get_all_stored_procedures(cons
   return cseqid;
 }
 
-void ThriftHiveMetastoreConcurrentClient::recv_get_all_stored_procedures(std::vector<StoredProcedure> & _return, const int32_t seqid)
+void ThriftHiveMetastoreConcurrentClient::recv_get_all_stored_procedures(std::vector<std::string> & _return, const int32_t seqid)
 {
 
   int32_t rseqid = 0;

@@ -1366,7 +1366,7 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
-  public List<StoredProcedure> getAllStoredProcedures(ListStoredProcedureRequest request) {
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) {
     return Collections.emptyList();
   }
 

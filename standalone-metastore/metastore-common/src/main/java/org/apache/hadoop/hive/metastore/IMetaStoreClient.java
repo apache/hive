@@ -4107,5 +4107,5 @@ public interface IMetaStoreClient {
 
   void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException;
 
-  List<StoredProcedure> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException;
+  List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException;
 }

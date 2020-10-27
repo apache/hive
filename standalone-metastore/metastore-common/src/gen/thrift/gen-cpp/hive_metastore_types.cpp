@@ -44894,6 +44894,11 @@ ListStoredProcedureRequest::~ListStoredProcedureRequest() noexcept {
 void ListStoredProcedureRequest::__set_catName(const std::string& val) {
   this->catName = val;
 }
+
+void ListStoredProcedureRequest::__set_dbName(const std::string& val) {
+  this->dbName = val;
+__isset.dbName = true;
+}
 std::ostream& operator<<(std::ostream& out, const ListStoredProcedureRequest& obj)
 {
   obj.printTo(out);
@@ -44931,6 +44936,14 @@ uint32_t ListStoredProcedureRequest::read(::apache::thrift::protocol::TProtocol*
           xfer += iprot->skip(ftype);
         }
         break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbName);
+          this->__isset.dbName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -44954,6 +44967,11 @@ uint32_t ListStoredProcedureRequest::write(::apache::thrift::protocol::TProtocol
   xfer += oprot->writeString(this->catName);
   xfer += oprot->writeFieldEnd();
 
+  if (this->__isset.dbName) {
+    xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
+    xfer += oprot->writeString(this->dbName);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -44962,19 +44980,26 @@ uint32_t ListStoredProcedureRequest::write(::apache::thrift::protocol::TProtocol
 void swap(ListStoredProcedureRequest &a, ListStoredProcedureRequest &b) {
   using ::std::swap;
   swap(a.catName, b.catName);
+  swap(a.dbName, b.dbName);
+  swap(a.__isset, b.__isset);
 }
 
 ListStoredProcedureRequest::ListStoredProcedureRequest(const ListStoredProcedureRequest& other1607) {
   catName = other1607.catName;
+  dbName = other1607.dbName;
+  __isset = other1607.__isset;
 }
 ListStoredProcedureRequest& ListStoredProcedureRequest::operator=(const ListStoredProcedureRequest& other1608) {
   catName = other1608.catName;
+  dbName = other1608.dbName;
+  __isset = other1608.__isset;
   return *this;
 }
 void ListStoredProcedureRequest::printTo(std::ostream& out) const {
   using ::apache::thrift::to_string;
   out << "ListStoredProcedureRequest(";
   out << "catName=" << to_string(catName);
+  out << ", " << "dbName="; (__isset.dbName ? (out << to_string(dbName)) : (out << "<null>"));
   out << ")";
 }
 
