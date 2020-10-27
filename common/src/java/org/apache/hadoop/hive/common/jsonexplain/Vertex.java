@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.common.jsonexplain;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.hadoop.hive.common.jsonexplain.Op.OpType;
@@ -66,7 +68,7 @@ public final class Vertex implements Comparable<Vertex>{
   // tag
   public String tag;
   protected final Logger LOG = LoggerFactory.getLogger(this.getClass().getName());
-
+  
   public static enum VertexType {
     MAP, REDUCE, UNION, UNKNOWN
   };
@@ -279,7 +281,7 @@ public final class Vertex implements Comparable<Vertex>{
 
   /**
    * We check if a vertex has multiple reduce operators.
-   * @throws JSONException
+   * @throws JSONException 
    */
   public void checkMultiReduceOperator(boolean rewriteObject) throws JSONException {
     // check if it is a reduce vertex and its children is more than 1;
@@ -308,12 +310,8 @@ public final class Vertex implements Comparable<Vertex>{
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
     Vertex vertex = (Vertex) o;
     return Objects.equals(name, vertex.name) &&
             Objects.equals(stage, vertex.stage) &&
