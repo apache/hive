@@ -19,11 +19,13 @@ package org.apache.hadoop.hive.ql.plan.impala.catalog;
 
 import java.util.List;
 
+import com.google.common.base.Preconditions;
 import org.apache.impala.analysis.LiteralExpr;
 import org.apache.impala.catalog.HdfsPartition;
 import org.apache.impala.catalog.HdfsPartitionLocationCompressor;
 import org.apache.impala.catalog.HdfsStorageDescriptor;
 import org.apache.impala.catalog.HdfsTable;
+import org.apache.impala.common.FileSystemUtil;
 import org.apache.impala.thrift.TAccessLevel;
 import org.apache.impala.thrift.TNetworkAddress;
 import org.apache.impala.util.ListMap;
@@ -43,6 +45,8 @@ public class ImpalaHdfsPartition extends HdfsPartition {
 
   private final ListMap<TNetworkAddress> hostIndex;
 
+  private final FileSystemUtil.FsType fsType;
+
   public ImpalaHdfsPartition(
         org.apache.hadoop.hive.metastore.api.Partition msPartition,
         List<LiteralExpr> partitionKeyValues,
@@ -54,6 +58,9 @@ public class ImpalaHdfsPartition extends HdfsPartition {
         id, location, accessLevel);
     this.partitionName = partitionName;
     this.hostIndex = hostIndex;
+    Preconditions.checkNotNull(getLocationPath().toUri().getScheme(),
+        "Cannot get scheme from path " + getLocationPath());
+    fsType = FileSystemUtil.FsType.getFsType(getLocationPath().toUri().getScheme());
   }
 
   @Override
@@ -64,5 +71,10 @@ public class ImpalaHdfsPartition extends HdfsPartition {
   @Override
   public ListMap<TNetworkAddress> getHostIndex() {
     return hostIndex;
+  }
+
+  @Override
+  public FileSystemUtil.FsType getFsType() {
+    return fsType;
   }
 }
