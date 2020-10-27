@@ -363,6 +363,10 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
+    public ExprNodeDesc getFullFilterExpr() throws UDFArgumentException {
+      return conjunction(semijoinExprNodes, normalFilterExpr);
+    }
+
   }
 
   /**
@@ -1997,10 +2001,10 @@ public class SharedWorkOptimizer extends Transform {
       SharedWorkOptimizerCache optimizerCache, DecomposedTs tsModel)
                   throws UDFArgumentException {
     TableScanOperator tsOp = tsModel.ts;
-    if (tsOp.getConf().getFilterExpr() == null) {
+    ExprNodeGenericFuncDesc tableScanExprNode = (ExprNodeGenericFuncDesc) tsModel.getFullFilterExpr();
+    if (tableScanExprNode == null) {
       return;
     }
-    ExprNodeGenericFuncDesc tableScanExprNode = tsOp.getConf().getFilterExpr();
     List<Operator<? extends OperatorDesc>> allChildren =
         Lists.newArrayList(tsOp.getChildOperators());
     for (Operator<? extends OperatorDesc> op : allChildren) {
