@@ -23,3 +23,4 @@ select * from t1 where col0 = 1
 union
 select * from t1 where col0 = 2;
 
+drop materialized view mat1;
