@@ -3177,7 +3177,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public Table getTable(GetTableRequest req) throws TException {
+  public GetTableResult getTable(GetTableRequest req) throws TException {
     throw new UnsupportedOperationException();
   }
 

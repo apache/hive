@@ -200,7 +200,7 @@ public class ImpalaHdfsTable extends HdfsTable {
       // CDPD-16617: HIVE_IN_TEST mode, we avoid the call to HMS and return an empty table.
       Table result = conf.getBoolVar(ConfVars.HIVE_IN_TEST)
         ? new Table()
-        : client.getTable(request);
+        : client.getTable(request).getTable();
 
       HdfsStorageDescriptor fileFormatDescriptor =
           HdfsStorageDescriptor.fromStorageDescriptor(this.getName(), msTable_.getSd());

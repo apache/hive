@@ -2223,11 +2223,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     if (getColumnStats) {
       req.setEngine(engine);
     }
-    return getTable(req);
+    return getTable(req).getTable();
   }
 
   @Override
-  public Table getTable(GetTableRequest req) throws TException {
+  public GetTableResult getTable(GetTableRequest req) throws TException {
     Preconditions.checkArgument(!req.isGetColumnStats() || req.isSetEngine(),
         "Engine must be set if requesting column statistics.");
     long t1 = System.currentTimeMillis();
@@ -2240,9 +2240,12 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
         req.setProcessorIdentifier(processorIdentifier);
       }
       req.setCapabilities(version);
-      Table t = getTableInternal(req).getTable();
-      return deepCopy(
-          FilterUtils.filterTableIfEnabled(isClientFilterEnabled, filterHook, t));
+      GetTableResult result = getTableInternal(req);
+      Table copiedTable = deepCopy(FilterUtils.filterTableIfEnabled(isClientFilterEnabled,
+          filterHook, result.getTable()));
+      GetTableResult copiedResult = new GetTableResult(result);
+      copiedResult.setTable(copiedTable);
+      return copiedResult;
     } finally {
       long diff = System.currentTimeMillis() - t1;
       if (LOG.isDebugEnabled()) {
