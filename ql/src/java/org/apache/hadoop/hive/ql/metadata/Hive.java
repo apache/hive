@@ -2576,6 +2576,7 @@ public class Hive {
 
   /**
    * Recursively get paths in a directory.
+   *
    * In certain filesystem implementations, this would reduce drastically the number of calls to
    * FS, since tree walking is avoided.
    *
