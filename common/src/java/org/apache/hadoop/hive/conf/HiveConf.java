@@ -2460,6 +2460,10 @@ public class HiveConf extends Configuration {
         "Whether to eliminate scans of the tables from which no columns are selected. Note\n" +
         "that, when selecting from empty tables with data files, this can produce incorrect\n" +
         "results, so it's disabled by default. It works correctly for normal tables."),
+    HIVENULLSCAN_RECURSIVE_LISTING_RATIO("hive.optimize.null.scan.recursive.listing.ratio", 0.2f,
+        "Null scan/metadataonly optimizations list partition directories to see if they are empty. If the ratio" +
+            "of required partition directories to all partition directories of a table exceeds this threshold, we use " +
+            "recursive listFiles on table directory instead of querying directories one by one."),
     HIVENULLSCANOPTIMIZE("hive.optimize.null.scan", true, "Dont scan relations which are guaranteed to not generate any rows"),
     HIVEOPTPPD_STORAGE("hive.optimize.ppd.storage", true,
         "Whether to push predicates down to storage handlers"),

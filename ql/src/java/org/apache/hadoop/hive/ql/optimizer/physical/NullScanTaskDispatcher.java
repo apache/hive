@@ -27,15 +27,19 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -74,12 +78,15 @@ public class NullScanTaskDispatcher implements SemanticDispatcher {
 
   private final PhysicalContext physicalContext;
   private final Map<SemanticRule, SemanticNodeProcessor> rules;
+  private final float minRecursiveListingRatio;
 
   public NullScanTaskDispatcher(PhysicalContext context,
       Map<SemanticRule, SemanticNodeProcessor> rules) {
     super();
     this.physicalContext = context;
     this.rules = rules;
+    this.minRecursiveListingRatio = HiveConf.getFloatVar(physicalContext.getConf(),
+        HiveConf.ConfVars.HIVENULLSCAN_RECURSIVE_LISTING_RATIO);
   }
 
   private String getAliasForTableScanOperator(MapWork work,
@@ -93,11 +100,23 @@ public class NullScanTaskDispatcher implements SemanticDispatcher {
     return null;
   }
 
-  private PartitionDesc changePartitionToMetadataOnly(PartitionDesc desc,
-      Path path) {
-    if (desc == null) {
-      return null;
+  private PartitionDesc maybeChangePartitionToMetadataOnly(PartitionDesc desc, Path path, Set<Path> notAllowed, Set<Path> nonEmptyDirs) {
+    if (notAllowed.contains(path)) {
+      return desc;
     }
+    if (nonEmptyDirs.contains(path)) {
+      desc.setInputFileFormatClass(OneNullRowInputFormat.class);
+    } else {
+      desc.setInputFileFormatClass(ZeroRowsInputFormat.class);
+    }
+    desc.setOutputFileFormatClass(HiveIgnoreKeyTextOutputFormat.class);
+    desc.getProperties().setProperty(serdeConstants.SERIALIZATION_LIB,
+        NullStructSerDe.class.getName());
+    return desc;
+  }
+
+  private PartitionDesc maybeChangePartitionToMetadataOnly(PartitionDesc desc,
+                                                           Path path) {
     FileStatus[] filesFoundInPartitionDir = null;
     try {
       filesFoundInPartitionDir = Utilities.listNonHiddenFileStatus(physicalContext.getConf(), path);
@@ -134,32 +153,56 @@ public class NullScanTaskDispatcher implements SemanticDispatcher {
     return true;
   }
 
-  private void processAlias(MapWork work, Path path,
-      Collection<String> aliasesAffected, Set<String> aliases) {
-    // the aliases that are allowed to map to a null scan.
-    Collection<String> allowed = aliasesAffected.stream()
-        .filter(a -> aliases.contains(a)).collect(Collectors.toList());
-    if (!allowed.isEmpty()) {
-      PartitionDesc partDesc = work.getPathToPartitionInfo().get(path).clone();
-      PartitionDesc newPartition =
-          changePartitionToMetadataOnly(partDesc, path);
-      // Prefix partition with something to avoid it being a hidden file.
-      Path fakePath =
-          new Path(NullScanFileSystem.getBase() + newPartition.getTableName()
-              + "/part" + encode(newPartition.getPartSpec()));
-      StringInternUtils.internUriStringsInPath(fakePath);
-      work.addPathToPartitionInfo(fakePath, newPartition);
-      work.addPathToAlias(fakePath, new ArrayList<>(allowed));
-      aliasesAffected.removeAll(allowed);
-      if (aliasesAffected.isEmpty()) {
-        work.removePathToAlias(path);
-        work.removePathToPartitionInfo(path);
+  private void processPaths(MapWork work, List<Path> queriedPaths,
+                            Map<Path, List<String>> pathToAffectedAliases,
+                            Set<String> tableScanAliases,
+                            final boolean useRecursiveListing, Path parent) {
+    Set<Path> metadataOnlyNotAllowed = null;
+    Set<Path> nonEmptyPartitionDirs = null;
+    if (useRecursiveListing) {
+      metadataOnlyNotAllowed = new HashSet<>();
+      nonEmptyPartitionDirs = new HashSet<>();
+      fillMetadataFromRecursiveListing(parent, metadataOnlyNotAllowed, nonEmptyPartitionDirs);
+    }
+    for (Path partitionDir: queriedPaths) {
+      Collection<String> allowed = pathToAffectedAliases.get(partitionDir).stream()
+          .filter(a -> tableScanAliases.contains(a)).collect(Collectors.toList());
+      if (!allowed.isEmpty()) {
+        PartitionDesc partDesc = work.getPathToPartitionInfo().get(partitionDir).clone();
+        PartitionDesc newPartition;
+        if (useRecursiveListing) {
+          newPartition = maybeChangePartitionToMetadataOnly(partDesc, partitionDir,
+              metadataOnlyNotAllowed, nonEmptyPartitionDirs);
+        } else {
+          newPartition = maybeChangePartitionToMetadataOnly(partDesc, partitionDir);
+        }
+        Path fakePath =
+            new Path(NullScanFileSystem.getBase() + newPartition.getTableName()
+                + "/part" + encode(newPartition.getPartSpec()));
+        StringInternUtils.internUriStringsInPath(fakePath);
+        work.addPathToPartitionInfo(fakePath, newPartition);
+        work.addPathToAlias(fakePath, new ArrayList<>(allowed));
+        pathToAffectedAliases.get(partitionDir).removeAll(allowed);
+        if (pathToAffectedAliases.get(partitionDir).isEmpty()) {
+          work.removePathToAlias(partitionDir);
+          work.removePathToPartitionInfo(partitionDir);
+        }
       }
     }
   }
 
-  private void processAlias(MapWork work, Set<TableScanOperator> tableScans) {
-    Set<String> aliases = new HashSet<>();
+  private void addToParentToPathMap(Map<Path, List<Path>> map, Path path) {
+    Path parent = path.getParent();
+    List<Path> paths = map.get(parent);
+    if (paths == null) {
+      paths = new ArrayList<>();
+      map.put(parent, paths);
+    }
+    paths.add(path);
+  }
+
+  private void processTableScans(MapWork work, Set<TableScanOperator> tableScans) {
+    Set<String> allAliasesInMapWork = new HashSet<>();
     for (TableScanOperator tso : tableScans) {
       // use LinkedHashMap<String, Operator<? extends OperatorDesc>>
       // getAliasToWork() should not apply this for non-native table
@@ -167,19 +210,68 @@ public class NullScanTaskDispatcher implements SemanticDispatcher {
         continue;
       }
       String alias = getAliasForTableScanOperator(work, tso);
-      aliases.add(alias);
+      allAliasesInMapWork.add(alias);
       tso.getConf().setIsMetadataOnly(true);
     }
     // group path alias according to work
-    Map<Path, List<String>> candidates = new HashMap<>();
+    Map<Path, List<String>> pathToAffectedAliasesMap = new HashMap<>();
+    Map<Path, List<Path>> parentToPathMap = new HashMap<>();
     for (Path path : work.getPaths()) {
-      List<String> aliasesAffected = work.getPathToAliases().get(path);
-      if (CollectionUtils.isNotEmpty(aliasesAffected)) {
-        candidates.put(path, aliasesAffected);
+      List<String> aliasesAffectedByPathScan = work.getPathToAliases().get(path);
+      if (CollectionUtils.isNotEmpty(aliasesAffectedByPathScan)) {
+        pathToAffectedAliasesMap.put(path, aliasesAffectedByPathScan);
+        addToParentToPathMap(parentToPathMap, path);
       }
     }
-    for (Entry<Path, List<String>> entry : candidates.entrySet()) {
-      processAlias(work, entry.getKey(), entry.getValue(), aliases);
+
+    for (Map.Entry<Path, List<Path>> parentToChildrenEntry : parentToPathMap.entrySet()) {
+      Path parent = parentToChildrenEntry.getKey();
+      List<Path> children = parentToChildrenEntry.getValue();
+      // if we need to list only a few partitions, we will listStatus them one
+      // by one. Otherwise, we will do a recursive file listing on table directory
+      // to save round trips
+      boolean useRecursiveListing = false;
+      // If there is only one directory, just get the listing. It would be
+      // a waste to do extra listing on its parent directory.
+      if (children.size() > 1) {
+        try {
+          FileStatus[] fileStatuses = Utilities.listNonHiddenFileStatus(physicalContext.getConf(), parent);
+          if (fileStatuses.length * minRecursiveListingRatio < children.size()) {
+            useRecursiveListing = true;
+          }
+        } catch (IOException e) {
+          LOG.warn("Cannot query parent directory of data files: {}", parent);
+        }
+      }
+      processPaths(work, children, pathToAffectedAliasesMap, allAliasesInMapWork, useRecursiveListing, parent);
+    }
+  }
+
+  private void fillMetadataFromRecursiveListing(Path parent,Set<Path> metadataOnlyNotAllowed,
+                                                Set<Path> nonEmptyPartitionDirs) {
+    try {
+      FileSystem fs = parent.getFileSystem(physicalContext.getConf());
+      RemoteIterator<LocatedFileStatus> it = fs.listFiles(parent, true);
+      while (it.hasNext()) {
+        LocatedFileStatus fileStatus = it.next();
+        if (!FileUtils.HIDDEN_FILES_PATH_FILTER.accept(fileStatus.getPath())) {
+          continue;
+        }
+        Path cur = fileStatus.getPath().getParent();
+        // mark non empty directories from here all the way to
+        // parent. Unless the table is non-acid and oddly nested
+        // the following loop will not loop more than once
+        while (!cur.equals(parent)) {
+          if (AcidUtils.isDeleteDelta(cur)) {
+            metadataOnlyNotAllowed.add(cur.getParent());
+          }
+          nonEmptyPartitionDirs.add(cur);
+          cur = cur.getParent();
+        }
+      }
+    } catch (IOException e) {
+      LOG.error("Cannot determine if subdirectories of {} are empty." +
+          "Bailing out of null scan optimizer for this table. Caused by {}", parent, e);
     }
   }
 
@@ -241,7 +333,7 @@ public class NullScanTaskDispatcher implements SemanticDispatcher {
       int scanTableSize = walkerCtx.getMetadataOnlyTableScans().size();
       LOG.debug("Found {} null table scans", scanTableSize);
       if (scanTableSize > 0) {
-        processAlias(mapWork, walkerCtx.getMetadataOnlyTableScans());
+        processTableScans(mapWork, walkerCtx.getMetadataOnlyTableScans());
       }
     }
     return null;
