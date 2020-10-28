@@ -2270,7 +2270,13 @@ public class Hive {
           if (!isMmTableWrite && !isDirectInsert) {
             isInsertOverwrite = false;
           }
-          listFilesCreatedByQuery(loadPath, writeId, stmtId, isInsertOverwrite, newFiles);
+          listFilesCreatedByQuery(loadPath, writeId, stmtId, isInsertOverwrite, newFiles, false);
+          if (isDirectInsert) {
+            // If the direct insert is on, we need to check for the delete_delta folders as well.
+            // One file listing call only checks either the delete_delta or the delta folders, but
+            // in case of an ACID update, both has to be checked.
+            listFilesCreatedByQuery(loadPath, writeId, stmtId, isInsertOverwrite, newFiles, true);
+          }
         }
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("maybe deleting stuff from " + oldPartPath
@@ -2509,8 +2515,8 @@ public class Hive {
   public static void listFilesInsideAcidDirectory(Path acidDir, FileSystem srcFs, List<Path> newFiles)
           throws IOException {
     // list out all the files/directory in the path
-    FileStatus[] acidFiles;
-    acidFiles = srcFs.listStatus(acidDir);
+    FileStatus[] acidFiles = srcFs.listStatus(acidDir);
+
     if (acidFiles == null) {
       LOG.debug("No files added by this query in: " + acidDir);
       return;
@@ -2527,8 +2533,12 @@ public class Hive {
   }
 
   private void listFilesCreatedByQuery(Path loadPath, long writeId, int stmtId,
-                                             boolean isInsertOverwrite, List<Path> newFiles) throws HiveException {
+                                             boolean isInsertOverwrite, List<Path> newFiles, boolean delete) throws HiveException {
     Path acidDir = new Path(loadPath, AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
+    if (delete) {
+      acidDir = new Path(loadPath, AcidUtils.deleteDeltaSubdir(writeId, writeId, stmtId));
+    }
+
     try {
       FileSystem srcFs = loadPath.getFileSystem(conf);
       listFilesInsideAcidDirectory(acidDir, srcFs, newFiles);
@@ -2694,7 +2704,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   private Set<Path> getValidPartitionsInPath(
       int numDP, int numLB, Path loadPath, Long writeId, int stmtId,
-      boolean isMmTable, boolean isInsertOverwrite, boolean isDirectInsert) throws HiveException {
+      boolean isMmTable, boolean isInsertOverwrite, boolean isDirectInsert, AcidUtils.Operation operation) throws HiveException {
     Set<Path> validPartitions = new HashSet<Path>();
     try {
       FileSystem fs = loadPath.getFileSystem(conf);
@@ -2716,8 +2726,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
         //       we have multiple statements anyway is union.
         Utilities.FILE_OP_LOGGER.trace(
             "Looking for dynamic partitions in {} ({} levels)", loadPath, numDP);
+        int stmtIdToUse = -1;
+        if (isDirectInsert) {
+          stmtIdToUse = stmtId;
+        }
         Path[] leafStatus = Utilities.getDirectInsertDirectoryCandidates(
-            fs, loadPath, numDP, null, writeId, -1, conf, isInsertOverwrite);
+            fs, loadPath, numDP, null, writeId, stmtIdToUse, conf, isInsertOverwrite, operation);
         for (Path p : leafStatus) {
           Path dpPath = p.getParent(); // Skip the MM directory that we have found.
           if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
@@ -2772,7 +2786,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // Get all valid partition paths and existing partitions for them (if any)
     final Table tbl = getTable(tableName);
     final Set<Path> validPartitions = getValidPartitionsInPath(numDP, numLB, loadPath, writeId, stmtId,
-        AcidUtils.isInsertOnlyTable(tbl.getParameters()), isInsertOverwrite, isDirectInsert);
+        AcidUtils.isInsertOnlyTable(tbl.getParameters()), isInsertOverwrite, isDirectInsert, operation);
 
     final int partsToLoad = validPartitions.size();
     final AtomicInteger partitionsLoaded = new AtomicInteger(0);
@@ -3033,7 +3047,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
         if (!isMmTable && !isDirectInsert) {
           isInsertOverwrite = false;
         }
-        listFilesCreatedByQuery(loadPath, writeId, stmtId, isInsertOverwrite, newFiles);
+        listFilesCreatedByQuery(loadPath, writeId, stmtId, isInsertOverwrite, newFiles, false);
+        if (isDirectInsert) {
+          // If the direct insert is on, we need to check for the delete_delta folders as well.
+          // One file listing call only checks either the delete_delta or the delta folders, but
+          // in case of an ACID update, both has to be checked.
+          listFilesCreatedByQuery(loadPath, writeId, stmtId, isInsertOverwrite, newFiles, true);
+        }
       }
     } else {
       // Either a non-MM query, or a load into MM table from an external source.
