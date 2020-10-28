@@ -289,14 +289,15 @@ public class CompileProcessor implements CommandProcessor {
             FileUtils.forceDeleteOnExit(destination);
         } catch (IOException WhatCanYouDo) {
         }
+        try {
+          if (testArchive != null && testArchive.exists())
+            testArchive.deleteOnExit();
+        } catch (Exception WhatCanYouDo) { /* ignore */ }
       }
     }
 
     if (ss != null){
       ss.add_resource(ResourceType.JAR, testArchive.getAbsolutePath());
-      try {
-        testArchive.deleteOnExit();
-      } catch (Exception e) { /* ignore */ }
     }
     CommandProcessorResponse good = new CommandProcessorResponse(null, testArchive.getAbsolutePath());
     return good;
