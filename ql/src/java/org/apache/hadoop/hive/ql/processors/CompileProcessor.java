@@ -201,7 +201,7 @@ public class CompileProcessor implements CommandProcessor {
    * @throws CompileProcessorException
    */
   CommandProcessorResponse compile(SessionState ss) throws CommandProcessorException {
-    String lockout = "rw-------";
+    String lockout = "rwx------";
     Project proj = new Project();
     String ioTempDir = System.getProperty(IO_TMP_DIR);
     File ioTempFile = new File(ioTempDir);
@@ -215,6 +215,7 @@ public class CompileProcessor implements CommandProcessor {
     File sessionTempFile = new File(ioTempDir, ss.getUserName() + "_" + runStamp);
     if (!sessionTempFile.exists()) {
       sessionTempFile.mkdir();
+      setPosixFilePermissions(sessionTempFile, lockout, true);
     }
     Groovyc g = new Groovyc();
     String jarId = myId + "_" + runStamp;
@@ -226,14 +227,17 @@ public class CompileProcessor implements CommandProcessor {
     sourcePath.setLocation(input);
     g.setSrcdir(sourcePath);
     input.mkdir();
+    setPosixFilePermissions(input, lockout, true);
 
     File fileToWrite = new File(input, this.named);
     try {
       Files.write(Paths.get(fileToWrite.toURI()), code.getBytes(Charset.forName("UTF-8")), StandardOpenOption.CREATE_NEW);
+      setPosixFilePermissions(fileToWrite, lockout, false);
     } catch (IOException e1) {
       throw new CommandProcessorException("writing file", e1);
     }
     destination.mkdir();
+    setPosixFilePermissions(destination, lockout, true);
     try {
       g.execute();
     } catch (BuildException ex){
