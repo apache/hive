@@ -2609,7 +2609,8 @@ public class Hive {
   private void listFilesCreatedByQuery(Path loadPath, long writeId, int stmtId,
                                              boolean isInsertOverwrite, List<Path> newFiles) throws HiveException {
     Path acidDir = new Path(loadPath, AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
-    try (FileSystem srcFs = loadPath.getFileSystem(conf)) {
+    try {
+      FileSystem srcFs = loadPath.getFileSystem(conf);
       listFilesInsideAcidDirectory(acidDir, srcFs, newFiles);
     } catch (FileNotFoundException e) {
       LOG.info("directory does not exist: " + acidDir);
@@ -4533,19 +4534,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
     } catch (Exception e) {
       throw getHiveException(e, msg);
-    } finally {
-      closeFSQuitely(destFs);
-      closeFSQuitely(srcFs);
-    }
-  }
-
-  static void closeFSQuitely(FileSystem fs) {
-    try {
-      if (fs != null) {
-        fs.close();
-      }
-    } catch(IOException e) {
-      LOG.error("Error closing fs", e);
     }
   }
 
