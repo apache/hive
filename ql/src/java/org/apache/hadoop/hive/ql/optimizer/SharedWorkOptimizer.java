@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -298,17 +297,8 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
-    try {
-      new OperatorGraph(pctx).toDot(new File("/tmp/out.final." + xx++));
-    } catch (Exception e1) {
-      throw new RuntimeException("e", e1);
-
-    }
-
     return pctx;
   }
-
-  static int xx = 0;
 
   /** SharedWorkOptimization strategy modes */
   public enum Mode {
