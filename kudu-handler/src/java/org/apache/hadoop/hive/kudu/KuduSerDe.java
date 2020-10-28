@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -273,12 +272,6 @@ public class KuduSerDe extends AbstractSerDe {
       }
     }
     return output;
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    // No support for statistics. That seems to be a popular answer.
-    return null;
   }
 }
 
