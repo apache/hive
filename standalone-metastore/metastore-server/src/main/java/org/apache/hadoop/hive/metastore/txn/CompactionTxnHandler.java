@@ -266,11 +266,12 @@ class CompactionTxnHandler extends TxnHandler {
   /**
    * Find entries in the queue that are ready to
    * be cleaned.
+   * @param retentionTime time in milliseconds to delay cleanup after compaction
    * @return information on the entry in the queue.
    */
   @Override
   @RetrySemantics.ReadOnly
-  public List<CompactionInfo> findReadyToClean() throws MetaException {
+  public List<CompactionInfo> findReadyToClean(long retentionTime) throws MetaException {
     Connection dbConn = null;
     List<CompactionInfo> rc = new ArrayList<>();
 
@@ -287,7 +288,11 @@ class CompactionTxnHandler extends TxnHandler {
         long minOpenTxnWaterMark = getMinOpenTxnIdWaterMark(dbConn);
         String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
                 + "\"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '"
-                + READY_FOR_CLEANING + "' AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
+                + READY_FOR_CLEANING + "' AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL) ";
+        if (retentionTime > 0) {
+          s = s + " AND \"CQ_COMMIT_TIME\" < (" + TxnDbUtil.getEpochFn(dbProduct) + " - " + retentionTime + ")";
+        }
+
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
 
@@ -317,7 +322,7 @@ class CompactionTxnHandler extends TxnHandler {
         close(rs, stmt, dbConn);
       }
     } catch (RetryException e) {
-      return findReadyToClean();
+      return findReadyToClean(retentionTime);
     }
   }
 

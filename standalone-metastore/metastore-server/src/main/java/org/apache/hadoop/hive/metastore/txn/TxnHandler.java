@@ -291,7 +291,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private int deadlockCnt;
   private long deadlockRetryInterval;
   protected Configuration conf;
-  private static DatabaseProduct dbProduct;
+  protected static DatabaseProduct dbProduct;
   private static SQLGenerator sqlGenerator;
   private static long openTxnTimeOutMillis;
 
@@ -1512,7 +1512,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   }
 
   private void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType,
-      Long commitId, long tempId) throws SQLException {
+      Long commitId, long tempId) throws SQLException, MetaException {
     List<String> queryBatch = new ArrayList<>(5);
     // update write_set with real commitId
     if (commitId != null) {
@@ -1530,8 +1530,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       queryBatch.add("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
     }
     if (txnType == TxnType.COMPACTION) {
-      queryBatch.add("UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId
-          + " WHERE \"CQ_TXN_ID\" = " + txnid);
+      queryBatch.add("UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = "
+          + TxnDbUtil.getEpochFn(dbProduct) + " WHERE \"CQ_TXN_ID\" = " + txnid);
     }
 
     // execute all in one batch
