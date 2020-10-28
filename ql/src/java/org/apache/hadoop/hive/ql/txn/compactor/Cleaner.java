@@ -255,6 +255,10 @@ public class Cleaner extends MetaStoreCompactorThread {
     return validWriteIdList;
   }
 
+  private static boolean isDynPartAbort(Table t, CompactionInfo ci) {
+    return t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0
+      && ci.partName == null;
+  }
   private static String idWatermark(CompactionInfo ci) {
     return " id=" + ci.id;
   }
