@@ -1875,19 +1875,20 @@ public class CalcitePlanner extends SemanticAnalyzer {
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
 
       if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_QUERY_TEXT) &&
+              mvRebuildMode == MaterializationRebuildMode.NONE &&
               !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
               getQB().hasTableDefined()) {
         unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
         String expandedQueryText = ctx.getTokenRewriteStream()
-                .toString(EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
+            .toString(EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
         List<RelOptMaterialization> relOptMaterializationList = db.getMaterialization(expandedQueryText);
         for (RelOptMaterialization relOptMaterialization : relOptMaterializationList) {
           try {
             Table hiveTableMD = ((RelOptHiveTable) relOptMaterialization.tableRel.getTable()).getHiveTableMD();
             if (db.validateMaterializedViewsFromRegistry(
-                    singletonList(hiveTableMD),
-                    singletonList(hiveTableMD.getFullyQualifiedName()),
-                    getTxnMgr())) {
+                singletonList(hiveTableMD),
+                singletonList(hiveTableMD.getFullyQualifiedName()),
+                getTxnMgr())) {
               return relOptMaterialization.tableRel;
             }
           } catch (HiveException e) {

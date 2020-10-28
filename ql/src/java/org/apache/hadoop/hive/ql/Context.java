@@ -176,6 +176,7 @@ public class Context {
    * After enabling unparsing before analysis - a valid query unparse can be done.
    */
   private boolean enableUnparse;
+  private boolean scheduledQuery;
 
   public void setOperation(Operation operation) {
     this.operation = operation;
@@ -338,6 +339,7 @@ public class Context {
     viewsTokenRewriteStreams = new HashMap<>();
     enableUnparse =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_QUERY_TEXT);
+    scheduledQuery = false;
   }
 
   protected Context(Context ctx) {
@@ -382,6 +384,8 @@ public class Context {
     this.viewsTokenRewriteStreams = new HashMap<>();
     this.subContexts = new HashSet<>();
     this.opContext = new CompilationOpContext();
+    this.enableUnparse = ctx.enableUnparse;
+    this.scheduledQuery = ctx.scheduledQuery;
   }
 
   public Map<String, Path> getFsScratchDirs() {
@@ -1280,4 +1284,11 @@ public class Context {
     this.enableUnparse = enableUnparse;
   }
 
+  public boolean isScheduledQuery() {
+    return scheduledQuery;
+  }
+
+  public void setScheduledQuery(boolean scheduledQuery) {
+    this.scheduledQuery = scheduledQuery;
+  }
 }
