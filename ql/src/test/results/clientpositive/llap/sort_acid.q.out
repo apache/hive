@@ -315,8 +315,8 @@ POSTHOOK: query: select * from acidtlb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
+30	1000
 10	2021
 60	2023
 70	2024
 80	2025
-30	1000

@@ -98,8 +98,8 @@ public class GenSparkUtils {
     sequenceNumber = 0;
   }
 
-  public ReduceWork createReduceWork(GenSparkProcContext context, Operator<?> root,
-    SparkWork sparkWork) throws SemanticException {
+  public ReduceWork createReduceWork(GenSparkProcContext context, Operator<?> root, SparkWork sparkWork)
+      throws SemanticException {
     Preconditions.checkArgument(!root.getParentOperators().isEmpty(),
         "AssertionError: expected root.getParentOperators() to be non-empty");
 
@@ -112,8 +112,7 @@ public class GenSparkUtils {
     int maxExecutors = -1;
     for (Operator<? extends OperatorDesc> parentOfRoot : root.getParentOperators()) {
       Preconditions.checkArgument(parentOfRoot instanceof ReduceSinkOperator,
-          "AssertionError: expected parentOfRoot to be an "
-              + "instance of ReduceSinkOperator, but was "
+          "AssertionError: expected parentOfRoot to be an " + "instance of ReduceSinkOperator, but was "
               + parentOfRoot.getClass().getName());
       ReduceSinkOperator reduceSink = (ReduceSinkOperator) parentOfRoot;
       maxExecutors = Math.max(maxExecutors, reduceSink.getConf().getNumReducers());
@@ -130,30 +129,27 @@ public class GenSparkUtils {
     return reduceWork;
   }
 
-  protected void setupReduceSink(GenSparkProcContext context, ReduceWork reduceWork,
-      ReduceSinkOperator reduceSink) {
+  protected void setupReduceSink(GenSparkProcContext context, ReduceWork reduceWork, ReduceSinkOperator reduceSink) {
 
-    LOG.debug("Setting up reduce sink: " + reduceSink
-        + " with following reduce work: " + reduceWork.getName());
+    LOG.debug("Setting up reduce sink: " + reduceSink + " with following reduce work: " + reduceWork.getName());
 
     // need to fill in information about the key and value in the reducer
     GenMapRedUtils.setKeyAndValueDesc(reduceWork, reduceSink);
 
     // remember which parent belongs to which tag
-    reduceWork.getTagToInput().put(reduceSink.getConf().getTag(),
-        context.preceedingWork.getName());
+    reduceWork.getTagToInput().put(reduceSink.getConf().getTag(), context.preceedingWork.getName());
 
     // remember the output name of the reduce sink
     reduceSink.getConf().setOutputName(reduceWork.getName());
   }
 
-  public MapWork createMapWork(GenSparkProcContext context, Operator<?> root,
-    SparkWork sparkWork, PrunedPartitionList partitions) throws SemanticException {
+  public MapWork createMapWork(GenSparkProcContext context, Operator<?> root, SparkWork sparkWork,
+      PrunedPartitionList partitions) throws SemanticException {
     return createMapWork(context, root, sparkWork, partitions, false);
   }
 
-  public MapWork createMapWork(GenSparkProcContext context, Operator<?> root,
-      SparkWork sparkWork, PrunedPartitionList partitions, boolean deferSetup) throws SemanticException {
+  public MapWork createMapWork(GenSparkProcContext context, Operator<?> root, SparkWork sparkWork,
+      PrunedPartitionList partitions, boolean deferSetup) throws SemanticException {
     Preconditions.checkArgument(root.getParentOperators().isEmpty(),
         "AssertionError: expected root.getParentOperators() to be empty");
     MapWork mapWork = new MapWork("Map " + (++sequenceNumber));
@@ -161,8 +157,7 @@ public class GenSparkUtils {
 
     // map work starts with table scan operators
     Preconditions.checkArgument(root instanceof TableScanOperator,
-      "AssertionError: expected root to be an instance of TableScanOperator, but was "
-      + root.getClass().getName());
+        "AssertionError: expected root to be an instance of TableScanOperator, but was " + root.getClass().getName());
     String alias_id = null;
     if (context.parseContext != null && context.parseContext.getTopOps() != null) {
       for (String currentAliasID : context.parseContext.getTopOps().keySet()) {
@@ -176,7 +171,7 @@ public class GenSparkUtils {
     if (alias_id == null)
       alias_id = ((TableScanOperator) root).getConf().getAlias();
     if (!deferSetup) {
-      setupMapWork(mapWork, context, partitions,(TableScanOperator) root, alias_id);
+      setupMapWork(mapWork, context, partitions, (TableScanOperator) root, alias_id);
     }
 
     // add new item to the Spark work
@@ -186,12 +181,11 @@ public class GenSparkUtils {
   }
 
   // this method's main use is to help unit testing this class
-  protected void setupMapWork(MapWork mapWork, GenSparkProcContext context,
-      PrunedPartitionList partitions, TableScanOperator root,
-      String alias_id) throws SemanticException {
+  protected void setupMapWork(MapWork mapWork, GenSparkProcContext context, PrunedPartitionList partitions,
+      TableScanOperator root, String alias_id) throws SemanticException {
     // All the setup is done in GenMapRedUtils
-    GenMapRedUtils.setMapWork(mapWork, context.parseContext,
-        context.inputs, partitions, root, alias_id, context.conf, false);
+    GenMapRedUtils.setMapWork(mapWork, context.parseContext, context.inputs, partitions, root, alias_id, context.conf,
+        false);
   }
 
   private void collectOperators(Operator<?> op, List<Operator<?>> opList) {
@@ -204,8 +198,7 @@ public class GenSparkUtils {
   }
 
   // removes any union operator and clones the plan
-  public void removeUnionOperators(GenSparkProcContext context, BaseWork work)
-    throws SemanticException {
+  public void removeUnionOperators(GenSparkProcContext context, BaseWork work) throws SemanticException {
 
     List<Operator<?>> roots = new ArrayList<Operator<?>>();
 
@@ -277,7 +270,7 @@ public class GenSparkUtils {
     List<HashTableDummyOperator> dummyOps = new LinkedList<HashTableDummyOperator>();
 
     Iterator<Operator<?>> it = newRoots.iterator();
-    for (Operator<?> orig: roots) {
+    for (Operator<?> orig : roots) {
       Set<FileSinkOperator> fsOpSet = OperatorUtils.findOperators(orig, FileSinkOperator.class);
       for (FileSinkOperator fsOp : fsOpSet) {
         context.fileSinkSet.remove(fsOp);
@@ -305,7 +298,7 @@ public class GenSparkUtils {
       seen.add(current);
 
       if (current instanceof FileSinkOperator) {
-        FileSinkOperator fileSink = (FileSinkOperator)current;
+        FileSinkOperator fileSink = (FileSinkOperator) current;
 
         // remember it for additional processing later
         context.fileSinkSet.add(fileSink);
@@ -328,7 +321,7 @@ public class GenSparkUtils {
         Operator<?> parent = null;
         int count = 0;
 
-        for (Operator<?> op: current.getParentOperators()) {
+        for (Operator<?> op : current.getParentOperators()) {
           if (seen.contains(op)) {
             ++count;
             parent = op;
@@ -336,8 +329,7 @@ public class GenSparkUtils {
         }
 
         // we should have been able to reach the union from only one side.
-        Preconditions.checkArgument(count <= 1,
-            "AssertionError: expected count to be <= 1, but was " + count);
+        Preconditions.checkArgument(count <= 1, "AssertionError: expected count to be <= 1, but was " + count);
 
         if (parent == null) {
           // root operator is union (can happen in reducers)
@@ -347,8 +339,7 @@ public class GenSparkUtils {
         }
       }
 
-      if (current instanceof FileSinkOperator
-          || current instanceof ReduceSinkOperator) {
+      if (current instanceof FileSinkOperator || current instanceof ReduceSinkOperator) {
         current.setChildOperators(null);
       } else {
         operators.addAll(current.getChildOperators());
@@ -358,8 +349,7 @@ public class GenSparkUtils {
     work.replaceRoots(replacementMap);
   }
 
-  public void processFileSink(GenSparkProcContext context, FileSinkOperator fileSink)
-      throws SemanticException {
+  public void processFileSink(GenSparkProcContext context, FileSinkOperator fileSink) throws SemanticException {
 
     ParseContext parseContext = context.parseContext;
 
@@ -367,8 +357,8 @@ public class GenSparkUtils {
         GenMapRedUtils.isInsertInto(parseContext, fileSink);
     HiveConf hconf = parseContext.getConf();
 
-    boolean  chDir = GenMapRedUtils.isMergeRequired(context.moveTask,
-         hconf, fileSink, context.currentTask, isInsertTable);
+    boolean chDir =
+        GenMapRedUtils.isMergeRequired(context.moveTask, hconf, fileSink, context.currentTask, isInsertTable);
     // Set stats config for FileSinkOperators which are cloned from the fileSink
     List<FileSinkOperator> fileSinkList = context.fileSinkMap.get(fileSink);
     if (fileSinkList != null) {
@@ -378,16 +368,15 @@ public class GenSparkUtils {
       }
     }
 
-    Path finalName = createMoveTask(context.currentTask,
-        chDir, fileSink, parseContext, context.moveTask, hconf, context.dependencyTask);
+    Path finalName = createMoveTask(context.currentTask, chDir, fileSink, parseContext, context.moveTask, hconf,
+        context.dependencyTask);
 
     if (chDir) {
       // Merge the files in the destination table/partitions by creating Map-only merge job
       // If underlying data is RCFile a RCFileBlockMerge task would be created.
       LOG.info("using CombineHiveInputformat for the merge job");
-      GenMapRedUtils.createMRWorkForMergingFiles(fileSink, finalName,
-          context.dependencyTask, context.moveTask,
-          hconf, context.currentTask, parseContext.getQueryState().getLineageState());
+      GenMapRedUtils.createMRWorkForMergingFiles(fileSink, finalName, context.dependencyTask, context.moveTask, hconf,
+          context.currentTask, parseContext.getQueryState().getLineageState());
     }
 
     FetchTask fetchTask = parseContext.getFetchTask();
@@ -404,9 +393,8 @@ public class GenSparkUtils {
    * This is forked from {@link GenMapRedUtils}. The difference is that it doesn't check
    * 'isLinkedFileSink' and does not set parent dir for the linked file sinks.
    */
-  public static Path createMoveTask(Task<?> currTask, boolean chDir,
-      FileSinkOperator fsOp, ParseContext parseCtx, List<Task<MoveWork>> mvTasks,
-      HiveConf hconf, DependencyCollectionTask dependencyTask) {
+  public static Path createMoveTask(Task<?> currTask, boolean chDir, FileSinkOperator fsOp, ParseContext parseCtx,
+      List<Task<MoveWork>> mvTasks, HiveConf hconf, DependencyCollectionTask dependencyTask) {
 
     Path dest = null;
     FileSinkDesc fileSinkDesc = fsOp.getConf();
@@ -444,7 +432,8 @@ public class GenSparkUtils {
     Task<MoveWork> mvTask = null;
 
     if (!chDir) {
-      mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fileSinkDesc.getFinalDirName(), false, false);
+      mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fileSinkDesc.getFinalDirName(), false,
+          fileSinkDesc.isDirectInsert(), fileSinkDesc.getAcidOperation());
     }
 
     // Set the move task to be dependent on the current task
@@ -467,8 +456,7 @@ public class GenSparkUtils {
    * @param context the spark context.
    * @param pruningSink the pruner sink operator being processed.
    */
-  public void processPartitionPruningSink(GenSparkProcContext context,
-      SparkPartitionPruningSinkOperator pruningSink) {
+  public void processPartitionPruningSink(GenSparkProcContext context, SparkPartitionPruningSinkOperator pruningSink) {
     SparkPartitionPruningSinkDesc desc = pruningSink.getConf();
     final Path outputBase = getDPPOutputPath(context.parseContext.getContext());
     final String sourceId = pruningSink.getUniqueId();
@@ -486,11 +474,9 @@ public class GenSparkUtils {
       }
 
       targetInfo.work = targetWork;
-      targetInfo.columnName = SparkPartitionPruningSinkDesc.colNameWithTargetId(
-          targetWork, targetInfo.columnName);
+      targetInfo.columnName = SparkPartitionPruningSinkDesc.colNameWithTargetId(targetWork, targetInfo.columnName);
 
-      pruningSink.addAsSourceEvent(targetWork, targetInfo.partKey, targetInfo.columnName,
-          targetInfo.columnType);
+      pruningSink.addAsSourceEvent(targetWork, targetInfo.partKey, targetInfo.columnName, targetInfo.columnType);
     }
   }
 
@@ -498,8 +484,8 @@ public class GenSparkUtils {
     return new Path(context.getMRScratchDir(), "_dpp_output_");
   }
 
-  public static SparkEdgeProperty getEdgeProperty(HiveConf conf, ReduceSinkOperator reduceSink,
-      ReduceWork reduceWork) throws SemanticException {
+  public static SparkEdgeProperty getEdgeProperty(HiveConf conf, ReduceSinkOperator reduceSink, ReduceWork reduceWork)
+      throws SemanticException {
     boolean useSparkGroupBy = conf.getBoolVar(HiveConf.ConfVars.SPARK_USE_GROUPBY_SHUFFLE);
     SparkEdgeProperty edgeProperty = new SparkEdgeProperty(SparkEdgeProperty.SHUFFLE_NONE);
     edgeProperty.setNumPartitions(reduceWork.getNumReduceTasks());
@@ -526,8 +512,8 @@ public class GenSparkUtils {
     // get compatible taskId for bucket-name
     FileSinkOperator fso = getChildOperator(reduceWork.getReducer(), FileSinkOperator.class);
     if (fso != null) {
-      String bucketCount = fso.getConf().getTableInfo().getProperties().getProperty(
-          hive_metastoreConstants.BUCKET_COUNT);
+      String bucketCount =
+          fso.getConf().getTableInfo().getProperties().getProperty(hive_metastoreConstants.BUCKET_COUNT);
       if (bucketCount != null && Integer.parseInt(bucketCount) > 1) {
         edgeProperty.setMRShuffle();
       }
@@ -535,8 +521,7 @@ public class GenSparkUtils {
 
     // test if we need partition/global order, SHUFFLE_SORT should only be used for global order
     if (edgeProperty.isShuffleNone() && !sortOrder.isEmpty()) {
-      if ((reduceSink.getConf().getPartitionCols() == null
-          || reduceSink.getConf().getPartitionCols().isEmpty()
+      if ((reduceSink.getConf().getPartitionCols() == null || reduceSink.getConf().getPartitionCols().isEmpty()
           || isSame(reduceSink.getConf().getPartitionCols(), reduceSink.getConf().getKeyCols()))
           && reduceSink.getConf().hasOrderBy()) {
         edgeProperty.setShuffleSort();
@@ -555,7 +540,6 @@ public class GenSparkUtils {
       }
     }
 
-
     return edgeProperty;
   }
 
@@ -573,11 +557,9 @@ public class GenSparkUtils {
       return true;
     }
     List<Operator<? extends OperatorDesc>> children = reduceSinkOperator.getChildOperators();
-    if (children != null && children.size() == 1
-      && children.get(0) instanceof GroupByOperator) {
+    if (children != null && children.size() == 1 && children.get(0) instanceof GroupByOperator) {
       GroupByOperator child = (GroupByOperator) children.get(0);
-      if (isSame(reduceSinkOperator.getConf().getKeyCols(),
-          reduceSinkOperator.getConf().getPartitionCols())
+      if (isSame(reduceSinkOperator.getConf().getKeyCols(), reduceSinkOperator.getConf().getPartitionCols())
           && reduceSinkOperator.getConf().getKeyCols().size() == child.getConf().getKeys().size()) {
         return false;
       }
@@ -608,7 +590,8 @@ public class GenSparkUtils {
 
   @SuppressWarnings("unchecked")
   public static <T> T getChildOperator(Operator<?> root, Class<T> klazz) throws SemanticException {
-    if (root == null) return null;
+    if (root == null)
+      return null;
 
     HashSet<Operator<?>> visited = new HashSet<Operator<?>>();
     Stack<Operator<?>> stack = new Stack<Operator<?>>();
@@ -643,10 +626,10 @@ public class GenSparkUtils {
       SparkSMBMapJoinInfo smbMapJoinInfo = context.smbMapJoinCtxMap.get(smbMapJoinOp);
       MapWork work = smbMapJoinInfo.mapWork;
       SparkSortMergeJoinFactory.annotateMapWork(context, work, smbMapJoinOp,
-        (TableScanOperator) smbMapJoinInfo.bigTableRootOp, false);
+          (TableScanOperator) smbMapJoinInfo.bigTableRootOp, false);
       for (Operator<?> smallTableRootOp : smbMapJoinInfo.smallTableRootOps) {
-        SparkSortMergeJoinFactory.annotateMapWork(context, work, smbMapJoinOp,
-          (TableScanOperator) smallTableRootOp, true);
+        SparkSortMergeJoinFactory.annotateMapWork(context, work, smbMapJoinOp, (TableScanOperator) smallTableRootOp,
+            true);
       }
     }
   }

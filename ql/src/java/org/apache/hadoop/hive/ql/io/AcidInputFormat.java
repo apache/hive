@@ -266,8 +266,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     public DeltaFileMetaData(HadoopShims.HdfsFileStatusWithId fileStatus, Integer stmtId, int bucketId) {
       modTime = fileStatus.getFileStatus().getModificationTime();
       length = fileStatus.getFileStatus().getLen();
-      String attempt = AcidUtils.parseAttemptId(fileStatus.getFileStatus().getPath());
-      attemptId = StringUtils.isEmpty(attempt) ? null : Integer.parseInt(attempt);
+      attemptId = AcidUtils.parseAttemptId(fileStatus.getFileStatus().getPath());
       fileId = fileStatus.getFileId();
       this.stmtId = stmtId;
       this.bucketId = bucketId;
@@ -315,6 +314,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
       out.writeByte(flags);
       out.writeLong(modTime);
       out.writeLong(length);
+      out.writeInt(bucketId);
       if (attemptId != null) {
         out.writeInt(attemptId);
       }
@@ -334,6 +334,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
           hasStmtId = (HAS_STMTID_FLAG & flags) != 0;
       modTime = in.readLong();
       length = in.readLong();
+      bucketId = in.readInt();
       if (hasAttemptId) {
         attemptId = in.readInt();
       }
@@ -356,7 +357,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
     }
 
     public Path getPath(Path deltaDirectory, int bucketId) {
-      return AcidUtils.createBucketFile(deltaDirectory, bucketId, attemptId == null ? null : String.valueOf(attemptId));
+      return AcidUtils.createBucketFile(deltaDirectory, bucketId, attemptId);
     }
   }
 
@@ -438,7 +439,7 @@ public interface AcidInputFormat<KEY extends WritableComparable, VALUE>
                              ValidWriteIdList validWriteIdList,
                              Path baseDirectory,
                              Path[] deltaDirectory,
-                             Map<String, String> deltasToAttemptId
+                             Map<String, Integer> deltasToAttemptId
                              ) throws IOException;
 
   /**

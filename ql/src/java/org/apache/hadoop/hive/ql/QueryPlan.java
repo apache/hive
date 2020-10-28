@@ -36,6 +36,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ColumnAccessInfo;
 import org.apache.hadoop.hive.ql.parse.TableAccessInfo;
@@ -187,6 +189,16 @@ public class QueryPlan implements Serializable {
    */
   Set<FileSinkDesc> getAcidSinks() {
     return acidSinks;
+  }
+
+  public Integer getStatmentIdForAcidWriteType (AcidUtils.Operation acidOperation, long writeId, Path path) {
+    for (FileSinkDesc acidSink : acidSinks) {
+      if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
+          && acidSink.getTableWriteId() == writeId) {
+        return acidSink.getStatementId();
+      }
+    }
+    return -1;
   }
 
   DDLDescWithWriteId getAcidDdlDesc() {
