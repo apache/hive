@@ -212,7 +212,8 @@ public class CompileProcessor implements CommandProcessor {
       throw new CommandProcessorException(ioTempDir + " is not a writable directory");
     }
     long runStamp = System.currentTimeMillis();
-    File sessionTempFile = new File(ioTempDir, ss.getUserName() + "_" + runStamp);
+    String user = (ss != null) ? ss.getUserName() : "anonymous";
+    File sessionTempFile = new File(ioTempDir, user + "_" + runStamp);
     if (!sessionTempFile.exists()) {
       sessionTempFile.mkdir();
       setPosixFilePermissions(sessionTempFile, lockout, true);
