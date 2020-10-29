@@ -201,9 +201,9 @@ public class Cleaner extends MetaStoreCompactorThread {
         LOG.debug("Cleaning based on writeIdList: " + validWriteIdList);
       }
 
-      final boolean[] removedFiles = new boolean[1];
+      Ref<Boolean> removedFiles = Ref.from(false);
       if (runJobAsSelf(ci.runAs)) {
-        removedFiles[0] = removeFiles(location, validWriteIdList, ci);
+        removedFiles.value = removeFiles(location, validWriteIdList, ci);
       } else {
         LOG.info("Cleaning as user " + ci.runAs + " for " + ci.getFullPartitionName());
         UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
@@ -211,7 +211,7 @@ public class Cleaner extends MetaStoreCompactorThread {
         ugi.doAs(new PrivilegedExceptionAction<Object>() {
           @Override
           public Object run() throws Exception {
-            removedFiles[0] = removeFiles(location, validWriteIdList, ci);
+            removedFiles.value = removeFiles(location, validWriteIdList, ci);
             return null;
           }
         });
@@ -222,7 +222,7 @@ public class Cleaner extends MetaStoreCompactorThread {
               ci.getFullPartitionName() + idWatermark(ci), exception);
         }
       }
-      if (removedFiles[0]) {
+      if (removedFiles.value) {
         txnHandler.markCleaned(ci);
       }
     } catch (Exception e) {
