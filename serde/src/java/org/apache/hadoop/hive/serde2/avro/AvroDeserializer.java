@@ -278,7 +278,7 @@ class AvroDeserializer {
 
       int scale = 0;
       try {
-        scale = (int) fileSchema.getObjectProp(AvroSerDe.AVRO_PROP_SCALE);
+        scale = Integer.parseInt((String) fileSchema.getObjectProp(AvroSerDe.AVRO_PROP_SCALE));
       } catch(Exception ex) {
         throw new AvroSerdeException("Failed to obtain scale value from file schema: " + fileSchema, ex);
       }
