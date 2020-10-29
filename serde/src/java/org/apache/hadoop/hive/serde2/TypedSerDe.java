@@ -73,7 +73,8 @@ public abstract class TypedSerDe extends AbstractSerDe {
   }
 
   @Override
-  public void initialize(Configuration job, Properties tbl) throws SerDeException {
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
     // do nothing
   }
 

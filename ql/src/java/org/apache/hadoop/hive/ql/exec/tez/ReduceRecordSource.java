@@ -152,10 +152,11 @@ public class ReduceRecordSource implements RecordSource {
     this.tag = tag;
 
     try {
-      inputKeyDeserializer = ReflectionUtils.newInstance(keyTableDesc
-          .getDeserializerClass(), null);
-      SerDeUtils.initializeSerDe(inputKeyDeserializer, null, keyTableDesc.getProperties(), null);
-      keyObjectInspector = inputKeyDeserializer.getObjectInspector();
+      AbstractSerDe serde = ReflectionUtils.newInstance(keyTableDesc.getSerDeClass(), null);
+      serde.initialize(null, keyTableDesc.getProperties(), null);
+
+      inputKeyDeserializer = serde; 
+      keyObjectInspector = serde.getObjectInspector();
 
       if(vectorized) {
         keyStructInspector = (StructObjectInspector) keyObjectInspector;
@@ -164,10 +165,8 @@ public class ReduceRecordSource implements RecordSource {
 
       // We should initialize the SerDe with the TypeInfo when available.
       this.valueTableDesc = valueTableDesc;
-      inputValueDeserializer = (AbstractSerDe) ReflectionUtils.newInstance(
-          valueTableDesc.getDeserializerClass(), null);
-      SerDeUtils.initializeSerDe(inputValueDeserializer, null,
-          valueTableDesc.getProperties(), null);
+      inputValueDeserializer = (AbstractSerDe) ReflectionUtils.newInstance(valueTableDesc.getSerDeClass(), null);
+      inputValueDeserializer.initialize(null, valueTableDesc.getProperties(), null);
       valueObjectInspector = inputValueDeserializer.getObjectInspector();
 
       ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();

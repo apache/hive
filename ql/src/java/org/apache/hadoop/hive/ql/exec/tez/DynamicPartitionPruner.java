@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -353,8 +354,10 @@ public class DynamicPartitionPruner {
       this.columnType = columnType;
       this.mustKeepOnePartition = jobConf.getBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, false);
 
-      deserializer = ReflectionUtils.newInstance(table.getDeserializerClass(), null);
-      deserializer.initialize(jobConf, table.getProperties());
+      AbstractSerDe serDe = ReflectionUtils.newInstance(table.getSerDeClass(), null);
+      serDe.initialize(jobConf, table.getProperties(), null);
+
+      this.deserializer = serDe;
 
       ObjectInspector inspector = deserializer.getObjectInspector();
       LOG.debug("Type of obj insp: " + inspector.getTypeName());

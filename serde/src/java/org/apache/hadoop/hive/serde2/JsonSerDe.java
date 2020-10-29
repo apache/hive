@@ -80,9 +80,10 @@ public class JsonSerDe extends AbstractSerDe {
    * expected to be Java primitive objects.
    */
   @Override
-  public void initialize(final Configuration conf, final Properties tbl)
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
-    initialize(conf, tbl, true);
+    super.initialize(configuration, tableProperties, partitionProperties);
+    initialize(configuration, this.properties, true);
   }
 
   /**

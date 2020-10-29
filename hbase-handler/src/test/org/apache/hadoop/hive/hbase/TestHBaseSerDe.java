@@ -1083,7 +1083,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForHiveAvroSchemaInline();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
         EXPECTED_DESERIALIZED_AVRO_STRING);
@@ -1130,7 +1130,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForHiveAvroForwardEvolvedSchema();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
         EXPECTED_DESERIALIZED_AVRO_STRING_3);
@@ -1176,7 +1176,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForHiveAvroBackwardEvolvedSchema();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
         EXPECTED_DESERIALIZED_AVRO_STRING);
@@ -1227,7 +1227,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForHiveAvroSerClass();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
         EXPECTED_DESERIALIZED_AVRO_STRING_2);
@@ -1287,7 +1287,7 @@ public class TestHBaseSerDe {
       HBaseSerDe serDe = new HBaseSerDe();
       Configuration conf = new Configuration();
       Properties tbl = createPropertiesForHiveAvroSchemaUrl(onHDFS);
-      serDe.initialize(conf, tbl);
+      serDe.initialize(conf, tbl, null);
 
       deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
           EXPECTED_DESERIALIZED_AVRO_STRING);
@@ -1344,7 +1344,7 @@ public class TestHBaseSerDe {
     Configuration conf = new Configuration();
 
     Properties tbl = createPropertiesForHiveAvroExternalSchema();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHiveAvro(serDe, r, p, expectedFieldsData,
         EXPECTED_DESERIALIZED_AVRO_STRING_2);
@@ -1418,7 +1418,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForHiveAvroColumnFamilyMap();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     Object notPresentKey = new Text("prefixA_avro1");
 
@@ -1467,7 +1467,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Configuration conf = new Configuration();
     Properties tbl = createPropertiesForValueStruct();
-    serDe.initialize(conf, tbl);
+    serDe.initialize(conf, tbl, null);
 
     deserializeAndSerializeHBaseValueStruct(serDe, r, p);
 
@@ -1483,7 +1483,7 @@ public class TestHBaseSerDe {
     HBaseSerDe serDe = new HBaseSerDe();
     Properties tbl = createPropertiesForValueStruct();
     tbl.setProperty("columns.comments", "");
-    serDe.initialize(new Configuration(), tbl);
+    serDe.initialize(new Configuration(), tbl, null);
   }
 
   private Properties createPropertiesForValueStruct() {

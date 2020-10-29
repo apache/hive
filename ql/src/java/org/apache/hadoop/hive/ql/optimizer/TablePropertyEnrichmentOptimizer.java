@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
-import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hive.common.util.ReflectionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,13 +115,13 @@ class TablePropertyEnrichmentOptimizer extends Transform {
       String deserializerClassName = null;
       try {
         deserializerClassName = tableScanDesc.getTableMetadata().getSd().getSerdeInfo().getSerializationLib();
-        Deserializer deserializer = ReflectionUtil.newInstance(
+        AbstractSerDe deserializer = ReflectionUtil.newInstance(
             context.conf.getClassByName(deserializerClassName)
-                .asSubclass(Deserializer.class),
+                .asSubclass(AbstractSerDe.class),
             context.conf);
 
         if (context.serdeClassesUnderConsideration.contains(deserializerClassName)) {
-          deserializer.initialize(context.conf, clonedTableParameters);
+          deserializer.initialize(context.conf, clonedTableParameters, null);
           LOG.debug("SerDe init succeeded for class: " + deserializerClassName);
           for (Map.Entry property : clonedTableParameters.entrySet()) {
             if (!property.getValue().equals(originalTableParameters.get(property.getKey()))) {

@@ -407,7 +407,7 @@ public class MapOperator extends AbstractMapOperator {
       StructObjectInspector soi = null;
       PartitionDesc partDesc = conf.getAliasToPartnInfo().get(tsOp.getConf().getAlias());
       Configuration newConf = tableNameToConf.get(partDesc.getTableDesc().getTableName());
-      Deserializer serde = partDesc.getTableDesc().getDeserializer();
+      Deserializer serde = partDesc.getTableDesc().getSerDe();
       partDesc.setProperties(partDesc.getProperties());
       MapOpCtx opCtx = new MapOpCtx(tsOp.getConf().getAlias(), child, partDesc);
       StructObjectInspector tableRowOI = (StructObjectInspector) serde.getObjectInspector();

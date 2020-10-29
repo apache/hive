@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.parse.RuntimeValuesInfo;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.common.NoDynamicValuesException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
@@ -104,8 +105,8 @@ public class DynamicValueRegistryTez implements DynamicValueRegistry {
       RuntimeValuesInfo runtimeValuesInfo = rct.baseWork.getInputSourceToRuntimeValuesInfo().get(inputSourceName);
 
       // Setup deserializer/obj inspectors for the incoming data source
-      Deserializer deserializer = ReflectionUtils.newInstance(runtimeValuesInfo.getTableDesc().getDeserializerClass(), null);
-      deserializer.initialize(rct.conf, runtimeValuesInfo.getTableDesc().getProperties());
+      AbstractSerDe deserializer = ReflectionUtils.newInstance(runtimeValuesInfo.getTableDesc().getSerDeClass(), null);
+      deserializer.initialize(rct.conf, runtimeValuesInfo.getTableDesc().getProperties(), null);
       ObjectInspector inspector = deserializer.getObjectInspector();
 
       // Set up col expressions for the dynamic values using this input

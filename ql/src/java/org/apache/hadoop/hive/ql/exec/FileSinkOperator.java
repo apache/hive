@@ -593,8 +593,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         parent = Utilities.toTempPath(conf.getDirName());
       }
       statsFromRecordWriter = new boolean[numFiles];
-      serializer = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
-      serializer.initialize(unsetNestedColumnPaths(hconf), conf.getTableInfo().getProperties());
+      AbstractSerDe serde = conf.getTableInfo().getSerDeClass().newInstance();
+      serde.initialize(unsetNestedColumnPaths(hconf), conf.getTableInfo().getProperties(), null);
+
+      serializer = serde;
+
       outputClass = serializer.getSerializedClass();
       destTablePath = conf.getDestPath();
       isInsertOverwrite = conf.getInsertOverwrite();

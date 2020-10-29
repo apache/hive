@@ -557,7 +557,7 @@ public class SQLOperation extends ExecuteStatementOperation {
           props.setProperty(serdeConstants.LIST_COLUMN_TYPES, types);
         }
 
-        SerDeUtils.initializeSerDe(serde, queryState.getConf(), props, null);
+        serde.initialize(queryState.getConf(), props, null);
       } catch (Exception ex) {
         throw new SQLException("Could not create ResultSet: " + ex.getMessage(), ex);
       }

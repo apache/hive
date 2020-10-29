@@ -163,6 +163,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -1642,9 +1643,9 @@ public final class Utilities {
     HiveOutputFormat<?, ?> hiveOutputFormat = null;
     Class<? extends Writable> outputClass = null;
     try {
-      Serializer serializer = (Serializer) tableInfo.getDeserializerClass().newInstance();
-      serializer.initialize(hconf, tableInfo.getProperties());
-      outputClass = serializer.getSerializedClass();
+      AbstractSerDe serde = tableInfo.getSerDeClass().newInstance();
+      serde.initialize(hconf, tableInfo.getProperties(), null);
+      outputClass = serde.getSerializedClass();
       hiveOutputFormat = HiveFileFormatUtils.getHiveOutputFormat(hconf, tableInfo);
     } catch (SerDeException e) {
       throw new HiveException(e);

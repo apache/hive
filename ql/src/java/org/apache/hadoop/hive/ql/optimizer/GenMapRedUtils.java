@@ -775,7 +775,7 @@ public final class GenMapRedUtils {
     if (topOp instanceof TableScanOperator) {
       try {
         Utilities.addSchemaEvolutionToTableScanOperator(
-          (StructObjectInspector) tt_desc.getDeserializer().getObjectInspector(),
+          (StructObjectInspector) tt_desc.getSerDe().getObjectInspector(),
           (TableScanOperator) topOp);
       } catch (Exception e) {
         throw new SemanticException(e);
