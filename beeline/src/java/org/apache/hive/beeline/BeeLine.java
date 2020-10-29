@@ -931,6 +931,8 @@ public class BeeLine implements Closeable {
       if (!dispatch("!properties " + propertyFile)) {
         exit = true;
         return false;
+      } else {
+        return true;
       }
     }
     return false;

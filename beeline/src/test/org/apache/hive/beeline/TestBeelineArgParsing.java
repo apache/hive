@@ -367,4 +367,17 @@ public class TestBeelineArgParsing {
     bl.close();
   }
 
+  /**
+   * Test property file option with query.
+   */
+  @Test
+  public void testPropertyFileWithQuery() throws Exception {
+    TestBeeline bl = new TestBeeline();
+    String args[] =
+        new String[] {"--property-file", "props", "-e", "show tables"};
+    Assert.assertEquals(0, bl.initArgs(args));
+    Assert.assertEquals("props", bl.properties.get(0));
+    Assert.assertEquals("show tables", bl.queries.get(0));
+    bl.close();
+  }
 }
