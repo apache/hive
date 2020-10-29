@@ -228,32 +228,18 @@ public class CompileProcessor implements CommandProcessor {
     sourcePath.setLocation(input);
     g.setSrcdir(sourcePath);
     input.mkdir();
-    setPosixFilePermissions(input, lockout, true);
 
     File fileToWrite = new File(input, this.named);
     try {
       Files.write(Paths.get(fileToWrite.toURI()), code.getBytes(Charset.forName("UTF-8")), StandardOpenOption.CREATE_NEW);
-      setPosixFilePermissions(fileToWrite, lockout, false);
     } catch (IOException e1) {
       throw new CommandProcessorException("writing file", e1);
     }
     destination.mkdir();
-    setPosixFilePermissions(destination, lockout, true);
     try {
       g.execute();
     } catch (BuildException ex){
       throw new CommandProcessorException("Problem compiling", ex);
-    } finally {
-      // delete the source files
-      try {
-        fileToWrite.delete();
-        FileUtils.deleteDirectory(input);
-      } catch (Exception e) {
-        try {
-          fileToWrite.deleteOnExit();
-          FileUtils.forceDeleteOnExit(input);
-        } catch(Exception ex) { /* ignore */ }
-      }
     }
     File testArchive = new File(sessionTempFile, jarId + ".jar");
     JarArchiveOutputStream out = null;
@@ -269,31 +255,21 @@ public class CompileProcessor implements CommandProcessor {
       }
       out.finish();
       setPosixFilePermissions(testArchive, lockout, false);
-      try {
-        FileUtils.deleteDirectory(destination);
-      } catch (Exception e) {
-        try {
-          FileUtils.forceDeleteOnExit(destination);
-        } catch (Exception ex) { /* ignore */ }
-      }
     } catch (IOException e) {
       throw new CommandProcessorException("Exception while writing jar", e);
     } finally {
       if (out!=null){
         try {
           out.close();
-        } catch (IOException WhatCanYouDo) {
-        }
+        } catch (IOException WhatCanYouDo) { }
         try {
           if (input.exists())
             FileUtils.forceDeleteOnExit(input);
-        } catch (IOException WhatCanYouDo) {
-        }
+        } catch (IOException WhatCanYouDo) { /* ignore */ }
         try {
           if (destination.exists())
             FileUtils.forceDeleteOnExit(destination);
-        } catch (IOException WhatCanYouDo) {
-        }
+        } catch (IOException WhatCanYouDo) { /* ignore */ }
         try {
           if (testArchive != null && testArchive.exists())
             testArchive.deleteOnExit();
