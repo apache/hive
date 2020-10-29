@@ -35,6 +35,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -347,21 +348,21 @@ class CompactionTxnHandler extends TxnHandler {
       ResultSet rs = null;
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        pStmt = dbConn.prepareStatement("SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
-            + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
-            + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
-            + "\"CQ_ENQUEUE_TIME\" "
-            + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
+        String s = "INSERT INTO \"COMPLETED_COMPACTIONS\"(\"CC_ID\", \"CC_DATABASE\", "
+            + "\"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", "
+            + "\"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", "
+            + "\"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", \"CC_ENQUEUE_TIME\") "
+          + "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
+            + quoteChar(SUCCEEDED_STATE) + ", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", "
+            + TxnDbUtil.getEpochFn(dbProduct) + ", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", "
+            + "\"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", \"CQ_ENQUEUE_TIME\" "
+            + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
+        pStmt = dbConn.prepareStatement(s);
         pStmt.setLong(1, info.id);
-        rs = pStmt.executeQuery();
-        if (rs.next()) {
-          info = CompactionInfo.loadFullFromCompactionQueue(rs);
-        }
-        else {
-          throw new IllegalStateException("No record with CQ_ID=" + info.id + " found in COMPACTION_QUEUE");
-        }
-        close(rs);
-        String s = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
+        LOG.debug("Going to execute update <" + s + "> for CQ_ID=" + info.id);
+        pStmt.executeUpdate();
+
+        s = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
         pStmt = dbConn.prepareStatement(s);
         pStmt.setLong(1, info.id);
         LOG.debug("Going to execute update <" + s + ">");
@@ -371,18 +372,6 @@ class CompactionTxnHandler extends TxnHandler {
           LOG.debug("Going to rollback");
           dbConn.rollback();
         }
-        s = "INSERT INTO \"COMPLETED_COMPACTIONS\"(\"CC_ID\", \"CC_DATABASE\", "
-            + "\"CC_TABLE\", \"CC_PARTITION\", \"CC_STATE\", \"CC_TYPE\", \"CC_TBLPROPERTIES\", \"CC_WORKER_ID\", "
-            + "\"CC_START\", \"CC_END\", \"CC_RUN_AS\", \"CC_HIGHEST_WRITE_ID\", \"CC_META_INFO\", "
-            + "\"CC_HADOOP_JOB_ID\", \"CC_ERROR_MESSAGE\", \"CC_ENQUEUE_TIME\")"
-            + " VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,?,?)";
-        pStmt = dbConn.prepareStatement(s);
-        info.state = SUCCEEDED_STATE;
-        long enqueueTime = getDbTime(dbConn);
-        CompactionInfo.insertIntoCompletedCompactions(pStmt, info, enqueueTime);
-        LOG.debug("Going to execute update <" + s + "> with parameter enqueue time: " + enqueueTime);
-        updCount = pStmt.executeUpdate();
-
         // Remove entries from completed_txn_components as well, so we don't start looking there
         // again but only up to the highest write ID include in this compaction job.
         //highestWriteId will be NULL in upgrade scenarios
@@ -415,31 +404,56 @@ class CompactionTxnHandler extends TxnHandler {
          * aborted TXN_COMPONENTS above tc_writeid (and consequently about aborted txns).
          * See {@link ql.txn.compactor.Cleaner.removeFiles()}
          */
-        s = "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN (" +
-            "   SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED + ") " +
-            "AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ? " +
-            "AND \"TC_PARTITION\" "+ (info.partName != null ? "= ?" : "IS NULL");
-        if (info.highestWriteId != 0) {
-          s += " AND \"TC_WRITEID\" <= ?";
-        }
-        LOG.debug("Going to execute update <" + s + ">");
-        pStmt = dbConn.prepareStatement(s);
-        paramCount = 1;
+        s = "DELETE FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\" IN ( "
+              + "SELECT \"TXN_ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.ABORTED + ") "
+            + "AND \"TC_DATABASE\" = ? AND \"TC_TABLE\" = ? "
+            + "AND \"TC_PARTITION\" "+ (info.partName != null ? "= ?" : "IS NULL");
 
-        pStmt.setString(paramCount++, info.dbname);
-        pStmt.setString(paramCount++, info.tableName);
-        if (info.partName != null) {
-          pStmt.setString(paramCount++, info.partName);
-        }
-        if (info.highestWriteId != 0) {
-          pStmt.setLong(paramCount, info.highestWriteId);
-        }
-        int rc = pStmt.executeUpdate();
-        LOG.debug("Removed " + rc + " records from txn_components");
-        // Don't bother cleaning from the txns table.  A separate call will do that.  We don't
-        // know here which txns still have components from other tables or partitions in the
-        // table, so we don't know which ones we can and cannot clean.
+        List<String> queries = new ArrayList<>();
+        Iterator<Long> writeIdsIter = null;
+        List<Integer> counts = null;
 
+        if (info.isSetWriteIds && !info.writeIds.isEmpty()) {
+          StringBuilder prefix = new StringBuilder(s).append(" AND ");
+          List<String> questions = Collections.nCopies(info.writeIds.size(), "?");
+
+          counts = TxnUtils.buildQueryWithINClauseStrings(conf, queries, prefix,
+            new StringBuilder(), questions, "\"TC_WRITEID\"", false, false);
+          writeIdsIter = info.writeIds.iterator();
+        } else if (!info.isSetWriteIds){
+          if (info.highestWriteId != 0) {
+            s += " AND \"TC_WRITEID\" <= ?";
+          }
+          queries.add(s);
+        }
+
+        for (int i = 0; i < queries.size(); i++) {
+          String query = queries.get(i);
+          int writeIdCount = (counts != null) ? counts.get(i) : 0;
+
+          LOG.debug("Going to execute update <" + query + ">");
+          pStmt = dbConn.prepareStatement(query);
+          paramCount = 1;
+
+          pStmt.setString(paramCount++, info.dbname);
+          pStmt.setString(paramCount++, info.tableName);
+          if (info.partName != null) {
+            pStmt.setString(paramCount++, info.partName);
+          }
+          if (info.highestWriteId != 0 && writeIdCount == 0) {
+            pStmt.setLong(paramCount, info.highestWriteId);
+          }
+          for (int j = 0; j < writeIdCount; j++) {
+            if (writeIdsIter.hasNext()) {
+              pStmt.setLong(paramCount + j, writeIdsIter.next());
+            }
+          }
+          int rc = pStmt.executeUpdate();
+          LOG.debug("Removed " + rc + " records from txn_components");
+          // Don't bother cleaning from the txns table.  A separate call will do that.  We don't
+          // know here which txns still have components from other tables or partitions in the
+          // table, so we don't know which ones we can and cannot clean.
+        }
         LOG.debug("Going to commit");
         dbConn.commit();
       } catch (SQLException e) {
@@ -1037,7 +1051,7 @@ class CompactionTxnHandler extends TxnHandler {
             + "FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?");
         pStmt.setLong(1, ci.id);
         rs = pStmt.executeQuery();
-        if(rs.next()) {
+        if (rs.next()) {
           ci = CompactionInfo.loadFullFromCompactionQueue(rs);
           String s = "DELETE FROM \"COMPACTION_QUEUE\" WHERE \"CQ_ID\" = ?";
           pStmt = dbConn.prepareStatement(s);

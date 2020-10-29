@@ -218,7 +218,7 @@ public class Cleaner extends MetaStoreCompactorThread {
               ci.getFullPartitionName() + idWatermark(ci), exception);
         }
       }
-      if (removedFiles.value) {
+      if (removedFiles.value || isDynPartAbort(t, ci)) {
         txnHandler.markCleaned(ci);
       } else {
         LOG.warn("No files were removed. Leaving queue entry " + ci + " in ready for cleaning state.");
@@ -257,8 +257,9 @@ public class Cleaner extends MetaStoreCompactorThread {
 
   private static boolean isDynPartAbort(Table t, CompactionInfo ci) {
     return t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0
-      && ci.partName == null;
+        && ci.partName == null;
   }
+
   private static String idWatermark(CompactionInfo ci) {
     return " id=" + ci.id;
   }
@@ -281,13 +282,18 @@ public class Cleaner extends MetaStoreCompactorThread {
      * txns with write IDs > {@link CompactionInfo#highestWriteId}.
      * See {@link TxnStore#markCleaned(CompactionInfo)}
      */
+    Table table = getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
+    if (isDynPartAbort(table, ci)) {
+      ci.setWriteIds(dir.getAbortedWriteIds());
+    }
     obsoleteDirs.addAll(dir.getAbortedDirectories());
     List<Path> filesToDelete = new ArrayList<>(obsoleteDirs.size());
+
     StringBuilder extraDebugInfo = new StringBuilder("[");
     for (Path stat : obsoleteDirs) {
       filesToDelete.add(stat);
       extraDebugInfo.append(stat.getName()).append(",");
-      if(!FileUtils.isPathWithinSubtree(stat, locPath)) {
+      if (!FileUtils.isPathWithinSubtree(stat, locPath)) {
         LOG.info(idWatermark(ci) + " found unexpected file: " + stat);
       }
     }
@@ -302,7 +308,6 @@ public class Cleaner extends MetaStoreCompactorThread {
 
     FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
-    Table table = getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
 
     for (Path dead : filesToDelete) {
       LOG.debug("Going to delete path " + dead.toString());

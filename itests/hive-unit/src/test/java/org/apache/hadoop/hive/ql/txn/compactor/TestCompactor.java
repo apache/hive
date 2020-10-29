@@ -858,7 +858,6 @@ public class TestCompactor {
             Lists.newArrayList(5, 6), 1);
   }
 
-  @Ignore("PR #1618")
   @Test
   public void testCleanAbortCompactAfter2ndCommitAbort() throws Exception {
     String dbName = "default";
@@ -880,7 +879,6 @@ public class TestCompactor {
     connection.close();
   }
 
-  @Ignore("PR #1618")
   @Test
   public void testCleanAbortCompactAfter1stCommitAbort() throws Exception {
     String dbName = "default";
@@ -1004,8 +1002,7 @@ public class TestCompactor {
 
     rsp = txnHandler.showCompact(new ShowCompactRequest());
     Assert.assertEquals(1, rsp.getCompacts().size());
-    Assert.assertEquals((singleSession && partialAbort) ? TxnStore.FAILED_RESPONSE : TxnStore.SUCCEEDED_RESPONSE,
-        rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
     Assert.assertEquals("cws", rsp.getCompacts().get(0).getTablename());
     Assert.assertEquals(CompactionType.MINOR, rsp.getCompacts().get(0).getType());
   }
