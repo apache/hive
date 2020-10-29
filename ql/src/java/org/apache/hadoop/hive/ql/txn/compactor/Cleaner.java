@@ -224,6 +224,8 @@ public class Cleaner extends MetaStoreCompactorThread {
       }
       if (removedFiles.value) {
         txnHandler.markCleaned(ci);
+      } else {
+        LOG.warn("No files were removed. Leaving queue entry " + ci + " in ready for cleaning state.");
       }
     } catch (Exception e) {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of " + ci + " " +
