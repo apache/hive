@@ -137,6 +137,7 @@ import org.apache.hadoop.hive.metastore.datasource.DataSourceProvider;
 import org.apache.hadoop.hive.metastore.datasource.DataSourceProviderFactory;
 import org.apache.hadoop.hive.metastore.events.AbortTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AllocWriteIdEvent;
+import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.OpenTxnEvent;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
@@ -1270,6 +1271,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
         String conflictSQLSuffix = "FROM \"TXN_COMPONENTS\" WHERE \"TC_TXNID\"=" + txnid + " AND \"TC_OPERATION_TYPE\" IN (" +
                 OperationType.UPDATE + "," + OperationType.DELETE + ")";
+        CompactionInfo compactionInfo = null;
 
         long tempCommitId = generateTemporaryId();
         if (txnType.get() != TxnType.READ_ONLY
@@ -1338,8 +1340,15 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
             }
           }
         } else if (txnType.get() == TxnType.COMPACTION) {
-          acquireTxnLock(stmt, false);
-          commitId = getHighWaterMark(stmt);
+          // get the compactionInfo for the event before the lock
+          compactionInfo = getCompactionByTxnId(dbConn, txnid);
+          if (compactionInfo != null) {
+            // don't bother with locking and finding the highwaterMark there is no record to update
+            acquireTxnLock(stmt, false);
+            commitId = getHighWaterMark(stmt);
+          } else {
+            LOG.warn("No compaction queue record found for Compaction type transaction commit. txnId:" + txnid);
+          }
         } else {
           /*
            * current txn didn't update/delete anything (may have inserted), so just proceed with commit
@@ -1390,6 +1399,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         if (transactionalListeners != null) {
           MetaStoreListenerNotifier.notifyEventWithDirectSql(transactionalListeners,
                   EventMessage.EventType.COMMIT_TXN, new CommitTxnEvent(txnid, txnType.get()), dbConn, sqlGenerator);
+          if (compactionInfo != null) {
+            MetaStoreListenerNotifier
+                .notifyEventWithDirectSql(transactionalListeners, EventMessage.EventType.COMMIT_COMPACTION,
+                    new CommitCompactionEvent(txnid, compactionInfo), dbConn, sqlGenerator);
+          }
         }
 
         LOG.debug("Going to commit");
@@ -1408,6 +1422,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       commitTxn(rqst);
     }
   }
+
+  protected abstract CompactionInfo getCompactionByTxnId(Connection dbConn, long txnid) throws SQLException, MetaException;
 
   private boolean isUpdateOrDelete(Statement stmt, String conflictSQLSuffix) throws SQLException, MetaException {
     try (ResultSet rs = stmt.executeQuery(sqlGenerator.addLimitClause(1,

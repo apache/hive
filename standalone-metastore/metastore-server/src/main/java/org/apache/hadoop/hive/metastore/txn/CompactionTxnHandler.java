@@ -46,6 +46,12 @@ class CompactionTxnHandler extends TxnHandler {
   static final private String CLASS_NAME = CompactionTxnHandler.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
 
+  private static final String SELECT_COMPACTION_QUEUE_BY_TXN_ID =
+      "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
+          + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
+          + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
+          + "\"CQ_ENQUEUE_TIME\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_TXN_ID\" = ?";
+
   public CompactionTxnHandler() {
   }
 
@@ -1166,6 +1172,39 @@ class CompactionTxnHandler extends TxnHandler {
       }
     } catch (RetryException e) {
       return findMinOpenTxnIdForCleaner();
+    }
+  }
+
+  protected CompactionInfo getCompactionByTxnId(Connection dbConn, long txnid) throws SQLException, MetaException {
+    CompactionInfo info = null;
+    try (PreparedStatement pStmt = dbConn.prepareStatement(SELECT_COMPACTION_QUEUE_BY_TXN_ID)) {
+      pStmt.setLong(1, txnid);
+      try (ResultSet rs = pStmt.executeQuery()) {
+        if (rs.next()) {
+          info = CompactionInfo.loadFullFromCompactionQueue(rs);
+        }
+      }
+    }
+    return info;
+  }
+
+  @Override
+  public CompactionInfo getCompactionByTxnId(long txnId) throws MetaException {
+    Connection dbConn = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        return getCompactionByTxnId(dbConn, txnId);
+      } catch (SQLException e) {
+        LOG.error("Unable to getCompactionByTxnId", e);
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "getCompactionByTxnId");
+        throw new MetaException("Unable to execute getCompactionByTxnId() " + StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      return getCompactionByTxnId(txnId);
     }
   }
 }
