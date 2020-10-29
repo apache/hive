@@ -858,6 +858,7 @@ public class TestCompactor {
             Lists.newArrayList(5, 6), 1);
   }
 
+  @Ignore("PR #1618")
   @Test
   public void testCleanAbortCompactAfter2ndCommitAbort() throws Exception {
     String dbName = "default";
@@ -901,7 +902,6 @@ public class TestCompactor {
     connection.close();
   }
 
-  @Ignore("PR #1618")
   @Test
   public void testCleanAbortCompactAfterAbortTwoPartitions() throws Exception {
     String dbName = "default";
