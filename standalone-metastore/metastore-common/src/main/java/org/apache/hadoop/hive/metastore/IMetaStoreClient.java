@@ -4101,4 +4101,11 @@ public interface IMetaStoreClient {
   ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
                                                 replicationMetricsRequest) throws MetaException, TException;
 
+  void createStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException, TException;
+
+  StoredProcedure getStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException;
+
+  void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException;
+
+  List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException;
 }

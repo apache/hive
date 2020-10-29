@@ -1312,7 +1312,7 @@ public interface RawStore extends Configurable {
   List<ColStatsObjWithSourceInfo> getPartitionColStatsForDatabase(String catName, String dbName)
       throws MetaException, NoSuchObjectException;
 
-  /**
+    /**
    * Get the next notification event.
    * @param rqst Request containing information on the last processed notification.
    * @return list of notifications, sorted by eventId
@@ -1867,4 +1867,12 @@ public interface RawStore extends Configurable {
   int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException;
 
   void deleteAllPartitionColumnStatistics(TableName tn, String writeIdList);
+
+  void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException;
+
+  StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException;
+
+  void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException;
+
+  List<String> getAllStoredProcedures(ListStoredProcedureRequest request);
 }

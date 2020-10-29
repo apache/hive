@@ -948,6 +948,12 @@ class GetReplicationMetricsRequest;
 
 class GetOpenTxnsRequest;
 
+class StoredProcedureRequest;
+
+class ListStoredProcedureRequest;
+
+class StoredProcedure;
+
 class MetaException;
 
 class UnknownTableException;
@@ -16696,6 +16702,167 @@ class GetOpenTxnsRequest : public virtual ::apache::thrift::TBase {
 void swap(GetOpenTxnsRequest &a, GetOpenTxnsRequest &b);
 
 std::ostream& operator<<(std::ostream& out, const GetOpenTxnsRequest& obj);
+
+
+class StoredProcedureRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  StoredProcedureRequest(const StoredProcedureRequest&);
+  StoredProcedureRequest& operator=(const StoredProcedureRequest&);
+  StoredProcedureRequest() : catName(), dbName(), procName() {
+  }
+
+  virtual ~StoredProcedureRequest() noexcept;
+  std::string catName;
+  std::string dbName;
+  std::string procName;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_procName(const std::string& val);
+
+  bool operator == (const StoredProcedureRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(procName == rhs.procName))
+      return false;
+    return true;
+  }
+  bool operator != (const StoredProcedureRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const StoredProcedureRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(StoredProcedureRequest &a, StoredProcedureRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const StoredProcedureRequest& obj);
+
+typedef struct _ListStoredProcedureRequest__isset {
+  _ListStoredProcedureRequest__isset() : dbName(false) {}
+  bool dbName :1;
+} _ListStoredProcedureRequest__isset;
+
+class ListStoredProcedureRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  ListStoredProcedureRequest(const ListStoredProcedureRequest&);
+  ListStoredProcedureRequest& operator=(const ListStoredProcedureRequest&);
+  ListStoredProcedureRequest() : catName(), dbName() {
+  }
+
+  virtual ~ListStoredProcedureRequest() noexcept;
+  std::string catName;
+  std::string dbName;
+
+  _ListStoredProcedureRequest__isset __isset;
+
+  void __set_catName(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  bool operator == (const ListStoredProcedureRequest & rhs) const
+  {
+    if (!(catName == rhs.catName))
+      return false;
+    if (__isset.dbName != rhs.__isset.dbName)
+      return false;
+    else if (__isset.dbName && !(dbName == rhs.dbName))
+      return false;
+    return true;
+  }
+  bool operator != (const ListStoredProcedureRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ListStoredProcedureRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(ListStoredProcedureRequest &a, ListStoredProcedureRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const ListStoredProcedureRequest& obj);
+
+typedef struct _StoredProcedure__isset {
+  _StoredProcedure__isset() : name(false), dbName(false), catName(false), ownerName(false), source(false) {}
+  bool name :1;
+  bool dbName :1;
+  bool catName :1;
+  bool ownerName :1;
+  bool source :1;
+} _StoredProcedure__isset;
+
+class StoredProcedure : public virtual ::apache::thrift::TBase {
+ public:
+
+  StoredProcedure(const StoredProcedure&);
+  StoredProcedure& operator=(const StoredProcedure&);
+  StoredProcedure() : name(), dbName(), catName(), ownerName(), source() {
+  }
+
+  virtual ~StoredProcedure() noexcept;
+  std::string name;
+  std::string dbName;
+  std::string catName;
+  std::string ownerName;
+  std::string source;
+
+  _StoredProcedure__isset __isset;
+
+  void __set_name(const std::string& val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_catName(const std::string& val);
+
+  void __set_ownerName(const std::string& val);
+
+  void __set_source(const std::string& val);
+
+  bool operator == (const StoredProcedure & rhs) const
+  {
+    if (!(name == rhs.name))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(catName == rhs.catName))
+      return false;
+    if (!(ownerName == rhs.ownerName))
+      return false;
+    if (!(source == rhs.source))
+      return false;
+    return true;
+  }
+  bool operator != (const StoredProcedure &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const StoredProcedure & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(StoredProcedure &a, StoredProcedure &b);
+
+std::ostream& operator<<(std::ostream& out, const StoredProcedure& obj);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}
