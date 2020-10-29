@@ -1832,9 +1832,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
     private final StatsSource statsSource;
 
     CalcitePlannerAction(
-            java.util.Map<String, org.apache.hadoop.hive.ql.parse.PrunedPartitionList> partitionCache,
-            org.apache.hadoop.hive.ql.plan.mapper.StatsSource statsSource,
-            org.apache.hadoop.hive.ql.parse.ColumnAccessInfo columnAccessInfo) {
+        Map<String, PrunedPartitionList> partitionCache,
+        StatsSource statsSource,
+        ColumnAccessInfo columnAccessInfo) {
       this.partitionCache = partitionCache;
       this.statsSource = statsSource;
       this.colStatsCache = ctx.getOpContext().getColStatsCache();
