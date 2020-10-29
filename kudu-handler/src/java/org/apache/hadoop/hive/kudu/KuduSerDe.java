@@ -80,13 +80,13 @@ public class KuduSerDe extends AbstractSerDe {
   private ObjectInspector objectInspector;
   private Schema schema;
 
-  @SuppressWarnings("unused")
-  public KuduSerDe() {}
 
   @Override
-  public void initialize(Configuration sysConf, Properties tblProps)
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
-    Configuration conf = createOverlayedConf(sysConf, tblProps);
+    super.initialize(configuration, tableProperties, partitionProperties);
+
+    Configuration conf = createOverlayedConf(configuration, properties);
     String tableName = conf.get(KuduStorageHandler.KUDU_TABLE_NAME_KEY);
     if (StringUtils.isEmpty(tableName)) {
       throw new SerDeException(KUDU_TABLE_NAME_KEY + " is not set.");

@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -352,8 +351,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     try {
       TableDesc keyTableDesc = conf.getKeyTblDesc();
       AbstractSerDe keySerializer = (AbstractSerDe) ReflectionUtil.newInstance(
-          keyTableDesc.getDeserializerClass(), null);
-      SerDeUtils.initializeSerDe(keySerializer, null, keyTableDesc.getProperties(), null);
+          keyTableDesc.getSerDeClass(), null);
+      keySerializer.initialize(null, keyTableDesc.getProperties(), null);
       MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerializer, false);
       for (int pos = 0; pos < order.length; pos++) {
         if (pos == posBigTable) {
@@ -366,8 +365,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
           valueTableDesc = conf.getValueFilteredTblDescs().get(pos);
         }
         AbstractSerDe valueSerDe = (AbstractSerDe) ReflectionUtil.newInstance(
-            valueTableDesc.getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(valueSerDe, null, valueTableDesc.getProperties(), null);
+            valueTableDesc.getSerDeClass(), null);
+        valueSerDe.initialize(null, valueTableDesc.getProperties(), null);
         MapJoinObjectSerDeContext valueContext =
             new MapJoinObjectSerDeContext(valueSerDe, hasFilter(pos));
         mapJoinTableSerdes[pos] = new MapJoinTableContainerSerDe(keyContext, valueContext);

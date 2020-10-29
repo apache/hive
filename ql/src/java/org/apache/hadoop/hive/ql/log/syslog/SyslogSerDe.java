@@ -50,8 +50,9 @@ public class SyslogSerDe extends AbstractSerDe {
   private List<Object> EMPTY_ROW;
 
   @Override
-  public void initialize(@Nullable final Configuration configuration, final Properties properties)
-    throws SerDeException {
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
     final List<String> columnNames = Arrays.asList(COLUMN_NAMES.split(COLUMN_NAME_DELIMITER));
     final List<TypeInfo> columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(COLUMN_TYPES);

@@ -102,14 +102,15 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
   private Deserializer deserializer;
 
   @Override
-  public void initialize(Configuration conf, Properties tbl) throws SerDeException {
-    this.conf = conf;
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-
-    final String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    final String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+    final String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+    final String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
+        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
+        : String.valueOf(SerDeUtils.COMMA);
 
     // Create an object inspector
     final List<String> columnNames;
@@ -125,8 +126,7 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
       columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     }
     rowTypeInfo = (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
-    rowObjectInspector =
-        (StructObjectInspector) getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
+    rowObjectInspector = (StructObjectInspector) getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
 
     final List<Field> fields = new ArrayList<>();
     final int size = columnNames.size();

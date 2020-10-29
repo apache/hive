@@ -262,6 +262,7 @@ import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.hive.ql.util.NullOrdering;
 import org.apache.hadoop.hive.ql.util.ResourceDownloader;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.DelimitedJSONSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
@@ -8742,9 +8743,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     StructObjectInspector oi = null;
     try {
-      Deserializer deserializer = tableDesc.getDeserializerClass()
+      AbstractSerDe deserializer = tableDesc.getSerDeClass()
           .newInstance();
-      SerDeUtils.initializeSerDe(deserializer, conf, tableDesc.getProperties(), null);
+      deserializer.initialize(conf, tableDesc.getProperties(), null);
       oi = (StructObjectInspector) deserializer.getObjectInspector();
     } catch (Exception e) {
       throw new SemanticException(e);

@@ -19,54 +19,52 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
-
-import javax.annotation.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * Abstract class for implementing SerDe. The abstract class has been created, so that
- * new methods can be added in the underlying interface, SerDe, and only implementations
- * that need those methods overwrite it.
+ * This abstract class is the superclass of all classes that can serialize and
+ * de-serialize Hadoop {@link Writable} objects.
  */
 public abstract class AbstractSerDe implements Deserializer, Serializer {
 
-  protected String configErrors;
+  protected Logger log = LoggerFactory.getLogger(getClass());
+
+  protected Optional<Configuration> configuration;
+  protected Properties properties;
+  protected Properties tableProperties;
+  protected Optional<Properties> partitionProperties;
 
   /**
-   * Initialize the SerDe. By default, this will use one set of properties, either the
-   * table properties or the partition properties. If a SerDe needs access to both sets,
-   * it should override this method.
+   * Initialize the SerDe. By default, this will use one set of properties,
+   * either the table properties or the partition properties. If a SerDe needs
+   * access to both sets, it should override this method.
    *
-   * Eventually, once all SerDes have implemented this method,
-   * we should convert it to an abstract method.
+   * Eventually, once all SerDes have implemented this method, we should convert
+   * it to an abstract method.
    *
-   * @param configuration        Hadoop configuration
-   * @param tableProperties      Table properties
-   * @param partitionProperties  Partition properties
-   * @throws SerDeException
+   * @param configuration Hadoop configuration
+   * @param tableProperties Table properties
+   * @param partitionProperties Partition properties (may be {@code null} if
+   *          table has no partitions)
+   * @throws NullPointerException if tableProperties is {@code null}
+   * @throws SerDeException if SerDe fails to initialize
    */
-  public void initialize(Configuration configuration, Properties tableProperties,
-                         Properties partitionProperties) throws SerDeException {
-    initialize(configuration,
-               SerDeUtils.createOverlayedProperties(tableProperties, partitionProperties));
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    this.configuration = Optional.ofNullable(configuration);
+    this.tableProperties = Objects.requireNonNull(tableProperties);
+    this.partitionProperties = Optional.ofNullable(partitionProperties);
+    this.properties = SerDeUtils.createOverlayedProperties(tableProperties, partitionProperties);
+    log.debug("SerDe initialized: [{}][{}]", this.configuration, this.properties);
   }
-
-  /**
-   * Initialize the HiveSerializer.
-   *
-   * @param conf
-   *          System properties. Can be null in compile time
-   * @param tbl
-   *          table properties
-   * @throws SerDeException
-   */
-  @Deprecated
-  public abstract void initialize(@Nullable Configuration conf, Properties tbl)
-      throws SerDeException;
 
   /**
    * Returns the Writable class that would be returned by the serialize method.
@@ -75,58 +73,38 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
   public abstract Class<? extends Writable> getSerializedClass();
 
   /**
-   * Serialize an object by navigating inside the Object with the
-   * ObjectInspector. In most cases, the return value of this function will be
-   * constant since the function will reuse the Writable object. If the client
-   * wants to keep a copy of the Writable, the client needs to clone the
-   * returned value.
-   */
-  public abstract Writable serialize(Object obj, ObjectInspector objInspector)
-      throws SerDeException;
-
-  /**
    * Returns statistics collected when serializing.
    *
    * @return A SerDeStats object or {@code null} if stats are not supported by
-   *         this SerDe.
+   *         this SerDe. Returns statistics collected when serializing
    */
-  public SerDeStats getSerDeStats() { 
+  public SerDeStats getSerDeStats() {
     return null;
   }
 
-  /**
-   * Deserialize an object out of a Writable blob. In most cases, the return
-   * value of this function will be constant since the function will reuse the
-   * returned object. If the client wants to keep a copy of the object, the
-   * client needs to clone the returned value by calling
-   * ObjectInspectorUtils.getStandardObject().
-   *
-   * @param blob
-   *          The Writable object containing a serialized object
-   * @return A Java object representing the contents in the blob.
-   */
-  public abstract Object deserialize(Writable blob) throws SerDeException;
+  @Override
+  public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
+    throw new SerDeException("Serialize is not implemented");
+  }
 
-  /**
-   * Get the object inspector that can be used to navigate through the internal
-   * structure of the Object returned from deserialize(...).
-   */
-  public abstract ObjectInspector getObjectInspector() throws SerDeException;
-
-  /**
-   * Get the error messages during the Serde configuration
-   *
-   * @return The error messages in the configuration which are empty if no error occurred
-   */
-  public String getConfigurationErrors() {
-    return configErrors == null ? "" : configErrors;
+  @Override
+  public Object deserialize(Writable blob) throws SerDeException {
+    throw new SerDeException("Deserialize is not implemented");
   }
 
   /**
-   * @return Whether the SerDe that can store schema both inside and outside of metastore
-   *        does, in fact, store it inside metastore, based on table parameters.
+   * @return Whether the SerDe that can store schema both inside and outside of
+   *         metastore does, in fact, store it inside metastore, based on table
+   *         parameters.
    */
   public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
     return false; // The default, unless SerDe overrides it.
+  }
+
+  @Override
+  public String toString() {
+    return "AbstractSerDe [log=" + log + ", configuration=" + configuration + ", properties=" + properties
+        + ", tableProperties=" + tableProperties + ", partitionProperties=" + partitionProperties + ", getClass()="
+        + getClass() + "]";
   }
 }

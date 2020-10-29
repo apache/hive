@@ -76,14 +76,18 @@ public class ParquetHiveSerDe extends AbstractSerDe {
   }
 
   @Override
-  public final void initialize(final Configuration conf, final Properties tbl) throws SerDeException {
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
+
     final List<String> columnNames;
     final List<TypeInfo> columnTypes;
     // Get column names and sort order
-    final String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    final String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+    final String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+    final String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
+        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
+        : String.valueOf(SerDeUtils.COMMA);
     if (columnNameProperty.length() == 0) {
       columnNames = new ArrayList<String>();
     } else {
@@ -104,8 +108,9 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     StructTypeInfo completeTypeInfo =
         (StructTypeInfo) TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
     StructTypeInfo prunedTypeInfo = null;
-    if (conf != null) {
-      String rawPrunedColumnPaths = conf.get(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
+    if (this.configuration.isPresent()) {
+      String rawPrunedColumnPaths =
+          this.configuration.get().get(ColumnProjectionUtils.READ_NESTED_COLUMN_PATH_CONF_STR);
       if (rawPrunedColumnPaths != null) {
         List<String> prunedColumnPaths = processRawPrunedPaths(rawPrunedColumnPaths);
         prunedTypeInfo = pruneFromPaths(completeTypeInfo, prunedColumnPaths);

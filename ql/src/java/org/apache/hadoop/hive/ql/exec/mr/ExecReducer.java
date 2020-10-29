@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.ReportStats;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -100,20 +101,19 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     isTagged = gWork.getNeedsTagging();
     try {
       keyTableDesc = gWork.getKeyDesc();
-      inputKeyDeserializer = ReflectionUtils.newInstance(keyTableDesc
-          .getDeserializerClass(), null);
-      SerDeUtils.initializeSerDe(inputKeyDeserializer, null, keyTableDesc.getProperties(), null);
+      AbstractSerDe serDe = ReflectionUtils.newInstance(keyTableDesc
+          .getSerDeClass(), null);
+      serDe.initialize(null, keyTableDesc.getProperties(), null);
+      inputKeyDeserializer = serDe;
       keyObjectInspector = inputKeyDeserializer.getObjectInspector();
       valueTableDesc = new TableDesc[gWork.getTagToValueDesc().size()];
       for (int tag = 0; tag < gWork.getTagToValueDesc().size(); tag++) {
         // We should initialize the SerDe with the TypeInfo when available.
         valueTableDesc[tag] = gWork.getTagToValueDesc().get(tag);
-        inputValueDeserializer[tag] = ReflectionUtils.newInstance(
-            valueTableDesc[tag].getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(inputValueDeserializer[tag], null,
-                                   valueTableDesc[tag].getProperties(), null);
-        valueObjectInspector[tag] = inputValueDeserializer[tag]
-            .getObjectInspector();
+        AbstractSerDe sd = ReflectionUtils.newInstance(valueTableDesc[tag].getSerDeClass(), null);
+        sd.initialize(null, valueTableDesc[tag].getProperties(), null);
+        valueObjectInspector[tag] = inputValueDeserializer[tag].getObjectInspector();
+        inputValueDeserializer[tag] = sd;
 
         ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
         ois.add(keyObjectInspector);

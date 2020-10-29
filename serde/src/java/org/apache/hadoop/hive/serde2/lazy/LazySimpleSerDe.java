@@ -105,24 +105,18 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
     return sb.toString();
   }
 
-  public LazySimpleSerDe() throws SerDeException {
-  }
-
   /**
    * Initialize the SerDe given the parameters. serialization.format: separator
    * char or byte code (only supports byte-value up to 127) columns:
    * ","-separated column names columns.types: ",", ":", or ";"-separated column
    * types
-   *
-   * @see  org.apache.hadoop.hive.serde2.AbstractSerDe#initialize(Configuration, Properties)
    */
   @Override
-  public void initialize(Configuration job, Properties tbl)
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-    super.initialize(job, tbl);
-
-    serdeParams = new LazySerDeParameters(job, tbl, getClass().getName());
+    serdeParams = new LazySerDeParameters(configuration, tableProperties, getClass().getName());
 
     // Create the ObjectInspectors for the fields
     cachedObjectInspector = LazyFactory.createLazyStructInspector(serdeParams

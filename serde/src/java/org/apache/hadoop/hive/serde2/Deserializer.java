@@ -18,9 +18,6 @@
 
 package org.apache.hadoop.hive.serde2;
 
-import java.util.Properties;
-
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 
@@ -34,18 +31,7 @@ import org.apache.hadoop.io.Writable;
  * All deserializers should extend the abstract class AbstractDeserializer.
  * The interface is necessary for SerDes to be able to implement both Serializer and Deserializer.
  */
-public interface Deserializer {
-
-  /**
-   * Initialize the HiveDeserializer.
-   *
-   * @param conf
-   *          System properties
-   * @param tbl
-   *          table properties
-   * @throws SerDeException
-   */
-  void initialize(Configuration conf, Properties tbl) throws SerDeException;
+public interface Deserializer extends SerDe {
 
   /**
    * Deserialize an object out of a Writable blob. In most cases, the return
@@ -66,10 +52,4 @@ public interface Deserializer {
    */
   ObjectInspector getObjectInspector() throws SerDeException;
 
-  /**
-   * Returns statistics collected when serializing
-   *
-   * @return {@link SerDeStats} object; or in case not supported: null
-   */
-  SerDeStats getSerDeStats();
 }
