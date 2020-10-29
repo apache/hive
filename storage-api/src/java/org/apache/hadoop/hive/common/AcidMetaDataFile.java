@@ -74,9 +74,8 @@ public class AcidMetaDataFile {
     metadata.put(Field.VERSION.toString(), CURRENT_VERSION);
     metadata.put(Field.DATA_FORMAT.toString(), format.toString());
     String data = new ObjectMapper().writeValueAsString(metadata);
-    try (FSDataOutputStream out = fs
-        .create(new Path(basePath, METADATA_FILE)); OutputStreamWriter writer = new OutputStreamWriter(
-        out, "UTF-8")) {
+    FSDataOutputStream out = fs.create(new Path(basePath, METADATA_FILE));
+    try (OutputStreamWriter writer = new OutputStreamWriter(out, "UTF-8")) {
       writer.write(data);
       writer.flush();
     }
