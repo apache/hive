@@ -37,6 +37,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -65,6 +66,7 @@ import org.apache.hadoop.hive.metastore.messaging.json.JSONAlterCatalogMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAlterTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.json.JSONCommitCompactionMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONCommitTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONCreateCatalogMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONCreateDatabaseMessage;
@@ -133,6 +135,7 @@ public class MessageBuilder {
   public static final String DELETE_TBL_COL_STAT_EVENT = "DELETE_TBL_COL_STAT_EVENT";
   public static final String UPDATE_PART_COL_STAT_EVENT = "UPDATE_PART_COL_STAT_EVENT";
   public static final String DELETE_PART_COL_STAT_EVENT = "DELETE_PART_COL_STAT_EVENT";
+  public static final String COMMIT_COMPACTION_EVENT = "COMMIT_COMPACTION_EVENT";
 
   protected static final Configuration conf = MetastoreConf.newMetastoreConf();
 
@@ -325,6 +328,12 @@ public class MessageBuilder {
                                                                             String partName, List<String> partValues) {
     return new JSONDeletePartitionColumnStatMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), dbName,
             colName, partName, partValues);
+  }
+
+  public CommitCompactionMessage buildCommitCompactionMessage(Long txnid, Long compactionId, CompactionType type,
+      String dbname, String tableName, String partName) {
+    return new JSONCommitCompactionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), txnid, compactionId, type,
+        dbname, tableName, partName);
   }
 
   private long now() {

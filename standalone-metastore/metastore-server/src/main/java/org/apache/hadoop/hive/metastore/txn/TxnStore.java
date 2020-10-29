@@ -554,4 +554,13 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.Idempotent
   long findMinOpenTxnIdForCleaner() throws MetaException;
+
+  /**
+   * Returns the compaction running in the transaction txnId
+   * @param txnId transaction Id
+   * @return compaction info
+   * @throws MetaException ex
+   */
+  @RetrySemantics.ReadOnly
+  CompactionInfo getCompactionByTxnId(long txnId) throws MetaException;
 }

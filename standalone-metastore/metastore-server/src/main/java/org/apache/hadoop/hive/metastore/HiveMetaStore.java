@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.metastore.events.AlterISchemaEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.CommitTxnEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
@@ -8373,6 +8374,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (listeners != null && !listeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_TXN,
                 new CommitTxnEvent(rqst.getTxnid(), this));
+        CompactionInfo compactionInfo = getTxnHandler().getCompactionByTxnId(rqst.getTxnid());
+        if (compactionInfo != null) {
+          MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_COMPACTION,
+              new CommitCompactionEvent(rqst.getTxnid(), compactionInfo, this));
+        }
       }
     }
 

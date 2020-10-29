@@ -18,11 +18,14 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
+import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
+import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 
@@ -46,6 +50,12 @@ import java.util.Set;
 class CompactionTxnHandler extends TxnHandler {
   static final private String CLASS_NAME = CompactionTxnHandler.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
+
+  private static final String SELECT_COMPACTION_QUEUE_BY_TXN_ID =
+      "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
+          + "\"CQ_STATE\", \"CQ_TYPE\", \"CQ_TBLPROPERTIES\", \"CQ_WORKER_ID\", \"CQ_START\", \"CQ_RUN_AS\", "
+          + "\"CQ_HIGHEST_WRITE_ID\", \"CQ_META_INFO\", \"CQ_HADOOP_JOB_ID\", \"CQ_ERROR_MESSAGE\", "
+          + "\"CQ_ENQUEUE_TIME\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_TXN_ID\" = ?";
 
   public CompactionTxnHandler() {
   }
@@ -1154,6 +1164,55 @@ class CompactionTxnHandler extends TxnHandler {
     if (txnType == TxnType.COMPACTION) {
       stmt.executeUpdate(
           "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + " WHERE \"CQ_TXN_ID\" = " + txnid);
+    }
+  }
+
+  protected CompactionInfo getCompactionByTxnId(Connection dbConn, long txnid) throws SQLException, MetaException {
+    CompactionInfo info = null;
+    try (PreparedStatement pStmt = dbConn.prepareStatement(SELECT_COMPACTION_QUEUE_BY_TXN_ID)) {
+      pStmt.setLong(1, txnid);
+      try (ResultSet rs = pStmt.executeQuery()) {
+        if (rs.next()) {
+          info = CompactionInfo.loadFullFromCompactionQueue(rs);
+        }
+      }
+    }
+    return info;
+  }
+
+  @Override
+  public CompactionInfo getCompactionByTxnId(long txnId) throws MetaException {
+    Connection dbConn = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        return getCompactionByTxnId(dbConn, txnId);
+      } catch (SQLException e) {
+        LOG.error("Unable to getCompactionByTxnId", e);
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "getCompactionByTxnId");
+        throw new MetaException("Unable to execute getCompactionByTxnId() " + StringUtils.stringifyException(e));
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      return getCompactionByTxnId(txnId);
+    }
+  }
+
+  @Override
+  protected void createCommitNotificationEvent(Connection dbConn, long txnid, Optional<TxnType> txnType)
+      throws MetaException, SQLException {
+    super.createCommitNotificationEvent(dbConn, txnid, txnType);
+    if (transactionalListeners != null) {
+      CompactionInfo compactionInfo = getCompactionByTxnId(dbConn, txnid);
+      if (compactionInfo != null) {
+        MetaStoreListenerNotifier
+            .notifyEventWithDirectSql(transactionalListeners, EventMessage.EventType.COMMIT_COMPACTION,
+                new CommitCompactionEvent(txnid, compactionInfo), dbConn, sqlGenerator);
+      } else {
+        LOG.warn("No compaction queue record found for Compaction type transaction commit. txnId:" + txnid);
+      }
     }
   }
 }
