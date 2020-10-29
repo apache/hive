@@ -2199,8 +2199,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
           profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
         rules.add(HiveJoinConstraintsRule.INSTANCE);
       }
-      rules.add(HiveJoinAddNotNullRule.INSTANCE_JOIN);
-      rules.add(HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN);
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_NOT_NULL_INFERRED_EXPRESSIONS)) {
+        rules.add(HiveJoinAddNotNullRule.INSTANCE_JOIN);
+        rules.add(HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN);
+      }
       rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_JOIN);
       rules.add(HiveJoinPushTransitivePredicatesRule.INSTANCE_SEMIJOIN);
       // We use DEPTH_FIRST traversal order because it is more efficient
