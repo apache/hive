@@ -100,7 +100,7 @@ public class Select {
                 var.setValues(rs, rm);
               }
               if (trace) {
-                trace(ctx, var, rs, rm, i);
+                trace(ctx, var, rm, i);
               }
             } 
             else {
@@ -480,7 +480,7 @@ public class Select {
     exec.trace(ctx, message);
   }
   
-  void trace(ParserRuleContext ctx, Var var, ResultSet rs, ResultSetMetaData rm, int idx) throws SQLException {
-    exec.trace(ctx, var, rs, rm, idx);
+  void trace(ParserRuleContext ctx, Var var, ResultSetMetaData rm, int idx) throws SQLException {
+    exec.trace(ctx, var, rm, idx);
   }    
 }

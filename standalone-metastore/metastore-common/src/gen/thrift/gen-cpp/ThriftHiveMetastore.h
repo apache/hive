@@ -270,6 +270,10 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void add_replication_metrics(const ReplicationMetricList& replicationMetricList) = 0;
   virtual void get_replication_metrics(ReplicationMetricList& _return, const GetReplicationMetricsRequest& rqst) = 0;
   virtual void get_open_txns_req(GetOpenTxnsResponse& _return, const GetOpenTxnsRequest& getOpenTxnsRequest) = 0;
+  virtual void create_stored_procedure(const StoredProcedure& proc) = 0;
+  virtual void get_stored_procedure(StoredProcedure& _return, const StoredProcedureRequest& request) = 0;
+  virtual void drop_stored_procedure(const StoredProcedureRequest& request) = 0;
+  virtual void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -1067,6 +1071,18 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_open_txns_req(GetOpenTxnsResponse& /* _return */, const GetOpenTxnsRequest& /* getOpenTxnsRequest */) {
+    return;
+  }
+  void create_stored_procedure(const StoredProcedure& /* proc */) {
+    return;
+  }
+  void get_stored_procedure(StoredProcedure& /* _return */, const StoredProcedureRequest& /* request */) {
+    return;
+  }
+  void drop_stored_procedure(const StoredProcedureRequest& /* request */) {
+    return;
+  }
+  void get_all_stored_procedures(std::vector<std::string> & /* _return */, const ListStoredProcedureRequest& /* request */) {
     return;
   }
 };
@@ -30962,6 +30978,462 @@ class ThriftHiveMetastore_get_open_txns_req_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_create_stored_procedure_args__isset {
+  _ThriftHiveMetastore_create_stored_procedure_args__isset() : proc(false) {}
+  bool proc :1;
+} _ThriftHiveMetastore_create_stored_procedure_args__isset;
+
+class ThriftHiveMetastore_create_stored_procedure_args {
+ public:
+
+  ThriftHiveMetastore_create_stored_procedure_args(const ThriftHiveMetastore_create_stored_procedure_args&);
+  ThriftHiveMetastore_create_stored_procedure_args& operator=(const ThriftHiveMetastore_create_stored_procedure_args&);
+  ThriftHiveMetastore_create_stored_procedure_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_create_stored_procedure_args() noexcept;
+  StoredProcedure proc;
+
+  _ThriftHiveMetastore_create_stored_procedure_args__isset __isset;
+
+  void __set_proc(const StoredProcedure& val);
+
+  bool operator == (const ThriftHiveMetastore_create_stored_procedure_args & rhs) const
+  {
+    if (!(proc == rhs.proc))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_create_stored_procedure_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_create_stored_procedure_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_create_stored_procedure_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_create_stored_procedure_pargs() noexcept;
+  const StoredProcedure* proc;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_create_stored_procedure_result__isset {
+  _ThriftHiveMetastore_create_stored_procedure_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_create_stored_procedure_result__isset;
+
+class ThriftHiveMetastore_create_stored_procedure_result {
+ public:
+
+  ThriftHiveMetastore_create_stored_procedure_result(const ThriftHiveMetastore_create_stored_procedure_result&);
+  ThriftHiveMetastore_create_stored_procedure_result& operator=(const ThriftHiveMetastore_create_stored_procedure_result&);
+  ThriftHiveMetastore_create_stored_procedure_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_create_stored_procedure_result() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_create_stored_procedure_result__isset __isset;
+
+  void __set_o1(const NoSuchObjectException& val);
+
+  void __set_o2(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_create_stored_procedure_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_create_stored_procedure_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_create_stored_procedure_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_create_stored_procedure_presult__isset {
+  _ThriftHiveMetastore_create_stored_procedure_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_create_stored_procedure_presult__isset;
+
+class ThriftHiveMetastore_create_stored_procedure_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_create_stored_procedure_presult() noexcept;
+  NoSuchObjectException o1;
+  MetaException o2;
+
+  _ThriftHiveMetastore_create_stored_procedure_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_stored_procedure_args__isset {
+  _ThriftHiveMetastore_get_stored_procedure_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_get_stored_procedure_args__isset;
+
+class ThriftHiveMetastore_get_stored_procedure_args {
+ public:
+
+  ThriftHiveMetastore_get_stored_procedure_args(const ThriftHiveMetastore_get_stored_procedure_args&);
+  ThriftHiveMetastore_get_stored_procedure_args& operator=(const ThriftHiveMetastore_get_stored_procedure_args&);
+  ThriftHiveMetastore_get_stored_procedure_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_stored_procedure_args() noexcept;
+  StoredProcedureRequest request;
+
+  _ThriftHiveMetastore_get_stored_procedure_args__isset __isset;
+
+  void __set_request(const StoredProcedureRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_stored_procedure_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_stored_procedure_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_stored_procedure_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_stored_procedure_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_stored_procedure_pargs() noexcept;
+  const StoredProcedureRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_stored_procedure_result__isset {
+  _ThriftHiveMetastore_get_stored_procedure_result__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_stored_procedure_result__isset;
+
+class ThriftHiveMetastore_get_stored_procedure_result {
+ public:
+
+  ThriftHiveMetastore_get_stored_procedure_result(const ThriftHiveMetastore_get_stored_procedure_result&);
+  ThriftHiveMetastore_get_stored_procedure_result& operator=(const ThriftHiveMetastore_get_stored_procedure_result&);
+  ThriftHiveMetastore_get_stored_procedure_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_stored_procedure_result() noexcept;
+  StoredProcedure success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_stored_procedure_result__isset __isset;
+
+  void __set_success(const StoredProcedure& val);
+
+  void __set_o1(const MetaException& val);
+
+  void __set_o2(const NoSuchObjectException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_stored_procedure_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_stored_procedure_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_stored_procedure_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_stored_procedure_presult__isset {
+  _ThriftHiveMetastore_get_stored_procedure_presult__isset() : success(false), o1(false), o2(false) {}
+  bool success :1;
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_get_stored_procedure_presult__isset;
+
+class ThriftHiveMetastore_get_stored_procedure_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_stored_procedure_presult() noexcept;
+  StoredProcedure* success;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_get_stored_procedure_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_stored_procedure_args__isset {
+  _ThriftHiveMetastore_drop_stored_procedure_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_drop_stored_procedure_args__isset;
+
+class ThriftHiveMetastore_drop_stored_procedure_args {
+ public:
+
+  ThriftHiveMetastore_drop_stored_procedure_args(const ThriftHiveMetastore_drop_stored_procedure_args&);
+  ThriftHiveMetastore_drop_stored_procedure_args& operator=(const ThriftHiveMetastore_drop_stored_procedure_args&);
+  ThriftHiveMetastore_drop_stored_procedure_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_stored_procedure_args() noexcept;
+  StoredProcedureRequest request;
+
+  _ThriftHiveMetastore_drop_stored_procedure_args__isset __isset;
+
+  void __set_request(const StoredProcedureRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_drop_stored_procedure_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_stored_procedure_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_stored_procedure_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_drop_stored_procedure_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_stored_procedure_pargs() noexcept;
+  const StoredProcedureRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_stored_procedure_result__isset {
+  _ThriftHiveMetastore_drop_stored_procedure_result__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_drop_stored_procedure_result__isset;
+
+class ThriftHiveMetastore_drop_stored_procedure_result {
+ public:
+
+  ThriftHiveMetastore_drop_stored_procedure_result(const ThriftHiveMetastore_drop_stored_procedure_result&);
+  ThriftHiveMetastore_drop_stored_procedure_result& operator=(const ThriftHiveMetastore_drop_stored_procedure_result&);
+  ThriftHiveMetastore_drop_stored_procedure_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_stored_procedure_result() noexcept;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_drop_stored_procedure_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  void __set_o2(const NoSuchObjectException& val);
+
+  bool operator == (const ThriftHiveMetastore_drop_stored_procedure_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    if (!(o2 == rhs.o2))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_stored_procedure_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_stored_procedure_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_stored_procedure_presult__isset {
+  _ThriftHiveMetastore_drop_stored_procedure_presult__isset() : o1(false), o2(false) {}
+  bool o1 :1;
+  bool o2 :1;
+} _ThriftHiveMetastore_drop_stored_procedure_presult__isset;
+
+class ThriftHiveMetastore_drop_stored_procedure_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_stored_procedure_presult() noexcept;
+  MetaException o1;
+  NoSuchObjectException o2;
+
+  _ThriftHiveMetastore_drop_stored_procedure_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_stored_procedures_args__isset {
+  _ThriftHiveMetastore_get_all_stored_procedures_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_get_all_stored_procedures_args__isset;
+
+class ThriftHiveMetastore_get_all_stored_procedures_args {
+ public:
+
+  ThriftHiveMetastore_get_all_stored_procedures_args(const ThriftHiveMetastore_get_all_stored_procedures_args&);
+  ThriftHiveMetastore_get_all_stored_procedures_args& operator=(const ThriftHiveMetastore_get_all_stored_procedures_args&);
+  ThriftHiveMetastore_get_all_stored_procedures_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_all_stored_procedures_args() noexcept;
+  ListStoredProcedureRequest request;
+
+  _ThriftHiveMetastore_get_all_stored_procedures_args__isset __isset;
+
+  void __set_request(const ListStoredProcedureRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_all_stored_procedures_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_all_stored_procedures_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_all_stored_procedures_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_all_stored_procedures_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_all_stored_procedures_pargs() noexcept;
+  const ListStoredProcedureRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_stored_procedures_result__isset {
+  _ThriftHiveMetastore_get_all_stored_procedures_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_all_stored_procedures_result__isset;
+
+class ThriftHiveMetastore_get_all_stored_procedures_result {
+ public:
+
+  ThriftHiveMetastore_get_all_stored_procedures_result(const ThriftHiveMetastore_get_all_stored_procedures_result&);
+  ThriftHiveMetastore_get_all_stored_procedures_result& operator=(const ThriftHiveMetastore_get_all_stored_procedures_result&);
+  ThriftHiveMetastore_get_all_stored_procedures_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_all_stored_procedures_result() noexcept;
+  std::vector<std::string>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_all_stored_procedures_result__isset __isset;
+
+  void __set_success(const std::vector<std::string> & val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_all_stored_procedures_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_all_stored_procedures_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_all_stored_procedures_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_stored_procedures_presult__isset {
+  _ThriftHiveMetastore_get_all_stored_procedures_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_all_stored_procedures_presult__isset;
+
+class ThriftHiveMetastore_get_all_stored_procedures_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_all_stored_procedures_presult() noexcept;
+  std::vector<std::string> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_all_stored_procedures_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -31714,6 +32186,18 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_open_txns_req(GetOpenTxnsResponse& _return, const GetOpenTxnsRequest& getOpenTxnsRequest);
   void send_get_open_txns_req(const GetOpenTxnsRequest& getOpenTxnsRequest);
   void recv_get_open_txns_req(GetOpenTxnsResponse& _return);
+  void create_stored_procedure(const StoredProcedure& proc);
+  void send_create_stored_procedure(const StoredProcedure& proc);
+  void recv_create_stored_procedure();
+  void get_stored_procedure(StoredProcedure& _return, const StoredProcedureRequest& request);
+  void send_get_stored_procedure(const StoredProcedureRequest& request);
+  void recv_get_stored_procedure(StoredProcedure& _return);
+  void drop_stored_procedure(const StoredProcedureRequest& request);
+  void send_drop_stored_procedure(const StoredProcedureRequest& request);
+  void recv_drop_stored_procedure();
+  void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request);
+  void send_get_all_stored_procedures(const ListStoredProcedureRequest& request);
+  void recv_get_all_stored_procedures(std::vector<std::string> & _return);
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -31971,6 +32455,10 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_add_replication_metrics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_replication_metrics(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_open_txns_req(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_create_stored_procedure(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_stored_procedure(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_drop_stored_procedure(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_all_stored_procedures(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(::std::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -32222,6 +32710,10 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["add_replication_metrics"] = &ThriftHiveMetastoreProcessor::process_add_replication_metrics;
     processMap_["get_replication_metrics"] = &ThriftHiveMetastoreProcessor::process_get_replication_metrics;
     processMap_["get_open_txns_req"] = &ThriftHiveMetastoreProcessor::process_get_open_txns_req;
+    processMap_["create_stored_procedure"] = &ThriftHiveMetastoreProcessor::process_create_stored_procedure;
+    processMap_["get_stored_procedure"] = &ThriftHiveMetastoreProcessor::process_get_stored_procedure;
+    processMap_["drop_stored_procedure"] = &ThriftHiveMetastoreProcessor::process_drop_stored_procedure;
+    processMap_["get_all_stored_procedures"] = &ThriftHiveMetastoreProcessor::process_get_all_stored_procedures;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -34632,6 +35124,44 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void create_stored_procedure(const StoredProcedure& proc) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->create_stored_procedure(proc);
+    }
+    ifaces_[i]->create_stored_procedure(proc);
+  }
+
+  void get_stored_procedure(StoredProcedure& _return, const StoredProcedureRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_stored_procedure(_return, request);
+    }
+    ifaces_[i]->get_stored_procedure(_return, request);
+    return;
+  }
+
+  void drop_stored_procedure(const StoredProcedureRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->drop_stored_procedure(request);
+    }
+    ifaces_[i]->drop_stored_procedure(request);
+  }
+
+  void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_all_stored_procedures(_return, request);
+    }
+    ifaces_[i]->get_all_stored_procedures(_return, request);
+    return;
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -35389,6 +35919,18 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_open_txns_req(GetOpenTxnsResponse& _return, const GetOpenTxnsRequest& getOpenTxnsRequest);
   int32_t send_get_open_txns_req(const GetOpenTxnsRequest& getOpenTxnsRequest);
   void recv_get_open_txns_req(GetOpenTxnsResponse& _return, const int32_t seqid);
+  void create_stored_procedure(const StoredProcedure& proc);
+  int32_t send_create_stored_procedure(const StoredProcedure& proc);
+  void recv_create_stored_procedure(const int32_t seqid);
+  void get_stored_procedure(StoredProcedure& _return, const StoredProcedureRequest& request);
+  int32_t send_get_stored_procedure(const StoredProcedureRequest& request);
+  void recv_get_stored_procedure(StoredProcedure& _return, const int32_t seqid);
+  void drop_stored_procedure(const StoredProcedureRequest& request);
+  int32_t send_drop_stored_procedure(const StoredProcedureRequest& request);
+  void recv_drop_stored_procedure(const int32_t seqid);
+  void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request);
+  int32_t send_get_all_stored_procedures(const ListStoredProcedureRequest& request);
+  void recv_get_all_stored_procedures(std::vector<std::string> & _return, const int32_t seqid);
 };
 
 #ifdef _MSC_VER

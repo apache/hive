@@ -1232,6 +1232,20 @@ CREATE TABLE "REPLICATION_METRICS" (
 CREATE INDEX POLICY_IDX ON "REPLICATION_METRICS" ("RM_POLICY");
 CREATE INDEX DUMP_IDX ON "REPLICATION_METRICS" ("RM_DUMP_EXECUTION_ID");
 
+-- Create stored procedure tables
+CREATE TABLE "STORED_PROCS" (
+  "SP_ID" NUMBER NOT NULL,
+  "CREATE_TIME" NUMBER(10) NOT NULL,
+  "DB_ID" NUMBER NOT NULL,
+  "NAME" VARCHAR(256) NOT NULL,
+  "OWNER_NAME" VARCHAR(128) NOT NULL,
+  "SOURCE" NCLOB NOT NULL,
+  PRIMARY KEY ("SP_ID")
+);
+
+CREATE UNIQUE INDEX UNIQUESTOREDPROC ON STORED_PROCS ("NAME", "DB_ID");
+ALTER TABLE "STORED_PROCS" ADD CONSTRAINT "STOREDPROC_FK1" FOREIGN KEY ("DB_ID") REFERENCES "DBS" ("DB_ID");
+
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
 -- -----------------------------------------------------------------
