@@ -84,6 +84,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
@@ -892,6 +893,11 @@ public class BeeLine implements Closeable {
     getOpts().setInitFiles(cl.getOptionValues("i"));
     getOpts().setScriptFile(cl.getOptionValue("f"));
 
+    String hplSqlMode = Utils.parsePropertyFromUrl(url, Constants.HPLSQL_MODE);
+    if ("true".equalsIgnoreCase(hplSqlMode)) {
+      getOpts().setDelimiter("/");
+      getOpts().setEntireLineAsCommand(true);
+    }
 
     if (url != null) {
       // Specifying username/password/driver explicitly will override the values from the url;

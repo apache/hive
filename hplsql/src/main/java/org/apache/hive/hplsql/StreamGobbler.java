@@ -27,10 +27,12 @@ import java.io.IOException;
  * Read a stream from an external process 
  */
 public class StreamGobbler extends Thread {
-  InputStream is;
+  private final Console console;
+  private final InputStream is;
   
-  StreamGobbler(InputStream is) {
+  StreamGobbler(InputStream is, Console console) {
     this.is = is;
+    this.console = console;
   }
   
   public void run() {
@@ -42,7 +44,7 @@ public class StreamGobbler extends Thread {
         if(line == null) {
           break;
         }        
-        System.out.println(line);
+        console.printLine(line);
       }
     } catch (IOException ioe) {
       ioe.printStackTrace();  

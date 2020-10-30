@@ -515,6 +515,7 @@ struct TSessionHandle {
 // The subtype of an OperationHandle.
 enum TOperationType {
   EXECUTE_STATEMENT,
+  PROCEDURAL_SQL,
   GET_TYPE_INFO,
   GET_CATALOGS,
   GET_SCHEMAS,

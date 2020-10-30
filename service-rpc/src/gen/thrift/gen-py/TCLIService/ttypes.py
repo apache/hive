@@ -198,37 +198,40 @@ class TOperationState(object):
 
 class TOperationType(object):
     EXECUTE_STATEMENT = 0
-    GET_TYPE_INFO = 1
-    GET_CATALOGS = 2
-    GET_SCHEMAS = 3
-    GET_TABLES = 4
-    GET_TABLE_TYPES = 5
-    GET_COLUMNS = 6
-    GET_FUNCTIONS = 7
-    UNKNOWN = 8
+    PROCEDURAL_SQL = 1
+    GET_TYPE_INFO = 2
+    GET_CATALOGS = 3
+    GET_SCHEMAS = 4
+    GET_TABLES = 5
+    GET_TABLE_TYPES = 6
+    GET_COLUMNS = 7
+    GET_FUNCTIONS = 8
+    UNKNOWN = 9
 
     _VALUES_TO_NAMES = {
         0: "EXECUTE_STATEMENT",
-        1: "GET_TYPE_INFO",
-        2: "GET_CATALOGS",
-        3: "GET_SCHEMAS",
-        4: "GET_TABLES",
-        5: "GET_TABLE_TYPES",
-        6: "GET_COLUMNS",
-        7: "GET_FUNCTIONS",
-        8: "UNKNOWN",
+        1: "PROCEDURAL_SQL",
+        2: "GET_TYPE_INFO",
+        3: "GET_CATALOGS",
+        4: "GET_SCHEMAS",
+        5: "GET_TABLES",
+        6: "GET_TABLE_TYPES",
+        7: "GET_COLUMNS",
+        8: "GET_FUNCTIONS",
+        9: "UNKNOWN",
     }
 
     _NAMES_TO_VALUES = {
         "EXECUTE_STATEMENT": 0,
-        "GET_TYPE_INFO": 1,
-        "GET_CATALOGS": 2,
-        "GET_SCHEMAS": 3,
-        "GET_TABLES": 4,
-        "GET_TABLE_TYPES": 5,
-        "GET_COLUMNS": 6,
-        "GET_FUNCTIONS": 7,
-        "UNKNOWN": 8,
+        "PROCEDURAL_SQL": 1,
+        "GET_TYPE_INFO": 2,
+        "GET_CATALOGS": 3,
+        "GET_SCHEMAS": 4,
+        "GET_TABLES": 5,
+        "GET_TABLE_TYPES": 6,
+        "GET_COLUMNS": 7,
+        "GET_FUNCTIONS": 8,
+        "UNKNOWN": 9,
     }
 
 

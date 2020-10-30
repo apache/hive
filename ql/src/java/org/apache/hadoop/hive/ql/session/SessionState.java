@@ -113,6 +113,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.apache.hive.hplsql.Exec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -269,6 +270,8 @@ public class SessionState implements ISessionAuthState{
   private String userIpAddress;
 
   private SparkSession sparkSession;
+
+  private Exec hplsqlInterpreter;
 
   /**
    * Gets information about HDFS encryption
@@ -1875,6 +1878,7 @@ public class SessionState implements ISessionAuthState{
     // There are lots of places where hadoop's ReflectionUtils is still used. Until all of them are
     // cleared up, we would have to retain this to avoid mem leak.
     clearReflectionUtilsCache();
+    hplsqlInterpreter = null;
   }
 
   private void clearReflectionUtilsCache() {
@@ -2040,6 +2044,14 @@ public class SessionState implements ISessionAuthState{
 
   public void setSparkSession(SparkSession sparkSession) {
     this.sparkSession = sparkSession;
+  }
+
+  public Exec getHplsqlInterpreter() {
+    return hplsqlInterpreter;
+  }
+
+  public void setHplsqlInterpreter(Exec hplsqlInterpreter) {
+    this.hplsqlInterpreter = hplsqlInterpreter;
   }
 
   /**
