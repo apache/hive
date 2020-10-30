@@ -1513,6 +1513,16 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   private void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType,
       Long commitId, long tempId) throws SQLException {
+    List<String> queryBatch = getCommitTxnUpdateAndCleanupQueries(txnid, txnType, commitId, tempId);
+    // execute all in one batch
+    executeQueriesInBatchNoCount(dbProduct, stmt, queryBatch, maxBatchSize);
+  }
+
+  /**
+   * Get queries to run after txn is committed.
+   * See also overriden method in CompactionTxnHandler
+   */
+  protected List<String> getCommitTxnUpdateAndCleanupQueries(long txnid, TxnType txnType, Long commitId, long tempId) {
     List<String> queryBatch = new ArrayList<>(5);
     // update write_set with real commitId
     if (commitId != null) {
@@ -1529,13 +1539,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (txnType == TxnType.MATER_VIEW_REBUILD) {
       queryBatch.add("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
     }
-    if (txnType == TxnType.COMPACTION) {
-      queryBatch.add("UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId
-          + " WHERE \"CQ_TXN_ID\" = " + txnid);
-    }
-
-    // execute all in one batch
-    executeQueriesInBatchNoCount(dbProduct, stmt, queryBatch, maxBatchSize);
+    return queryBatch;
   }
 
   private void updateKeyValueAssociatedWithTxn(CommitTxnRequest rqst, Statement stmt) throws SQLException {
