@@ -219,12 +219,6 @@ public class JsonSerDe extends AbstractSerDe {
     return Text.class;
   }
 
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics yet
-    return null;
-  }
-
   public StructTypeInfo getTypeInfo() {
     return rowTypeInfo;
   }

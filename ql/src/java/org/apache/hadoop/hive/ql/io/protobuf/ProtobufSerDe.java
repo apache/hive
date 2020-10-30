@@ -30,7 +30,6 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
@@ -112,11 +111,6 @@ public abstract class ProtobufSerDe extends AbstractSerDe {
   @Override
   public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
     throw new UnsupportedOperationException("Not implemented serialize");
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
   }
 
   @Override
