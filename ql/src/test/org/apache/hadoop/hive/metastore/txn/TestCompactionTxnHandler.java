@@ -183,15 +183,15 @@ public class TestCompactionTxnHandler {
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0).size());
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
     assertNotNull(ci);
 
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0).size());
     txnHandler.markCompacted(ci);
     assertNull(txnHandler.findNextToCompact("fred"));
 
-    List<CompactionInfo> toClean = txnHandler.findReadyToClean();
+    List<CompactionInfo> toClean = txnHandler.findReadyToClean(0);
     assertEquals(1, toClean.size());
     assertNull(txnHandler.findNextToCompact("fred"));
 
@@ -212,20 +212,20 @@ public class TestCompactionTxnHandler {
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0).size());
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
     assertNotNull(ci);
 
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0).size());
     txnHandler.markCompacted(ci);
     assertNull(txnHandler.findNextToCompact("fred"));
 
-    List<CompactionInfo> toClean = txnHandler.findReadyToClean();
+    List<CompactionInfo> toClean = txnHandler.findReadyToClean(0);
     assertEquals(1, toClean.size());
     assertNull(txnHandler.findNextToCompact("fred"));
     txnHandler.markCleaned(ci);
     assertNull(txnHandler.findNextToCompact("fred"));
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0).size());
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, rsp.getCompactsSize());
@@ -262,11 +262,11 @@ public class TestCompactionTxnHandler {
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
     rqst.setPartitionname(partitionName);
     txnHandler.compact(rqst);
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0).size());
     CompactionInfo ci = txnHandler.findNextToCompact(workerId);
     assertNotNull(ci);
 
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0).size());
     ci.errorMessage = errorMessage;
     txnHandler.markFailed(ci);
     assertNull(txnHandler.findNextToCompact(workerId));
@@ -501,13 +501,13 @@ public class TestCompactionTxnHandler {
     // Now clean them and check that they are removed from the count.
     CompactionRequest rqst = new CompactionRequest("mydb", "mytable", CompactionType.MAJOR);
     txnHandler.compact(rqst);
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0).size());
     ci = txnHandler.findNextToCompact("fred");
     assertNotNull(ci);
     txnHandler.markCompacted(ci);
 
     Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
-    List<CompactionInfo> toClean = txnHandler.findReadyToClean();
+    List<CompactionInfo> toClean = txnHandler.findReadyToClean(0);
     assertEquals(1, toClean.size());
     txnHandler.markCleaned(ci);
 
@@ -525,12 +525,12 @@ public class TestCompactionTxnHandler {
     rqst = new CompactionRequest("mydb", "foo", CompactionType.MAJOR);
     rqst.setPartitionname("bar");
     txnHandler.compact(rqst);
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0).size());
     ci = txnHandler.findNextToCompact("fred");
     assertNotNull(ci);
     txnHandler.markCompacted(ci);
 
-    toClean = txnHandler.findReadyToClean();
+    toClean = txnHandler.findReadyToClean(0);
     assertEquals(1, toClean.size());
     txnHandler.markCleaned(ci);
 
