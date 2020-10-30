@@ -1886,7 +1886,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
         List<RelOptMaterialization> relOptMaterializationList = db.getMaterialization(expandedQueryText);
         for (RelOptMaterialization relOptMaterialization : relOptMaterializationList) {
           try {
-            Table hiveTableMD = ((RelOptHiveTable) relOptMaterialization.tableRel.getTable()).getHiveTableMD();
+            HiveTableScan mvScan;
+            if (relOptMaterialization.tableRel instanceof Project) {
+              mvScan = (HiveTableScan) relOptMaterialization.tableRel.getInput(0);
+            } else {
+              mvScan = (HiveTableScan) relOptMaterialization.tableRel;
+            }
+            Table hiveTableMD = ((RelOptHiveTable) mvScan.getTable()).getHiveTableMD();
             if (db.validateMaterializedViewsFromRegistry(
                 singletonList(hiveTableMD),
                 singletonList(hiveTableMD.getFullyQualifiedName()),
