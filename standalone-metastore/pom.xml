@@ -87,7 +87,7 @@
     <zookeeper.version>3.5.5.7.2.8.0-SNAPSHOT</zookeeper.version>
     <curator.version>4.3.0.7.2.8.0-SNAPSHOT</curator.version>
     <cron-utils.version>8.1.1</cron-utils.version>
-
+    <springframework.version>4.3.29.RELEASE</springframework.version>
     <!-- Thrift properties -->
     <thrift.home>you-must-set-this-to-run-thrift</thrift.home>
     <thrift.gen.dir>${basedir}/src/gen/thrift</thrift.gen.dir>
@@ -333,6 +333,13 @@
       <groupId>org.datanucleus</groupId>
       <artifactId>javax.jdo</artifactId>
       <version>${datanucleus-jdo.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-framework-bom</artifactId>
+      <version>${springframework.version}</version>
+      <type>pom</type>
+      <scope>import</scope>
     </dependency>
     <dependency>
       <groupId>org.skyscreamer</groupId>
