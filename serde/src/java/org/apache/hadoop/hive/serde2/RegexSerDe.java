@@ -290,10 +290,4 @@ public class RegexSerDe extends AbstractSerDe {
         throw new UnsupportedOperationException(
           "Regex SerDe doesn't support the serialize() method");
   }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
-  }
 }
