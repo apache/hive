@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo WITH all_sales AS (
+explain cbo physical WITH all_sales AS (
  SELECT d_year
        ,i_brand_id
        ,i_class_id

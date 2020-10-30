@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  i_item_id, 
+PREHOOK: query: explain cbo physical select  i_item_id, 
         avg(cs_quantity) agg1,
         avg(cs_list_price) agg2,
         avg(cs_coupon_amt) agg3,
@@ -23,7 +23,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_promotion
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  i_item_id, 
+POSTHOOK: query: explain cbo physical select  i_item_id, 
         avg(cs_quantity) agg1,
         avg(cs_list_price) agg2,
         avg(cs_coupon_amt) agg3,

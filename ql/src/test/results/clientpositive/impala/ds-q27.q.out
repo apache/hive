@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  i_item_id,
+PREHOOK: query: explain cbo physical select  i_item_id,
         s_state, grouping(s_state) g_state,
         avg(ss_quantity) agg1,
         avg(ss_list_price) agg2,
@@ -25,7 +25,7 @@ PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  i_item_id,
+POSTHOOK: query: explain cbo physical select  i_item_id,
         s_state, grouping(s_state) g_state,
         avg(ss_quantity) agg1,
         avg(ss_list_price) agg2,

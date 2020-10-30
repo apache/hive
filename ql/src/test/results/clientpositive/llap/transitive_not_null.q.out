@@ -45,7 +45,7 @@ POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJoin(condition=[=($0, $2)], joinType=[left], algorithm=[none], cost=[not available])
+HiveJoin(condition=[=($0, $2)], joinType=[left])
   HiveProject(i1=[$0], j1=[$1])
     HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
   HiveProject(i2=[$0], j2=[$1])
@@ -79,7 +79,7 @@ POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJoin(condition=[=($0, $2)], joinType=[right], algorithm=[none], cost=[not available])
+HiveJoin(condition=[=($0, $2)], joinType=[right])
   HiveProject(i1=[$0], j1=[$1])
     HiveFilter(condition=[IS NOT NULL($0)])
       HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
@@ -113,7 +113,7 @@ POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJoin(condition=[=($0, $2)], joinType=[full], algorithm=[none], cost=[not available])
+HiveJoin(condition=[=($0, $2)], joinType=[full])
   HiveProject(i1=[$0], j1=[$1])
     HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
   HiveProject(i2=[$0], j2=[$1])
@@ -147,7 +147,7 @@ POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[left], algorithm=[none], cost=[not available])
+HiveJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[left])
   HiveProject(i1=[$0], j1=[$1])
     HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
   HiveProject(i2=[$0], j2=[$1])
@@ -179,7 +179,7 @@ POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[right], algorithm=[none], cost=[not available])
+HiveJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[right])
   HiveProject(i1=[$0], j1=[$1])
     HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
       HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
@@ -211,7 +211,7 @@ POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJoin(condition=[AND(=($0, $2), >($1, $3))], joinType=[left], algorithm=[none], cost=[not available])
+HiveJoin(condition=[AND(=($0, $2), >($1, $3))], joinType=[left])
   HiveProject(i1=[$0], j1=[$1])
     HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
   HiveProject(i2=[$0], j2=[$1])
@@ -243,7 +243,7 @@ POSTHOOK: Input: default@tbl_1
 POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJoin(condition=[AND(=($0, $2), >($1, $3))], joinType=[right], algorithm=[none], cost=[not available])
+HiveJoin(condition=[AND(=($0, $2), >($1, $3))], joinType=[right])
   HiveProject(i1=[$0], j1=[$1])
     HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($1))])
       HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
@@ -294,7 +294,7 @@ POSTHOOK: Input: default@tbl_2
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject(col0=[$0], col1=[$1])
-  HiveJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[left], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[AND(=($0, $2), =($1, $3))], joinType=[left])
     HiveProject(i1=[$0], j1=[$1])
       HiveTableScan(table=[[default, tbl_1]], table:alias=[tbl_1])
     HiveProject(i2=[$0], j2=[$1])

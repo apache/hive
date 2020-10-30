@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select
+explain cbo physical select
   nation,
   o_year,
   sum(amount) as sum_profit

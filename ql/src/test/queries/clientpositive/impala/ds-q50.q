@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  
+explain cbo physical select  
    s_store_name
   ,s_company_id
   ,s_street_number

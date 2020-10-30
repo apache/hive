@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with customer_total_return as
+explain cbo physical with customer_total_return as
  (select wr_returning_customer_sk as ctr_customer_sk
         ,ca_state as ctr_state, 
       sum(wr_return_amt) as ctr_total_return

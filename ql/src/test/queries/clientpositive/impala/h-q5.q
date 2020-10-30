@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select
+explain cbo physical select
   n_name,
   sum(l_extendedprice * (1 - l_discount)) as revenue
 from

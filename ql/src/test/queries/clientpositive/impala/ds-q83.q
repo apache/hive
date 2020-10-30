@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with sr_items as
+explain cbo physical with sr_items as
  (select i_item_id item_id,
         sum(sr_return_quantity) sr_item_qty
  from impala_tpcds_store_returns,

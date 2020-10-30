@@ -56,7 +56,7 @@ create table tab_item_n0
 )
 STORED AS PARQUET;
 
-explain cbo
+explain cbo physical
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
    ,i_category
@@ -72,7 +72,7 @@ select
  where i_item_sk  = ss_item_sk
  group by rollup(i_category,i_class);
 
-explain cbo
+explain cbo physical
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
    ,i_category
@@ -88,7 +88,7 @@ select
  where i_item_sk  = ss_item_sk
  group by rollup(i_category,i_class);
 
-explain cbo
+explain cbo physical
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
    ,i_category

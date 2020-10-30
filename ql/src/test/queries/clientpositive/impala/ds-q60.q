@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with ss as (
+explain cbo physical with ss as (
  select
           i_item_id,sum(ss_ext_sales_price) total_sales
  from

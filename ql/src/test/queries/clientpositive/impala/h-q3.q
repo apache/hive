@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select
+explain cbo physical select
   l_orderkey,
   sum(l_extendedprice * (1 - l_discount)) as revenue,
   o_orderdate,

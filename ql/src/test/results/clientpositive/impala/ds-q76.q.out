@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  channel, col_name, d_year, d_qoy, i_category, COUNT(*) sales_cnt, SUM(ext_sales_price) sales_amt FROM (
+PREHOOK: query: explain cbo physical select  channel, col_name, d_year, d_qoy, i_category, COUNT(*) sales_cnt, SUM(ext_sales_price) sales_amt FROM (
         SELECT 'store' as channel, 'ss_customer_sk' col_name, d_year, d_qoy, i_category, ss_ext_sales_price ext_sales_price
          FROM impala_tpcds_store_sales, impala_tpcds_item, impala_tpcds_date_dim
          WHERE ss_customer_sk IS NULL
@@ -26,7 +26,7 @@ PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  channel, col_name, d_year, d_qoy, i_category, COUNT(*) sales_cnt, SUM(ext_sales_price) sales_amt FROM (
+POSTHOOK: query: explain cbo physical select  channel, col_name, d_year, d_qoy, i_category, COUNT(*) sales_cnt, SUM(ext_sales_price) sales_amt FROM (
         SELECT 'store' as channel, 'ss_customer_sk' col_name, d_year, d_qoy, i_category, ss_ext_sales_price ext_sales_price
          FROM impala_tpcds_store_sales, impala_tpcds_item, impala_tpcds_date_dim
          WHERE ss_customer_sk IS NULL

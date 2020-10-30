@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  dt.d_year
+explain cbo physical select  dt.d_year
       ,impala_tpcds_item.i_category_id
       ,impala_tpcds_item.i_category
       ,sum(ss_ext_sales_price)

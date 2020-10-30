@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select
+explain cbo physical select
   o_orderpriority,
   count(*) as order_count
 from

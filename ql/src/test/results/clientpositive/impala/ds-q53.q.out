@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  * from 
+PREHOOK: query: explain cbo physical select  * from 
 (select i_manufact_id,
 sum(ss_sales_price) sum_sales,
 avg(sum(ss_sales_price)) over (partition by i_manufact_id) avg_quarterly_sales
@@ -29,7 +29,7 @@ PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  * from 
+POSTHOOK: query: explain cbo physical select  * from 
 (select i_manufact_id,
 sum(ss_sales_price) sum_sales,
 avg(sum(ss_sales_price)) over (partition by i_manufact_id) avg_quarterly_sales

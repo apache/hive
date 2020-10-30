@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  distinct(i_product_name)
+explain cbo physical select  distinct(i_product_name)
  from impala_tpcds_item i1
  where i_manufact_id between 970 and 970+40 
    and (select count(*) as item_cnt

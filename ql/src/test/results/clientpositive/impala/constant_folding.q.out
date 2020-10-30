@@ -1,4 +1,4 @@
-PREHOOK: query: EXPLAIN CBO
+PREHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT
   f.`year`,
   a.iata,
@@ -26,7 +26,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_airports
 PREHOOK: Input: default@impala_flights
 PREHOOK: Output: streaming
-POSTHOOK: query: EXPLAIN CBO
+POSTHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT
   f.`year`,
   a.iata,

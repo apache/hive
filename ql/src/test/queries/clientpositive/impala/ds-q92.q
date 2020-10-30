@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  
+explain cbo physical select  
    sum(ws_ext_discount_amt)  as `Excess Discount Amount` 
 from 
     impala_tpcds_web_sales 

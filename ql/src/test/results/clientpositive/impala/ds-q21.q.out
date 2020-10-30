@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  *
+PREHOOK: query: explain cbo physical select  *
  from(select w_warehouse_name
             ,i_item_id
             ,sum(case when (cast(d_date as date) < cast ('1999-03-20' as date))
@@ -31,7 +31,7 @@ PREHOOK: Input: default@impala_tpcds_inventory
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_warehouse
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  *
+POSTHOOK: query: explain cbo physical select  *
  from(select w_warehouse_name
             ,i_item_id
             ,sum(case when (cast(d_date as date) < cast ('1999-03-20' as date))

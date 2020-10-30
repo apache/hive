@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select
+explain cbo physical select
   supp_nation,
   cust_nation,
   l_year,

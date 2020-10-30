@@ -219,10 +219,8 @@ public class HiveJoin extends Join implements HiveRelNode {
   @Override
   public RelWriter explainTerms(RelWriter pw) {
     return super.explainTerms(pw)
-        .item("algorithm", joinAlgorithm == null ?
-                "none" : joinAlgorithm.toString())
-        .item("cost", joinCost == null ?
-                "not available" : joinCost.toString());
+        .itemIf("algorithm", joinAlgorithm, joinAlgorithm != null && joinAlgorithm != DefaultJoinAlgorithm.INSTANCE)
+        .itemIf("cost", joinCost, joinCost != null);
   }
 
   //required for HiveRelDecorrelator

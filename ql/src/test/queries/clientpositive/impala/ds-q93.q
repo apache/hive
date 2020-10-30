@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  ss_customer_sk
+explain cbo physical select  ss_customer_sk
             ,sum(act_sales) sumsales
       from (select ss_item_sk
                   ,ss_ticket_number

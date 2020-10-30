@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select   
+PREHOOK: query: explain cbo physical select   
          w_warehouse_name
       ,w_warehouse_sq_ft
       ,w_city
@@ -223,7 +223,7 @@ PREHOOK: Input: default@impala_tpcds_time_dim
 PREHOOK: Input: default@impala_tpcds_warehouse
 PREHOOK: Input: default@impala_tpcds_web_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select   
+POSTHOOK: query: explain cbo physical select   
          w_warehouse_name
       ,w_warehouse_sq_ft
       ,w_city

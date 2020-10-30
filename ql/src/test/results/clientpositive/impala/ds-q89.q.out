@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  *
+PREHOOK: query: explain cbo physical select  *
 from(
 select i_category, i_class, i_brand,
        s_store_name, s_company_name,
@@ -29,7 +29,7 @@ PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  *
+POSTHOOK: query: explain cbo physical select  *
 from(
 select i_category, i_class, i_brand,
        s_store_name, s_company_name,

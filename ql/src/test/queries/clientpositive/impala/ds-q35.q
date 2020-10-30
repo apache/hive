@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select   
+explain cbo physical select   
   ca_state,
   cd_gender,
   cd_marital_status,

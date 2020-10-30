@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  dt.d_year 
+explain cbo physical select  dt.d_year 
        ,impala_tpcds_item.i_brand_id brand_id 
        ,impala_tpcds_item.i_brand brand
        ,sum(ss_sales_price) sum_agg

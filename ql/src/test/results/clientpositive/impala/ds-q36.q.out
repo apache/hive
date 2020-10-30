@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  
+PREHOOK: query: explain cbo physical select  
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
    ,i_category
    ,i_class
@@ -31,7 +31,7 @@ PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  
+POSTHOOK: query: explain cbo physical select  
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
    ,i_category
    ,i_class

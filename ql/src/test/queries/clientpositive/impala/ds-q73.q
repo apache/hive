@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select c_last_name
+explain cbo physical select c_last_name
        ,c_first_name
        ,c_salutation
        ,c_preferred_cust_flag 

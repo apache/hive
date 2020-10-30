@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select   
+PREHOOK: query: explain cbo physical select   
      i_item_id
     ,i_item_desc
     ,s_store_id
@@ -50,7 +50,7 @@ PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_returns
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select   
+POSTHOOK: query: explain cbo physical select   
      i_item_id
     ,i_item_desc
     ,s_store_id

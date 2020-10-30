@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo with cs_ui as
+PREHOOK: query: explain cbo physical with cs_ui as
  (select cs_item_sk
         ,sum(cs_ext_list_price) as sale,sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit) as refund
   from impala_tpcds_catalog_sales
@@ -131,7 +131,7 @@ PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_returns
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo with cs_ui as
+POSTHOOK: query: explain cbo physical with cs_ui as
  (select cs_item_sk
         ,sum(cs_ext_list_price) as sale,sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit) as refund
   from impala_tpcds_catalog_sales

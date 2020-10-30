@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select
+PREHOOK: query: explain cbo physical select
   nation,
   o_year,
   sum(amount) as sum_profit
@@ -37,7 +37,7 @@ PREHOOK: Input: default@impala_tpch_part
 PREHOOK: Input: default@impala_tpch_partsupp
 PREHOOK: Input: default@impala_tpch_supplier
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select
+POSTHOOK: query: explain cbo physical select
   nation,
   o_year,
   sum(amount) as sum_profit

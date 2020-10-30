@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with ssci as (
+explain cbo physical with ssci as (
 select ss_customer_sk customer_sk
       ,ss_item_sk item_sk
 from impala_tpcds_store_sales,impala_tpcds_date_dim

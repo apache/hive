@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo with customer_total_return as
+PREHOOK: query: explain cbo physical with customer_total_return as
 (select sr_customer_sk as ctr_customer_sk
 ,sr_store_sk as ctr_store_sk
 ,sum(SR_FEE) as ctr_total_return
@@ -26,7 +26,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_returns
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo with customer_total_return as
+POSTHOOK: query: explain cbo physical with customer_total_return as
 (select sr_customer_sk as ctr_customer_sk
 ,sr_store_sk as ctr_store_sk
 ,sum(SR_FEE) as ctr_total_return

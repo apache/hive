@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with wscs as
+explain cbo physical with wscs as
  (select sold_date_sk
         ,sales_price
   from (select ws_sold_date_sk sold_date_sk

@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  s_store_name
+explain cbo physical select  s_store_name
       ,sum(ss_net_profit)
  from impala_tpcds_store_sales
      ,impala_tpcds_date_dim

@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  ss_customer_sk
+PREHOOK: query: explain cbo physical select  ss_customer_sk
             ,sum(act_sales) sumsales
       from (select ss_item_sk
                   ,ss_ticket_number
@@ -18,7 +18,7 @@ PREHOOK: Input: default@impala_tpcds_reason
 PREHOOK: Input: default@impala_tpcds_store_returns
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  ss_customer_sk
+POSTHOOK: query: explain cbo physical select  ss_customer_sk
             ,sum(act_sales) sumsales
       from (select ss_item_sk
                   ,ss_ticket_number

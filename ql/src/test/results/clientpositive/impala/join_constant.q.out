@@ -1,15 +1,15 @@
-PREHOOK: query: explain cbo
+PREHOOK: query: explain cbo physical
 select 5 + 3
 PREHOOK: type: QUERY
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo
+POSTHOOK: query: explain cbo physical
 select 5 + 3
 POSTHOOK: type: QUERY
 CBO PLAN:
 ImpalaProjectPassthroughRel(_o__c0=[+(5:SMALLINT, 3:SMALLINT)])
   ImpalaUnionRel
 
-PREHOOK: query: explain cbo
+PREHOOK: query: explain cbo physical
 select * from (select t.* from impala_tpch_lineitem t
 inner join (select 10 bigint_col) d where
 t.l_linenumber < d.bigint_col ) q
@@ -17,7 +17,7 @@ where l_linenumber = 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo
+POSTHOOK: query: explain cbo physical
 select * from (select t.* from impala_tpch_lineitem t
 inner join (select 10 bigint_col) d where
 t.l_linenumber < d.bigint_col ) q

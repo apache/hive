@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  count(*) from (
+explain cbo physical select  count(*) from (
     select distinct c_last_name, c_first_name, d_date
     from impala_tpcds_store_sales, impala_tpcds_date_dim, impala_tpcds_customer
           where impala_tpcds_store_sales.ss_sold_date_sk = impala_tpcds_date_dim.d_date_sk

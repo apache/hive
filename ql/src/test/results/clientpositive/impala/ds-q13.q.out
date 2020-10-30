@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select avg(ss_quantity)
+PREHOOK: query: explain cbo physical select avg(ss_quantity)
        ,avg(ss_ext_sales_price)
        ,avg(ss_ext_wholesale_cost)
        ,sum(ss_ext_wholesale_cost)
@@ -54,7 +54,7 @@ PREHOOK: Input: default@impala_tpcds_household_demographics
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select avg(ss_quantity)
+POSTHOOK: query: explain cbo physical select avg(ss_quantity)
        ,avg(ss_ext_sales_price)
        ,avg(ss_ext_wholesale_cost)
        ,sum(ss_ext_wholesale_cost)

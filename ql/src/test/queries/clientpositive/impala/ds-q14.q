@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with  cross_items as
+explain cbo physical with  cross_items as
  (select i_item_sk ss_item_sk
  from impala_tpcds_item,
  (select iss.i_brand_id brand_id

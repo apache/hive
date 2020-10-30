@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select
+PREHOOK: query: explain cbo physical select
   supp_nation,
   cust_nation,
   l_year,
@@ -43,7 +43,7 @@ PREHOOK: Input: default@impala_tpch_nation
 PREHOOK: Input: default@impala_tpch_orders
 PREHOOK: Input: default@impala_tpch_supplier
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select
+POSTHOOK: query: explain cbo physical select
   supp_nation,
   cust_nation,
   l_year,

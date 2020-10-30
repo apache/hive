@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  
+explain cbo physical select  
    w_state
   ,i_item_id
   ,sum(case when (cast(d_date as date) < cast ('2000-03-18' as date)) 
@@ -52,9 +52,9 @@ explain select
  order by w_state,i_item_id
 limit 100;
 
-set hive.optimize.filter.inferred.notnull=false;
+set hive.optimize.filter.infer.notnull=false;
 
-explain cbo select
+explain cbo physical select
    w_state
   ,i_item_id
   ,sum(case when (cast(d_date as date) < cast ('2000-03-18' as date))

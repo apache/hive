@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  s_store_name
+PREHOOK: query: explain cbo physical select  s_store_name
       ,sum(ss_net_profit)
  from impala_tpcds_store_sales
      ,impala_tpcds_date_dim
@@ -110,7 +110,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  s_store_name
+POSTHOOK: query: explain cbo physical select  s_store_name
       ,sum(ss_net_profit)
  from impala_tpcds_store_sales
      ,impala_tpcds_date_dim

@@ -62,12 +62,12 @@ STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab_sales_n1
-PREHOOK: query: explain cbo
+PREHOOK: query: explain cbo physical
 select sum(ss_quantity) over(order by ss_quantity) from tab_sales_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_sales_n1
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo
+POSTHOOK: query: explain cbo physical
 select sum(ss_quantity) over(order by ss_quantity) from tab_sales_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_sales_n1
@@ -76,12 +76,12 @@ ImpalaProjectPassthroughRel(sum_window_0=[sum($1) OVER (PARTITION BY 0:TINYINT O
   ImpalaProjectRel(ss_quantity=[$10], $func_0=[CAST($10):BIGINT])
     ImpalaHdfsScanRel(table=[[default, tab_sales_n1]])
 
-PREHOOK: query: explain cbo
+PREHOOK: query: explain cbo physical
 select sum(ss_net_profit) over(order by ss_net_profit) from tab_sales_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_sales_n1
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo
+POSTHOOK: query: explain cbo physical
 select sum(ss_net_profit) over(order by ss_net_profit) from tab_sales_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_sales_n1

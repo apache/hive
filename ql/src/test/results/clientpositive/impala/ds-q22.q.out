@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  i_product_name
+PREHOOK: query: explain cbo physical select  i_product_name
              ,i_brand
              ,i_class
              ,i_category
@@ -20,7 +20,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_inventory
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  i_product_name
+POSTHOOK: query: explain cbo physical select  i_product_name
              ,i_brand
              ,i_class
              ,i_category

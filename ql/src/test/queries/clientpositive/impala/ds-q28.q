@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  *
+explain cbo physical select  *
 from (select avg(ss_list_price) B1_LP
             ,count(ss_list_price) B1_CNT
             ,count(distinct ss_list_price) B1_CNTD

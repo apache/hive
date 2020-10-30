@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo WITH all_sales AS (
+PREHOOK: query: explain cbo physical WITH all_sales AS (
  SELECT d_year
        ,i_brand_id
        ,i_class_id
@@ -75,7 +75,7 @@ PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_returns
 PREHOOK: Input: default@impala_tpcds_web_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo WITH all_sales AS (
+POSTHOOK: query: explain cbo physical WITH all_sales AS (
  SELECT d_year
        ,i_brand_id
        ,i_class_id

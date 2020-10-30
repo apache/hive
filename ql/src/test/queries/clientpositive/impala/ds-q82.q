@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  i_item_id
+explain cbo physical select  i_item_id
        ,i_item_desc
        ,i_current_price
  from impala_tpcds_item, impala_tpcds_inventory, impala_tpcds_date_dim, impala_tpcds_store_sales

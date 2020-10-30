@@ -27,7 +27,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 CBO PLAN:
-HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+HiveJoin(condition=[=($0, $1)], joinType=[inner])
   HiveProject(a=[$0])
     HiveFilter(condition=[AND(=($1, _UTF-16LE'c'), IS NOT NULL($0))])
       HiveTableScan(table=[[default, t1]], table:alias=[t1])

@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  c_customer_id as customer_id
+explain cbo physical select  c_customer_id as customer_id
        , coalesce(c_last_name,'') || ', ' || coalesce(c_first_name,'') as customername
  from impala_tpcds_customer
      ,impala_tpcds_customer_address

@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select case when (select count(*) 
+PREHOOK: query: explain cbo physical select case when (select count(*) 
                   from impala_tpcds_store_sales 
                   where ss_quantity between 1 and 20) > 98972190
             then (select avg(ss_ext_discount_amt) 
@@ -49,7 +49,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpcds_reason
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select case when (select count(*) 
+POSTHOOK: query: explain cbo physical select case when (select count(*) 
                   from impala_tpcds_store_sales 
                   where ss_quantity between 1 and 20) > 98972190
             then (select avg(ss_ext_discount_amt) 

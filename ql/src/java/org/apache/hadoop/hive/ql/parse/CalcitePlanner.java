@@ -564,8 +564,8 @@ public class CalcitePlanner extends SemanticAnalyzer {
         final boolean materializedView = getQB().isMaterializedView();
 
         try {
-          // 0. Gen Optimized Plan
-          RelNode newPlan = enginePlan();
+          // 0. Generate Calcite plan from query
+          final CalcitePlan newPlan = plan(true);
 
           if (isImpalaPlan) {
             // 2. If we are creating a view, populate the definition
@@ -575,7 +575,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
 
             markEvent("Calcite - Optimized plan generated");
             // 3. Create Impala operator
-            sinkOp = getImpalaSinkOperator(newPlan, cboCtx);
+            sinkOp = getImpalaSinkOperator(newPlan.enginePlan, cboCtx);
 
             // 4. Generate explain plan
             if (this.ctx.isExplainPlan()) {
@@ -588,17 +588,17 @@ public class CalcitePlanner extends SemanticAnalyzer {
             if (cboCtx.type == PreCboCtx.Type.VIEW && !materializedView) {
               throw new SemanticException("Create view is not supported in cbo return path.");
             }
-            sinkOp = getOptimizedHiveOPDag(newPlan);
+            sinkOp = getOptimizedHiveOPDag(newPlan.enginePlan);
             if (oldHints.size() > 0) {
               LOG.debug("Propagating hints to QB: " + oldHints);
               getQB().getParseInfo().setHintList(oldHints);
             }
-            LOG.info("CBO Succeeded; optimized logical plan.");
+            LOG.info("CBO Succeeded; optimized plan.");
             this.ctx.setCboInfo("Plan optimized by CBO.");
             this.ctx.setCboSucceeded(true);
           } else {
             // 1. Convert Plan to AST
-            ASTNode newAST = getOptimizedAST(newPlan);
+            ASTNode newAST = getOptimizedAST(newPlan.optimizedPlan);
 
             // 1.1. Fix up the query for insert/ctas/materialized views
             newAST = fixUpAfterCbo(ast, newAST, cboCtx);
@@ -653,7 +653,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               doExplainPlan(newPlan);
             }
             if (LOG.isTraceEnabled()) {
-              LOG.trace(getOptimizedSql(newPlan));
+              LOG.trace(getOptimizedSql(newPlan.optimizedPlan));
               LOG.trace(newAST.dump());
             }
           }
@@ -1568,18 +1568,18 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * Get optimized logical plan for the given QB tree in the semAnalyzer.
    */
   RelNode logicalPlan() throws SemanticException {
-    return plan(false);
+    return plan(false).optimizedPlan;
   }
 
   /**
    * Get engine-specific optimized logical plan for the given QB tree
    * in the semAnalyzer.
    */
-  RelNode enginePlan() throws SemanticException {
-    return plan(true);
+  RelNode physicalPlan() throws SemanticException {
+    return plan(true).enginePlan;
   }
 
-  private RelNode plan(boolean generateEnginePlan) throws SemanticException {
+  private CalcitePlan plan(boolean generateEnginePlan) throws SemanticException {
     if (this.columnAccessInfo == null) {
       this.columnAccessInfo = new ColumnAccessInfo();
     }
@@ -1666,13 +1666,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
    * @return Optimized Hive operator tree
    * @throws SemanticException
    */
-  Operator getOptimizedHiveOPDag(RelNode optimizedOptiqPlan) throws SemanticException {
-    RelNode modifiedOptimizedOptiqPlan = PlanModifierForReturnPath.convertOpTree(
-        optimizedOptiqPlan, resultSchema, this.getQB().getTableDesc() != null);
+  Operator getOptimizedHiveOPDag(RelNode optimizedHivePlan) throws SemanticException {
+    RelNode modifiedHivePlan = PlanModifierForReturnPath.convertOpTree(
+        optimizedHivePlan, resultSchema, this.getQB().getTableDesc() != null);
 
-    LOG.debug("Translating the following plan:\n" + RelOptUtil.toString(modifiedOptimizedOptiqPlan));
+    LOG.debug("Translating the following plan:\n" + RelOptUtil.toString(modifiedHivePlan));
     Operator<?> hiveRoot = new HiveOpConverter(this, conf, unparseTranslator, topOps)
-                                  .convert(modifiedOptimizedOptiqPlan);
+        .convert(modifiedHivePlan);
     RowResolver hiveRootRR = genRowResolver(hiveRoot, getQB());
     opParseCtx.put(hiveRoot, new OpParseContext(hiveRootRR));
     String dest = getQB().getParseInfo().getClauseNames().iterator().next();
@@ -1899,28 +1899,29 @@ public class CalcitePlanner extends SemanticAnalyzer {
     return rr;
   }
 
-  private void doExplainPlan(RelNode newPlan) {
+  private void doExplainPlan(CalcitePlan newPlan) {
     // Enrich explain with information derived from CBO
     ExplainConfiguration explainConfig = this.ctx.getExplainConfig();
     if (explainConfig.isCbo()) {
+      RelNode plan = explainConfig.isCboPhysical() ? newPlan.enginePlan : newPlan.optimizedPlan;
       if (!explainConfig.isCboJoinCost()) {
         // Include cost as provided by Calcite
-        newPlan.getCluster().invalidateMetadataQuery();
+        plan.getCluster().invalidateMetadataQuery();
         RelMetadataQuery.THREAD_PROVIDERS.set(JaninoRelMetadataProvider.DEFAULT);
       }
       if (explainConfig.isFormatted()) {
-        this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
+        this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(plan));
       } else if (explainConfig.isCboCost() || explainConfig.isCboJoinCost()) {
-        this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan, SqlExplainLevel.ALL_ATTRIBUTES));
+        this.ctx.setCalcitePlan(RelOptUtil.toString(plan, SqlExplainLevel.ALL_ATTRIBUTES));
       } else {
         // Do not include join cost
-        this.ctx.setCalcitePlan(RelOptUtil.toString(newPlan));
+        this.ctx.setCalcitePlan(RelOptUtil.toString(plan));
       }
     } else if (explainConfig.isFormatted()) {
-      this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan));
-      this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+      this.ctx.setCalcitePlan(HiveRelOptUtil.toJsonString(newPlan.optimizedPlan));
+      this.ctx.setOptimizedSql(getOptimizedSql(newPlan.optimizedPlan));
     } else if (explainConfig.isExtended()) {
-      this.ctx.setOptimizedSql(getOptimizedSql(newPlan));
+      this.ctx.setOptimizedSql(getOptimizedSql(newPlan.optimizedPlan));
     }
   }
 
@@ -1933,7 +1934,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   /**
    * Code responsible for Calcite plan generation and optimization.
    */
-  private class CalcitePlannerAction implements Frameworks.PlannerAction<RelNode> {
+  private class CalcitePlannerAction implements Frameworks.PlannerAction<CalcitePlan> {
     private final boolean generateEnginePlan;
     private RelOptCluster                                 cluster;
     private RelOptSchema                                  relOptSchema;
@@ -1967,10 +1968,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     @Override
-    public RelNode apply(RelOptCluster cluster, RelOptSchema relOptSchema, SchemaPlus rootSchema) {
+    public CalcitePlan apply(RelOptCluster cluster, RelOptSchema relOptSchema, SchemaPlus rootSchema) {
       RelNode calciteGenPlan = null;
       RelNode calcitePreCboPlan = null;
       RelNode calciteOptimizedPlan = null;
+      RelNode calciteEnginePlan = null;
       subqueryId = -1;
 
       /*
@@ -2089,21 +2091,55 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // even if they are equivalent.
           // While this does have the potential to have a bigger memory footprint, the nodes being
           // replaced in these rules are 1:1, so it should be ok here.
-          calciteOptimizedPlan =
+          calciteEnginePlan =
               executeProgram(calciteOptimizedPlan, hepProgram, mdProvider.getMetadataProvider(),
                   executorProvider, null, true, null);
           perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Impala transformation rules");
 
           if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
-            LOG.debug("Impala plan:\n"
-                + RelOptUtil.toString(calciteOptimizedPlan));
+            LOG.debug("Impala plan:\n{}", RelOptUtil.toString(calciteEnginePlan));
+          }
+          break;
+        case HIVE:
+          if (HiveConf.getBoolVar(conf, ConfVars.HIVE_CBO_RETPATH_HIVEOP)) {
+            final HepProgramBuilder program = new HepProgramBuilder();
+            // Merge join into multijoin operators (if possible)
+            generatePartialProgram(program, true, HepMatchOrder.BOTTOM_UP,
+                HiveJoinProjectTransposeRule.BOTH_PROJECT_INCLUDE_OUTER,
+                HiveJoinProjectTransposeRule.LEFT_PROJECT_INCLUDE_OUTER,
+                HiveJoinProjectTransposeRule.RIGHT_PROJECT_INCLUDE_OUTER,
+                HiveJoinToMultiJoinRule.INSTANCE, HiveProjectMergeRule.INSTANCE);
+            // The previous rules can pull up projections through join operators,
+            // thus we run the field trimmer again to push them back down
+            generatePartialProgram(program, false, HepMatchOrder.TOP_DOWN,
+                new HiveFieldTrimmerRule(false));
+            generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+                ProjectRemoveRule.INSTANCE, new ProjectMergeRule(false, HiveRelFactories.HIVE_BUILDER));
+            generatePartialProgram(program, true, HepMatchOrder.TOP_DOWN,
+                HiveFilterProjectTSTransposeRule.INSTANCE, HiveFilterProjectTSTransposeRule.INSTANCE_DRUID,
+                HiveProjectFilterPullUpConstantsRule.INSTANCE);
+
+            // Introduce exchange operators below join/multijoin operators
+            generatePartialProgram(program, false, HepMatchOrder.DEPTH_FIRST,
+                HiveInsertExchange4JoinRule.EXCHANGE_BELOW_JOIN, HiveInsertExchange4JoinRule.EXCHANGE_BELOW_MULTIJOIN);
+
+            // Trigger program
+            perfLogger.PerfLogBegin(this.getClass().getName(), PerfLogger.OPTIMIZER);
+            calciteEnginePlan = executeProgram(calciteOptimizedPlan, program.build(), mdProvider.getMetadataProvider(),
+                executorProvider);
+            perfLogger.PerfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER,
+                "Calcite: Hive transformation rules");
+
+            if (LOG.isDebugEnabled() && !conf.getBoolVar(ConfVars.HIVE_IN_TEST)) {
+              LOG.debug("Hive plan:\n{}", RelOptUtil.toString(calciteEnginePlan));
+            }
           }
         default:
           // Nothing to do for other engines for the time being
         }
       }
 
-      return calciteOptimizedPlan;
+      return CalcitePlan.of(calciteOptimizedPlan, calciteEnginePlan);
     }
 
     /**
@@ -2199,7 +2235,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           profilesCBO.contains(ExtendedCBOProfile.REFERENTIAL_CONSTRAINTS)) {
         rules.add(HiveJoinConstraintsRule.INSTANCE);
       }
-      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_NOT_NULL_INFERRED_EXPRESSIONS)) {
+      if (conf.getBoolVar(HiveConf.ConfVars.HIVE_INFER_NOT_NULL_EXPRESSIONS)) {
         rules.add(HiveJoinAddNotNullRule.INSTANCE_JOIN);
         rules.add(HiveJoinAddNotNullRule.INSTANCE_SEMIJOIN);
       }
@@ -5842,6 +5878,25 @@ public class CalcitePlanner extends SemanticAnalyzer {
     HiveTezModelRelMetadataProvider.DEFAULT.register(HIVE_REL_NODE_CLASSES);
     HiveMaterializationRelMetadataProvider.DEFAULT.register(HIVE_REL_NODE_CLASSES);
     HiveRelFieldTrimmer.initializeFieldTrimmerClass(HIVE_REL_NODE_CLASSES);
+  }
+
+  /**
+   * Internal class containing the output of the Calcite planner.
+   * In particular, it contains i) the logical optimized plan, and ii) the plan
+   * specific to the engine after applying the corresponding conversion rules.
+   */
+  private static class CalcitePlan {
+    private final RelNode optimizedPlan;
+    private final RelNode enginePlan;
+
+    private CalcitePlan(RelNode optimizedPlan, RelNode enginePlan) {
+      this.optimizedPlan = optimizedPlan;
+      this.enginePlan = enginePlan;
+    }
+
+    private static CalcitePlan of(RelNode optimizedPlan, RelNode enginePlan) {
+      return new CalcitePlan(optimizedPlan, enginePlan);
+    }
   }
 
 }

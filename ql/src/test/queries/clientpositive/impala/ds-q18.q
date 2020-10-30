@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  i_item_id,
+explain cbo physical select  i_item_id,
         ca_country,
         ca_state, 
         ca_county,

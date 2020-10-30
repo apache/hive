@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  a.ca_state state, count(*) cnt
+PREHOOK: query: explain cbo physical select  a.ca_state state, count(*) cnt
  from impala_tpcds_customer_address a
      ,impala_tpcds_customer c
      ,impala_tpcds_store_sales s
@@ -28,7 +28,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  a.ca_state state, count(*) cnt
+POSTHOOK: query: explain cbo physical select  a.ca_state state, count(*) cnt
  from impala_tpcds_customer_address a
      ,impala_tpcds_customer c
      ,impala_tpcds_store_sales s

@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with my_customers as (
+explain cbo physical with my_customers as (
  select distinct c_customer_sk
         , c_current_addr_sk
  from   

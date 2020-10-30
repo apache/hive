@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select
+PREHOOK: query: explain cbo physical select
   o_orderpriority,
   count(*) as order_count
 from
@@ -23,7 +23,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_orders
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select
+POSTHOOK: query: explain cbo physical select
   o_orderpriority,
   count(*) as order_count
 from

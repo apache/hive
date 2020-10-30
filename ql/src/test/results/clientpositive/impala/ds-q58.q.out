@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo with ss_items as
+PREHOOK: query: explain cbo physical with ss_items as
  (select i_item_id item_id
         ,sum(ss_ext_sales_price) ss_item_rev 
  from impala_tpcds_store_sales
@@ -67,7 +67,7 @@ PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo with ss_items as
+POSTHOOK: query: explain cbo physical with ss_items as
  (select i_item_id item_id
         ,sum(ss_ext_sales_price) ss_item_rev 
  from impala_tpcds_store_sales

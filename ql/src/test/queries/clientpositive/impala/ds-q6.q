@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  a.ca_state state, count(*) cnt
+explain cbo physical select  a.ca_state state, count(*) cnt
  from impala_tpcds_customer_address a
      ,impala_tpcds_customer c
      ,impala_tpcds_store_sales s

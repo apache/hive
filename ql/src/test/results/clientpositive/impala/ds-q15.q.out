@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  ca_zip
+PREHOOK: query: explain cbo physical select  ca_zip
        ,sum(cs_sales_price)
  from impala_tpcds_catalog_sales
      ,impala_tpcds_customer
@@ -21,7 +21,7 @@ PREHOOK: Input: default@impala_tpcds_customer
 PREHOOK: Input: default@impala_tpcds_customer_address
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  ca_zip
+POSTHOOK: query: explain cbo physical select  ca_zip
        ,sum(cs_sales_price)
  from impala_tpcds_catalog_sales
      ,impala_tpcds_customer

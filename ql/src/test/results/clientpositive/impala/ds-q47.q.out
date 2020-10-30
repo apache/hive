@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo with v1 as(
+PREHOOK: query: explain cbo physical with v1 as(
  select i_category, i_brand,
         s_store_name, s_company_name,
         d_year, d_moy,
@@ -52,7 +52,7 @@ PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo with v1 as(
+POSTHOOK: query: explain cbo physical with v1 as(
  select i_category, i_brand,
         s_store_name, s_company_name,
         d_year, d_moy,

@@ -1,9 +1,9 @@
-PREHOOK: query: explain cbo
+PREHOOK: query: explain cbo physical
 select l_quantity from `impala_tpch_lineitem` limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo
+POSTHOOK: query: explain cbo physical
 select l_quantity from `impala_tpch_lineitem` limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem

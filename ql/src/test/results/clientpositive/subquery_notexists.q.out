@@ -1665,7 +1665,7 @@ CBO PLAN:
 HiveProject(eid=[_UTF-16LE'empno':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"], id=[$0])
   HiveAggregate(group=[{0}])
     HiveFilter(condition=[IS NULL($1)])
-      HiveJoin(condition=[=($0, $2)], joinType=[left], algorithm=[none], cost=[not available])
+      HiveJoin(condition=[=($0, $2)], joinType=[left])
         HiveProject(id=[$0])
           HiveTableScan(table=[[default, tschema]], table:alias=[a])
         HiveProject(literalTrue=[true], id0=[$0])

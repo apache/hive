@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select sum (ss_quantity)
+explain cbo physical select sum (ss_quantity)
  from impala_tpcds_store_sales, impala_tpcds_store, impala_tpcds_customer_demographics, impala_tpcds_customer_address, impala_tpcds_date_dim
  where s_store_sk = ss_store_sk
  and  ss_sold_date_sk = d_date_sk and d_year = 1998

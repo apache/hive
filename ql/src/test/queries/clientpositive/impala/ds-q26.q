@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  i_item_id, 
+explain cbo physical select  i_item_id, 
         avg(cs_quantity) agg1,
         avg(cs_list_price) agg2,
         avg(cs_coupon_amt) agg3,

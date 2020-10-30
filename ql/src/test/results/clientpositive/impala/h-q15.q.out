@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo with revenue_view as (
+PREHOOK: query: explain cbo physical with revenue_view as (
   select 
     l_suppkey as supplier_no,
     sum(l_extendedprice * (1 - l_discount)) as total_revenue
@@ -32,7 +32,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_supplier
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo with revenue_view as (
+POSTHOOK: query: explain cbo physical with revenue_view as (
   select 
     l_suppkey as supplier_no,
     sum(l_extendedprice * (1 - l_discount)) as total_revenue

@@ -72,6 +72,7 @@ public class HiveDefaultCostModel extends HiveCostModel {
     public static final JoinAlgorithm INSTANCE = new DefaultJoinAlgorithm();
     private static final String ALGORITHM_NAME = "none";
 
+    private DefaultJoinAlgorithm() { }
 
     @Override
     public String toString() {

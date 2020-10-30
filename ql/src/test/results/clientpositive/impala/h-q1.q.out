@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select
+PREHOOK: query: explain cbo physical select
   l_returnflag,
   l_linestatus,
   sum(l_quantity) as sum_qty,
@@ -22,7 +22,7 @@ order by
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select
+POSTHOOK: query: explain cbo physical select
   l_returnflag,
   l_linestatus,
   sum(l_quantity) as sum_qty,

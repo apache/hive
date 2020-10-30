@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo with ssci as (
+PREHOOK: query: explain cbo physical with ssci as (
 select ss_customer_sk customer_sk
       ,ss_item_sk item_sk
 from impala_tpcds_store_sales,impala_tpcds_date_dim
@@ -25,7 +25,7 @@ PREHOOK: Input: default@impala_tpcds_catalog_sales
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo with ssci as (
+POSTHOOK: query: explain cbo physical with ssci as (
 select ss_customer_sk customer_sk
       ,ss_item_sk item_sk
 from impala_tpcds_store_sales,impala_tpcds_date_dim

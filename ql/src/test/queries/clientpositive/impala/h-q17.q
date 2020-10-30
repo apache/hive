@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select
+explain cbo physical select
   sum(l_extendedprice) / 7.0 as avg_yearly
 from
   impala_tpch_lineitem,

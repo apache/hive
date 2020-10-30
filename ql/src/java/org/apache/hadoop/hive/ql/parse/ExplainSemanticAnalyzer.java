@@ -81,6 +81,8 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
         config.setCboCost(true);
       } else if (explainOptions == HiveParser.KW_JOINCOST) {
         config.setCboJoinCost(true);
+      } else if (explainOptions == HiveParser.KW_PHYSICAL) {
+        config.setCboPhysical(true);
       } else if (explainOptions == HiveParser.KW_LOGICAL) {
         config.setLogical(true);
       } else if (explainOptions == HiveParser.KW_AUTHORIZATION) {

@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  ca_zip
+explain cbo physical select  ca_zip
        ,sum(cs_sales_price)
  from impala_tpcds_catalog_sales
      ,impala_tpcds_customer

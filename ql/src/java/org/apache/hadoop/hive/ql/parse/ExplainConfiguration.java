@@ -44,6 +44,7 @@ public class ExplainConfiguration {
   private boolean cbo = false;
   private boolean cboCost = false;
   private boolean cboJoinCost = false;
+  private boolean cboPhysical = false;
   private boolean logical = false;
   private boolean authorize = false;
   private boolean userLevelExplain = false;
@@ -109,6 +110,15 @@ public class ExplainConfiguration {
   public void setCboJoinCost(boolean cboJoinCost) {
     this.cboJoinCost = cboJoinCost;
   }
+
+  public boolean isCboPhysical() {
+    return cboPhysical;
+  }
+
+  public void setCboPhysical(boolean cboPhysical) {
+    this.cboPhysical = cboPhysical;
+  }
+
 
   public boolean isLogical() {
     return logical;

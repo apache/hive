@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  i_item_desc
+PREHOOK: query: explain cbo physical select  i_item_desc
       ,w_warehouse_name
       ,d1.d_week_seq
       ,sum(case when p_promo_sk is null then 1 else 0 end) no_promo
@@ -35,7 +35,7 @@ PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_promotion
 PREHOOK: Input: default@impala_tpcds_warehouse
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  i_item_desc
+POSTHOOK: query: explain cbo physical select  i_item_desc
       ,w_warehouse_name
       ,d1.d_week_seq
       ,sum(case when p_promo_sk is null then 1 else 0 end) no_promo

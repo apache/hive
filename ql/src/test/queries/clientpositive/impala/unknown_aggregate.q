@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo
+explain cbo physical
 select ndv(l_returnflag) from `impala_tpch_lineitem`;
 
 explain

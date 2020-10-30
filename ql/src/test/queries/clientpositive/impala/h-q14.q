@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select
+explain cbo physical select
   100.00 * sum(case
     when p_type like 'PROMO%'
     then l_extendedprice * (1 - l_discount)

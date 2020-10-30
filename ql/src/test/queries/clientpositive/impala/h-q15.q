@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with revenue_view as (
+explain cbo physical with revenue_view as (
   select 
     l_suppkey as supplier_no,
     sum(l_extendedprice * (1 - l_discount)) as total_revenue

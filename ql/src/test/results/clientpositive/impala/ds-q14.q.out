@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo with  cross_items as
+PREHOOK: query: explain cbo physical with  cross_items as
  (select i_item_sk ss_item_sk
  from impala_tpcds_item,
  (select iss.i_brand_id brand_id
@@ -106,7 +106,7 @@ PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo with  cross_items as
+POSTHOOK: query: explain cbo physical with  cross_items as
  (select i_item_sk ss_item_sk
  from impala_tpcds_item,
  (select iss.i_brand_id brand_id

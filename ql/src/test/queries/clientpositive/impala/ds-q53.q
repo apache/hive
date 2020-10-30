@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  * from 
+explain cbo physical select  * from 
 (select i_manufact_id,
 sum(ss_sales_price) sum_sales,
 avg(sum(ss_sales_price)) over (partition by i_manufact_id) avg_quarterly_sales

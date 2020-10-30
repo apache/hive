@@ -1,5 +1,5 @@
 --! qt:dataset:impala_dataset
-explain cbo with ssr as
+explain cbo physical with ssr as
  (select  s_store_id as store_id,
           sum(ss_ext_sales_price) as sales,
           sum(coalesce(sr_return_amt, 0)) as returns,

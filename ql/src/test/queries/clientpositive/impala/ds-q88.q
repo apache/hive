@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  *
+explain cbo physical select  *
 from
  (select count(*) h8_30_to_9
  from impala_tpcds_store_sales, impala_tpcds_household_demographics , impala_tpcds_time_dim, impala_tpcds_store

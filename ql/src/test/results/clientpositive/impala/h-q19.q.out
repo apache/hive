@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select
+PREHOOK: query: explain cbo physical select
   sum(l_extendedprice * (1 - l_discount)) as revenue
 from
   impala_tpch_lineitem,
@@ -37,7 +37,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Input: default@impala_tpch_part
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select
+POSTHOOK: query: explain cbo physical select
   sum(l_extendedprice * (1 - l_discount)) as revenue
 from
   impala_tpch_lineitem,

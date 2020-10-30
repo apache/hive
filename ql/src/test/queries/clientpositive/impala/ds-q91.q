@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  
+explain cbo physical select  
         cc_call_center_id Call_Center,
         cc_name Call_Center_Name,
         cc_manager Manager,

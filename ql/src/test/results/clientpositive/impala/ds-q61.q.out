@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  promotions,total,cast(promotions as decimal(15,4))/cast(total as decimal(15,4))*100
+PREHOOK: query: explain cbo physical select  promotions,total,cast(promotions as decimal(15,4))/cast(total as decimal(15,4))*100
 from
   (select sum(ss_ext_sales_price) promotions
    from  impala_tpcds_store_sales
@@ -48,7 +48,7 @@ PREHOOK: Input: default@impala_tpcds_promotion
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  promotions,total,cast(promotions as decimal(15,4))/cast(total as decimal(15,4))*100
+POSTHOOK: query: explain cbo physical select  promotions,total,cast(promotions as decimal(15,4))/cast(total as decimal(15,4))*100
 from
   (select sum(ss_ext_sales_price) promotions
    from  impala_tpcds_store_sales

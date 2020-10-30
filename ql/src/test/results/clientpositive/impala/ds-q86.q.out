@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select   
+PREHOOK: query: explain cbo physical select   
     sum(ws_net_paid) as total_sum
    ,i_category
    ,i_class
@@ -26,7 +26,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_web_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select   
+POSTHOOK: query: explain cbo physical select   
     sum(ws_net_paid) as total_sum
    ,i_category
    ,i_class

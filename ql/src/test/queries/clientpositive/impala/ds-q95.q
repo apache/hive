@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with ws_wh as
+explain cbo physical with ws_wh as
 (select ws1.ws_order_number,ws1.ws_warehouse_sk wh1,ws2.ws_warehouse_sk wh2
  from impala_tpcds_web_sales ws1,impala_tpcds_web_sales ws2
  where ws1.ws_order_number = ws2.ws_order_number

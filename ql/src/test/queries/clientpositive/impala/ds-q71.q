@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select i_brand_id brand_id, i_brand brand,t_hour,t_minute,
+explain cbo physical select i_brand_id brand_id, i_brand brand,t_hour,t_minute,
       sum(ext_price) ext_price
  from impala_tpcds_item, (select ws_ext_sales_price as ext_price, 
                         ws_sold_date_sk as sold_date_sk,

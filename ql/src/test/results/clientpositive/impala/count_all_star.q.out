@@ -1,10 +1,10 @@
-PREHOOK: query: EXPLAIN CBO
+PREHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT COUNT(ALL *)
  FROM impala_tpch_lineitem
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Output: streaming
-POSTHOOK: query: EXPLAIN CBO
+POSTHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT COUNT(ALL *)
  FROM impala_tpch_lineitem
 POSTHOOK: type: QUERY
@@ -13,13 +13,13 @@ CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[count()])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]])
 
-PREHOOK: query: EXPLAIN CBO
+PREHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT COUNT(*)
  FROM impala_tpch_lineitem
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Output: streaming
-POSTHOOK: query: EXPLAIN CBO
+POSTHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT COUNT(*)
  FROM impala_tpch_lineitem
 POSTHOOK: type: QUERY

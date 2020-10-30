@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select
+PREHOOK: query: explain cbo physical select
   *
 from (
   select
@@ -35,7 +35,7 @@ PREHOOK: Input: default@impala_tpch_nation
 PREHOOK: Input: default@impala_tpch_partsupp
 PREHOOK: Input: default@impala_tpch_supplier
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select
+POSTHOOK: query: explain cbo physical select
   *
 from (
   select

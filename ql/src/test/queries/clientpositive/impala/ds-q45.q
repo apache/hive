@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  ca_zip, ca_county, sum(ws_sales_price)
+explain cbo physical select  ca_zip, ca_county, sum(ws_sales_price)
  from impala_tpcds_web_sales, impala_tpcds_customer, impala_tpcds_customer_address, impala_tpcds_date_dim, impala_tpcds_item
  where ws_bill_customer_sk = c_customer_sk
       and c_current_addr_sk = ca_address_sk 

@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  
+PREHOOK: query: explain cbo physical select  
    count(distinct cs_order_number) as `order count`
   ,sum(cs_ext_ship_cost) as `total shipping cost`
   ,sum(cs_net_profit) as `total net profit`
@@ -33,7 +33,7 @@ PREHOOK: Input: default@impala_tpcds_catalog_sales
 PREHOOK: Input: default@impala_tpcds_customer_address
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  
+POSTHOOK: query: explain cbo physical select  
    count(distinct cs_order_number) as `order count`
   ,sum(cs_ext_ship_cost) as `total shipping cost`
   ,sum(cs_net_profit) as `total net profit`

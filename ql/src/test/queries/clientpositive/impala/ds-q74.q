@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with year_total as (
+explain cbo physical with year_total as (
  select c_customer_id customer_id
        ,c_first_name customer_first_name
        ,c_last_name customer_last_name

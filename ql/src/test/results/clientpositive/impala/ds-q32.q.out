@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  sum(cs_ext_discount_amt)  as `excess discount amount` 
+PREHOOK: query: explain cbo physical select  sum(cs_ext_discount_amt)  as `excess discount amount` 
 from 
    impala_tpcds_catalog_sales 
    ,impala_tpcds_item 
@@ -28,7 +28,7 @@ PREHOOK: Input: default@impala_tpcds_catalog_sales
 PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  sum(cs_ext_discount_amt)  as `excess discount amount` 
+POSTHOOK: query: explain cbo physical select  sum(cs_ext_discount_amt)  as `excess discount amount` 
 from 
    impala_tpcds_catalog_sales 
    ,impala_tpcds_item 

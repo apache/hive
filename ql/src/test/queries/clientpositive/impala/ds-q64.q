@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with cs_ui as
+explain cbo physical with cs_ui as
  (select cs_item_sk
         ,sum(cs_ext_list_price) as sale,sum(cr_refunded_cash+cr_reversed_charge+cr_store_credit) as refund
   from impala_tpcds_catalog_sales

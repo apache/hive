@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  
+explain cbo physical select  
  'web' as channel
  ,web.item
  ,web.return_ratio

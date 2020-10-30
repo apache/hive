@@ -2625,7 +2625,7 @@ public class HiveConf extends Configuration {
     HIVE_BETWEEN_SELECTIVITY_LEGACY("hive.optimize.legacy.selectivity.between", false,
         "Whether to infer BETWEEN selectivity in Calcite using legacy logic (similar to EQUALS). " +
             "This is for debugging."),
-    HIVE_NOT_NULL_INFERRED_EXPRESSIONS("hive.optimize.filter.inferred.notnull", true,
+    HIVE_INFER_NOT_NULL_EXPRESSIONS("hive.optimize.filter.infer.notnull", true,
         "Whether to infer IS NOT NULL filter expressions based on comparison operations."),
 
     HIVE_OPTIMIZE_TABLE_PROPERTIES_FROM_SERDE("hive.optimize.update.table.properties.from.serde", false,

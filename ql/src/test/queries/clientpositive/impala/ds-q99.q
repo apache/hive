@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  
+explain cbo physical select  
    substr(w_warehouse_name,1,20)
   ,sm_type
   ,cc_name

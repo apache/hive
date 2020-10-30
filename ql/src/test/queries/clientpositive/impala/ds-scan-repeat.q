@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  ca_zip, ca_county, sum(ws_sales_price)
+explain cbo physical select  ca_zip, ca_county, sum(ws_sales_price)
  from impala_tpcds_web_sales, impala_tpcds_customer_address, impala_tpcds_item
  where ws_item_sk <> i_item_sk
       and ( substr(ca_zip,1,5) in ('85669', '86197','88274','83405','86475', '85392', '85460', '80348', '81792')

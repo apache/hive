@@ -1,8 +1,8 @@
-PREHOOK: query: explain cbo
+PREHOOK: query: explain cbo physical
 select now()
 PREHOOK: type: QUERY
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo
+POSTHOOK: query: explain cbo physical
 select now()
 POSTHOOK: type: QUERY
 CBO PLAN:

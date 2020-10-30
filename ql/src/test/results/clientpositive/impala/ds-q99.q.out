@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  
+PREHOOK: query: explain cbo physical select  
    substr(w_warehouse_name,1,20)
   ,sm_type
   ,cc_name
@@ -37,7 +37,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_ship_mode
 PREHOOK: Input: default@impala_tpcds_warehouse
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  
+POSTHOOK: query: explain cbo physical select  
    substr(w_warehouse_name,1,20)
   ,sm_type
   ,cc_name

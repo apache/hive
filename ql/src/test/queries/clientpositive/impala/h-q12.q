@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select
+explain cbo physical select
   l_shipmode,
   sum(case
     when o_orderpriority = '1-URGENT'

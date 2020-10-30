@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo with inv as
+PREHOOK: query: explain cbo physical with inv as
 (select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
        ,stdev,mean, case mean when 0 then null else stdev/mean end cov
  from(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
@@ -28,7 +28,7 @@ PREHOOK: Input: default@impala_tpcds_inventory
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_warehouse
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo with inv as
+POSTHOOK: query: explain cbo physical with inv as
 (select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy
        ,stdev,mean, case mean when 0 then null else stdev/mean end cov
  from(select w_warehouse_name,w_warehouse_sk,i_item_sk,d_moy

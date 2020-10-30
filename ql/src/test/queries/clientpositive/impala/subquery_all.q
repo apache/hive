@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-EXPLAIN CBO
+EXPLAIN CBO PHYSICAL
 SELECT
   a.description,
   o.airport,

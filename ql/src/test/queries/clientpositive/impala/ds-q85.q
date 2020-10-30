@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  substr(r_reason_desc,1,20)
+explain cbo physical select  substr(r_reason_desc,1,20)
        ,avg(ws_quantity)
        ,avg(wr_refunded_cash)
        ,avg(wr_fee)

@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
+explain cbo physical select  cast(amc as decimal(15,4))/cast(pmc as decimal(15,4)) am_pm_ratio
  from ( select count(*) amc
        from impala_tpcds_web_sales, impala_tpcds_household_demographics , impala_tpcds_time_dim, impala_tpcds_web_page
        where ws_sold_time_sk = impala_tpcds_time_dim.t_time_sk

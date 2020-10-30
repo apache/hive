@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select 
+PREHOOK: query: explain cbo physical select 
   c_last_name,c_first_name,substr(s_city,1,30),ss_ticket_number,amt,profit
   from
    (select ss_ticket_number
@@ -25,7 +25,7 @@ PREHOOK: Input: default@impala_tpcds_household_demographics
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select 
+POSTHOOK: query: explain cbo physical select 
   c_last_name,c_first_name,substr(s_city,1,30),ss_ticket_number,amt,profit
   from
    (select ss_ticket_number

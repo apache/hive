@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo
+PREHOOK: query: explain cbo physical
 WITH web_v1 as (
 select
   ws_item_sk item_sk, d_date,
@@ -46,7 +46,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo
+POSTHOOK: query: explain cbo physical
 WITH web_v1 as (
 select
   ws_item_sk item_sk, d_date,

@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with ssales as
+explain cbo physical with ssales as
 (select c_last_name
       ,c_first_name
       ,s_store_name

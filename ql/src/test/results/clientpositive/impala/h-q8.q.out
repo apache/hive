@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select
+PREHOOK: query: explain cbo physical select
   o_year,
   sum(case
     when nation = 'BRAZIL'
@@ -44,7 +44,7 @@ PREHOOK: Input: default@impala_tpch_part
 PREHOOK: Input: default@impala_tpch_region
 PREHOOK: Input: default@impala_tpch_supplier
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select
+POSTHOOK: query: explain cbo physical select
   o_year,
   sum(case
     when nation = 'BRAZIL'

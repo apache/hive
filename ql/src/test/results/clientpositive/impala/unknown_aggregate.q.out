@@ -1,9 +1,9 @@
-PREHOOK: query: explain cbo
+PREHOOK: query: explain cbo physical
 select ndv(l_returnflag) from `impala_tpch_lineitem`
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo
+POSTHOOK: query: explain cbo physical
 select ndv(l_returnflag) from `impala_tpch_lineitem`
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@impala_tpch_lineitem

@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  
+explain cbo physical select  
     sum(ss_net_profit) as total_sum
    ,s_state
    ,s_county

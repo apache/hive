@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with ws as
+explain cbo physical with ws as
   (select d_year AS ws_sold_year, ws_item_sk,
     ws_bill_customer_sk ws_customer_sk,
     sum(ws_quantity) ws_qty,

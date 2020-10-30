@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select   
+explain cbo physical select   
     sum(ws_net_paid) as total_sum
    ,i_category
    ,i_class

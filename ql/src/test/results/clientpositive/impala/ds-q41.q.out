@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  distinct(i_product_name)
+PREHOOK: query: explain cbo physical select  distinct(i_product_name)
  from impala_tpcds_item i1
  where i_manufact_id between 970 and 970+40 
    and (select count(*) as item_cnt
@@ -50,7 +50,7 @@ PREHOOK: query: explain cbo select  distinct(i_product_name)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  distinct(i_product_name)
+POSTHOOK: query: explain cbo physical select  distinct(i_product_name)
  from impala_tpcds_item i1
  where i_manufact_id between 970 and 970+40 
    and (select count(*) as item_cnt

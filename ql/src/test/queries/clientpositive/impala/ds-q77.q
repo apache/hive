@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with ss as
+explain cbo physical with ss as
  (select s_store_sk,
          sum(ss_ext_sales_price) as sales,
          sum(ss_net_profit) as profit

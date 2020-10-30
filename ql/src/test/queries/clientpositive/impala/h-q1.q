@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select
+explain cbo physical select
   l_returnflag,
   l_linestatus,
   sum(l_quantity) as sum_qty,

@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  
+explain cbo physical select  
    count(distinct cs_order_number) as `order count`
   ,sum(cs_ext_ship_cost) as `total shipping cost`
   ,sum(cs_net_profit) as `total net profit`

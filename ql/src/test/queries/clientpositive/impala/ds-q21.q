@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  *
+explain cbo physical select  *
  from(select w_warehouse_name
             ,i_item_id
             ,sum(case when (cast(d_date as date) < cast ('1999-03-20' as date))

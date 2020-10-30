@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select
+explain cbo physical select
   cntrycode,
   count(*) as numcust,
   sum(c_acctbal) as totacctbal

@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo with frequent_ss_items as 
+PREHOOK: query: explain cbo physical with frequent_ss_items as 
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
   from impala_tpcds_store_sales
       ,impala_tpcds_date_dim 
@@ -55,7 +55,7 @@ PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_web_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo with frequent_ss_items as 
+POSTHOOK: query: explain cbo physical with frequent_ss_items as 
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
   from impala_tpcds_store_sales
       ,impala_tpcds_date_dim 

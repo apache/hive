@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  dt.d_year
+PREHOOK: query: explain cbo physical select  dt.d_year
       ,impala_tpcds_item.i_category_id
       ,impala_tpcds_item.i_category
       ,sum(ss_ext_sales_price)
@@ -22,7 +22,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_item
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  dt.d_year
+POSTHOOK: query: explain cbo physical select  dt.d_year
       ,impala_tpcds_item.i_category_id
       ,impala_tpcds_item.i_category
       ,sum(ss_ext_sales_price)

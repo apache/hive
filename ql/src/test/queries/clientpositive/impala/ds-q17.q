@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select  i_item_id
+explain cbo physical select  i_item_id
        ,i_item_desc
        ,s_state
        ,count(ss_quantity) as store_sales_quantitycount

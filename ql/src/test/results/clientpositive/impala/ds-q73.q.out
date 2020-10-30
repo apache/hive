@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select c_last_name
+PREHOOK: query: explain cbo physical select c_last_name
        ,c_first_name
        ,c_salutation
        ,c_preferred_cust_flag 
@@ -30,7 +30,7 @@ PREHOOK: Input: default@impala_tpcds_household_demographics
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select c_last_name
+POSTHOOK: query: explain cbo physical select c_last_name
        ,c_first_name
        ,c_salutation
        ,c_preferred_cust_flag 

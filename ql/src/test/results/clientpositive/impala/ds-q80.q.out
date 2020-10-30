@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo with ssr as
+PREHOOK: query: explain cbo physical with ssr as
  (select  s_store_id as store_id,
           sum(ss_ext_sales_price) as sales,
           sum(coalesce(sr_return_amt, 0)) as returns,
@@ -105,7 +105,7 @@ PREHOOK: Input: default@impala_tpcds_web_returns
 PREHOOK: Input: default@impala_tpcds_web_sales
 PREHOOK: Input: default@impala_tpcds_web_site
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo with ssr as
+POSTHOOK: query: explain cbo physical with ssr as
  (select  s_store_id as store_id,
           sum(ss_ext_sales_price) as sales,
           sum(coalesce(sr_return_amt, 0)) as returns,

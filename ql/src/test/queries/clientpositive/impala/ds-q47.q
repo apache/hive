@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with v1 as(
+explain cbo physical with v1 as(
  select i_category, i_brand,
         s_store_name, s_company_name,
         d_year, d_moy,

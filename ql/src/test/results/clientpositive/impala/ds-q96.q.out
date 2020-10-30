@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  count(*) 
+PREHOOK: query: explain cbo physical select  count(*) 
 from impala_tpcds_store_sales
     ,impala_tpcds_household_demographics 
     ,impala_tpcds_time_dim, impala_tpcds_store
@@ -17,7 +17,7 @@ PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Input: default@impala_tpcds_time_dim
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  count(*) 
+POSTHOOK: query: explain cbo physical select  count(*) 
 from impala_tpcds_store_sales
     ,impala_tpcds_household_demographics 
     ,impala_tpcds_time_dim, impala_tpcds_store

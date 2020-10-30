@@ -236,7 +236,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
-  HiveJoin(condition=[AND(OR(IS NOT TRUE(<=($0, $1)), $2), OR($3, $2, <=($0, $1)), OR(>($0, $1), $2, <=($0, $1), $4))], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[AND(OR(IS NOT TRUE(<=($0, $1)), $2), OR($3, $2, <=($0, $1)), OR(>($0, $1), $2, <=($0, $1), $4))], joinType=[inner])
     HiveProject(p_partkey=[$0])
       HiveTableScan(table=[[default, part]], table:alias=[part])
     HiveProject(m=[$0], ==[=($1, 0)], <==[<=($1, $2)], >=[>($1, $2)])
@@ -264,7 +264,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
-  HiveJoin(condition=[AND(OR(IS NOT TRUE(>=($0, $1)), $2), OR($3, $2, >=($0, $1)), OR(<($0, $1), $2, >=($0, $1), $4))], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[AND(OR(IS NOT TRUE(>=($0, $1)), $2), OR($3, $2, >=($0, $1)), OR(<($0, $1), $2, >=($0, $1), $4))], joinType=[inner])
     HiveProject(p_partkey=[$0])
       HiveTableScan(table=[[default, part]], table:alias=[part])
     HiveProject(m=[$0], ==[=($1, 0)], <==[<=($1, $2)], >=[>($1, $2)])
@@ -292,7 +292,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
-  HiveJoin(condition=[AND(OR(IS NOT TRUE(<($0, $1)), $2), OR($3, $2, <($0, $1)), OR(>=($0, $1), $2, <($0, $1), $4))], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[AND(OR(IS NOT TRUE(<($0, $1)), $2), OR($3, $2, <($0, $1)), OR(>=($0, $1), $2, <($0, $1), $4))], joinType=[inner])
     HiveProject(p_partkey=[$0])
       HiveTableScan(table=[[default, part]], table:alias=[part])
     HiveProject(m=[$0], ==[=($1, 0)], <==[<=($1, $2)], >=[>($1, $2)])
@@ -320,7 +320,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
-  HiveJoin(condition=[AND(OR(IS NOT TRUE(>($0, $1)), $2), OR($3, $2, >($0, $1)), OR(<=($0, $1), $2, >($0, $1), $4))], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[AND(OR(IS NOT TRUE(>($0, $1)), $2), OR($3, $2, >($0, $1)), OR(<=($0, $1), $2, >($0, $1), $4))], joinType=[inner])
     HiveProject(p_partkey=[$0])
       HiveTableScan(table=[[default, part]], table:alias=[part])
     HiveProject(m=[$0], ==[=($1, 0)], <==[<=($1, $2)], >=[>($1, $2)])
@@ -348,7 +348,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
-  HiveJoin(condition=[AND(OR(IS NOT TRUE(>=($0, $1)), $2), OR($3, $2, >=($0, $1)), OR(<($0, $1), $2, >=($0, $1), $4))], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[AND(OR(IS NOT TRUE(>=($0, $1)), $2), OR($3, $2, >=($0, $1)), OR(<($0, $1), $2, >=($0, $1), $4))], joinType=[inner])
     HiveProject(p_size=[$5])
       HiveTableScan(table=[[default, part]], table:alias=[part])
     HiveProject(m=[$0], ==[=($1, 0)], <==[<=($1, $2)], >=[>($1, $2)])
@@ -449,7 +449,7 @@ POSTHOOK: Input: default@part
 #### A masked pattern was here ####
 CBO PLAN:
 HiveProject($f0=[$4])
-  HiveJoin(condition=[AND(OR(IS NOT TRUE(<=($4, $0)), $1), OR($2, $1, <=($4, $0)), OR(>($4, $0), $1, <=($4, $0), $3))], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[AND(OR(IS NOT TRUE(<=($4, $0)), $1), OR($2, $1, <=($4, $0)), OR(>($4, $0), $1, <=($4, $0), $3))], joinType=[inner])
     HiveProject(m=[$0], ==[=($1, 0)], <==[<=($1, $2)], >=[>($1, $2)])
       HiveAggregate(group=[{}], m=[MAX($1)], c=[COUNT()], d=[COUNT($1)])
         HiveProject(p_partkey=[$0], $f1=[$1])
@@ -743,12 +743,12 @@ POSTHOOK: Input: default@part_null_n0
 #### A masked pattern was here ####
 CBO PLAN:
 HiveAggregate(group=[{}], agg#0=[count()])
-  HiveJoin(condition=[AND(OR(IS NOT TRUE(<($0, $1)), $2), OR($3, $2, <($0, $1)), OR(>=($0, $1), $2, <($0, $1), $4))], joinType=[inner], algorithm=[none], cost=[not available])
+  HiveJoin(condition=[AND(OR(IS NOT TRUE(<($0, $1)), $2), OR($3, $2, <($0, $1)), OR(>=($0, $1), $2, <($0, $1), $4))], joinType=[inner])
     HiveProject(p_partkey=[$0])
       HiveTableScan(table=[[default, part]], table:alias=[part])
     HiveProject(m=[$0], ==[=($1, 0)], <==[<=($1, $2)], >=[>($1, $2)])
       HiveAggregate(group=[{}], m=[MAX($0)], c=[COUNT()], d=[COUNT($0)])
-        HiveJoin(condition=[AND(OR(IS NOT TRUE(<($1, $2)), $3), OR($4, $3, <($1, $2)), OR(>=($1, $2), $3, <($1, $2), $5))], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveJoin(condition=[AND(OR(IS NOT TRUE(<($1, $2)), $3), OR($4, $3, <($1, $2)), OR(>=($1, $2), $3, <($1, $2), $5))], joinType=[inner])
           HiveProject(p_partkey=[$0], p_size=[$5])
             HiveTableScan(table=[[default, part]], table:alias=[part])
           HiveProject(m=[$0], ==[=($1, 0)], <==[<=($1, $2)], >=[>($1, $2)])

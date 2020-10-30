@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo select case when (select count(*) 
+explain cbo physical select case when (select count(*) 
                   from impala_tpcds_store_sales 
                   where ss_quantity between 1 and 20) > 98972190
             then (select avg(ss_ext_discount_amt) 

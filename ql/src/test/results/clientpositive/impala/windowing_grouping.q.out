@@ -124,7 +124,7 @@ STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab_item_n0
-PREHOOK: query: explain cbo
+PREHOOK: query: explain cbo physical
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
    ,i_category
@@ -143,7 +143,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_item_n0
 PREHOOK: Input: default@tab_sales_n0
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo
+POSTHOOK: query: explain cbo physical
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
    ,i_category
@@ -172,7 +172,7 @@ ImpalaProjectPassthroughRel(gross_margin=[$7], i_category=[$2], i_class=[$3], lo
           ImpalaProjectPassthroughRel(i_item_sk=[$0], i_class=[$10], i_category=[$12])
             ImpalaHdfsScanRel(table=[[default, tab_item_n0]], condition=[IS NOT NULL($0)])
 
-PREHOOK: query: explain cbo
+PREHOOK: query: explain cbo physical
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
    ,i_category
@@ -191,7 +191,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_item_n0
 PREHOOK: Input: default@tab_sales_n0
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo
+POSTHOOK: query: explain cbo physical
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
    ,i_category
@@ -219,7 +219,7 @@ ImpalaProjectPassthroughRel(gross_margin=[$6], i_category=[$2], i_class=[$3], lo
         ImpalaProjectPassthroughRel(i_item_sk=[$0], i_class=[$10], i_category=[$12])
           ImpalaHdfsScanRel(table=[[default, tab_item_n0]], condition=[IS NOT NULL($0)])
 
-PREHOOK: query: explain cbo
+PREHOOK: query: explain cbo physical
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
    ,i_category
@@ -238,7 +238,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@tab_item_n0
 PREHOOK: Input: default@tab_sales_n0
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo
+POSTHOOK: query: explain cbo physical
 select
     sum(ss_net_profit)/sum(ss_ext_sales_price) as gross_margin
    ,i_category

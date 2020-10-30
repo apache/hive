@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo select  s_store_name, s_store_id,
+PREHOOK: query: explain cbo physical select  s_store_name, s_store_id,
         sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
         sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
         sum(case when (d_day_name='Tuesday') then ss_sales_price else  null end) tue_sales,
@@ -19,7 +19,7 @@ PREHOOK: Input: default@impala_tpcds_date_dim
 PREHOOK: Input: default@impala_tpcds_store
 PREHOOK: Input: default@impala_tpcds_store_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo select  s_store_name, s_store_id,
+POSTHOOK: query: explain cbo physical select  s_store_name, s_store_id,
         sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
         sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
         sum(case when (d_day_name='Tuesday') then ss_sales_price else  null end) tue_sales,

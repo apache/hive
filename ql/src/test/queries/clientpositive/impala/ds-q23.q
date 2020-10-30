@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with frequent_ss_items as 
+explain cbo physical with frequent_ss_items as 
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
   from impala_tpcds_store_sales
       ,impala_tpcds_date_dim 

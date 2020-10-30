@@ -1,4 +1,4 @@
-PREHOOK: query: explain cbo with ss as
+PREHOOK: query: explain cbo physical with ss as
  (select s_store_sk,
          sum(ss_ext_sales_price) as sales,
          sum(ss_net_profit) as profit
@@ -114,7 +114,7 @@ PREHOOK: Input: default@impala_tpcds_web_page
 PREHOOK: Input: default@impala_tpcds_web_returns
 PREHOOK: Input: default@impala_tpcds_web_sales
 PREHOOK: Output: streaming
-POSTHOOK: query: explain cbo with ss as
+POSTHOOK: query: explain cbo physical with ss as
  (select s_store_sk,
          sum(ss_ext_sales_price) as sales,
          sum(ss_net_profit) as profit

@@ -29,10 +29,10 @@ create table tab_sales_n1
 STORED AS PARQUET;
 
 
-explain cbo
+explain cbo physical
 select sum(ss_quantity) over(order by ss_quantity) from tab_sales_n1;
 
-explain cbo
+explain cbo physical
 select sum(ss_net_profit) over(order by ss_net_profit) from tab_sales_n1;
 
 

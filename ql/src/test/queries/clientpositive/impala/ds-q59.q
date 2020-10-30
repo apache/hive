@@ -1,6 +1,6 @@
 --! qt:dataset:impala_dataset
 
-explain cbo with wss as 
+explain cbo physical with wss as 
  (select d_week_seq,
         ss_store_sk,
         sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,

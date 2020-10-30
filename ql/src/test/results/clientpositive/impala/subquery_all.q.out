@@ -1,4 +1,4 @@
-PREHOOK: query: EXPLAIN CBO
+PREHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT
   a.description,
   o.airport,
@@ -25,7 +25,7 @@ PREHOOK: Input: default@impala_airlines
 PREHOOK: Input: default@impala_airports
 PREHOOK: Input: default@impala_flights
 PREHOOK: Output: streaming
-POSTHOOK: query: EXPLAIN CBO
+POSTHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT
   a.description,
   o.airport,
