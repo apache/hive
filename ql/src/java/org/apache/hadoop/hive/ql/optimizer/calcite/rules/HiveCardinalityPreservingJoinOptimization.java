@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.rel.RelNode;
-import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.apache.calcite.rel.type.RelDataTypeField;
@@ -123,7 +122,9 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
         newColumnNames.add(relDataTypeField.getName());
       }
 
-      List<JoinedBackFields> lineages = getExpressionLineageOf(rootFieldList, rootInput);
+      // Bit set to gather the refs that backtrack to constant values
+      BitSet constants = new BitSet();
+      List<JoinedBackFields> lineages = getExpressionLineageOf(rootFieldList, rootInput, constants);
       if (lineages == null) {
         LOG.debug("Some projected field lineage can not be determined");
         return root;
@@ -132,7 +133,7 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
       // 1. Collect candidate tables for join back and map RexNodes coming from those tables to their index in the
       // rootInput row type
       // Collect all used fields from original plan
-      ImmutableBitSet fieldsUsed = ImmutableBitSet.of();
+      ImmutableBitSet fieldsUsed = ImmutableBitSet.of(constants.stream().toArray());
       List<TableToJoinBack> tableToJoinBackList = new ArrayList<>(lineages.size());
       Map<Integer, RexNode> rexNodesToShuttle = new HashMap<>(rootInput.getRowType().getFieldCount());
 
@@ -242,7 +243,7 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
   }
 
   private List<JoinedBackFields> getExpressionLineageOf(
-      List<RexInputRef> projectExpressions, RelNode projectInput) {
+      List<RexInputRef> projectExpressions, RelNode projectInput, BitSet constants) {
     RelMetadataQuery relMetadataQuery = RelMetadataQuery.instance();
     Map<RexTableInputRef.RelTableRef, JoinedBackFieldsBuilder> fieldMappingBuilders = new HashMap<>();
     List<RexTableInputRef.RelTableRef> tablesOrdered = new ArrayList<>(); // use this list to keep the order of tables
@@ -254,14 +255,23 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
       }
 
       RexNode rexNode = expressionLineage.iterator().next();
-      for (RexTableInputRef rexTableInputRef : rexTableInputRef(rexNode)) {
-        RexTableInputRef.RelTableRef tableRef = rexTableInputRef.getTableRef();
-        JoinedBackFieldsBuilder joinedBackFieldsBuilder = fieldMappingBuilders.computeIfAbsent(
-            tableRef, k -> {
-              tablesOrdered.add(tableRef);
-              return new JoinedBackFieldsBuilder(tableRef);
-            });
-        joinedBackFieldsBuilder.add(expr, rexNode, rexTableInputRef);
+      List<RexTableInputRef> refs = rexTableInputRef(rexNode);
+      if (refs.isEmpty()) {
+        if (!RexUtil.isConstant(rexNode)) {
+          LOG.debug("Unknown expression that should be a constant: {}", rexNode);
+          return null;
+        }
+        constants.set(expr.getIndex());
+      } else {
+        for (RexTableInputRef rexTableInputRef : refs) {
+          RexTableInputRef.RelTableRef tableRef = rexTableInputRef.getTableRef();
+          JoinedBackFieldsBuilder joinedBackFieldsBuilder = fieldMappingBuilders.computeIfAbsent(
+              tableRef, k -> {
+                tablesOrdered.add(tableRef);
+                return new JoinedBackFieldsBuilder(tableRef);
+              });
+          joinedBackFieldsBuilder.add(expr, rexNode, rexTableInputRef);
+        }
       }
     }
 
