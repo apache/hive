@@ -44749,6 +44749,433 @@ void GetOpenTxnsRequest::printTo(std::ostream& out) const {
 }
 
 
+StoredProcedureRequest::~StoredProcedureRequest() noexcept {
+}
+
+
+void StoredProcedureRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+}
+
+void StoredProcedureRequest::__set_dbName(const std::string& val) {
+  this->dbName = val;
+}
+
+void StoredProcedureRequest::__set_procName(const std::string& val) {
+  this->procName = val;
+}
+std::ostream& operator<<(std::ostream& out, const StoredProcedureRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t StoredProcedureRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_catName = false;
+  bool isset_dbName = false;
+  bool isset_procName = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          isset_catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbName);
+          isset_dbName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->procName);
+          isset_procName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_catName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_dbName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  if (!isset_procName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t StoredProcedureRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("StoredProcedureRequest");
+
+  xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->catName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->dbName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("procName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->procName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(StoredProcedureRequest &a, StoredProcedureRequest &b) {
+  using ::std::swap;
+  swap(a.catName, b.catName);
+  swap(a.dbName, b.dbName);
+  swap(a.procName, b.procName);
+}
+
+StoredProcedureRequest::StoredProcedureRequest(const StoredProcedureRequest& other1605) {
+  catName = other1605.catName;
+  dbName = other1605.dbName;
+  procName = other1605.procName;
+}
+StoredProcedureRequest& StoredProcedureRequest::operator=(const StoredProcedureRequest& other1606) {
+  catName = other1606.catName;
+  dbName = other1606.dbName;
+  procName = other1606.procName;
+  return *this;
+}
+void StoredProcedureRequest::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "StoredProcedureRequest(";
+  out << "catName=" << to_string(catName);
+  out << ", " << "dbName=" << to_string(dbName);
+  out << ", " << "procName=" << to_string(procName);
+  out << ")";
+}
+
+
+ListStoredProcedureRequest::~ListStoredProcedureRequest() noexcept {
+}
+
+
+void ListStoredProcedureRequest::__set_catName(const std::string& val) {
+  this->catName = val;
+}
+
+void ListStoredProcedureRequest::__set_dbName(const std::string& val) {
+  this->dbName = val;
+__isset.dbName = true;
+}
+std::ostream& operator<<(std::ostream& out, const ListStoredProcedureRequest& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t ListStoredProcedureRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+  bool isset_catName = false;
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          isset_catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbName);
+          this->__isset.dbName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  if (!isset_catName)
+    throw TProtocolException(TProtocolException::INVALID_DATA);
+  return xfer;
+}
+
+uint32_t ListStoredProcedureRequest::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("ListStoredProcedureRequest");
+
+  xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->catName);
+  xfer += oprot->writeFieldEnd();
+
+  if (this->__isset.dbName) {
+    xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
+    xfer += oprot->writeString(this->dbName);
+    xfer += oprot->writeFieldEnd();
+  }
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(ListStoredProcedureRequest &a, ListStoredProcedureRequest &b) {
+  using ::std::swap;
+  swap(a.catName, b.catName);
+  swap(a.dbName, b.dbName);
+  swap(a.__isset, b.__isset);
+}
+
+ListStoredProcedureRequest::ListStoredProcedureRequest(const ListStoredProcedureRequest& other1607) {
+  catName = other1607.catName;
+  dbName = other1607.dbName;
+  __isset = other1607.__isset;
+}
+ListStoredProcedureRequest& ListStoredProcedureRequest::operator=(const ListStoredProcedureRequest& other1608) {
+  catName = other1608.catName;
+  dbName = other1608.dbName;
+  __isset = other1608.__isset;
+  return *this;
+}
+void ListStoredProcedureRequest::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "ListStoredProcedureRequest(";
+  out << "catName=" << to_string(catName);
+  out << ", " << "dbName="; (__isset.dbName ? (out << to_string(dbName)) : (out << "<null>"));
+  out << ")";
+}
+
+
+StoredProcedure::~StoredProcedure() noexcept {
+}
+
+
+void StoredProcedure::__set_name(const std::string& val) {
+  this->name = val;
+}
+
+void StoredProcedure::__set_dbName(const std::string& val) {
+  this->dbName = val;
+}
+
+void StoredProcedure::__set_catName(const std::string& val) {
+  this->catName = val;
+}
+
+void StoredProcedure::__set_ownerName(const std::string& val) {
+  this->ownerName = val;
+}
+
+void StoredProcedure::__set_source(const std::string& val) {
+  this->source = val;
+}
+std::ostream& operator<<(std::ostream& out, const StoredProcedure& obj)
+{
+  obj.printTo(out);
+  return out;
+}
+
+
+uint32_t StoredProcedure::read(::apache::thrift::protocol::TProtocol* iprot) {
+
+  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
+  uint32_t xfer = 0;
+  std::string fname;
+  ::apache::thrift::protocol::TType ftype;
+  int16_t fid;
+
+  xfer += iprot->readStructBegin(fname);
+
+  using ::apache::thrift::protocol::TProtocolException;
+
+
+  while (true)
+  {
+    xfer += iprot->readFieldBegin(fname, ftype, fid);
+    if (ftype == ::apache::thrift::protocol::T_STOP) {
+      break;
+    }
+    switch (fid)
+    {
+      case 1:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->name);
+          this->__isset.name = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 2:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->dbName);
+          this->__isset.dbName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->catName);
+          this->__isset.catName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->ownerName);
+          this->__isset.ownerName = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->source);
+          this->__isset.source = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      default:
+        xfer += iprot->skip(ftype);
+        break;
+    }
+    xfer += iprot->readFieldEnd();
+  }
+
+  xfer += iprot->readStructEnd();
+
+  return xfer;
+}
+
+uint32_t StoredProcedure::write(::apache::thrift::protocol::TProtocol* oprot) const {
+  uint32_t xfer = 0;
+  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
+  xfer += oprot->writeStructBegin("StoredProcedure");
+
+  xfer += oprot->writeFieldBegin("name", ::apache::thrift::protocol::T_STRING, 1);
+  xfer += oprot->writeString(this->name);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("dbName", ::apache::thrift::protocol::T_STRING, 2);
+  xfer += oprot->writeString(this->dbName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("catName", ::apache::thrift::protocol::T_STRING, 3);
+  xfer += oprot->writeString(this->catName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("ownerName", ::apache::thrift::protocol::T_STRING, 4);
+  xfer += oprot->writeString(this->ownerName);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldBegin("source", ::apache::thrift::protocol::T_STRING, 5);
+  xfer += oprot->writeString(this->source);
+  xfer += oprot->writeFieldEnd();
+
+  xfer += oprot->writeFieldStop();
+  xfer += oprot->writeStructEnd();
+  return xfer;
+}
+
+void swap(StoredProcedure &a, StoredProcedure &b) {
+  using ::std::swap;
+  swap(a.name, b.name);
+  swap(a.dbName, b.dbName);
+  swap(a.catName, b.catName);
+  swap(a.ownerName, b.ownerName);
+  swap(a.source, b.source);
+  swap(a.__isset, b.__isset);
+}
+
+StoredProcedure::StoredProcedure(const StoredProcedure& other1609) {
+  name = other1609.name;
+  dbName = other1609.dbName;
+  catName = other1609.catName;
+  ownerName = other1609.ownerName;
+  source = other1609.source;
+  __isset = other1609.__isset;
+}
+StoredProcedure& StoredProcedure::operator=(const StoredProcedure& other1610) {
+  name = other1610.name;
+  dbName = other1610.dbName;
+  catName = other1610.catName;
+  ownerName = other1610.ownerName;
+  source = other1610.source;
+  __isset = other1610.__isset;
+  return *this;
+}
+void StoredProcedure::printTo(std::ostream& out) const {
+  using ::apache::thrift::to_string;
+  out << "StoredProcedure(";
+  out << "name=" << to_string(name);
+  out << ", " << "dbName=" << to_string(dbName);
+  out << ", " << "catName=" << to_string(catName);
+  out << ", " << "ownerName=" << to_string(ownerName);
+  out << ", " << "source=" << to_string(source);
+  out << ")";
+}
+
+
 MetaException::~MetaException() noexcept {
 }
 
@@ -44824,13 +45251,13 @@ void swap(MetaException &a, MetaException &b) {
   swap(a.__isset, b.__isset);
 }
 
-MetaException::MetaException(const MetaException& other1605) : TException() {
-  message = other1605.message;
-  __isset = other1605.__isset;
+MetaException::MetaException(const MetaException& other1611) : TException() {
+  message = other1611.message;
+  __isset = other1611.__isset;
 }
-MetaException& MetaException::operator=(const MetaException& other1606) {
-  message = other1606.message;
-  __isset = other1606.__isset;
+MetaException& MetaException::operator=(const MetaException& other1612) {
+  message = other1612.message;
+  __isset = other1612.__isset;
   return *this;
 }
 void MetaException::printTo(std::ostream& out) const {
@@ -44927,13 +45354,13 @@ void swap(UnknownTableException &a, UnknownTableException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownTableException::UnknownTableException(const UnknownTableException& other1607) : TException() {
-  message = other1607.message;
-  __isset = other1607.__isset;
+UnknownTableException::UnknownTableException(const UnknownTableException& other1613) : TException() {
+  message = other1613.message;
+  __isset = other1613.__isset;
 }
-UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1608) {
-  message = other1608.message;
-  __isset = other1608.__isset;
+UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1614) {
+  message = other1614.message;
+  __isset = other1614.__isset;
   return *this;
 }
 void UnknownTableException::printTo(std::ostream& out) const {
@@ -45030,13 +45457,13 @@ void swap(UnknownDBException &a, UnknownDBException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownDBException::UnknownDBException(const UnknownDBException& other1609) : TException() {
-  message = other1609.message;
-  __isset = other1609.__isset;
+UnknownDBException::UnknownDBException(const UnknownDBException& other1615) : TException() {
+  message = other1615.message;
+  __isset = other1615.__isset;
 }
-UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1610) {
-  message = other1610.message;
-  __isset = other1610.__isset;
+UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1616) {
+  message = other1616.message;
+  __isset = other1616.__isset;
   return *this;
 }
 void UnknownDBException::printTo(std::ostream& out) const {
@@ -45133,13 +45560,13 @@ void swap(AlreadyExistsException &a, AlreadyExistsException &b) {
   swap(a.__isset, b.__isset);
 }
 
-AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1611) : TException() {
-  message = other1611.message;
-  __isset = other1611.__isset;
+AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1617) : TException() {
+  message = other1617.message;
+  __isset = other1617.__isset;
 }
-AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1612) {
-  message = other1612.message;
-  __isset = other1612.__isset;
+AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1618) {
+  message = other1618.message;
+  __isset = other1618.__isset;
   return *this;
 }
 void AlreadyExistsException::printTo(std::ostream& out) const {
@@ -45236,13 +45663,13 @@ void swap(InvalidPartitionException &a, InvalidPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1613) : TException() {
-  message = other1613.message;
-  __isset = other1613.__isset;
+InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1619) : TException() {
+  message = other1619.message;
+  __isset = other1619.__isset;
 }
-InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1614) {
-  message = other1614.message;
-  __isset = other1614.__isset;
+InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1620) {
+  message = other1620.message;
+  __isset = other1620.__isset;
   return *this;
 }
 void InvalidPartitionException::printTo(std::ostream& out) const {
@@ -45339,13 +45766,13 @@ void swap(UnknownPartitionException &a, UnknownPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1615) : TException() {
-  message = other1615.message;
-  __isset = other1615.__isset;
+UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1621) : TException() {
+  message = other1621.message;
+  __isset = other1621.__isset;
 }
-UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1616) {
-  message = other1616.message;
-  __isset = other1616.__isset;
+UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1622) {
+  message = other1622.message;
+  __isset = other1622.__isset;
   return *this;
 }
 void UnknownPartitionException::printTo(std::ostream& out) const {
@@ -45442,13 +45869,13 @@ void swap(InvalidObjectException &a, InvalidObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1617) : TException() {
-  message = other1617.message;
-  __isset = other1617.__isset;
+InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1623) : TException() {
+  message = other1623.message;
+  __isset = other1623.__isset;
 }
-InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1618) {
-  message = other1618.message;
-  __isset = other1618.__isset;
+InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1624) {
+  message = other1624.message;
+  __isset = other1624.__isset;
   return *this;
 }
 void InvalidObjectException::printTo(std::ostream& out) const {
@@ -45545,13 +45972,13 @@ void swap(NoSuchObjectException &a, NoSuchObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1619) : TException() {
-  message = other1619.message;
-  __isset = other1619.__isset;
+NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1625) : TException() {
+  message = other1625.message;
+  __isset = other1625.__isset;
 }
-NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1620) {
-  message = other1620.message;
-  __isset = other1620.__isset;
+NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1626) {
+  message = other1626.message;
+  __isset = other1626.__isset;
   return *this;
 }
 void NoSuchObjectException::printTo(std::ostream& out) const {
@@ -45648,13 +46075,13 @@ void swap(InvalidOperationException &a, InvalidOperationException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1621) : TException() {
-  message = other1621.message;
-  __isset = other1621.__isset;
+InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1627) : TException() {
+  message = other1627.message;
+  __isset = other1627.__isset;
 }
-InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1622) {
-  message = other1622.message;
-  __isset = other1622.__isset;
+InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1628) {
+  message = other1628.message;
+  __isset = other1628.__isset;
   return *this;
 }
 void InvalidOperationException::printTo(std::ostream& out) const {
@@ -45751,13 +46178,13 @@ void swap(ConfigValSecurityException &a, ConfigValSecurityException &b) {
   swap(a.__isset, b.__isset);
 }
 
-ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1623) : TException() {
-  message = other1623.message;
-  __isset = other1623.__isset;
+ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1629) : TException() {
+  message = other1629.message;
+  __isset = other1629.__isset;
 }
-ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1624) {
-  message = other1624.message;
-  __isset = other1624.__isset;
+ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1630) {
+  message = other1630.message;
+  __isset = other1630.__isset;
   return *this;
 }
 void ConfigValSecurityException::printTo(std::ostream& out) const {
@@ -45854,13 +46281,13 @@ void swap(InvalidInputException &a, InvalidInputException &b) {
   swap(a.__isset, b.__isset);
 }
 
-InvalidInputException::InvalidInputException(const InvalidInputException& other1625) : TException() {
-  message = other1625.message;
-  __isset = other1625.__isset;
+InvalidInputException::InvalidInputException(const InvalidInputException& other1631) : TException() {
+  message = other1631.message;
+  __isset = other1631.__isset;
 }
-InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1626) {
-  message = other1626.message;
-  __isset = other1626.__isset;
+InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1632) {
+  message = other1632.message;
+  __isset = other1632.__isset;
   return *this;
 }
 void InvalidInputException::printTo(std::ostream& out) const {
@@ -45957,13 +46384,13 @@ void swap(NoSuchTxnException &a, NoSuchTxnException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1627) : TException() {
-  message = other1627.message;
-  __isset = other1627.__isset;
+NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1633) : TException() {
+  message = other1633.message;
+  __isset = other1633.__isset;
 }
-NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1628) {
-  message = other1628.message;
-  __isset = other1628.__isset;
+NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1634) {
+  message = other1634.message;
+  __isset = other1634.__isset;
   return *this;
 }
 void NoSuchTxnException::printTo(std::ostream& out) const {
@@ -46060,13 +46487,13 @@ void swap(TxnAbortedException &a, TxnAbortedException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1629) : TException() {
-  message = other1629.message;
-  __isset = other1629.__isset;
+TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1635) : TException() {
+  message = other1635.message;
+  __isset = other1635.__isset;
 }
-TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1630) {
-  message = other1630.message;
-  __isset = other1630.__isset;
+TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1636) {
+  message = other1636.message;
+  __isset = other1636.__isset;
   return *this;
 }
 void TxnAbortedException::printTo(std::ostream& out) const {
@@ -46163,13 +46590,13 @@ void swap(TxnOpenException &a, TxnOpenException &b) {
   swap(a.__isset, b.__isset);
 }
 
-TxnOpenException::TxnOpenException(const TxnOpenException& other1631) : TException() {
-  message = other1631.message;
-  __isset = other1631.__isset;
+TxnOpenException::TxnOpenException(const TxnOpenException& other1637) : TException() {
+  message = other1637.message;
+  __isset = other1637.__isset;
 }
-TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1632) {
-  message = other1632.message;
-  __isset = other1632.__isset;
+TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1638) {
+  message = other1638.message;
+  __isset = other1638.__isset;
   return *this;
 }
 void TxnOpenException::printTo(std::ostream& out) const {
@@ -46266,13 +46693,13 @@ void swap(NoSuchLockException &a, NoSuchLockException &b) {
   swap(a.__isset, b.__isset);
 }
 
-NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1633) : TException() {
-  message = other1633.message;
-  __isset = other1633.__isset;
+NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1639) : TException() {
+  message = other1639.message;
+  __isset = other1639.__isset;
 }
-NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1634) {
-  message = other1634.message;
-  __isset = other1634.__isset;
+NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1640) {
+  message = other1640.message;
+  __isset = other1640.__isset;
   return *this;
 }
 void NoSuchLockException::printTo(std::ostream& out) const {

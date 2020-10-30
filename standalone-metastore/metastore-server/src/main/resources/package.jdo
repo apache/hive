@@ -1549,6 +1549,31 @@
         <column name="RM_DUMP_EXECUTION_ID"/>
       </index>
     </class>
+
+    <class name="MStoredProc" table="STORED_PROCS" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="SP_ID"/>
+      </datastore-identity>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer" allows-null="false"/>
+      </field>
+      <field name="database">
+        <column name="DB_ID" allows-null="false"/>
+      </field>
+      <field name="name">
+        <column name="NAME" length="256" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="owner">
+        <column name="OWNER_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="source">
+        <column name="SOURCE" jdbc-type="CLOB" allows-null="false"/>
+      </field>
+      <index name="UniqueStoredProc" unique="true">
+        <column name="NAME"/>
+        <column name="DB_ID"/>
+      </index>
+    </class>
   </package>
 </jdo>
 

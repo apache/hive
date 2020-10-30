@@ -230,6 +230,44 @@ Example code to test specific scenarios:
   }
 
   @Test
+  public void testDeclaredLengthUnsetForCollidedBuffer() throws Exception {
+    LowLevelCacheImpl cache = new LowLevelCacheImpl(
+        LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
+        new DummyAllocator(), true, -1); // no cleanup thread
+
+    long fileKey = 1;
+    long[] putResult;
+
+    // 5 buffers: 0,1 cached in the first go, 2,3,4 cached in the next one; buffers 1 and 4 cover overlapping ranges
+    LlapDataBuffer[] buffers = IntStream.range(0, 5).mapToObj(i -> fb()).toArray(LlapDataBuffer[]::new);
+
+    LlapDataBuffer[] oldBufs = new LlapDataBuffer[]{ buffers[0], buffers[1] };
+    DiskRange[] oldRanges = drs(0, 15);
+
+    LlapDataBuffer[] newBufs = new LlapDataBuffer[]{ buffers[2], buffers[3], buffers[4] };
+    DiskRange[] newRanges = drs(5, 10, 15);
+
+    putResult = cache.putFileData(fileKey, oldRanges, oldBufs, 0, Priority.NORMAL, null, null);
+    assertNull(putResult);
+
+    putResult = cache.putFileData(fileKey, newRanges, newBufs, 0, Priority.NORMAL, null, null);
+    assertEquals(1, putResult.length);
+    assertEquals(Long.parseLong("100", 2), putResult[0]);
+
+    for (int i = 0; i < buffers.length; ++i) {
+      // since buffer 4 collided with buffer 1 it should not have cached length set, as it will not even be seen by
+      // cache policy before it gets quickly deallocated in processCollisions method
+      if (i == buffers.length - 1) {
+        assertEquals(LlapDataBuffer.UNKNOWN_CACHED_LENGTH, buffers[i].declaredCachedLength);
+      } else {
+        assertEquals(1, buffers[i].declaredCachedLength);
+      }
+    }
+
+
+  }
+
+  @Test
   public void testMultiMatch() {
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),

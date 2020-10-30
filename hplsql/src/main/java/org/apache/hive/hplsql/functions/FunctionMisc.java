@@ -26,7 +26,7 @@ import java.util.Map;
 
 import org.apache.hive.hplsql.*;
 
-public class FunctionMisc extends Function {
+public class FunctionMisc extends BuiltinFunctions {
   public FunctionMisc(Exec e) {
     super(e);
   }
@@ -35,12 +35,13 @@ public class FunctionMisc extends Function {
    * Register functions
    */
   @Override
-  public void register(Function f) {
+  public void register(BuiltinFunctions f) {
     f.map.put("COALESCE", this::nvl);
     f.map.put("DECODE", this::decode);
     f.map.put("NVL", this::nvl);
     f.map.put("NVL2", this::nvl2);
     f.map.put("PART_COUNT_BY", this::partCountBy);
+    f.map.put("MOD", this::modulo);
 
     f.specMap.put("ACTIVITY_COUNT", this::activityCount);
     f.specMap.put("CAST", this::cast);
@@ -244,7 +245,17 @@ public class FunctionMisc extends Function {
     evalInt(result);
     exec.closeQuery(query, exec.conf.defaultConnection);
   }
-  
+
+  public void modulo(HplsqlParser.Expr_func_paramsContext ctx) {
+    if (ctx.func_param().size() == 2) {
+      int a = evalPop(ctx.func_param(0).expr()).intValue();
+      int b = evalPop(ctx.func_param(1).expr()).intValue();
+      evalInt(a % b);
+    } else {
+      evalNull();
+    }
+  }
+
   /**
    * PART_COUNT_BY function
    */
