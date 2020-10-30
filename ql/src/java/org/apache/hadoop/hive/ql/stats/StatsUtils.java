@@ -34,8 +34,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -83,6 +85,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.NDV;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.hive.ql.util.NamedForkJoinWorkerThreadFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -316,12 +319,11 @@ public class StatsUtils {
 
       basicStatsFactory.addEnhancer(new BasicStats.RowNumEstimator(estimateRowSizeFromSchema(conf, schema)));
 
-      List<BasicStats> partStats = new ArrayList<>();
+      List<BasicStats> partStats =
+          partList.getNotDeniedPartns().parallelStream().
+              map(p -> basicStatsFactory.build(Partish.buildFor(table, p))).
+              collect(Collectors.toList());
 
-      for (Partition p : partList.getNotDeniedPartns()) {
-        BasicStats basicStats = basicStatsFactory.build(Partish.buildFor(table, p));
-        partStats.add(basicStats);
-      }
       BasicStats bbs = BasicStats.buildFrom(partStats);
 
       long nr = bbs.getNumRows();
