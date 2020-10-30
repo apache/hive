@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ParquetHiveRecord;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -46,9 +45,9 @@ import org.apache.hadoop.io.Writable;
 import org.apache.parquet.hadoop.ParquetOutputFormat;
 
 /**
- *
- * A ParquetHiveSerDe for Hive (with the deprecated package mapred)
- *
+ * A ParquetHiveSerDe for Hive (with the deprecated package mapred). Parquet
+ * format and stats is collected in ParquetRecordWriterWrapper when writer gets
+ * closed.
  */
 @SerDeSpec(schemaProps = {serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES,
         ParquetOutputFormat.COMPRESSION})
@@ -144,17 +143,6 @@ public class ParquetHiveSerDe extends AbstractSerDe {
     parquetRow.value = obj;
     parquetRow.inspector= (StructObjectInspector)objInspector;
     return parquetRow;
-  }
-
-  /**
-   * Return null for Parquet format and stats is collected in ParquetRecordWriterWrapper when writer gets
-   * closed.
-   *
-   * @return null
-   */
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
   }
 
   /**

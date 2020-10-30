@@ -302,10 +302,4 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
     return SerDeUtils.transformTextToUTF8(text, this.charset);
   }
 
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
-  }
-
 }

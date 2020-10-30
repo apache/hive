@@ -106,10 +106,4 @@ public class CustomSerDe2 extends AbstractSerDe {
     return null;
   }
 
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
-  }
-
 }

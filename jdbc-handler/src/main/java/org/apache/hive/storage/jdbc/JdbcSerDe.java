@@ -23,7 +23,6 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -334,12 +333,6 @@ public class JdbcSerDe extends AbstractSerDe {
   @Override
   public Class<? extends Writable> getSerializedClass() {
     return MapWritable.class;
-  }
-
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
   }
 
 }
