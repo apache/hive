@@ -227,6 +227,10 @@ jobWrappers {
 set -x
 echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
 . /etc/profile.d/confs.sh
+
+sw java 11
+. /etc/profile.d/java.sh
+
 sw hive-dev $PWD
 ping -c2 dev_$dbType
 export DOCKER_NETWORK=host
