@@ -75,12 +75,14 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
   private final TupleDescriptor tupleDesc;
   private final ImpalaBasicAnalyzer analyzer;
   private final ImpalaConjuncts impalaConjuncts;
+  private final HiveFilter filter;
 
   public ImpalaRulePartitionPruner(RelOptHiveTable table, HiveFilter filter,
       ImpalaQueryContext queryContext, RexBuilder rexBuilder)
       throws HiveException, ImpalaException, MetaException {
     this.table = table;
     this.queryContext = queryContext;
+    this.filter = filter;
 
     RexNode pruneNode = (filter == null) ? null : filter.getCondition();
     Preconditions.checkNotNull(queryContext);
@@ -164,6 +166,7 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
       PrunedPartitionList ppl = new ImpalaPrunedPartitionList(t, partitionConjunctsKey, msPartitions,
           false, impalaPartitions, impalaTable, impalaConjuncts);
       partitionCache.put(partitionConjunctsKey, ppl);
+      partitionCache.put(PrunerUtils.getConditionKey(table.getHiveTableMD(), filter), ppl);
       return ppl;
     } catch (ImpalaException|MetaException e) {
       throw new HiveException(e);

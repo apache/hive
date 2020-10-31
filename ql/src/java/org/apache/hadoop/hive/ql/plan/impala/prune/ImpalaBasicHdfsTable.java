@@ -91,18 +91,15 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
       loadSchema(msTable_);
       this.nullPartitionKeyValue = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
       initializePartitionMetadata(msTbl);
-      updateMdFromHmsTable(msTbl);
 
       // initialize basic partitions
       if (getNumClusteringCols() > 0) {
         List<String> partitionNames =
             client.listPartitionNames(msTable_.getDbName(), msTable_.getTableName(), (short) -1);
-        HdfsStorageDescriptor fileFormatDescriptor =
-            HdfsStorageDescriptor.fromStorageDescriptor(this.getName(), msTable_.getSd());
         for (String partitionName : partitionNames) {
-          ImpalaBasicPartition partition = new ImpalaBasicPartition(this, partitionName,
-              fileFormatDescriptor);
-          addPartition(partition);
+          ImpalaBasicPartition partition = new ImpalaBasicPartition(this, partitionName, null);
+          partitionMap_.put(partition.getId(), partition);
+          updatePartitionMdAndColStats(partition);
           this.nameToIdMap.put(partitionName, partition.getId());
           this.basicPartitionMap.put(partitionName, partition);
         }
@@ -110,7 +107,7 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
         // need the dummy name in the map
         this.basicPartitionMap.put(ImpalaHdfsPartition.DUMMY_PARTITION, null);
       }
-    } catch (CatalogException|IOException|TException e) {
+    } catch (CatalogException|TException e) {
       throw new HiveException(e);
     }
   }

@@ -65,6 +65,8 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint;
 import org.apache.hadoop.hive.ql.metadata.UniqueConstraint.UniqueConstraintCol;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.optimizer.PrunerUtils;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.PartitionPruneRuleHelper;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.RulePartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ColumnStatsList;
@@ -480,6 +482,22 @@ public class RelOptHiveTable implements RelOptTable {
       }
     }
     return sb.toString();
+  }
+
+  /**
+   * Compute the partitionList if the partitionCache contains the filter condition.
+   * If the filter condition is in the partitionCache, the pruned partitions have
+   * already been calculated elsewhere, so we use that partition list. If there
+   * is no filter or if the table isn't partitioned, then the "key" is just the
+   * table name.
+   */
+  public boolean computeCacheWithFilter(HiveFilter filter) {
+    String key = PrunerUtils.getConditionKey(getHiveTableMD(), filter);
+    if (partitionCache.containsKey(key)) {
+      partitionList = partitionCache.get(key);
+      return true;
+    }
+    return false;
   }
 
   public void computePartitionList(RulePartitionPruner pruner) {

@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
 import java.util.Collections;
 import java.util.List;
 
-
 public abstract class HivePartitionPruneRule extends RelOptRule {
   protected final HiveConf conf;
   protected HivePartitionPruneRule(HiveConf conf, RelOptRuleOperand operand, String description) {
@@ -62,12 +61,14 @@ public abstract class HivePartitionPruneRule extends RelOptRule {
       functionHelper.getPartitionPruneRuleHelper();
     HiveTableScan tScanCopy = tScan.copyIncludingTable(tScan.getRowType(), ruleHelper);
     RelOptHiveTable hiveTableCopy = (RelOptHiveTable) tScanCopy.getTable();
-    try {
-      RulePartitionPruner pruner = ruleHelper.createRulePartitionPruner(tScanCopy, hiveTableCopy,
-          filter);
-      hiveTableCopy.computePartitionList(pruner);
-    } catch (HiveException e) {
-      throw new RuntimeException(e);
+    if (!hiveTableCopy.computeCacheWithFilter(filter)) {
+      try {
+        RulePartitionPruner pruner = ruleHelper.createRulePartitionPruner(tScanCopy, hiveTableCopy,
+            filter);
+        hiveTableCopy.computePartitionList(pruner);
+      } catch (HiveException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     if (StringUtils.equals(hiveTableCopy.getPartitionListKey(), hiveTable.getPartitionListKey())) {

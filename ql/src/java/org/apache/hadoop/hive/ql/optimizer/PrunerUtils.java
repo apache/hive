@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.lib.RuleExactMatch;
 import org.apache.hadoop.hive.ql.lib.TypeRule;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -123,5 +124,13 @@ public final class PrunerUtils {
 
   public static String getTableKey(Table tab) {
     return tab.getFullyQualifiedName() + ";";
+  }
+
+  public static String getConditionKey(Table tab, HiveFilter filter) {
+    // No need to prune if the table isn't partitioned.
+    if (!tab.isPartitioned()) {
+      return getTableKey(tab);
+    }
+    return filter == null ? getTableKey(tab) : getTableKey(tab) + filter.getCondition().toString();
   }
 }

@@ -131,7 +131,7 @@ public class PartitionCacheHelper {
     List<Partition> partitionsFound = new ArrayList<>();
     List<String> partitionNamesMissing = new ArrayList<>();
     List<String> partitionNamesFound = new ArrayList<>();
-    if (cachedValue == null) {
+    if (cachedValue == null || cachedValue.partitionsMap.size() == 0) {
       // no cached partitions exist, so all requested partitions are missing
       partitionNamesMissing.addAll(rqst.getNames());
       return Pair.of(partitionsFound, partitionNamesMissing);

@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.fs.Path;
 import org.apache.impala.catalog.CatalogException;
 import org.apache.impala.catalog.FeCatalogUtils;
+import org.apache.impala.catalog.HdfsFileFormat;
 import org.apache.impala.catalog.HdfsPartition;
 import org.apache.impala.catalog.HdfsStorageDescriptor;
 import org.apache.impala.catalog.HdfsTable;
@@ -78,6 +79,11 @@ public class ImpalaBasicPartition extends HdfsPartition {
     // Return 0 because we don't have enough information to determine this with
     // the basic partition.
     return 0;
+  }
+
+  @Override // FeFsPartition
+  public HdfsFileFormat getFileFormat() {
+    return null;
   }
 
   @Override
