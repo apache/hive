@@ -136,8 +136,8 @@ class SchemaToTypeInfo {
       int precision = 0;
       int scale = 0;
       try {
-        precision = Integer.parseInt((String) schema.getObjectProp(AvroSerDe.AVRO_PROP_PRECISION));
-        scale = Integer.parseInt((String) schema.getObjectProp(AvroSerDe.AVRO_PROP_SCALE));
+        precision = AvroSerdeUtils.getIntFromSchema(schema, AvroSerDe.AVRO_PROP_PRECISION);
+        scale = AvroSerdeUtils.getIntFromSchema(schema, AvroSerDe.AVRO_PROP_SCALE);
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain scale value from file schema: " + schema, ex);
       }
@@ -155,7 +155,7 @@ class SchemaToTypeInfo {
       AvroSerDe.CHAR_TYPE_NAME.equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
       int maxLength = 0;
       try {
-        maxLength = (int) schema.getObjectProp(AvroSerDe.AVRO_PROP_MAX_LENGTH);
+        maxLength = AvroSerdeUtils.getIntFromSchema(schema, AvroSerDe.AVRO_PROP_MAX_LENGTH);
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain maxLength value from file schema: " + schema, ex);
       }
@@ -166,7 +166,7 @@ class SchemaToTypeInfo {
       .equalsIgnoreCase(schema.getProp(AvroSerDe.AVRO_PROP_LOGICAL_TYPE))) {
       int maxLength = 0;
       try {
-        maxLength = (int) schema.getObjectProp(AvroSerDe.AVRO_PROP_MAX_LENGTH);
+        maxLength = AvroSerdeUtils.getIntFromSchema(schema, AvroSerDe.AVRO_PROP_MAX_LENGTH);
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain maxLength value from file schema: " + schema, ex);
       }
