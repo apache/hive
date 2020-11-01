@@ -187,7 +187,7 @@ public class TaskExecutorService extends AbstractService
     executionCompletionExecutorService = MoreExecutors.listeningDecorator(
         executionCompletionExecutorServiceRaw);
     ListenableFuture<?> future = waitQueueExecutorService.submit(new WaitQueueWorker());
-    Futures.addCallback(future, new WaitQueueWorkerCallback());
+    Futures.addCallback(future, new WaitQueueWorkerCallback(), MoreExecutors.directExecutor());
   }
 
   /**
