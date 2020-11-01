@@ -233,7 +233,7 @@
                 children = [];
                 var showArrayIndices = options.showArrayIndex;
                 var showArrayAsFlatTable = options.showArrayAsFlatTable;
-                var flatTableKeys = options.flatTableKeys = options.flatTableKeys;
+                var flatTableKeys = options.flatTableKeys;
 
                 aTarget = options.hyperlinks.target;
                 hyperlinkKeys = options.hyperlinks.keys;
