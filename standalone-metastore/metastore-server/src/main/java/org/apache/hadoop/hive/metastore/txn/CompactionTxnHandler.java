@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.util.StringUtils;
@@ -1127,7 +1128,7 @@ class CompactionTxnHandler extends TxnHandler {
 
   @Override
   @RetrySemantics.Idempotent
-  public long findMinOpenTxnIdForCleaner() throws MetaException{
+  public long findMinOpenTxnIdForCleaner() throws MetaException {
     Connection dbConn = null;
     try {
       try {
@@ -1144,6 +1145,15 @@ class CompactionTxnHandler extends TxnHandler {
       }
     } catch (RetryException e) {
       return findMinOpenTxnIdForCleaner();
+    }
+  }
+
+  protected void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, Long commitId,
+      long tempId) throws SQLException {
+    super.updateWSCommitIdAndCleanUpMetadata(stmt, txnid, txnType, commitId, tempId);
+    if (txnType == TxnType.COMPACTION) {
+      stmt.executeUpdate(
+          "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + " WHERE \"CQ_TXN_ID\" = " + txnid);
     }
   }
 }
