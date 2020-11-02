@@ -89,7 +89,7 @@ and c.c3 = ca.c1
 and cm.c1 = m.c1
 and m.c5 = r.c1
 and m.c6 = 1
-and (cm.c5 is null or cm.c5 > date_format(current_date,'yyyy-MM-01'));
+and (cm.c5 is null or cm.c5 > date_format(cast('2020-10-30' as date),'yyyy-MM-01'));
 
 drop table f_tab_e10;
 drop table f2_tab_e10;

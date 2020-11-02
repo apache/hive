@@ -188,7 +188,7 @@ and c.c3 = ca.c1
 and cm.c1 = m.c1
 and m.c5 = r.c1
 and m.c6 = 1
-and (cm.c5 is null or cm.c5 > date_format(current_date,'yyyy-MM-01'))
+and (cm.c5 is null or cm.c5 > date_format(cast('2020-10-30' as date),'yyyy-MM-01'))
 PREHOOK: type: QUERY
 PREHOOK: Input: mydb_e10@d1_tab_e10
 PREHOOK: Input: mydb_e10@d2_tab_e10
@@ -208,7 +208,7 @@ and c.c3 = ca.c1
 and cm.c1 = m.c1
 and m.c5 = r.c1
 and m.c6 = 1
-and (cm.c5 is null or cm.c5 > date_format(current_date,'yyyy-MM-01'))
+and (cm.c5 is null or cm.c5 > date_format(cast('2020-10-30' as date),'yyyy-MM-01'))
 POSTHOOK: type: QUERY
 POSTHOOK: Input: mydb_e10@d1_tab_e10
 POSTHOOK: Input: mydb_e10@d2_tab_e10
@@ -239,7 +239,7 @@ HiveProject(c1=[$11], c5=[$13], c6=[$14], c3=[$1], c4=[$2], c51=[$3], c61=[$4], 
             HiveFilter(condition=[IS NOT NULL($0)])
               HiveTableScan(table=[[mydb_e10, d4_tab_e10]], table:alias=[r])
         HiveProject(c1=[$0], c2=[$1], c4=[$3], c5=[$4])
-          HiveFilter(condition=[AND(OR(IS NULL($4), >($4, 2021-06-01)), IS NOT NULL($0), IS NOT NULL($1))])
+          HiveFilter(condition=[AND(OR(IS NULL($4), >($4, 2020-10-01)), IS NOT NULL($0), IS NOT NULL($1))])
             HiveTableScan(table=[[mydb_e10, f2_tab_e10]], table:alias=[cm])
 
 PREHOOK: query: drop table f_tab_e10
