@@ -870,44 +870,88 @@ class MetaStoreDirectSql {
       List<? extends Object> paramsForFilter, List<String> joinsForFilter, Integer max)
       throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
+
+    // The JDBC client driver implementations of Derby, PostgreSQL, MySQL, MariaDB and Oracle send the number of
+    // parameters being set in a executed statement as a 2 byte signed integer to the servers. This indirectly
+    // sets s limit on the number of parameters that can be set to 32767. This is also the number of parameters
+    // that can be passed to the JDO executeArray call.
+    final int JDBC_STMT_PARAM_LIMIT = 32767;
+
     final String dbNameLcase = dbName.toLowerCase();
     final String tblNameLcase = tblName.toLowerCase();
     final String catNameLcase = normalizeSpace(catName).toLowerCase();
 
     // We have to be mindful of order during filtering if we are not returning all partitions.
+    // If the number of parameters is larger than 32767 and the query is split into multiple
+    // parts, the order by would work within each query part.
     String orderForFilter = (max != null) ? " order by \"PART_NAME\" asc" : "";
 
     String queryText =
-        "select " + PARTITIONS + ".\"PART_ID\" from " + PARTITIONS + ""
-      + "  inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\" "
-      + "    and " + TBLS + ".\"TBL_NAME\" = ? "
-      + "  inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
-      + "     and " + DBS + ".\"NAME\" = ? "
-      + join(joinsForFilter, ' ')
-      + " where " + DBS + ".\"CTLG_NAME\" = ? "
-      + (StringUtils.isBlank(sqlFilter) ? "" : (" and " + sqlFilter)) + orderForFilter;
-    Object[] params = new Object[paramsForFilter.size() + 3];
-    params[0] = tblNameLcase;
-    params[1] = dbNameLcase;
-    params[2] = catNameLcase;
-    for (int i = 0; i < paramsForFilter.size(); ++i) {
-      params[i + 3] = paramsForFilter.get(i);
+            "select " + PARTITIONS + ".\"PART_ID\" from " + PARTITIONS + ""
+                    + "  inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\" "
+                    + "    and " + TBLS + ".\"TBL_NAME\" = ? "
+                    + "  inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
+                    + "     and " + DBS + ".\"NAME\" = ? "
+                    + join(joinsForFilter, ' ')
+                    + " where " + DBS + ".\"CTLG_NAME\" = ? "
+                    + (StringUtils.isBlank(sqlFilter) ? "" : (" and " + sqlFilter)) + orderForFilter;
+
+    int parametersToProcess = paramsForFilter.size();
+
+    List<Long> result = new ArrayList<>();
+
+    // If this method has been called by default we need to query the tables once. Hence set the minimum numbner of
+    // iterations to 1.
+    int iterations = 1;
+
+
+    // The first three parameters in the query are the table, database and the catalog names. This leaves us
+    // JDBC_STMT_PARAM_LIMIT - 3 parameters that can be passed to the underlying JDBC driver. If the number of
+    // input parameters is greater than this limit, we will have to process them in multiple iterations.
+    if (parametersToProcess > (JDBC_STMT_PARAM_LIMIT - 3)) {
+      // Find the number of iterations required from the number of input parameters and sets of 32764 parameters
+      // that can be created from it.
+      iterations = parametersToProcess / (JDBC_STMT_PARAM_LIMIT - 3);
+      iterations += ((parametersToProcess % (JDBC_STMT_PARAM_LIMIT - 3) != 0) ? 1 : 0);
     }
 
-    long start = doTrace ? System.nanoTime() : 0;
-    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
-    List<Object> sqlResult = executeWithArray(query, params, queryText, ((max == null)  ? -1 : max.intValue()));
-    long queryTime = doTrace ? System.nanoTime() : 0;
-    MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
-    if (sqlResult.isEmpty()) {
-      return Collections.emptyList(); // no partitions, bail early.
-    }
+    for (int i = 0 ; i < iterations; i++) {
+      // The number of filter parameters that can be processed in each iteration has to be lesser than or equal to
+      // JDBC_STMT_PARAM_LIMIT - 3
+      int filterParamSize = parametersToProcess > (JDBC_STMT_PARAM_LIMIT - 3) ? (JDBC_STMT_PARAM_LIMIT - 3) : parametersToProcess;
 
-    List<Long> result = new ArrayList<>(sqlResult.size());
-    for (Object fields : sqlResult) {
-      result.add(MetastoreDirectSqlUtils.extractSqlLong(fields));
+      Object[] params = new Object[filterParamSize + 3];
+      params[0] = tblNameLcase;
+      params[1] = dbNameLcase;
+      params[2] = catNameLcase;
+
+      // Reduce by the number of parameters that have already been processed.
+      parametersToProcess -= (JDBC_STMT_PARAM_LIMIT - 3);
+
+      for (int j = 0; j < filterParamSize; j++) {
+        // The current set of parameters have to be fetched from the correct offset in the input parameters set.
+        params[j + 3] = paramsForFilter.get(((JDBC_STMT_PARAM_LIMIT - 3) * i) + j);
+      }
+
+      long start = doTrace ? System.nanoTime() : 0;
+      Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+      List<Object> sqlResult = MetastoreDirectSqlUtils.executeWithArray(query, params, queryText, ((max == null) ? -1 : max.intValue()));
+      long queryTime = doTrace ? System.nanoTime() : 0;
+      MetastoreDirectSqlUtils.timingTrace(doTrace, queryText, start, queryTime);
+
+      for (Object fields : sqlResult) {
+        if (max != null && max != -1) {
+          if (max > 0) {
+            max--;
+          } else {
+            break;
+          }
+        }
+        result.add(MetastoreDirectSqlUtils.extractSqlLong(fields));
+      }
+
+      query.closeAll();
     }
-    query.closeAll();
     return result;
   }
 
