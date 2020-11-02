@@ -22,6 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.After;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -69,6 +70,7 @@ public class TestCleanupService {
     testDeleteManyFiles(SyncCleanupService.INSTANCE, 10);
   }
 
+  @Ignore("HIVE-24345")
   @Test
   public void testEventualCleanupService_finishesCleanupBeforeExit() throws IOException, InterruptedException {
     EventualCleanupService cleanupService = new EventualCleanupService(4, 1000);
