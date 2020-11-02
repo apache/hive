@@ -96,7 +96,7 @@ public class Cleaner extends MetaStoreCompactorThread {
           long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
           LOG.info("Cleaning based on min open txn id: " + minOpenTxnId);
           List<CompletableFuture> cleanerList = new ArrayList<>();
-          for(CompactionInfo compactionInfo : txnHandler.findReadyToClean()) {
+          for (CompactionInfo compactionInfo : txnHandler.findReadyToClean(minOpenTxnId)) {
             cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
                     clean(compactionInfo, minOpenTxnId)), cleanerExecutor));
           }

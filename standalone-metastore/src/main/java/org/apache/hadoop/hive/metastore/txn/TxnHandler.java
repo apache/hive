@@ -1033,7 +1033,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               }
             }
           }
-        } else {
+        } else if (txnType.get() == TxnType.COMPACTION) {
+          try (ResultSet commitIdRs = stmt.executeQuery(sqlGenerator.addForUpdateClause("SELECT \"NTXN_NEXT\" - 1 FROM \"NEXT_TXN_ID\""))) {
+            if (!commitIdRs.next()) {
+              throw new IllegalStateException("No rows found in NEXT_TXN_ID");
+            }
+            commitId = commitIdRs.getLong(1);
+          }
+        }  else {
           /**
            * current txn didn't update/delete anything (may have inserted), so just proceed with commit
            *
@@ -1158,8 +1165,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               "completed_txn_components when committing txn! " + JavaUtils.txnIdToString(txnid));
     }
   }
-
-  private void updateCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, Long commitId, long tempId) throws SQLException {
+  /**
+   * See overridden method in CompactionTxnHandler also.
+   */
+  protected void updateCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, Long commitId, long tempId) throws SQLException {
     List<String> queryBatch = new ArrayList<>(5);
     // update write_set with real commitId
     if (commitId != null) {
@@ -1888,9 +1897,26 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public void performWriteSetGC() {
     Connection dbConn = null;
     Statement stmt = null;
-    ResultSet rs = null;
     try {
       dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+      stmt = dbConn.createStatement();
+      long commitHighWaterMark = getMinOpenTxnIdWaterMark(dbConn);
+      int delCnt = stmt.executeUpdate("DELETE FROM \"WRITE_SET\" WHERE \"WS_COMMIT_ID\" < " + commitHighWaterMark);
+      LOG.info("Deleted " + delCnt + " obsolete rows from WRTIE_SET");
+      dbConn.commit();
+    } catch (SQLException ex) {
+      LOG.warn("WriteSet GC failed due to " + getMessage(ex), ex);
+    }
+    finally {
+      close(null, stmt, dbConn);
+    }
+  }
+
+  protected long getMinOpenTxnIdWaterMark(Connection dbConn) throws SQLException {
+    long commitHighWaterMark;
+    Statement stmt = null;
+    ResultSet rs = null;
+    try {
       stmt = dbConn.createStatement();
       rs = stmt.executeQuery("SELECT \"NTXN_NEXT\" - 1 FROM \"NEXT_TXN_ID\"");
       if(!rs.next()) {
@@ -1902,7 +1928,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       if(!rs.next()) {
         throw new IllegalStateException("Scalar query returned no rows?!?!!");
       }
-      long commitHighWaterMark;//all currently open txns (if any) have txnid >= than commitHighWaterMark
+      //all currently open txns (if any) have txnid >= than commitHighWaterMark
       long lowestOpenTxnId = rs.getLong(1);
       if(rs.wasNull()) {
         //if here then there are no Open txns and  highestAllocatedTxnId must be
@@ -1918,15 +1944,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       else {
         commitHighWaterMark = lowestOpenTxnId;
       }
-      int delCnt = stmt.executeUpdate("DELETE FROM \"WRITE_SET\" WHERE \"WS_COMMIT_ID\" < " + commitHighWaterMark);
-      LOG.info("Deleted " + delCnt + " obsolete rows from WRTIE_SET");
-      dbConn.commit();
-    } catch (SQLException ex) {
-      LOG.warn("WriteSet GC failed due to " + getMessage(ex), ex);
+    } finally {
+      close(rs, stmt, null);
     }
-    finally {
-      close(rs, stmt, dbConn);
-    }
+
+    return commitHighWaterMark;
   }
 
   /**

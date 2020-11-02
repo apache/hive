@@ -370,10 +370,11 @@ public interface TxnStore extends Configurable {
   /**
    * Find entries in the queue that are ready to
    * be cleaned.
+   * @param minOpenTxnWaterMark Minimum open txnId
    * @return information on the entry in the queue.
    */
   @RetrySemantics.ReadOnly
-  List<CompactionInfo> findReadyToClean() throws MetaException;
+  List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark) throws MetaException;
 
   /**
    * This will remove an entry from the queue after
