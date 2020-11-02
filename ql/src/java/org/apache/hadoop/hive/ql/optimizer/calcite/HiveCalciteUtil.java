@@ -94,6 +94,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import javax.annotation.Nullable;
+
 /**
  * Generic utility functions needed for Calcite based Hive CBO.
  */
@@ -645,7 +647,7 @@ public class HiveCalciteUtil {
   }
 
   public static final Function<RexNode, String> REX_STR_FN = new Function<RexNode, String>() {
-                                                              public String apply(RexNode r) {
+                                                              public String apply(@Nullable RexNode r) {
                                                                 return r.toString();
                                                               }
                                                             };

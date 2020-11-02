@@ -65,6 +65,8 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 
+import javax.annotation.Nullable;
+
 /**
  * StatsNoJobTask is used in cases where stats collection is the only task for the given query (no
  * parent MR or Tez job). It is used in the following cases 1) ANALYZE with noscan for
@@ -142,7 +144,7 @@ public class BasicStatsNoJobTask implements IStatsProcessor {
     public static final Function<FooterStatCollector, String> SIMPLE_NAME_FUNCTION = new Function<FooterStatCollector, String>() {
 
       @Override
-      public String apply(FooterStatCollector sc) {
+      public String apply(@Nullable FooterStatCollector sc) {
         return String.format("%s#%s", sc.partish.getTable().getCompleteName(), sc.partish.getPartishType());
       }
     };
