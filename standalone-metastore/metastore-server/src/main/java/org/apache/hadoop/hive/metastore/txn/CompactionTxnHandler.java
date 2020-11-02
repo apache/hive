@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.util.StringUtils;
@@ -236,8 +237,7 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String s = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_STATE\" = '" + READY_FOR_CLEANING + "', "
-            + "\"CQ_WORKER_ID\" = NULL, \"CQ_NEXT_TXN_ID\" = "
-            + "(SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\")"
+            + "\"CQ_WORKER_ID\" = NULL"
             + " WHERE \"CQ_ID\" = " + info.id;
         LOG.debug("Going to execute update <" + s + ">");
         int updCnt = stmt.executeUpdate(s);
@@ -267,11 +267,12 @@ class CompactionTxnHandler extends TxnHandler {
   /**
    * Find entries in the queue that are ready to
    * be cleaned.
+   * @param minOpenTxnWaterMark Minimum open txnId
    * @return information on the entry in the queue.
    */
   @Override
   @RetrySemantics.ReadOnly
-  public List<CompactionInfo> findReadyToClean() throws MetaException {
+  public List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark) throws MetaException {
     Connection dbConn = null;
     List<CompactionInfo> rc = new ArrayList<>();
 
@@ -281,9 +282,16 @@ class CompactionTxnHandler extends TxnHandler {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
-        String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", " +
-            "\"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\" FROM \"COMPACTION_QUEUE\" " +
-            "WHERE \"CQ_STATE\" = '" + READY_FOR_CLEANING + "'";
+        /*
+         * By filtering on minOpenTxnWaterMark, we will only cleanup after every transaction is committed, that could see
+         * the uncompacted deltas. This way the cleaner can clean up everything that was made obsolete by this compaction.
+         */
+        String s = "SELECT \"CQ_ID\", \"CQ_DATABASE\", \"CQ_TABLE\", \"CQ_PARTITION\", "
+                + "\"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '"
+                + READY_FOR_CLEANING + "'";
+        if (minOpenTxnWaterMark > 0) {
+          s = s + " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
+        }
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
 
@@ -313,7 +321,7 @@ class CompactionTxnHandler extends TxnHandler {
         close(rs, stmt, dbConn);
       }
     } catch (RetryException e) {
-      return findReadyToClean();
+      return findReadyToClean(minOpenTxnWaterMark);
     }
   }
 
@@ -747,7 +755,7 @@ class CompactionTxnHandler extends TxnHandler {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
         stmt = dbConn.createStatement();
         String sqlText = "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_HIGHEST_WRITE_ID\" = " +
-            ci.highestWriteId + ", \"CQ_RUN_AS\" = " + quoteString(ci.runAs) +
+            ci.highestWriteId + ", \"CQ_RUN_AS\" = " + quoteString(ci.runAs) + ", \"CQ_TXN_ID\" = " + compactionTxnId +
             " WHERE \"CQ_ID\" = " + ci.id;
         if(LOG.isDebugEnabled()) {
           LOG.debug("About to execute: " + sqlText);
@@ -1120,37 +1128,12 @@ class CompactionTxnHandler extends TxnHandler {
 
   @Override
   @RetrySemantics.Idempotent
-  public long findMinOpenTxnIdForCleaner() throws MetaException{
+  public long findMinOpenTxnIdForCleaner() throws MetaException {
     Connection dbConn = null;
-    Statement stmt = null;
-    ResultSet rs = null;
     try {
       try {
         dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
-        stmt = dbConn.createStatement();
-        String query = "SELECT COUNT(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN;
-        LOG.debug("Going to execute query <" + query + ">");
-        rs = stmt.executeQuery(query);
-        if (!rs.next()) {
-          throw new MetaException("Transaction tables not properly initialized.");
-        }
-        long numOpenTxns = rs.getLong(1);
-        if (numOpenTxns > 0) {
-          query = "SELECT MIN(\"RES\".\"ID\") FROM (" +
-              "SELECT MIN(\"TXN_ID\") AS \"ID\" FROM \"TXNS\" WHERE \"TXN_STATE\" = " + TxnStatus.OPEN +
-              " UNION " +
-              "SELECT MAX(\"CQ_NEXT_TXN_ID\") AS \"ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = "
-              + quoteChar(READY_FOR_CLEANING) +
-              ") \"RES\"";
-        } else {
-          query = "SELECT MAX(\"TXN_ID\") + 1 FROM \"TXNS\"";
-        }
-        LOG.debug("Going to execute query <" + query + ">");
-        rs = stmt.executeQuery(query);
-        if (!rs.next()) {
-          throw new MetaException("Transaction tables not properly initialized, no record found in TXNS");
-        }
-        return rs.getLong(1);
+        return getMinOpenTxnIdWaterMark(dbConn);
       } catch (SQLException e) {
         LOG.error("Unable to getMinOpenTxnIdForCleaner", e);
         rollbackDBConn(dbConn);
@@ -1158,10 +1141,19 @@ class CompactionTxnHandler extends TxnHandler {
         throw new MetaException("Unable to execute getMinOpenTxnIfForCleaner() " +
             StringUtils.stringifyException(e));
       } finally {
-        close(rs, stmt, dbConn);
+        closeDbConn(dbConn);
       }
     } catch (RetryException e) {
       return findMinOpenTxnIdForCleaner();
+    }
+  }
+
+  protected void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, Long commitId,
+      long tempId) throws SQLException {
+    super.updateWSCommitIdAndCleanUpMetadata(stmt, txnid, txnType, commitId, tempId);
+    if (txnType == TxnType.COMPACTION) {
+      stmt.executeUpdate(
+          "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + " WHERE \"CQ_TXN_ID\" = " + txnid);
     }
   }
 }
