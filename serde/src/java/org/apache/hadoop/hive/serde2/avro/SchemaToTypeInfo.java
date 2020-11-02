@@ -136,8 +136,14 @@ class SchemaToTypeInfo {
       int precision = 0;
       int scale = 0;
       try {
-        precision = AvroSerdeUtils.getIntFromSchema(schema, AvroSerDe.AVRO_PROP_PRECISION);
-        scale = AvroSerdeUtils.getIntFromSchema(schema, AvroSerDe.AVRO_PROP_SCALE);
+        Object o = schema.getObjectProp(AvroSerDe.AVRO_PROP_PRECISION);
+        if (o instanceof Integer) {
+          precision = (int) o;
+        }
+        o = schema.getObjectProp(AvroSerDe.AVRO_PROP_SCALE);
+        if (o instanceof Integer) {
+          scale = (int) o;
+        }
       } catch (Exception ex) {
         throw new AvroSerdeException("Failed to obtain scale value from file schema: " + schema, ex);
       }
