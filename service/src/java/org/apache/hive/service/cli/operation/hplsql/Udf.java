@@ -40,7 +40,7 @@ import org.apache.hive.hplsql.Var;
 @UDFType(deterministic = false)
 public class Udf extends GenericUDF {
 
-  Exec exec;
+  transient Exec exec;
   StringObjectInspector queryOI;
   ObjectInspector[] argumentsOI;
 
@@ -65,7 +65,7 @@ public class Udf extends GenericUDF {
     queryOI = (StringObjectInspector)arguments[0];
     argumentsOI = arguments;
     if (exec == null) {
-      exec = SessionState.get().getHplsqlInterpreter();
+      exec = SessionState.get() == null ? null : SessionState.get().getHplsqlInterpreter();
     }
     if (exec == null) {
       throw new UDFArgumentException("Cannot be used in non HPL/SQL mode.");

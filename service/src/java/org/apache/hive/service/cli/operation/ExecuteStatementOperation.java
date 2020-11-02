@@ -43,7 +43,7 @@ public abstract class ExecuteStatementOperation extends Operation {
   protected String statement = null;
 
   public ExecuteStatementOperation(HiveSession parentSession, String statement,
-      Map<String, String> confOverlay, boolean runInBackground) {
+      Map<String, String> confOverlay) {
     super(parentSession, confOverlay, OperationType.EXECUTE_STATEMENT);
     this.statement = statement;
   }
@@ -62,7 +62,7 @@ public abstract class ExecuteStatementOperation extends Operation {
       throws HiveSQLException {
 
     String cleanStatement = HiveStringUtils.removeComments(statement);
-    if (!HPLSQL.equals(confOverlay.get(QUERY_EXECUTOR)) && hplSqlMode()) {
+    if (proceduralMode(confOverlay) && hplSqlMode()) {
       if (SessionState.get().getHplsqlInterpreter() == null) {
         Exec interpreter = new Exec(
                 new Conf(),
@@ -90,6 +90,10 @@ public abstract class ExecuteStatementOperation extends Operation {
       return new SQLOperation(parentSession, statement, confOverlay, runAsync, queryTimeout, hplSqlMode());
     }
     return new HiveCommandOperation(parentSession, cleanStatement, processor, confOverlay);
+  }
+
+  private static boolean proceduralMode(Map<String, String> confOverlay) {
+    return confOverlay != null && !HPLSQL.equals(confOverlay.get(QUERY_EXECUTOR));
   }
 
   public static Boolean hplSqlMode() {

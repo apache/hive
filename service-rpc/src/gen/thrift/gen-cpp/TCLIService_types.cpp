@@ -211,7 +211,6 @@ std::string to_string(const TOperationState::type& val) {
 
 int _kTOperationTypeValues[] = {
   TOperationType::EXECUTE_STATEMENT,
-  TOperationType::PROCEDURAL_SQL,
   TOperationType::GET_TYPE_INFO,
   TOperationType::GET_CATALOGS,
   TOperationType::GET_SCHEMAS,
@@ -219,11 +218,11 @@ int _kTOperationTypeValues[] = {
   TOperationType::GET_TABLE_TYPES,
   TOperationType::GET_COLUMNS,
   TOperationType::GET_FUNCTIONS,
-  TOperationType::UNKNOWN
+  TOperationType::UNKNOWN,
+  TOperationType::PROCEDURAL_SQL
 };
 const char* _kTOperationTypeNames[] = {
   "EXECUTE_STATEMENT",
-  "PROCEDURAL_SQL",
   "GET_TYPE_INFO",
   "GET_CATALOGS",
   "GET_SCHEMAS",
@@ -231,7 +230,8 @@ const char* _kTOperationTypeNames[] = {
   "GET_TABLE_TYPES",
   "GET_COLUMNS",
   "GET_FUNCTIONS",
-  "UNKNOWN"
+  "UNKNOWN",
+  "PROCEDURAL_SQL"
 };
 const std::map<int, const char*> _TOperationType_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(10, _kTOperationTypeValues, _kTOperationTypeNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 

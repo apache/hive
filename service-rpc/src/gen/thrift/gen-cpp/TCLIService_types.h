@@ -116,15 +116,15 @@ std::string to_string(const TOperationState::type& val);
 struct TOperationType {
   enum type {
     EXECUTE_STATEMENT = 0,
-    PROCEDURAL_SQL = 1,
-    GET_TYPE_INFO = 2,
-    GET_CATALOGS = 3,
-    GET_SCHEMAS = 4,
-    GET_TABLES = 5,
-    GET_TABLE_TYPES = 6,
-    GET_COLUMNS = 7,
-    GET_FUNCTIONS = 8,
-    UNKNOWN = 9
+    GET_TYPE_INFO = 1,
+    GET_CATALOGS = 2,
+    GET_SCHEMAS = 3,
+    GET_TABLES = 4,
+    GET_TABLE_TYPES = 5,
+    GET_COLUMNS = 6,
+    GET_FUNCTIONS = 7,
+    UNKNOWN = 8,
+    PROCEDURAL_SQL = 9
   };
 };
 

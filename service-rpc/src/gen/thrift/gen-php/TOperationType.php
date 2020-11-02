@@ -18,35 +18,35 @@ final class TOperationType
 {
     const EXECUTE_STATEMENT = 0;
 
-    const PROCEDURAL_SQL = 1;
+    const GET_TYPE_INFO = 1;
 
-    const GET_TYPE_INFO = 2;
+    const GET_CATALOGS = 2;
 
-    const GET_CATALOGS = 3;
+    const GET_SCHEMAS = 3;
 
-    const GET_SCHEMAS = 4;
+    const GET_TABLES = 4;
 
-    const GET_TABLES = 5;
+    const GET_TABLE_TYPES = 5;
 
-    const GET_TABLE_TYPES = 6;
+    const GET_COLUMNS = 6;
 
-    const GET_COLUMNS = 7;
+    const GET_FUNCTIONS = 7;
 
-    const GET_FUNCTIONS = 8;
+    const UNKNOWN = 8;
 
-    const UNKNOWN = 9;
+    const PROCEDURAL_SQL = 9;
 
     static public $__names = array(
         0 => 'EXECUTE_STATEMENT',
-        1 => 'PROCEDURAL_SQL',
-        2 => 'GET_TYPE_INFO',
-        3 => 'GET_CATALOGS',
-        4 => 'GET_SCHEMAS',
-        5 => 'GET_TABLES',
-        6 => 'GET_TABLE_TYPES',
-        7 => 'GET_COLUMNS',
-        8 => 'GET_FUNCTIONS',
-        9 => 'UNKNOWN',
+        1 => 'GET_TYPE_INFO',
+        2 => 'GET_CATALOGS',
+        3 => 'GET_SCHEMAS',
+        4 => 'GET_TABLES',
+        5 => 'GET_TABLE_TYPES',
+        6 => 'GET_COLUMNS',
+        7 => 'GET_FUNCTIONS',
+        8 => 'UNKNOWN',
+        9 => 'PROCEDURAL_SQL',
     );
 }
 

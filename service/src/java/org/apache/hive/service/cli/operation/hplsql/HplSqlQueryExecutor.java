@@ -51,9 +51,10 @@ public class HplSqlQueryExecutor implements QueryExecutor {
   public static final String QUERY_EXECUTOR = "QUERY_EXECUTOR";
   public static final String HPLSQL = "HPLSQL";
   private final HiveSession hiveSession;
-  private long defaultMaxRows = HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.defaultIntVal;
+  private long fetchSize;
 
   public HplSqlQueryExecutor(HiveSession hiveSession) {
+    this.fetchSize = hiveSession.getHiveConf().getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);
     this.hiveSession = hiveSession;
   }
 
@@ -111,7 +112,7 @@ public class HplSqlQueryExecutor implements QueryExecutor {
     private RowSet fetch() {
       try {
         return hiveSession.fetchResults(
-                handle, FetchOrientation.FETCH_NEXT, defaultMaxRows, FetchType.QUERY_OUTPUT);
+                handle, FetchOrientation.FETCH_NEXT, fetchSize, FetchType.QUERY_OUTPUT);
       } catch (HiveSQLException e) {
         throw new QueryException(e);
       }

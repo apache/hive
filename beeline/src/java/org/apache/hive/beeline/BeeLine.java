@@ -893,13 +893,12 @@ public class BeeLine implements Closeable {
     getOpts().setInitFiles(cl.getOptionValues("i"));
     getOpts().setScriptFile(cl.getOptionValue("f"));
 
-    String hplSqlMode = Utils.parsePropertyFromUrl(url, Constants.HPLSQL_MODE);
-    if ("true".equalsIgnoreCase(hplSqlMode)) {
-      getOpts().setDelimiter("/");
-      getOpts().setEntireLineAsCommand(true);
-    }
-
     if (url != null) {
+      String hplSqlMode = Utils.parsePropertyFromUrl(url, Constants.HPLSQL_MODE);
+      if ("true".equalsIgnoreCase(hplSqlMode)) {
+        getOpts().setDelimiter("/");
+        getOpts().setEntireLineAsCommand(true);
+      }
       // Specifying username/password/driver explicitly will override the values from the url;
       // make sure we don't override the values present in the url with empty values.
       if (user == null) {
