@@ -1897,7 +1897,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 singletonList(hiveTableMD),
                 singletonList(hiveTableMD.getFullyQualifiedName()),
                 getTxnMgr())) {
-              return relOptMaterialization.tableRel;
+              return copyMaterializationToNewCluster(optCluster, relOptMaterialization).tableRel;
             }
           } catch (HiveException e) {
             LOG.warn("Exception validating materialized views", e);
@@ -2232,13 +2232,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         }
         // We need to use the current cluster for the scan operator on views,
         // otherwise the planner will throw an Exception (different planners)
-        materializations = materializations.stream().map(materialization -> {
-          final RelNode viewScan = materialization.tableRel;
-          final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
-              optCluster, viewScan);
-          return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
-              materialization.qualifiedTableName);
-        }).collect(Collectors.toList());
+        materializations = materializations.stream().
+                map(materialization -> copyMaterializationToNewCluster(optCluster, materialization)).
+                collect(Collectors.toList());
       } catch (HiveException e) {
         LOG.warn("Exception loading materialized views", e);
       }
@@ -2380,6 +2376,14 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       return basePlan;
+    }
+
+    private RelOptMaterialization copyMaterializationToNewCluster(RelOptCluster optCluster, RelOptMaterialization materialization) {
+      final RelNode viewScan = materialization.tableRel;
+      final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
+              optCluster, viewScan);
+      return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
+          materialization.qualifiedTableName);
     }
 
     /**
