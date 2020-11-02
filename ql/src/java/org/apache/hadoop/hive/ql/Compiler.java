@@ -106,6 +106,9 @@ public class Compiler {
       DriverUtils.checkInterrupted(driverState, driverContext, "after analyzing query.", null, null);
 
       plan = createPlan(sem);
+
+      driverContext.getTimeline().markEvent("Completed query compilation");
+
       authorize(sem);
       explainOutput(sem, plan);
     } catch (CommandProcessorException cpe) {
@@ -143,7 +146,7 @@ public class Compiler {
     } catch (Exception e) {
       LOG.warn("WARNING! Query command could not be redacted." + e);
     }
-    driverContext.getTimeline().markEvent("Command Redacted");
+    driverContext.getTimeline().markEvent("Command redacted");
 
     DriverUtils.checkInterrupted(driverState, driverContext, "at beginning of compilation.", null, null);
 
@@ -172,7 +175,7 @@ public class Compiler {
     } finally {
       driverContext.getHookRunner().runAfterParseHook(context.getCmd(), !success);
     }
-    driverContext.getTimeline().markEvent("Query Parsed");
+    driverContext.getTimeline().markEvent("Query parsed");
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARSE);
   }
 
@@ -211,7 +214,7 @@ public class Compiler {
       openTransaction(driverContext.getTxnType());
 
       generateValidTxnList();
-      driverContext.getTimeline().markEvent("Transaction Opened");
+      driverContext.getTimeline().markEvent("Transaction opened");
     }
 
     // Do semantic analysis and plan generation
@@ -412,6 +415,7 @@ public class Compiler {
         throw DriverUtils.createProcessorException(driverContext, 403, authExp.getMessage(), "42000", null);
       } finally {
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DO_AUTHORIZATION);
+        driverContext.getTimeline().markEvent("Authorization finished");
       }
     }
   }

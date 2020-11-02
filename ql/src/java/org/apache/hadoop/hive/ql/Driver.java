@@ -232,7 +232,7 @@ public class Driver implements IDriver {
       }
       driverContext.setTxnManager(queryTxnManager);
       driverContext.getQueryState().setTxnManager(queryTxnManager);
-      driverContext.getTimeline().markEvent("Transaction Manager Initialized");
+      driverContext.getTimeline().markEvent("Transaction manager initialized");
 
       // In case when user Ctrl-C twice to kill Hive CLI JVM, we want to release locks
       // if compile is being called multiple times, clear the old shutdownhook
