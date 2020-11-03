@@ -43,10 +43,10 @@ public class RetryingClientTimeBased {
   protected double backOff;
   protected int maxJitterInSeconds;
 
-  protected <T> T invokeWithRetry(Callable<T> func, T defaultReturnValue) throws SemanticException {
+  protected <T> T invokeWithRetry(Callable<T> func) throws SemanticException {
     long startTime = System.currentTimeMillis();
     long delay = this.initialDelayInSeconds;
-    while (elapsedTimeInSeconds(startTime) + delay > this.totalDurationInSeconds) {
+    while (true) {
       try {
         LOG.debug("Retrying method: {}", func.getClass().getName(), null);
         return func.call();
@@ -54,16 +54,19 @@ public class RetryingClientTimeBased {
         if (processImportExportLockException(e, delay)) {
           //retry case. compute next sleep time
           delay = getNextDelay(delay);
+          if (elapsedTimeInSeconds(startTime) + delay > this.totalDurationInSeconds) {
+            throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(), e);
+          }
           continue;
         }
         if (processInvalidParameterException(e)) {
+          LOG.info("There is nothing to export/import.");
           return null;
         }
         LOG.error(func.getClass().getName(), e);
         throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(), e);
       }
     }
-    return defaultReturnValue;
   }
 
   private long getNextDelay(long currentDelay) {
@@ -109,8 +112,8 @@ public class RetryingClientTimeBased {
     String excMessage = e.getMessage() == null ? "" : e.getMessage();
     if (excMessage.contains(ERROR_MESSAGE_IN_PROGRESS)) {
       try {
-        LOG.info("Atlas in-progress operation detected. Will pause for: {} ms", delay);
-        Thread.sleep(delay);
+        LOG.info("Atlas in-progress operation detected. Will pause for: {} seconds", delay);
+        Thread.sleep(delay * 1000L);
       } catch (InterruptedException intEx) {
         LOG.error("Pause wait interrupted!", intEx);
         throw new SemanticException(intEx);

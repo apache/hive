@@ -338,12 +338,16 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
                   buffer, oldVal);
             }
 
+            // This is always set to ranges[i].getLength() prior inserting into the map to avoid inconsistency with the
+            // check above. However once we decided that this new buffer will not be cached, we should unset
+            // declaredCachedLength, so that it can be instantly deallocated at unlockBuffer()'s else branch.
+            buffer.declaredCachedLength = LlapDataBuffer.UNKNOWN_CACHED_LENGTH;
             unlockBuffer(buffer, false);
             buffers[i] = oldVal;
             if (result == null) {
               result = new long[align64(buffers.length) >>> 6];
             }
-            result[i >>> 6] |= (1 << (i & 63)); // indicate that we've replaced the value
+            result[i >>> 6] |= (1L << (i & 63)); // indicate that we've replaced the value
             break;
           }
           // We found some old value but couldn't incRef it; remove it.

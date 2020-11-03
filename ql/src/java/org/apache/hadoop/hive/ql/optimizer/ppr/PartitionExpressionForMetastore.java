@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.optimizer.ppr;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,8 +49,21 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   private static final Logger LOG = LoggerFactory.getLogger(PartitionExpressionForMetastore.class);
 
   @Override
-  public String convertExprToFilter(byte[] exprBytes, String defaultPartitionName) throws MetaException {
-    ExprNodeGenericFuncDesc expr = deserializeExpr(exprBytes);
+  public String convertExprToFilter(byte[] exprBytes, String defaultPartitionName, boolean decodeFilterExpToStr)
+      throws MetaException {
+    ExprNodeGenericFuncDesc expr;
+    try {
+      expr = deserializeExpr(exprBytes);
+    } catch (MetaException e) {
+      // When deserializeExpr fails try to deserialize th exprBytes to string based on the
+      // flag decodeFilterExpToStr. This usually happens when MSCK command is run with partition
+      // filters. When MSCK command tries to drop the partitions, The string partition filter is serialized
+      // to byte array and during deserialization we need to construct the filter string back.
+      if (decodeFilterExpToStr) {
+        return new String(exprBytes, StandardCharsets.UTF_8);
+      }
+      throw new MetaException(e.getMessage());
+    }
     if ((defaultPartitionName != null) && (!defaultPartitionName.isEmpty())) {
       try {
         ExprNodeDescUtils.replaceNullFiltersWithDefaultPartition(expr, defaultPartitionName);

@@ -20,7 +20,7 @@ package org.apache.hive.hplsql.functions;
 
 import org.apache.hive.hplsql.*;
 
-public class FunctionString extends Function {
+public class FunctionString extends BuiltinFunctions {
   public FunctionString(Exec e) {
     super(e);
   }
@@ -29,7 +29,7 @@ public class FunctionString extends Function {
    * Register functions
    */
   @Override
-  public void register(Function f) {
+  public void register(BuiltinFunctions f) {
     f.map.put("CONCAT", this::concat);
     f.map.put("CHAR", this::char_);
     f.map.put("INSTR", this::instr);
@@ -197,7 +197,7 @@ public class FunctionString extends Function {
    * SUBSTR and SUBSTRING function
    */
   void substr(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = getParamCount(ctx);
+    int cnt = BuiltinFunctions.getParamCount(ctx);
     if (cnt < 2) {
       evalNull();
       return;
@@ -269,7 +269,7 @@ public class FunctionString extends Function {
    * TO_CHAR function
    */
   void toChar(HplsqlParser.Expr_func_paramsContext ctx) {
-    int cnt = getParamCount(ctx);
+    int cnt = BuiltinFunctions.getParamCount(ctx);
     if (cnt != 1) {
       evalNull();
       return;

@@ -220,13 +220,7 @@ public class HiveServer2 extends CompositeService {
     cliService = new CLIService(this, false);
     addService(cliService);
     final HiveServer2 hiveServer2 = this;
-    Runnable oomHook = new Runnable() {
-      @Override
-      public void run() {
-        hiveServer2.stop();
-      }
-    };
-
+    Runnable oomHook = new HiveServer2OomHookRunner(hiveServer2);
     boolean isHttpTransportMode = isHttpTransportMode(hiveConf);
     boolean isAllTransportMode = isAllTransportMode(hiveConf);
     if (isHttpTransportMode || isAllTransportMode) {
@@ -289,7 +283,7 @@ public class HiveServer2 extends CompositeService {
 
     // setup metastore client cache
     if (hiveConf.getBoolVar(ConfVars.MSC_CACHE_ENABLED)) {
-      HiveMetaStoreClientWithLocalCache.init();
+      HiveMetaStoreClientWithLocalCache.init(hiveConf);
     }
 
     try {
@@ -366,6 +360,9 @@ public class HiveServer2 extends CompositeService {
             builder.setKeyStorePassword(ShimLoader.getHadoopShims().getPassword(
               hiveConf, ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD.varname));
             builder.setKeyStorePath(keyStorePath);
+            builder.setKeyStoreType(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE));
+            builder.setKeyManagerFactoryAlgorithm(
+                hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYMANAGERFACTORY_ALGORITHM));
             builder.setUseSSL(true);
           }
           if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SPNEGO)) {

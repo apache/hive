@@ -3401,7 +3401,9 @@ public interface IMetaStoreClient {
    */
   void insertTable(Table table, boolean overwrite) throws MetaException;
 
-    /**
+  long getLatestTxnIdInConflict(long txnId) throws TException;
+
+  /**
    * A filter provided by the client that determines if a given notification event should be
    * returned.
    */
@@ -4099,4 +4101,11 @@ public interface IMetaStoreClient {
   ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
                                                 replicationMetricsRequest) throws MetaException, TException;
 
+  void createStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException, TException;
+
+  StoredProcedure getStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException;
+
+  void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException;
+
+  List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException;
 }

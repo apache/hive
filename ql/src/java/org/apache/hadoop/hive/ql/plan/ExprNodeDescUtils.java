@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -42,12 +43,12 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -1056,6 +1057,81 @@ public class ExprNodeDescUtils {
     if (columnDesc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) columnDesc;
       return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFStruct);
+    }
+    return false;
+  }
+
+  public static ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes) throws UDFArgumentException {
+    if (semijoinExprNodes.isEmpty()) {
+      return null;
+    }
+    if (semijoinExprNodes.size() > 1) {
+      return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), semijoinExprNodes);
+    } else {
+      return semijoinExprNodes.get(0);
+    }
+  }
+
+  public static ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes, ExprNodeDesc exprNode)
+      throws UDFArgumentException {
+    if (semijoinExprNodes != null && !semijoinExprNodes.isEmpty()) {
+      if (exprNode != null) {
+        semijoinExprNodes.add(0, exprNode);
+      }
+      if (semijoinExprNodes.size() > 1) {
+        exprNode = ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), semijoinExprNodes);
+      } else {
+        exprNode = semijoinExprNodes.get(0);
+      }
+    }
+    return exprNode;
+  }
+
+  public static ExprNodeDesc disjunction(ExprNodeDesc e1, ExprNodeDesc e2) throws UDFArgumentException {
+    if (e1 == null) {
+      return e2;
+    }
+    if (e2 == null) {
+      return e1;
+    }
+    if (e1.isSame(e2)) {
+      return e1;
+    }
+    List<ExprNodeDesc> operands = new ArrayList<ExprNodeDesc>();
+    disjunctiveDecomposition(e1, operands);
+    disjunctiveDecomposition(e2, operands);
+    return disjunction(operands);
+  }
+
+  public static ExprNodeDesc disjunction(List<ExprNodeDesc> operands) throws UDFArgumentException {
+    if (operands.size() == 0) {
+      return null;
+    }
+    if (operands.size() == 1) {
+      return operands.get(0);
+    }
+    return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPOr(), operands);
+  }
+
+  public static void disjunctiveDecomposition(ExprNodeDesc expr, List<ExprNodeDesc> operands) {
+    if (isOr(expr)) {
+      for (ExprNodeDesc c : expr.getChildren()) {
+        disjunctiveDecomposition(c, operands);
+      }
+    } else {
+      for (ExprNodeDesc o : operands) {
+        if (o.isSame(expr)) {
+          return;
+        }
+      }
+      operands.add(expr);
+    }
+  }
+
+  public static boolean isOr(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) expr;
+      return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFOPOr);
     }
     return false;
   }

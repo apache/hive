@@ -518,7 +518,7 @@ public class MetastoreConf {
             + "metastore.dbaccess.ssl.use.SSL must be set to true for this property to take effect. \n"
             + "This directly maps to the javax.net.ssl.trustStore Java system property. Defaults to the default Java truststore file. \n"),
     DBACCESS_SSL_TRUSTSTORE_TYPE("metastore.dbaccess.ssl.truststore.type", "hive.metastore.dbaccess.ssl.truststore.type", "jks",
-        new StringSetValidator("jceks", "jks", "dks", "pkcs11", "pkcs12"),
+        new StringSetValidator("jceks", "jks", "dks", "pkcs11", "pkcs12", "bcfks"),
         "File type for the Java truststore file that is used when encrypting the connection to the database store. \n"
             + "metastore.dbaccess.ssl.use.SSL must be set to true for this property to take effect. \n"
             + "This directly maps to the javax.net.ssl.trustStoreType Java system property. \n"
@@ -622,6 +622,11 @@ public class MetastoreConf {
     EXPRESSION_PROXY_CLASS("metastore.expression.proxy", "hive.metastore.expression.proxy",
         "org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore",
         "Class to use to process expressions in partition pruning."),
+    DECODE_FILTER_EXPRESSION_TO_STRING("metastore.decode.filter.expression.tostring",
+        "hive.metastore.decode.filter.expression.tostring", false,
+        "If set to true convertExprToFilter method of PartitionExpressionForMetastore will decode \n" +
+            "byte array into string rather than ExprNode. This is specially required for \n" +
+            "msck command when used with filter conditions"),
     FILE_METADATA_THREADS("metastore.file.metadata.threads",
         "hive.metastore.hbase.file.metadata.threads", 1,
         "Number of threads to use to read file metadata in background to cache it."),
@@ -774,15 +779,15 @@ public class MetastoreConf {
                 "get_partitions_spec_by_filter, \n" +
                 "get_partitions_by_expr.\n" +
             "The default value \"-1\" means no limit."),
-    MSC_CACHE_ENABLED("metastore.client.cache.enabled",
-            "hive.metastore.client.cache.enabled", true,
-            "This property enables a Caffeiene Cache for Metastore client"),
-    MSC_CACHE_MAX_SIZE("metastore.client.cache.maxSize",
-            "hive.metastore.client.cache.maxSize", "1Gb", new SizeValidator(),
+    MSC_CACHE_ENABLED("metastore.client.cache.v2.enabled",
+            "hive.metastore.client.cache.v2.enabled", true,
+            "This property enables a Caffeine Cache for Metastore client"),
+    MSC_CACHE_MAX_SIZE("metastore.client.cache.v2.maxSize",
+            "hive.metastore.client.cache.v2.maxSize", "1Gb", new SizeValidator(),
             "Set the maximum size (number of bytes) of the metastore client cache (DEFAULT: 1GB). " +
                     "Only in effect when the cache is enabled"),
-    MSC_CACHE_RECORD_STATS("metastore.client.cache.recordStats",
-            "hive.metastore.client.cache.recordStats", false,
+    MSC_CACHE_RECORD_STATS("metastore.client.cache.v2.recordStats",
+            "hive.metastore.client.cache.v2.recordStats", false,
             "This property enables recording metastore client cache stats in DEBUG logs"),
     LOG4J_FILE("metastore.log4j.file", "hive.log4j.file", "",
         "Hive log4j configuration file.\n" +
@@ -1044,12 +1049,20 @@ public class MetastoreConf {
         "Metastore SSL certificate keystore password."),
     SSL_KEYSTORE_PATH("metastore.keystore.path", "hive.metastore.keystore.path", "",
         "Metastore SSL certificate keystore location."),
+    SSL_KEYSTORE_TYPE("metastore.keystore.type", "hive.metastore.keystore.type", "",
+            "Metastore SSL certificate keystore type."),
+    SSL_KEYMANAGERFACTORY_ALGORITHM("metastore.keymanagerfactory.algorithm", "hive.metastore.keymanagerfactory.algorithm", "",
+            "Metastore SSL certificate keystore algorithm."),
     SSL_PROTOCOL_BLACKLIST("metastore.ssl.protocol.blacklist", "hive.ssl.protocol.blacklist",
         "SSLv2,SSLv3", "SSL Versions to disable for all Hive Servers"),
     SSL_TRUSTSTORE_PATH("metastore.truststore.path", "hive.metastore.truststore.path", "",
         "Metastore SSL certificate truststore location."),
     SSL_TRUSTSTORE_PASSWORD("metastore.truststore.password", "hive.metastore.truststore.password", "",
         "Metastore SSL certificate truststore password."),
+    SSL_TRUSTSTORE_TYPE("metastore.truststore.type", "hive.metastore.truststore.type", "",
+            "Metastore SSL certificate truststore type."),
+    SSL_TRUSTMANAGERFACTORY_ALGORITHM("metastore.trustmanagerfactory.algorithm", "hive.metastore.trustmanagerfactory.algorithm", "",
+            "Metastore SSL certificate truststore algorithm."),
     STATS_AUTO_GATHER("metastore.stats.autogather", "hive.stats.autogather", true,
         "A flag to gather statistics (only basic) automatically during the INSERT OVERWRITE command."),
     STATS_FETCH_BITVECTOR("metastore.stats.fetch.bitvector", "hive.stats.fetch.bitvector", false,
@@ -1200,6 +1213,9 @@ public class MetastoreConf {
         "hive.metastore.transactional.event.listeners", "",
         "A comma separated list of Java classes that implement the org.apache.riven.MetaStoreEventListener" +
             " interface. Both the metastore event and corresponding listener method will be invoked in the same JDO transaction."),
+    TRUNCATE_ACID_USE_BASE("metastore.acid.truncate.usebase", "hive.metastore.acid.truncate.usebase", true,
+        "If enabled, truncate for transactional tables will not delete the data directories,\n" +
+        "rather create a new base directory with no datafiles."),
     TRY_DIRECT_SQL("metastore.try.direct.sql", "hive.metastore.try.direct.sql", true,
         "Whether the metastore should try to use direct SQL queries instead of the\n" +
             "DataNucleus for certain read paths. This can improve metastore performance when\n" +
@@ -1340,6 +1356,17 @@ public class MetastoreConf {
     HIVE_TXN_STATS_ENABLED("hive.txn.stats.enabled", "hive.txn.stats.enabled", true,
         "Whether Hive supports transactional stats (accurate stats for transactional tables)"),
 
+    // External RDBMS support
+    USE_CUSTOM_RDBMS("metastore.use.custom.database.product",
+        "hive.metastore.use.custom.database.product", false,
+        "Use an external RDBMS which is not in the list of natively supported databases (Derby,\n"
+            + "Mysql, Oracle, Postgres, MSSQL), as defined by hive.metastore.db.type. If this configuration\n"
+            + "is true, the metastore.custom.database.product.classname must be set to a valid class name"),
+    CUSTOM_RDBMS_CLASSNAME("metastore.custom.database.product.classname",
+        "hive.metastore.custom.database.product.classname", "none",
+          "Hook for external RDBMS. This class will be instantiated only when " +
+          "metastore.use.custom.database.product is set to true."),
+        
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated
     HIVE_CODAHALE_METRICS_REPORTER_CLASSES("hive.service.metrics.codahale.reporter.classes",

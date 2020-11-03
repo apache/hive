@@ -101,12 +101,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 import static org.apache.hadoop.hive.metastore.Warehouse.getFs;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.LOAD_ACKNOWLEDGEMENT;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
+import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.NON_RECOVERABLE_MARKER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -472,7 +475,6 @@ public class TestReplicationScenarios {
   private Task getReplLoadRootTask(String sourceDb, String replicadb, boolean isIncrementalDump,
                                    Tuple tuple) throws Throwable {
     HiveConf confTemp = new HiveConf();
-    confTemp.set("hive.repl.enable.move.optimization", "true");
     Path loadPath = new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR);
     ReplicationMetricCollector metricCollector;
     if (isIncrementalDump) {
@@ -1139,7 +1141,7 @@ public class TestReplicationScenarios {
         driver.run("REPL DUMP " + dbName);
         assert false;
       } catch (CommandProcessorException e) {
-        assertTrue(e.getResponseCode() == ErrorMsg.REPL_EVENTS_MISSING_IN_METASTORE.getErrorCode());
+        assertTrue(e.getCauseMessage() == ErrorMsg.REPL_EVENTS_MISSING_IN_METASTORE.getMsg());
       }
       eventIdSkipper.assertInjectionsPerformed(true,false);
     } finally {
@@ -4019,8 +4021,7 @@ public class TestReplicationScenarios {
 
     String replDbName = dbName + "_replica";
     Tuple dump = replDumpDb(dbName);
-    run("REPL LOAD " + dbName + " INTO " + replDbName +
-            " with ('hive.repl.enable.move.optimization'='true')", driverMirror);
+    run("REPL LOAD " + dbName + " INTO " + replDbName, driverMirror);
     verifyRun("REPL STATUS " + replDbName, dump.lastReplId, driverMirror);
 
     run(" use " + replDbName, driverMirror);
@@ -4053,8 +4054,7 @@ public class TestReplicationScenarios {
     verifySetup("SELECT * from " + dbName + ".unptned_late ORDER BY a", unptn_data, driver);
 
     Tuple incrementalDump = replDumpDb(dbName);
-    run("REPL LOAD " + dbName + " INTO " + replDbName +
-            " with ('hive.repl.enable.move.optimization'='true')", driverMirror);
+    run("REPL LOAD " + dbName + " INTO " + replDbName, driverMirror);
     verifyRun("REPL STATUS " + replDbName, incrementalDump.lastReplId, driverMirror);
 
     verifyRun("SELECT a from " + replDbName + ".unptned ORDER BY a", unptn_data, driverMirror);
@@ -4070,8 +4070,7 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + ".unptned", data_after_ovwrite, driver);
 
     incrementalDump = replDumpDb(dbName);
-    run("REPL LOAD " + dbName + " INTO " + replDbName +
-            " with ('hive.repl.enable.move.optimization'='true')", driverMirror);
+    run("REPL LOAD " + dbName + " INTO " + replDbName, driverMirror);
     verifyRun("REPL STATUS " + replDbName, incrementalDump.lastReplId, driverMirror);
 
     verifyRun("SELECT a from " + replDbName + ".unptned_late ORDER BY a", unptn_data_after_ins, driverMirror);
@@ -4346,5 +4345,19 @@ public class TestReplicationScenarios {
         writer.close();
       }
     }
+  }
+
+  public static Path getNonRecoverablePath(Path dumpDir, String dbName, HiveConf conf) throws IOException {
+    Path dumpPath = new Path(dumpDir,
+            Base64.getEncoder().encodeToString(dbName.toLowerCase()
+                    .getBytes(StandardCharsets.UTF_8.name())));
+    FileSystem fs = dumpPath.getFileSystem(conf);
+    if (fs.exists(dumpPath)) {
+      FileStatus[] statuses = fs.listStatus(dumpPath);
+      if (statuses.length > 0) {
+        return new Path(statuses[0].getPath(), NON_RECOVERABLE_MARKER.toString());
+      }
+    }
+    return null;
   }
 }

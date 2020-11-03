@@ -534,7 +534,7 @@ public class Stmt {
                 var.setValues(rs, rsm);
               }
               if (trace) {
-                trace(ctx, var, rs, rsm, i);
+                trace(ctx, var, rsm, i);
               }
             } 
             else if(trace) {
@@ -864,7 +864,7 @@ public class Stmt {
    */
   public Integer use(HplsqlParser.Use_stmtContext ctx) {
     trace(ctx, "USE");
-    return use(ctx, ctx.T_USE().toString() + " " + meta.normalizeIdentifierPart(evalPop(ctx.expr()).toString()));
+    return use(ctx, ctx.T_USE().toString() + " " + meta.normalizeIdentifierPart(ctx.expr().getText()));
   }
   
   public Integer use(ParserRuleContext ctx, String sql) {
@@ -952,7 +952,7 @@ public class Stmt {
         while (rs.next()) {
           var.setValues(rs, rm);
           if (trace) {
-            trace(ctx, var, rs, rm, 0);
+            trace(ctx, var, rm, 0);
           }
           visit(ctx.block());
           exec.incRowCount();
@@ -1048,7 +1048,7 @@ public class Stmt {
                   var.setValues(rs, rm);
                 }
                 if (trace) {
-                  trace(ctx, var, rs, rm, i + 1);
+                  trace(ctx, var, rm, i + 1);
                 }
               } 
               else if (trace) {
@@ -1085,10 +1085,8 @@ public class Stmt {
    */
   public Boolean execProc(HplsqlParser.Exec_stmtContext ctx) { 
     String name = evalPop(ctx.expr()).toString();
-    if (exec.function.isProc(name)) {
-      if (exec.function.execProc(name, ctx.expr_func_params(), ctx)) {
-        return true;
-      }
+    if (exec.function.exec(name, ctx.expr_func_params())) {
+      return true;
     }
     return false;
   }
@@ -1638,7 +1636,7 @@ public class Stmt {
 	  exec.trace(ctx, message);
   }
   
-  void trace(ParserRuleContext ctx, Var var, ResultSet rs, ResultSetMetaData rm, int idx) throws SQLException {
-    exec.trace(ctx, var, rs, rm, idx);
+  void trace(ParserRuleContext ctx, Var var, ResultSetMetaData rm, int idx) throws SQLException {
+    exec.trace(ctx, var, rm, idx);
   }
 }

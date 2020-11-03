@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
+import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
@@ -45,7 +46,10 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -82,6 +86,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -187,8 +192,13 @@ public abstract class CompactorTest {
   }
 
   protected long openTxn() throws MetaException {
-    List<Long> txns = txnHandler.openTxns(new OpenTxnRequest(1, System.getProperty("user.name"),
-        Worker.hostname())).getTxn_ids();
+    return openTxn(TxnType.DEFAULT);
+  }
+
+  protected long openTxn(TxnType txnType) throws MetaException {
+    OpenTxnRequest rqst = new OpenTxnRequest(1, System.getProperty("user.name"), Worker.hostname());
+    rqst.setTxn_type(txnType);
+    List<Long> txns = txnHandler.openTxns(rqst).getTxn_ids();
     return txns.get(0);
   }
 
@@ -213,6 +223,9 @@ public abstract class CompactorTest {
 
   protected void addBaseFile(Table t, Partition p, long maxTxn, int numRecords) throws Exception {
     addFile(t, p, 0, maxTxn, numRecords, FileType.BASE, 2, true);
+  }
+  protected void addBaseFile(Table t, Partition p, long maxTxn, int numRecords, long visibilityId) throws Exception {
+    addFile(t, p, 0, maxTxn, numRecords, FileType.BASE, 2, true, visibilityId);
   }
 
   protected void addLegacyFile(Table t, Partition p, int numRecords) throws Exception {
@@ -316,16 +329,20 @@ public abstract class CompactorTest {
     return location;
   }
 
-  private enum FileType {BASE, DELTA, LEGACY, LENGTH_FILE};
+  private enum FileType {BASE, DELTA, LEGACY, LENGTH_FILE}
 
-  private void addFile(Table t, Partition p, long minTxn, long maxTxn,
-                       int numRecords,  FileType type, int numBuckets,
-                       boolean allBucketsPresent) throws Exception {
+  private void addFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords, FileType type, int numBuckets,
+      boolean allBucketsPresent) throws Exception {
+    addFile(t, p, minTxn, maxTxn, numRecords, type, numBuckets, allBucketsPresent, 0);
+  }
+
+  private void addFile(Table t, Partition p, long minTxn, long maxTxn, int numRecords, FileType type, int numBuckets,
+      boolean allBucketsPresent, long visibilityId) throws Exception {
     String partValue = (p == null) ? null : p.getValues().get(0);
     Path location = new Path(getLocation(t.getTableName(), partValue));
     String filename = null;
     switch (type) {
-      case BASE: filename = "base_" + maxTxn; break;
+      case BASE: filename = AcidUtils.BASE_PREFIX + maxTxn + (visibilityId > 0 ? AcidUtils.VISIBILITY_PREFIX + visibilityId : ""); break;
       case LENGTH_FILE: // Fall through to delta
       case DELTA: filename = makeDeltaDirName(minTxn, maxTxn); break;
       case LEGACY: break; // handled below
@@ -579,5 +596,17 @@ public abstract class CompactorTest {
   }
   String makeDeleteDeltaDirNameCompacted(long minTxnId, long maxTxnId) {
     return AcidUtils.deleteDeltaSubdir(minTxnId, maxTxnId);
+  }
+
+  protected long compactInTxn(CompactionRequest rqst) throws Exception {
+    txnHandler.compact(rqst);
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = System.getProperty("user.name");
+    long compactTxn = openTxn(TxnType.COMPACTION);
+    txnHandler.updateCompactorState(ci, compactTxn);
+    txnHandler.markCompacted(ci);
+    txnHandler.commitTxn(new CommitTxnRequest(compactTxn));
+    Thread.sleep(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
+    return compactTxn;
   }
 }

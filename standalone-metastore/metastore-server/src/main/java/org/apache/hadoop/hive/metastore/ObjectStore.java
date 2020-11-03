@@ -52,6 +52,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOException;
@@ -102,6 +103,7 @@ import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.InvalidPartitionException;
+import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -151,6 +153,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SerdeType;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableMeta;
 import org.apache.hadoop.hive.metastore.api.Type;
@@ -203,6 +206,7 @@ import org.apache.hadoop.hive.metastore.model.MScheduledQuery;
 import org.apache.hadoop.hive.metastore.model.MSchemaVersion;
 import org.apache.hadoop.hive.metastore.model.MSerDeInfo;
 import org.apache.hadoop.hive.metastore.model.MStorageDescriptor;
+import org.apache.hadoop.hive.metastore.model.MStoredProc;
 import org.apache.hadoop.hive.metastore.model.MStringList;
 import org.apache.hadoop.hive.metastore.model.MTable;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
@@ -374,13 +378,10 @@ public class ObjectStore implements RawStore, Configurable {
     pm = PersistenceManagerProvider.getPersistenceManager();
     LOG.info("RawStore: {}, with PersistenceManager: {}" +
         " created in the thread with id: {}", this, pm, Thread.currentThread().getId());
-    try {
-      String productName = MetaStoreDirectSql.getProductName(pm);
-      sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(productName), conf);
-    } catch (SQLException e) {
-      LOG.error("error trying to figure out the database product", e);
-      throw new RuntimeException(e);
-    }
+
+    String productName = MetaStoreDirectSql.getProductName(pm);
+    sqlGenerator = new SQLGenerator(DatabaseProduct.determineDatabaseProduct(productName, conf), conf);
+
     isInitialized = pm != null;
     if (isInitialized) {
       dbType = determineDatabaseProduct();
@@ -394,12 +395,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private DatabaseProduct determineDatabaseProduct() {
-    try {
-      return DatabaseProduct.determineDatabaseProduct(getProductName(pm));
-    } catch (SQLException e) {
-      LOG.warn("Cannot determine database product; assuming OTHER", e);
-      return DatabaseProduct.OTHER;
-    }
+      return DatabaseProduct.determineDatabaseProduct(getProductName(pm), conf);
   }
 
   private static String getProductName(PersistenceManager pm) {
@@ -1090,11 +1086,8 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> createTableWithConstraints(Table tbl,
-    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
-    List<SQLUniqueConstraint> uniqueConstraints, List<SQLNotNullConstraint> notNullConstraints,
-    List<SQLDefaultConstraint> defaultConstraints, List<SQLCheckConstraint> checkConstraints)
-    throws InvalidObjectException, MetaException {
+  public SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints)
+      throws InvalidObjectException, MetaException {
     boolean success = false;
     try {
       openTransaction();
@@ -1102,27 +1095,27 @@ public class ObjectStore implements RawStore, Configurable {
       // Add constraints.
       // We need not do a deep retrieval of the Table Column Descriptor while persisting the
       // constraints since this transaction involving create table is not yet committed.
-      List<String> constraintNames = new ArrayList<>();
-      if (foreignKeys != null) {
-        constraintNames.addAll(addForeignKeys(foreignKeys, false, primaryKeys, uniqueConstraints));
+      if (CollectionUtils.isNotEmpty(constraints.getForeignKeys())) {
+        constraints.setForeignKeys(addForeignKeys(constraints.getForeignKeys(), false, constraints.getPrimaryKeys(),
+            constraints.getUniqueConstraints()));
       }
-      if (primaryKeys != null) {
-        constraintNames.addAll(addPrimaryKeys(primaryKeys, false));
+      if (CollectionUtils.isNotEmpty(constraints.getPrimaryKeys())) {
+        constraints.setPrimaryKeys(addPrimaryKeys(constraints.getPrimaryKeys(), false));
       }
-      if (uniqueConstraints != null) {
-        constraintNames.addAll(addUniqueConstraints(uniqueConstraints, false));
+      if (CollectionUtils.isNotEmpty(constraints.getUniqueConstraints())) {
+        constraints.setUniqueConstraints(addUniqueConstraints(constraints.getUniqueConstraints(), false));
       }
-      if (notNullConstraints != null) {
-        constraintNames.addAll(addNotNullConstraints(notNullConstraints, false));
+      if (CollectionUtils.isNotEmpty(constraints.getNotNullConstraints())) {
+        constraints.setNotNullConstraints(addNotNullConstraints(constraints.getNotNullConstraints(), false));
       }
-      if (defaultConstraints != null) {
-        constraintNames.addAll(addDefaultConstraints(defaultConstraints, false));
+      if (CollectionUtils.isNotEmpty(constraints.getDefaultConstraints())) {
+        constraints.setDefaultConstraints(addDefaultConstraints(constraints.getDefaultConstraints(), false));
       }
-      if (checkConstraints != null) {
-        constraintNames.addAll(addCheckConstraints(checkConstraints, false));
+      if (CollectionUtils.isNotEmpty(constraints.getCheckConstraints())) {
+        constraints.setCheckConstraints(addCheckConstraints(constraints.getCheckConstraints(), false));
       }
       success = commitTransaction();
-      return constraintNames;
+      return constraints;
     } finally {
       if (!success) {
         rollbackTransaction();
@@ -2992,7 +2985,7 @@ public class ObjectStore implements RawStore, Configurable {
     ExpressionTree tmp = null;
     if (!isEmptyFilter) {
       tmp = PartFilterExprUtil.makeExpressionTree(expressionProxy, exprBytes,
-          getDefaultPartitionName(defaultPartName));
+          getDefaultPartitionName(defaultPartName), conf);
     }
     final ExpressionTree exprTree = tmp;
     return new GetListHelper<String>(catName, dbName, tblName, true, true) {
@@ -3592,7 +3585,7 @@ public class ObjectStore implements RawStore, Configurable {
     assert result != null;
 
     final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr,
-                                                    getDefaultPartitionName(defaultPartitionName));
+                                                    getDefaultPartitionName(defaultPartitionName), conf);
     final AtomicBoolean hasUnknownPartitions = new AtomicBoolean(false);
 
     catName = normalizeIdentifier(catName);
@@ -4141,7 +4134,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public int getNumPartitionsByExpr(String catName, String dbName, String tblName,
                                     byte[] expr) throws MetaException, NoSuchObjectException {
-    final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr, null);
+    final ExpressionTree exprTree = PartFilterExprUtil.makeExpressionTree(expressionProxy, expr, null, conf);
     final byte[] tempExpr = expr; // Need to be final to pass it to an inner class
 
     catName = normalizeIdentifier(catName);
@@ -4823,6 +4816,7 @@ public class ObjectStore implements RawStore, Configurable {
         Map<Integer, Integer> mapping = new HashMap<>();
         for (int i = 0; i < oldCols.size(); i++) {
           FieldSchema oldCol = oldCols.get(i);
+          //TODO: replace for loop with list.indexOf()
           for (int j = 0; j < newCols.size(); j++) {
             FieldSchema newCol = newCols.get(j);
             if (oldCol.equals(newCol)) {
@@ -4999,7 +4993,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> addForeignKeys(
+  public List<SQLForeignKey> addForeignKeys(
     List<SQLForeignKey> fks) throws InvalidObjectException, MetaException {
    return addForeignKeys(fks, true, null, null);
   }
@@ -5075,11 +5069,10 @@ public class ObjectStore implements RawStore, Configurable {
     return null;
   }
 
-  private List<String> addForeignKeys(List<SQLForeignKey> foreignKeys, boolean retrieveCD,
+  //TODO: clean up this method
+  private List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> foreignKeys, boolean retrieveCD,
       List<SQLPrimaryKey> primaryKeys, List<SQLUniqueConstraint> uniqueConstraints)
           throws InvalidObjectException, MetaException {
-    List<String> fkNames = new ArrayList<>();
-
     if (CollectionUtils.isNotEmpty(foreignKeys)) {
       List<MConstraint> mpkfks = new ArrayList<>();
       String currentConstraintName = null;
@@ -5163,7 +5156,7 @@ public class ObjectStore implements RawStore, Configurable {
         StringBuilder fkSignature = new StringBuilder();
         StringBuilder referencedKSignature = new StringBuilder();
         for (; i < foreignKeys.size(); i++) {
-          final SQLForeignKey foreignKey = foreignKeys.get(i);
+          SQLForeignKey foreignKey = foreignKeys.get(i);
           final String fkColumnName = normalizeIdentifier(foreignKey.getFkcolumn_name());
           int childIntegerIndex = getColumnIndexFromTableColumns(childCD.getCols(), fkColumnName);
           if (childIntegerIndex == -1) {
@@ -5208,7 +5201,16 @@ public class ObjectStore implements RawStore, Configurable {
               throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
             }
           }
-          fkNames.add(currentConstraintName);
+          // Update Column, keys, table, database, catalog name
+          foreignKey.setFk_name(currentConstraintName);
+          foreignKey.setCatName(catName);
+          foreignKey.setFktable_db(fkTableDB);
+          foreignKey.setFktable_name(fkTableName);
+          foreignKey.setPktable_db(pkTableDB);
+          foreignKey.setPktable_name(pkTableName);
+          foreignKey.setFkcolumn_name(fkColumnName);
+          foreignKey.setPkcolumn_name(pkColumnName);
+
           Integer updateRule = foreignKey.getUpdate_rule();
           Integer deleteRule = foreignKey.getDelete_rule();
           int enableValidateRely = (foreignKey.isEnable_cstr() ? 4 : 0) +
@@ -5255,8 +5257,9 @@ public class ObjectStore implements RawStore, Configurable {
         referencedKSignature = new StringBuilder();
       }
       pm.makePersistentAll(mpkfks);
+
     }
-    return fkNames;
+    return foreignKeys;
   }
 
   private static Set<String> generateValidPKsOrUniqueSignatures(List<MFieldSchema> tableCols,
@@ -5311,22 +5314,21 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException,
+  public List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks) throws InvalidObjectException,
     MetaException {
     return addPrimaryKeys(pks, true);
   }
 
-  private List<String> addPrimaryKeys(List<SQLPrimaryKey> pks, boolean retrieveCD) throws InvalidObjectException,
+  private List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks, boolean retrieveCD) throws InvalidObjectException,
     MetaException {
-    List<String> pkNames = new ArrayList<>();
     List<MConstraint> mpks = new ArrayList<>();
     String constraintName = null;
 
-    for (int i = 0; i < pks.size(); i++) {
-      final String catName = normalizeIdentifier(pks.get(i).getCatName());
-      final String tableDB = normalizeIdentifier(pks.get(i).getTable_db());
-      final String tableName = normalizeIdentifier(pks.get(i).getTable_name());
-      final String columnName = normalizeIdentifier(pks.get(i).getColumn_name());
+    for (SQLPrimaryKey pk : pks) {
+      final String catName = normalizeIdentifier(pk.getCatName());
+      final String tableDB = normalizeIdentifier(pk.getTable_db());
+      final String tableName = normalizeIdentifier(pk.getTable_name());
+      final String columnName = normalizeIdentifier(pk.getColumn_name());
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
@@ -5352,24 +5354,24 @@ public class ObjectStore implements RawStore, Configurable {
         throw new MetaException(" Primary key already exists for: " +
             TableName.getQualified(catName, tableDB, tableName));
       }
-      if (pks.get(i).getPk_name() == null) {
-        if (pks.get(i).getKey_seq() == 1) {
+      if (pk.getPk_name() == null) {
+        if (pk.getKey_seq() == 1) {
           constraintName = generateConstraintName(parentTable, tableDB, tableName, columnName, "pk");
         }
       } else {
-        constraintName = normalizeIdentifier(pks.get(i).getPk_name());
+        constraintName = normalizeIdentifier(pk.getPk_name());
         if (constraintNameAlreadyExists(parentTable, constraintName)) {
           String fqConstraintName = String.format("%s.%s.%s", parentTable.getDatabase().getName(),
               parentTable.getTableName(), constraintName);
           throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
         }
       }
-      pkNames.add(constraintName);
-      int enableValidateRely = (pks.get(i).isEnable_cstr() ? 4 : 0) +
-      (pks.get(i).isValidate_cstr() ? 2 : 0) + (pks.get(i).isRely_cstr() ? 1 : 0);
+
+      int enableValidateRely = (pk.isEnable_cstr() ? 4 : 0) +
+      (pk.isValidate_cstr() ? 2 : 0) + (pk.isRely_cstr() ? 1 : 0);
       MConstraint mpk = new MConstraint(
           constraintName,
-          pks.get(i).getKey_seq(),
+          pk.getKey_seq(),
           MConstraint.PRIMARY_KEY_CONSTRAINT,
           null,
           null,
@@ -5381,28 +5383,35 @@ public class ObjectStore implements RawStore, Configurable {
           null,
         parentIntegerIndex);
       mpks.add(mpk);
+
+      // Add normalized identifier back to result
+      pk.setCatName(catName);
+      pk.setTable_db(tableDB);
+      pk.setTable_name(tableName);
+      pk.setColumn_name(columnName);
+      pk.setPk_name(constraintName);
     }
     pm.makePersistentAll(mpks);
-    return pkNames;
+    return pks;
   }
 
   @Override
-  public List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks)
+  public List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks)
           throws InvalidObjectException, MetaException {
     return addUniqueConstraints(uks, true);
   }
 
-  private List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks, boolean retrieveCD)
+  private List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks, boolean retrieveCD)
           throws InvalidObjectException, MetaException {
-    List<String> ukNames = new ArrayList<>();
+
     List<MConstraint> cstrs = new ArrayList<>();
     String constraintName = null;
 
-    for (int i = 0; i < uks.size(); i++) {
-      final String catName = normalizeIdentifier(uks.get(i).getCatName());
-      final String tableDB = normalizeIdentifier(uks.get(i).getTable_db());
-      final String tableName = normalizeIdentifier(uks.get(i).getTable_name());
-      final String columnName = normalizeIdentifier(uks.get(i).getColumn_name());
+    for (SQLUniqueConstraint uk : uks) {
+      final String catName = normalizeIdentifier(uk.getCatName());
+      final String tableDB = normalizeIdentifier(uk.getTable_db());
+      final String tableName = normalizeIdentifier(uk.getTable_name());
+      final String columnName = normalizeIdentifier(uk.getColumn_name());
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
@@ -5423,25 +5432,25 @@ public class ObjectStore implements RawStore, Configurable {
           throw new InvalidObjectException("Parent column not found: " + columnName);
         }
       }
-      if (uks.get(i).getUk_name() == null) {
-        if (uks.get(i).getKey_seq() == 1) {
+      if (uk.getUk_name() == null) {
+        if (uk.getKey_seq() == 1) {
           constraintName = generateConstraintName(parentTable, tableDB, tableName, columnName, "uk");
         }
       } else {
-        constraintName = normalizeIdentifier(uks.get(i).getUk_name());
+        constraintName = normalizeIdentifier(uk.getUk_name());
         if (constraintNameAlreadyExists(parentTable, constraintName)) {
           String fqConstraintName = String.format("%s.%s.%s", parentTable.getDatabase().getName(),
               parentTable.getTableName(), constraintName);
           throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
         }
       }
-      ukNames.add(constraintName);
 
-      int enableValidateRely = (uks.get(i).isEnable_cstr() ? 4 : 0) +
-          (uks.get(i).isValidate_cstr() ? 2 : 0) + (uks.get(i).isRely_cstr() ? 1 : 0);
+
+      int enableValidateRely = (uk.isEnable_cstr() ? 4 : 0) +
+          (uk.isValidate_cstr() ? 2 : 0) + (uk.isRely_cstr() ? 1 : 0);
       MConstraint muk = new MConstraint(
           constraintName,
-          uks.get(i).getKey_seq(),
+          uk.getKey_seq(),
           MConstraint.UNIQUE_CONSTRAINT,
           null,
           null,
@@ -5453,56 +5462,70 @@ public class ObjectStore implements RawStore, Configurable {
           null,
           parentIntegerIndex);
       cstrs.add(muk);
+
+      // Add normalized identifier back to result
+      uk.setCatName(catName);
+      uk.setTable_db(tableDB);
+      uk.setTable_name(tableName);
+      uk.setColumn_name(columnName);
+      uk.setUk_name(constraintName);
+
     }
     pm.makePersistentAll(cstrs);
-    return ukNames;
+    return uks;
   }
 
   @Override
-  public List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns)
+  public List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns)
           throws InvalidObjectException, MetaException {
     return addNotNullConstraints(nns, true);
   }
 
   @Override
-  public List<String> addDefaultConstraints(List<SQLDefaultConstraint> nns)
+  public List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> nns)
       throws InvalidObjectException, MetaException {
     return addDefaultConstraints(nns, true);
   }
 
   @Override
-  public List<String> addCheckConstraints(List<SQLCheckConstraint> nns)
+  public List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> nns)
       throws InvalidObjectException, MetaException {
     return addCheckConstraints(nns, true);
   }
 
-  private List<String> addCheckConstraints(List<SQLCheckConstraint> cc, boolean retrieveCD)
+  private List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> ccs, boolean retrieveCD)
       throws InvalidObjectException, MetaException {
-    List<String> nnNames = new ArrayList<>();
     List<MConstraint> cstrs = new ArrayList<>();
 
-    for (int i = 0; i < cc.size(); i++) {
-      final String catName = normalizeIdentifier(cc.get(i).getCatName());
-      final String tableDB = normalizeIdentifier(cc.get(i).getTable_db());
-      final String tableName = normalizeIdentifier(cc.get(i).getTable_name());
-      final String columnName = cc.get(i).getColumn_name() == null? null
-          : normalizeIdentifier(cc.get(i).getColumn_name());
-      final String ccName = cc.get(i).getDc_name();
-      boolean isEnable = cc.get(i).isEnable_cstr();
-      boolean isValidate = cc.get(i).isValidate_cstr();
-      boolean isRely = cc.get(i).isRely_cstr();
-      String constraintValue = cc.get(i).getCheck_expression();
-      addConstraint(catName, tableDB, tableName, columnName, ccName, isEnable, isRely, isValidate,
-                    MConstraint.CHECK_CONSTRAINT, constraintValue, retrieveCD, nnNames, cstrs);
+    for (SQLCheckConstraint cc: ccs) {
+      final String catName = normalizeIdentifier(cc.getCatName());
+      final String tableDB = normalizeIdentifier(cc.getTable_db());
+      final String tableName = normalizeIdentifier(cc.getTable_name());
+      final String columnName = cc.getColumn_name() == null? null
+          : normalizeIdentifier(cc.getColumn_name());
+      final String ccName = cc.getDc_name();
+      boolean isEnable = cc.isEnable_cstr();
+      boolean isValidate = cc.isValidate_cstr();
+      boolean isRely = cc.isRely_cstr();
+      String constraintValue = cc.getCheck_expression();
+      MConstraint muk = addConstraint(catName, tableDB, tableName, columnName, ccName, isEnable, isRely, isValidate,
+                    MConstraint.CHECK_CONSTRAINT, constraintValue, retrieveCD);
+      cstrs.add(muk);
+
+      // Add normalized identifier back to result
+      cc.setCatName(catName);
+      cc.setTable_db(tableDB);
+      cc.setTable_name(tableName);
+      cc.setColumn_name(columnName);
+      cc.setDc_name(muk.getConstraintName());
     }
     pm.makePersistentAll(cstrs);
-    return nnNames;
+    return ccs;
   }
 
-  private void addConstraint(String catName, String tableDB, String tableName, String columnName, String ccName,
+  private MConstraint addConstraint(String catName, String tableDB, String tableName, String columnName, String ccName,
                                boolean isEnable, boolean isRely, boolean isValidate, int constraintType,
-                               String constraintValue, boolean retrieveCD, List<String> nnNames,
-                               List<MConstraint> cstrs)
+                               String constraintValue, boolean retrieveCD)
       throws InvalidObjectException, MetaException {
     String constraintName = null;
     // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
@@ -5531,7 +5554,6 @@ public class ObjectStore implements RawStore, Configurable {
         throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
       }
     }
-    nnNames.add(constraintName);
 
     int enableValidateRely = (isEnable ? 4 : 0) +
         (isValidate ? 2 : 0) + (isRely ? 1 : 0);
@@ -5549,42 +5571,50 @@ public class ObjectStore implements RawStore, Configurable {
         null,
         parentIntegerIndex,
         constraintValue);
-    cstrs.add(muk);
+
+    return muk;
   }
 
-  private List<String> addDefaultConstraints(List<SQLDefaultConstraint> nns, boolean retrieveCD)
+  private List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> dcs, boolean retrieveCD)
       throws InvalidObjectException, MetaException {
-    List<String> nnNames = new ArrayList<>();
-    List<MConstraint> cstrs = new ArrayList<>();
 
-    for (int i = 0; i < nns.size(); i++) {
-      final String catName = normalizeIdentifier(nns.get(i).getCatName());
-      final String tableDB = normalizeIdentifier(nns.get(i).getTable_db());
-      final String tableName = normalizeIdentifier(nns.get(i).getTable_name());
-      final String columnName = normalizeIdentifier(nns.get(i).getColumn_name());
-      final String ccName = nns.get(i).getDc_name();
-      boolean isEnable = nns.get(i).isEnable_cstr();
-      boolean isValidate = nns.get(i).isValidate_cstr();
-      boolean isRely = nns.get(i).isRely_cstr();
-      String constraintValue = nns.get(i).getDefault_value();
-      addConstraint(catName, tableDB, tableName, columnName, ccName, isEnable, isRely, isValidate,
-      MConstraint.DEFAULT_CONSTRAINT, constraintValue, retrieveCD, nnNames, cstrs);
+    List<MConstraint> cstrs = new ArrayList<>();
+    for (SQLDefaultConstraint dc : dcs) {
+      final String catName = normalizeIdentifier(dc.getCatName());
+      final String tableDB = normalizeIdentifier(dc.getTable_db());
+      final String tableName = normalizeIdentifier(dc.getTable_name());
+      final String columnName = normalizeIdentifier(dc.getColumn_name());
+      final String dcName = dc.getDc_name();
+      boolean isEnable = dc.isEnable_cstr();
+      boolean isValidate = dc.isValidate_cstr();
+      boolean isRely = dc.isRely_cstr();
+      String constraintValue = dc.getDefault_value();
+      MConstraint muk = addConstraint(catName, tableDB, tableName, columnName, dcName, isEnable, isRely, isValidate,
+      MConstraint.DEFAULT_CONSTRAINT, constraintValue, retrieveCD);
+      cstrs.add(muk);
+
+      // Add normalized identifier back to result
+      dc.setCatName(catName);
+      dc.setTable_db(tableDB);
+      dc.setTable_name(tableName);
+      dc.setColumn_name(columnName);
+      dc.setDc_name(muk.getConstraintName());
     }
     pm.makePersistentAll(cstrs);
-    return nnNames;
+    return dcs;
   }
 
-  private List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns, boolean retrieveCD)
+  private List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns, boolean retrieveCD)
           throws InvalidObjectException, MetaException {
-    List<String> nnNames = new ArrayList<>();
-    List<MConstraint> cstrs = new ArrayList<>();
-    String constraintName = null;
 
-    for (int i = 0; i < nns.size(); i++) {
-      final String catName = normalizeIdentifier(nns.get(i).getCatName());
-      final String tableDB = normalizeIdentifier(nns.get(i).getTable_db());
-      final String tableName = normalizeIdentifier(nns.get(i).getTable_name());
-      final String columnName = normalizeIdentifier(nns.get(i).getColumn_name());
+    List<MConstraint> cstrs = new ArrayList<>();
+    String constraintName;
+
+    for (SQLNotNullConstraint nn : nns) {
+      final String catName = normalizeIdentifier(nn.getCatName());
+      final String tableDB = normalizeIdentifier(nn.getTable_db());
+      final String tableName = normalizeIdentifier(nn.getTable_name());
+      final String columnName = normalizeIdentifier(nn.getColumn_name());
 
       // If retrieveCD is false, we do not need to do a deep retrieval of the Table Column Descriptor.
       // For instance, this is the case when we are creating the table.
@@ -5605,20 +5635,19 @@ public class ObjectStore implements RawStore, Configurable {
           throw new InvalidObjectException("Parent column not found: " + columnName);
         }
       }
-      if (nns.get(i).getNn_name() == null) {
+      if (nn.getNn_name() == null) {
         constraintName = generateConstraintName(parentTable, tableDB, tableName, columnName, "nn");
       } else {
-        constraintName = normalizeIdentifier(nns.get(i).getNn_name());
+        constraintName = normalizeIdentifier(nn.getNn_name());
         if (constraintNameAlreadyExists(parentTable, constraintName)) {
           String fqConstraintName = String.format("%s.%s.%s", parentTable.getDatabase().getName(),
               parentTable.getTableName(), constraintName);
           throw new InvalidObjectException("Constraint name already exists: " + fqConstraintName);
         }
       }
-      nnNames.add(constraintName);
 
-      int enableValidateRely = (nns.get(i).isEnable_cstr() ? 4 : 0) +
-          (nns.get(i).isValidate_cstr() ? 2 : 0) + (nns.get(i).isRely_cstr() ? 1 : 0);
+      int enableValidateRely = (nn.isEnable_cstr() ? 4 : 0) +
+          (nn.isValidate_cstr() ? 2 : 0) + (nn.isRely_cstr() ? 1 : 0);
       MConstraint muk = new MConstraint(
           constraintName,
           1,
@@ -5633,9 +5662,15 @@ public class ObjectStore implements RawStore, Configurable {
           null,
           parentIntegerIndex);
       cstrs.add(muk);
+      // Add normalized identifier back to result
+      nn.setCatName(catName);
+      nn.setTable_db(tableDB);
+      nn.setTable_name(tableName);
+      nn.setColumn_name(columnName);
+      nn.setNn_name(constraintName);
     }
     pm.makePersistentAll(cstrs);
-    return nnNames;
+    return nns;
   }
 
   @Override
@@ -8778,7 +8813,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (oldStats != null) {
       StatObjectConverter.setFieldsIntoOldStats(mStatsObj, oldStats);
     } else {
-      if (sqlGenerator.getDbProduct().equals(DatabaseProduct.POSTGRES) && mStatsObj.getBitVector() == null) {
+      if (sqlGenerator.getDbProduct().isPOSTGRES() && mStatsObj.getBitVector() == null) {
         // workaround for DN bug in persisting nulls in pg bytea column
         // instead set empty bit vector with header.
         mStatsObj.setBitVector(new byte[] { 'H', 'L' });
@@ -8817,7 +8852,7 @@ public class ObjectStore implements RawStore, Configurable {
     if (oldStats != null) {
       StatObjectConverter.setFieldsIntoOldStats(mStatsObj, oldStats);
     } else {
-      if (sqlGenerator.getDbProduct().equals(DatabaseProduct.POSTGRES) && mStatsObj.getBitVector() == null) {
+      if (sqlGenerator.getDbProduct().isPOSTGRES() && mStatsObj.getBitVector() == null) {
         // workaround for DN bug in persisting nulls in pg bytea column
         // instead set empty bit vector with header.
         mStatsObj.setBitVector(new byte[] { 'H', 'L' });
@@ -10375,6 +10410,127 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
+  public void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    MStoredProc mProc;
+    Query query = null;
+    String catName = normalizeIdentifier(proc.getCatName());
+    String dbName = normalizeIdentifier(proc.getDbName());
+    MDatabase db = getMDatabase(catName, dbName);
+    try {
+      openTransaction();
+      query = storedProcQuery();
+      mProc = (MStoredProc) query.execute(proc.getName(), dbName, catName);
+      pm.retrieve(mProc);
+      if (mProc == null) { // create new
+        mProc = new MStoredProc();
+        populate(proc, db, mProc);
+        pm.makePersistent(mProc);
+      } else { // update existing
+        populate(proc, db, mProc);
+      }
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+  }
+
+  private static void populate(StoredProcedure proc, MDatabase mDatabase, MStoredProc result) throws MetaException {
+    result.setName(proc.getName());
+    result.setOwner(proc.getOwnerName());
+    result.setSource(proc.getSource());
+    result.setDatabase(mDatabase);
+  }
+
+  @Override
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
+    MStoredProc proc = getMStoredProcedure(catName, db, name);
+    return proc == null ? null : convertToStoredProc(catName, proc);
+  }
+
+  private MStoredProc getMStoredProcedure(String catName, String db, String procName) {
+    MStoredProc proc;
+    catName = normalizeIdentifier(catName);
+    db = normalizeIdentifier(db);
+    boolean committed = false;
+    Query query = null;
+    try {
+      openTransaction();
+      query = storedProcQuery();
+      proc = (MStoredProc) query.execute(procName, db, catName);
+      pm.retrieve(proc);
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return proc;
+  }
+
+  private Query storedProcQuery() {
+    Query query = pm.newQuery(MStoredProc.class,
+            "name == procName && database.name == db && database.catalogName == catName");
+    query.declareParameters("java.lang.String procName, java.lang.String db, java.lang.String catName");
+    query.setUnique(true);
+    return query;
+  }
+
+  private StoredProcedure convertToStoredProc(String catName, MStoredProc proc) {
+    return new StoredProcedure(
+            proc.getName(),
+            proc.getDatabase().getName(),
+            catName,
+            proc.getOwner(),
+            proc.getSource());
+  }
+
+  @Override
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException {
+    boolean success = false;
+    try {
+      openTransaction();
+      MStoredProc proc = getMStoredProcedure(catName, dbName, funcName);
+      pm.retrieve(proc);
+      if (proc != null) {
+        pm.deletePersistentAll(proc);
+      }
+      success = commitTransaction();
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  @Override
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) {
+    boolean committed = false;
+    Query query = null;
+    final String catName = normalizeIdentifier(request.getCatName());
+    final String dbName = request.isSetDbName() ? normalizeIdentifier(request.getDbName()) : null;
+    List<String> names;
+    try {
+      openTransaction();
+      if (request.isSetDbName()) {
+        query = pm.newQuery("SELECT name FROM org.apache.hadoop.hive.metastore.model.MStoredProc " +
+                "WHERE database.catalogName == catName && database.name == db");
+        query.declareParameters("java.lang.String catName, java.lang.String db");
+        query.setResult("name");
+        names = new ArrayList<>((Collection<String>) query.execute(catName, dbName));
+      } else {
+        query = pm.newQuery("SELECT name FROM org.apache.hadoop.hive.metastore.model.MStoredProc " +
+                "WHERE database.catalogName == catName");
+        query.declareParameters("java.lang.String catName");
+        query.setResult("name");
+        names = new ArrayList<>((Collection<String>) query.execute(catName));
+      }
+      committed = commitTransaction();
+    } finally {
+      rollbackAndCleanup(committed, query);
+    }
+    return names;
+  }
+
+  @Override
   public NotificationEventResponse getNextNotification(NotificationEventRequest rqst) {
     boolean commited = false;
     Query query = null;
@@ -10508,11 +10664,12 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void prepareQuotes() throws SQLException {
-    if (dbType == DatabaseProduct.MYSQL) {
+    String s = dbType.getPrepareTxnStmt();
+    if (s != null) {
       assert pm.currentTransaction().isActive();
       JDOConnection jdoConn = pm.getDataStoreConnection();
       try (Statement statement = ((Connection) jdoConn.getNativeConnection()).createStatement()) {
-        statement.execute("SET @@session.sql_mode=ANSI_QUOTES");
+        statement.execute(s);
       } finally {
         jdoConn.close();
       }
@@ -10520,7 +10677,7 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   private void lockNotificationSequenceForUpdate() throws MetaException {
-    if (sqlGenerator.getDbProduct() == DatabaseProduct.DERBY && directSql != null) {
+    if (sqlGenerator.getDbProduct().isDERBY() && directSql != null) {
       // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
       // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
       // only one row in the table, this shouldn't cause any performance degradation.

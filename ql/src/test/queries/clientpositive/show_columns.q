@@ -42,3 +42,11 @@ SHOW COLUMNS from foo_n7 from test_db;
 SHOW COLUMNS from foo_n7 from test_db "col*";
 EXPLAIN SHOW COLUMNS from foo_n7 from test_db like 'col*';
 SHOW COLUMNS from foo_n7 from test_db like 'col*';
+
+-- SORTED output
+SHOW SORTED COLUMNS from test_db.foo_n7;
+SHOW SORTED COLUMNS FROM foo_n7 in `database`;
+SHOW SORTED COLUMNS in foo_n7 from test_db "col+";
+SHOW SORTED COLUMNS in foo_n7 from test_db "c";
+SHOW SORTED COLUMNS from foo_n7 from test_db "c*";
+SHOW SORTED COLUMNS from foo_n7 from test_db like 'c*';

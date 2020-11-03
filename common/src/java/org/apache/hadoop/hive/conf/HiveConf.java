@@ -487,12 +487,12 @@ public class HiveConf extends Configuration {
    * in the underlying Hadoop configuration.
    */
   public static enum ConfVars {
-    MSC_CACHE_ENABLED("hive.metastore.client.cache.enabled", true,
+    MSC_CACHE_ENABLED("hive.metastore.client.cache.v2.enabled", true,
             "This property enables a Caffeine Cache for Metastore client"),
-    MSC_CACHE_MAX_SIZE("hive.metastore.client.cache.maxSize", "1Gb", new SizeValidator(),
+    MSC_CACHE_MAX_SIZE("hive.metastore.client.cache.v2.maxSize", "1Gb", new SizeValidator(),
             "Set the maximum size (number of bytes) of the metastore client cache (DEFAULT: 1GB). " +
                     "Only in effect when the cache is enabled"),
-    MSC_CACHE_RECORD_STATS("hive.metastore.client.cache.recordStats", false,
+    MSC_CACHE_RECORD_STATS("hive.metastore.client.cache.v2.recordStats", false,
             "This property enables recording metastore client cache stats in DEBUG logs"),
     // QL execution stuff
     SCRIPTWRAPPER("hive.exec.script.wrapper", null, ""),
@@ -596,18 +596,6 @@ public class HiveConf extends Configuration {
           + "'hive.repl.include.external.tables' when sets to true. If 'hive.repl.include.external.tables' is \n"
           + "set to false, then this config parameter has no effect. It should be set to true only once for \n"
           + "incremental repl dump on each existing replication policy after enabling external tables replication."),
-    REPL_ENABLE_MOVE_OPTIMIZATION("hive.repl.enable.move.optimization", false,
-          "If its set to true, REPL LOAD copies data files directly to the target table/partition location \n"
-          + "instead of copying to staging directory first and then move to target location. This optimizes \n"
-          + " the REPL LOAD on object data stores such as S3 or WASB where creating a directory and move \n"
-          + " files are costly operations. In file system like HDFS where move operation is atomic, this \n"
-          + " optimization should not be enabled as it may lead to inconsistent data read for non acid tables."),
-    REPL_MOVE_OPTIMIZED_FILE_SCHEMES("hive.repl.move.optimized.scheme", "s3a, wasb",
-        "Comma separated list of schemes for which move optimization will be enabled during repl load. \n"
-        + "This configuration overrides the value set using REPL_ENABLE_MOVE_OPTIMIZATION for the given schemes. \n"
-        + " Schemes of the file system which does not support atomic move (rename) can be specified here to \n "
-        + " speed up the repl load operation. In file system like HDFS where move operation is atomic, this \n"
-        + " optimization should not be enabled as it may lead to inconsistent data read for non acid tables."),
     REPL_EXTERNAL_TABLE_BASE_DIR("hive.repl.replica.external.table.base.dir", null,
         "This is the fully qualified base directory on the target/replica warehouse under which data for "
             + "external tables is stored. This is relative base path and hence prefixed to the source "
@@ -652,6 +640,10 @@ public class HiveConf extends Configuration {
       "Total allowed retry duration in hours inclusive of all retries. Once this is exhausted, " +
         "the policy instance will be marked as failed and will need manual intervention to restart."),
     REPL_LOAD_PARTITIONS_BATCH_SIZE("hive.repl.load.partitions.batch.size", 10000,
+      "Provide the maximum number of partitions of a table that will be batched together during  \n"
+        + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
+        + "The data for these partitions will be copied before copying the metadata batch. "),
+    REPL_LOAD_PARTITIONS_WITH_DATA_COPY_BATCH_SIZE("hive.repl.load.partitions.with.data.copy.batch.size",1000,
       "Provide the maximum number of partitions of a table that will be batched together during  \n"
         + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
         + "The data for these partitions will be copied before copying the metadata batch. "),
@@ -2103,6 +2095,7 @@ public class HiveConf extends Configuration {
     HIVETESTCURRENTTIMESTAMP("hive.test.currenttimestamp", null, "current timestamp for test", false),
     HIVETESTMODEROLLBACKTXN("hive.test.rollbacktxn", false, "For testing only.  Will mark every ACID transaction aborted", false),
     HIVETESTMODEFAILCOMPACTION("hive.test.fail.compaction", false, "For testing only.  Will cause CompactorMR to fail.", false),
+    HIVETESTMODEFAILLOADDYNAMICPARTITION("hive.test.fail.load.dynamic.partition", false, "For testing only.  Will cause loadDynamicPartition to fail.", false),
     HIVETESTMODEFAILHEARTBEATER("hive.test.fail.heartbeater", false, "For testing only.  Will cause Heartbeater to fail.", false),
     TESTMODE_BUCKET_CODEC_VERSION("hive.test.bucketcodec.version", 1,
       "For testing only.  Will make ACID subsystem write RecordIdentifier.bucketId in specified\n" +
@@ -2592,6 +2585,9 @@ public class HiveConf extends Configuration {
         "When shared work optimizer is enabled, whether we should reuse the cache for the broadcast side\n" +
         "of mapjoin operators that share same broadcast input. Requires hive.optimize.shared.work\n" +
         "to be set to true. Tez only."),
+    HIVE_SHARED_WORK_DPPUNION_OPTIMIZATION("hive.optimize.shared.work.dppunion", true,
+        "Enables dppops unioning. This optimization will enable to merge multiple tablescans with different "
+            + "dynamic filters into a single one (with a more complex filter)"),
     HIVE_COMBINE_EQUIVALENT_WORK_OPTIMIZATION("hive.combine.equivalent.work.optimization", true, "Whether to " +
             "combine equivalent work objects during physical optimization.\n This optimization looks for equivalent " +
             "work objects and combines them if they meet certain preconditions. Spark only."),
@@ -3565,6 +3561,9 @@ public class HiveConf extends Configuration {
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
     HIVE_SERVER2_ZOOKEEPER_PUBLISH_CONFIGS("hive.server2.zookeeper.publish.configs", true,
         "Whether we should publish HiveServer2's configs to ZooKeeper."),
+    HIVE_SERVER2_OOM_HOOKS("hive.server2.oom.hooks", null,
+        "A comma separated list of hooks which implement Runnable. Will be run in the order specified \n" +
+        "before HiveServer2 stops due to OutOfMemoryError."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
@@ -3608,6 +3607,10 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore location for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD("hive.server2.webui.keystore.password", "",
         "SSL certificate keystore password for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE("hive.server2.webui.keystore.type", "",
+        "SSL certificate keystore type for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_SSL_KEYMANAGERFACTORY_ALGORITHM("hive.server2.webui.keymanagerfactory.algorithm",
+        "","SSL certificate key manager factory algorithm for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_USE_SPNEGO("hive.server2.webui.use.spnego", false,
         "If true, the HiveServer2 WebUI will be secured with SPNEGO. Clients must authenticate with Kerberos."),
     HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB("hive.server2.webui.spnego.keytab", "",
@@ -3972,6 +3975,10 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore location."),
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "",
         "SSL certificate keystore password."),
+    HIVE_SERVER2_SSL_KEYSTORE_TYPE("hive.server2.keystore.type", "",
+            "SSL certificate keystore type."),
+    HIVE_SERVER2_SSL_KEYMANAGERFACTORY_ALGORITHM("hive.server2.keymanagerfactory.algorithm", "",
+            "SSL certificate keystore algorithm."),
     HIVE_SERVER2_BUILTIN_UDF_WHITELIST("hive.server2.builtin.udf.whitelist", "",
         "Comma separated list of builtin udf names allowed in queries.\n" +
         "An empty whitelist allows all builtin udfs to be executed. " +
@@ -5231,6 +5238,11 @@ public class HiveConf extends Configuration {
     HIVE_SCHEDULED_QUERIES_MAX_EXECUTORS("hive.scheduled.queries.max.executors", 4, new RangeValidator(1, null),
         "Maximal number of scheduled query executors to allow."),
 
+    HIVE_ASYNC_CLEANUP_SERVICE_THREAD_COUNT("hive.async.cleanup.service.thread.count", 10, new RangeValidator(0, null),
+        "Number of threads that run some eventual cleanup operations after queries/sessions close. 0 means cleanup is sync."),
+    HIVE_ASYNC_CLEANUP_SERVICE_QUEUE_SIZE("hive.async.cleanup.service.queue.size", 10000, new RangeValidator(10, Integer.MAX_VALUE),
+        "Size of the async cleanup queue. If cleanup queue is full, cleanup operations become synchronous. " +
+            "Applicable only when number of async cleanup is turned on."),
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +
         "to be reused if the same query is executed again."),

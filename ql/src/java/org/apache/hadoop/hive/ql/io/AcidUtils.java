@@ -55,7 +55,14 @@ import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.RemoteIterator;
-import org.apache.hadoop.hive.common.*;
+import org.apache.hadoop.hive.common.AcidConstants;
+import org.apache.hadoop.hive.common.AcidMetaDataFile;
+import org.apache.hadoop.hive.common.ValidTxnList;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
+import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.common.ValidWriteIdList;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.LockComponentBuilder;
@@ -114,7 +121,7 @@ import java.util.stream.Stream;
 public class AcidUtils {
   // This key will be put in the conf file when planning an acid operation
   public static final String CONF_ACID_KEY = "hive.doing.acid";
-  public static final String BASE_PREFIX = "base_";
+  public static final String BASE_PREFIX = AcidConstants.BASE_PREFIX;
   public static final String COMPACTOR_TABLE_PROPERTY = "compactiontable";
   public static final PathFilter baseFileFilter = new PathFilter() {
     @Override
@@ -122,8 +129,8 @@ public class AcidUtils {
       return path.getName().startsWith(BASE_PREFIX);
     }
   };
-  public static final String DELTA_PREFIX = "delta_";
-  public static final String DELETE_DELTA_PREFIX = "delete_delta_";
+  public static final String DELTA_PREFIX = AcidConstants.DELTA_PREFIX;
+  public static final String DELETE_DELTA_PREFIX = AcidConstants.DELETE_DELTA_PREFIX;
   /**
    * Acid Streaming Ingest writes multiple transactions to the same file.  It also maintains a
    * {@link org.apache.orc.impl.OrcAcidUtils#getSideFile(Path)} side file which stores the length of
@@ -157,14 +164,14 @@ public class AcidUtils {
           !path.getName().endsWith(DELTA_SIDE_FILE_SUFFIX);
     }
   };
-  public static final String BUCKET_DIGITS = "%05d";
-  public static final String LEGACY_FILE_BUCKET_DIGITS = "%06d";
-  public static final String DELTA_DIGITS = "%07d";
+  public static final String BUCKET_DIGITS = AcidConstants.BUCKET_DIGITS;
+  public static final String LEGACY_FILE_BUCKET_DIGITS = AcidConstants.LEGACY_FILE_BUCKET_DIGITS;
+  public static final String DELTA_DIGITS = AcidConstants.DELTA_DIGITS;
   /**
    * 10K statements per tx.  Probably overkill ... since that many delta files
    * would not be good for performance
    */
-  public static final String STATEMENT_DIGITS = "%04d";
+  public static final String STATEMENT_DIGITS = AcidConstants.STATEMENT_DIGITS;
   /**
    * This must be in sync with {@link #STATEMENT_DIGITS}
    */
@@ -240,8 +247,8 @@ public class AcidUtils {
     }
   };
 
-  public static final String VISIBILITY_PREFIX = "_v";
-  public static final Pattern VISIBILITY_PATTERN = Pattern.compile(VISIBILITY_PREFIX + "\\d+");
+  public static final String VISIBILITY_PREFIX = AcidConstants.VISIBILITY_PREFIX;
+  public static final Pattern VISIBILITY_PATTERN = AcidConstants.VISIBILITY_PATTERN;
 
   private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
 
@@ -315,7 +322,7 @@ public class AcidUtils {
   }
 
   public static String baseDir(long writeId) {
-    return BASE_PREFIX + String.format(DELTA_DIGITS, writeId);
+    return AcidConstants.baseDir(writeId);
   }
 
   /**
@@ -1367,7 +1374,7 @@ public class AcidUtils {
       original.clear();
       originalDirectories.clear();
     } else {
-      // Okay, we're going to need these originals.  
+      // Okay, we're going to need these originals.
       // Recurse through them and figure out what we really need.
       // If we already have the original list, do nothing
       // If childrenWithId != null, we would have already populated "original"
@@ -1524,7 +1531,7 @@ public class AcidUtils {
   }
 
   /**
-   * DFS dir listing. 
+   * DFS dir listing.
    * Captures a dir and the corresponding list of files it contains,
    * with additional properties about the dir (like isBase etc)
    *
@@ -1538,7 +1545,7 @@ public class AcidUtils {
 
     public void addMetadataFile(FileStatus fStatus);
 
-    public FileStatus getMetadataFile(FileStatus fStatus);
+    public FileStatus getMetadataFile();
 
     // Get the list of files if any within this directory
     public List<FileStatus> getFiles();
@@ -1663,7 +1670,7 @@ public class AcidUtils {
     }
 
     @Override
-    public FileStatus getMetadataFile(FileStatus fStatus) {
+    public FileStatus getMetadataFile() {
       return metadataFStatus;
     }
 
@@ -1810,6 +1817,11 @@ public class AcidUtils {
       // keep track for error reporting
       bestBase.oldestBase = baseDir;
       bestBase.oldestBaseWriteId = writeId;
+    }
+    // Handle aborted IOW base.
+    if (writeIdList.isWriteIdAborted(writeId) && !isCompactedBase(parsedBase, fs, dirSnapshot)) {
+      aborted.add(baseDir);
+      return;
     }
     if (bestBase.basePath == null) {
       if (isValidBase(parsedBase, writeIdList, fs, dirSnapshot)) {
@@ -2452,26 +2464,14 @@ public class AcidUtils {
   }
 
   /**
-   * General facility to place a metadta file into a dir created by acid/compactor write.
+   * General facility to place a metadata file into a dir created by acid/compactor write.
    *
    * Load Data commands against Acid tables write {@link AcidBaseFileType#ORIGINAL_BASE} type files
    * into delta_x_x/ (or base_x in case there is Overwrite clause).  {@link MetaDataFile} is a
    * small JSON file in this directory that indicates that these files don't have Acid metadata
    * columns and so the values for these columns need to be assigned at read time/compaction.
    */
-  public static class MetaDataFile {
-    //export command uses _metadata....
-    public static final String METADATA_FILE = "_metadata_acid";
-    private static final String CURRENT_VERSION = "0";
-    //todo: enums? that have both field name and value list
-    private interface Field {
-      String VERSION = "thisFileVersion";
-      String DATA_FORMAT = "dataFormat";
-    }
-    private interface Value {
-      //written by Major compaction
-      String COMPACTED = "compacted";
-    }
+  public static class MetaDataFile extends AcidMetaDataFile {
 
     static boolean isCompacted(Path baseOrDeltaDir, FileSystem fs, HdfsDirSnapshot dirSnapshot) throws IOException {
       /**
@@ -2479,29 +2479,22 @@ public class AcidUtils {
        * created by compactor so that it can be distinguished from the one
        * created by Insert Overwrite
        */
-      Path formatFile = new Path(baseOrDeltaDir, METADATA_FILE);
-      if (dirSnapshot != null && !dirSnapshot.contains(formatFile)) {
+      if (dirSnapshot != null && dirSnapshot.getMetadataFile() == null) {
         return false;
       }
+      Path formatFile = new Path(baseOrDeltaDir, METADATA_FILE);
       try (FSDataInputStream strm = fs.open(formatFile)) {
         Map<String, String> metaData = new ObjectMapper().readValue(strm, Map.class);
-        if(!CURRENT_VERSION.equalsIgnoreCase(metaData.get(Field.VERSION))) {
-          throw new IllegalStateException("Unexpected Meta Data version: "
-              + metaData.get(Field.VERSION));
+        if (!CURRENT_VERSION.equalsIgnoreCase(metaData.get(Field.VERSION.toString()))) {
+          throw new IllegalStateException("Unexpected Meta Data version: " + metaData.get(Field.VERSION));
         }
-        String dataFormat = metaData.getOrDefault(Field.DATA_FORMAT, "null");
-        switch (dataFormat) {
-          case Value.COMPACTED:
-            return true;
-          default:
-            throw new IllegalArgumentException("Unexpected value for " + Field.DATA_FORMAT
-                + ": " + dataFormat);
-        }
+        String dataFormat = metaData.getOrDefault(Field.DATA_FORMAT.toString(), "null");
+        DataFormat format = DataFormat.valueOf(dataFormat.toUpperCase());
+        return DataFormat.COMPACTED == format;
       } catch (FileNotFoundException e) {
         return false;
-      } catch(IOException e) {
-        String msg = "Failed to read " + baseOrDeltaDir + "/" + METADATA_FILE
-            + ": " + e.getMessage();
+      } catch (IOException e) {
+        String msg = "Failed to read " + baseOrDeltaDir + "/" + METADATA_FILE + ": " + e.getMessage();
         LOG.error(msg, e);
         throw e;
       }
@@ -2999,6 +2992,10 @@ public class AcidUtils {
         compBuilder.setExclusive();
         compBuilder.setOperationType(DataOperationType.NO_TXN);
         break;
+      case DDL_EXCL_WRITE:
+        compBuilder.setExclWrite();
+        compBuilder.setOperationType(DataOperationType.NO_TXN);
+        break;
       case INSERT_OVERWRITE:
         t = AcidUtils.getTable(output);
         if (AcidUtils.isTransactionalTable(t)) {
@@ -3016,18 +3013,20 @@ public class AcidUtils {
       case INSERT:
         assert t != null;
         if (AcidUtils.isTransactionalTable(t)) {
+          boolean isExclMergeInsert = conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge;
+
           if (sharedWrite) {
-            if (conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge) {
-              compBuilder.setExclWrite();
-            } else {
-              compBuilder.setSharedWrite();
-            }
+            compBuilder.setSharedWrite();
           } else {
-            if (conf.getBoolVar(ConfVars.TXN_MERGE_INSERT_X_LOCK) && isMerge) {
-              compBuilder.setExclusive();
+            if (isExclMergeInsert) {
+              compBuilder.setExclWrite();
             } else {
               compBuilder.setSharedRead();
             }
+          }
+          if (isExclMergeInsert) {
+            compBuilder.setOperationType(DataOperationType.UPDATE);
+            break;
           }
         } else if (MetaStoreUtils.isNonNativeTable(t.getTTable())) {
           final HiveStorageHandler storageHandler = Preconditions.checkNotNull(t.getStorageHandler(),

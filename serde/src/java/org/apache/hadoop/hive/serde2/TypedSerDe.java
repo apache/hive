@@ -87,10 +87,4 @@ public abstract class TypedSerDe extends AbstractSerDe {
     throw new RuntimeException("not supported");
   }
 
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
-  }
-
 }

@@ -27,7 +27,8 @@ import org.apache.hive.hplsql.HplsqlParser.Package_spec_itemContext;
 import org.apache.hive.hplsql.HplsqlParser.Package_body_itemContext;
 import org.apache.hive.hplsql.HplsqlParser.Create_function_stmtContext;
 import org.apache.hive.hplsql.HplsqlParser.Create_procedure_stmtContext;
-import org.apache.hive.hplsql.functions.Function;
+import org.apache.hive.hplsql.functions.BuiltinFunctions;
+import org.apache.hive.hplsql.functions.InMemoryFunction;
 
 /**
  * Program package
@@ -46,13 +47,13 @@ public class Package {
   boolean allMembersPublic = false;
     
   Exec exec;
-  Function function;
+  InMemoryFunction function;
   boolean trace = false;
   
-  Package(String name, Exec exec) {
+  Package(String name, Exec exec, BuiltinFunctions builtinFunctions) {
     this.name = name;
     this.exec = exec;
-    this.function = new Function(exec);
+    this.function = new InMemoryFunction(exec, builtinFunctions);
     this.trace = exec.getTrace();
   }
   
@@ -126,7 +127,7 @@ public class Package {
     }
     ArrayList<Var> actualParams = function.getActualCallParameters(ctx);
     exec.enterScope(Scope.Type.ROUTINE, this);
-    function.setCallParameters(ctx, actualParams, f.create_routine_params(), null);    
+    function.setCallParameters(ctx, actualParams, f.create_routine_params(), null, exec);
     visit(f.single_block_stmt());
     exec.leaveScope(); 
     return true;
@@ -154,7 +155,7 @@ public class Package {
       visit(p.declare_block_inplace());
     }
     if (p.create_routine_params() != null) {
-      function.setCallParameters(ctx, actualParams, p.create_routine_params(), out);
+      function.setCallParameters(ctx, actualParams, p.create_routine_params(), out, exec);
     }
     visit(p.proc_block());
     exec.callStackPop();

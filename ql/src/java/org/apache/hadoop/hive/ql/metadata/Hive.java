@@ -2952,7 +2952,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
       LOG.debug("Cancelling " + futures.size() + " dynamic loading tasks");
       executor.shutdownNow();
     }
-
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) && HiveConf.getBoolVar(conf, ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION)) {
+      throw new HiveException(HiveConf.ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION.name() + "=true");
+    }
     try {
       if (isTxnTable) {
         List<String> partNames =
@@ -5536,13 +5538,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   public ImmutableMap<String, Long> dumpAndClearMetaCallTiming(String phase) {
-    boolean phaseInfoLogged = false;
-    if (LOG.isDebugEnabled()) {
-      phaseInfoLogged = logDumpPhase(phase);
-      LOG.debug("Total time spent in each metastore function (ms): " + metaCallTimeMap);
-    }
-
     if (LOG.isInfoEnabled()) {
+      boolean phaseInfoLogged = logDumpPhase(phase);
+      LOG.info("Total time spent in each metastore function (ms): " + metaCallTimeMap);
       // print information about calls that took longer time at INFO level
       for (Entry<String, Long> callTime : metaCallTimeMap.entrySet()) {
         // dump information if call took more than 1 sec (1000ms)

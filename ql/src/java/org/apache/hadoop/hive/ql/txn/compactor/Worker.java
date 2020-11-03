@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.common.util.Ref;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -138,6 +139,16 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       if (msc != null) {
         msc.close();
       }
+    }
+  }
+
+  private void verifyTableIdHasNotChanged(CompactionInfo ci, Table originalTable) throws HiveException, MetaException {
+    Table currentTable = resolveTable(ci);
+    if (originalTable.getId() != currentTable.getId()) {
+      throw new HiveException("Table " + originalTable.getDbName() + "." + originalTable.getTableName()
+          + " id (" + currentTable.getId() + ") is not equal to its id when compaction started ("
+          + originalTable.getId() + "). The table might have been dropped and recreated while compaction was running."
+          + " Marking compaction as failed.");
     }
   }
 
@@ -355,7 +366,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
    * @return true if cleaning is needed
    */
   public static boolean needsCleaning(AcidUtils.Directory dir, StorageDescriptor sd) {
-    int numObsoleteDirs = dir.getObsolete().size();
+    int numObsoleteDirs = dir.getObsolete().size() + dir.getAbortedDirectories().size();
     boolean needsJustCleaning = numObsoleteDirs > 0;
     if (needsJustCleaning) {
       LOG.info("{} obsolete directories in {} found; marked for cleaning.", numObsoleteDirs,
@@ -497,6 +508,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       jobName.append(ci.getFullPartitionName());
 
       // Don't start compaction or cleaning if not necessary
+      if (isDynPartAbort(t, ci)) {
+        msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
+        return false;
+      }
       AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
           tblValidWriteIds, Ref.from(false), true);
       if (!isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
@@ -540,6 +555,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           }
         }
         heartbeater.cancel();
+
+        verifyTableIdHasNotChanged(ci, t1);
+
         LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in txn "
             + JavaUtils.txnIdToString(compactorTxnId) + ", marking as compacted.");
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
@@ -588,5 +606,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     if (Thread.interrupted()) {
       throw new InterruptedException("Compaction execution is interrupted");
     }
+  }
+
+  private static boolean isDynPartAbort(Table t, CompactionInfo ci) {
+    return t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0
+        && ci.partName == null;
   }
 }

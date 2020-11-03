@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.orc.ExternalCache;
 import org.apache.hadoop.hive.ql.lockmgr.DbLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
@@ -95,7 +96,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
@@ -104,7 +104,6 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Base64;
 import java.util.UUID;
 import java.util.ArrayList;
 import java.util.Map;
@@ -121,7 +120,8 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final String dumpSchema = "dump_dir,last_repl_id#string,string";
   private static final String FUNCTION_METADATA_FILE_NAME = EximUtil.METADATA_NAME;
-  private static final long SLEEP_TIME = 60000;
+  private static final long SLEEP_TIME = 5 * 60000;
+  private static final long SLEEP_TIME_FOR_TESTS = 30000;
   private Set<String> tablesForBootstrap = new HashSet<>();
 
   public enum ConstraintFileType {COMMON("common", "c_"), FOREIGNKEY("fk", "f_");
@@ -163,6 +163,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         }
         Path previousValidHiveDumpPath = getPreviousValidDumpMetadataPath(dumpRoot);
         boolean isBootstrap = (previousValidHiveDumpPath == null);
+        work.setBootstrap(isBootstrap);
         //If no previous dump is present or previous dump is already loaded, proceed with the dump operation.
         if (shouldDump(previousValidHiveDumpPath)) {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, isBootstrap);
@@ -194,23 +195,27 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
           LOG.info("Previous Dump is not yet loaded");
         }
       }
+    } catch (RuntimeException e) {
+      LOG.error("replication failed with run time exception", e);
+      setException(e);
+      try{
+        ReplUtils.handleException(true, e, work.getCurrentDumpPath().toString(),
+                work.getMetricCollector(), getName(), conf);
+      } catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+      }
+      throw e;
     } catch (Exception e) {
-      LOG.error("failed", e);
       setException(e);
       int errorCode = ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode();
-      try {
-        if (errorCode > 40000) {
-          Path nonRecoverableMarker = new Path(work.getCurrentDumpPath(),
-            ReplAck.NON_RECOVERABLE_MARKER.toString());
-          Utils.writeStackTrace(e, nonRecoverableMarker, conf);
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED_ADMIN, nonRecoverableMarker.toString());
-        } else {
-          work.getMetricCollector().reportStageEnd(getName(), Status.FAILED);
-        }
-      } catch (Exception ex) {
-        LOG.error("Failed to collect Metrics", ex);
+      try{
+        return ReplUtils.handleException(true, e, work.getCurrentDumpPath().toString(),
+                work.getMetricCollector(), getName(), conf);
       }
-      return errorCode;
+      catch (Exception ex){
+        LOG.error("Failed to collect replication metrics: ", ex);
+        return errorCode;        
+      }
     }
     return 0;
   }
@@ -520,6 +525,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // waiting for the concurrent transactions to finish, we start dumping the incremental events
     // and wait only for the remaining time if any.
     if (needBootstrapAcidTablesDuringIncrementalDump()) {
+      work.setBootstrap(true);
       bootDumpBeginReplId = queryState.getConf().getLong(ReplUtils.LAST_REPL_ID_KEY, -1L);
       assert (bootDumpBeginReplId >= 0);
       LOG.info("Dump for bootstrapping ACID tables during an incremental dump for db {}",
@@ -859,7 +865,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
                   " with first incremental dump pending : " + dbName);
         }
         int estimatedNumTables = Utils.getAllTables(hiveDb, dbName, work.replScope).size();
-        int estimatedNumFunctions = hiveDb.getAllFunctions().size();
+        int estimatedNumFunctions = hiveDb.getFunctions(dbName, "*").size();
         replLogger = new BootstrapDumpLogger(dbName, dumpRoot.toString(),
                 estimatedNumTables,
                 estimatedNumFunctions);
@@ -1017,14 +1023,6 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     replLogger.tableLog(tblName, tableSpec.tableHandle.getTableType());
   }
 
-  private boolean dataCopyRequired(TableSpec tableSpec) {
-    if (tableSpec.tableHandle.getTableType().equals(TableType.EXTERNAL_TABLE)
-            || Utils.shouldDumpMetaDataOnly(conf)) {
-      return false;
-    }
-    return true;
-  }
-
   private String getValidWriteIdList(String dbName, String tblName, String validTxnString) throws LockException {
     if ((validTxnString == null) || validTxnString.isEmpty()) {
       return null;
@@ -1036,15 +1034,28 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     return ((validWriteIds != null) ? validWriteIds.toString() : null);
   }
 
-  private List<Long> getOpenTxns(ValidTxnList validTxnList) {
-    long[] invalidTxns = validTxnList.getInvalidTransactions();
-    List<Long> openTxns = new ArrayList<>();
-    for (long invalidTxn : invalidTxns) {
-      if (!validTxnList.isTxnAborted(invalidTxn)) {
-        openTxns.add(invalidTxn);
+  private List<Long> getTxnsNotPresentInHiveLocksTable(List<Long> openTxnList) throws LockException {
+    List<Long> txnsNotPresentInHiveLocks = new ArrayList<>();
+    for (long openTxnId : openTxnList) {
+      if (!isTxnPresentInHiveLocks(openTxnId)) {
+        txnsNotPresentInHiveLocks.add(openTxnId);
       }
     }
-    return openTxns;
+    return txnsNotPresentInHiveLocks;
+  }
+
+  /**
+   * Get if there is an entry for the txn id in the hive locks table. It can be in waiting state or acquired state.
+   * @param txnId
+   * @return true if the entry for the txn id is present in hive locks.
+   * @throws LockException
+   */
+  private boolean isTxnPresentInHiveLocks(long txnId) throws LockException {
+    ShowLocksRequest request = new ShowLocksRequest();
+    request.setTxnid(txnId);
+    HiveLockManager lockManager = getTxnMgr().getLockManager();
+    ShowLocksResponse showLocksResponse = ((DbLockManager) lockManager).getLocks(request);
+    return !showLocksResponse.getLocks().isEmpty();
   }
 
   List<Long> getOpenTxns(ValidTxnList validTxnList, String dbName) throws LockException {
@@ -1089,14 +1100,26 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     List<TxnType> excludedTxns = Arrays.asList(TxnType.READ_ONLY, TxnType.REPL_CREATED);
     ValidTxnList validTxnList = getTxnMgr().getValidTxns(excludedTxns);
     while (System.currentTimeMillis() < waitUntilTime) {
-      // If there are no txns which are open for the given ValidTxnList snapshot, then just return it.
-      if (getOpenTxns(validTxnList).isEmpty()) {
+      //check if no open txns at all
+      List<Long> openTxnListForAllDbs = getOpenTxns(validTxnList);
+      if (openTxnListForAllDbs.isEmpty()) {
         return validTxnList.toString();
       }
-
-      // Wait for 1 minute and check again.
+      //check if all transactions that are open are inserted into the hive locks table. If not wait and check again.
+      //Transactions table don't contain the db information. DB information is present only in the hive locks table.
+      //Transactions are inserted into the hive locks table after compilation. We need to make sure all transactions
+      //that are open have a entry in hive locks which can give us the db information and then we only wait for open
+      //transactions for the db under replication and not for all open transactions.
+      if (getTxnsNotPresentInHiveLocksTable(openTxnListForAllDbs).isEmpty()) {
+        //If all open txns have been inserted in the hive locks table, we just need to check for the db under replication
+        // If there are no txns which are open for the given db under replication, then just return it.
+        if (getOpenTxns(validTxnList, work.dbNameOrPattern).isEmpty()) {
+          return validTxnList.toString();
+        }
+      }
+      // Wait for 5 minutes and check again.
       try {
-        Thread.sleep(SLEEP_TIME);
+        Thread.sleep(getSleepTime());
       } catch (InterruptedException e) {
         LOG.info("REPL DUMP thread sleep interrupted", e);
       }
@@ -1123,6 +1146,22 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         "hive.repl.bootstrap.dump.abort.write.txn.after.timeout to proceed.");
     }
     return validTxnList.toString();
+  }
+
+  private long getSleepTime() {
+    return (conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)
+      || conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)) ? SLEEP_TIME_FOR_TESTS : SLEEP_TIME;
+  }
+
+  private List<Long> getOpenTxns(ValidTxnList validTxnList) {
+    long[] invalidTxns = validTxnList.getInvalidTransactions();
+    List<Long> openTxns = new ArrayList<>();
+    for (long invalidTxn : invalidTxns) {
+      if (!validTxnList.isTxnAborted(invalidTxn)) {
+        openTxns.add(invalidTxn);
+      }
+    }
+    return openTxns;
   }
 
   private ReplicationSpec getNewReplicationSpec(String evState, String objState,

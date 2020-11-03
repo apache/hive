@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -268,12 +267,6 @@ public class RegexSerDe extends AbstractSerDe {
     }
     outputRowText.set(outputRowString);
     return outputRowText;
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    // no support for statistics
-    return null;
   }
 
 }
