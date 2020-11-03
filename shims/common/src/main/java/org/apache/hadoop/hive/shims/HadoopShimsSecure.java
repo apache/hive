@@ -132,6 +132,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     protected RecordReader<K, V> curReader;
     protected boolean isShrinked;
     protected long shrinkedLength;
+    private long timeOut, lastProgressReport = System.currentTimeMillis();
 
     @Override
     public boolean next(K key, V value) throws IOException {
@@ -139,11 +140,22 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       while ((curReader == null)
           || !doNextWithExceptionHandler((K) ((CombineHiveKey) key).getKey(),
               value)) {
+        reportProgress();
         if (!initNextRecordReader(key)) {
           return false;
         }
       }
       return true;
+    }
+
+    private void reportProgress() {
+      // sometimes if the merge task tries to merge lots of empty files,
+      // the mapper may be terminated due to task timeout.
+      if (reporter != null && timeOut > 0
+          && (System.currentTimeMillis() - lastProgressReport) > timeOut) {
+        reporter.progress();
+        lastProgressReport = System.currentTimeMillis();
+      }
     }
 
     @Override
@@ -197,6 +209,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
       this.progress = 0;
 
       isShrinked = false;
+      this.timeOut = job.getInt("mapred.healthChecker.script.timeout", 600000) / 2;
 
       assert (split instanceof InputSplitShim);
       if (((InputSplitShim) split).isShrinked()) {
