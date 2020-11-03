@@ -200,14 +200,15 @@ public class Cleaner extends MetaStoreCompactorThread {
         LOG.debug("Cleaning based on writeIdList: " + validWriteIdList);
       }
 
+      Ref<Boolean> removedFiles = Ref.from(false);
       if (runJobAsSelf(ci.runAs)) {
-        removeFiles(location, validWriteIdList, ci);
+        removedFiles.value = removeFiles(location, validWriteIdList, ci);
       } else {
         LOG.info("Cleaning as user " + ci.runAs + " for " + ci.getFullPartitionName());
         UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
             UserGroupInformation.getLoginUser());
         ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
-          removeFiles(location, validWriteIdList, ci);
+          removedFiles.value = removeFiles(location, validWriteIdList, ci);
           return null;
         });
         try {
@@ -217,7 +218,11 @@ public class Cleaner extends MetaStoreCompactorThread {
               ci.getFullPartitionName() + idWatermark(ci), exception);
         }
       }
-      txnHandler.markCleaned(ci);
+      if (removedFiles.value) {
+        txnHandler.markCleaned(ci);
+      } else {
+        LOG.warn("No files were removed. Leaving queue entry " + ci + " in ready for cleaning state.");
+      }
     } catch (Exception e) {
       LOG.error("Caught exception when cleaning, unable to complete cleaning of " + ci + " " +
           StringUtils.stringifyException(e));
@@ -253,7 +258,11 @@ public class Cleaner extends MetaStoreCompactorThread {
   private static String idWatermark(CompactionInfo ci) {
     return " id=" + ci.id;
   }
-  private void removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
+
+  /**
+   * @return true if any files were removed
+   */
+  private boolean removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
       throws IOException, NoSuchObjectException, MetaException {
     Path locPath = new Path(location);
     AcidUtils.Directory dir = AcidUtils.getAcidState(locPath.getFileSystem(conf), locPath, conf, writeIdList, Ref.from(
@@ -284,7 +293,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     if (filesToDelete.size() < 1) {
       LOG.warn("Hmm, nothing to delete in the cleaner for directory " + location +
           ", that hardly seems right.");
-      return;
+      return false;
     }
 
     FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
@@ -298,5 +307,6 @@ public class Cleaner extends MetaStoreCompactorThread {
       }
       fs.delete(dead, true);
     }
+    return true;
   }
 }
