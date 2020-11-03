@@ -92,7 +92,7 @@ public class ImpalaTableConverter implements HMSTableConverter {
       response.partitionInfo.locationPrefixes = partitionLocationCompressor.getPrefixes();
       response.partitionInfo.hostIndex = hostIndex.getList();
       return response;
-    } catch (CatalogException e) {
+    } catch (Exception e) {
       LOG.error("Exception thrown in ImpalaTableConverter.", e);
     }
     return null;

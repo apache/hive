@@ -20,6 +20,10 @@ package org.apache.hadoop.hive.ql.plan.impala.catalog;
 import java.util.List;
 
 import com.google.common.base.Preconditions;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.impala.analysis.LiteralExpr;
 import org.apache.impala.catalog.HdfsPartition;
 import org.apache.impala.catalog.HdfsPartitionLocationCompressor;
@@ -41,11 +45,19 @@ public class ImpalaHdfsPartition extends HdfsPartition {
 
   public static final String DUMMY_PARTITION = "DUMMY";
 
+  // Static Configuration object. On first iteration, getting a FileSystem object with a new
+  // Configuration object is about 10ms, On subsequent calls to get a new FileSystem, it is much
+  // quicker when using the same Configuration object.
+  // Impala also declares this Configuration object as static when they fetch the FileSystem object.
+  private static final Configuration CONF = new Configuration();
+
   private final String partitionName;
 
   private final ListMap<TNetworkAddress> hostIndex;
 
   private final FileSystemUtil.FsType fsType;
+
+  private final FileSystem fs;
 
   public ImpalaHdfsPartition(
         org.apache.hadoop.hive.metastore.api.Partition msPartition,
@@ -53,14 +65,19 @@ public class ImpalaHdfsPartition extends HdfsPartition {
         HdfsStorageDescriptor fileFormatDescriptor,
         List<HdfsPartition.FileDescriptor> fileDescriptors, long id,
         HdfsPartitionLocationCompressor.Location location, TAccessLevel accessLevel,
-        String partitionName, ListMap<TNetworkAddress> hostIndex) {
+        String partitionName, ListMap<TNetworkAddress> hostIndex) throws HiveException {
     super(null /*table*/, msPartition, partitionKeyValues, fileFormatDescriptor, fileDescriptors,
         id, location, accessLevel);
-    this.partitionName = partitionName;
-    this.hostIndex = hostIndex;
-    Preconditions.checkNotNull(getLocationPath().toUri().getScheme(),
-        "Cannot get scheme from path " + getLocationPath());
-    fsType = FileSystemUtil.FsType.getFsType(getLocationPath().toUri().getScheme());
+    try {
+      this.partitionName = partitionName;
+      this.hostIndex = hostIndex;
+      Preconditions.checkNotNull(getLocationPath().toUri().getScheme(),
+          "Cannot get scheme from path " + getLocationPath());
+      fsType = FileSystemUtil.FsType.getFsType(getLocationPath().toUri().getScheme());
+      fs = getLocationPath().getFileSystem(CONF);
+    } catch (Exception e) {
+      throw new HiveException("Could not create ImpalaHdfsPartition.", e);
+    }
   }
 
   @Override
@@ -76,5 +93,10 @@ public class ImpalaHdfsPartition extends HdfsPartition {
   @Override
   public FileSystemUtil.FsType getFsType() {
     return fsType;
+  }
+
+  @Override
+  public FileSystem getFileSystem(Configuration conf) {
+    return fs;
   }
 }

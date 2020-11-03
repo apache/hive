@@ -173,7 +173,7 @@ public class ImpalaPartitionConverter implements HMSPartitionConverter {
       String partitionName, Partition partition, List<FileDescriptor> fds,
       ListMap<TNetworkAddress> cachedHostIndex,
       HdfsPartitionLocationCompressor cachedLocationCompressor
-      ) throws CatalogException {
+      ) throws CatalogException, HiveException {
     HdfsStorageDescriptor fileFormatDescriptor =
         HdfsStorageDescriptor.fromStorageDescriptor(basicHdfsTable.getName(), partition.getSd());
     List<LiteralExpr> keyValues = FeCatalogUtils.parsePartitionKeyValues(basicHdfsTable, partition.getValues());
