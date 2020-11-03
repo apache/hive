@@ -87,6 +87,7 @@ import org.apache.orc.OrcConf;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -802,6 +803,7 @@ public class TestCompactor {
             Lists.newArrayList(5, 6), 1);
   }
 
+  @Ignore("PR #1618")
   @Test
   public void testCleanAbortCompactAfter2ndCommitAbort() throws Exception {
     String dbName = "default";
@@ -823,6 +825,7 @@ public class TestCompactor {
     connection.close();
   }
 
+  @Ignore("PR #1618")
   @Test
   public void testCleanAbortCompactAfter1stCommitAbort() throws Exception {
     String dbName = "default";
