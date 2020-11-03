@@ -18,12 +18,14 @@
 
 package org.apache.hadoop.hive.common.type;
 
+import com.google.common.base.Stopwatch;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public class TestTimestampTZ {
   @Test
@@ -82,6 +84,18 @@ public class TestTimestampTZ {
     TimestampTZUtil.parse("2017-11-08GMT");
     TimestampTZUtil.parse("2017-10-11 GMT+8:00");
     TimestampTZUtil.parse("2017-05-08 07:45:00-3:00");
+  }
+
+  @Test
+  public void testPerformance() {
+    for (int i = 0; i < 100; i++) {
+      TimestampTZUtil.parse("2017-01-01 13:33:00", ZoneId.of("UTC"));
+    }
+    Stopwatch sw = Stopwatch.createStarted();
+    for (int i = 0; i < 10000; i++) {
+      TimestampTZUtil.parse("2017-01-01 13:33:00", ZoneId.of("UTC"));
+    }
+    System.out.println(sw.elapsed(TimeUnit.MILLISECONDS));
   }
 
   @Test
