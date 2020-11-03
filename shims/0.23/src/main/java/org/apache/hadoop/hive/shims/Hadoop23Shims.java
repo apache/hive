@@ -1246,8 +1246,8 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     /**
      * Returns true if the given fs supports mount functionality. In general we
      * can have child file systems only in the case of mount fs like
-     * ViewFileSystem, ViewFsOverloadScheme or ViewDistributedFileSystem.
-     * Returns false if the getChildFileSystems API returns null.
+     * ViewFsOverloadScheme or ViewDistributedFileSystem. Returns false if the
+     * getChildFileSystems API returns null.
      */
     private boolean isMountedFs(FileSystem fs) {
       return fs.getChildFileSystems() != null;
@@ -1256,7 +1256,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     private boolean isFileInHdfs(FileSystem fs, Path path) throws IOException {
       String hdfsScheme = "hdfs";
       boolean isHdfs = hdfsScheme.equalsIgnoreCase(path.toUri().getScheme());
-      // In case of viewfs we need to lookup where the actual file is to know
+      // In case of viewhdfs we need to lookup where the actual file is to know
       // the filesystem in use. The resolvePath is a sure shot way of knowing
       // which file system the file is.
       if (isHdfs && isMountedFs(fs)) {
