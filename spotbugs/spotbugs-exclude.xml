@@ -43,10 +43,5 @@
   <Match>
     <Class name="~org.apache.hadoop.hive.ql.plan.api.*" />
   </Match>
-  <Match>
-    <Class name="~org.apache.hadoop.hive.common.log.*" />
-    <Method name="apply" />
-    <Bug pattern="NP_PARAMETER_MUST_BE_NONNULL_BUT_MARKED_AS_NULLABLE" />
-  </Match>
 </FindBugsFilter>
 
