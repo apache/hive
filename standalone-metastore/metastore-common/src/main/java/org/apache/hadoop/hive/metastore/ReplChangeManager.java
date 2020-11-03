@@ -20,21 +20,25 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileChecksum;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.fs.Trash;
+import org.apache.hadoop.fs.*;
+import org.apache.hadoop.fs.permission.AclEntry;
+import static org.apache.hadoop.fs.permission.AclEntryScope.ACCESS;
+import static org.apache.hadoop.fs.permission.AclEntryType.GROUP;
+import static org.apache.hadoop.fs.permission.AclEntryType.USER;
+import static org.apache.hadoop.fs.permission.AclEntryType.OTHER;
+import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hdfs.DFSConfigKeys;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -591,10 +595,10 @@ public class ReplChangeManager {
       @Override
       public Void execute() throws IOException {
         FileSystem cmFs = cmroot.getFileSystem(conf);
-        // Create cmroot with permission 700 if not exist
+        // Create cmroot if not exist
         if (!cmFs.exists(cmroot)) {
           cmFs.mkdirs(cmroot);
-          cmFs.setPermission(cmroot, new FsPermission("700"));
+          setCmRootPermissions(cmroot);
         }
         return null;
       }
@@ -603,6 +607,44 @@ public class ReplChangeManager {
       retriable.run();
     } catch (Exception e) {
       throw new IOException(org.apache.hadoop.util.StringUtils.stringifyException(e));
+    }
+  }
+
+  /* 
+   * Assign cmRoot to group of warehouse directory.
+   * If warehouse directory cannot be determined then give rwx permissions to default group of cmroot.
+   */
+  private static void setCmRootPermissions(Path cmroot) throws IOException{
+    FileSystem cmFs = cmroot.getFileSystem(conf);
+    cmFs.setPermission(cmroot, new FsPermission("770"));
+    try {
+      FileStatus warehouseStatus = cmFs.getFileStatus(new Path(MetastoreConf.get(conf, ConfVars.WAREHOUSE.getVarname())));
+
+      //if wh-owner is same as cmroot owner, then change the group if required.
+      //else add acl for wh-group.
+      String warehouseOwner = warehouseStatus.getOwner();
+      String warehouseGroup = warehouseStatus.getGroup();
+      if (warehouseOwner.equals(cmFs.getFileStatus(cmroot).getOwner())) {
+        FsAction whOwnerAction = warehouseStatus.getPermission().getUserAction();
+        FsAction whGroupAction = warehouseStatus.getPermission().getGroupAction();
+        FsAction whOtherAction = warehouseStatus.getPermission().getOtherAction();
+        if(!warehouseGroup.equals(cmFs.getFileStatus(cmroot).getGroup())) {
+          cmFs.setOwner(cmroot, null, warehouseGroup);
+          cmFs.setPermission(cmroot, new FsPermission(whOwnerAction, whGroupAction, whOtherAction));
+        }
+      } else {
+        if(!warehouseGroup.equals(cmFs.getFileStatus(cmroot).getGroup())) {
+          List<AclEntry> aclList = Lists.newArrayList(
+                  new AclEntry.Builder().setScope(ACCESS).setType(USER).setPermission(FsAction.ALL).build(),
+                  new AclEntry.Builder().setScope(ACCESS).setType(GROUP).setPermission(FsAction.ALL).build(),
+                  new AclEntry.Builder().setScope(ACCESS).setType(OTHER).setPermission(FsAction.NONE).build());
+          aclList.add(new AclEntry.Builder().setScope(ACCESS).setType(GROUP).setName(warehouseGroup).
+                  setPermission(warehouseStatus.getPermission().getGroupAction()).build());
+          cmFs.setAcl(cmroot, aclList);
+        }
+      }
+    } catch (Exception e) {
+      LOG.error("Unable to set permissions corresponding to hive-warehouse on CMRoot: ", e);
     }
   }
 
