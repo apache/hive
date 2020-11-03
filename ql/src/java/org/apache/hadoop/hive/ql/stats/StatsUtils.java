@@ -36,6 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -1756,17 +1757,7 @@ public class StatsUtils {
    */
   @Deprecated
   public static long getBasicStatForTable(Table table, String statType) {
-    Map<String, String> params = table.getParameters();
-    long result = -1;
-
-    if (params != null) {
-      try {
-        result = Long.parseLong(params.get(statType));
-      } catch (NumberFormatException e) {
-        result = -1;
-      }
-    }
-    return result;
+    return parseLong(table.getParameters(), statType, -1);
   }
 
   /**
@@ -1784,19 +1775,28 @@ public class StatsUtils {
 
     List<Long> stats = Lists.newArrayList();
     for (Partition part : parts) {
-      Map<String, String> params = part.getParameters();
-      long result = 0;
-      if (params != null) {
-        try {
-          result = Long.parseLong(params.get(statType));
-        } catch (NumberFormatException e) {
-          result = 0;
-        }
-        stats.add(result);
-      }
+      stats.add(parseLong(part.getParameters(), statType, 0));
     }
     return stats;
   }
+
+  public static long parseLong(Map<String, String> params, String fieldName, int defaultVal) {
+    long result = defaultVal;
+    if (params != null) {
+      String val = params.get(fieldName);
+      if (!StringUtils.isBlank(val)) {
+        try {
+          result = Long.parseLong(val);
+        } catch (NumberFormatException e) {
+          // Pass-through. This should not happen and we will LOG it,
+          // but do not fail query.
+          LOG.warn("Error parsing {} value: {}", fieldName, val);
+        }
+      }
+    }
+    return result;
+  }
+
 
   /**
    * Compute raw data size from column statistics

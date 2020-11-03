@@ -311,22 +311,7 @@ public class BasicStats {
   }
 
   private long parseLong(String fieldName) {
-    Map<String, String> params = partish.getPartParameters();
-    long result = -1;
-
-    if (params != null) {
-      String val = params.get(fieldName);
-      if (!StringUtils.isBlank(val)) {
-        try {
-          result = Long.parseLong(val);
-        } catch (NumberFormatException e) {
-          // Pass-through. This should not happen and we will LOG it,
-          // but do not fail query.
-          LOG.warn("Error parsing {} value: {}", fieldName, val);
-        }
-      }
-    }
-    return result;
+    return StatsUtils.parseLong(partish.getPartParameters(), fieldName, -1);
   }
 
   public static BasicStats buildFrom(List<BasicStats> partStats) {
