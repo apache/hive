@@ -158,12 +158,7 @@ public class InPlaceUpdate {
 
 
     // Map 1 .......... container  SUCCEEDED      7          7        0        0       0       0
-    List<String> printReady = Lists.transform(monitor.rows(), new Function<List<String>, String>() {
-      @Override
-      public String apply(List<String> row) {
-        return String.format(VERTEX_FORMAT, row.toArray());
-      }
-    });
+    List<String> printReady = Lists.transform(monitor.rows(), row -> String.format(VERTEX_FORMAT, row.toArray()));
     reprintMultiLine(StringUtils.join(printReady, "\n"));
 
     // -------------------------------------------------------------------------------
