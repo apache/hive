@@ -145,11 +145,7 @@ public class MergeFileTask extends Task<MergeFileWork> implements Serializable,
       // submit the job
       JobClient jc = new JobClient(job);
 
-      String addedJars = Utilities.getResourceFiles(job,
-          SessionState.ResourceType.JAR);
-      if (!addedJars.isEmpty()) {
-        job.set("tmpjars", addedJars);
-      }
+      // There is no need for Mergefile Task to add extra jars.
 
       // make this client wait if job trcker is not behaving well.
       Throttle.checkJobTracker(job, LOG);
