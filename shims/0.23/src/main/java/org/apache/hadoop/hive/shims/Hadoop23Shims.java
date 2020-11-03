@@ -1256,9 +1256,14 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     private boolean isFileInHdfs(FileSystem fs, Path path) throws IOException {
       String hdfsScheme = "hdfs";
       boolean isHdfs = hdfsScheme.equalsIgnoreCase(path.toUri().getScheme());
-      // In case of viewhdfs we need to lookup where the actual file is to know
-      // the filesystem in use. The resolvePath is a sure shot way of knowing
-      // which file system the file is.
+      // The ViewHDFS supports that, any non-hdfs paths can be mounted as hdfs
+      // paths. Here HDFSEncryptionShim actually works only for hdfs paths. But
+      // in the case of ViewHDFS, paths can be with hdfs scheme, but they might
+      // actually resolve to other fs.
+      // ex: hdfs://ns1/test ---> o3fs://b.v.ozone1/test
+      // So, we need to lookup where the actual file is to know the filesystem
+      // in use. The resolvePath is a sure shot way of knowing which file system
+      // the file is.
       if (isHdfs && isMountedFs(fs)) {
         isHdfs = hdfsScheme.equals(fs.resolvePath(path).toUri().getScheme());
       }
