@@ -15,4 +15,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@except_nocbo
 POSTHOOK: Lineage: except_nocbo.id SCRIPT []
-FAILED: SemanticException Except and intersect operations are only supported with Cost Based Optimizations enabled. Turn on hive.cbo.enable
+FAILED: SemanticException EXCEPT and INTERSECT operations are only supported with Cost Based Optimizations enabled. Please set 'hive.cbo.enable' to true!
