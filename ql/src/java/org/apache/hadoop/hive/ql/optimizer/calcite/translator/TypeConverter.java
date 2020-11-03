@@ -63,8 +63,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
 
-import javax.annotation.Nullable;
-
 public class TypeConverter {
 
   private static final Map<String, HiveToken> calciteToHiveTypeNameMap;
@@ -302,7 +300,7 @@ public class TypeConverter {
     List<String> fNames = Lists.transform(rType.getFieldList(),
         new Function<RelDataTypeField, String>() {
           @Override
-          public String apply(@Nullable RelDataTypeField f) {
+          public String apply(RelDataTypeField f) {
             return f.getName();
           }
         });

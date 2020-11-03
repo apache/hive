@@ -119,7 +119,7 @@ import java.util.TreeSet;
 public class HiveSubQRemoveRelBuilder {
   private static final Function<RexNode, String> FN_TYPE =
       new Function<RexNode, String>() {
-        public String apply(@Nullable RexNode input) {
+        public String apply(RexNode input) {
           return input + ": " + input.getType();
         }
       };
