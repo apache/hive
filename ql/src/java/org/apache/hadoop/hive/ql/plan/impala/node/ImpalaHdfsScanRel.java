@@ -127,8 +127,11 @@ public class ImpalaHdfsScanRel extends ImpalaPlanRel {
 
     ImpalaBaseTableRef baseTblRef = new ImpalaBaseTableRef(tblRef, resolvedPath, basicAnalyzer);
 
+    // Fetch a sorted list of basic partitions such that when the scan ranges are computed
+    // by the HdfsScanNode, they are in some deterministic order. This allows the backend
+    // to schedule the scan ranges to different nodes in a more predictable manner.
     List<FeFsPartition> impalaPartitions =
-        impalaHdfsTable.getPartitions(prunedPartList.getBasicPartitions());
+        impalaHdfsTable.getPartitions(prunedPartList.getSortedBasicPartitions());
 
     TupleDescriptor tupleDesc =
         createTupleAndSlotDesc(baseTblRef, scan.getPrunedRowType(), basicAnalyzer);

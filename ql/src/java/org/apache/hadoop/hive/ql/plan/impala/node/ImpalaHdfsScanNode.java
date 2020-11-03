@@ -31,10 +31,14 @@ import org.apache.impala.catalog.FeFsPartition;
 import org.apache.impala.common.ImpalaException;
 import org.apache.impala.planner.HdfsScanNode;
 import org.apache.impala.planner.PlanNodeId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class ImpalaHdfsScanNode extends HdfsScanNode {
+  private static final Logger LOG = LoggerFactory.getLogger(ImpalaHdfsScanNode.class);
+
   private ImpalaNodeInfo nodeInfo;
 
   public ImpalaHdfsScanNode(PlanNodeId id, List<? extends FeFsPartition> partitions,
@@ -43,6 +47,15 @@ public class ImpalaHdfsScanNode extends HdfsScanNode {
     super(id, nodeInfo.getTupleDesc(), nodeInfo.getAssignedConjuncts(),
         partitions, hdfsTblRef, aggInfo, partConjuncts);
     this.nodeInfo = nodeInfo;
+    if (LOG.isDebugEnabled()) {
+      if (partitions != null && partitions.size() > 1) {
+        String names = "";
+        for (int i = 0; i < partitions.size() && i < 5; i++) {
+          names += partitions.get(i).getPartitionName() + " ";
+        }
+        LOG.debug("Table: " + hdfsTblRef.getTable().getName() + " First 5 partitions: " + names);
+      }
+    }
   }
 
   @Override

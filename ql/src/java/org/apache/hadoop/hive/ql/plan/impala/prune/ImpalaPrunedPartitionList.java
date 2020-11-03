@@ -25,18 +25,26 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaConjuncts;
+import org.apache.impala.catalog.HdfsPartition;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 /**
  * Extension of PrunedPartitionList containing objects specific for Impala.
+ * It is recommended that callers don't pre-sort the impalaBasicPartitions
+ * list supplied in the constructor because this class does the sorting the
+ * first time the list is accessed and is maintained sorted thereafter.
+ * Note: This class is not thread safe.
  */
 public class ImpalaPrunedPartitionList extends PrunedPartitionList {
   // "Basic" partitions is an Impala HdfsPartition object that only
   // contains the name (no data other than the name was fetched from
-  // HMS).
+  // HMS). See comments above about sortedness of this list
   private final List<ImpalaBasicPartition> impalaBasicPartitions;
+
+  private boolean isPartitionListSorted = false;
 
   // The Impala HdfsTable wrapper containing the real HdfsTable catalog
   // table.  Used to defer loading partition and filemetadata information
@@ -55,8 +63,16 @@ public class ImpalaPrunedPartitionList extends PrunedPartitionList {
     this.impalaConjuncts = impalaConjuncts;
   }
 
-  public List<ImpalaBasicPartition> getBasicPartitions() throws HiveException {
-    return impalaBasicPartitions;
+  /**
+   * Return an unmodifiable 'view' of the list of basic partitions sorted
+   * by their value
+   */
+  public List<ImpalaBasicPartition> getSortedBasicPartitions() {
+    if (!isPartitionListSorted) {
+      Collections.sort(impalaBasicPartitions, HdfsPartition.KV_COMPARATOR);
+      isPartitionListSorted = true;
+    }
+    return Collections.unmodifiableList(impalaBasicPartitions);
   }
 
   public ImpalaBasicHdfsTable getTable() throws HiveException {
