@@ -159,71 +159,75 @@ public class SharedWorkOptimizer extends Transform {
     // Gather information about the DPP table scans and store it in the cache
     gatherDPPTableScanOps(pctx, optimizerCache);
 
-    // Execute shared work optimization
-    new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables,
-        Mode.SubtreeMerge);
+    for (Entry<String, Long> tablePair : sortedTables) {
+      String tableName = tablePair.getKey();
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("After SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
-    }
-
-    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
-      // Execute extended shared work optimization
-      sharedWorkExtendedOptimization(pctx, optimizerCache);
+      // Execute shared work optimization
+      new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables,
+          Mode.SubtreeMerge, tableName);
 
       if (LOG.isDebugEnabled()) {
-        LOG.debug("After SharedWorkExtendedOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
+        LOG.debug("After SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
       }
-    }
 
-    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_SEMIJOIN_OPTIMIZATION)) {
-      // Map of dbName.TblName -> TSOperator
-      tableNameToOps = splitTableScanOpsByTable(pctx);
-      // We rank by size of table x number of reads
-      sortedTables = rankTablesByAccumulatedSize(pctx);
-
-      // Execute shared work optimization with semijoin removal
-      boolean optimized =
-          new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, tableNameToOps,
-              sortedTables, Mode.RemoveSemijoin);
-      if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
-        // If it was further optimized, execute a second round of extended shared work optimizer
+      if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
+        // Execute extended shared work optimization
         sharedWorkExtendedOptimization(pctx, optimizerCache);
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("After SharedWorkExtendedOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
+        }
       }
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("After SharedWorkSJOptimizer:\n"
-            + Operator.toString(pctx.getTopOps().values()));
+      if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_SEMIJOIN_OPTIMIZATION)) {
+        // Map of dbName.TblName -> TSOperator
+        tableNameToOps = splitTableScanOpsByTable(pctx);
+        // We rank by size of table x number of reads
+        sortedTables = rankTablesByAccumulatedSize(pctx);
+
+        // Execute shared work optimization with semijoin removal
+        boolean optimized = new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache,
+            tableNameToOps, sortedTables, Mode.RemoveSemijoin, tableName);
+        if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
+          // If it was further optimized, execute a second round of extended shared work optimizer
+          sharedWorkExtendedOptimization(pctx, optimizerCache);
+        }
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("After SharedWorkSJOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
+        }
       }
-    }
 
-    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
-      new BaseSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables,
-          Mode.SubtreeMerge);
-
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("After SharedWorkOptimizer merging TS schema:\n" + Operator.toString(pctx.getTopOps().values()));
-      }
-    }
-
-    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DPPUNION_OPTIMIZATION)) {
-      BaseSharedWorkOptimizer swo;
       if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
-        swo = new BaseSharedWorkOptimizer();
-      } else {
-        swo = new SchemaAwareSharedWorkOptimizer();
+        new BaseSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables,
+            Mode.SubtreeMerge, tableName);
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("After SharedWorkOptimizer merging TS schema:\n" + Operator.toString(pctx.getTopOps().values()));
+        }
       }
 
-      boolean optimized = swo.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables, Mode.DPPUnion);
+      if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DPPUNION_OPTIMIZATION)) {
+        BaseSharedWorkOptimizer swo;
+        if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
+          swo = new BaseSharedWorkOptimizer();
+        } else {
+          swo = new SchemaAwareSharedWorkOptimizer();
+        }
 
-      if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
-        // If it was further optimized, do a round of extended shared work optimizer
-        sharedWorkExtendedOptimization(pctx, optimizerCache);
+        boolean optimized =
+            swo.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, sortedTables, Mode.DPPUnion, tableName);
+
+        if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
+          // If it was further optimized, do a round of extended shared work optimizer
+          sharedWorkExtendedOptimization(pctx, optimizerCache);
+        }
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("After DPPUnion:\n" + Operator.toString(pctx.getTopOps().values()));
+        }
       }
 
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("After DPPUnion:\n" + Operator.toString(pctx.getTopOps().values()));
-      }
     }
 
     if(pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE)) {
@@ -362,14 +366,14 @@ public class SharedWorkOptimizer extends Transform {
 
     public boolean sharedWorkOptimization(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,
                                            ArrayListMultimap<String, TableScanOperator> tableNameToOps, List<Entry<String, Long>> sortedTables,
-                                           Mode mode) throws SemanticException {
+        Mode mode, String tableName) throws SemanticException {
       // Boolean to keep track of whether this method actually merged any TS operators
       boolean mergedExecuted = false;
 
       Multimap<String, TableScanOperator> existingOps = ArrayListMultimap.create();
       Set<Operator<?>> removedOps = new HashSet<>();
-      for (Entry<String, Long> tablePair : sortedTables) {
-        String tableName = tablePair.getKey();
+      //for (Entry<String, Long> tablePair : sortedTables)
+      {
         for (TableScanOperator discardableTsOp : tableNameToOps.get(tableName)) {
           if (removedOps.contains(discardableTsOp)) {
             LOG.debug("Skip {} as it has already been removed", discardableTsOp);
