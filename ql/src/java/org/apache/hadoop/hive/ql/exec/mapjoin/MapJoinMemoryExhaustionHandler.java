@@ -96,7 +96,8 @@ public class MapJoinMemoryExhaustionHandler {
         + tableContainerSize + "\tMemory usage:\t" + usedMemory + "\tpercentage:\t" + percentageNumberFormat.format(percentage);
     console.printInfo(msg);
     if(percentage > maxMemoryUsage) {
-      throw new MapJoinMemoryExhaustionError(msg);
+      String errorMsg = "Memory usage/max exceeded the threshold: " + percentageNumberFormat.format(maxMemoryUsage);
+      throw new MapJoinMemoryExhaustionError(errorMsg);
     }
    }
 }

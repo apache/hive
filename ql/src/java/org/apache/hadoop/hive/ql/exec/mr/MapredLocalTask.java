@@ -358,6 +358,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
       return exitVal;
     } catch (Exception e) {
+      setException(e);
       LOG.error("Exception: ", e);
       return (1);
     } finally {
@@ -392,6 +393,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       console.printInfo(Utilities.now() + "\tEnd of local task; Time Taken: "
           + Utilities.showTime(elapsed) + " sec.");
     } catch (Throwable throwable) {
+      setException(throwable);
       int retVal;
       String message;
       if (throwable instanceof OutOfMemoryError

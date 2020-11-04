@@ -317,6 +317,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
       return exitVal;
     } catch (Exception e) {
+      setException(e);
       LOG.error("Got exception", e);
       return (1);
     } finally {
