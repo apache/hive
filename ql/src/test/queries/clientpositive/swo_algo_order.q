@@ -38,7 +38,7 @@ alter table x1_date_dim update statistics set(
 'rawDataSize'='81449');
 
 
--- the following query is designed to produce a DPP plan
+select 'expected output here is to have 1 merged TS on SS while we still have 2 DD scans';
 explain 
 select   count(*) cnt
  from
