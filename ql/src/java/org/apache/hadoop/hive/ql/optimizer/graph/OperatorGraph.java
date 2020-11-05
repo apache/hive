@@ -17,7 +17,7 @@
  */
 
 
-package org.apache.hadoop.hive.ql.optimizer;
+package org.apache.hadoop.hive.ql.optimizer.graph;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HivePointLookupOptimizerRule.DiGraph;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
@@ -58,68 +57,6 @@ import com.google.common.collect.Sets;
  *  - connections to more easily consumable graph layout tools could help understand plans better
  */
 public class OperatorGraph {
-
-  /**
-   * A directed graph extended with support to check dag property.
-   */
-  static class DagGraph<V, E> extends DiGraph<V, E> {
-
-    static class DagNode<V, E> extends Node<V, E> {
-      int dagIdx = 0;
-      public DagNode(V v) {
-        super(v);
-      }
-
-      @Override
-      public void addEdge(Edge<V, E> edge) {
-        if (edge.s == this) {
-          DagNode<V, E> t = (DagNode<V, E>) edge.t;
-          ensureDagIdxAtLeast(t.dagIdx + 1);
-          if (t.dagIdx > dagIdx) {
-            throw new IllegalArgumentException("adding this edge would violate dag properties");
-          }
-        }
-        super.addEdge(edge);
-      }
-
-      void ensureDagIdxAtLeast(int min) {
-        if (dagIdx >= min) {
-          return;
-        }
-        dagIdx = min;
-        for (Edge<V, E> e : edges) {
-          if(e.t == this) {
-            DagNode<V, E> s = (DagNode<V, E>) e.s;
-            s.ensureDagIdxAtLeast(min + 1);
-          }
-        }
-      }
-    }
-
-    @Override
-    protected Node<V, E> newNode(V s) {
-      return new DagNode<V, E>(s);
-    }
-
-    public int getDepth(V o1) {
-      Set<Node<V, E>> active = new HashSet<>();
-      active.add(nodeOf(o1));
-      int depth = 0;
-      while(!active.isEmpty()) {
-        Set<Node<V, E>> newActive = new HashSet<>();
-        for (Node<V, E> node : active) {
-          Set<V> p = successors(node.v);
-          for (V n : p) {
-            newActive.add(nodeOf(n));
-          }
-        }
-        depth++;
-        active = newActive;
-      }
-      return depth;
-    }
-
-  }
 
   DagGraph<Operator<?>, OpEdge> g;
 
