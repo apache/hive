@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
@@ -430,7 +431,7 @@ public class SharedWorkOptimizer extends Transform {
               // about the part of the tree that can be merged. We need to regenerate the
               // cache because semijoin operators have been removed
               sr = extractSharedOptimizationInfoForRoot(pctx, optimizerCache, retainableTsOp, discardableTsOp, false);
-              if (!isResultValid(sr)) {
+              if (!validPreConditions(pctx, optimizerCache, sr)) {
                 continue;
               }
             } else if (mode == Mode.SubtreeMerge) {
@@ -1247,12 +1248,6 @@ public class SharedWorkOptimizer extends Transform {
       SharedWorkOptimizerCache optimizerCache, TableScanOperator tsOp1, TableScanOperator tsOp2)
       throws SemanticException {
 
-    List<Operator<?>> dppsOp1 = new ArrayList<>(optimizerCache.tableScanToDPPSource.get(tsOp1));
-    List<Operator<?>> dppsOp2 = new ArrayList<>(optimizerCache.tableScanToDPPSource.get(tsOp2));
-
-    if (dppsOp1.isEmpty() || dppsOp2.isEmpty()) {
-      return false;
-    }
     if (!areSupportedDppUnionOps(pctx, optimizerCache, tsOp1, tsOp2)) {
       return false;
     }
@@ -1265,6 +1260,9 @@ public class SharedWorkOptimizer extends Transform {
   private static boolean areSupportedDppUnionOps(ParseContext pctx, SharedWorkOptimizerCache cache, TableScanOperator tsOp1,
       TableScanOperator tsOp2) {
     Collection<Operator<?>> dppOps = cache.tableScanToDPPSource.get(tsOp1);
+    if (dppOps.isEmpty()) {
+      return false;
+    }
     for (Operator<?> op : dppOps) {
       if (op instanceof ReduceSinkOperator) {
         ReduceSinkOperator semijoinRSOp = (ReduceSinkOperator) op;
@@ -1273,27 +1271,11 @@ public class SharedWorkOptimizer extends Transform {
           return false;
         }
       } else if (op.getConf() instanceof DynamicPruningEventDesc) {
-        // ok
+        return false;
       } else {
         return false;
       }
-      Set<Operator<?>> ascendants = findAscendantWorkOperators(pctx, cache, op);
-      if (ascendants.contains(tsOp2)) {
-        // This should not happen, we cannot merge
-        return false;
-      }
-
     }
-    final Set<Operator<?>> workOps1 = findWorkOperators(cache, tsOp1);
-    for (Operator<?> op : workOps1) {
-      if (op instanceof UnionOperator) {
-        return false;
-      }
-      if (op instanceof DummyStoreOperator) {
-        return false;
-      }
-    }
-
     return true;
   }
 
@@ -1668,7 +1650,12 @@ public class SharedWorkOptimizer extends Transform {
   private static boolean validPreConditions(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,
           SharedResult sr) {
 
-    if (!isResultValid(sr)) {
+    // We check whether merging the works would cause the size of
+    // the data in memory grow too large.
+    // TODO: Currently ignores GBY and PTF which may also buffer data in memory.
+    if (sr.dataSize > sr.maxDataSize) {
+      // Size surpasses limit, we cannot convert
+      LOG.debug("accumulated data size: {} / max size: {}", sr.dataSize, sr.maxDataSize);
       return false;
     }
 
@@ -1764,18 +1751,13 @@ public class SharedWorkOptimizer extends Transform {
             || !Collections.disjoint(workOps1, descendantWorksOps2)) {
       return false;
     }
-    return true;
-  }
 
-  private static boolean isResultValid(SharedResult sr) {
-    // We check whether merging the works would cause the size of
-    // the data in memory grow too large.
-    // TODO: Currently ignores GBY and PTF which may also buffer data in memory.
-    if (sr.dataSize > sr.maxDataSize) {
-      // Size surpasses limit, we cannot convert
-      LOG.debug("accumulated data size: {} / max size: {}", sr.dataSize, sr.maxDataSize);
+    OperatorGraph og = new OperatorGraph(pctx);
+    if (!og.mayMerge(op1, op2)) {
+      LOG.debug("merging {} and {} would violate dag properties", op1, op2);
       return false;
     }
+
     return true;
   }
 
