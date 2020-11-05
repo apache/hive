@@ -1142,6 +1142,7 @@ public class MetaStoreServerUtils {
     ret.setSharedSDPartitionSpec(sharedSDPartSpec);
     ret.setDbName(table.getDbName());
     ret.setTableName(table.getTableName());
+    ret.setCatName(table.getCatName());
 
     return ret;
   }
