@@ -984,7 +984,7 @@ class MetaStoreDirectSql {
         part.setLastAccessTime(MetastoreDirectSqlUtils.extractSqlInt(fields[5]));
       }
       Long writeId = MetastoreDirectSqlUtils.extractSqlLong(fields[14]);
-      if (writeId != null) {
+      if (writeId != null && writeId>0) {
         part.setWriteId(writeId);
       }
       partitions.put(partitionId, part);
