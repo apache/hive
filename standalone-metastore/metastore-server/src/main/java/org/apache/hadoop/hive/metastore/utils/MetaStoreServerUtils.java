@@ -1111,6 +1111,7 @@ public class MetaStoreServerUtils {
     }
     if (!partitionsOutsideTableDir.isEmpty()) {
       PartitionSpec partListSpec = new PartitionSpec();
+      partListSpec.setCatName(table.getCatName());
       partListSpec.setDbName(table.getDbName());
       partListSpec.setTableName(table.getTableName());
       partListSpec.setPartitionList(new PartitionListComposingSpec(partitionsOutsideTableDir));
