@@ -426,7 +426,7 @@ public class SharedWorkOptimizer extends Transform {
               // about the part of the tree that can be merged. We need to regenerate the
               // cache because semijoin operators have been removed
               sr = extractSharedOptimizationInfoForRoot(pctx, optimizerCache, retainableTsOp, discardableTsOp, false);
-              if (!isResultValid(sr)) {
+              if (!validPreConditions(pctx, optimizerCache, sr)) {
                 continue;
               }
             } else if (mode == Mode.SubtreeMerge) {
@@ -1664,7 +1664,12 @@ public class SharedWorkOptimizer extends Transform {
   private static boolean validPreConditions(ParseContext pctx, SharedWorkOptimizerCache optimizerCache,
           SharedResult sr) {
 
-    if (!isResultValid(sr)) {
+    // We check whether merging the works would cause the size of
+    // the data in memory grow too large.
+    // TODO: Currently ignores GBY and PTF which may also buffer data in memory.
+    if (sr.dataSize > sr.maxDataSize) {
+      // Size surpasses limit, we cannot convert
+      LOG.debug("accumulated data size: {} / max size: {}", sr.dataSize, sr.maxDataSize);
       return false;
     }
 
@@ -1758,18 +1763,6 @@ public class SharedWorkOptimizer extends Transform {
             findDescendantWorkOperators(pctx, optimizerCache, op2, sr.discardableInputOps);
     if (!Collections.disjoint(descendantWorksOps1, workOps2)
             || !Collections.disjoint(workOps1, descendantWorksOps2)) {
-      return false;
-    }
-    return true;
-  }
-
-  private static boolean isResultValid(SharedResult sr) {
-    // We check whether merging the works would cause the size of
-    // the data in memory grow too large.
-    // TODO: Currently ignores GBY and PTF which may also buffer data in memory.
-    if (sr.dataSize > sr.maxDataSize) {
-      // Size surpasses limit, we cannot convert
-      LOG.debug("accumulated data size: {} / max size: {}", sr.dataSize, sr.maxDataSize);
       return false;
     }
     return true;
