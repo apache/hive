@@ -16,6 +16,7 @@
  * limitations under the License.
  */
 
+
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.File;
@@ -43,6 +44,19 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 
 import com.google.common.collect.Sets;
 
+/**
+ * Represents the Operator tree as a graph.
+ *
+ * The Operator-s already have graph like parent/child relationships.
+ * However there are some information which might be skewed away in the configuration (like SJ connections).
+ * And the actual execution time "vertex boundaries" are only there implicitly.
+ *
+ * The goal of this class is to parse in the different informations and provide some operations above it:
+ *  - decompose the graph into "clusters" ; these are the runtime equvivalent of execution vertices.
+ *  - ensures that the plan has a valid DAG property
+ *  - hidden edges are also added - for ex: "semijoin"
+ *  - connections to more easily consumable graph layout tools could help understand plans better
+ */
 public class OperatorGraph {
 
   /**
