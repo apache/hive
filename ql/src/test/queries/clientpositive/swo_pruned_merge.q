@@ -6,14 +6,14 @@ insert into t values ('2008-04-08',11);
 
 set hive.tez.dynamic.partition.pruning=true;
 
-select '2 scans';
+select 'involved partitions differ: expected 2 separate scans (could be improved)';
 explain
 select count(*) from srcpart where ds = '2008-04-08' and hr = 11
 union 
 select count(*) from srcpart where key > '3';
 
 
-select '???';
+select 'expected 1 as both scans all the partitions';
 explain
 select count(*) from srcpart 
   join t on (srcpart.ds = t.ds and srcpart.hr = t.hr)
