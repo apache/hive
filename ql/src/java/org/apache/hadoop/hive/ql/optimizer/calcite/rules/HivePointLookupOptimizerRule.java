@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -204,7 +205,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
 
     protected static class Node<V, E> {
       public final Set<Edge<V, E>> edges;
-      final V v;
+      public final V v;
 
       public Node(V v) {
         edges = new LinkedHashSet<>();
@@ -230,6 +231,24 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
         return null;
       }
 
+      public int degree() {
+        return edges.size();
+      }
+
+      public int inDegree() {
+        Iterator<Edge<V, E>> it = edges.iterator();
+        int cnt = 0;
+        while (it.hasNext()) {
+          Edge<V, E> edge = it.next();
+          if (edge.t == this) {
+            cnt++;
+          }
+        }
+        return cnt;
+      }
+
+
+
     }
 
     private final Map<V, Node<V, E>> nodes;
@@ -246,7 +265,7 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       //      nodeT.addEdge(edge);
     }
 
-    private Node<V, E> nodeOf(V s) {
+    public Node<V, E> nodeOf(V s) {
       Node<V, E> node = nodes.get(s);
       if (node == null) {
         nodes.put(s, node = newNode(s));
@@ -292,10 +311,44 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
       return ret;
     }
 
+    public int degree(V n) {
+      Node<V, E> node = nodes.get(n);
+      return node.degree();
+    }
+
+    public int inDegree(V n) {
+      Node<V, E> node = nodes.get(n);
+      return node.inDegree();
+    }
+
     public E removeEdge(V s, V t) {
       nodeOf(s).removeEdge(s, t);
       return nodeOf(t).removeEdge(s, t);
     }
+
+    public void impode(V n, E edge) {
+      Set<V> preds = predecessors(n);
+      Set<V> succ = successors(n);
+
+      for (V u : preds) {
+        for (V v : succ) {
+          putEdgeValue(u, v, edge);
+        }
+      }
+      delete(n);
+
+
+    }
+
+    public void delete(V n) {
+      Node<V, E> node = nodeOf(n);
+      Set<Edge<V, E>> edges = new HashSet<>(node.edges);
+      for (Edge<V, E> edge : edges) {
+        removeEdge(edge.s.v, edge.t.v);
+      }
+      nodes.remove(n);
+    }
+
   }
 
   /**
