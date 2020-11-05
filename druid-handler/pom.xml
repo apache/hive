@@ -29,6 +29,7 @@
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
+    <druid.guava.version>16.0.1</druid.guava.version>
   </properties>
 
   <dependencies>
@@ -52,6 +53,10 @@
           <artifactId>*</artifactId>
         </exclusion>
         <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
+        <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-core</artifactId>
         </exclusion>
@@ -66,6 +71,11 @@
       </exclusions>
     </dependency>
     <!-- inter-project -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${druid.guava.version}</version>
+    </dependency>
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
@@ -202,6 +212,10 @@
                   <groupId>org.slf4j</groupId>
                   <artifactId>slf4j-log4j12</artifactId>
               </exclusion>
+              <exclusion>
+                  <groupId>com.google.guava</groupId>
+                  <artifactId>guava</artifactId>
+              </exclusion>
                <exclusion>
                   <groupId>commons-beanutils</groupId>
                   <artifactId>commons-beanutils</artifactId>
@@ -233,6 +247,10 @@
         <exclusion>
           <groupId>io.netty</groupId>
           <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
         </exclusion>
         <exclusion>
           <groupId>com.fasterxml.jackson.core</groupId>
@@ -348,6 +366,7 @@
                       <include>com.fasterxml.jackson.core:*</include>
                       <include>com.fasterxml.jackson.datatype:*</include>
                       <include>com.fasterxml.jackson.dataformat:*</include>
+                      <include>com.google.guava:*</include>
                       <include>it.unimi.dsi:*</include>
                       <include>org.jdbi:*</include>
                       <include>net.jpountz.lz4:*</include>
