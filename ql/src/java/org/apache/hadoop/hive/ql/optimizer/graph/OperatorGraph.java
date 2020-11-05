@@ -234,7 +234,7 @@ public class OperatorGraph {
     return member.toString();
   }
 
-  boolean mayMerge(Operator<?> opA, Operator<?> opB) {
+  public boolean mayMerge(Operator<?> opA, Operator<?> opB) {
     try {
       g.putEdgeValue(opA, opB, new OpEdge(EdgeType.TEST));
       g.removeEdge(opA, opB);
@@ -249,7 +249,7 @@ public class OperatorGraph {
     }
   }
 
-  public int getDepth(Operator o1) {
+  public int getDepth(Operator<?> o1) {
     return g.getDepth(o1);
   }
 

@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph;
 import org.apache.hadoop.hive.ql.parse.GenTezUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
@@ -1746,6 +1747,13 @@ public class SharedWorkOptimizer extends Transform {
             || !Collections.disjoint(workOps1, descendantWorksOps2)) {
       return false;
     }
+
+    OperatorGraph og = new OperatorGraph(pctx);
+    if (!og.mayMerge(op1, op2)) {
+      LOG.debug("merging {} and {} would violate dag properties", op1, op2);
+      return false;
+    }
+
     return true;
   }
 
