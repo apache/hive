@@ -1,5 +1,6 @@
 --! qt:dataset:srcpart
 set hive.tez.dynamic.partition.pruning=false;
+set hive.auto.convert.join=false;
 
 create table t (ds string,hr int);
 insert into t values ('2008-04-08',11);
