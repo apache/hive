@@ -1243,12 +1243,6 @@ public class SharedWorkOptimizer extends Transform {
       SharedWorkOptimizerCache optimizerCache, TableScanOperator tsOp1, TableScanOperator tsOp2)
       throws SemanticException {
 
-    List<Operator<?>> dppsOp1 = new ArrayList<>(optimizerCache.tableScanToDPPSource.get(tsOp1));
-    List<Operator<?>> dppsOp2 = new ArrayList<>(optimizerCache.tableScanToDPPSource.get(tsOp2));
-
-    if (dppsOp1.isEmpty() || dppsOp2.isEmpty()) {
-      return false;
-    }
     if (!areSupportedDppUnionOps(pctx, optimizerCache, tsOp1, tsOp2)) {
       return false;
     }
@@ -1261,6 +1255,9 @@ public class SharedWorkOptimizer extends Transform {
   private static boolean areSupportedDppUnionOps(ParseContext pctx, SharedWorkOptimizerCache cache, TableScanOperator tsOp1,
       TableScanOperator tsOp2) {
     Collection<Operator<?>> dppOps = cache.tableScanToDPPSource.get(tsOp1);
+    if (dppOps.isEmpty()) {
+      return false;
+    }
     for (Operator<?> op : dppOps) {
       if (op instanceof ReduceSinkOperator) {
         ReduceSinkOperator semijoinRSOp = (ReduceSinkOperator) op;
@@ -1269,27 +1266,11 @@ public class SharedWorkOptimizer extends Transform {
           return false;
         }
       } else if (op.getConf() instanceof DynamicPruningEventDesc) {
-        // ok
+        return false;
       } else {
         return false;
       }
-      Set<Operator<?>> ascendants = findAscendantWorkOperators(pctx, cache, op);
-      if (ascendants.contains(tsOp2)) {
-        // This should not happen, we cannot merge
-        return false;
-      }
-
     }
-    final Set<Operator<?>> workOps1 = findWorkOperators(cache, tsOp1);
-    for (Operator<?> op : workOps1) {
-      if (op instanceof UnionOperator) {
-        return false;
-      }
-      if (op instanceof DummyStoreOperator) {
-        return false;
-      }
-    }
-
     return true;
   }
 
