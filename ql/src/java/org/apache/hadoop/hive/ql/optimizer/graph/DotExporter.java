@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.curator.shaded.com.google.common.base.Joiner;
+import com.google.common.base.Joiner;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
