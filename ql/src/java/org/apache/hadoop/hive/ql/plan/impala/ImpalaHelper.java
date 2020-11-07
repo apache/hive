@@ -236,7 +236,11 @@ public class ImpalaHelper {
     filterUnsupportedImpalaQueryOptions(sessionConf);
     updateImpalaQueryOptions(sessionConf);
 
-    ImpalaSession session = ImpalaSessionManager.getInstance().getSession(conf);
+    ImpalaSessionManager mgr = ImpalaSessionManager.getInstance();
+    ImpalaSession session = mgr.getSession(conf);
+    // make sure cluster membership snapshot is not stale
+    mgr.ensureCurrentMembership(session);
+    timeline.markEvent("Set current executor membership");
 
     // Collect the option settings that are returned in the HS2 session
     // config and generate a comma separated string apply using FeSupport

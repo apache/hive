@@ -19,9 +19,12 @@ package org.apache.hadoop.hive.ql.exec.impala;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import org.apache.hive.common.util.ShutdownHookManager;
 import org.apache.impala.thrift.TUpdateExecutorMembershipRequest;
 import org.apache.impala.util.ExecutorMembershipSnapshot;
@@ -45,6 +48,18 @@ public class ImpalaSessionManager {
   private Set<ImpalaSession> createdSessions = Collections.synchronizedSet(new HashSet<ImpalaSession>());
   private volatile boolean inited = false;
 
+  // A cluster membership cache.
+  private LoadingCache<MembershipCacheKey, ExecutorMembershipSnapshot> membershipCache;
+
+  // The cache expiration is chosen based on a couple of factors:
+  //   1. Single node removal or addition is unlikely to change plans significantly, so we
+  //      don't want the (potentially small) overhead of re-loading the cache in such cases.
+  //   2. On a kubernetes platform it may take couple of minutes for a 10 node cluster to be
+  //      brought up either at startup or during auto-scaling..hence choosing an expiration
+  //      time based on that seems reasonable
+  // TODO: CDPD-19122: Make the cluster membership refresh interval configurable
+  private static final int EXPIRATION_SECS = 60;
+
   private static ImpalaSessionManager instance;
 
   static {
@@ -59,6 +74,65 @@ public class ImpalaSessionManager {
         }
       }
     });
+  }
+
+  /**
+   * A MembershipCacheKey is a placeholder for an impala session object. The session
+   * object can keep changing via the setter but a static instance of MembershipCacheKey
+   * allows cache lookups based on this instance rather than individual sessions.
+   */
+  private static class MembershipCacheKey {
+    public static MembershipCacheKey INSTANCE = new MembershipCacheKey();
+    private ImpalaSession session;
+    private MembershipCacheKey() {
+    }
+    public void setSession(ImpalaSession session) {
+      this.session = session;
+    }
+    public ImpalaSession getSession() {
+      return session;
+    }
+  }
+
+  /**
+   * Ensure that the supplied session has the current executor membership snapshot.
+   */
+  public synchronized void ensureCurrentMembership(ImpalaSession session) {
+    MembershipCacheKey.INSTANCE.setSession(session);
+    // The retrieval from the loading cache will automatically trigger an update of the
+    // ExecutorMembershipSnapshot which is a singleton object exposed to all sessions.
+    membershipCache.getUnchecked(MembershipCacheKey.INSTANCE);
+    MembershipCacheKey.INSTANCE.setSession(null);
+  }
+
+  /**
+   * Create a cache for executor membership snapshot that is updated based
+   * on the expiration settings. The cache has exactly 1 entry in it because
+   * there is a single ExecutorMembershipSnapshot in the whole HS2 process.
+   * We leverage the loading cache because it allows us to delegate the expiration
+   * and Futures based loading to the cache instead of managing it ourselves.
+   */
+  private void createMembershipCache(ImpalaSession session) {
+    CacheLoader<MembershipCacheKey, ExecutorMembershipSnapshot> loader =
+        new CacheLoader<MembershipCacheKey, ExecutorMembershipSnapshot>() {
+          //  load() will only be called in response to a get() from the cache
+          //  and the only way a get() would be called is from a valid Impala
+          //  session. If the session terminated early due to an exception,
+          //  the get and load would not be called for that particular session.
+          @Override
+          public ExecutorMembershipSnapshot load(MembershipCacheKey key) throws HiveException {
+            TUpdateExecutorMembershipRequest req = key.getSession().getExecutorMembership();
+            ExecutorMembershipSnapshot.update(req);
+            return ExecutorMembershipSnapshot.getCluster();
+          }
+        };
+    membershipCache = CacheBuilder.newBuilder()
+        .expireAfterWrite(EXPIRATION_SECS, TimeUnit.SECONDS)
+        .maximumSize(1)
+        .build(loader);
+
+    // init the cache for the first time
+    ensureCurrentMembership(session);
   }
 
   public static synchronized ImpalaSessionManager getInstance()
@@ -83,10 +157,7 @@ public class ImpalaSessionManager {
         BackendConfig.create(cfg,
             false /* don't initialize SqlScanner or AuthToLocal */);
 
-        // update the executor membership snapshot
-        // TODO: CDPD-15339: create a session level cache for this snapshot
-        final TUpdateExecutorMembershipRequest req = session.getExecutorMembership();
-        ExecutorMembershipSnapshot.update(req);
+        createMembershipCache(session);
       }
       FeSupport.loadLibrary(true);
     } catch(Exception e) {
