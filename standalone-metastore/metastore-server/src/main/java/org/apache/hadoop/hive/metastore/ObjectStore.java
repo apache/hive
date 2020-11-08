@@ -2611,7 +2611,11 @@ public class ObjectStore implements RawStore, Configurable {
         mpart.getLastAccessTime(), convertToStorageDescriptor(mpart.getSd(), false, isAcidTable),
         params);
     p.setCatName(catName);
-    p.setWriteId(mpart.getWriteId());
+    if(mpart.getWriteId()>0) {
+      p.setWriteId(mpart.getWriteId());
+    }else {
+      p.setWriteId(-1L);
+    }
     return p;
   }
 
@@ -2626,7 +2630,11 @@ public class ObjectStore implements RawStore, Configurable {
         mpart.getCreateTime(), mpart.getLastAccessTime(),
         convertToStorageDescriptor(mpart.getSd(), false, isAcidTable), params);
     p.setCatName(catName);
-    p.setWriteId(mpart.getWriteId());
+    if(mpart.getWriteId()>0) {
+      p.setWriteId(mpart.getWriteId());
+    }else {
+      p.setWriteId(-1L);
+    }
     return p;
   }
 
