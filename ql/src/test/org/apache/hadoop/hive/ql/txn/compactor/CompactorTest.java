@@ -24,6 +24,8 @@ import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -36,6 +38,7 @@ import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
@@ -50,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
+import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -79,6 +83,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -602,11 +607,23 @@ public abstract class CompactorTest {
     txnHandler.compact(rqst);
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
     ci.runAs = System.getProperty("user.name");
-    long compactTxn = openTxn(TxnType.COMPACTION);
-    txnHandler.updateCompactorState(ci, compactTxn);
+    long compactorTxnId = openTxn(TxnType.COMPACTION);
+    // Need to create a valid writeIdList to set the highestWriteId in ci
+    ValidTxnList validTxnList = TxnCommonUtils.createValidReadTxnList(txnHandler.getOpenTxns(), compactorTxnId);
+    GetValidWriteIdsRequest writeIdsRequest = new GetValidWriteIdsRequest();
+    writeIdsRequest.setValidTxnList(validTxnList.writeToString());
+    writeIdsRequest
+        .setFullTableNames(Collections.singletonList(TxnUtils.getFullTableName(rqst.getDbname(), rqst.getTablename())));
+    // with this ValidWriteIdList is capped at whatever HWM validTxnList has
+    ValidCompactorWriteIdList tblValidWriteIds = TxnUtils
+        .createValidCompactWriteIdList(txnHandler.getValidWriteIds(writeIdsRequest).getTblValidWriteIds().get(0));
+
+    ci.highestWriteId = tblValidWriteIds.getHighWatermark();
+    txnHandler.updateCompactorState(ci, compactorTxnId);
     txnHandler.markCompacted(ci);
-    txnHandler.commitTxn(new CommitTxnRequest(compactTxn));
+    txnHandler.commitTxn(new CommitTxnRequest(compactorTxnId));
     Thread.sleep(MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
-    return compactTxn;
+    return compactorTxnId;
   }
+
 }
