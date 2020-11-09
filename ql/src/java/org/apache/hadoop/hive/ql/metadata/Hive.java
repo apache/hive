@@ -4866,7 +4866,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private void replaceFiles(Path tablePath, Path srcf, Path destf, Path oldPath, HiveConf conf,
           boolean isSrcLocal, boolean purge, List<Path> newFiles, PathFilter deletePathFilter,
       boolean isNeedRecycle, boolean isManaged, boolean isInsertOverwrite) throws HiveException {
-    try (FileSystem destFs = destf.getFileSystem(conf)) {
+    try {
+
+      FileSystem destFs = destf.getFileSystem(conf);
       // check if srcf contains nested sub-directories
       FileStatus[] srcs;
       FileSystem srcFs;

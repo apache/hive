@@ -763,7 +763,7 @@ public class HiveStreamingConnection implements StreamingConnection {
       LOG.debug("Write notification log is ignored as dml event logging is disabled.");
       return;
     }
-    try (FileSystem fs = tableObject.getDataLocation().getFileSystem(conf)) {
+    try {
       // Traverse the write paths for the current streaming connection and add one write notification
       // event per table or partitions.
       // For non-partitioned table, there will be only one entry in writePath and corresponding
@@ -774,6 +774,8 @@ public class HiveStreamingConnection implements StreamingConnection {
         LOG.debug("TxnId: " + currentTxnId + ", WriteId: " + currentWriteId
                 + " - Logging write event for the files in path " + writeInfo.getWriteDir());
 
+        // List the new files added inside the write path (delta directory).
+        FileSystem fs = tableObject.getDataLocation().getFileSystem(conf);
         List<Path> newFiles = new ArrayList<>();
         Hive.listFilesInsideAcidDirectory(writeInfo.getWriteDir(), fs, newFiles);
 
