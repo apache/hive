@@ -30,11 +30,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -156,6 +158,15 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     }
   }
 
+  @VisibleForTesting
+  public static synchronized void resetCleaner(HiveConf conf) throws Exception {
+    if(cleaner != null && conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)){
+      cleaner.stopRun();
+      cleaner = null;
+      init(conf);
+    }
+  }
+
   public DbNotificationListener(Configuration config) throws MetaException {
     super(config);
     conf = config;
@@ -179,8 +190,31 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
           TimeUnit.SECONDS);
       MetastoreConf.setTimeVar(getConf(), MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, time,
           TimeUnit.SECONDS);
-      cleaner.setTimeToLive(MetastoreConf.getTimeVar(getConf(),
-          MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, TimeUnit.SECONDS));
+      boolean isReplEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.REPLCMENABLED);
+      if(!isReplEnabled){
+        cleaner.setTimeToLive(MetastoreConf.getTimeVar(getConf(), ConfVars.EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
+    } else if (key.equals(ConfVars.REPL_EVENT_DB_LISTENER_TTL.toString()) ||
+            key.equals(ConfVars.REPL_EVENT_DB_LISTENER_TTL.getHiveName())) {
+      long time = MetastoreConf.convertTimeStr(tableEvent.getNewValue(), TimeUnit.SECONDS,
+              TimeUnit.SECONDS);
+      boolean isReplEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.REPLCMENABLED);
+      if(isReplEnabled){
+        cleaner.setTimeToLive(time);
+      }
+    }
+
+    if (key.equals(ConfVars.REPLCMENABLED.toString()) || key.equals(ConfVars.REPLCMENABLED.getHiveName())) {
+      boolean isReplEnabled = MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED);
+      if(isReplEnabled){
+        cleaner.setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.REPL_EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
+      else {
+        cleaner.setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
     }
 
     if (key.equals(ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL.toString()) ||
@@ -1133,13 +1167,21 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   private static class CleanerThread extends Thread {
     private RawStore rs;
     private int ttl;
+    private boolean shouldRun = true;
     private long sleepTime;
 
     CleanerThread(Configuration conf, RawStore rs) {
       super("DB-Notification-Cleaner");
       this.rs = rs;
-      setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_TTL,
-          TimeUnit.SECONDS));
+      boolean isReplEnabled = MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED);
+      if(isReplEnabled){
+        setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.REPL_EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
+      else {
+        setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
       setCleanupInterval(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL,
               TimeUnit.MILLISECONDS));
       setDaemon(true);
@@ -1147,7 +1189,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
     @Override
     public void run() {
-      while (true) {
+      while (shouldRun) {
         try {
           rs.cleanNotificationEvents(ttl);
           rs.cleanWriteNotificationEvents(ttl);
@@ -1178,5 +1220,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       sleepTime = configInterval;
     }
 
+    @VisibleForTesting
+    private synchronized void stopRun(){
+      shouldRun = false;
+    }
   }
 }
