@@ -49,9 +49,6 @@ import java.util.Objects;
 public class ImpalaFunctionSignature {
 
   private enum SqlTypeOrdering {
-    CHAR,
-    VARCHAR,
-    STRING,
     BOOLEAN,
     TINYINT,
     SMALLINT,
@@ -59,6 +56,9 @@ public class ImpalaFunctionSignature {
     BIGINT,
     FLOAT,
     DOUBLE,
+    CHAR,
+    VARCHAR,
+    STRING,
     DECIMAL,
     DATE,
     TIMESTAMP
