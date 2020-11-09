@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
@@ -26,6 +27,10 @@ import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.AclEntry;
+import org.apache.hadoop.fs.permission.AclStatus;
+import static org.apache.hadoop.fs.permission.AclEntryScope.ACCESS;
+import static org.apache.hadoop.fs.permission.AclEntryType.GROUP;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.ReplChangeManager.RecycleType;
@@ -42,6 +47,7 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -73,6 +79,7 @@ public class TestMetaStoreMultipleEncryptionZones {
         //Create secure cluster
         conf = new Configuration();
         conf.set("hadoop.security.key.provider.path", "jceks://file" + jksFile);
+        conf.set("dfs.namenode.acls.enabled", "true");
         miniDFSCluster = new MiniDFSCluster.Builder(conf).numDataNodes(1).format(true).build();
         DFSTestUtil.createKey("test_key_cm", miniDFSCluster, conf);
         DFSTestUtil.createKey("test_key_db", miniDFSCluster, conf);
@@ -1344,6 +1351,148 @@ public class TestMetaStoreMultipleEncryptionZones {
                     !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part31.getName(), fileChksum31,
                             ReplChangeManager.getInstance(conf).getCmRoot(part31).toString())) &&
                     !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfCmClearer, part32.getName(), fileChksum32,
+                            ReplChangeManager.getInstance(conf).getCmRoot(part32).toString()))) {
+                cleared = true;
+            }
+        } while (!cleared);
+    }
+
+    @Test
+    public void testCmRootAclPermissions() throws Exception {
+        HiveConf hiveConfAclPermissions = new HiveConf(TestReplChangeManager.class);
+        hiveConfAclPermissions.setBoolean(HiveConf.ConfVars.REPLCMENABLED.varname, true);
+        hiveConfAclPermissions.setInt(CommonConfigurationKeysPublic.FS_TRASH_INTERVAL_KEY, 60);
+        hiveConfAclPermissions.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname,
+                "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort()
+                        + HiveConf.ConfVars.METASTOREWAREHOUSE.defaultStrVal);
+
+        String cmRootAclPermissions = "hdfs://" + miniDFSCluster.getNameNode().getHostAndPort() + "/cmRootAclPermissions";
+        hiveConfAclPermissions.set(HiveConf.ConfVars.REPLCMDIR.varname, cmRootAclPermissions);
+        Warehouse warehouseCmPermissions = new Warehouse(hiveConfAclPermissions);
+        FileSystem cmfs = new Path(cmRootAclPermissions).getFileSystem(hiveConfAclPermissions);
+        cmfs.mkdirs(warehouseCmPermissions.getWhRoot());
+
+        FileSystem fsWarehouse = warehouseCmPermissions.getWhRoot().getFileSystem(hiveConfAclPermissions);
+        //change the group of warehouse for testing
+        Path warehouse = new Path(hiveConfAclPermissions.get(HiveConf.ConfVars.METASTOREWAREHOUSE.varname));
+        fsWarehouse.setOwner(warehouse, null, "testgroup");
+
+        long now = System.currentTimeMillis();
+        Path dirDb = new Path(warehouseCmPermissions.getWhRoot(), "db_perm");
+        fsWarehouse.delete(dirDb, true);
+        fsWarehouse.mkdirs(dirDb);
+        Path dirTbl1 = new Path(dirDb, "tbl1");
+        fsWarehouse.mkdirs(dirTbl1);
+        EncryptionZoneUtils.createEncryptionZone(dirTbl1, "test_key_db", conf);
+        Path part11 = new Path(dirTbl1, "part1");
+        createFile(part11, "testClearer11");
+        String fileChksum11 = ReplChangeManager.checksumFor(part11, fsWarehouse);
+        Path part12 = new Path(dirTbl1, "part2");
+        createFile(part12, "testClearer12");
+        String fileChksum12 = ReplChangeManager.checksumFor(part12, fsWarehouse);
+        Path dirTbl2 = new Path(dirDb, "tbl2");
+        fsWarehouse.mkdirs(dirTbl2);
+        EncryptionZoneUtils.createEncryptionZone(dirTbl2, "test_key_db", conf);
+        Path part21 = new Path(dirTbl2, "part1");
+        createFile(part21, "testClearer21");
+        String fileChksum21 = ReplChangeManager.checksumFor(part21, fsWarehouse);
+        Path part22 = new Path(dirTbl2, "part2");
+        createFile(part22, "testClearer22");
+        String fileChksum22 = ReplChangeManager.checksumFor(part22, fsWarehouse);
+        Path dirTbl3 = new Path(dirDb, "tbl3");
+        fsWarehouse.mkdirs(dirTbl3);
+        EncryptionZoneUtils.createEncryptionZone(dirTbl3, "test_key_cm", conf);
+        Path part31 = new Path(dirTbl3, "part1");
+        createFile(part31, "testClearer31");
+        String fileChksum31 = ReplChangeManager.checksumFor(part31, fsWarehouse);
+        Path part32 = new Path(dirTbl3, "part2");
+        createFile(part32, "testClearer32");
+        String fileChksum32 = ReplChangeManager.checksumFor(part32, fsWarehouse);
+
+        final UserGroupInformation proxyUserUgi =
+                UserGroupInformation.createUserForTesting("impala", new String[] {"testgroup"});
+
+        fsWarehouse.setOwner(dirDb, "impala", "default");
+        fsWarehouse.setOwner(dirTbl1, "impala", "default");
+        fsWarehouse.setOwner(dirTbl2, "impala", "default");
+        fsWarehouse.setOwner(dirTbl3, "impala", "default");
+        fsWarehouse.setOwner(part11, "impala", "default");
+        fsWarehouse.setOwner(part12, "impala", "default");
+        fsWarehouse.setOwner(part21, "impala", "default");
+        fsWarehouse.setOwner(part22, "impala", "default");
+        fsWarehouse.setOwner(part31, "impala", "default");
+        fsWarehouse.setOwner(part32, "impala", "default");
+
+        proxyUserUgi.doAs((PrivilegedExceptionAction<Void>) () -> {
+            try {
+                //impala doesn't have access but it belongs to a group which has access through acl.
+                ReplChangeManager.getInstance(hiveConfAclPermissions).recycle(dirTbl1, RecycleType.MOVE, false);
+                ReplChangeManager.getInstance(hiveConfAclPermissions).recycle(dirTbl2, RecycleType.MOVE, false);
+                ReplChangeManager.getInstance(hiveConfAclPermissions).recycle(dirTbl3, RecycleType.MOVE, true);
+            } catch (Exception e) {
+                Assert.fail();
+            }
+            return null;
+        });
+
+        String cmEncrypted = hiveConf.get(HiveConf.ConfVars.REPLCMENCRYPTEDDIR.varname, cmrootEncrypted);
+        AclStatus aclStatus = fsWarehouse.getAclStatus(new Path(dirTbl1 + Path.SEPARATOR + cmEncrypted));
+        AclStatus aclStatus2 = fsWarehouse.getAclStatus(new Path(dirTbl2 + Path.SEPARATOR + cmEncrypted));
+        AclStatus aclStatus3 = fsWarehouse.getAclStatus(new Path(dirTbl3 + Path.SEPARATOR + cmEncrypted));
+        AclEntry expectedAcl = new AclEntry.Builder().setScope(ACCESS).setType(GROUP).setName("testgroup").
+                setPermission(fsWarehouse.getFileStatus(warehouse).getPermission().getGroupAction()).build();
+        Assert.assertTrue(aclStatus.getEntries().contains(expectedAcl));
+        Assert.assertTrue(aclStatus2.getEntries().contains(expectedAcl));
+        Assert.assertTrue(aclStatus3.getEntries().contains(expectedAcl));
+
+        assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part11.getName(), fileChksum11,
+                ReplChangeManager.getInstance(conf).getCmRoot(part11).toString())));
+        assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part12.getName(), fileChksum12,
+                ReplChangeManager.getInstance(conf).getCmRoot(part12).toString())));
+        assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part21.getName(), fileChksum21,
+                ReplChangeManager.getInstance(conf).getCmRoot(part21).toString())));
+        assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part22.getName(), fileChksum22,
+                ReplChangeManager.getInstance(conf).getCmRoot(part22).toString())));
+        assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part31.getName(), fileChksum31,
+                ReplChangeManager.getInstance(conf).getCmRoot(part31).toString())));
+        assertTrue(fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part32.getName(), fileChksum32,
+                ReplChangeManager.getInstance(conf).getCmRoot(part32).toString())));
+
+        fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfAclPermissions, part11.getName(), fileChksum11,
+                ReplChangeManager.getInstance(conf).getCmRoot(part11).toString()),
+                now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
+        fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfAclPermissions, part21.getName(), fileChksum21,
+                ReplChangeManager.getInstance(conf).getCmRoot(part21).toString()),
+                now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
+        fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfAclPermissions, part31.getName(), fileChksum31,
+                ReplChangeManager.getInstance(conf).getCmRoot(part31).toString()),
+                now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
+        fsWarehouse.setTimes(ReplChangeManager.getCMPath(hiveConfAclPermissions, part32.getName(), fileChksum32,
+                ReplChangeManager.getInstance(conf).getCmRoot(part32).toString()),
+                now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
+
+        ReplChangeManager.scheduleCMClearer(hiveConfAclPermissions);
+
+        long start = System.currentTimeMillis();
+        long end;
+        boolean cleared = false;
+        do {
+            Thread.sleep(200);
+            end = System.currentTimeMillis();
+            if (end - start > 5000) {
+                Assert.fail("timeout, cmroot has not been cleared");
+            }
+            if (!fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part11.getName(), fileChksum11,
+                    ReplChangeManager.getInstance(conf).getCmRoot(part11).toString())) &&
+                    fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part12.getName(), fileChksum12,
+                            ReplChangeManager.getInstance(conf).getCmRoot(part12).toString())) &&
+                    !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part21.getName(), fileChksum21,
+                            ReplChangeManager.getInstance(conf).getCmRoot(part21).toString())) &&
+                    fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part22.getName(), fileChksum22,
+                            ReplChangeManager.getInstance(conf).getCmRoot(part22).toString())) &&
+                    !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part31.getName(), fileChksum31,
+                            ReplChangeManager.getInstance(conf).getCmRoot(part31).toString())) &&
+                    !fsWarehouse.exists(ReplChangeManager.getCMPath(hiveConfAclPermissions, part32.getName(), fileChksum32,
                             ReplChangeManager.getInstance(conf).getCmRoot(part32).toString()))) {
                 cleared = true;
             }
