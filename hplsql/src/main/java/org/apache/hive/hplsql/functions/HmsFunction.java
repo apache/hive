@@ -62,7 +62,11 @@ public class HmsFunction implements Function {
   @Override
   public boolean exists(String name) {
     name = name.toUpperCase();
-    return cache.containsKey(name) || getProcFromHMS(name).isPresent();
+    return isCached(name) || getProcFromHMS(name).isPresent();
+  }
+
+  protected boolean isCached(String name) {
+    return cache.containsKey(qualified(name));
   }
 
   @Override
@@ -71,9 +75,9 @@ public class HmsFunction implements Function {
     if (builtinFunctions.exec(name, ctx)) {
       return true;
     }
-    if (cache.containsKey(name)) {
+    if (isCached(name)) {
       trace(ctx, "EXEC CACHED FUNCTION " + name);
-      execProcOrFunc(ctx, cache.get(name), name);
+      execProcOrFunc(ctx, cache.get(qualified(name)), name);
       return true;
     }
     Optional<StoredProcedure> proc = getProcFromHMS(name);
@@ -81,10 +85,18 @@ public class HmsFunction implements Function {
       trace(ctx, "EXEC HMS FUNCTION " + name);
       ParserRuleContext procCtx = parse(proc.get());
       execProcOrFunc(ctx, procCtx, name);
-      cache.put(name, procCtx);
+      saveInCache(name, procCtx);
       return true;
     }
     return false;
+  }
+
+  protected void saveInCache(String name, ParserRuleContext procCtx) {
+    cache.put(qualified(name), procCtx);
+  }
+
+  private String qualified(String name) {
+    return (hplSqlSession.currentDatabase() + "." + name).toUpperCase();
   }
 
   /**
@@ -159,7 +171,7 @@ public class HmsFunction implements Function {
     }
     trace(ctx, "CREATE FUNCTION " + name);
     StoredProcedure proc = newStoredProc(name, Exec.getFormattedText(ctx));
-    cache.put(name, ctx);
+    saveInCache(name, ctx);
     saveStoredProcInHMS(proc);
   }
 
@@ -172,7 +184,7 @@ public class HmsFunction implements Function {
     }
     trace(ctx, "CREATE PROCEDURE " + name);
     StoredProcedure proc = newStoredProc(name, Exec.getFormattedText(ctx));
-    cache.put(name, ctx);
+    saveInCache(name, ctx);
     saveStoredProcInHMS(proc);
   }
 

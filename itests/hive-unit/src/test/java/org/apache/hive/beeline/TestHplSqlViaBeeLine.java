@@ -148,6 +148,21 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "12345");
   }
 
+  @Test
+    public void testDbChange() throws Throwable {
+    String SCRIPT_TEXT =
+        "DROP TABLE IF EXISTS result;\n" +
+        "CREATE TABLE result (n int);\n" +
+        "create database test_db1;\n" +
+        "create database test_db2;\n" +
+        "use test_db1; CREATE PROCEDURE f() BEGIN INSERT INTO default.result VALUES(42); END;\n" +
+        "use test_db2; CREATE PROCEDURE f() BEGIN INSERT INTO default.result VALUES(43); END;\n" +
+        "use test_db1; f();/\n" +
+        "use test_db2; f();/\n" +
+        "SELECT sum(n) FROM default.result; /\n";
+    testScriptFile(SCRIPT_TEXT, args(), "85");
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";hplsqlMode=true", "-n", userName);
