@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -32,7 +31,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.*;
+import org.apache.hadoop.fs.FileChecksum;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.fs.permission.AclEntry;
 import static org.apache.hadoop.fs.permission.AclEntryScope.ACCESS;
 import static org.apache.hadoop.fs.permission.AclEntryType.GROUP;
@@ -610,8 +614,9 @@ public class ReplChangeManager {
     }
   }
 
-  /* 
-   * Assign cmRoot to group of warehouse directory.
+  /*
+   * Provide members of warehouse group access to the cmRoot location.
+   * To do this, assign cmRoot to group of warehouse if possible. If not, set acl for wh-group.
    * If warehouse directory cannot be determined then give rwx permissions to default group of cmroot.
    */
   private static void setCmRootPermissions(Path cmroot) throws IOException{
@@ -619,9 +624,6 @@ public class ReplChangeManager {
     cmFs.setPermission(cmroot, new FsPermission("770"));
     try {
       FileStatus warehouseStatus = cmFs.getFileStatus(new Path(MetastoreConf.get(conf, ConfVars.WAREHOUSE.getVarname())));
-
-      //if wh-owner is same as cmroot owner, then change the group if required.
-      //else add acl for wh-group.
       String warehouseOwner = warehouseStatus.getOwner();
       String warehouseGroup = warehouseStatus.getGroup();
       if (warehouseOwner.equals(cmFs.getFileStatus(cmroot).getOwner())) {
@@ -629,10 +631,13 @@ public class ReplChangeManager {
         FsAction whGroupAction = warehouseStatus.getPermission().getGroupAction();
         FsAction whOtherAction = warehouseStatus.getPermission().getOtherAction();
         if(!warehouseGroup.equals(cmFs.getFileStatus(cmroot).getGroup())) {
+          //change group to wh-group.
+          //since cmRoot owner is already part of wh-group, this can be done.
           cmFs.setOwner(cmroot, null, warehouseGroup);
           cmFs.setPermission(cmroot, new FsPermission(whOwnerAction, whGroupAction, whOtherAction));
         }
       } else {
+        LOG.warn("Metastore-user is not same as owner of warehouse.");
         if(!warehouseGroup.equals(cmFs.getFileStatus(cmroot).getGroup())) {
           List<AclEntry> aclList = Lists.newArrayList(
                   new AclEntry.Builder().setScope(ACCESS).setType(USER).setPermission(FsAction.ALL).build(),
@@ -643,7 +648,7 @@ public class ReplChangeManager {
           cmFs.setAcl(cmroot, aclList);
         }
       }
-    } catch (Exception e) {
+    } catch (RuntimeException | IOException e) {
       LOG.error("Unable to set permissions corresponding to hive-warehouse on CMRoot: ", e);
     }
   }
