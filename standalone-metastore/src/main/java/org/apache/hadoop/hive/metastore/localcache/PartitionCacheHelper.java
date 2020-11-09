@@ -152,7 +152,7 @@ public class PartitionCacheHelper {
           "fileMetadata={}, partitionNames hit={}", level, rqst.getDb_name(),
           rqst.getTbl_name(), rqst.isGetFileMetadata(), partitionNamesFound);
       LOG.debug("{} level HMS cache miss: method=analyzePartitionsInCache, dbName={}, " +
-          "tblName={}, fileMetadata={}, partitionNames missing={}" + level, rqst.getDb_name(),
+          "tblName={}, fileMetadata={}, partitionNames missing={}", level, rqst.getDb_name(),
           rqst.getTbl_name(), rqst.isGetFileMetadata(), partitionNamesMissing);
     }
 

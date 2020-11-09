@@ -866,7 +866,9 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
   private static Map<String, Map<String, Table>> getTempTables(String msg) {
     SessionState ss = SessionState.get();
     if (ss == null) {
-      LOG.debug("No current SessionState, skipping temp tables for " + msg);
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("No current SessionState, skipping temp tables for " + msg);
+      }
       return Collections.emptyMap();
     }
     return ss.getTempTables();
@@ -876,8 +878,10 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       String tableName) {
     SessionState ss = SessionState.get();
     if (ss == null) {
-      LOG.debug("No current SessionState, skipping temp tables for " +
-          Warehouse.getQualifiedName(dbName, tableName));
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("No current SessionState, skipping temp tables for " +
+            Warehouse.getQualifiedName(dbName, tableName));
+      }
       return null;
     }
     String lookupName = StatsUtils.getFullyQualifiedTableName(dbName.toLowerCase(),
@@ -1963,9 +1967,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.getConfigValueInternal(name, defaultValue);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=getConfigValueInternal, name={}",
-            name);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=getConfigValueInternal, name={}",
+              name);
+        }
       }
       return v;
     }
@@ -1983,9 +1989,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.getDatabaseInternal(request);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=getDatabaseInternal, name={}",
-            request.getName());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=getDatabaseInternal, name={}",
+              request.getName());
+        }
       }
       return v;
     }
@@ -2005,9 +2013,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.getTableInternal(req);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=getTableInternal, dbName={}, tblName={}",
-            req.getDbName(), req.getTblName());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=getTableInternal, dbName={}, tblName={}",
+              req.getDbName(), req.getTblName());
+        }
       }
       return v;
     }
@@ -2025,9 +2035,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.getPrimaryKeysInternal(req);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=getPrimaryKeysInternal, dbName={}, tblName={}",
-            req.getDb_name(), req.getTbl_name());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=getPrimaryKeysInternal, dbName={}, tblName={}",
+              req.getDb_name(), req.getTbl_name());
+        }
       }
       return v;
     }
@@ -2045,9 +2057,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.getForeignKeysInternal(req);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=getForeignKeysInternal, dbName={}, tblName={}",
-            req.getForeign_db_name(), req.getForeign_tbl_name());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=getForeignKeysInternal, dbName={}, tblName={}",
+              req.getForeign_db_name(), req.getForeign_tbl_name());
+        }
       }
       return v;
     }
@@ -2065,9 +2079,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.getUniqueConstraintsInternal(req);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=getUniqueConstraintsInternal, dbName={}, tblName={}",
-            req.getDb_name(), req.getTbl_name());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=getUniqueConstraintsInternal, dbName={}, tblName={}",
+              req.getDb_name(), req.getTbl_name());
+        }
       }
       return v;
     }
@@ -2085,9 +2101,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.getNotNullConstraintsInternal(req);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=getNotNullConstraintsInternal, dbName={}, tblName={}",
-            req.getDb_name(), req.getTbl_name());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=getNotNullConstraintsInternal, dbName={}, tblName={}",
+              req.getDb_name(), req.getTbl_name());
+        }
       }
       return v;
     }
@@ -2131,9 +2149,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.getAggrStatsForInternal(req);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=getAggrStatsForInternal, dbName={}, tblName={}, partNames={}",
-            req.getDbName(), req.getTblName(), req.getPartNames());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=getAggrStatsForInternal, dbName={}, tblName={}, partNames={}",
+              req.getDbName(), req.getTblName(), req.getPartNames());
+        }
       }
       return v;
     }
@@ -2151,9 +2171,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.getPartitionsByExprInternal(req);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=getPartitionsByExprInternal, dbName={}, tblName={}",
-            req.getDbName(), req.getTblName());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=getPartitionsByExprInternal, dbName={}, tblName={}",
+              req.getDbName(), req.getTblName());
+        }
       }
       return v;
     }
@@ -2173,9 +2195,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.listPartitionNamesInternal(catName, dbName, tableName, maxParts);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=listPartitionNamesInternalAll, dbName={}, tblName={}",
-            dbName, tableName);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=listPartitionNamesInternalAll, dbName={}, tblName={}",
+              dbName, tableName);
+        }
       }
       return v;
     }
@@ -2194,9 +2218,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.listPartitionNamesInternal(catName, dbName, tableName, partVals, maxParts);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=listPartitionNamesInternal, dbName={}, tblName={}",
-            dbName, tableName);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=listPartitionNamesInternal, dbName={}, tblName={}",
+              dbName, tableName);
+        }
       }
       return v;
     }
@@ -2215,9 +2241,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.listPartitionNamesRequestInternal(req);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=listPartitionNamesRequestInternal, dbName={}, tblName={}, partValues={}",
-            req.getDbName(), req.getTblName(), req.getPartValues());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=listPartitionNamesRequestInternal, dbName={}, tblName={}, partValues={}",
+              req.getDbName(), req.getTblName(), req.getPartValues());
+        }
       }
       return v;
     }
@@ -2237,9 +2265,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.listPartitionsWithAuthInfoInternal(catName, dbName, tableName, maxParts, userName, groupNames);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=listPartitionsWithAuthInfoInternalAll, dbName={}, tblName={}",
-            dbName, tableName);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=listPartitionsWithAuthInfoInternalAll, dbName={}, tblName={}",
+              dbName, tableName);
+        }
       }
       return v;
     }
@@ -2260,9 +2290,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.listPartitionsWithAuthInfoInternal(catName, dbName, tableName, partialPvals, maxParts, userName, groupNames);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=listPartitionsWithAuthInfoInternal, dbName={}, tblName={}, partVals={}",
-            dbName, tableName, partialPvals);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=listPartitionsWithAuthInfoInternal, dbName={}, tblName={}, partVals={}",
+              dbName, tableName, partialPvals);
+        }
       }
       return v;
     }
@@ -2281,9 +2313,11 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
         v = super.listPartitionsWithAuthInfoRequestInternal(req);
         queryCache.put(cacheKey, v);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=listPartitionsWithAuthInfoRequestInternal, dbName={}, tblName={}, partVals={}",
-            req.getDbName(), req.getTblName(), req.getPartVals());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=listPartitionsWithAuthInfoRequestInternal, dbName={}, tblName={}, partVals={}",
+              req.getDbName(), req.getTblName(), req.getPartVals());
+        }
       }
       return v;
     }

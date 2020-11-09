@@ -278,9 +278,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           r = convertTableRequest(req, super.getTableInternal(req));
           mscLocalCache.put(cacheKey, r);
         } else {
-          LOG.debug(
-              "HS2 level HMS cache: method=getTableInternal, dbName={}, tblName={}, columnStats={}, fileMetadata={}",
-              req.getDbName(), req.getTblName(), req.isGetColumnStats(), req.isGetFileMetadata());
+          if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "HS2 level HMS cache: method=getTableInternal, dbName={}, tblName={}, columnStats={}, fileMetadata={}",
+                req.getDbName(), req.getTblName(), req.isGetColumnStats(), req.isGetFileMetadata());
+          }
         }
 
         if (LOG.isDebugEnabled() && recordStats) {
@@ -306,9 +308,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           r = super.getPartitionsByExprInternal(req);
           mscLocalCache.put(cacheKey, r);
         } else {
-          LOG.debug(
-              "HS2 level HMS cache: method=getPartitionsByExprInternal, dbName={}, tblName={}",
-              req.getDbName(), req.getTblName());
+          if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "HS2 level HMS cache: method=getPartitionsByExprInternal, dbName={}, tblName={}",
+                req.getDbName(), req.getTblName());
+          }
         }
 
         if (LOG.isDebugEnabled() && recordStats) {
@@ -338,9 +342,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
               super.listPartitionNamesInternal(catName, dbName, tableName, maxParts));
           mscLocalCache.put(cacheKey, r);
         } else {
-          LOG.debug(
-              "HS2 level HMS cache: method=listPartitionNamesInternal, dbName={}, tblName={}",
-              dbName, tableName);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "HS2 level HMS cache: method=listPartitionNamesInternal, dbName={}, tblName={}",
+                dbName, tableName);
+          }
         }
 
         if (LOG.isDebugEnabled() && recordStats) {
@@ -377,9 +383,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           r = super.getPrimaryKeysInternal(req);
           mscLocalCache.put(cacheKey, r);
         } else {
-          LOG.debug(
-              "HS2 level HMS cache: method=getPrimaryKeysInternal, dbName={}, tblName={}",
-              req.getDb_name(), req.getTbl_name());
+          if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "HS2 level HMS cache: method=getPrimaryKeysInternal, dbName={}, tblName={}",
+                req.getDb_name(), req.getTbl_name());
+          }
         }
 
         if (LOG.isDebugEnabled() && recordStats) {
@@ -407,9 +415,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           r = super.getForeignKeysInternal(req);
           mscLocalCache.put(cacheKey, r);
         } else {
-          LOG.debug(
-              "HS2 level HMS cache: method=getForeignKeysInternal, dbName={}, tblName={}",
-              req.getForeign_db_name(), req.getForeign_tbl_name());
+          if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "HS2 level HMS cache: method=getForeignKeysInternal, dbName={}, tblName={}",
+                req.getForeign_db_name(), req.getForeign_tbl_name());
+          }
         }
 
         if (LOG.isDebugEnabled() && recordStats) {
@@ -437,9 +447,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           r = super.getUniqueConstraintsInternal(req);
           mscLocalCache.put(cacheKey, r);
         } else {
-          LOG.debug(
-              "HS2 level HMS cache: method=getUniqueConstraintsInternal, dbName={}, tblName={}",
-              req.getDb_name(), req.getTbl_name());
+          if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "HS2 level HMS cache: method=getUniqueConstraintsInternal, dbName={}, tblName={}",
+                req.getDb_name(), req.getTbl_name());
+          }
         }
 
         if (LOG.isDebugEnabled() && recordStats) {
@@ -467,9 +479,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           r = super.getNotNullConstraintsInternal(req);
           mscLocalCache.put(cacheKey, r);
         } else {
-          LOG.debug(
-              "HS2 level HMS cache: method=getNotNullConstraintsInternal, dbName={}, tblName={}",
-              req.getDb_name(), req.getTbl_name());
+          if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "HS2 level HMS cache: method=getNotNullConstraintsInternal, dbName={}, tblName={}",
+                req.getDb_name(), req.getTbl_name());
+          }
         }
 
         if (LOG.isDebugEnabled() && recordStats) {
@@ -529,9 +543,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           r = super.getAggrStatsForInternal(req);
           mscLocalCache.put(cacheKey, r);
         } else {
-          LOG.debug(
-              "HS2 level HMS cache: method=getAggrStatsForInternal, dbName={}, tblName={}, partNames={}",
-              req.getDbName(), req.getTblName(), req.getPartNames());
+          if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "HS2 level HMS cache: method=getAggrStatsForInternal, dbName={}, tblName={}, partNames={}",
+                req.getDbName(), req.getTblName(), req.getPartNames());
+          }
         }
 
         if (LOG.isDebugEnabled() && recordStats) {
@@ -619,14 +635,16 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     }
 
     if (columnNamesFound.size() > 0) {
-      if (watermark == null) {
-        LOG.debug(
-            "Query level HMS cache: method=getTableColumnStatisticsInternal, dbName={}, tblName={}, columnNames={}",
-            rqst.getDbName(), rqst.getTblName(), columnNamesFound);
-      } else {
-        LOG.debug(
-            "HS2 level HMS cache: method=getTableColumnStatisticsInternal, dbName={}, tblName={}, columnNames={}",
-            rqst.getDbName(), rqst.getTblName(), columnNamesFound);
+      if (LOG.isDebugEnabled()) {
+        if (watermark == null) {
+          LOG.debug(
+              "Query level HMS cache: method=getTableColumnStatisticsInternal, dbName={}, tblName={}, columnNames={}",
+              rqst.getDbName(), rqst.getTblName(), columnNamesFound);
+        } else {
+          LOG.debug(
+              "HS2 level HMS cache: method=getTableColumnStatisticsInternal, dbName={}, tblName={}, columnNames={}",
+              rqst.getDbName(), rqst.getTblName(), columnNamesFound);
+        }
       }
     }
   }
@@ -706,9 +724,11 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
       if (v == null) {
         fullTableNamesMissing.add(fullTableName);
       } else {
-        LOG.debug(
-            "Query level HMS cache: method=getValidWriteIdsInternal, fullTableName={}",
-            fullTableName);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(
+              "Query level HMS cache: method=getValidWriteIdsInternal, fullTableName={}",
+              fullTableName);
+        }
         tblValidWriteIds.add(v);
       }
     }
