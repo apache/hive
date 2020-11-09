@@ -272,11 +272,12 @@ class CompactionTxnHandler extends TxnHandler {
    * Find entries in the queue that are ready to
    * be cleaned.
    * @param minOpenTxnWaterMark Minimum open txnId
+   * @param retentionTime time in milliseconds to delay cleanup after compaction
    * @return information on the entry in the queue.
    */
   @Override
   @RetrySemantics.ReadOnly
-  public List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark) throws MetaException {
+  public List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark, long retentionTime) throws MetaException {
     Connection dbConn = null;
     List<CompactionInfo> rc = new ArrayList<>();
 
@@ -295,6 +296,9 @@ class CompactionTxnHandler extends TxnHandler {
             + READY_FOR_CLEANING + "'";
         if (minOpenTxnWaterMark > 0) {
           s = s + " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
+        }
+        if (retentionTime > 0) {
+          s = s + " AND \"CQ_COMMIT_TIME\" < (" + TxnDbUtil.getEpochFn(dbProduct) + " - " + retentionTime + ")";
         }
         LOG.debug("Going to execute query <" + s + ">");
         rs = stmt.executeQuery(s);
@@ -330,7 +334,7 @@ class CompactionTxnHandler extends TxnHandler {
         close(rs, stmt, dbConn);
       }
     } catch (RetryException e) {
-      return findReadyToClean(minOpenTxnWaterMark);
+      return findReadyToClean(minOpenTxnWaterMark, retentionTime);
     }
   }
 
@@ -1184,12 +1188,14 @@ class CompactionTxnHandler extends TxnHandler {
     }
   }
 
+  @Override
   protected void updateCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, Long commitId,
-      long tempId) throws SQLException {
+      long tempId) throws SQLException, MetaException {
     super.updateCommitIdAndCleanUpMetadata(stmt, txnid, txnType, commitId, tempId);
     if (txnType == TxnType.COMPACTION) {
       stmt.executeUpdate(
-          "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + " WHERE \"CQ_TXN_ID\" = " + txnid);
+          "UPDATE \"COMPACTION_QUEUE\" SET \"CQ_NEXT_TXN_ID\" = " + commitId + ", \"CQ_COMMIT_TIME\" = " +
+              TxnDbUtil.getEpochFn(dbProduct) + " WHERE \"CQ_TXN_ID\" = " + txnid);
     }
   }
 }

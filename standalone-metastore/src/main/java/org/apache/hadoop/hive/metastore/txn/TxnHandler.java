@@ -222,7 +222,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private int deadlockCnt;
   private long deadlockRetryInterval;
   protected Configuration conf;
-  private static DatabaseProduct dbProduct;
+  protected static DatabaseProduct dbProduct;
   private static SQLGenerator sqlGenerator;
 
   // (End user) Transaction timeout, in milliseconds.
@@ -1168,7 +1168,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   /**
    * See overridden method in CompactionTxnHandler also.
    */
-  protected void updateCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType, Long commitId, long tempId) throws SQLException {
+  protected void updateCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType,
+      Long commitId, long tempId) throws SQLException, MetaException {
     List<String> queryBatch = new ArrayList<>(5);
     // update write_set with real commitId
     if (commitId != null) {

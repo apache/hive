@@ -24,8 +24,10 @@ import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
-import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
+import org.apache.hadoop.hive.metastore.txn.TxnStore;
+import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -55,6 +57,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
 import static org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
@@ -94,9 +98,14 @@ public class Cleaner extends MetaStoreCompactorThread {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
           startedAt = System.currentTimeMillis();
           long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
+          boolean delayedCleanupEnabled = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED);
+          long retentionTime = 0;
+          if (delayedCleanupEnabled) {
+            retentionTime = HiveConf.getTimeVar(conf, HIVE_COMPACTOR_CLEANER_RETENTION_TIME, TimeUnit.MILLISECONDS);
+          }
           LOG.info("Cleaning based on min open txn id: " + minOpenTxnId);
-          List<CompletableFuture> cleanerList = new ArrayList<>();
-          for (CompactionInfo compactionInfo : txnHandler.findReadyToClean(minOpenTxnId)) {
+          List<CompletableFuture<Void>> cleanerList = new ArrayList<>();
+          for (CompactionInfo compactionInfo : txnHandler.findReadyToClean(minOpenTxnId, retentionTime)) {
             cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
                     clean(compactionInfo, minOpenTxnId)), cleanerExecutor));
           }
@@ -182,18 +191,9 @@ public class Cleaner extends MetaStoreCompactorThread {
        * as well up to that point which may be higher than CQ_HIGHEST_WRITE_ID.  This could be
        * useful if there is all of a sudden a flood of aborted txns.  (For another day).
        */
-      List<String> tblNames = Collections.singletonList(
-          TxnUtils.getFullTableName(t.getDbName(), t.getTableName()));
-      GetValidWriteIdsRequest rqst = new GetValidWriteIdsRequest(tblNames);
-      rqst.setValidTxnList(validTxnList.writeToString());
-      GetValidWriteIdsResponse rsp = txnHandler.getValidWriteIds(rqst);
-      //we could have no write IDs for a table if it was never written to but
-      // since we are in the Cleaner phase of compactions, there must have
-      // been some delta/base dirs
-      assert rsp != null && rsp.getTblValidWriteIdsSize() == 1;
-      //Creating 'reader' list since we are interested in the set of 'obsolete' files
-      ValidReaderWriteIdList validWriteIdList =
-          TxnUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
+
+      // Creating 'reader' list since we are interested in the set of 'obsolete' files
+      final ValidReaderWriteIdList validWriteIdList = getValidCleanerWriteIdList(ci, t, validTxnList);
       if (LOG.isDebugEnabled()) {
         LOG.debug("Cleaning based on writeIdList: " + validWriteIdList);
       }
@@ -204,12 +204,9 @@ public class Cleaner extends MetaStoreCompactorThread {
         LOG.info("Cleaning as user " + ci.runAs + " for " + ci.getFullPartitionName());
         UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
             UserGroupInformation.getLoginUser());
-        ugi.doAs(new PrivilegedExceptionAction<Object>() {
-          @Override
-          public Object run() throws Exception {
-            removeFiles(location, validWriteIdList, ci);
-            return null;
-          }
+        ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
+          removeFiles(location, validWriteIdList, ci);
+          return null;
         });
         try {
           FileSystem.closeAllForUGI(ugi);
@@ -226,6 +223,32 @@ public class Cleaner extends MetaStoreCompactorThread {
       txnHandler.markFailed(ci);
     }
   }
+
+  private ValidReaderWriteIdList getValidCleanerWriteIdList(CompactionInfo ci, Table t, ValidTxnList validTxnList)
+      throws NoSuchTxnException, MetaException {
+    List<String> tblNames = Collections.singletonList(
+        TxnUtils.getFullTableName(t.getDbName(), t.getTableName()));
+    GetValidWriteIdsRequest request = new GetValidWriteIdsRequest(tblNames);
+    request.setValidTxnList(validTxnList.writeToString());
+    GetValidWriteIdsResponse rsp = txnHandler.getValidWriteIds(request);
+    // we could have no write IDs for a table if it was never written to but
+    // since we are in the Cleaner phase of compactions, there must have
+    // been some delta/base dirs
+    assert rsp != null && rsp.getTblValidWriteIdsSize() == 1;
+    ValidReaderWriteIdList validWriteIdList =
+        TxnUtils.createValidReaderWriteIdList(rsp.getTblValidWriteIds().get(0));
+    boolean delayedCleanupEnabled = conf.getBoolVar(HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED);
+    if (delayedCleanupEnabled) {
+      /*
+       * If delayed cleanup enabled, we need to filter the obsoletes dir list, to only remove directories that were made obsolete by this compaction
+       * If we have a higher retentionTime it is possible for a second compaction to run on the same partition. Cleaning up the first compaction
+       * should not touch the newer obsolete directories to not to violate the retentionTime for those.
+       */
+      validWriteIdList = validWriteIdList.updateHighWatermark(ci.highestWriteId);
+    }
+    return validWriteIdList;
+  }
+
   private static String idWatermark(CompactionInfo ci) {
     return " id=" + ci.id;
   }

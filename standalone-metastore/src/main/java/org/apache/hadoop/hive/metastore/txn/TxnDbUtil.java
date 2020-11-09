@@ -185,7 +185,8 @@ public final class TxnDbUtil {
           " CQ_HADOOP_JOB_ID varchar(32)," +
           " CQ_ERROR_MESSAGE clob," +
           " CQ_NEXT_TXN_ID bigint," +
-          " CQ_TXN_ID bigint)");
+          " CQ_TXN_ID bigint," +
+          " CQ_COMMIT_TIME bigint)");
 
       stmt.execute("CREATE TABLE NEXT_COMPACTION_QUEUE_ID (NCQ_NEXT bigint NOT NULL)");
       stmt.execute("INSERT INTO NEXT_COMPACTION_QUEUE_ID VALUES(1)");
