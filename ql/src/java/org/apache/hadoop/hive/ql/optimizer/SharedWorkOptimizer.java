@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -162,12 +161,6 @@ public class SharedWorkOptimizer extends Transform {
     // Gather information about the DPP table scans and store it in the cache
     gatherDPPTableScanOps(pctx, optimizerCache);
 
-    try {
-      new OperatorGraph(pctx).implode().toDot(new File("/tmp/swo.before.dot"));
-    } catch (Exception e1) {
-      throw new RuntimeException(e1);
-    }
-
     for (Entry<String, Long> tablePair : sortedTables) {
       String tableName = tablePair.getKey();
       List<TableScanOperator> scans = tableNameToOps.get(tableName);
@@ -232,12 +225,6 @@ public class SharedWorkOptimizer extends Transform {
         }
       }
 
-    }
-
-    try {
-      new OperatorGraph(pctx).implode().toDot(new File("/tmp/swo.after.dot"));
-    } catch (Exception e1) {
-      throw new RuntimeException(e1);
     }
 
     if(pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE)) {
