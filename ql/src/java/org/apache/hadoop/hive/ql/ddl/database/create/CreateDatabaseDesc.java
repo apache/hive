@@ -49,15 +49,6 @@ public class CreateDatabaseDesc implements DDLDesc, Serializable {
   public CreateDatabaseDesc(String databaseName, String comment, String locationUri, String managedLocationUri,
       boolean ifNotExists, Map<String, String> dbProperties) {
     this(databaseName, comment, locationUri, managedLocationUri, ifNotExists, dbProperties, "NATIVE", null, null);
-/*
-    this.databaseName = databaseName;
-    this.comment = comment;
-    this.locationUri = locationUri;
-    this.managedLocationUri = managedLocationUri;
-    this.ifNotExists = ifNotExists;
-    this.dbProperties = dbProperties;
-
- */
   }
 
   public CreateDatabaseDesc(String databaseName, String comment, String locationUri, String managedLocationUri,
