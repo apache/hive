@@ -11628,6 +11628,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Operator genPlan(QB parent, QBExpr qbexpr) throws SemanticException {
+    if (qbexpr.getOpcode() == QBExpr.Opcode.EXCEPT || qbexpr.getOpcode() == QBExpr.Opcode.EXCEPTALL
+        || qbexpr.getOpcode() == QBExpr.Opcode.INTERSECT || qbexpr.getOpcode() == QBExpr.Opcode.INTERSECTALL) {
+      throw new SemanticException(
+          "EXCEPT and INTERSECT operations are only supported with Cost Based Optimizations enabled. Please set 'hive.cbo.enable' to true!");
+    }
     if (qbexpr.getOpcode() == QBExpr.Opcode.NULLOP) {
       boolean skipAmbiguityCheck = viewSelect == null && parent.isTopLevelSelectStarQuery();
       return genPlan(qbexpr.getQB(), skipAmbiguityCheck);
