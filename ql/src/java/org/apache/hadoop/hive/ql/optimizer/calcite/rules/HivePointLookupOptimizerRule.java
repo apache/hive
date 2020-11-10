@@ -23,8 +23,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +49,7 @@ import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveBetween;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveIn;
+import org.apache.hadoop.hive.ql.optimizer.graph.DiGraph;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -195,109 +194,6 @@ public abstract class HivePointLookupOptimizerRule extends RelOptRule {
    */
   protected static class RexTransformIntoBetween extends RexShuttle {
     private final RexBuilder rexBuilder;
-
-    static class DiGraph<V, E> {
-      static class Edge<V, E> {
-        final Node<V, E> s;
-        final Node<V, E> t;
-        final E e;
-
-        public Edge(Node<V, E> s, Node<V, E> t, E e) {
-          this.s = s;
-          this.t = t;
-          this.e = e;
-        }
-      }
-
-      static class Node<V, E> {
-        final Set<Edge<V, E>> edges;
-        final V v;
-
-        public Node(V v) {
-          edges = new LinkedHashSet<>();
-          this.v = v;
-        }
-
-        public void addEdge(Edge<V, E> edge) {
-          edges.add(edge);
-        }
-
-        public E removeEdge(V s, V t) {
-          Iterator<Edge<V, E>> it = edges.iterator();
-          while (it.hasNext()) {
-            Edge<V, E> edge = it.next();
-            if (edge.s.v.equals(s) && edge.t.v.equals(t)) {
-              it.remove();
-              return edge.e;
-            }
-          }
-          return null;
-        }
-
-      }
-
-      private final Map<V, Node<V, E>> nodes;
-
-      public DiGraph() {
-        nodes = new LinkedHashMap<>();
-      }
-
-      public void putEdgeValue(V s, V t, E e) {
-        Node<V, E> nodeS = nodeOf(s);
-        Node<V, E> nodeT = nodeOf(t);
-        Edge<V, E> edge = new Edge<>(nodeS, nodeT, e);
-        nodeS.addEdge(edge);
-        nodeT.addEdge(edge);
-      }
-
-      private Node<V, E> nodeOf(V s) {
-        Node<V, E> node = nodes.get(s);
-        if (node == null) {
-          nodes.put(s, node = new Node<>(s));
-        }
-        return node;
-      }
-
-      public Set<V> nodes() {
-        return nodes.keySet();
-      }
-
-      public Set<V> predecessors(V n) {
-        Set<V> ret = new LinkedHashSet<>();
-        Node<V, E> node = nodes.get(n);
-        if (node == null) {
-          return ret;
-        }
-
-        for (Edge<V, E> edge : node.edges) {
-          if (edge.t.v.equals(n)) {
-            ret.add(edge.s.v);
-          }
-        }
-        return ret;
-      }
-
-      public Set<V> successors(V n) {
-        Set<V> ret = new LinkedHashSet<>();
-        Node<V, E> node = nodes.get(n);
-        if (node == null) {
-          return ret;
-        }
-
-        for (Edge<V, E> edge : node.edges) {
-          if (edge.s.v.equals(n)) {
-            ret.add(edge.t.v);
-          }
-        }
-        return ret;
-      }
-
-      public E removeEdge(V s, V t) {
-        nodeOf(s).removeEdge(s, t);
-        return nodeOf(t).removeEdge(s, t);
-      }
-
-    }
 
     RexTransformIntoBetween(RexBuilder rexBuilder) {
       this.rexBuilder = rexBuilder;
