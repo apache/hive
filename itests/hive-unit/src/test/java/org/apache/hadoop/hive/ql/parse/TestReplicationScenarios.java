@@ -2169,8 +2169,8 @@ public class TestReplicationScenarios {
 
     boolean verifySetupOriginal = verifySetupSteps;
     verifySetupSteps = true;
-    final int CLEANER_TTL_SECONDS = 1;
-    final int CLEANER_INTERVAL_SECONDS = 1;
+    final int cleanerTtlSeconds = 1;
+    final int cleanerIntervalSeconds = 1;
     String nameOfTest = testName.getMethodName();
     String dbName = createDB(nameOfTest, driver);
     String replDbName = dbName + "_dupe";
@@ -2201,15 +2201,15 @@ public class TestReplicationScenarios {
     verifySetup("SELECT * from " + dbName + ".unptned_late", unptnData, driver);
 
     // CM was enabled during setup, REPL_EVENT_DB_LISTENER_TTL should be used, set the other one to a low value
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, CLEANER_TTL_SECONDS, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, CLEANER_INTERVAL_SECONDS, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, cleanerTtlSeconds, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, cleanerIntervalSeconds, TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
 
     //sleep to ensure correct conf(REPL_EVENT_DB_LISTENER_TTL) is used
     try {
-      Thread.sleep(CLEANER_INTERVAL_SECONDS * 1000 * 10);
+      Thread.sleep(cleanerIntervalSeconds * 1000 * 10);
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      LOG.warn("Sleep unsuccesful", e);
     }
 
     //verify events get replicated
@@ -2220,9 +2220,8 @@ public class TestReplicationScenarios {
 
 
     // For next run, CM is enabled, set REPL_EVENT_DB_LISTENER_TTL to low value for events to get deleted
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, CLEANER_TTL_SECONDS * 60 * 60, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, CLEANER_TTL_SECONDS , TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, CLEANER_INTERVAL_SECONDS, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, cleanerTtlSeconds * 60 * 60, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds , TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
 
     run("ALTER TABLE " + dbName + ".ptned ADD PARTITION (b=1)", driver);
@@ -2234,9 +2233,9 @@ public class TestReplicationScenarios {
     verifySetup("SELECT a from " + dbName + ".ptned WHERE b=2", ptnData2, driver);
 
     try {
-      Thread.sleep(CLEANER_INTERVAL_SECONDS * 1000 * 10);
+      Thread.sleep(cleanerIntervalSeconds * 1000 * 10);
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      LOG.warn("Sleep unsuccesful", e);
     }
 
     incrDump = replDumpDb(dbName);
@@ -2249,9 +2248,8 @@ public class TestReplicationScenarios {
     // With CM disabled, EVENT_DB_LISTENER_TTL should be used.
     // First check with high ttl
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.REPLCMENABLED, false);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, CLEANER_TTL_SECONDS  * 60 * 60, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, CLEANER_TTL_SECONDS, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, CLEANER_INTERVAL_SECONDS, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, cleanerTtlSeconds  * 60 * 60, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds, TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
 
     run("CREATE TABLE " + dbName
@@ -2263,9 +2261,9 @@ public class TestReplicationScenarios {
 
     //sleep to ensure correct conf(EVENT_DB_LISTENER_TTL) is used
     try {
-      Thread.sleep(CLEANER_INTERVAL_SECONDS * 1000 * 10);
+      Thread.sleep(cleanerIntervalSeconds * 1000 * 10);
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      LOG.warn("Sleep unsuccesful", e);
     }
 
     //check replication success
@@ -2276,9 +2274,8 @@ public class TestReplicationScenarios {
 
     //With CM disabled, set a low ttl for events to get deleted
     MetastoreConf.setBoolVar(hconf, MetastoreConf.ConfVars.REPLCMENABLED, false);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, CLEANER_TTL_SECONDS, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, CLEANER_TTL_SECONDS   * 60 * 60, TimeUnit.SECONDS);
-    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, CLEANER_INTERVAL_SECONDS, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, cleanerTtlSeconds, TimeUnit.SECONDS);
+    MetastoreConf.setTimeVar(hconf, MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, cleanerTtlSeconds   * 60 * 60, TimeUnit.SECONDS);
     DbNotificationListener.resetCleaner(hconf);
 
     run("INSERT INTO TABLE " + dbName + ".ptned_late PARTITION(b=2) SELECT a FROM " + dbName
@@ -2287,9 +2284,9 @@ public class TestReplicationScenarios {
 
 
     try {
-      Thread.sleep(CLEANER_INTERVAL_SECONDS * 1000 * 10);
+      Thread.sleep(cleanerIntervalSeconds * 1000 * 10);
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      LOG.warn("Sleep unsuccesful", e);
     }
 
     //events should be deleted before dump

@@ -164,8 +164,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   }
 
   @VisibleForTesting
-  public static synchronized void resetCleaner(HiveConf conf) throws Exception{
-    if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)){
+  public static synchronized void resetCleaner(HiveConf conf) throws Exception {
+    if(cleaner != null && conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)){
       cleaner.stopRun();
       cleaner = null;
       init(conf);
@@ -202,16 +202,22 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       }
     } else if (key.equals(ConfVars.REPL_EVENT_DB_LISTENER_TTL.toString()) ||
             key.equals(ConfVars.REPL_EVENT_DB_LISTENER_TTL.getHiveName())) {
-      // This weirdness of setting it in our conf and then reading back does two things.
-      // One, it handles the conversion of the TimeUnit.  Two, it keeps the value around for
-      // later in case we need it again.
       long time = MetastoreConf.convertTimeStr(tableEvent.getNewValue(), TimeUnit.SECONDS,
-              TimeUnit.SECONDS);
-      MetastoreConf.setTimeVar(getConf(), MetastoreConf.ConfVars.REPL_EVENT_DB_LISTENER_TTL, time,
               TimeUnit.SECONDS);
       boolean isReplEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.REPLCMENABLED);
       if(isReplEnabled){
-        cleaner.setTimeToLive(MetastoreConf.getTimeVar(getConf(), ConfVars.REPL_EVENT_DB_LISTENER_TTL,
+        cleaner.setTimeToLive(time);
+      }
+    }
+
+    if (key.equals(ConfVars.REPLCMENABLED.toString()) || key.equals(ConfVars.REPLCMENABLED.getHiveName())) {
+      boolean isReplEnabled = MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED);
+      if(isReplEnabled){
+        cleaner.setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.REPL_EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
+      else {
+        cleaner.setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_TTL,
                 TimeUnit.SECONDS));
       }
     }
