@@ -463,8 +463,8 @@ alterDataConnectorStatementSuffix
 alterDataConnectorSuffixProperties
 @init { gParent.pushMsg("alter connector set properties statement", state); }
 @after { gParent.popMsg(state); }
-    : name=identifier KW_SET KW_DBPROPERTIES dbProperties
-    -> ^(TOK_ALTERDATACONNECTOR_PROPERTIES $name dbProperties)
+    : name=identifier KW_SET KW_DCPROPERTIES dcProperties
+    -> ^(TOK_ALTERDATACONNECTOR_PROPERTIES $name dcProperties)
     ;
 
 alterDataConnectorSuffixSetOwner
