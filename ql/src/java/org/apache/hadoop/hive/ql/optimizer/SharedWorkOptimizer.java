@@ -371,7 +371,7 @@ public class SharedWorkOptimizer extends Transform {
       // Boolean to keep track of whether this method actually merged any TS operators
       boolean mergedExecuted = false;
 
-      Multimap<String, TableScanOperator> existingOps = ArrayListMultimap.create();
+      Set<TableScanOperator> retainedScans = new LinkedHashSet<>();
       Set<Operator<?>> removedOps = new HashSet<>();
       //for (Entry<String, Long> tablePair : sortedTables)
       {
@@ -380,8 +380,7 @@ public class SharedWorkOptimizer extends Transform {
             LOG.debug("Skip {} as it has already been removed", discardableTsOp);
             continue;
           }
-          Collection<TableScanOperator> prevTsOps = existingOps.get(tableName);
-          for (TableScanOperator retainableTsOp : prevTsOps) {
+          for (TableScanOperator retainableTsOp : retainedScans) {
             if (removedOps.contains(retainableTsOp)) {
               LOG.debug("Skip {} as it has already been removed", retainableTsOp);
               continue;
@@ -595,10 +594,11 @@ public class SharedWorkOptimizer extends Transform {
 
           if (removedOps.contains(discardableTsOp)) {
             // This operator has been removed, remove it from the list of existing operators
-            existingOps.remove(tableName, discardableTsOp);
+            // FIXME: there is no point of this
+            retainedScans.remove(discardableTsOp);
           } else {
             // This operator has not been removed, include it in the list of existing operators
-            existingOps.put(tableName, discardableTsOp);
+            retainedScans.add(discardableTsOp);
           }
         }
       }
