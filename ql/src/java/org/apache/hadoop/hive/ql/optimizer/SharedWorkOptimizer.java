@@ -135,11 +135,11 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     // Map of dbName.TblName -> TSOperator
-    ArrayListMultimap<String, TableScanOperator> tableNameToOps0 = splitTableScanOpsByTable(pctx);
+    ArrayListMultimap<String, TableScanOperator> tableNameToOps = splitTableScanOpsByTable(pctx);
 
     // Check whether all tables in the plan are unique
     boolean tablesReferencedOnlyOnce =
-        tableNameToOps0.asMap().entrySet().stream().noneMatch(e -> e.getValue().size() > 1);
+        tableNameToOps.asMap().entrySet().stream().noneMatch(e -> e.getValue().size() > 1);
     if (tablesReferencedOnlyOnce) {
       // Nothing to do, bail out
       return pctx;
@@ -163,11 +163,10 @@ public class SharedWorkOptimizer extends Transform {
 
     for (Entry<String, Long> tablePair : sortedTables) {
       String tableName = tablePair.getKey();
-      List<TableScanOperator> scans = tableNameToOps0.get(tableName);
+      List<TableScanOperator> scans = tableNameToOps.get(tableName);
 
-      List<TableScanOperator> tableNameToOps = scans;
       // Execute shared work optimization
-      new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, Mode.SubtreeMerge);
+      new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("After SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
@@ -186,7 +185,7 @@ public class SharedWorkOptimizer extends Transform {
 
         // Execute shared work optimization with semijoin removal
         boolean optimized = new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache,
-            tableNameToOps, Mode.RemoveSemijoin);
+            scans, Mode.RemoveSemijoin);
         if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
           // If it was further optimized, execute a second round of extended shared work optimizer
           sharedWorkExtendedOptimization(pctx, optimizerCache);
@@ -198,7 +197,7 @@ public class SharedWorkOptimizer extends Transform {
       }
 
       if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
-        new BaseSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, Mode.SubtreeMerge);
+        new BaseSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
 
         if (LOG.isDebugEnabled()) {
           LOG.debug("After SharedWorkOptimizer merging TS schema:\n" + Operator.toString(pctx.getTopOps().values()));
@@ -214,7 +213,7 @@ public class SharedWorkOptimizer extends Transform {
         }
 
         boolean optimized =
-            swo.sharedWorkOptimization(pctx, optimizerCache, tableNameToOps, Mode.DPPUnion);
+            swo.sharedWorkOptimization(pctx, optimizerCache, scans, Mode.DPPUnion);
 
         if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
           // If it was further optimized, do a round of extended shared work optimizer
