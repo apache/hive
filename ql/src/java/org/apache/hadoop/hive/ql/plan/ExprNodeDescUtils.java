@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 import java.util.Arrays;
@@ -1061,30 +1062,67 @@ public class ExprNodeDescUtils {
     return false;
   }
 
-  public static ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes) throws UDFArgumentException {
-    if (semijoinExprNodes.isEmpty()) {
+  public static ExprNodeDesc conjunction(List<ExprNodeDesc> inputExpr) throws UDFArgumentException {
+    List<ExprNodeDesc> operands=new ArrayList<ExprNodeDesc>();
+    for (ExprNodeDesc e : inputExpr) {
+      conjunctiveDecomposition(e, operands);
+    }
+
+    if (operands.isEmpty()) {
       return null;
     }
-    if (semijoinExprNodes.size() > 1) {
-      return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), semijoinExprNodes);
+    if (operands.size() > 1) {
+      return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), operands);
     } else {
-      return semijoinExprNodes.get(0);
+      return operands.get(0);
     }
   }
 
-  public static ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes, ExprNodeDesc exprNode)
-      throws UDFArgumentException {
-    if (semijoinExprNodes != null && !semijoinExprNodes.isEmpty()) {
-      if (exprNode != null) {
-        semijoinExprNodes.add(0, exprNode);
+  private static void conjunctiveDecomposition(ExprNodeDesc expr, List<ExprNodeDesc> operands) {
+    if (isAnd(expr)) {
+      for (ExprNodeDesc c : expr.getChildren()) {
+        conjunctiveDecomposition(c, operands);
       }
-      if (semijoinExprNodes.size() > 1) {
-        exprNode = ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), semijoinExprNodes);
-      } else {
-        exprNode = semijoinExprNodes.get(0);
+    } else {
+      if (isTrue(expr)) {
+        return;
+      }
+      for (ExprNodeDesc o : operands) {
+        if (o.isSame(expr)) {
+          return;
+        }
+      }
+      operands.add(expr);
+    }
+
+  }
+
+  private static boolean isTrue(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeConstantDesc) {
+      ExprNodeConstantDesc c = (ExprNodeConstantDesc) expr;
+      if (Boolean.TRUE.equals(c.getValue())) {
+        return true;
       }
     }
-    return exprNode;
+    return false;
+  }
+
+  public static ExprNodeDesc conjunction(ExprNodeDesc node1, ExprNodeDesc node2) throws UDFArgumentException {
+    List<ExprNodeDesc> operands = Lists.newArrayList(node1, node2);
+    return conjunction(operands);
+  }
+
+  public static ExprNodeDesc conjunction(List<ExprNodeDesc> nodes, ExprNodeDesc exprNode)
+      throws UDFArgumentException {
+    if (nodes == null) {
+      return exprNode;
+    }
+    List<ExprNodeDesc> operands = new ArrayList<ExprNodeDesc>();
+    if (exprNode != null) {
+      operands.add(exprNode);
+    }
+    operands.addAll(nodes);
+    return conjunction(operands);
   }
 
   public static ExprNodeDesc disjunction(ExprNodeDesc e1, ExprNodeDesc e2) throws UDFArgumentException {
