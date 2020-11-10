@@ -39,6 +39,7 @@ import java.util.UUID;
 /**
  * TestLlapExtClientWithCloudDeploymentConfigs
  */
+@org.junit.Ignore("flaky; see: HIVE-24364")
 public class TestLlapExtClientWithCloudDeploymentConfigs extends BaseJdbcWithMiniLlap {
 
   @BeforeClass
