@@ -597,6 +597,8 @@ public class SharedWorkOptimizer extends Transform {
       pctx.getTopOps().entrySet().removeIf(
           (Entry<String, TableScanOperator> e) -> e.getValue().getNumChild() == 0);
 
+      tableScans.removeAll(removedOps);
+
       return mergedExecuted;
     }
 
