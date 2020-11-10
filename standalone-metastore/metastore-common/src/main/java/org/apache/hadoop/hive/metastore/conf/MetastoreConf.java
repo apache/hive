@@ -600,8 +600,9 @@ public class MetastoreConf {
             + "present in HMS Notification. Any key-value pair whose key is matched with any regex will"
             +" be removed from Parameters map during Serialization of Table/Partition object."),
     EVENT_DB_LISTENER_TTL("metastore.event.db.listener.timetolive",
-        "hive.metastore.event.db.listener.timetolive", 7, TimeUnit.DAYS,
-        "time after which events will be removed from the database listener queue"),
+        "hive.metastore.event.db.listener.timetolive", 1, TimeUnit.DAYS,
+        "time after which events will be removed from the database listener queue when repl.cm.enabled \n" +
+         "is set to false. When set to true, the conf repl.event.db.listener.timetolive is used instead."),
     EVENT_CLEAN_MAX_EVENTS("metastore.event.db.clean.maxevents",
             "hive.metastore.event.db.clean.maxevents", 10000,
             "Limit on number events to be cleaned at a time in metastore cleanNotificationEvents " +
@@ -975,7 +976,7 @@ public class MetastoreConf {
     REPLCMFALLBACKNONENCRYPTEDDIR("metastore.repl.cm.nonencryptionzone.rootdir",
             "hive.repl.cm.nonencryptionzone.rootdir", "",
             "Root dir for ChangeManager for non encrypted paths if hive.repl.cmrootdir is encrypted."),
-    REPLCMRETIAN("metastore.repl.cm.retain", "hive.repl.cm.retain",  24, TimeUnit.HOURS,
+    REPLCMRETIAN("metastore.repl.cm.retain", "hive.repl.cm.retain",  24 * 10, TimeUnit.HOURS,
         "Time to retain removed files in cmrootdir."),
     REPLCMINTERVAL("metastore.repl.cm.interval", "hive.repl.cm.interval", 3600, TimeUnit.SECONDS,
         "Inteval for cmroot cleanup thread."),
@@ -991,6 +992,10 @@ public class MetastoreConf {
         "hive.exec.copyfile.maxsize", 32L * 1024 * 1024 /*32M*/,
         "Maximum file size (in bytes) that Hive uses to do single HDFS copies between directories." +
             "Distributed copies (distcp) will be used instead for bigger files so that copies can be done faster."),
+    REPL_EVENT_DB_LISTENER_TTL("metastore.repl.event.db.listener.timetolive",
+            "hive.repl.event.db.listener.timetolive", 10, TimeUnit.DAYS,
+            "time after which events will be removed from the database listener queue when repl.cm.enabled \n" +
+                    "is set to true. When set to false, the conf event.db.listener.timetolive is used instead."),
     REPL_METRICS_CACHE_MAXSIZE("metastore.repl.metrics.cache.maxsize",
       "hive.repl.metrics.cache.maxsize", 10000 /*10000 rows */,
       "Maximum in memory cache size to collect replication metrics. The metrics will be pushed to persistent"

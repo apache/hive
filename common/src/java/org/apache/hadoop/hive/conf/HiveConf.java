@@ -511,7 +511,7 @@ public class HiveConf extends Configuration {
         "Turn on ChangeManager, so delete files will go to cmrootdir."),
     REPLCMDIR("hive.repl.cmrootdir","/user/${system:user.name}/cmroot/",
         "Root dir for ChangeManager, used for deleted files."),
-    REPLCMRETIAN("hive.repl.cm.retain","7d",
+    REPLCMRETIAN("hive.repl.cm.retain","10d",
         new TimeValidator(TimeUnit.DAYS),
         "Time to retain removed files in cmrootdir."),
     REPLCMENCRYPTEDDIR("hive.repl.cm.encryptionzone.rootdir", ".cmroot",
@@ -1302,7 +1302,8 @@ public class HiveConf extends Configuration {
     @Deprecated
     METASTORE_EVENT_DB_LISTENER_TTL("hive.metastore.event.db.listener.timetolive", "86400s",
         new TimeValidator(TimeUnit.SECONDS),
-        "time after which events will be removed from the database listener queue"),
+        "time after which events will be removed from the database listener queue when repl.cm.enabled \n" +
+         "is set to false. When repl.cm.enabled is set to true, repl.event.db.listener.timetolive is used instead"),
 
     /**
      * @deprecated Use MetastoreConf.EVENT_DB_NOTIFICATION_API_AUTH
