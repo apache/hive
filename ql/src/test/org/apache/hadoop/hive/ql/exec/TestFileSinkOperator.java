@@ -864,11 +864,6 @@ public class TestFileSinkOperator {
     public ObjectInspector getObjectInspector() throws SerDeException {
       return null;
     }
-
-    @Override
-    public SerDeStats getSerDeStats() {
-      return null;
-    }
   }
 
   public static class TFSOStatsPublisher implements StatsPublisher {

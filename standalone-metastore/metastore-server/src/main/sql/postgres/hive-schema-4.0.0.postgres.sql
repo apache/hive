@@ -1743,7 +1743,9 @@ CREATE TABLE "COMPACTION_QUEUE" (
   "CQ_META_INFO" bytea,
   "CQ_HADOOP_JOB_ID" varchar(32),
   "CQ_ERROR_MESSAGE" text,
-  "CQ_NEXT_TXN_ID" bigint
+  "CQ_NEXT_TXN_ID" bigint,
+  "CQ_TXN_ID" bigint,
+  "CQ_COMMIT_TIME" bigint
 );
 
 CREATE TABLE "NEXT_COMPACTION_QUEUE_ID" (

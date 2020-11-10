@@ -291,7 +291,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private int deadlockCnt;
   private long deadlockRetryInterval;
   protected Configuration conf;
-  private static DatabaseProduct dbProduct;
+  protected static DatabaseProduct dbProduct;
   private static SQLGenerator sqlGenerator;
   private static long openTxnTimeOutMillis;
 
@@ -1337,6 +1337,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
               }
             }
           }
+        } else if (txnType.get() == TxnType.COMPACTION) {
+          acquireTxnLock(stmt, false);
+          commitId = getHighWaterMark(stmt);
         } else {
           /*
            * current txn didn't update/delete anything (may have inserted), so just proceed with commit
@@ -1508,8 +1511,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  private void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType,
-      Long commitId, long tempId) throws SQLException {
+  /**
+   * See overridden method in CompactionTxnHandler also.
+   */
+  protected void updateWSCommitIdAndCleanUpMetadata(Statement stmt, long txnid, TxnType txnType,
+      Long commitId, long tempId) throws SQLException, MetaException {
     List<String> queryBatch = new ArrayList<>(5);
     // update write_set with real commitId
     if (commitId != null) {
@@ -1526,7 +1532,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (txnType == TxnType.MATER_VIEW_REBUILD) {
       queryBatch.add("DELETE FROM \"MATERIALIZATION_REBUILD_LOCKS\" WHERE \"MRL_TXN_ID\" = " + txnid);
     }
-
     // execute all in one batch
     executeQueriesInBatchNoCount(dbProduct, stmt, queryBatch, maxBatchSize);
   }
@@ -2228,36 +2233,43 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   public void performWriteSetGC() throws MetaException {
     Connection dbConn = null;
     Statement stmt = null;
-    ResultSet rs = null;
     try {
       dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
       stmt = dbConn.createStatement();
-
-      long minOpenTxn;
-      rs = stmt.executeQuery("SELECT MIN(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\"=" + TxnStatus.OPEN);
-      if (!rs.next()) {
-        throw new IllegalStateException("Scalar query returned no rows?!?!!");
-      }
-      minOpenTxn = rs.getLong(1);
-      if (rs.wasNull()) {
-        minOpenTxn = Long.MAX_VALUE;
-      }
-      long lowWaterMark = getOpenTxnTimeoutLowBoundaryTxnId(dbConn);
-      /**
-       * We try to find the highest transactionId below everything was committed or aborted.
-       * For that we look for the lowest open transaction in the TXNS and the TxnMinTimeout boundary,
-       * because it is guaranteed there won't be open transactions below that.
-       */
-      long commitHighWaterMark = Long.min(minOpenTxn, lowWaterMark + 1);
-      LOG.debug("Perform WriteSet GC with minOpenTxn {}, lowWaterMark {}", minOpenTxn, lowWaterMark);
+      long commitHighWaterMark = getMinOpenTxnIdWaterMark(dbConn);
       int delCnt = stmt.executeUpdate("DELETE FROM \"WRITE_SET\" WHERE \"WS_COMMIT_ID\" < " + commitHighWaterMark);
       LOG.info("Deleted {} obsolete rows from WRITE_SET", delCnt);
       dbConn.commit();
     } catch (SQLException ex) {
       LOG.warn("WriteSet GC failed due to " + getMessage(ex), ex);
     } finally {
-      close(rs, stmt, dbConn);
+      close(null, stmt, dbConn);
     }
+  }
+
+  protected long getMinOpenTxnIdWaterMark(Connection dbConn) throws MetaException, SQLException {
+    /**
+     * We try to find the highest transactionId below everything was committed or aborted.
+     * For that we look for the lowest open transaction in the TXNS and the TxnMinTimeout boundary,
+     * because it is guaranteed there won't be open transactions below that.
+     */
+    long minOpenTxn;
+    try (Statement stmt = dbConn.createStatement()) {
+      try (ResultSet rs = stmt
+          .executeQuery("SELECT MIN(\"TXN_ID\") FROM \"TXNS\" WHERE \"TXN_STATE\"=" + TxnStatus.OPEN)) {
+        if (!rs.next()) {
+          throw new IllegalStateException("Scalar query returned no rows?!?!!");
+        }
+        minOpenTxn = rs.getLong(1);
+        if (rs.wasNull()) {
+          minOpenTxn = Long.MAX_VALUE;
+        }
+      }
+    }
+    long lowWaterMark = getOpenTxnTimeoutLowBoundaryTxnId(dbConn);
+
+    LOG.debug("MinOpenTxnIdWaterMark calculated with minOpenTxn {}, lowWaterMark {}", minOpenTxn, lowWaterMark);
+    return Long.min(minOpenTxn, lowWaterMark + 1);
   }
 
   /**
