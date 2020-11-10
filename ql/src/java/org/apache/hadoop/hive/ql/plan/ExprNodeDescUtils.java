@@ -1136,4 +1136,30 @@ public class ExprNodeDescUtils {
     return false;
   }
 
+  public static boolean isAnd(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) expr;
+      return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFOPAnd);
+    }
+    return false;
+  }
+
+  public static ExprNodeDesc replaceTabAlias(ExprNodeDesc expr, String oldAlias, String newAlias) {
+    if (expr == null) {
+      return null;
+    }
+    if (expr.getChildren() != null) {
+      for (ExprNodeDesc c : expr.getChildren()) {
+        replaceTabAlias(c, oldAlias, newAlias);
+      }
+    }
+    if (expr instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc exprNodeColumnDesc = (ExprNodeColumnDesc) expr;
+      if (exprNodeColumnDesc.getTabAlias() != null && exprNodeColumnDesc.getTabAlias().equals(oldAlias)) {
+        exprNodeColumnDesc.setTabAlias(newAlias);
+      }
+    }
+    return expr;
+  }
+
 }

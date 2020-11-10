@@ -351,6 +351,17 @@ public class SharedWorkOptimizer extends Transform {
       return semijoinExprNodes;
     }
 
+    public void replaceTabAlias(String oldAlias, String newAlias) {
+      ExprNodeDescUtils.replaceTabAlias(normalFilterExpr, oldAlias, newAlias);
+      for (ExprNodeDesc expr : semijoinExprNodes) {
+        ExprNodeDescUtils.replaceTabAlias(expr, oldAlias, newAlias);
+      }
+    }
+
+    public ExprNodeDesc getFullFilterExpr() throws UDFArgumentException {
+      return conjunction(semijoinExprNodes, normalFilterExpr);
+    }
+
   }
 
   /**
@@ -487,6 +498,8 @@ public class SharedWorkOptimizer extends Transform {
               // For RemoveSemiJoin; this will clear the discardable's semijoin filters
               replaceSemijoinExpressions(discardableTsOp, modelR.getSemiJoinFilter());
             }
+            modelD.replaceTabAlias(discardableTsOp.getConf().getAlias(), retainableTsOp.getConf().getAlias());
+
             // Push filter on top of children for discardable
             pushFilterToTopOfTableScan(optimizerCache, discardableTsOp);
 
