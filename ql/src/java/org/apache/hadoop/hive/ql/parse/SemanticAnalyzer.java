@@ -8013,6 +8013,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private boolean isDirectInsert(boolean destTableIsFullAcid, AcidUtils.Operation acidOp) {
+    // In case of an EXPLAIN ANALYZE query, the direct insert has to be turned off. HIVE-24336
+    if (ctx.getExplainAnalyze() == AnalyzeState.RUNNING) {
+      return false;
+    }
     boolean directInsertEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_ACID_DIRECT_INSERT_ENABLED);
     boolean directInsert = directInsertEnabled && destTableIsFullAcid && (acidOp == AcidUtils.Operation.INSERT);
     if (LOG.isDebugEnabled() && directInsert) {
