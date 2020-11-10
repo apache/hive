@@ -46,7 +46,7 @@ public abstract class LlapCacheableBuffer {
   public static final int INVALIDATE_OK = 0, INVALIDATE_FAILED = 1, INVALIDATE_ALREADY_INVALID = 2;
   protected abstract int invalidate();
   public abstract long getMemoryUsage();
-  public abstract void notifyEvicted(EvictionDispatcher evictionDispatcher);
+  public abstract void notifyEvicted(EvictionDispatcher evictionDispatcher, boolean isProactiveEviction);
 
   @Override
   public String toString() {
