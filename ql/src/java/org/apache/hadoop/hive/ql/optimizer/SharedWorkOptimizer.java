@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -71,6 +73,7 @@ import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFInBloomFilter;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.slf4j.Logger;
@@ -1940,9 +1943,6 @@ public class SharedWorkOptimizer extends Transform {
     List<Operator<? extends OperatorDesc>> allChildren =
         Lists.newArrayList(tsOp.getChildOperators());
     for (Operator<? extends OperatorDesc> op : allChildren) {
-      if (optimizerCache.isKnownFilteringOperator(op)) {
-        continue;
-      }
       if (op instanceof FilterOperator) {
         FilterOperator filterOp = (FilterOperator) op;
         ExprNodeDesc filterExprNode  = filterOp.getConf().getPredicate();
@@ -1963,7 +1963,6 @@ public class SharedWorkOptimizer extends Transform {
         if (!isSame(filterOp.getConf().getPredicate(), newFilterExpr)) {
           filterOp.getConf().setPredicate(newFilterExpr);
         }
-        optimizerCache.setKnownFilteringOperator(filterOp);
       } else {
         Operator<FilterDesc> newOp = OperatorFactory.get(tsOp.getCompilationOpContext(),
                 new FilterDesc(tableScanExprNode.clone(), false),
@@ -1974,10 +1973,8 @@ public class SharedWorkOptimizer extends Transform {
         newOp.getChildOperators().add(op);
         // Add to cache (same group as tsOp)
         optimizerCache.putIfWorkExists(newOp, tsOp);
-        optimizerCache.setKnownFilteringOperator(newOp);
       }
     }
-
   }
 
   static boolean canDeduplicateReduceTraits(ReduceSinkDesc retainable, ReduceSinkDesc discardable) {
@@ -2118,7 +2115,6 @@ public class SharedWorkOptimizer extends Transform {
     // Table scan operators to DPP sources
     final Multimap<TableScanOperator, Operator<?>> tableScanToDPPSource =
             HashMultimap.<TableScanOperator, Operator<?>>create();
-    private Set<Operator<?>> knownFilterOperators = new HashSet<>();
 
     // Add new operator to cache work group of existing operator (if group exists)
     void putIfWorkExists(Operator<?> opToAdd, Operator<?> existingOp) {
@@ -2130,14 +2126,6 @@ public class SharedWorkOptimizer extends Transform {
         operatorToWorkOperators.putAll(opToAdd, c);
         operatorToWorkOperators.put(opToAdd, opToAdd);
       }
-    }
-
-    public boolean isKnownFilteringOperator(Operator<? extends OperatorDesc> op) {
-      return knownFilterOperators.contains(op);
-    }
-
-    public void setKnownFilteringOperator(Operator<?> filterOp) {
-      knownFilterOperators.add(filterOp);
     }
 
     // Remove operator
