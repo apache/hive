@@ -373,9 +373,9 @@ public class SharedWorkOptimizer extends Transform {
 
       Set<TableScanOperator> retainedScans = new LinkedHashSet<>();
       Set<Operator<?>> removedOps = new HashSet<>();
-      //for (Entry<String, Long> tablePair : sortedTables)
       {
-        for (TableScanOperator discardableTsOp : tableNameToOps.get(tableName)) {
+        List<TableScanOperator> list = tableNameToOps.get(tableName);
+        for (TableScanOperator discardableTsOp : list) {
           if (removedOps.contains(discardableTsOp)) {
             LOG.debug("Skip {} as it has already been removed", discardableTsOp);
             continue;
