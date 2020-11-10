@@ -399,13 +399,16 @@ public class TestReplChangeManager {
       "impala", hiveConf);
     //set owner of data path to impala
     fs.setOwner(dirTbl1, "impala", "default");
+    fs.setOwner(part11, "impala", "default");
+    fs.setOwner(part12, "impala", "default");
     proxyUserUgi.doAs((PrivilegedExceptionAction<Void>) () -> {
       try {
         //impala doesn't have access. Should provide access control exception
         ReplChangeManager.getInstance(hiveConf).recycle(dirTbl1, RecycleType.MOVE, false);
         Assert.fail();
       } catch (AccessControlException e) {
-        assertTrue(e.getMessage().contains("Permission denied: user=impala, access=WRITE"));
+        assertTrue(e.getMessage().contains("Permission denied: user=impala, access=EXECUTE"));
+        assertTrue(e.getMessage().contains("/cmroot"));
       }
       return null;
     });
@@ -429,6 +432,60 @@ public class TestReplChangeManager {
       }
       if (!fs.exists(ReplChangeManager.getCMPath(hiveConf, part11.getName(), fileChksum11, cmroot)) &&
         fs.exists(ReplChangeManager.getCMPath(hiveConf, part12.getName(), fileChksum12, cmroot))) {
+        cleared = true;
+      }
+    } while (!cleared);
+  }
+
+  @Test
+  public void tesRecyleImpersionationWithGroupPermissions() throws Exception {
+    FileSystem fs = warehouse.getWhRoot().getFileSystem(hiveConf);
+    Path dirDb = new Path(warehouse.getWhRoot(), "db3");
+    long now = System.currentTimeMillis();
+    fs.delete(dirDb, true);
+    fs.mkdirs(dirDb);
+    Path dirTbl2 = new Path(dirDb, "tbl2");
+    fs.mkdirs(dirTbl2);
+    Path part21 = new Path(dirTbl2, "part1");
+    createFile(part21, "testClearer21");
+    String fileChksum21 = ReplChangeManager.checksumFor(part21, fs);
+    Path part22 = new Path(dirTbl2, "part2");
+    createFile(part22, "testClearer22");
+    String fileChksum22 = ReplChangeManager.checksumFor(part22, fs);
+    final UserGroupInformation proxyUserUgi =
+            UserGroupInformation.createUserForTesting("impala2", new String[] {"supergroup"});
+    //set owner of data path to impala2
+    fs.setOwner(dirTbl2, "impala2", "default");
+    fs.setOwner(part21, "impala2", "default");
+    fs.setOwner(part22, "impala2", "default");
+    proxyUserUgi.doAs((PrivilegedExceptionAction<Void>) () -> {
+      try {
+        //impala2 doesn't have access but it belongs to a group which does.
+        ReplChangeManager.getInstance(hiveConf).recycle(dirTbl2, RecycleType.MOVE, false);
+      } catch (Exception e) {
+        Assert.fail();
+      }
+      return null;
+    });
+    Assert.assertFalse(fs.exists(part21));
+    Assert.assertFalse(fs.exists(part22));
+    assertTrue(fs.exists(ReplChangeManager.getCMPath(hiveConf, part21.getName(), fileChksum21, cmroot)));
+    assertTrue(fs.exists(ReplChangeManager.getCMPath(hiveConf, part22.getName(), fileChksum22, cmroot)));
+    fs.setTimes(ReplChangeManager.getCMPath(hiveConf, part21.getName(), fileChksum21, cmroot),
+            now - 7 * 86400 * 1000 * 2, now - 7 * 86400 * 1000 * 2);
+    ReplChangeManager.scheduleCMClearer(hiveConf);
+
+    long start = System.currentTimeMillis();
+    long end;
+    boolean cleared = false;
+    do {
+      Thread.sleep(200);
+      end = System.currentTimeMillis();
+      if (end - start > 5000) {
+        Assert.fail("timeout, cmroot has not been cleared");
+      }
+      if (!fs.exists(ReplChangeManager.getCMPath(hiveConf, part21.getName(), fileChksum21, cmroot)) &&
+              fs.exists(ReplChangeManager.getCMPath(hiveConf, part22.getName(), fileChksum22, cmroot))) {
         cleared = true;
       }
     } while (!cleared);
