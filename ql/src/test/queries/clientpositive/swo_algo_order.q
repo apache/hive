@@ -10,7 +10,8 @@ drop table if exists x1_date_dim;
 create table x1_store_sales 
 (
 	ss_sold_date_sk int,
-	ss_item_sk	int
+	ss_item_sk	int,
+        x               int
 )
 stored as orc;
 
@@ -32,7 +33,7 @@ insert into x1_date_dim values	(1,1,2000,1),
 				(7,2,2001,7),
 				(8,2,2001,8);
 
-insert into x1_store_sales values (1,1),(3,3),(4,4),(5,5),(6,6),(7,7),(8,8),(9,9),(10,10),(11,11);
+insert into x1_store_sales values (1,1,1),(3,3,3),(4,4,4),(5,5,5),(6,6,6),(7,7,7),(8,8,8),(9,9,9),(10,10,10),(11,11,11);
 
 alter table x1_store_sales update statistics set(
 'numRows'='123456',
@@ -50,7 +51,6 @@ set hive.optimize.index.filter=true;
 set hive.tez.bigtable.minsize.semijoin.reduction=1;
 set hive.tez.min.bloom.filter.entries=1;
 set hive.tez.bloom.filter.factor=1.0f;
-set hive.explain.user=false;
 
 -- note: this plan should involve semijoin reduction
 explain 
@@ -62,10 +62,9 @@ select   sum(s.ss_item_sk) as a
  where
         1=1
         and s.ss_sold_date_sk=d.d_date_sk
-	and d.d_moy=3
 	and d2.d_date_sk=s.ss_sold_date_sk+d.d_date_sk
 union all
-select   sum(s.ss_item_sk) over (partition by d_date_sk) as b
+select   sum(s.ss_item_sk+s.x) over (partition by d_date_sk) as b
  from
      x1_store_sales s
      ,x1_date_dim d
