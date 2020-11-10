@@ -374,8 +374,9 @@ public class SharedWorkOptimizer extends Transform {
       Set<TableScanOperator> retainedScans = new LinkedHashSet<>();
       Set<Operator<?>> removedOps = new HashSet<>();
       {
-        List<TableScanOperator> list = tableNameToOps.get(tableName);
-        for (TableScanOperator discardableTsOp : list) {
+        List<TableScanOperator> scans = tableNameToOps.get(tableName);
+        for (TableScanOperator discardableTsOp : scans) {
+          //          tableName = discardableTsOp.getConf().getAlias();
           if (removedOps.contains(discardableTsOp)) {
             LOG.debug("Skip {} as it has already been removed", discardableTsOp);
             continue;
@@ -988,9 +989,7 @@ public class SharedWorkOptimizer extends Transform {
     Map<String, TableScanOperator> sortedTopOps = new TreeMap<>(pctx.getTopOps());
     for (Entry<String, TableScanOperator> e : sortedTopOps.entrySet()) {
       TableScanOperator tsOp = e.getValue();
-      tableNameToOps.put(
-              tsOp.getConf().getTableMetadata().getDbName() + "."
-                      + tsOp.getConf().getTableMetadata().getTableName(), tsOp);
+      tableNameToOps.put(tsOp.getTableName().toString(), tsOp);
     }
     return tableNameToOps;
   }
@@ -999,8 +998,7 @@ public class SharedWorkOptimizer extends Transform {
     Map<String, Long> tableToTotalSize = new HashMap<>();
     for (Entry<String, TableScanOperator> e : pctx.getTopOps().entrySet()) {
       TableScanOperator tsOp = e.getValue();
-      String tableName = tsOp.getConf().getTableMetadata().getDbName() + "."
-              + tsOp.getConf().getTableMetadata().getTableName();
+      String tableName = tsOp.getTableName().toString();
       long tableSize = tsOp.getStatistics() != null ?
               tsOp.getStatistics().getDataSize() : 0L;
       Long totalSize = tableToTotalSize.get(tableName);
