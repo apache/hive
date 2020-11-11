@@ -106,6 +106,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final Allocator allocator;
   private final FileMetadataCache fileMetadataCache;
   private final LowLevelCache dataCache;
+  private final SerDeLowLevelCacheImpl serdeCache;
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
   private final LowLevelCacheMemoryManager memoryManager;
@@ -153,6 +154,8 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       LowLevelCachePolicy
           realCachePolicy =
           useLrfu ? new LowLevelLrfuCachePolicy(minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
+      // TODO: if realCachePolicy is not something that supports proactive caching
+      // turn the feature off (LLAP_IO_PROACTIVE_EVICTION_ENABLED) and log it
       boolean trackUsage = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_TRACK_CACHE_USAGE);
       LowLevelCachePolicy cachePolicyWrapper;
       if (trackUsage) {
@@ -215,6 +218,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         }
       });
     }
+    this.serdeCache = serdeCache;
     // IO thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
     executor = new StatsRecordingThreadPool(numThreads, numThreads, 0L, TimeUnit.MILLISECONDS,
@@ -256,18 +260,31 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     }
     final ProactiveEviction.Request request = ProactiveEviction.Request.Builder.create()
         .fromProtoRequest(protoRequest).build();
-    Predicate<LlapCacheableBuffer> predicate = buffer -> request.isTagMatch(buffer.getTag());
+    Predicate<CacheTag> predicate = tag -> request.isTagMatch(tag);
     LOG.debug("Starting proactive eviction.");
-    long evictedBytes = memoryManager.evictEntity(predicate);
+    long time = System.currentTimeMillis();
+
+    long markedBytes = dataCache.markBuffersForProactiveEviction(predicate);
+    markedBytes += fileMetadataCache.markBuffersForProactiveEviction(predicate);
+    markedBytes += serdeCache.markBuffersForProactiveEviction(predicate);
+
+    // Signal mark phase of proactive eviction was done
+    if (markedBytes > 0) {
+      memoryManager.notifyProactiveEvictionMark();
+    }
+
+    time = System.currentTimeMillis() - time;
+
     if (LOG.isDebugEnabled()) {
       StringBuilder sb = new StringBuilder();
-      sb.append("Evicted ").append(evictedBytes).append(" bytes from LLAP cache buffers that belong to table(s): ");
+      sb.append(markedBytes).append(" bytes marked for eviction from LLAP cache buffers that belong to table(s): ");
       for (String table : request.getEntities().get(request.getSingleDbName()).keySet()) {
         sb.append(table).append(" ");
       }
+      sb.append(" Duration: ").append(time).append(" ms");
       LOG.debug(sb.toString());
     }
-    return evictedBytes;
+    return markedBytes;
   }
 
   @Override
