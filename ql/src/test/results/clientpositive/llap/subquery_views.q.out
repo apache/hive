@@ -124,7 +124,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: ((key < '11') or ((key < '11') and (value > 'val_11')) or ((key < '11') and (value > 'val_11')) or (key < '11')) (type: boolean)
+                  filterExpr: ((key < '11') or ((key < '11') and (value > 'val_11'))) (type: boolean)
                   properties:
                     insideView TRUE
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
