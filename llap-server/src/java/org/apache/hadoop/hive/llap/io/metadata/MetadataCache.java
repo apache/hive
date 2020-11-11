@@ -27,8 +27,10 @@ import java.io.InputStream;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.common.io.DiskRange;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
@@ -123,6 +125,29 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     estimateErrors.remove(buffer.getFileKey());
   }
 
+  @Override
+  public long markBuffersForProactiveEviction(Predicate<CacheTag> predicate) {
+    long markedBytes = 0;
+
+    Collection<LlapBufferOrBuffers> metadataBufferGroups = metadata.values();
+    for (LlapBufferOrBuffers bufferOrBuffers : metadataBufferGroups) {
+      LlapAllocatorBuffer singleBuffer = bufferOrBuffers.getSingleLlapBuffer();
+      if (singleBuffer != null) {
+        if (predicate.test(singleBuffer.getTag())) {
+          markedBytes += singleBuffer.markForEviction();
+        }
+        continue;
+      }
+      LlapAllocatorBuffer[] buffers = bufferOrBuffers.getMultipleLlapBuffers();
+      assert buffers != null && buffers.length > 1 : "Should have multiple buffers if NULL is set as single buffer";
+      if (predicate.test(buffers[0].getTag())) {
+        for (LlapAllocatorBuffer buffer : buffers) {
+          markedBytes += buffer.markForEviction();
+        }
+      }
+    }
+    return markedBytes;
+  }
 
   @Override
   public void debugDumpShort(StringBuilder sb) {
