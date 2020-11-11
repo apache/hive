@@ -121,7 +121,6 @@ import static org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils.*;
 public class SharedWorkOptimizer extends Transform {
 
   private final static Logger LOG = LoggerFactory.getLogger(SharedWorkOptimizer.class);
-  private static boolean ccc = false;
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -354,10 +353,10 @@ public class SharedWorkOptimizer extends Transform {
       for (ExprNodeDesc expr : semijoinExprNodes) {
         ExprNodeDescUtils.replaceTabAlias(expr, oldAlias, newAlias);
       }
-//      List<Operator<? extends OperatorDesc>> children = ts.getChildOperators();
-//      for (Operator<? extends OperatorDesc> c: children) {
-//        c.replaceTabAlias(oldAlias, newAlias);
-//      }
+      List<Operator<? extends OperatorDesc>> children = ts.getChildOperators();
+      for (Operator<? extends OperatorDesc> c : children) {
+        c.replaceTabAlias(oldAlias, newAlias);
+      }
     }
 
     public ExprNodeDesc getFullFilterExpr() throws UDFArgumentException {
@@ -1948,10 +1947,7 @@ public class SharedWorkOptimizer extends Transform {
         Lists.newArrayList(tsOp.getChildOperators());
     for (Operator<? extends OperatorDesc> op : allChildren) {
       if (optimizerCache.isKnownFilteringOperator(op)) {
-        int asd = 1;
-        if (ccc) {
-          continue;
-        }
+        continue;
       }
       if (op instanceof FilterOperator) {
         FilterOperator filterOp = (FilterOperator) op;
