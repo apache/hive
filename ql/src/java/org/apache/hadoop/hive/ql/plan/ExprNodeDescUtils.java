@@ -1067,6 +1067,15 @@ public class ExprNodeDescUtils {
     for (ExprNodeDesc e : inputExpr) {
       conjunctiveDecomposition(e, operands);
     }
+    for (int i = 0; i < operands.size(); i++) {
+      ExprNodeDesc curr = operands.get(i);
+      if (isOr(curr)) {
+        if (deterministicIntersection(curr.getChildren(), operands)) {
+          operands.remove(i);
+          i--;
+        }
+      }
+    }
 
     if (operands.isEmpty()) {
       return null;
@@ -1076,6 +1085,23 @@ public class ExprNodeDescUtils {
     } else {
       return operands.get(0);
     }
+  }
+
+  /**
+   * Checks wether the two expression sets have a common deterministic intersection.
+   */
+  private static boolean deterministicIntersection(List<ExprNodeDesc> li1, List<ExprNodeDesc> li2) {
+    for (ExprNodeDesc e1 : li1) {
+      if (!isDeterministic(e1)) {
+        continue;
+      }
+      for (ExprNodeDesc e2 : li2) {
+        if (e1.isSame(e2)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private static void conjunctiveDecomposition(ExprNodeDesc expr, List<ExprNodeDesc> operands) {
