@@ -4665,6 +4665,58 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   /**
+   * Builder for the GetProjectionsSpec. This is a projection specification for partitions returned from the HMS.
+   */
+  public static class GetPartitionProjectionsSpecBuilder {
+
+    java.util.List<java.lang.String> partitionList = null;
+    java.lang.String includePartitionPattern = null;
+    java.lang.String excludePartitionPattern = null;
+
+    public void setPartitionList(List<String> partitionList) {
+      this.partitionList = partitionList;
+    }
+
+    public void setIncludePartitionPattern(String includePartitionPattern) {
+      this.includePartitionPattern = includePartitionPattern;
+    }
+
+    public void setExcludePartitionPattern(String excludePartitionPattern) {
+      this.excludePartitionPattern = excludePartitionPattern;
+    }
+
+    public GetProjectionsSpec build() {
+      return new GetProjectionsSpec(partitionList, includePartitionPattern, excludePartitionPattern);
+    }
+  }
+
+  /**
+   * Builder for the GetProjectionsSpec. This is a projection specification for tables returned from the HMS.
+   */
+  public static class GetTableProjectionsSpecBuilder {
+
+    java.util.List<java.lang.String> columnList = null;
+    java.lang.String includeColumnPattern = null;
+    java.lang.String excludeColumnPattern = null;
+
+    public void setColumnList(List<String> columnList) {
+      this.columnList = columnList;
+    }
+
+    public void setIncludeColumnPattern(String includeColumnPattern) {
+      this.includeColumnPattern = includeColumnPattern;
+    }
+
+    public void setExcludeColumnPattern(String excludeColumnPattern) {
+      this.excludeColumnPattern = excludeColumnPattern;
+    }
+
+    public GetProjectionsSpec build() {
+      return new GetProjectionsSpec(columnList, includeColumnPattern, excludeColumnPattern);
+    }
+  }
+
+  /**
   * Builder for requiredFields bitmask to be sent via GetTablesExtRequest
   */
    public static class GetTablesRequestBuilder {
