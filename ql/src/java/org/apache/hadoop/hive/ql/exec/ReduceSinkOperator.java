@@ -605,4 +605,12 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     this.out = _out;
   }
 
+  @Override
+  public void replaceTabAlias(String oldAlias, String newAlias) {
+    super.replaceTabAlias(oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getColumnExprMap(), oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getBucketCols(), oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getPartitionCols(), oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getKeyCols(), oldAlias, newAlias);
+  }
 }

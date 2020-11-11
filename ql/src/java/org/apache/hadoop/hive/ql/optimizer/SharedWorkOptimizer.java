@@ -353,6 +353,10 @@ public class SharedWorkOptimizer extends Transform {
       for (ExprNodeDesc expr : semijoinExprNodes) {
         ExprNodeDescUtils.replaceTabAlias(expr, oldAlias, newAlias);
       }
+      List<Operator<? extends OperatorDesc>> children = ts.getChildOperators();
+      for (Operator<? extends OperatorDesc> c: children) {
+        c.replaceTabAlias(oldAlias, newAlias);
+      }
     }
 
     public ExprNodeDesc getFullFilterExpr() throws UDFArgumentException {
@@ -495,10 +499,11 @@ public class SharedWorkOptimizer extends Transform {
               // For RemoveSemiJoin; this will clear the discardable's semijoin filters
               replaceSemijoinExpressions(discardableTsOp, modelR.getSemiJoinFilter());
             }
-            modelD.replaceTabAlias(discardableTsOp.getConf().getAlias(), retainableTsOp.getConf().getAlias());
 
             // Push filter on top of children for discardable
             pushFilterToTopOfTableScan(optimizerCache, modelD);
+
+            modelD.replaceTabAlias(discardableTsOp.getConf().getAlias(), retainableTsOp.getConf().getAlias());
 
             // Obtain filter for shared TS operator
             ExprNodeDesc exprNode = null;

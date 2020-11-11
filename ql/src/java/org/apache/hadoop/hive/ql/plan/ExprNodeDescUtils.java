@@ -1200,4 +1200,19 @@ public class ExprNodeDescUtils {
     return expr;
   }
 
+  public static void replaceTabAlias(Map<String, ExprNodeDesc> exprMap, String oldAlias, String newAlias) {
+    if (exprMap != null) {
+      ExprNodeDescUtils.replaceTabAlias(exprMap.values(), oldAlias, newAlias);
+    }
+  }
+
+  public static void replaceTabAlias(Collection<ExprNodeDesc> exprs, String oldAlias, String newAlias) {
+    if (exprs != null) {
+      for (ExprNodeDesc expr : exprs) {
+        replaceTabAlias(expr, oldAlias, newAlias);
+      }
+    }
+
+  }
+
 }
