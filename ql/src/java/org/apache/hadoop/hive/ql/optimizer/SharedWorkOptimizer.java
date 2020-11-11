@@ -1945,6 +1945,7 @@ public class SharedWorkOptimizer extends Transform {
     }
     List<Operator<? extends OperatorDesc>> allChildren =
         Lists.newArrayList(tsOp.getChildOperators());
+    childOperators:
     for (Operator<? extends OperatorDesc> op : allChildren) {
       if (optimizerCache.isKnownFilteringOperator(op)) {
         continue;
@@ -1954,6 +1955,7 @@ public class SharedWorkOptimizer extends Transform {
         ExprNodeDesc filterExprNode  = filterOp.getConf().getPredicate();
         if (tableScanExprNode.isSame(filterExprNode)) {
           // We do not need to do anything
+          optimizerCache.setKnownFilteringOperator(filterOp);
           continue;
         }
         if (tableScanExprNode.getGenericUDF() instanceof GenericUDFOPOr) {
@@ -1961,7 +1963,8 @@ public class SharedWorkOptimizer extends Transform {
             if (childExprNode.isSame(filterExprNode)) {
               // We do not need to do anything, it is in the OR expression
               // so probably we pushed previously
-              continue;
+              optimizerCache.setKnownFilteringOperator(filterOp);
+              continue childOperators;
             }
           }
         }
