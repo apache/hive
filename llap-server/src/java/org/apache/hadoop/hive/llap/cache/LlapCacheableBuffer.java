@@ -61,4 +61,21 @@ public abstract class LlapCacheableBuffer {
   public abstract CacheTag getTag();
 
   protected abstract boolean isLocked();
+
+  /**
+   * Marks this buffer as eligible for proactive eviction.
+   * @return buffer size
+   */
+  public abstract long markForEviction();
+
+  /**
+   * Un-marks proactive eviction flag from this buffer.
+   */
+  public abstract void removeProactiveEvictionMark();
+
+  /**
+   * Checks if this buffer is marked for proactive eviction
+   * @return true if marked
+   */
+  public abstract boolean isMarkedForEviction();
 }
