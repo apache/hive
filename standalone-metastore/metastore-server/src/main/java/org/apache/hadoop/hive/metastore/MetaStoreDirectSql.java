@@ -113,6 +113,12 @@ import com.google.common.collect.Lists;
 class MetaStoreDirectSql {
   private static final int NO_BATCHING = -1, DETECT_BATCHING = 0;
 
+  // The JDBC client driver implementations of Derby, PostgreSQL, MySQL, MariaDB and Oracle send the number of
+  // parameters being set in a executed statement as a 2 byte signed integer to the servers. This indirectly
+  // sets s limit on the number of parameters that can be set to 32767. This is also the number of parameters
+  // that can be passed to the JDO executeArray call.
+  final int JDBC_STMT_PARAM_LIMIT = 32767;
+
   private static final Logger LOG = LoggerFactory.getLogger(MetaStoreDirectSql.class);
   private final PersistenceManager pm;
   private final Configuration conf;
@@ -871,12 +877,6 @@ class MetaStoreDirectSql {
       throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
 
-    // The JDBC client driver implementations of Derby, PostgreSQL, MySQL, MariaDB and Oracle send the number of
-    // parameters being set in a executed statement as a 2 byte signed integer to the servers. This indirectly
-    // sets s limit on the number of parameters that can be set to 32767. This is also the number of parameters
-    // that can be passed to the JDO executeArray call.
-    final int JDBC_STMT_PARAM_LIMIT = 32767;
-
     final String dbNameLcase = dbName.toLowerCase();
     final String tblNameLcase = tblName.toLowerCase();
     final String catNameLcase = normalizeSpace(catName).toLowerCase();
@@ -888,13 +888,13 @@ class MetaStoreDirectSql {
 
     String queryText =
             "select " + PARTITIONS + ".\"PART_ID\" from " + PARTITIONS + ""
-                    + "  inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\" "
-                    + "    and " + TBLS + ".\"TBL_NAME\" = ? "
-                    + "  inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
-                    + "     and " + DBS + ".\"NAME\" = ? "
-                    + join(joinsForFilter, ' ')
-                    + " where " + DBS + ".\"CTLG_NAME\" = ? "
-                    + (StringUtils.isBlank(sqlFilter) ? "" : (" and " + sqlFilter)) + orderForFilter;
+          + "  inner join " + TBLS + " on " + PARTITIONS + ".\"TBL_ID\" = " + TBLS + ".\"TBL_ID\" "
+          + "    and " + TBLS + ".\"TBL_NAME\" = ? "
+          + "  inner join " + DBS + " on " + TBLS + ".\"DB_ID\" = " + DBS + ".\"DB_ID\" "
+          + "     and " + DBS + ".\"NAME\" = ? "
+          + join(joinsForFilter, ' ')
+          + " where " + DBS + ".\"CTLG_NAME\" = ? "
+          + (StringUtils.isBlank(sqlFilter) ? "" : (" and " + sqlFilter)) + orderForFilter;
 
     int parametersToProcess = paramsForFilter.size();
 
@@ -903,7 +903,6 @@ class MetaStoreDirectSql {
     // If this method has been called by default we need to query the tables once. Hence set the minimum numbner of
     // iterations to 1.
     int iterations = 1;
-
 
     // The first three parameters in the query are the table, database and the catalog names. This leaves us
     // JDBC_STMT_PARAM_LIMIT - 3 parameters that can be passed to the underlying JDBC driver. If the number of
@@ -949,7 +948,6 @@ class MetaStoreDirectSql {
         }
         result.add(MetastoreDirectSqlUtils.extractSqlLong(fields));
       }
-
       query.closeAll();
     }
     return result;
