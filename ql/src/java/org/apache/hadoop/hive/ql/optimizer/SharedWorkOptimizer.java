@@ -121,6 +121,7 @@ import static org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils.*;
 public class SharedWorkOptimizer extends Transform {
 
   private final static Logger LOG = LoggerFactory.getLogger(SharedWorkOptimizer.class);
+  private static boolean ccc = false;
 
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
@@ -353,10 +354,10 @@ public class SharedWorkOptimizer extends Transform {
       for (ExprNodeDesc expr : semijoinExprNodes) {
         ExprNodeDescUtils.replaceTabAlias(expr, oldAlias, newAlias);
       }
-      List<Operator<? extends OperatorDesc>> children = ts.getChildOperators();
-      for (Operator<? extends OperatorDesc> c: children) {
-        c.replaceTabAlias(oldAlias, newAlias);
-      }
+//      List<Operator<? extends OperatorDesc>> children = ts.getChildOperators();
+//      for (Operator<? extends OperatorDesc> c: children) {
+//        c.replaceTabAlias(oldAlias, newAlias);
+//      }
     }
 
     public ExprNodeDesc getFullFilterExpr() throws UDFArgumentException {
@@ -500,10 +501,11 @@ public class SharedWorkOptimizer extends Transform {
               replaceSemijoinExpressions(discardableTsOp, modelR.getSemiJoinFilter());
             }
 
+            modelD.replaceTabAlias(discardableTsOp.getConf().getAlias(), retainableTsOp.getConf().getAlias());
+
             // Push filter on top of children for discardable
             pushFilterToTopOfTableScan(optimizerCache, modelD);
 
-            modelD.replaceTabAlias(discardableTsOp.getConf().getAlias(), retainableTsOp.getConf().getAlias());
 
             // Obtain filter for shared TS operator
             ExprNodeDesc exprNode = null;
@@ -1946,21 +1948,24 @@ public class SharedWorkOptimizer extends Transform {
         Lists.newArrayList(tsOp.getChildOperators());
     for (Operator<? extends OperatorDesc> op : allChildren) {
       if (optimizerCache.isKnownFilteringOperator(op)) {
-        continue;
+        int asd = 1;
+        if (ccc) {
+          continue;
+        }
       }
       if (op instanceof FilterOperator) {
         FilterOperator filterOp = (FilterOperator) op;
         ExprNodeDesc filterExprNode  = filterOp.getConf().getPredicate();
         if (tableScanExprNode.isSame(filterExprNode)) {
           // We do not need to do anything
-          return;
+          continue;
         }
         if (tableScanExprNode.getGenericUDF() instanceof GenericUDFOPOr) {
           for (ExprNodeDesc childExprNode : tableScanExprNode.getChildren()) {
             if (childExprNode.isSame(filterExprNode)) {
               // We do not need to do anything, it is in the OR expression
               // so probably we pushed previously
-              return;
+              continue;
             }
           }
         }
