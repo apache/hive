@@ -63,7 +63,7 @@ public class CreateDataConnectorAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_DATACONNECTORURL:
         url = unescapeSQLString(childNode.getChild(0).getText());
-        outputs.add(toWriteEntity(url));
+        // outputs.add(toWriteEntity(url));
         break;
       case HiveParser.TOK_DATACONNECTORTYPE:
         type = unescapeSQLString(childNode.getChild(0).getText());

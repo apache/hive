@@ -95,6 +95,7 @@ import org.apache.hadoop.hive.common.ZooKeeperHiveHelper;
 import org.apache.hadoop.hive.common.ZKDeRegisterWatcher;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.dataconnector.DataConnectorProviderFactory;
 import org.apache.hadoop.hive.metastore.events.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
@@ -210,6 +211,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     private PartitionExpressionProxy expressionProxy;
     private StorageSchemaReader storageSchemaReader;
     private IMetaStoreMetadataTransformer transformer;
+    private static DataConnectorProviderFactory dataconnectorFactory = null;
 
     // Variables for metrics
     // Package visible so that HMSMetricsListener can see them.
@@ -579,6 +581,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw new IllegalArgumentException(e);
         }
       }
+      dataconnectorFactory = DataConnectorProviderFactory.getInstance(this);
     }
 
     private static void startAlwaysTaskThreads(Configuration conf) throws MetaException {
@@ -2058,10 +2061,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    private DataConnector get_dataconnector_core(final String name) throws NoSuchObjectException, MetaException {
+    @Override
+    public DataConnector get_dataconnector_core(final String name) throws NoSuchObjectException, MetaException {
       DataConnector connector = null;
       if (name == null) {
-        throw new MetaException("Database name cannot be null.");
+        throw new MetaException("Data connector name cannot be null.");
       }
       try {
         connector = getMS().getDataConnector(name);
@@ -2079,19 +2083,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       startFunction("get_dataconnector", ": " + request.getConnectorName());
       DataConnector connector = null;
       Exception ex = null;
-      if (request.getConnectorName() == null) {
-        throw new MetaException("Dataconnector name cannot be null.");
-      }
-      // List<String> processorCapabilities = request.getProcessorCapabilities();
-      // String processorId = request.getProcessorIdentifier();
       try {
-        connector = getMS().getDataConnector(request.getConnectorName());
-        // firePreEvent(new PreReadDatabaseEvent(connector, this));
-        /*
-        if (processorCapabilities != null && transformer != null) {
-          connector = transformer.transformDatabase(connector, processorCapabilities, processorId);
-        }
-        */
+        connector = get_dataconnector_core(request.getConnectorName());
       } catch (MetaException | NoSuchObjectException e) {
         ex = e;
         throw e;
@@ -3724,7 +3717,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Preconditions.checkArgument(!getColumnStats || engine != null,
           "To retrieve column statistics with a table, engine parameter cannot be null");
 
+      Database db = null;
       Table t = null;
+      try {
+        db = get_database_core(catName, dbname);
+        if (db != null) {
+          if (db.getType().equals(DatabaseType.REMOTE)) {
+            return DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(name);
+          }
+        }
+      } catch (NoSuchObjectException notExists) {
+        throw new MetaException("Database could not be found:" + dbname);
+      }
+
       try {
         t = getMS().getTable(catName, dbname, name, writeIdList);
         if (t == null) {
@@ -5982,7 +5987,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       List<String> ret = null;
       Exception ex = null;
+      Database db = null;
       String[] parsedDbName = parseDbName(dbname, conf);
+      try {
+        db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+        if (db != null) {
+          if (db.getType().equals(DatabaseType.REMOTE)) {
+            return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
+          }
+        }
+      } catch (NoSuchObjectException notExists) {
+        throw new MetaException("Database could not be found:" + dbname);
+      }
+
       try {
         ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern);
         if(ret !=  null && !ret.isEmpty()) {
@@ -6037,7 +6054,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       List<String> ret = null;
       Exception ex = null;
+      Database db = null;
       try {
+        db = get_database_core(catName, dbname);
+        if (db != null) {
+          if(db.getType().equals(DatabaseType.REMOTE)) {
+            return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
+          }
+        }
         ret = getMS().getTables(catName, dbname, pattern, TableType.valueOf(tableType), -1);
       } catch (MetaException e) {
         ex = e;

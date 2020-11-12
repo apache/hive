@@ -75,12 +75,11 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
         break;
       case HiveParser.TOK_DATACONNECTOR:
         type = "REMOTE";
-        locationUri = "REMOTE_DATABASE"; // TODO
-        // i++;
+        // locationUri = "REMOTE_DATABASE"; // TODO
         ASTNode nextNode = (ASTNode) root.getChild(i);
         connectorName = ((ASTNode)nextNode).getChild(0).getText();
         outputs.add(toWriteEntity(connectorName));
-        outputs.remove(toWriteEntity(locationUri));
+        // outputs.remove(toWriteEntity(locationUri));
         if (managedLocationUri != null) {
           outputs.remove(toWriteEntity(managedLocationUri));
           managedLocationUri = null;
@@ -91,7 +90,6 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    // String remoteDbName = props.get("connector.remoteDbName");
     CreateDatabaseDesc desc = null;
     Database database = new Database(databaseName, comment, locationUri, props);
     if (type.equalsIgnoreCase("NATIVE")) {
@@ -103,7 +101,7 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
       }
     } else {
       String remoteDbName = databaseName;
-      if (props != null && props.get("connector.remoteDbName") != null) // TODO
+      if (props != null && props.get("connector.remoteDbName") != null) // TODO finalize the property name
         remoteDbName = props.get("connector.remoteDbName");
       desc = new CreateDatabaseDesc(databaseName, comment, locationUri, null, ifNotExists, props, type,
           connectorName, remoteDbName);
@@ -112,8 +110,6 @@ public class CreateDatabaseAnalyzer extends BaseSemanticAnalyzer {
       database.setRemote_dbname(remoteDbName);
     }
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-
-    // database = new Database(databaseName, comment, locationUri, props);
     outputs.add(new WriteEntity(database, WriteEntity.WriteType.DDL_NO_LOCK));
   }
 }

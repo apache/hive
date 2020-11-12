@@ -38,9 +38,7 @@ public class AlterDataConnectorSetUrlAnalyzer extends AbstractAlterDataConnector
   public void analyzeInternal(ASTNode root) throws SemanticException {
     String connectorName = getUnescapedName((ASTNode) root.getChild(0));
     String newURL = unescapeSQLString(root.getChild(1).getText());
-
-    outputs.add(toWriteEntity(newURL));
-
+    // TODO add some validation for the URL?
     AlterDataConnectorSetUrlDesc desc = new AlterDataConnectorSetUrlDesc(connectorName, newURL);
     addAlterDataConnectorDesc(desc);
   }
