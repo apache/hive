@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
- * VectorGroupByAggregrationInfo.
+ * VectorGroupByAggregationInfo.
  *
  * A convenience data structure that has information needed to vectorize reduce sink.
  *

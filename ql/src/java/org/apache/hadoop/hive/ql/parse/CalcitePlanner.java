@@ -4735,7 +4735,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
               (srcRel.getInputs().size() == 1 && srcRel.getInput(0) instanceof HiveAggregate))) {
             // Likely a malformed query eg, select hash(distinct c1) from t1;
             throw new CalciteSemanticException("Distinct without an aggregation.",
-                    UnsupportedFeature.Distinct_without_an_aggreggation);
+                    UnsupportedFeature.Distinct_without_an_aggregation);
           } else {
             // Case when this is an expression
             TypeCheckCtx tcCtx = new TypeCheckCtx(inputRR, cluster.getRexBuilder());
