@@ -2788,7 +2788,7 @@ public class HiveConf extends Configuration {
     HIVE_STATS_DEFAULT_PUBLISHER("hive.stats.default.publisher", "",
         "The Java class (implementing the StatsPublisher interface) that is used by default if hive.stats.dbclass is custom type."),
     /**
-     * @deprecated Use MetastoreConf.STATS_DEFAULT_AGGRETATOR
+     * @deprecated Use MetastoreConf.STATS_DEFAULT_AGGREGATOR
      */
     @Deprecated
     HIVE_STATS_DEFAULT_AGGREGATOR("hive.stats.default.aggregator", "",
