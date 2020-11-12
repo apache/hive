@@ -151,7 +151,7 @@ public class TestAvroSerdeUtils {
   }
 
   @Test
-  public void detemineSchemaTriesToOpenUrl() throws AvroSerdeException, IOException {
+  public void determineSchemaTriesToOpenUrl() throws AvroSerdeException, IOException {
     Configuration conf = new Configuration();
     Properties props = new Properties();
     props.put(AvroTableProperties.SCHEMA_URL.getPropName(), "not:///a.real.url");
