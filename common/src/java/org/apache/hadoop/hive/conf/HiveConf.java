@@ -4679,7 +4679,7 @@ public class HiveConf extends Configuration {
             + " 1: recommended value: there is only 1 merger thread (additionally to the task's main thread),"
             + "according perf tests, this can lead to serious improvement \n"),
     TEZ_BIGTABLE_MIN_SIZE_SEMIJOIN_REDUCTION("hive.tez.bigtable.minsize.semijoin.reduction", 100000000L,
-            "Big table for runtime filteting should be of atleast this size"),
+            "Big table for runtime filtering should be of atleast this size"),
     TEZ_DYNAMIC_SEMIJOIN_REDUCTION_THRESHOLD("hive.tez.dynamic.semijoin.reduction.threshold", (float) 0.50,
             "Only perform semijoin optimization if the estimated benefit at or above this fraction of the target table"),
     TEZ_DYNAMIC_SEMIJOIN_REDUCTION_MULTICOLUMN(
