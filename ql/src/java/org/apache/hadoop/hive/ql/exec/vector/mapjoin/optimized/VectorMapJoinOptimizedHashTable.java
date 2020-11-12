@@ -50,7 +50,7 @@ public abstract class VectorMapJoinOptimizedHashTable
 
   protected final MapJoinTableContainer originalTableContainer;
   protected final MapJoinTableContainerDirectAccess containerDirectAccess;
-  protected final ReusableGetAdaptorDirectAccess adapatorDirectAccess;
+  protected final ReusableGetAdaptorDirectAccess adapterDirectAccess;
 
   public static class SerializedBytes {
     byte[] bytes;
@@ -65,7 +65,7 @@ public abstract class VectorMapJoinOptimizedHashTable
 
   @Override
   public int spillPartitionId() {
-    return adapatorDirectAccess.directSpillPartitionId();
+    return adapterDirectAccess.directSpillPartitionId();
   }
 
   @Override
@@ -94,10 +94,10 @@ public abstract class VectorMapJoinOptimizedHashTable
     hashTableResult.forget();
 
     JoinUtil.JoinResult joinResult =
-            adapatorDirectAccess.setDirect(keyBytes, keyOffset, keyLength,
+            adapterDirectAccess.setDirect(keyBytes, keyOffset, keyLength,
                 bytesBytesMultiHashMapResult, matchTracker);
     if (joinResult == JoinUtil.JoinResult.SPILL) {
-      hashTableResult.setSpillPartitionId(adapatorDirectAccess.directSpillPartitionId());
+      hashTableResult.setSpillPartitionId(adapterDirectAccess.directSpillPartitionId());
     }
 
     hashTableResult.setJoinResult(joinResult);
@@ -110,7 +110,7 @@ public abstract class VectorMapJoinOptimizedHashTable
 
     this.originalTableContainer = originalTableContainer;
     containerDirectAccess = (MapJoinTableContainerDirectAccess) originalTableContainer;
-    adapatorDirectAccess = (ReusableGetAdaptorDirectAccess) hashMapRowGetter;
+    adapterDirectAccess = (ReusableGetAdaptorDirectAccess) hashMapRowGetter;
   }
 
   @Override
@@ -128,6 +128,6 @@ public abstract class VectorMapJoinOptimizedHashTable
 
   @Override
   public MatchTracker createMatchTracker() {
-    return adapatorDirectAccess.createMatchTracker();
+    return adapterDirectAccess.createMatchTracker();
   }
 }
