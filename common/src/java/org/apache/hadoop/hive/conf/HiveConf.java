@@ -2559,7 +2559,7 @@ public class HiveConf extends Configuration {
         "Whether to eliminate scans of the tables from which no columns are selected. Note\n" +
         "that, when selecting from empty tables with data files, this can produce incorrect\n" +
         "results, so it's disabled by default. It works correctly for normal tables."),
-    HIVENULLSCANOPTIMIZE("hive.optimize.null.scan", true, "Dont scan relations which are guaranteed to not generate any rows"),
+    HIVENULLSCANOPTIMIZE("hive.optimize.null.scan", true, "Don't scan relations which are guaranteed to not generate any rows"),
     HIVEOPTPPD_STORAGE("hive.optimize.ppd.storage", true,
         "Whether to push predicates down to storage handlers"),
     HIVEOPTGROUPBY("hive.optimize.groupby", true,

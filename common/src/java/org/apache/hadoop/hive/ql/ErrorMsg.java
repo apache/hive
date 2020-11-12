@@ -218,7 +218,7 @@ public enum ErrorMsg {
   BUCKET_MAPJOIN_NOT_POSSIBLE(10136,
     "Bucketed mapjoin cannot be performed. " +
     "This can be due to multiple reasons: " +
-    " . Join columns dont match bucketed columns. " +
+    " . Join columns don't match bucketed columns. " +
     " . Number of buckets are not a multiple of each other. " +
     "If you really want to perform the operation, either remove the " +
     "mapjoin hint from your query or set hive.enforce.bucketmapjoin to false."),
@@ -523,23 +523,23 @@ public enum ErrorMsg {
 
   STATSPUBLISHER_NOT_OBTAINED(30000, "StatsPublisher cannot be obtained. " +
     "There was a error to retrieve the StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
   STATSPUBLISHER_INITIALIZATION_ERROR(30001, "StatsPublisher cannot be initialized. " +
     "There was a error in the initialization of StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
   STATSPUBLISHER_CONNECTION_ERROR(30002, "StatsPublisher cannot be connected to." +
     "There was a error while connecting to the StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
   STATSPUBLISHER_PUBLISHING_ERROR(30003, "Error in publishing stats. There was an " +
     "error in publishing stats via StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
   STATSPUBLISHER_CLOSING_ERROR(30004, "StatsPublisher cannot be closed." +
     "There was a error while closing the StatsPublisher, and retrying " +
-    "might help. If you dont want the query to fail because accurate statistics " +
+    "might help. If you don't want the query to fail because accurate statistics " +
     "could not be collected, set hive.stats.reliable=false"),
 
   COLUMNSTATSCOLLECTOR_INVALID_PART_KEY(30005, "Invalid partitioning key specified in ANALYZE " +
