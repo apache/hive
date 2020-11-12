@@ -184,7 +184,9 @@ public class TezTask extends Task<TezWork> {
           ss.getHiveVariables().get("wmpool"), ss.getHiveVariables().get("wmapp"));
 
       WmContext wmContext = ctx.getWmContext();
-      boolean skipXmlConfs = conf.getBoolVar(HiveConf.ConfVars.HIVE_TEZ_SKIP_LOCAL_XML);
+      boolean isLlap = "llap".equalsIgnoreCase(HiveConf.getVar(
+          conf, HiveConf.ConfVars.HIVE_EXECUTION_MODE));
+      boolean skipXmlConfs = isLlap && conf.getBoolVar(HiveConf.ConfVars.HIVE_TEZ_SKIP_LOCAL_XML);
       // jobConf will hold all the configuration for hadoop, tez, and hive, which are not set in AM defaults
       JobConf jobConf = utils.createConfiguration(conf, skipXmlConfs);
 

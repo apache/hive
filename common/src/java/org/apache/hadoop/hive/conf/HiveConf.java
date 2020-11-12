@@ -4938,8 +4938,8 @@ public class HiveConf extends Configuration {
       "Merge adjacent joins into a single n-way join"),
     HIVE_LOG_N_RECORDS("hive.log.every.n.records", 1000000L, new RangeValidator(0L, null),
       "If value is greater than 0 logs in fixed intervals of size n rather than exponentially."),
-    HIVE_TEZ_SKIP_LOCAL_XML("hive.tez.skip.local.xml", true, "Hive excludes local xml files"
-        + " when sending configuration options to Tez AM when true"),
+    HIVE_TEZ_SKIP_LOCAL_XML("hive.tez.skip.local.xml", true, "Hive does not send local xml configuration" +
+        "files to Tez tasks when true. This takes affect only in LLAP mode."),
     /**
      * @deprecated Use MetastoreConf.MSCK_PATH_VALIDATION
      */
