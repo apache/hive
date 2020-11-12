@@ -158,7 +158,7 @@ class AvroDeserializer {
    * @param writable Instance of GenericAvroWritable to deserialize
    * @param readerSchema Schema of the writable to deserialize
    * @return A list of objects suitable for Hive to work with further
-   * @throws AvroSerdeException For any exception during deseriliazation
+   * @throws AvroSerdeException For any exception during deserialization
    */
   public Object deserialize(List<String> columnNames, List<TypeInfo> columnTypes,
                             Writable writable, Schema readerSchema) throws AvroSerdeException {
