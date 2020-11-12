@@ -109,7 +109,7 @@ public class TestHiveStringUtils {
    * check that statement is unchanged after stripping
    */
   private void assertUnchanged(String statement) {
-    assertEquals("statement should not have been affected by stripping commnents", statement,
+    assertEquals("statement should not have been affected by stripping comments", statement,
         removeComments(statement));
   }
 }
