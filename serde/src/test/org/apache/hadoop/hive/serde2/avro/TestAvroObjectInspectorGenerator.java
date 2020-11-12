@@ -412,7 +412,7 @@ public class TestAvroObjectInspectorGenerator {
   /**
    * Check a given AvroObjectInspectorGenerator to verify that it matches our test
    * schema's expected map.
-   * @param aoig should already have been intitialized, may not be null
+   * @param aoig should already have been initialized, may not be null
    * @param fieldName name of the contained column, will always fail if null.
    */
   private void verifyMap(final AvroObjectInspectorGenerator aoig, final String fieldName) {
