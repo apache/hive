@@ -408,7 +408,7 @@ public class TopNHash {
 
   /**
    * for order by, same keys are counted (For 1-2-2-3-4, limit 3 is 1-2-2)
-   * MinMaxPriorityQueue is used because it alows duplication and fast access to biggest one
+   * MinMaxPriorityQueue is used because it allows duplication and fast access to biggest one
    */
   private class HashForRow implements IndexStore {
     private final MinMaxPriorityQueue<Integer> indexes = MinMaxPriorityQueue.orderedBy(C).create();
