@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse.repl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.ContentSummary;
@@ -45,6 +46,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class CopyUtils {
@@ -60,12 +64,14 @@ public class CopyUtils {
   private final boolean hiveInReplTest;
   private final String copyAsUser;
   private FileSystem destinationFs;
+  private final int maxParallelCopyTask;
 
   public CopyUtils(String distCpDoAsUser, HiveConf hiveConf, FileSystem destinationFs) {
     this.hiveConf = hiveConf;
     maxNumberOfFiles = hiveConf.getLongVar(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES);
     maxCopyFileSize = hiveConf.getLongVar(HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE);
     hiveInReplTest = hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL);
+    maxParallelCopyTask = hiveConf.getIntVar(HiveConf.ConfVars.REPL_PARALLEL_COPY_TASKS);
     this.copyAsUser = distCpDoAsUser;
     this.destinationFs = destinationFs;
   }
@@ -82,27 +88,33 @@ public class CopyUtils {
     }
     FileSystem sourceFs = srcFiles.get(0).getSrcFs();
     boolean useRegularCopy = regularCopy(sourceFs, srcFiles);
+    ExecutorService executorService = null;
     try {
       if (useRegularCopy || readSrcAsFilesList) {
         // Layout of data files may differ based on the type of tables.
         Map<FileSystem, Map< Path, List<ReplChangeManager.FileInfo>>> map = fsToFileMap(srcFiles, destRoot);
         for (Map.Entry<FileSystem, Map<Path, List<ReplChangeManager.FileInfo>>> entry : map.entrySet()) {
           Map<Path, List<ReplChangeManager.FileInfo>> destMap = entry.getValue();
-          for (Map.Entry<Path, List<ReplChangeManager.FileInfo>> destMapEntry : destMap.entrySet()) {
-            Path destination = destMapEntry.getKey();
-            List<ReplChangeManager.FileInfo> fileInfoList = destMapEntry.getValue();
-            // Get the file system again from cache. There is a chance that the file system stored in the map is closed.
-            // For instance, doCopyRetry closes the file system in case of i/o exceptions.
-            sourceFs = fileInfoList.get(0).getSourcePath().getFileSystem(hiveConf);
-            if (!destinationFs.exists(destination)
-                    && !FileUtils.mkdir(destinationFs, destination, hiveConf)) {
-              LOG.error("Failed to create destination directory: " + destination);
-              throw new IOException("Destination directory creation failed");
+          if (destMap.size() > 1) {
+            //Multiple files, do copy in parallel
+            if (executorService == null) {
+              executorService = getExecutorService();
             }
-
-            // Copy files with retry logic on failure or source file is dropped or changed.
-            doCopyRetry(sourceFs, fileInfoList, destination, proxyUser, useRegularCopy, overwrite);
+            List<Callable<Void>> copyList = new ArrayList<>();
+            for (Map.Entry<Path, List<ReplChangeManager.FileInfo>> destMapEntry : destMap.entrySet()) {
+              copyList.add(() -> {
+                doCopy(destMapEntry, proxyUser, regularCopy(sourceFs, destMapEntry.getValue()), overwrite);
+                return null;
+              });
+            }
+            executorService.invokeAll(copyList);
+          } else {
+            //Since just a single file, just do a copy in the same thread
+            for (Map.Entry<Path, List<ReplChangeManager.FileInfo>> destMapEntry : destMap.entrySet()) {
+              doCopy(destMapEntry, proxyUser, regularCopy(sourceFs, destMapEntry.getValue()), overwrite);
+            }
           }
+
         }
       } else {
         // When distCp is to be used and the srcFiles doesn't contain subDirs (readSrcAsFilesList=false),
@@ -112,11 +124,40 @@ public class CopyUtils {
         srcFiles.add(new ReplChangeManager.FileInfo(sourceFs, origSrcPath, null));
         doCopyRetry(sourceFs, srcFiles, destRoot, proxyUser, useRegularCopy, overwrite);
       }
+    } catch (InterruptedException e) {
+      LOG.error("Failed to copy ", e);
+      throw new IOException(ErrorMsg.REPL_FILE_SYSTEM_OPERATION_RETRY.getMsg());
     } finally {
+      if (executorService != null) {
+        executorService.shutdown();
+      }
       if (proxyUser != null) {
         FileSystem.closeAllForUGI(proxyUser);
       }
     }
+  }
+
+  @VisibleForTesting
+  ExecutorService getExecutorService() {
+    return Executors.newFixedThreadPool(maxParallelCopyTask);
+  }
+
+  @VisibleForTesting
+  void doCopy(Map.Entry<Path, List<ReplChangeManager.FileInfo>> destMapEntry, UserGroupInformation proxyUser,
+                      boolean useRegularCopy, boolean overwrite) throws IOException, LoginException,
+    HiveFatalException {
+    Path destination = destMapEntry.getKey();
+    List<ReplChangeManager.FileInfo> fileInfoList = destMapEntry.getValue();
+    // Get the file system again from cache. There is a chance that the file system stored in the map is closed.
+    // For instance, doCopyRetry closes the file system in case of i/o exceptions.
+    FileSystem sourceFsOfFileInfo = fileInfoList.get(0).getSourcePath().getFileSystem(hiveConf);
+    if (!destinationFs.exists(destination)
+      && !FileUtils.mkdir(destinationFs, destination, hiveConf)) {
+      LOG.error("Failed to create destination directory: " + destination);
+      throw new IOException("Destination directory creation failed");
+    }
+    // Copy files with retry logic on failure or source file is dropped or changed.
+    doCopyRetry(sourceFsOfFileInfo, fileInfoList, destination, proxyUser, useRegularCopy, overwrite);
   }
 
   private void doCopyRetry(FileSystem sourceFs, List<ReplChangeManager.FileInfo> srcFileList,
