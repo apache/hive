@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 import java.util.Arrays;
@@ -1062,67 +1061,30 @@ public class ExprNodeDescUtils {
     return false;
   }
 
-  public static ExprNodeDesc conjunction(List<ExprNodeDesc> inputExpr) throws UDFArgumentException {
-    List<ExprNodeDesc> operands=new ArrayList<ExprNodeDesc>();
-    for (ExprNodeDesc e : inputExpr) {
-      conjunctiveDecomposition(e, operands);
-    }
-
-    if (operands.isEmpty()) {
+  public static ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes) throws UDFArgumentException {
+    if (semijoinExprNodes.isEmpty()) {
       return null;
     }
-    if (operands.size() > 1) {
-      return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), operands);
+    if (semijoinExprNodes.size() > 1) {
+      return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), semijoinExprNodes);
     } else {
-      return operands.get(0);
+      return semijoinExprNodes.get(0);
     }
   }
 
-  private static void conjunctiveDecomposition(ExprNodeDesc expr, List<ExprNodeDesc> operands) {
-    if (isAnd(expr)) {
-      for (ExprNodeDesc c : expr.getChildren()) {
-        conjunctiveDecomposition(c, operands);
-      }
-    } else {
-      if (isTrue(expr)) {
-        return;
-      }
-      for (ExprNodeDesc o : operands) {
-        if (o.isSame(expr)) {
-          return;
-        }
-      }
-      operands.add(expr);
-    }
-
-  }
-
-  private static boolean isTrue(ExprNodeDesc expr) {
-    if (expr instanceof ExprNodeConstantDesc) {
-      ExprNodeConstantDesc c = (ExprNodeConstantDesc) expr;
-      if (Boolean.TRUE.equals(c.getValue())) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public static ExprNodeDesc conjunction(ExprNodeDesc node1, ExprNodeDesc node2) throws UDFArgumentException {
-    List<ExprNodeDesc> operands = Lists.newArrayList(node1, node2);
-    return conjunction(operands);
-  }
-
-  public static ExprNodeDesc conjunction(List<ExprNodeDesc> nodes, ExprNodeDesc exprNode)
+  public static ExprNodeDesc conjunction(List<ExprNodeDesc> semijoinExprNodes, ExprNodeDesc exprNode)
       throws UDFArgumentException {
-    if (nodes == null) {
-      return exprNode;
+    if (semijoinExprNodes != null && !semijoinExprNodes.isEmpty()) {
+      if (exprNode != null) {
+        semijoinExprNodes.add(0, exprNode);
+      }
+      if (semijoinExprNodes.size() > 1) {
+        exprNode = ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), semijoinExprNodes);
+      } else {
+        exprNode = semijoinExprNodes.get(0);
+      }
     }
-    List<ExprNodeDesc> operands = new ArrayList<ExprNodeDesc>();
-    if (exprNode != null) {
-      operands.add(exprNode);
-    }
-    operands.addAll(nodes);
-    return conjunction(operands);
+    return exprNode;
   }
 
   public static ExprNodeDesc disjunction(ExprNodeDesc e1, ExprNodeDesc e2) throws UDFArgumentException {
@@ -1172,32 +1134,6 @@ public class ExprNodeDescUtils {
       return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFOPOr);
     }
     return false;
-  }
-
-  public static boolean isAnd(ExprNodeDesc expr) {
-    if (expr instanceof ExprNodeGenericFuncDesc) {
-      ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) expr;
-      return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFOPAnd);
-    }
-    return false;
-  }
-
-  public static ExprNodeDesc replaceTabAlias(ExprNodeDesc expr, String oldAlias, String newAlias) {
-    if (expr == null) {
-      return null;
-    }
-    if (expr.getChildren() != null) {
-      for (ExprNodeDesc c : expr.getChildren()) {
-        replaceTabAlias(c, oldAlias, newAlias);
-      }
-    }
-    if (expr instanceof ExprNodeColumnDesc) {
-      ExprNodeColumnDesc exprNodeColumnDesc = (ExprNodeColumnDesc) expr;
-      if (exprNodeColumnDesc.getTabAlias() != null && exprNodeColumnDesc.getTabAlias().equals(oldAlias)) {
-        exprNodeColumnDesc.setTabAlias(newAlias);
-      }
-    }
-    return expr;
   }
 
 }
