@@ -530,7 +530,7 @@ public class TestTCTLSeparatedProtocol {
     separatedProtocol.initialize(null, new Properties());
     try {
       separatedProtocol.readStructBegin();
-      fail("Runtime Exception is expected if the intialization of tokenizer failed.");
+      fail("Runtime Exception is expected if the initialization of tokenizer failed.");
     } catch (Exception e) {
       assertTrue(e.getCause() instanceof TTransportException);
     }
