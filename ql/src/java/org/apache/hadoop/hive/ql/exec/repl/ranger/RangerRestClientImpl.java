@@ -264,8 +264,9 @@ public class RangerRestClientImpl implements RangerRestClient {
   public String getRangerImportUrl(String rangerUrl, String dbName) throws URISyntaxException {
     URIBuilder uriBuilder = new URIBuilder(rangerUrl);
     uriBuilder.setPath(RANGER_REST_URL_IMPORTJSONFILE);
-    uriBuilder.addParameter("mergeIfExists", "true");
+    uriBuilder.addParameter("updateIfExists", "true");
     uriBuilder.addParameter("polResource", dbName);
+    uriBuilder.addParameter("policyMatchingAlgorithm", "matchByName");
     return uriBuilder.build().toString();
   }
 
@@ -437,6 +438,7 @@ public class RangerRestClientImpl implements RangerRestClient {
         RangerPolicyItemAccess>();
 
     resourceNameList.add(sourceDb);
+    resourceNameList.add("dummy");
     rangerPolicyResource.setValues(resourceNameList);
     RangerPolicy.RangerPolicyResource rangerPolicyResourceColumn =new RangerPolicy.RangerPolicyResource();
     rangerPolicyResourceColumn.setValues(new ArrayList<String>(){{add("*"); }});
