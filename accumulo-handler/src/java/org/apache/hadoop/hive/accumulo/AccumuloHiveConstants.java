@@ -35,7 +35,7 @@ public class AccumuloHiveConstants {
       + Character.toString(ASTERISK);
 
   // Escape the escape, and escape the asterisk
-  public static final String ESCAPED_ASERTISK_REGEX = Character.toString(ESCAPE)
+  public static final String ESCAPED_ASTERISK_REGEX = Character.toString(ESCAPE)
       + Character.toString(ESCAPE) + Character.toString(ESCAPE) + Character.toString(ASTERISK);
 
   public static final Charset UTF_8 = Charset.forName("UTF-8");
