@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hdfs.protocol.HdfsLocatedFileStatus;
 import org.apache.hadoop.hive.common.BlobStorageUtils;
@@ -1331,7 +1332,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         for (HdfsFileStatusWithId fileId : originals) {
           baseFiles.add(new AcidBaseFileInfo(fileId, AcidUtils.AcidBaseFileType.ORIGINAL_BASE));
         }
-        return new AcidDirInfo(fs.get(), dir, new AcidUtils.DirectoryImpl(Lists.newArrayList(), true, originals,
+        return new AcidDirInfo(fs.get(), dir, new AcidUtils.DirectoryImpl(Lists.newArrayList(), Sets.newHashSet(), true, originals,
             Lists.newArrayList(), Lists.newArrayList(), null), baseFiles, new ArrayList<>());
       }
       //todo: shouldn't ignoreEmptyFiles be set based on ExecutionEngine?
