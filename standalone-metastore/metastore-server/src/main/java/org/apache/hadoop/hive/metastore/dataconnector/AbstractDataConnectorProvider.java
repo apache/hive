@@ -8,13 +8,8 @@ import java.net.ConnectException;
 import java.util.List;
 
 public abstract class AbstractDataConnectorProvider implements IDataConnectorProvider {
-  public static final String MYSQL_TYPE = "mysql";
-  public static final String POSTGRES_TYPE = "postgres";
-  public static final String ORACLE_TYPE = "oracle";
-  public static final String MSSQL_TYPE = "mssql";
-
   protected String scoped_db = null;
-  protected Object handle = null;
+  protected Object  handle = null;
   protected boolean isOpen = false;
   protected DataConnector connector = null;
 

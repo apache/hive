@@ -20,6 +20,12 @@ import java.util.Map;
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
 public interface IDataConnectorProvider {
+  public static final String MYSQL_TYPE = "mysql";
+  public static final String POSTGRES_TYPE = "postgres";
+  public static final String ORACLE_TYPE = "oracle";
+  public static final String MSSQL_TYPE = "mssql";
+  public static final String DERBY_TYPE = "derby";
+
   DataConnector connector = null;
 
   /**
