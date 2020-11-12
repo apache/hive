@@ -51,7 +51,7 @@ public class HplSqlQueryExecutor implements QueryExecutor {
   public static final String QUERY_EXECUTOR = "QUERY_EXECUTOR";
   public static final String HPLSQL = "HPLSQL";
   private final HiveSession hiveSession;
-  private long fetchSize;
+  private final long fetchSize;
 
   public HplSqlQueryExecutor(HiveSession hiveSession) {
     this.fetchSize = hiveSession.getHiveConf().getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);
@@ -96,7 +96,7 @@ public class HplSqlQueryExecutor implements QueryExecutor {
 
     @Override
     public boolean next() {
-      if (rows == null) {
+      if (rows == null || !iterator.hasNext()) {
         this.rows = fetch();
         this.iterator = rows.iterator();
       }

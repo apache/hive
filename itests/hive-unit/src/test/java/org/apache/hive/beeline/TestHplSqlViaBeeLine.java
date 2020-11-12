@@ -52,6 +52,7 @@ public class TestHplSqlViaBeeLine {
     HiveConf hiveConf = new HiveConf();
     hiveConf.setVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER,
             "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager");
+    hiveConf.setIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE, 10);
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
     hiveConf.set(HiveConf.ConfVars.HIVE_SERVER2_LOGGING_OPERATION_LEVEL.varname, "verbose");
     miniHS2 = new MiniHS2(hiveConf, MiniHS2.MiniClusterType.TEZ);
@@ -124,8 +125,7 @@ public class TestHplSqlViaBeeLine {
             "DROP TABLE IF EXISTS result;\n" +
             "CREATE TABLE numbers (n int);\n" +
             "CREATE TABLE result (n int);\n" +
-            "INSERT INTO numbers VALUES(12345);\n" +
-            "INSERT INTO numbers VALUES(12345);\n" +
+            "FOR i IN 1000..1043 LOOP INSERT INTO numbers values(i) END LOOP;\n" +
             "CREATE PROCEDURE pc(cur OUT SYS_REFCURSOR)\n" +
             "BEGIN\n" +
             "  OPEN cur FOR SELECT n FROM NUMBERS;\n" +
@@ -134,18 +134,20 @@ public class TestHplSqlViaBeeLine {
             "BEGIN\n" +
             " DECLARE curs SYS_REFCURSOR;\n" +
             " DECLARE n INT = 0;\n" +
+            " DECLARE sum INT = 0;\n" +
             " CALL pc(curs);\n" +
             " FETCH curs INTO n;\n" +
             " WHILE (SQLCODE = 0) DO\n" +
-            "    EXEC 'INSERT INTO result VALUES(' || n || ')';\n" +
+            "    sum = sum + n;\n" +
             "    FETCH curs INTO n;\n" +
             " END WHILE;\n" +
             " CLOSE curs;\n" +
+            " INSERT INTO result VALUES(sum);\n" +
             "END;\n" +
             "uc();\n" +
             "SELECT * FROM result;\n" +
             "/\n";
-    testScriptFile(SCRIPT_TEXT, args(), "12345");
+    testScriptFile(SCRIPT_TEXT, args(), "44946");
   }
 
   @Test
