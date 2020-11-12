@@ -113,7 +113,6 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.shims.Utils;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hive.hplsql.Exec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -271,7 +270,7 @@ public class SessionState implements ISessionAuthState{
 
   private SparkSession sparkSession;
 
-  private Exec hplsqlInterpreter;
+  private final Map<Class, Object> dynamicVars = new HashMap<>();
 
   /**
    * Gets information about HDFS encryption
@@ -1878,7 +1877,7 @@ public class SessionState implements ISessionAuthState{
     // There are lots of places where hadoop's ReflectionUtils is still used. Until all of them are
     // cleared up, we would have to retain this to avoid mem leak.
     clearReflectionUtilsCache();
-    hplsqlInterpreter = null;
+    dynamicVars.clear();
   }
 
   private void clearReflectionUtilsCache() {
@@ -2046,12 +2045,13 @@ public class SessionState implements ISessionAuthState{
     this.sparkSession = sparkSession;
   }
 
-  public Exec getHplsqlInterpreter() {
-    return hplsqlInterpreter;
+  public void addDynamicVar(Object object) {
+    dynamicVars.put(object.getClass(), object);
   }
 
-  public void setHplsqlInterpreter(Exec hplsqlInterpreter) {
-    this.hplsqlInterpreter = hplsqlInterpreter;
+  public <T> T getDynamicVar(Class<T> clazz) {
+    Object value = dynamicVars.get(clazz);
+    return value == null ? null : clazz.cast(value);
   }
 
   /**

@@ -24,7 +24,7 @@ import static org.apache.hive.service.cli.operation.hplsql.HplSqlQueryExecutor.Q
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.BeelineConsole;
+import org.apache.hive.service.cli.operation.hplsql.BeelineConsole;
 import org.apache.hadoop.hive.ql.processors.CommandProcessor;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -63,7 +63,7 @@ public abstract class ExecuteStatementOperation extends Operation {
 
     String cleanStatement = HiveStringUtils.removeComments(statement);
     if (proceduralMode(confOverlay) && hplSqlMode()) {
-      if (SessionState.get().getHplsqlInterpreter() == null) {
+      if (SessionState.get().getDynamicVar(Exec.class) == null) {
         Exec interpreter = new Exec(
                 new Conf(),
                 new BeelineConsole(),
@@ -72,9 +72,9 @@ public abstract class ExecuteStatementOperation extends Operation {
                 parentSession.getMetaStoreClient(),
                 new HiveHplSqlSessionState(SessionState.get())
         );
-        SessionState.get().setHplsqlInterpreter(interpreter);
+        SessionState.get().addDynamicVar(interpreter);
       }
-      return new HplSqlOperation(parentSession, statement, confOverlay, runAsync, SessionState.get().getHplsqlInterpreter());
+      return new HplSqlOperation(parentSession, statement, confOverlay, runAsync, SessionState.get().getDynamicVar(Exec.class));
     }
 
     String[] tokens = cleanStatement.trim().split("\\s+");

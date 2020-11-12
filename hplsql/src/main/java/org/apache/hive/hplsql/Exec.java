@@ -629,7 +629,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     if (lu != null) {
       sql.add("ADD FILE " + lu);
     }
-    sql.add("CREATE TEMPORARY FUNCTION hplsql AS 'org.apache.hive.service.cli.operation.hplsql.Udf'");
+    sql.add("CREATE TEMPORARY FUNCTION hplsql AS 'org.apache.hive.hplsql.udf.Udf'");
     exec.conn.addPreSql(exec.conf.defaultConnection, sql);
     udfRegistered = true;
   }

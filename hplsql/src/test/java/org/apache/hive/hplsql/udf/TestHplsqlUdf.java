@@ -1,5 +1,4 @@
 /*
- *
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
  *  distributed with this work for additional information
@@ -15,21 +14,19 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
  */
-package org.apache.hive.service.cli.operation.hplsql;
 
+package org.apache.hive.hplsql.udf;
+
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hive.hplsql.Exec;
 import org.apache.hive.hplsql.Var;
 import org.junit.Assert;
 import org.junit.Test;
-
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 
 public class TestHplsqlUdf {
   StringObjectInspector queryOI = PrimitiveObjectInspectorFactory.javaStringObjectInspector;
@@ -46,18 +43,18 @@ public class TestHplsqlUdf {
     udf.initialize(initArguments);
     //set arguments
     DeferredObject queryObj = new DeferredJavaObject("hello(:1)");
-      DeferredObject argObj = new DeferredJavaObject("name");
-      DeferredObject[] argumentsObj = {queryObj, argObj};
-      udf.exec.init(new String[]{"-e", "null"});
-      udf.exec.enterGlobalScope();
-      // init exec and set parameters, included
-      udf.setParameters(argumentsObj);
+    DeferredObject argObj = new DeferredJavaObject("name");
+    DeferredObject[] argumentsObj = {queryObj, argObj};
+    udf.exec.init(new String[]{"-e", "null"});
+    udf.exec.enterGlobalScope();
+    // init exec and set parameters, included
+    udf.setParameters(argumentsObj);
 
-      // checking var exists and its value is right
-      Var var = udf.exec.findVariable(":1");
-      Assert.assertNotNull(var);
-      String val = (String) var.value;
-      Assert.assertEquals(val, "name");
+    // checking var exists and its value is right
+    Var var = udf.exec.findVariable(":1");
+    Assert.assertNotNull(var);
+    String val = (String) var.value;
+    Assert.assertEquals(val, "name");
   }
 }
 
