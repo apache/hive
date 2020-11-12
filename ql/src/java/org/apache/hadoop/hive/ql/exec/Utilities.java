@@ -4189,7 +4189,7 @@ public final class Utilities {
     // if its auto-stats gather for inserts or CTAS, stats dir will be in FileSink
     Set<Operator<? extends OperatorDesc>> ops = work.getAllLeafOperators();
     if (work instanceof MapWork) {
-      // if its an anlayze statement, stats dir will be in TableScan
+      // if its an analyze statement, stats dir will be in TableScan
       ops.addAll(work.getAllRootOperators());
     }
     for (Operator<? extends OperatorDesc> op : ops) {
