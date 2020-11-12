@@ -418,9 +418,9 @@ class AvroDeserializer {
     // and we would end up doing calculations twice to get the same tag
     int fsTag = GenericData.get().resolveUnion(fileSchema, datum); // Determine index of value from fileSchema
     int rsTag = GenericData.get().resolveUnion(recordSchema, datum); // Determine index of value from recordSchema
-    Object desered = worker(datum, fileSchema == null ? null : fileSchema.getTypes().get(fsTag),
+    Object desired = worker(datum, fileSchema == null ? null : fileSchema.getTypes().get(fsTag),
         recordSchema.getTypes().get(rsTag), columnType.getAllUnionObjectTypeInfos().get(rsTag));
-    return new StandardUnionObjectInspector.StandardUnion((byte)rsTag, desered);
+    return new StandardUnionObjectInspector.StandardUnion((byte)rsTag, desired);
   }
 
   private Object deserializeList(Object datum, Schema fileSchema, Schema recordSchema,
