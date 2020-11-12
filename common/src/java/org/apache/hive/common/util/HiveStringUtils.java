@@ -342,7 +342,7 @@ public class HiveStringUtils {
    * If finish time is 0, empty string is returned, if start time is 0
    * then difference is not appended to return value.
    * @param dateFormat date format to use
-   * @param finishTime fnish time
+   * @param finishTime finish time
    * @param startTime start time
    * @return formatted value.
    */
