@@ -356,7 +356,7 @@ public class TopNHash {
     hashes[index] = key.hashCode();
     if (null != indexes.store(index)) {
       // it's only for GBY which should forward all values associated with the key in the range
-      // of limit. new value should be attatched with the key but in current implementation,
+      // of limit. new value should be attached with the key but in current implementation,
       // only one values is allowed. with map-aggregation which is true by default,
       // this is not common case, so just forward new key/value and forget that (todo)
       return FORWARD;
