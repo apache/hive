@@ -179,7 +179,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
         LOGGER.error("Exception during rename", e);
       }
     } catch (Throwable t) {
-      // catch all errors (throwable and execptions to prevent subsequent tasks from being suppressed)
+      // catch all errors (throwable and exceptions to prevent subsequent tasks from being suppressed)
       LOGGER.error("Error executing scheduled task ", t);
     } finally {
       // If something happened and we were not able to rename the temp file, attempt to remove it
