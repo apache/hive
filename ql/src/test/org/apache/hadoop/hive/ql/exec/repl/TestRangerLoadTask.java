@@ -283,11 +283,11 @@ public class TestRangerLoadTask {
 
     Assert.assertTrue(rangerRestClient.getRangerImportUrl("http://ranger.apache.org:6080/",
       "dbname").equals("http://ranger.apache.org:6080/service/plugins/policies/importPoliciesFromFile"
-      + "?mergeIfExists=true&polResource=dbname"));
+      + "?updateIfExists=true&polResource=dbname&policyMatchingAlgorithm=matchByName"));
 
     Assert.assertTrue(rangerRestClient.getRangerImportUrl("http://ranger.apache.org:6080",
       "dbname").equals("http://ranger.apache.org:6080/service/plugins/policies/importPoliciesFromFile"
-      + "?mergeIfExists=true&polResource=dbname"));
+      + "?updateIfExists=true&polResource=dbname&policyMatchingAlgorithm=matchByName"));
 
   }
 
