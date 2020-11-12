@@ -115,16 +115,16 @@ public class ExecServiceImpl implements ExecService {
   public ExecBean run(String program, List<String> args,
             Map<String, String> env)
     throws NotAuthorizedException, BusyException, ExecuteException, IOException {
-    boolean aquired = false;
+    boolean acquired = false;
     try {
-      aquired = avail.tryAcquire();
-      if (aquired) {
+      acquired = avail.tryAcquire();
+      if (acquired) {
         return runUnlimited(program, args, env);
       } else {
         throw new BusyException();
       }
     } finally {
-      if (aquired) {
+      if (acquired) {
         avail.release();
       }
     }

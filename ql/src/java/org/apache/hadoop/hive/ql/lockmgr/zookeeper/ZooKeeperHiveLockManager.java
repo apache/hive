@@ -151,7 +151,7 @@ public class ZooKeeperHiveLockManager implements HiveLockManager {
    * @param  lockObjects  List of objects and the modes of the locks requested
    * @param  keepAlive    Whether the lock is to be persisted after the statement
    *
-   * Acuire all the locks. Release all the locks and return null if any lock
+   * Acquire all the locks. Release all the locks and return null if any lock
    * could not be acquired.
    **/
   @Override
