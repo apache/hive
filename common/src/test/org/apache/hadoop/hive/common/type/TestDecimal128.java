@@ -629,13 +629,13 @@ public class TestDecimal128 {
     final short SCALE = 33;
     Decimal128 current = new Decimal128(1, SCALE);
     Decimal128 multiplier = new Decimal128();
-    Decimal128 dividor = new Decimal128();
+    Decimal128 divisor = new Decimal128();
     Decimal128 one = new Decimal128(1);
     for (int i = LOOPS; i > 0; --i) {
       multiplier.update(i, SCALE);
       current.multiplyDestructive(multiplier, SCALE);
-      dividor.update(1 + 2 * i, SCALE);
-      current.divideDestructive(dividor, SCALE);
+      divisor.update(1 + 2 * i, SCALE);
+      current.divideDestructive(divisor, SCALE);
       current.addDestructive(one, SCALE);
     }
     current.multiplyDestructive(new Decimal128(2), SCALE);
@@ -654,17 +654,17 @@ public class TestDecimal128 {
     final short SCALE = 30;
     Decimal128 total = new Decimal128(0);
     Decimal128 multiplier = new Decimal128();
-    Decimal128 dividor = new Decimal128();
+    Decimal128 divisor = new Decimal128();
     Decimal128 current = new Decimal128();
     for (int i = 0; i < LOOPS; ++i) {
       current.update(3, SCALE);
-      dividor.update(2 * i + 1, SCALE);
-      current.divideDestructive(dividor, SCALE);
+      divisor.update(2 * i + 1, SCALE);
+      current.divideDestructive(divisor, SCALE);
       for (int j = 1; j <= i; ++j) {
         multiplier.update(i + j, SCALE);
-        dividor.update(16 * j, SCALE);
+        divisor.update(16 * j, SCALE);
         current.multiplyDestructive(multiplier, SCALE);
-        current.divideDestructive(dividor, SCALE);
+        current.divideDestructive(divisor, SCALE);
       }
 
       total.addDestructive(current, SCALE);
