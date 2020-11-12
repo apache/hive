@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Set;
 
 /**
  * Information on a possible or running compaction.
@@ -59,6 +60,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
    * {@link ValidCompactorWriteIdList#highWatermark}.
    */
   public long highestWriteId;
+  public Set<Long> writeIds;
+  public boolean isSetWriteIds;
+
   byte[] metaInfo;
   String hadoopJobId;
   public String errorMessage;
@@ -229,5 +233,10 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       return compactionStructToInfo(ocis.getCi());
     }
     return null;
+  }
+
+  public void setWriteIds(Set<Long> writeIds) {
+    this.writeIds = writeIds;
+    isSetWriteIds = true;
   }
 }

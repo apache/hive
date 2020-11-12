@@ -133,6 +133,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.google.protobuf.CodedInputStream;
 /**
@@ -1293,7 +1294,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         for (HdfsFileStatusWithId fileId : originals) {
           baseFiles.add(new AcidBaseFileInfo(fileId, AcidUtils.AcidBaseFileType.ORIGINAL_BASE));
         }
-        return new AcidDirInfo(fs.get(), dir, new AcidUtils.DirectoryImpl(Lists.newArrayList(), true, originals,
+        return new AcidDirInfo(fs.get(), dir, new AcidUtils.DirectoryImpl(Lists.newArrayList(), Sets.newHashSet(), true, originals,
             Lists.newArrayList(), Lists.newArrayList(), null), baseFiles, new ArrayList<>());
       }
       //todo: shouldn't ignoreEmptyFiles be set based on ExecutionEngine?

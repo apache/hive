@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -111,6 +112,7 @@ import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.concurrent.Immutable;
 import java.nio.charset.Charset;
 import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 /**
@@ -558,6 +560,7 @@ public class AcidUtils {
 
   public static final class DirectoryImpl implements Directory {
     private final List<Path> abortedDirectories;
+    private final Set<Long> abortedWriteIds;
     private final boolean isBaseInRawFormat;
     private final List<HdfsFileStatusWithId> original;
     private final List<Path> obsolete;
@@ -565,11 +568,13 @@ public class AcidUtils {
     private final Path base;
     private List<HdfsFileStatusWithId> baseFiles;
 
-    public DirectoryImpl(List<Path> abortedDirectories,
+    public DirectoryImpl(List<Path> abortedDirectories, Set<Long> abortedWriteIds,
         boolean isBaseInRawFormat, List<HdfsFileStatusWithId> original,
         List<Path> obsolete, List<ParsedDelta> deltas, Path base) {
       this.abortedDirectories = abortedDirectories == null ?
           Collections.emptyList() : abortedDirectories;
+      this.abortedWriteIds = abortedWriteIds == null ?
+        Collections.emptySet() : abortedWriteIds;
       this.isBaseInRawFormat = isBaseInRawFormat;
       this.original = original == null ? Collections.emptyList() : original;
       this.obsolete = obsolete == null ? Collections.emptyList() : obsolete;
@@ -613,6 +618,11 @@ public class AcidUtils {
     @Override
     public List<Path> getAbortedDirectories() {
       return abortedDirectories;
+    }
+
+    @Override
+    public Set<Long> getAbortedWriteIds() {
+      return abortedWriteIds;
     }
 
     @Override
@@ -899,6 +909,12 @@ public class AcidUtils {
      * @return the list of aborted directories
      */
     List<Path> getAbortedDirectories();
+
+    /**
+     * Get the list of writeIds that belong to the aborted transactions.
+     * @return the list of aborted writeIds
+     */
+    Set<Long> getAbortedWriteIds();
   }
   /**
    * Since version 3 but prior to version 4, format of a base is "base_X" where X is a writeId.
@@ -1328,6 +1344,7 @@ public class AcidUtils {
     List<Path> originalDirectories = new ArrayList<>();
     final List<Path> obsolete = new ArrayList<>();
     final List<Path> abortedDirectories = new ArrayList<>();
+    final Set<Long> abortedWriteIds = new HashSet<>();
     TxnBase bestBase = new TxnBase();
     final List<HdfsFileStatusWithId> original = new ArrayList<>();
 
@@ -1336,14 +1353,14 @@ public class AcidUtils {
     if (childrenWithId != null) {
       for (HdfsFileStatusWithId child : childrenWithId) {
         getChildState(child, writeIdList, working, originalDirectories, original, obsolete,
-            bestBase, ignoreEmptyFiles, abortedDirectories, fs, validTxnList);
+            bestBase, ignoreEmptyFiles, abortedDirectories, abortedWriteIds, fs, validTxnList);
       }
     } else {
       if (dirSnapshots == null) {
         dirSnapshots = getHdfsDirSnapshots(fs, candidateDirectory);
       }
       getChildState(candidateDirectory, dirSnapshots, writeIdList, working, originalDirectories, original, obsolete,
-          bestBase, ignoreEmptyFiles, abortedDirectories, fs, validTxnList);
+          bestBase, ignoreEmptyFiles, abortedDirectories, abortedWriteIds, fs, validTxnList);
     }
     // If we have a base, the original files are obsolete.
     if (bestBase.basePath != null) {
@@ -1453,7 +1470,7 @@ public class AcidUtils {
      */
     // this does "Path.uri.compareTo(that.uri)"
     original.sort(Comparator.comparing(HdfsFileStatusWithId::getFileStatus));
-    return new DirectoryImpl(abortedDirectories, isBaseInRawFormat, original, obsolete, deltas, base);
+    return new DirectoryImpl(abortedDirectories, abortedWriteIds, isBaseInRawFormat, original, obsolete, deltas, base);
   }
 
   public static Map<Path, HdfsDirSnapshot> getHdfsDirSnapshots(final FileSystem fs, final Path path)
@@ -1737,7 +1754,7 @@ public class AcidUtils {
 
   private static void getChildState(HdfsFileStatusWithId childWithId, ValidWriteIdList writeIdList,
       List<ParsedDelta> working, List<Path> originalDirectories, List<HdfsFileStatusWithId> original,
-      List<Path> obsolete, TxnBase bestBase, boolean ignoreEmptyFiles, List<Path> aborted, FileSystem fs,
+      List<Path> obsolete, TxnBase bestBase, boolean ignoreEmptyFiles, List<Path> aborted, Set<Long> abortedWriteIds, FileSystem fs,
       ValidTxnList validTxnList) throws IOException {
     Path childPath = childWithId.getFileStatus().getPath();
     String fn = childPath.getName();
@@ -1746,9 +1763,9 @@ public class AcidUtils {
         original.add(childWithId);
       }
     } else if (fn.startsWith(BASE_PREFIX)) {
-      processBaseDir(childPath, writeIdList, obsolete, bestBase, aborted, fs, validTxnList, null);
+      processBaseDir(childPath, writeIdList, obsolete, bestBase, aborted, abortedWriteIds, fs, validTxnList, null);
     } else if (fn.startsWith(DELTA_PREFIX) || fn.startsWith(DELETE_DELTA_PREFIX)) {
-      processDeltaDir(childPath, writeIdList, working, aborted, fs, validTxnList, null);
+      processDeltaDir(childPath, writeIdList, working, aborted, abortedWriteIds, fs, validTxnList, null);
     } else {
       // This is just the directory.  We need to recurse and find the actual files.  But don't
       // do this until we have determined there is no base.  This saves time.  Plus,
@@ -1761,7 +1778,7 @@ public class AcidUtils {
   private static void getChildState(Path candidateDirectory, Map<Path, HdfsDirSnapshot> dirSnapshots,
       ValidWriteIdList writeIdList, List<ParsedDelta> working, List<Path> originalDirectories,
       List<HdfsFileStatusWithId> original, List<Path> obsolete, TxnBase bestBase, boolean ignoreEmptyFiles,
-      List<Path> aborted, FileSystem fs, ValidTxnList validTxnList) throws IOException {
+      List<Path> aborted, Set<Long> abortedWriteIds, FileSystem fs, ValidTxnList validTxnList) throws IOException {
     for (HdfsDirSnapshot dirSnapshot : dirSnapshots.values()) {
       Path dirPath = dirSnapshot.getPath();
       String dirName = dirPath.getName();
@@ -1775,9 +1792,9 @@ public class AcidUtils {
           }
         }
       } else if (dirName.startsWith(BASE_PREFIX)) {
-        processBaseDir(dirPath, writeIdList, obsolete, bestBase, aborted, fs, validTxnList, dirSnapshot);
+        processBaseDir(dirPath, writeIdList, obsolete, bestBase, aborted, abortedWriteIds, fs, validTxnList, dirSnapshot);
       } else if (dirName.startsWith(DELTA_PREFIX) || dirName.startsWith(DELETE_DELTA_PREFIX)) {
-        processDeltaDir(dirPath, writeIdList, working, aborted, fs, validTxnList, dirSnapshot);
+        processDeltaDir(dirPath, writeIdList, working, aborted, abortedWriteIds, fs, validTxnList, dirSnapshot);
       } else {
         originalDirectories.add(dirPath);
         for (FileStatus stat : dirSnapshot.getFiles()) {
@@ -1790,7 +1807,7 @@ public class AcidUtils {
   }
 
   private static void processBaseDir(Path baseDir, ValidWriteIdList writeIdList, List<Path> obsolete, TxnBase bestBase,
-      List<Path> aborted, FileSystem fs, ValidTxnList validTxnList, AcidUtils.HdfsDirSnapshot dirSnapshot)
+      List<Path> aborted, Set<Long> abortedWriteIds, FileSystem fs, ValidTxnList validTxnList, AcidUtils.HdfsDirSnapshot dirSnapshot)
       throws IOException {
     ParsedBase parsedBase = ParsedBase.parseBase(baseDir);
     if (!isDirUsable(baseDir, parsedBase.getVisibilityTxnId(), aborted, validTxnList)) {
@@ -1805,6 +1822,7 @@ public class AcidUtils {
     // Handle aborted IOW base.
     if (writeIdList.isWriteIdAborted(writeId) && !isCompactedBase(parsedBase, fs, dirSnapshot)) {
       aborted.add(baseDir);
+      abortedWriteIds.add(parsedBase.writeId);
       return;
     }
     if (bestBase.basePath == null) {
@@ -1824,7 +1842,7 @@ public class AcidUtils {
   }
 
   private static void processDeltaDir(Path deltadir, ValidWriteIdList writeIdList, List<ParsedDelta> working,
-      List<Path> aborted, FileSystem fs, ValidTxnList validTxnList, AcidUtils.HdfsDirSnapshot dirSnapshot)
+      List<Path> aborted, Set<Long> abortedWriteIds, FileSystem fs, ValidTxnList validTxnList, AcidUtils.HdfsDirSnapshot dirSnapshot)
       throws IOException {
     String dirName = deltadir.getName();
     String deltaPrefix = dirName.startsWith(DELTA_PREFIX) ? DELTA_PREFIX : DELETE_DELTA_PREFIX;
@@ -1834,6 +1852,8 @@ public class AcidUtils {
     }
     if (ValidWriteIdList.RangeResponse.ALL == writeIdList.isWriteIdRangeAborted(delta.minWriteId, delta.maxWriteId)) {
       aborted.add(deltadir);
+      abortedWriteIds.addAll(LongStream.rangeClosed(delta.minWriteId, delta.maxWriteId)
+          .boxed().collect(Collectors.toList()));
     } else if (writeIdList.isWriteIdRangeValid(delta.minWriteId, delta.maxWriteId)
         != ValidWriteIdList.RangeResponse.NONE) {
       working.add(delta);
