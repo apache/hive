@@ -82,10 +82,10 @@ public class TestLegacyMetrics {
     mbs.setAttribute(oname, attr);
 
     mBeanInfo = mbs.getMBeanInfo(oname);
-    MBeanAttributeInfo[] attrinuteInfos = mBeanInfo.getAttributes();
-    assertEquals(1, attrinuteInfos.length);
+    MBeanAttributeInfo[] attributeInfos = mBeanInfo.getAttributes();
+    assertEquals(1, attributeInfos.length);
     boolean attrFound = false;
-    for (MBeanAttributeInfo info : attrinuteInfos) {
+    for (MBeanAttributeInfo info : attributeInfos) {
       if ("fooMetric".equals(info.getName())) {
         assertEquals("java.lang.Long", info.getType());
         assertTrue(info.isReadable());
