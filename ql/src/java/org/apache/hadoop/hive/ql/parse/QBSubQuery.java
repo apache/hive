@@ -554,7 +554,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
           subQueryAST, "SubQuery can contain only 1 item in Select List."));
     }
 
-    boolean hasAggreateExprs = false;
+    boolean hasAggregateExprs = false;
     boolean hasWindowing = false;
 
     // we need to know if aggregate is COUNT since IN corr subq with count aggregate
@@ -566,7 +566,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       int r = SubQueryUtils.checkAggOrWindowing(selectItem);
 
       hasWindowing = hasWindowing | ( r == 3);
-      hasAggreateExprs = hasAggreateExprs | ( r == 1 | r== 2 );
+      hasAggregateExprs = hasAggregateExprs | ( r == 1 | r== 2 );
       hasCount = hasCount | ( r == 2 );
     }
 
@@ -624,7 +624,7 @@ public class QBSubQuery implements ISubQueryJoinInfo {
       // * IN - always allowed, BUT returns true for cases with aggregate other than COUNT since later in subquery remove
       //        rule we need to know about this case.
       // * NOT IN - always allow, but always return true because later subq remove rule will generate diff plan for this case
-      if (hasAggreateExprs &&
+      if (hasAggregateExprs &&
               !hasExplicitGby) {
 
         if(operator.getType() == SubQueryType.SCALAR) {

@@ -98,17 +98,17 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private Aggregation getCurrentAggregationBuffer(
         VectorAggregationBufferRow[] aggregationBufferSets,
-        int aggregrateIndex,
+        int aggregateIndex,
         int row) {
       VectorAggregationBufferRow mySet = aggregationBufferSets[row];
-      Aggregation myagg = (Aggregation) mySet.getAggregationBuffer(aggregrateIndex);
+      Aggregation myagg = (Aggregation) mySet.getAggregationBuffer(aggregateIndex);
       return myagg;
     }
 
     @Override
     public void aggregateInputSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       VectorizedRowBatch batch) throws HiveException {
 
       int batchSize = batch.size;
@@ -126,32 +126,32 @@ public class <ClassName> extends VectorAggregateExpression {
       if (inputColVector.noNulls) {
         if (inputColVector.isRepeating) {
           iterateNoNullsRepeatingWithAggregationSelection(
-            aggregationBufferSets, aggregrateIndex,
+            aggregationBufferSets, aggregateIndex,
             inputColVector, batchSize);
         } else {
           if (batch.selectedInUse) {
             iterateNoNullsSelectionWithAggregationSelection(
-              aggregationBufferSets, aggregrateIndex,
+              aggregationBufferSets, aggregateIndex,
               inputColVector, batch.selected, batchSize);
           } else {
             iterateNoNullsWithAggregationSelection(
-              aggregationBufferSets, aggregrateIndex,
+              aggregationBufferSets, aggregateIndex,
               inputColVector, batchSize);
           }
         }
       } else {
         if (inputColVector.isRepeating) {
           iterateHasNullsRepeatingWithAggregationSelection(
-            aggregationBufferSets, aggregrateIndex,
+            aggregationBufferSets, aggregateIndex,
             inputColVector, batchSize, inputColVector.isNull);
         } else {
           if (batch.selectedInUse) {
             iterateHasNullsSelectionWithAggregationSelection(
-              aggregationBufferSets, aggregrateIndex,
+              aggregationBufferSets, aggregateIndex,
               inputColVector, batchSize, batch.selected, inputColVector.isNull);
           } else {
             iterateHasNullsWithAggregationSelection(
-              aggregationBufferSets, aggregrateIndex,
+              aggregationBufferSets, aggregateIndex,
               inputColVector, batchSize, inputColVector.isNull);
           }
         }
@@ -160,14 +160,14 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateNoNullsRepeatingWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       IntervalDayTimeColumnVector inputColVector,
       int batchSize) {
 
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
-          aggregrateIndex,
+          aggregateIndex,
           i);
         // Repeating use index 0.
         myagg.minmaxValue(inputColVector, 0);
@@ -176,7 +176,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateNoNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       IntervalDayTimeColumnVector inputColVector,
       int[] selection,
       int batchSize) {
@@ -184,7 +184,7 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
-          aggregrateIndex,
+          aggregateIndex,
           i);
         myagg.minmaxValue(inputColVector, selection[i]);
       }
@@ -192,13 +192,13 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateNoNullsWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       IntervalDayTimeColumnVector inputColVector,
       int batchSize) {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
-          aggregrateIndex,
+          aggregateIndex,
           i);
         myagg.minmaxValue(inputColVector, i);
       }
@@ -206,7 +206,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateHasNullsRepeatingWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       IntervalDayTimeColumnVector inputColVector,
       int batchSize,
       boolean[] isNull) {
@@ -218,7 +218,7 @@ public class <ClassName> extends VectorAggregateExpression {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
           aggregationBufferSets,
-          aggregrateIndex,
+          aggregateIndex,
           i);
         // Repeating use index 0.
         myagg.minmaxValue(inputColVector, 0);
@@ -227,7 +227,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateHasNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       IntervalDayTimeColumnVector inputColVector,
       int batchSize,
       int[] selection,
@@ -238,7 +238,7 @@ public class <ClassName> extends VectorAggregateExpression {
         if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
             aggregationBufferSets,
-            aggregrateIndex,
+            aggregateIndex,
             j);
           myagg.minmaxValue(inputColVector, i);
         }
@@ -247,7 +247,7 @@ public class <ClassName> extends VectorAggregateExpression {
 
     private void iterateHasNullsWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int aggregrateIndex,
+      int aggregateIndex,
       IntervalDayTimeColumnVector inputColVector,
       int batchSize,
       boolean[] isNull) {
@@ -256,7 +256,7 @@ public class <ClassName> extends VectorAggregateExpression {
         if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
             aggregationBufferSets,
-            aggregrateIndex,
+            aggregateIndex,
             i);
           myagg.minmaxValue(inputColVector, i);
         }
