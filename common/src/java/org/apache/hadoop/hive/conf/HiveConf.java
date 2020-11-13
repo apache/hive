@@ -5546,7 +5546,7 @@ public class HiveConf extends Configuration {
             + "and execution is also bound to the namespace"),
     HIVE_SCHEDULED_QUERIES_EXECUTOR_IDLE_SLEEP_TIME("hive.scheduled.queries.executor.idle.sleep.time", "60s",
         new TimeValidator(TimeUnit.SECONDS),
-        "Time to sleep between quering for the presence of a scheduled query."),
+        "Time to sleep between querying for the presence of a scheduled query."),
     HIVE_SCHEDULED_QUERIES_EXECUTOR_PROGRESS_REPORT_INTERVAL("hive.scheduled.queries.executor.progress.report.interval",
         "60s",
         new TimeValidator(TimeUnit.SECONDS),
