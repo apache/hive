@@ -1152,7 +1152,7 @@ Release Notes - Hive - Version 3.0.0
     * [HIVE-17321] - HoS: analyze ORC table doesn't compute raw data size when noscan/partialscan is not specified
     * [HIVE-17322] - Serialise BeeLine qtest execution to prevent flakyness
     * [HIVE-17327] - LLAP IO: restrict native file ID usage to default FS to avoid hypothetical collisions when HDFS federation is used
-    * [HIVE-17331] - Path must be used as key type of the pathToAlises
+    * [HIVE-17331] - Path must be used as key type of the pathToAliases
     * [HIVE-17333] - Schema changes in HIVE-12274 for Oracle may not work for upgrade
     * [HIVE-17336] - Missing class 'org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat' from Hive on Spark when inserting into hbase based table
     * [HIVE-17338] - Utilities.get*Tasks multiple methods duplicate code
