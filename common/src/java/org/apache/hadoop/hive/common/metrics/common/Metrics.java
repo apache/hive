@@ -18,7 +18,7 @@
 package org.apache.hadoop.hive.common.metrics.common;
 
 /**
- * Generic Metics interface.
+ * Generic Metrics interface.
  */
 public interface Metrics {
 
