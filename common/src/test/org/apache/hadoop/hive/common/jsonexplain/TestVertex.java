@@ -42,7 +42,7 @@ public class TestVertex {
     Vertex uut = new Vertex("name", object, null, tezJsonParser);
     uut.extractOpTree();
 
-    assertEquals(2, uut.mergeJoinDummyVertexs.size());
+    assertEquals(2, uut.mergeJoinDummyVertices.size());
   }
 
   @Test

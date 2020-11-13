@@ -53,7 +53,7 @@ public final class Vertex implements Comparable<Vertex>{
   public final List<Op> inputOps= new ArrayList<>();
   // we create a dummy vertex for a mergejoin branch for a self join if this
   // vertex is a mergejoin
-  public final List<Vertex> mergeJoinDummyVertexs = new ArrayList<>();
+  public final List<Vertex> mergeJoinDummyVertices = new ArrayList<>();
   // this vertex has multiple reduce operators
   public int numReduceOp = 0;
   // execution mode
@@ -121,7 +121,7 @@ public final class Vertex implements Comparable<Vertex>{
             Vertex v = new Vertex(null, mpOpTree, this.stage, parser);
             v.extractOpTree();
             v.dummy = true;
-            mergeJoinDummyVertexs.add(v);
+            mergeJoinDummyVertices.add(v);
           }
         } else if (key.equals("Merge File Operator")) {
           JSONObject opTree = vertexObject.getJSONObject(key);
@@ -254,7 +254,7 @@ public final class Vertex implements Comparable<Vertex>{
       }
     }
     if (vertexType == VertexType.UNION) {
-      // print dependent vertexs
+      // print dependent vertices
       indentFlag++;
       for (int index = 0; index < this.parentConnections.size(); index++) {
         Connection connection = this.parentConnections.get(index);
@@ -274,7 +274,7 @@ public final class Vertex implements Comparable<Vertex>{
     for (Op op : this.outputOps) {
       if (op.type == OpType.RS) {
         if (rewriteObject) {
-          Vertex outputVertex = this.stage.vertexs.get(op.outputVertexName);
+          Vertex outputVertex = this.stage.vertices.get(op.outputVertexName);
           if (outputVertex != null && outputVertex.inputOps.size() > 0) {
             JSONArray array = new JSONArray();
             for (Op inputOp : outputVertex.inputOps) {

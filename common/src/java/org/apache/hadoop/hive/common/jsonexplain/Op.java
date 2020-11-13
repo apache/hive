@@ -195,7 +195,7 @@ public final class Op {
     // should be merge join
     else {
       Map<String, String> posToOpId = new LinkedHashMap<>();
-      if (vertex.mergeJoinDummyVertexs.isEmpty()) {
+      if (vertex.mergeJoinDummyVertices.isEmpty()) {
         for (Entry<String, String> entry : vertex.tagToInput.entrySet()) {
           Connection c = null;
           for (Connection connection : vertex.parentConnections) {
@@ -226,7 +226,7 @@ public final class Op {
         }
       } else {
         posToOpId.put(vertex.tag, this.parent.operatorId);
-        for (Vertex v : vertex.mergeJoinDummyVertexs) {
+        for (Vertex v : vertex.mergeJoinDummyVertices) {
           if (v.outputOps.size() != 1) {
             throw new Exception("Can not find a single root operators in a single vertex " + v.name
                 + " when hive explain user is trying to identify the operator id.");
@@ -244,7 +244,7 @@ public final class Op {
           }
         }
         // inline merge join operator in a self-join
-        for (Vertex v : this.vertex.mergeJoinDummyVertexs) {
+        for (Vertex v : this.vertex.mergeJoinDummyVertices) {
             parser.addInline(this, new Connection(null, v));
         }
       }
