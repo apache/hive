@@ -111,7 +111,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     = new ConcurrentHashMap<Class, InputFormat<WritableComparable, Writable>>();
 
   private JobConf job;
-  private CompressionCodecFactory compressionCodecs;
 
   // both classes access by subclasses
   protected Map<Path, PartitionDesc> pathToPartitionInfo;
@@ -241,7 +240,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   @Override
   public void configure(JobConf job) {
     this.job = job;
-    this.compressionCodecs = new CompressionCodecFactory(job);
   }
 
   public static InputFormat<WritableComparable, Writable> wrapForLlap(
@@ -519,12 +517,11 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     conf.setInputFormat(inputFormat.getClass());
-    boolean isCompressedFormat = isCompressedInput(finalDirs);
     if (table != null) {
       int headerCount = Utilities.getHeaderCount(table);
       int footerCount = Utilities.getFooterCount(table, conf);
       if (headerCount != 0 || footerCount != 0) {
-        if (TextInputFormat.class.isAssignableFrom(inputFormatClass) && !isCompressedFormat) {
+        if (TextInputFormat.class.isAssignableFrom(inputFormatClass) && isUncompressedInput(finalDirs, conf)) {
           SkippingTextInputFormat skippingTextInputFormat = new SkippingTextInputFormat();
           skippingTextInputFormat.configure(conf, headerCount, footerCount);
           inputFormat = skippingTextInputFormat;
@@ -604,15 +601,23 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return validWriteIdList;
   }
 
-  public boolean isCompressedInput(List<Path> finalPaths) {
-    if (compressionCodecs != null) {
-      for (Path curr : finalPaths) {
-        if (this.compressionCodecs.getCodec(curr) != null) {
-          return true;
+  public boolean isUncompressedInput(List<Path> finalPaths, Configuration conf) throws IOException {
+    CompressionCodecFactory compressionCodecs = new CompressionCodecFactory(conf);
+    for (Path curr : finalPaths) {
+      FileSystem fs = curr.getFileSystem(conf);
+      if (fs.isDirectory(curr)) {
+        List<FileStatus> results = new ArrayList<>();
+        FileUtils.listStatusRecursively(fs, fs.getFileStatus(curr), results);
+        for (FileStatus fileStatus : results) {
+          if (compressionCodecs.getCodec(fileStatus.getPath()) != null) {
+            return false;
+          }
         }
+      } else if (compressionCodecs.getCodec(curr) != null) {
+        return false;
       }
     }
-    return false;
+    return true;
   }
 
   public static void processPathsForMmRead(List<Path> dirs, Configuration conf,

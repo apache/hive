@@ -58,7 +58,7 @@ class PassThruOffsetReader implements ReaderWithOffsets {
        */
       if (!initialized) {
         // Skip header lines.
-        opNotEOF = Utilities.skipHeader(sourceReader, skipHeaderCnt, key, value);
+        opNotEOF = Utilities.skipHeader(sourceReader, skipHeaderCnt, (WritableComparable) key, value);
 
         // Initialize footer buffer.
         if (opNotEOF && skipFooterCnt > 0) {
