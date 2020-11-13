@@ -1823,7 +1823,7 @@ Release Notes - Hive - Version 3.0.0
     * [HIVE-16855] - org.apache.hadoop.hive.ql.exec.mr.HashTableLoader Improvements
     * [HIVE-16856] - Allow For Customization Of Buffer Size In MapJoinTableContainerSerDe
     * [HIVE-16857] - SparkPartitionPruningSinkOperator Buffer Size
-    * [HIVE-16858] - Acumulo Utils Improvements
+    * [HIVE-16858] - Accumulo Utils Improvements
     * [HIVE-16866] - existing available UDF is used in TestReplicationScenariosAcrossInstances#testDropFunctionIncrementalReplication 
     * [HIVE-16867] - Extend shared scan optimizer to reuse computation from other operators
     * [HIVE-16873] - Remove Thread Cache From Logging
