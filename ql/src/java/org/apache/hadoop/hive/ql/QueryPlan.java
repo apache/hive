@@ -191,10 +191,9 @@ public class QueryPlan implements Serializable {
     return acidSinks;
   }
 
-  public Integer getStatementIdForAcidWriteType(AcidUtils.Operation acidOperation, long writeId, Path path) {
+  public Integer getStatementIdForAcidWriteType(long writeId, String moveTaskId) {
     for (FileSinkDesc acidSink : acidSinks) {
-      if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
-          && acidSink.getTableWriteId() == writeId) {
+      if (moveTaskId.equals(acidSink.getMoveTaskId()) && acidSink.getTableWriteId() == writeId) {
         return acidSink.getStatementId();
       }
     }

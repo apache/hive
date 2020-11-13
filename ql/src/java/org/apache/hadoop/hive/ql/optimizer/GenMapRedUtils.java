@@ -1383,7 +1383,7 @@ public final class GenMapRedUtils {
     Path fsopPath = srcMmWriteId != null ? fsInputDesc.getFinalDirName() : finalName;
 
     Task<MoveWork> mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(
-        mvTasks, fsopPath, fsInputDesc.isMmTable(), fsInputDesc.isDirectInsert(), fsInputDesc.getAcidOperation());
+        mvTasks, fsopPath, fsInputDesc.isMmTable(), fsInputDesc.isDirectInsert(), fsInputDesc.getMoveTaskId());
     ConditionalTask cndTsk = GenMapRedUtils.createCondTask(conf, currTask, dummyMv, work,
         fsInputDesc.getMergeInputDirName(), finalName, mvTask, dependencyTask, lineageState);
 
@@ -1873,23 +1873,22 @@ public final class GenMapRedUtils {
   }
 
   public static Task<MoveWork> findMoveTaskForFsopOutput(List<Task<MoveWork>> mvTasks, Path fsopFinalDir,
-      boolean isMmFsop, boolean isDirectInsert, AcidUtils.Operation acidOperation) {
+      boolean isMmFsop, boolean isDirectInsert, String fsoMoveTaskId) {
     // find the move task
     for (Task<MoveWork> mvTsk : mvTasks) {
       MoveWork mvWork = mvTsk.getWork();
       Path srcDir = null;
       boolean isLfd = false;
-      AcidUtils.Operation moveTaskWriteType = null;
+      String moveTaskId = null;
       if (mvWork.getLoadFileWork() != null) {
         srcDir = mvWork.getLoadFileWork().getSourcePath();
         isLfd = true;
         if (isMmFsop || isDirectInsert) {
           srcDir = srcDir.getParent();
         }
-        moveTaskWriteType = mvWork.getLoadFileWork().getWriteType();
       } else if (mvWork.getLoadTableWork() != null) {
         srcDir = mvWork.getLoadTableWork().getSourcePath();
-        moveTaskWriteType = mvWork.getLoadTableWork().getWriteType();
+        moveTaskId = mvWork.getLoadTableWork().getMoveTaskId();
       }
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("Observing MoveWork " + System.identityHashCode(mvWork)
@@ -1899,7 +1898,7 @@ public final class GenMapRedUtils {
 
       if ((srcDir != null) && srcDir.equals(fsopFinalDir)) {
         if (isDirectInsert) {
-          if (moveTaskWriteType != null && moveTaskWriteType.equals(acidOperation)) {
+          if (moveTaskId != null && moveTaskId.equals(fsoMoveTaskId)) {
             // If the ACID direct insert is on, the MoveTasks cannot be identified by the srcDir as
             // in this case the srcDir is always the root directory of the table.
             // We need to consider the ACID write type to identify the MoveTasks.
@@ -1926,7 +1925,7 @@ public final class GenMapRedUtils {
     // no need of merging if the move is to a local file system
     // We are looking based on the original FSOP, so use the original path as is.
     MoveTask mvTask = (MoveTask) GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fsOp.getConf().getFinalDirName(),
-        fsOp.getConf().isMmTable(), fsOp.getConf().isDirectInsert(), fsOp.getConf().getAcidOperation());
+        fsOp.getConf().isMmTable(), fsOp.getConf().isDirectInsert(), fsOp.getConf().getMoveTaskId());
 
     // TODO: wtf?!! why is this in this method? This has nothing to do with anything.
     if (isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
@@ -2040,7 +2039,7 @@ public final class GenMapRedUtils {
 
     if (!chDir) {
       mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fsOp.getConf().getFinalDirName(), isMmTable,
-          isDirectInsert, fsOp.getConf().getAcidOperation());
+          isDirectInsert, fsOp.getConf().getMoveTaskId());
     }
 
     // Set the move task to be dependent on the current task

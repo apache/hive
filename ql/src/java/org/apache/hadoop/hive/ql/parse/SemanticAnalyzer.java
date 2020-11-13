@@ -7255,6 +7255,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean destTableIsMaterialization = false;
     Partition destinationPartition = null;// destination partition if any
     Path queryTmpdir = null; // the intermediate destination directory
+    String moveTaskId = null;
     Path destinationPath = null; // the final destination directory
     TableDesc tableDescriptor = null;
     int currentTableId = 0;
@@ -7322,6 +7323,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOp);
       acidOperation = acidOp;
       queryTmpdir = getTmpDir(isNonNativeTable, isMmTable, isDirectInsert, destinationPath);
+      moveTaskId = getMoveTaskId(isDirectInsert);
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("create filesink w/DEST_TABLE specifying " + queryTmpdir
             + " from " + destinationPath);
@@ -7386,6 +7388,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (writeId != null) {
           ltd.setStmtId(txnMgr.getCurrentStmtId());
         }
+        ltd.setMoveTaskId(moveTaskId);
         // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
         // deltas and base and leave them up to the cleaner to clean up
         boolean isInsertInto = qb.getParseInfo().isInsertIntoTable(
@@ -7471,6 +7474,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOp);
       acidOperation = acidOp;
       queryTmpdir = getTmpDir(isNonNativeTable, isMmTable, isDirectInsert, destinationPath);
+      moveTaskId = getMoveTaskId(isDirectInsert);
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("create filesink w/DEST_PARTITION specifying "
             + queryTmpdir + " from " + destinationPath);
@@ -7545,6 +7549,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ltd.setInsertOverwrite(!isInsertInto);
       ltd.setIsDirectInsert(isDirectInsert);
       ltd.setLbCtx(lbCtx);
+      ltd.setMoveTaskId(moveTaskId);
 
       loadTableWork.add(ltd);
       if (!outputs.add(new WriteEntity(destinationPartition, determineWriteType(ltd, dest)))) {
@@ -7848,7 +7853,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     FileSinkDesc fileSinkDesc = createFileSinkDesc(dest, tableDescriptor, destinationPartition,
         destinationPath, currentTableId, destTableIsFullAcid, destTableIsTemporary,//this was 1/4 acid
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
-        canBeMerged, destinationTable, writeId, isMmCreate, destType, qb, isDirectInsert, acidOperation);
+        canBeMerged, destinationTable, writeId, isMmCreate, destType, qb, isDirectInsert, acidOperation, moveTaskId);
     if (isMmCreate) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
       if (tableDesc != null) {
@@ -7938,6 +7943,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       return ctx.getTempDirForFinalJobPath(destinationPath);
     }
+  }
+
+  private String getMoveTaskId(boolean isDirectInsert) {
+    if (isDirectInsert) {
+      return ctx.getMoveTaskId();
+    }
+    return null;
   }
 
   private boolean useBatchingSerializer(String serdeClassName) {
@@ -8094,7 +8106,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                           boolean destTableIsMaterialization, Path queryTmpdir,
                                           SortBucketRSCtx rsCtx, DynamicPartitionCtx dpCtx, ListBucketingCtx lbCtx,
                                           RowSchema fsRS, boolean canBeMerged, Table dest_tab, Long mmWriteId, boolean isMmCtas,
-                                          Integer dest_type, QB qb, boolean isDirectInsert, AcidUtils.Operation acidOperation) throws SemanticException {
+                                          Integer dest_type, QB qb, boolean isDirectInsert, AcidUtils.Operation acidOperation, String moveTaskId) throws SemanticException {
     boolean isInsertOverwrite = false;
     switch (dest_type) {
     case QBMetaData.DEST_PARTITION:
@@ -8121,6 +8133,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         dest_path, mmWriteId, isMmCtas, isInsertOverwrite, qb.getIsQuery(),
         qb.isCTAS() || qb.isMaterializedView(), isDirectInsert, acidOperation);
 
+    fileSinkDesc.setMoveTaskId(moveTaskId);
     boolean isHiveServerQuery = SessionState.get().isHiveServerQuery();
     fileSinkDesc.setHiveServerQuery(isHiveServerQuery);
     // If this is an insert, update, or delete on an ACID table then mark that so the

@@ -405,9 +405,16 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               + " into " + tbd.getTable().getTableName());
           }
 
+          int statementId = tbd.getStmtId();
+          if (tbd.isDirectInsert()) {
+            statementId =
+                queryPlan.getStatementIdForAcidWriteType(work.getLoadTableWork().getWriteId(), tbd.getMoveTaskId());
+            LOG.debug("The statementId used when loading the dynamic partitions is " + statementId);
+          }
+
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getLoadFileType(),
                   work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp,
-                  resetStatisticsProps(table), tbd.getWriteId(), tbd.getStmtId(),
+                  resetStatisticsProps(table), tbd.getWriteId(), statementId,
                   tbd.isInsertOverwrite(), tbd.isDirectInsert());
           if (work.getOutputs() != null) {
             DDLUtils.addIfAbsentByName(new WriteEntity(table,
@@ -550,8 +557,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     // we could restrict the file listing to the directory the particular MoveTask is responsible for.
     int statementId = tbd.getStmtId();
     if (tbd.isDirectInsert()) {
-      statementId = queryPlan.getStatementIdForAcidWriteType(work.getLoadTableWork().getWriteType(),
-          work.getLoadTableWork().getWriteId(), tbd.getSourcePath());
+      statementId = queryPlan.getStatementIdForAcidWriteType(work.getLoadTableWork().getWriteId(), tbd.getMoveTaskId());
       LOG.debug("The statementId used when loading the dynamic partitions is " + statementId);
     }
     

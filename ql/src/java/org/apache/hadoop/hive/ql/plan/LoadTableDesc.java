@@ -49,6 +49,7 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
   private Table mdTable;
   private org.apache.hadoop.hive.ql.plan.TableDesc table;
   private Map<String, String> partitionSpec; // NOTE: this partitionSpec has to be ordered map
+  private String moveTaskId;
 
   public enum LoadFileType {
     /**
@@ -281,5 +282,13 @@ public class LoadTableDesc extends LoadDesc implements Serializable {
 
   public void setMdTable(Table mdTable) {
     this.mdTable = mdTable;
+  }
+
+  public String getMoveTaskId() {
+    return moveTaskId;
+  }
+
+  public void setMoveTaskId(String moveTaskId) {
+    this.moveTaskId = moveTaskId;
   }
 }
