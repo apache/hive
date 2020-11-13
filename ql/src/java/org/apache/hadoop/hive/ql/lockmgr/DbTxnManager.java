@@ -176,7 +176,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   // ExecutorService for sending heartbeat to metastore periodically.
   private static ScheduledExecutorService heartbeatExecutorService = null;
   private ScheduledFuture<?> heartbeatTask = null;
-  private Runnable shutdownRunner = null;
   private static final int SHUTDOWN_HOOK_PRIORITY = 0;
   private final ReentrantLock heartbeatTaskLock = new ReentrantLock();
 
@@ -205,19 +204,8 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
       throw new LockException(e);
     }
   }
+
   DbTxnManager() {
-    shutdownRunner = new Runnable() {
-      @Override
-      public void run() {
-        if (heartbeatExecutorService != null
-            && !heartbeatExecutorService.isShutdown()
-            && !heartbeatExecutorService.isTerminated()) {
-          LOG.info("Shutting down Heartbeater thread pool.");
-          heartbeatExecutorService.shutdown();
-        }
-      }
-    };
-    ShutdownHookManager.addShutdownHook(shutdownRunner, SHUTDOWN_HOOK_PRIORITY);
   }
 
   @Override
@@ -891,9 +879,6 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
   protected void destruct() {
     try {
       stopHeartbeat();
-      if (shutdownRunner != null) {
-        ShutdownHookManager.removeShutdownHook(shutdownRunner);
-      }
       if (isTxnOpen()) {
         rollbackTxn();
       }
@@ -911,25 +896,34 @@ public final class DbTxnManager extends HiveTxnManagerImpl {
     if (conf == null) {
       throw new RuntimeException("Must call setHiveConf before any other methods.");
     }
-    initHeartbeatExecutorService();
+    initHeartbeatExecutorService(conf.getIntVar(HiveConf.ConfVars.HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE));
   }
 
-  private synchronized void initHeartbeatExecutorService() {
-    if (heartbeatExecutorService != null && !heartbeatExecutorService.isShutdown()
-        && !heartbeatExecutorService.isTerminated()) {
-      return;
-    }
-    heartbeatExecutorService =
-        Executors.newScheduledThreadPool(
-          conf.getIntVar(HiveConf.ConfVars.HIVE_TXN_HEARTBEAT_THREADPOOL_SIZE), new ThreadFactory() {
-          private final AtomicInteger threadCounter = new AtomicInteger();
+  private synchronized static void initHeartbeatExecutorService(int corePoolSize) {
+      if(heartbeatExecutorService != null) {
+        return;
+      }
+      // The following code will be executed only once when the service is not initialized
+      heartbeatExecutorService =
+          Executors.newScheduledThreadPool(
+              corePoolSize,
+              new ThreadFactory() {
+                private final AtomicInteger threadCounter = new AtomicInteger();
 
-          @Override
-          public Thread newThread(Runnable r) {
-            return new HeartbeaterThread(r, "Heartbeater-" + threadCounter.getAndIncrement());
-          }
-        });
-    ((ScheduledThreadPoolExecutor) heartbeatExecutorService).setRemoveOnCancelPolicy(true);
+                @Override
+                public Thread newThread(Runnable r) {
+                  return new HeartbeaterThread(r, "Heartbeater-" + threadCounter.getAndIncrement());
+                }
+              });
+      ((ScheduledThreadPoolExecutor) heartbeatExecutorService).setRemoveOnCancelPolicy(true);
+      ShutdownHookManager.addShutdownHook(DbTxnManager::shutdownHeartbeatExecutorService, SHUTDOWN_HOOK_PRIORITY);
+  }
+
+  private synchronized static void shutdownHeartbeatExecutorService() {
+    if (heartbeatExecutorService != null && !heartbeatExecutorService.isShutdown()) {
+      LOG.info("Shutting down Heartbeater thread pool.");
+      heartbeatExecutorService.shutdown();
+    }
   }
 
   public static class HeartbeaterThread extends Thread {

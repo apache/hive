@@ -67,15 +67,9 @@ public class ShowLocksAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    HiveTxnManager txnManager = null;
-    try {
-      txnManager = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    } catch (LockException e) {
-      throw new SemanticException(e.getMessage());
-    }
-
-    ShowLocksDesc desc = new ShowLocksDesc(ctx.getResFile(), tableName, partitionSpec, isExtended,
-        txnManager.useNewShowLocksFormat());
+    assert txnManager != null : "Transaction manager should be set before calling analyze";
+    ShowLocksDesc desc =
+        new ShowLocksDesc(ctx.getResFile(), tableName, partitionSpec, isExtended, txnManager.useNewShowLocksFormat());
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(task);
 
