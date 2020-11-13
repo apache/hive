@@ -17,11 +17,11 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
+import static org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer.INVALIDATE_OK;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
@@ -318,6 +318,61 @@ public class TestOrcMetadataCache {
     Path path = new Path("../data/files/alltypesorc");
     Configuration conf = new Configuration();
     OrcEncodedDataReader.getOrcTailForPath(path, conf, null, conf, null, null);
+  }
+
+  @Test
+  public void testProactiveEvictionMark() throws Exception {
+    DummyMemoryManager mm = new DummyMemoryManager();
+    DummyCachePolicy cp = new DummyCachePolicy();
+    final int MAX_ALLOC = 64;
+    LlapDaemonCacheMetrics metrics = LlapDaemonCacheMetrics.create("", "");
+    BuddyAllocator alloc = new BuddyAllocator(
+        false, false, 8, MAX_ALLOC, 1, 4096, 0, null, mm, metrics, null, true);
+    MetadataCache cache = new MetadataCache(alloc, mm, cp, true, metrics);
+
+    long fn1 = 1;
+    long fn2 = 2;
+    long fn3 = 3;
+
+    AtomicBoolean isStopped = new AtomicBoolean(false);
+
+    // Case for when metadata consists of just 1 buffer (most of the realworld cases)
+    ByteBuffer bb = ByteBuffer.wrap("small-meta-data-content".getBytes());
+    // Case for when metadata consists of multiple buffers (rare case), (max allocation is 64 hence the test data
+    // below is of length 65
+    ByteBuffer bb2 = ByteBuffer.wrap("-large-meta-data-content-large-meta-data-content-large-meta-data-".getBytes());
+
+    LlapBufferOrBuffers table1Buffers1 = cache.putFileMetadata(fn1, bb, CacheTag.build("default.table1"), isStopped);
+    assertNotNull(table1Buffers1.getSingleLlapBuffer());
+
+    LlapBufferOrBuffers table1Buffers2 = cache.putFileMetadata(fn2, bb2, CacheTag.build("default.table1"), isStopped);
+    assertNotNull(table1Buffers2.getMultipleLlapBuffers());
+    assertEquals(2, table1Buffers2.getMultipleLlapBuffers().length);
+
+    // Case for when metadata consists of just 1 buffer (most of the realworld cases)
+    ByteBuffer bb3 = ByteBuffer.wrap("small-meta-data-content-for-otherFile".getBytes());
+    LlapBufferOrBuffers table2Buffers1 = cache.putFileMetadata(fn3, bb3, CacheTag.build("default.table2"), isStopped);
+    assertNotNull(table2Buffers1.getSingleLlapBuffer());
+
+    Predicate<CacheTag> predicate = tag -> "default.table1".equals(tag.getTableName());
+
+    // Simulating eviction on some buffers
+    table1Buffers2.getMultipleLlapBuffers()[1].decRef();
+    assertEquals(INVALIDATE_OK, table1Buffers2.getMultipleLlapBuffers()[1].invalidate());
+
+    // table1Buffers1:27 (allocated as 32) + table1Buffers2[0]:64 (also allocated as 64)
+    assertEquals(96, cache.markBuffersForProactiveEviction(predicate));
+
+    // Single buffer for file1 should be marked as per predicate
+    assertTrue(table1Buffers1.getSingleLlapBuffer().isMarkedForEviction());
+
+    // Multi buffer for file2 should be partially marked as per predicate and prior eviction
+    assertTrue(table1Buffers2.getMultipleLlapBuffers()[0].isMarkedForEviction());
+    assertFalse(table1Buffers2.getMultipleLlapBuffers()[1].isMarkedForEviction());
+
+    // Single buffer for file3 should not be marked as per predicate
+    assertFalse(table2Buffers1.getSingleLlapBuffer().isMarkedForEviction());
+
   }
 
   private static final int INCOMPLETE = 0, DRL = 1;
