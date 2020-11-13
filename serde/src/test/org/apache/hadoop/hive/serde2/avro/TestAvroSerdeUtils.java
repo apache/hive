@@ -48,7 +48,7 @@ public class TestAvroSerdeUtils {
       "    {\"name\":\"mayBeNull\", \"type\":[\"string\", \"null\"]}\n" +
       "  ]\n" +
       "}";
-  // Same union, order reveresed
+  // Same union, order reversed
   private final String NULLABLE_UNION2 = "{\n" +
     "  \"type\": \"record\", \n" +
     "  \"name\": \"nullTest\",\n" +
