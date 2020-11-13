@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.exec.AppMasterEventOperator;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -596,6 +597,12 @@ public class SharedWorkOptimizer extends Transform {
             LOG.debug("Operator removed: {}", op);
           }
 
+          if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DOWNSTREAM_MERGE)) {
+            if (sr.discardableOps.size() == 1) {
+              downStreamMerge(retainableTsOp, optimizerCache, pctx);
+            }
+          }
+
           break;
         }
 
@@ -731,6 +738,28 @@ public class SharedWorkOptimizer extends Transform {
               filterOp.getConf().setPredicate(filterExpr.getChildren().get(0));
             }
           }
+        }
+      }
+    }
+  }
+
+  private static void downStreamMerge(Operator<?> op, SharedWorkOptimizerCache optimizerCache, ParseContext pctx)
+      throws SemanticException {
+    List<Operator<?>> childs = op.getChildOperators();
+    for (int i = 0; i < childs.size(); i++) {
+      Operator<?> cI = childs.get(i);
+      if (cI instanceof ReduceSinkOperator || cI instanceof JoinOperator || cI.getParentOperators().size() != 1) {
+        continue;
+      }
+      for (int j = i + 1; j < childs.size(); j++) {
+        Operator<?> cJ = childs.get(j);
+        if (cI.logicalEquals(cJ)) {
+          LOG.debug("downstream merge: from {} into {}", cJ, cI);
+          adoptChildren(cI, cJ);
+          op.removeChild(cJ);
+          optimizerCache.removeOp(cJ);
+          j--;
+          downStreamMerge(cI, optimizerCache, pctx);
         }
       }
     }
@@ -918,6 +947,12 @@ public class SharedWorkOptimizer extends Transform {
               optimizerCache.removeOp(op);
               removedOps.add(op);
               LOG.debug("Operator removed: {}", op);
+            }
+
+            if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DOWNSTREAM_MERGE)) {
+              if (sr.discardableOps.size() == 1) {
+                downStreamMerge(retainableRsOp, optimizerCache, pctx);
+              }
             }
 
             break;
