@@ -298,7 +298,7 @@ public class HiveStringUtils {
    *
    * Given a finish and start time in long milliseconds, returns a
    * String in the format Xhrs, Ymins, Z sec, for the time difference between two times.
-   * If finish time comes before start time then negative valeus of X, Y and Z wil return.
+   * If finish time comes before start time then negative values of X, Y and Z wil return.
    *
    * @param finishTime finish time
    * @param startTime start time
