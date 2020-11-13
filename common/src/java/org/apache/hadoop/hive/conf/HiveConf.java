@@ -550,7 +550,7 @@ public class HiveConf extends Configuration {
             "If this is set to false, then all previously used dump-directories will be deleted after repl-dump. " +
              "If true, a number of latest dump-directories specified by hive.repl.retain.prev.dump.dir.count will be retained"),
     REPL_RETAIN_PREV_DUMP_DIR_COUNT("hive.repl.retain.prev.dump.dir.count", 3,
-            "Indicates maximium number of latest previously used dump-directories which would be retained when " +
+            "Indicates maximum number of latest previously used dump-directories which would be retained when " +
              "hive.repl.retain.prev.dump.dir is set to true"),
     REPL_RETAIN_CUSTOM_LOCATIONS_FOR_DB_ON_TARGET("hive.repl.retain.custom.db.locations.on.target", true,
             "Indicates if source database has custom warehouse locations, whether that should be retained on target as well"),
