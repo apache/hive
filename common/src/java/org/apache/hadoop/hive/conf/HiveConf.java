@@ -465,7 +465,7 @@ public class HiveConf extends Configuration {
   }
 
   /**
-   * Get a set containing configuration parameter names used by LLAP Server isntances
+   * Get a set containing configuration parameter names used by LLAP Server instances
    * @return an unmodifiable set containing llap ConfVars
    */
   public static final Set<String> getLlapDaemonConfVars() {
