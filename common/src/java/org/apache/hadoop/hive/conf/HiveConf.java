@@ -5169,7 +5169,7 @@ public class HiveConf extends Configuration {
         "hive.llap.daemon.task.preemption.metrics.intervals", "30,60,300",
         "Comma-delimited set of integers denoting the desired rollover intervals (in seconds)\n" +
         " for percentile latency metrics. Used by LLAP daemon task scheduler metrics for\n" +
-        " time taken to kill task (due to pre-emption) and useful time wasted by the task that\n" +
+        " time taken to kill task (due to preemption) and useful time wasted by the task that\n" +
         " is about to be preempted."
     ),
     LLAP_DAEMON_TASK_SCHEDULER_WAIT_QUEUE_SIZE("hive.llap.daemon.task.scheduler.wait.queue.size",
