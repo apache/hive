@@ -2378,10 +2378,10 @@ public class HiveConf extends Configuration {
         "we think the key as a skew join key. "),
     HIVESKEWJOINMAPJOINNUMMAPTASK("hive.skewjoin.mapjoin.map.tasks", 10000,
         "Determine the number of map task used in the follow up map join job for a skew join.\n" +
-        "It should be used together with hive.skewjoin.mapjoin.min.split to perform a fine grained control."),
+        "It should be used together with hive.skewjoin.mapjoin.min.split to perform a fine-grained control."),
     HIVESKEWJOINMAPJOINMINSPLIT("hive.skewjoin.mapjoin.min.split", 33554432L,
         "Determine the number of map task at most used in the follow up map join job for a skew join by specifying \n" +
-        "the minimum split size. It should be used together with hive.skewjoin.mapjoin.map.tasks to perform a fine grained control."),
+        "the minimum split size. It should be used together with hive.skewjoin.mapjoin.map.tasks to perform a fine-grained control."),
 
     HIVESENDHEARTBEAT("hive.heartbeat.interval", 1000,
         "Send a heartbeat after this interval - used by mapjoin and filter operators"),

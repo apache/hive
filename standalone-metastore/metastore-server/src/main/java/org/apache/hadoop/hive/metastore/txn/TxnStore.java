@@ -539,7 +539,7 @@ public interface TxnStore extends Configurable {
   MutexAPI getMutexAPI();
 
   /**
-   * This is primarily designed to provide coarse grained mutex support to operations running
+   * This is primarily designed to provide coarse-grained mutex support to operations running
    * inside the Metastore (of which there could be several instances).  The initial goal is to
    * ensure that various sub-processes of the Compactor don't step on each other.
    *
