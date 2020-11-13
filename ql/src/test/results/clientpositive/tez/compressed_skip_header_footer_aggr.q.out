@@ -306,3 +306,57 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testcase6
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 2
+PREHOOK: query: create table testcase_gz(age int, name string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+TBLPROPERTIES ("skip.header.line.count"="1", "skip.footer.line.count"="1")
+PREHOOK: type: CREATETABLE
+PREHOOK: Input: hdfs://### HDFS PATH ###
+PREHOOK: Output: database:default
+PREHOOK: Output: default@testcase_gz
+POSTHOOK: query: create table testcase_gz(age int, name string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
+#### A masked pattern was here ####
+TBLPROPERTIES ("skip.header.line.count"="1", "skip.footer.line.count"="1")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Input: hdfs://### HDFS PATH ###
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@testcase_gz
+PREHOOK: query: select * from testcase_gz
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testcase_gz
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from testcase_gz
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testcase_gz
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a
+2	b
+PREHOOK: query: select count(*) from testcase_gz
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testcase_gz
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from testcase_gz
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testcase_gz
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2
+PREHOOK: query: select * from testcase_gz
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testcase_gz
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select * from testcase_gz
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testcase_gz
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+1	a
+2	b
+PREHOOK: query: select count(*) from testcase_gz
+PREHOOK: type: QUERY
+PREHOOK: Input: default@testcase_gz
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: select count(*) from testcase_gz
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@testcase_gz
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+2

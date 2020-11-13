@@ -43,7 +43,6 @@ public class SkippingTextInputFormat extends TextInputFormat {
 
   private final Map<Path, Long> startIndexMap = new ConcurrentHashMap<>();
   private final Map<Path, Long> endIndexMap = new ConcurrentHashMap<>();
-  CompressionCodecFactory compressionCodecs = null;
   private JobConf conf;
   private int headerCount;
   private int footerCount;
@@ -51,7 +50,6 @@ public class SkippingTextInputFormat extends TextInputFormat {
   @Override
   public void configure(JobConf conf) {
     this.conf = conf;
-    this.compressionCodecs = new CompressionCodecFactory(conf);
     super.configure(conf);
   }
 
@@ -72,11 +70,6 @@ public class SkippingTextInputFormat extends TextInputFormat {
   }
 
   private FileSplit makeSplitInternal(Path file, long start, long length, String[] hosts, String[] inMemoryHosts) {
-    // Do not currently support compressed files!
-    if (compressionCodecs.getCodec(file) != null) {
-      LOG.error("Compressed files are not currently supported!");
-      return new NullRowsInputFormat.DummyInputSplit(file);
-    }
     long cachedStart;
     long cachedEnd;
     try {

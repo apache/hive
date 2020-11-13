@@ -181,7 +181,7 @@ public class TestSkippingTextInputFormat {
       HiveInputFormat.HiveInputSplit hiveInputSplit =
           new HiveInputFormat.HiveInputSplit(splits[i], inputFormat.getClass().getName());
       System.out.println(hiveInputSplit.getInputSplit().getClass());
-      assertTrue(NullRowsInputFormat.DummyInputSplit.class == hiveInputSplit.getInputSplit().getClass());
+      assertTrue(FileSplit.class == hiveInputSplit.getInputSplit().getClass());
       System.out.println("Split: [" +i + "] "+ hiveInputSplit.getStart() + " => " + hiveInputSplit.getLength());
 
       LongWritable key = reader.createKey();
