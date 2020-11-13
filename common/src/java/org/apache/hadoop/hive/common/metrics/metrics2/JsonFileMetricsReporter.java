@@ -159,7 +159,7 @@ public class JsonFileMetricsReporter implements CodahaleReporter, Runnable {
         return;
       } catch (UnsupportedOperationException e) {
         // This shouldn't ever happen
-        LOGGER.error("failed to create temp file for JSON metrics: operartion not supported", e);
+        LOGGER.error("failed to create temp file for JSON metrics: operation not supported", e);
         return;
       }
 
