@@ -49,7 +49,7 @@ import org.junit.Test;
 public class TestJsonSerDe {
 
   @Test
-  public void testPrimativeDataTypes() throws Exception {
+  public void testPrimitiveDataTypes() throws Exception {
     Properties props = new Properties();
     props.setProperty(serdeConstants.LIST_COLUMNS,
         "name,height,weight,endangered,born");
