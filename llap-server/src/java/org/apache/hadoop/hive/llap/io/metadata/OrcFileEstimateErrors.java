@@ -124,6 +124,21 @@ public class OrcFileEstimateErrors extends LlapCacheableBuffer {
   }
 
   @Override
+  public long markForEviction() {
+    return 0;
+  }
+
+  @Override
+  public void removeProactiveEvictionMark() {
+    //No-op
+  }
+
+  @Override
+  public boolean isMarkedForEviction() {
+    return false;
+  }
+
+  @Override
   public CacheTag getTag() {
     // We don't care about these.
     return CacheTag.build("OrcEstimates");

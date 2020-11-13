@@ -858,7 +858,6 @@ public class TestCompactor {
             Lists.newArrayList(5, 6), 1);
   }
 
-  @Ignore("PR #1618")
   @Test
   public void testCleanAbortCompactAfter2ndCommitAbort() throws Exception {
     String dbName = "default";
@@ -872,15 +871,14 @@ public class TestCompactor {
     connection.commitTransaction();
 
     connection.beginTransaction();
-    connection.write("2,3".getBytes());
+    connection.write("3,2".getBytes());
     connection.write("3,3".getBytes());
     connection.abortTransaction();
 
-    assertAndCompactCleanAbort(dbName, tblName, false);
+    assertAndCompactCleanAbort(dbName, tblName, true, true);
     connection.close();
   }
 
-  @Ignore("PR #1618")
   @Test
   public void testCleanAbortCompactAfter1stCommitAbort() throws Exception {
     String dbName = "default";
@@ -894,11 +892,11 @@ public class TestCompactor {
     connection.abortTransaction();
 
     connection.beginTransaction();
-    connection.write("2,3".getBytes());
+    connection.write("3,2".getBytes());
     connection.write("3,3".getBytes());
     connection.commitTransaction();
 
-    assertAndCompactCleanAbort(dbName, tblName, false);
+    assertAndCompactCleanAbort(dbName, tblName, true, true);
     connection.close();
   }
 
@@ -924,7 +922,7 @@ public class TestCompactor {
     connection2.write("3,3".getBytes());
     connection2.abortTransaction();
 
-    assertAndCompactCleanAbort(dbName, tblName, true);
+    assertAndCompactCleanAbort(dbName, tblName, false, false);
 
     connection1.close();
     connection2.close();
@@ -953,13 +951,13 @@ public class TestCompactor {
     connection2.write("3,3".getBytes());
     connection2.abortTransaction();
 
-    assertAndCompactCleanAbort(dbName, tblName, true);
+    assertAndCompactCleanAbort(dbName, tblName, false, false);
 
     connection1.close();
     connection2.close();
   }
 
-  private void assertAndCompactCleanAbort(String dbName, String tblName, boolean allAborted) throws Exception {
+  private void assertAndCompactCleanAbort(String dbName, String tblName, boolean partialAbort, boolean singleSession) throws Exception {
     IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
     TxnStore txnHandler = TxnUtils.getTxnStore(conf);
     Table table = msClient.getTable(dbName, tblName);
@@ -972,7 +970,7 @@ public class TestCompactor {
 
     int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='i'");
     // We should have two rows corresponding to the two aborted transactions
-    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), allAborted ? 2 : 1, count);
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), partialAbort ? 1 : 2, count);
 
     runInitiator(conf);
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
@@ -991,14 +989,14 @@ public class TestCompactor {
 
     // After the cleaner runs TXN_COMPONENTS and COMPACTION_QUEUE should have zero rows, also the folders should have been deleted.
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
-    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), (singleSession && partialAbort) ? 1 : 0, count);
 
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
     Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 0, count);
 
     RemoteIterator it =
         fs.listFiles(new Path(table.getSd().getLocation()), true);
-    if (it.hasNext() && allAborted) {
+    if (it.hasNext() && !partialAbort) {
       Assert.fail("Expected cleaner to drop aborted delta & base directories, FileStatus[] stat " + Arrays.toString(stat));
     }
 
