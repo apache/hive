@@ -360,8 +360,8 @@ public class HiveStringUtils {
 
   /**
    * Returns an arraylist of strings.
-   * @param str the comma seperated string values
-   * @return the arraylist of the comma seperated string values
+   * @param str the comma separated string values
+   * @return the arraylist of the comma separated string values
    */
   public static String[] getStrings(String str){
     Collection<String> values = getStringCollection(str);
@@ -373,7 +373,7 @@ public class HiveStringUtils {
 
   /**
    * Returns a collection of strings.
-   * @param str comma seperated string values
+   * @param str comma separated string values
    * @return an <code>ArrayList</code> of string values
    */
   public static Collection<String> getStringCollection(String str){
