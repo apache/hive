@@ -523,7 +523,7 @@ public class HiveConf extends Configuration {
             "Root dir for ChangeManager for non encrypted paths if hive.repl.cmrootdir is encrypted."),
     REPLCMINTERVAL("hive.repl.cm.interval","3600s",
         new TimeValidator(TimeUnit.SECONDS),
-        "Inteval for cmroot cleanup thread."),
+        "Interval for cmroot cleanup thread."),
     REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE("hive.repl.ha.datapath.replace.remote.nameservice", false,
             "When HDFS is HA enabled and both source and target clusters are configured with same nameservice name," +
                     "enable this flag and provide a new unique logical name for representing the remote cluster " +
