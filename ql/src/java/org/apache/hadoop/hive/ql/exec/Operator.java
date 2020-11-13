@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.OpTraits;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
@@ -1542,5 +1543,12 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       }
     }
     return true;
+  }
+
+  public void replaceTabAlias(String oldAlias, String newAlias) {
+    ExprNodeDescUtils.replaceTabAlias(getConf().getColumnExprMap(), oldAlias, newAlias);
+    for (Operator<? extends OperatorDesc> c : getChildOperators()) {
+      c.replaceTabAlias(oldAlias, newAlias);
+    }
   }
 }
