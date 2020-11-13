@@ -98,9 +98,9 @@ public class AtlasDumpTask extends Task<AtlasDumpWork> implements Serializable {
       AtlasRequestBuilder atlasRequestBuilder = new AtlasRequestBuilder();
       String entityGuid = checkHiveEntityGuid(atlasRequestBuilder, atlasReplInfo.getSrcCluster(),
               atlasReplInfo.getSrcDB());
-      long currentModifiedTime = getCurrentTimestamp(atlasReplInfo, entityGuid);
       long numBytesWritten = dumpAtlasMetaData(atlasRequestBuilder, atlasReplInfo);
       LOG.debug("Finished dumping atlas metadata, total:{} bytes written", numBytesWritten);
+      long currentModifiedTime = getCurrentTimestamp(atlasReplInfo, entityGuid);
       createDumpMetadata(atlasReplInfo, currentModifiedTime);
       replLogger.endLog(0L);
       work.getMetricCollector().reportStageEnd(getName(), Status.SUCCESS);
