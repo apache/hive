@@ -1,4 +1,3 @@
---! qt:disabled:HIVE-23910
 --! qt:dataset:src
 
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';

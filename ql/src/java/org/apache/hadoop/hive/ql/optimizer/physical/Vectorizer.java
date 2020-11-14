@@ -488,6 +488,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFElt.class);
     supportedGenericUDFs.add(GenericUDFInitCap.class);
     supportedGenericUDFs.add(GenericUDFInBloomFilter.class);
+    supportedGenericUDFs.add(GenericUDFMurmurHash.class);
 
     // For type casts
     supportedGenericUDFs.add(UDFToLong.class);
@@ -3382,6 +3383,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         case INT:
           hashTableKeyType = HashTableKeyType.INT;
           break;
+        case DATE:
+          hashTableKeyType = HashTableKeyType.DATE;
+          break;
         case LONG:
           hashTableKeyType = HashTableKeyType.LONG;
           break;
@@ -3434,6 +3438,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     case BYTE:
     case SHORT:
     case INT:
+    case DATE:
     case LONG:
       switch (vectorMapJoinVariation) {
       case INNER:
@@ -3989,11 +3994,13 @@ public class Vectorizer implements PhysicalPlanResolver {
           case BYTE:
           case SHORT:
           case INT:
+          case DATE:
           case LONG:
             reduceSinkKeyType = VectorReduceSinkDesc.ReduceSinkKeyType.LONG;
             break;
           default:
-            // Other integer types not supported yet.
+            // For any remaining Long CV types use default multi-key
+            LOG.warn("Unsupported Long-CV key type {} defaulted to multi-key ReduceSink", primitiveCategory);
             break;
           }
         }

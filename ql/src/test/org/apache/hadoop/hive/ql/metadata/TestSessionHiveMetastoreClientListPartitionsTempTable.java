@@ -18,11 +18,13 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TestMetastoreExpr;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
@@ -53,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 
 import static junit.framework.TestCase.assertTrue;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -79,7 +82,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     SessionState.start(conf);
     // setup metastore client cache
     if (conf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
-      HiveMetaStoreClientWithLocalCache.init();
+      HiveMetaStoreClientWithLocalCache.init(conf);
     }
     setClient(Hive.get(conf).getMSC());
     getClient().dropDatabase(DB_NAME, true, true, true);
@@ -232,6 +235,83 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     super.testListPartitionsAllNoTable();
   }
 
+  private void checkPartitionNames(List<String> expected, short numParts, String order,
+      String defaultPartName, ExprNodeGenericFuncDesc expr, Table t) throws Exception {
+    PartitionsByExprRequest request = new PartitionsByExprRequest();
+    request.setDbName(DB_NAME);
+    request.setTblName(TABLE_NAME);
+    byte[] exprs = {(byte)-1};
+    if (expr != null) {
+      exprs = SerializationUtilities.serializeExpressionToKryo(expr);
+    }
+    request.setExpr(exprs);
+    request.setMaxParts(numParts);
+    request.setOrder(order);
+    request.setDefaultPartitionName(defaultPartName);
+    request.setId(t.getId());
+    List<String> partitionNames = getClient().listPartitionNames(request);
+    assertArrayEquals(expected.toArray(), partitionNames.toArray());
+  }
+
+  @Test
+  public void testListPartitionNames() throws Exception {
+    Table t = createTable4PartColsParts(getClient()).table;
+    String defaultPartitionName = HiveConf.getVar(conf, HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    List<List<String>> testValues = Lists.newArrayList(
+        Lists.newArrayList("1999", defaultPartitionName, "02"),
+        Lists.newArrayList(defaultPartitionName, "02", "10"),
+        Lists.newArrayList("2017", "10", defaultPartitionName));
+
+    for(List<String> vals : testValues) {
+      addPartition(getClient(), t, vals);
+    }
+    TestMetastoreExpr.ExprBuilder e = new TestMetastoreExpr.ExprBuilder(TABLE_NAME);
+    checkPartitionNames(Lists.newArrayList("yyyy=2017/mm=10/dd=26",
+        "yyyy=2017/mm=10/dd=__HIVE_DEFAULT_PARTITION__",
+        "yyyy=2017/mm=11/dd=27"),
+        (short)3, null, defaultPartitionName,
+        e.val("2017").strCol("yyyy").pred(">=", 2).build(), t);
+
+    checkPartitionNames(Lists.newArrayList(
+        "yyyy=2017/mm=11/dd=27",
+        "yyyy=2017/mm=10/dd=26"),
+        (short)2, "1,2:-+", defaultPartitionName,
+        e.val("2017").strCol("yyyy").pred(">=", 2).build(), t);
+
+    checkPartitionNames(Lists.newArrayList("yyyy=1999/mm=01/dd=02",
+        "yyyy=1999/mm=__HIVE_DEFAULT_PARTITION__/dd=02",
+        "yyyy=2009/mm=02/dd=10"),
+        (short)3, null, defaultPartitionName, null, t);
+
+    checkPartitionNames(Lists.newArrayList("yyyy=__HIVE_DEFAULT_PARTITION__/mm=02/dd=10",
+        "yyyy=2017/mm=10/dd=26",
+        "yyyy=2017/mm=10/dd=__HIVE_DEFAULT_PARTITION__"),
+        (short)3, "0,1:-+", defaultPartitionName, null, t);
+
+    checkPartitionNames(Lists.newArrayList("yyyy=1999/mm=01/dd=02",
+        "yyyy=1999/mm=__HIVE_DEFAULT_PARTITION__/dd=02",
+        "yyyy=2009/mm=02/dd=10"),
+        (short)3, null, defaultPartitionName, null, t);
+  }
+
+  private void checkPartitionNames(int numParts, List<String> partVals) throws Exception {
+    GetPartitionNamesPsRequest request = new GetPartitionNamesPsRequest();
+    request.setDbName(DB_NAME);
+    request.setTblName(TABLE_NAME);
+    request.setPartValues(partVals);
+    request.setMaxParts((short)-1);
+    List<String> partNames = getClient().listPartitionNamesRequest(request).getNames();
+    assertTrue(partNames.size() == numParts);
+  }
+
+  @Test
+  public void testListPartitionNamesRequest() throws Exception {
+    createTable4PartColsParts(getClient());
+    checkPartitionNames(1, Lists.newArrayList("1999", "01", "02"));
+    checkPartitionNames(2, Lists.newArrayList("2017", "", ""));
+    checkPartitionNames(0, Lists.newArrayList("2008", "02", "10"));
+  }
+
   @Test
   public void testListPartitionsByExpr() throws Exception {
     createTable4PartColsParts(getClient());
@@ -283,19 +363,19 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
         null, (short)-1, new ArrayList<>());
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   public void testListPartitionsByExprNoTbl() throws Exception {
     getClient().listPartitionsByExpr(DB_NAME, TABLE_NAME, new byte[] {'f', 'o', 'o'},
         null, (short)-1, new ArrayList<>());
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   public void testListPartitionsByExprEmptyDbName() throws Exception {
     getClient().listPartitionsByExpr("", TABLE_NAME, new byte[] {'f', 'o', 'o'},
         null, (short)-1, new ArrayList<>());
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   public void testListPartitionsByExprEmptyTblName() throws Exception {
     createTable3PartCols1Part(getClient());
     getClient().listPartitionsByExpr(DB_NAME, "", new byte[] {'f', 'o', 'o'},
@@ -396,7 +476,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     getClient().listPartitionsSpecByExpr(req, null);
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   public void testListPartitionsSpecByExprNoTbl() throws Exception {
     PartitionsByExprRequest req = new PartitionsByExprRequest(DB_NAME, TABLE_NAME,
             ByteBuffer.wrap(new byte[] {'f', 'o', 'o'}));
@@ -405,7 +485,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     getClient().listPartitionsSpecByExpr(req, new ArrayList<>());
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   public void testListPartitionsSpecByExprEmptyDbName() throws Exception {
     PartitionsByExprRequest req = new PartitionsByExprRequest("", TABLE_NAME,
             ByteBuffer.wrap(new byte[] {'f', 'o', 'o'}));
@@ -414,7 +494,7 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
     getClient().listPartitionsSpecByExpr(req, new ArrayList<>());
   }
 
-  @Test(expected = MetaException.class)
+  @Test(expected = NoSuchObjectException.class)
   public void testListPartitionsSpecByExprEmptyTblName() throws Exception {
     Table t = createTable3PartCols1Part(getClient());
 
@@ -462,5 +542,11 @@ public class TestSessionHiveMetastoreClientListPartitionsTempTable
       partSpecSize = partSpec.iterator().next().getSharedSDPartitionSpec().getPartitionsSize();
     }
     assertEquals("Partition Spec check failed: " + expr.getExprString(), numParts, partSpecSize);
+  }
+
+  @Test(expected = NoSuchObjectException.class)
+  @Override
+  public void testListPartitionNamesNoTable() throws Exception {
+    super.testListPartitionNamesNoTable();
   }
 }

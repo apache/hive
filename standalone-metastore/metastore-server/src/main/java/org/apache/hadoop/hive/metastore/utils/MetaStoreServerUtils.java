@@ -47,6 +47,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicates;
@@ -448,16 +449,22 @@ public class MetaStoreServerUtils {
       return;
     }
 
-    // NOTE: wh.getFileStatusesForUnpartitionedTable() can be REALLY slow
-    List<FileStatus> fileStatus = wh.getFileStatusesForUnpartitionedTable(db, tbl);
     if (params == null) {
       params = new HashMap<>();
       tbl.setParameters(params);
     }
     // The table location already exists and may contain data.
     // Let's try to populate those stats that don't require full scan.
-    LOG.info("Updating table stats for {}", tbl.getTableName());
-    populateQuickStats(fileStatus, params);
+    boolean populateQuickStats  = !((environmentContext != null)
+        && environmentContext.isSetProperties()
+        && StatsSetupConst.TRUE.equals(environmentContext.getProperties()
+        .get(StatsSetupConst.DO_NOT_POPULATE_QUICK_STATS)));
+    if (populateQuickStats) {
+      // NOTE: wh.getFileStatusesForUnpartitionedTable() can be REALLY slow
+      List<FileStatus> fileStatus = wh.getFileStatusesForUnpartitionedTable(db, tbl);
+      LOG.info("Updating table stats for {}", tbl.getTableName());
+      populateQuickStats(fileStatus, params);
+    }
     LOG.info("Updated size of table {} to {}",
         tbl.getTableName(), params.get(StatsSetupConst.TOTAL_SIZE));
     if (environmentContext != null
@@ -1104,6 +1111,7 @@ public class MetaStoreServerUtils {
     }
     if (!partitionsOutsideTableDir.isEmpty()) {
       PartitionSpec partListSpec = new PartitionSpec();
+      partListSpec.setCatName(table.getCatName());
       partListSpec.setDbName(table.getDbName());
       partListSpec.setTableName(table.getTableName());
       partListSpec.setPartitionList(new PartitionListComposingSpec(partitionsOutsideTableDir));
@@ -1134,6 +1142,7 @@ public class MetaStoreServerUtils {
     ret.setSharedSDPartitionSpec(sharedSDPartSpec);
     ret.setDbName(table.getDbName());
     ret.setTableName(table.getTableName());
+    ret.setCatName(table.getCatName());
 
     return ret;
   }
@@ -1553,5 +1562,34 @@ public class MetaStoreServerUtils {
       tpart.getSd().setLocation((location != null) ? location.toString() : null);
     }
     return tpart;
+  }
+
+  /**
+   * Validate bucket columns should belong to table columns.
+   * @param sd StorageDescriptor of given table
+   * @return true if bucket columns are empty or belong to table columns else false
+   */
+  public static List<String> validateBucketColumns(StorageDescriptor sd) {
+    List<String> bucketColumnNames = null;
+
+    if (CollectionUtils.isNotEmpty(sd.getBucketCols())) {
+      bucketColumnNames = sd.getBucketCols().stream().map(String::toLowerCase).collect(Collectors.toList());
+      List<String> columnNames = getColumnNames(sd.getCols());
+      if (CollectionUtils.isNotEmpty(columnNames))
+        bucketColumnNames.removeAll(columnNames);
+    }
+    return bucketColumnNames;
+  }
+
+  /**
+   * Generate list of lower case column names from the fieldSchema list
+   * @param cols fieldSchema list
+   * @return column name list
+   */
+  public static List<String> getColumnNames(List<FieldSchema> cols) {
+    if (CollectionUtils.isNotEmpty(cols)) {
+      return cols.stream().map(FieldSchema::getName).map(String::toLowerCase).collect(Collectors.toList());
+    }
+    return null;
   }
 }

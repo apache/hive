@@ -139,6 +139,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  NotNullConstraintsResponse get_not_null_constraints(NotNullConstraintsRequest request)')
     print('  DefaultConstraintsResponse get_default_constraints(DefaultConstraintsRequest request)')
     print('  CheckConstraintsResponse get_check_constraints(CheckConstraintsRequest request)')
+    print('  AllTableConstraintsResponse get_all_table_constraints(AllTableConstraintsRequest request)')
     print('  bool update_table_column_statistics(ColumnStatistics stats_obj)')
     print('  bool update_partition_column_statistics(ColumnStatistics stats_obj)')
     print('  SetPartitionsStatsResponse update_table_column_statistics_req(SetPartitionsStatsRequest req)')
@@ -190,6 +191,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void abort_txn(AbortTxnRequest rqst)')
     print('  void abort_txns(AbortTxnsRequest rqst)')
     print('  void commit_txn(CommitTxnRequest rqst)')
+    print('  i64 get_latest_txnid_in_conflict(i64 txnId)')
     print('  void repl_tbl_writeid_state(ReplTblWriteIdStateRequest rqst)')
     print('  GetValidWriteIdsResponse get_valid_write_ids(GetValidWriteIdsRequest rqst)')
     print('  AllocateTableWriteIdsResponse allocate_table_write_ids(AllocateTableWriteIdsRequest rqst)')
@@ -269,6 +271,10 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('  void add_replication_metrics(ReplicationMetricList replicationMetricList)')
     print('  ReplicationMetricList get_replication_metrics(GetReplicationMetricsRequest rqst)')
     print('  GetOpenTxnsResponse get_open_txns_req(GetOpenTxnsRequest getOpenTxnsRequest)')
+    print('  void create_stored_procedure(StoredProcedure proc)')
+    print('  StoredProcedure get_stored_procedure(StoredProcedureRequest request)')
+    print('  void drop_stored_procedure(StoredProcedureRequest request)')
+    print('   get_all_stored_procedures(ListStoredProcedureRequest request)')
     print('  string getName()')
     print('  string getVersion()')
     print('  fb_status getStatus()')
@@ -1051,6 +1057,12 @@ elif cmd == 'get_check_constraints':
         sys.exit(1)
     pp.pprint(client.get_check_constraints(eval(args[0]),))
 
+elif cmd == 'get_all_table_constraints':
+    if len(args) != 1:
+        print('get_all_table_constraints requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_all_table_constraints(eval(args[0]),))
+
 elif cmd == 'update_table_column_statistics':
     if len(args) != 1:
         print('update_table_column_statistics requires 1 args')
@@ -1356,6 +1368,12 @@ elif cmd == 'commit_txn':
         print('commit_txn requires 1 args')
         sys.exit(1)
     pp.pprint(client.commit_txn(eval(args[0]),))
+
+elif cmd == 'get_latest_txnid_in_conflict':
+    if len(args) != 1:
+        print('get_latest_txnid_in_conflict requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_latest_txnid_in_conflict(eval(args[0]),))
 
 elif cmd == 'repl_tbl_writeid_state':
     if len(args) != 1:
@@ -1830,6 +1848,30 @@ elif cmd == 'get_open_txns_req':
         print('get_open_txns_req requires 1 args')
         sys.exit(1)
     pp.pprint(client.get_open_txns_req(eval(args[0]),))
+
+elif cmd == 'create_stored_procedure':
+    if len(args) != 1:
+        print('create_stored_procedure requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.create_stored_procedure(eval(args[0]),))
+
+elif cmd == 'get_stored_procedure':
+    if len(args) != 1:
+        print('get_stored_procedure requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_stored_procedure(eval(args[0]),))
+
+elif cmd == 'drop_stored_procedure':
+    if len(args) != 1:
+        print('drop_stored_procedure requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.drop_stored_procedure(eval(args[0]),))
+
+elif cmd == 'get_all_stored_procedures':
+    if len(args) != 1:
+        print('get_all_stored_procedures requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.get_all_stored_procedures(eval(args[0]),))
 
 elif cmd == 'getName':
     if len(args) != 0:

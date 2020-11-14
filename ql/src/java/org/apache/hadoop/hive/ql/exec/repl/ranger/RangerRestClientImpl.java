@@ -202,9 +202,13 @@ public class RangerRestClientImpl implements RangerRestClient {
     Retryable retryable = Retryable.builder()
       .withHiveConf(hiveConf)
       .withRetryOnException(Exception.class).build();
-    return retryable.executeCallable(() -> importRangerPoliciesPlain(jsonRangerExportPolicyList,
-      rangerPoliciesJsonFileName,
-      serviceMapJsonFileName, jsonServiceMap, finalUrl, rangerExportPolicyList));
+    try {
+      return retryable.executeCallable(() -> importRangerPoliciesPlain(jsonRangerExportPolicyList,
+              rangerPoliciesJsonFileName,
+              serviceMapJsonFileName, jsonServiceMap, finalUrl, rangerExportPolicyList));
+    } catch (Exception e) {
+      throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
+    }
   }
 
   private RangerExportPolicyList importRangerPoliciesPlain(String jsonRangerExportPolicyList,
@@ -262,6 +266,7 @@ public class RangerRestClientImpl implements RangerRestClient {
     uriBuilder.setPath(RANGER_REST_URL_IMPORTJSONFILE);
     uriBuilder.addParameter("updateIfExists", "true");
     uriBuilder.addParameter("polResource", dbName);
+    uriBuilder.addParameter("policyMatchingAlgorithm", "matchByName");
     return uriBuilder.build().toString();
   }
 
@@ -277,7 +282,7 @@ public class RangerRestClientImpl implements RangerRestClient {
   @Override
   public List<RangerPolicy> changeDataSet(List<RangerPolicy> rangerPolicies, String sourceDbName,
                                           String targetDbName) {
-    if (targetDbName.equals(sourceDbName)) {
+    if (StringUtils.isEmpty(sourceDbName) || StringUtils.isEmpty(targetDbName) || targetDbName.equals(sourceDbName)) {
       return rangerPolicies;
     }
     if (CollectionUtils.isNotEmpty(rangerPolicies)) {
@@ -433,6 +438,7 @@ public class RangerRestClientImpl implements RangerRestClient {
         RangerPolicyItemAccess>();
 
     resourceNameList.add(sourceDb);
+    resourceNameList.add("dummy");
     rangerPolicyResource.setValues(resourceNameList);
     RangerPolicy.RangerPolicyResource rangerPolicyResourceColumn =new RangerPolicy.RangerPolicyResource();
     rangerPolicyResourceColumn.setValues(new ArrayList<String>(){{add("*"); }});

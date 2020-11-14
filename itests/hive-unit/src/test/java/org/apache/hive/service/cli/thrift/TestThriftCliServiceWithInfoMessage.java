@@ -72,6 +72,8 @@ public class TestThriftCliServiceWithInfoMessage {
     hiveConf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, HiveAuthConstants.AuthTypes.NOSASL.toString());
     hiveConf.setVar(ConfVars.HIVE_SERVER2_TRANSPORT_MODE, "binary");
     hiveConf.setIntVar(ConfVars.HIVE_SERVER2_WEBUI_PORT, webuiPort);
+    hiveConf.setBoolVar(ConfVars.HIVE_DEFAULT_NULLS_LAST, true);
+
     // Enable showing operation drilldown link
     hiveConf.setBoolVar(ConfVars.HIVE_SERVER2_SHOW_OPERATION_DRILLDOWN_LINK, true);
     hiveServer2 = new HiveServer2();
@@ -95,6 +97,11 @@ public class TestThriftCliServiceWithInfoMessage {
       TOpenSessionReq openReq = new TOpenSessionReq();
       openReq.setClient_protocol(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V11);
       TOpenSessionResp sessionResp = client.OpenSession(openReq);
+
+      Map<String, String> serverHiveConf = sessionResp.getConfiguration();
+      assertNotNull(serverHiveConf);
+      assertTrue(Boolean.parseBoolean(serverHiveConf.get(ConfVars.HIVE_DEFAULT_NULLS_LAST.varname)));
+
       TSessionHandle sessHandle = sessionResp.getSessionHandle();
       TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, "select 1");
       execReq.setRunAsync(true);

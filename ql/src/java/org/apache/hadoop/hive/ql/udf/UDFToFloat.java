@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFMethodResolver;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastDecimalToFloat;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.CastStringToFloat;
@@ -67,6 +68,10 @@ public class UDFToFloat extends UDF {
   public UDFToFloat() {
   }
 
+  @Override
+  public UDFMethodResolver getResolver() {
+    return new TimestampCastRestrictorResolver(super.getResolver());
+  }
   /**
    * Convert from void to a float. This is called for CAST(... AS FLOAT)
    *

@@ -23,6 +23,8 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.events.AddCheckConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AddDefaultConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
@@ -206,6 +208,20 @@ public abstract class MetaStoreEventListener implements Configurable {
    * @throws MetaException
    */
   public void onAddNotNullConstraint(AddNotNullConstraintEvent addNotNullConstraintEvent) throws MetaException {
+  }
+
+  /**
+   * @param addDefaultConstraintEvent add default constraint event
+   * @throws MetaException
+   */
+  public void onAddDefaultConstraint(AddDefaultConstraintEvent addDefaultConstraintEvent) throws MetaException {
+  }
+
+  /**
+   * @param addCheckConstraintEvent add check constraint event
+   * @throws MetaException
+   */
+  public void onAddCheckConstraint(AddCheckConstraintEvent addCheckConstraintEvent) throws MetaException {
   }
 
   /**

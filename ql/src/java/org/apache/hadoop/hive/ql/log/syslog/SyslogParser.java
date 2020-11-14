@@ -356,10 +356,10 @@ public class SyslogParser implements Closeable {
     row.add(getEventPriorityBySyslog(priority));
     row.add(version == 0 ? "RFC3164" : "RFC5424");
     row.add(Timestamp.ofEpochMilli(cal.getTimeInMillis()));
-    row.add(hostname);
-    row.add(new String(appname));
-    row.add(new String(procId));
-    row.add(new String(msgId));
+    row.add(hostname != null ? hostname : "");
+    row.add(appname != null ? new String(appname) : "");
+    row.add(procId != null ? new String(procId) : "");
+    row.add(msgId != null ? new String(msgId) : "");
     row.add(structuredData);
     row.add(body);
   }

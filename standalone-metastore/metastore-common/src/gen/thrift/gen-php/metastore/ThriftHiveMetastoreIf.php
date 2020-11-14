@@ -955,6 +955,13 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function get_check_constraints(\metastore\CheckConstraintsRequest $request);
     /**
+     * @param \metastore\AllTableConstraintsRequest $request
+     * @return \metastore\AllTableConstraintsResponse
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function get_all_table_constraints(\metastore\AllTableConstraintsRequest $request);
+    /**
      * @param \metastore\ColumnStatistics $stats_obj
      * @return bool
      * @throws \metastore\NoSuchObjectException
@@ -1310,6 +1317,12 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\TxnAbortedException
      */
     public function commit_txn(\metastore\CommitTxnRequest $rqst);
+    /**
+     * @param int $txnId
+     * @return int
+     * @throws \metastore\MetaException
+     */
+    public function get_latest_txnid_in_conflict($txnId);
     /**
      * @param \metastore\ReplTblWriteIdStateRequest $rqst
      */
@@ -1803,4 +1816,29 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @return \metastore\GetOpenTxnsResponse
      */
     public function get_open_txns_req(\metastore\GetOpenTxnsRequest $getOpenTxnsRequest);
+    /**
+     * @param \metastore\StoredProcedure $proc
+     * @throws \metastore\NoSuchObjectException
+     * @throws \metastore\MetaException
+     */
+    public function create_stored_procedure(\metastore\StoredProcedure $proc);
+    /**
+     * @param \metastore\StoredProcedureRequest $request
+     * @return \metastore\StoredProcedure
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function get_stored_procedure(\metastore\StoredProcedureRequest $request);
+    /**
+     * @param \metastore\StoredProcedureRequest $request
+     * @throws \metastore\MetaException
+     * @throws \metastore\NoSuchObjectException
+     */
+    public function drop_stored_procedure(\metastore\StoredProcedureRequest $request);
+    /**
+     * @param \metastore\ListStoredProcedureRequest $request
+     * @return string[]
+     * @throws \metastore\MetaException
+     */
+    public function get_all_stored_procedures(\metastore\ListStoredProcedureRequest $request);
 }

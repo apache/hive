@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.apache.hadoop.fs.FSDataInputStream;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
 import org.apache.hadoop.hive.common.metrics.common.MetricsConstant;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
 import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.mapper.PlanMapper;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
@@ -72,12 +74,10 @@ public class Driver implements IDriver {
   private static final Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   private static final LogHelper CONSOLE = new LogHelper(LOG);
 
-  // Exception message that ReExecutionRetryLockPlugin will recognize
-  public static final String SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED =
+  private static final String SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED =
       "snapshot was outdated when locks were acquired";
 
   private int maxRows = 100;
-  private ByteStream.Output bos = new ByteStream.Output();
 
   private final DriverContext driverContext;
   private final DriverState driverState = new DriverState();
@@ -85,28 +85,6 @@ public class Driver implements IDriver {
 
   private Context context;
   private TaskQueue taskQueue;
-
-  @Override
-  public Schema getSchema() {
-    return driverContext.getSchema();
-  }
-
-  @Override
-  public Context getContext() {
-    return context;
-  }
-
-  public PlanMapper getPlanMapper() {
-    return context.getPlanMapper();
-  }
-
-  /**
-   * Set the maximum number of rows returned by getResults.
-   */
-  @Override
-  public void setMaxRows(int maxRows) {
-    this.maxRows = maxRows;
-  }
 
   @VisibleForTesting
   public Driver(HiveConf conf) {
@@ -137,153 +115,17 @@ public class Driver implements IDriver {
   public Driver(QueryState queryState, QueryInfo queryInfo, HiveTxnManager txnManager) {
     driverContext = new DriverContext(queryState, queryInfo, new HookRunner(queryState.getConf(), CONSOLE),
         txnManager);
-    driverTxnHandler = new DriverTxnHandler(this, driverContext, driverState);
+    driverTxnHandler = new DriverTxnHandler(driverContext, driverState);
   }
 
-  /**
-   * Compiles a new HQL command, but potentially resets taskID counter. Not resetting task counter is useful for
-   * generating re-entrant QL queries.
-   * 
-   * @param command  The HiveQL query to compile
-   * @param resetTaskIds Resets taskID counter if true.
-   * @return 0 for ok
-   */
-  public int compile(String command, boolean resetTaskIds) {
-    try {
-      compile(command, resetTaskIds, false);
-      return 0;
-    } catch (CommandProcessorException cpr) {
-      return cpr.getErrorCode();
-    }
-  }
-
-  /**
-   * Compiles an HQL command, creates an execution plan for it.
-   * 
-   * @param deferClose indicates if the close/destroy should be deferred when the process has been interrupted, it
-   *        should be set to true if the compile is called within another method like runInternal, which defers the
-   *        close to the called in that method.
-   * @param resetTaskIds Resets taskID counter if true.
-   */
-  @VisibleForTesting
-  public void compile(String command, boolean resetTaskIds, boolean deferClose) throws CommandProcessorException {
-    preparForCompile(resetTaskIds);
-
-    Compiler compiler = new Compiler(context, driverContext, driverState);
-    QueryPlan plan = compiler.compile(command, deferClose);
-    driverContext.setPlan(plan);
-
-    compileFinished(deferClose);
-  }
-
-  private void compileFinished(boolean deferClose) {
-    if (DriverState.getDriverState().isAborted() && !deferClose) {
-      closeInProcess(true);
-    }
-  }
-
-  private void preparForCompile(boolean resetTaskIds) throws CommandProcessorException {
-    driverTxnHandler.createTxnManager();
-    DriverState.setDriverState(driverState);
-    prepareContext();
-    setQueryId();
-
-    if (resetTaskIds) {
-      TaskFactory.resetId();
-    }
-  }
-
-  private void prepareContext() throws CommandProcessorException {
-    if (context != null && context.getExplainAnalyze() != AnalyzeState.RUNNING) {
-      // close the existing ctx etc before compiling a new query, but does not destroy driver
-      closeInProcess(false);
-    }
-
-    try {
-      if (context == null) {
-        context = new Context(driverContext.getConf());
-      }
-    } catch (IOException e) {
-      throw new CommandProcessorException(e);
-    }
-
-    context.setHiveTxnManager(driverContext.getTxnManager());
-    context.setStatsSource(driverContext.getStatsSource());
-    context.setHDFSCleanup(true);
-
-    driverTxnHandler.setContext(context);
-  }
-
-  private void setQueryId() {
-    String queryId = Strings.isNullOrEmpty(driverContext.getQueryState().getQueryId()) ?
-        QueryPlan.makeQueryId() : driverContext.getQueryState().getQueryId();
-
-    SparkSession ss = SessionState.get().getSparkSession();
-    if (ss != null) {
-      ss.onQuerySubmission(queryId);
-    }
-    driverContext.getQueryDisplay().setQueryId(queryId);
-
-    setTriggerContext(queryId);
-  }
-
-  private void setTriggerContext(String queryId) {
-    long queryStartTime;
-    // query info is created by SQLOperation which will have start time of the operation. When JDBC Statement is not
-    // used queryInfo will be null, in which case we take creation of Driver instance as query start time (which is also
-    // the time when query display object is created)
-    if (driverContext.getQueryInfo() != null) {
-      queryStartTime = driverContext.getQueryInfo().getBeginTime();
-    } else {
-      queryStartTime = driverContext.getQueryDisplay().getQueryStartTime();
-    }
-    WmContext wmContext = new WmContext(queryStartTime, queryId);
-    context.setWmContext(wmContext);
+  @Override
+  public Context getContext() {
+    return context;
   }
 
   @Override
   public HiveConf getConf() {
     return driverContext.getConf();
-  }
-
-  /**
-   * @return The current query plan associated with this Driver, if any.
-   */
-  @Override
-  public QueryPlan getPlan() {
-    return driverContext.getPlan();
-  }
-
-  /**
-   * @return The current FetchTask associated with the Driver's plan, if any.
-   */
-  @Override
-  public FetchTask getFetchTask() {
-    return driverContext.getFetchTask();
-  }
-
-  public void releaseLocksAndCommitOrRollback(boolean commit) throws LockException {
-    releaseLocksAndCommitOrRollback(commit, driverContext.getTxnManager());
-  }
-
-  /**
-   * @param commit if there is an open transaction and if true, commit,
-   *               if false rollback.  If there is no open transaction this parameter is ignored.
-   * @param txnManager an optional existing transaction manager retrieved earlier from the session
-   *
-   **/
-  @VisibleForTesting
-  public void releaseLocksAndCommitOrRollback(boolean commit, HiveTxnManager txnManager) throws LockException {
-    driverTxnHandler.endTransactionAndCleanup(commit, txnManager);
-  }
-
-  /**
-   * Release some resources after a query is executed
-   * while keeping the result around.
-   */
-  public void releaseResources() {
-    releasePlan();
-    releaseTaskQueue();
   }
 
   /**
@@ -352,82 +194,6 @@ public class Driver implements IDriver {
     }
   }
 
-  @Override
-  public CommandProcessorResponse compileAndRespond(String command) throws CommandProcessorException {
-    return compileAndRespond(command, false);
-  }
-
-  public CommandProcessorResponse compileAndRespond(String command, boolean cleanupTxnList)
-      throws CommandProcessorException {
-    try {
-      compileInternal(command, false);
-      return new CommandProcessorResponse(getSchema(), null);
-    } catch (CommandProcessorException cpe) {
-      throw cpe;
-    } finally {
-      if (cleanupTxnList) {
-        // Valid txn list might be generated for a query compiled using this command, thus we need to reset it
-        driverTxnHandler.cleanupTxnList();
-      }
-    }
-  }
-
-  public void lockAndRespond() throws CommandProcessorException {
-    // Assumes the query has already been compiled
-    if (driverContext.getPlan() == null) {
-      throw new IllegalStateException(
-          "No previously compiled query for driver - queryId=" + driverContext.getQueryState().getQueryId());
-    }
-
-    try {
-      driverTxnHandler.acquireLocksIfNeeded();
-    } catch (CommandProcessorException cpe) {
-      driverTxnHandler.rollback(cpe);
-      throw cpe;
-    }
-  }
-
-  private void compileInternal(String command, boolean deferClose) throws CommandProcessorException {
-    Metrics metrics = MetricsFactory.getInstance();
-    if (metrics != null) {
-      metrics.incrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
-    }
-
-    PerfLogger perfLogger = SessionState.getPerfLogger(true);
-    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.WAIT_COMPILE);
-
-    try (CompileLock compileLock = CompileLockFactory.newInstance(driverContext.getConf(), command)) {
-      boolean success = compileLock.tryAcquire();
-
-      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.WAIT_COMPILE);
-
-      if (metrics != null) {
-        metrics.decrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
-      }
-      if (!success) {
-        String errorMessage = ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCodedMsg();
-        throw DriverUtils.createProcessorException(driverContext, ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode(),
-            errorMessage, null, null);
-      }
-
-      try {
-        compile(command, true, deferClose);
-      } catch (CommandProcessorException cpe) {
-        try {
-          driverTxnHandler.endTransactionAndCleanup(false);
-        } catch (LockException e) {
-          LOG.warn("Exception in releasing locks. " + StringUtils.stringifyException(e));
-        }
-        throw cpe;
-      }
-    }
-    //Save compile-time PerfLogging for WebUI.
-    //Execution-time Perf logs are done by either another thread's PerfLogger
-    //or a reset PerfLogger.
-    driverContext.getQueryDisplay().setPerfLogStarts(QueryDisplay.Phase.COMPILATION, perfLogger.getStartTimes());
-    driverContext.getQueryDisplay().setPerfLogEnds(QueryDisplay.Phase.COMPILATION, perfLogger.getEndTimes());
-  }
-
   private void runInternal(String command, boolean alreadyCompiled) throws CommandProcessorException {
     DriverState.setDriverState(driverState);
 
@@ -490,7 +256,69 @@ public class Driver implements IDriver {
       DriverUtils.checkInterrupted(driverState, driverContext, "at acquiring the lock.", null, null);
 
       lockAndRespond();
-      driverTxnHandler.validateTxnListState();
+
+      int retryShapshotCnt = 0;
+      int maxRetrySnapshotCnt = HiveConf.getIntVar(driverContext.getConf(),
+        HiveConf.ConfVars.HIVE_TXN_MAX_RETRYSNAPSHOT_COUNT);
+
+      try {
+        do {
+          driverContext.setOutdatedTxn(false);
+          // Inserts will not invalidate the snapshot, that could cause duplicates.
+          if (!driverTxnHandler.isValidTxnListState()) {
+            LOG.info("Re-compiling after acquiring locks, attempt #" + retryShapshotCnt);
+            // Snapshot was outdated when locks were acquired, hence regenerate context, txn list and retry.
+            // TODO: Lock acquisition should be moved before analyze, this is a bit hackish.
+            // Currently, we acquire a snapshot, compile the query with that snapshot, and then - acquire locks.
+            // If snapshot is still valid, we continue as usual.
+            // But if snapshot is not valid, we recompile the query.
+            if (driverContext.isOutdatedTxn()) {
+              // Later transaction invalidated the snapshot, a new transaction is required
+              LOG.info("Snapshot is outdated, re-initiating transaction ...");
+              driverContext.getTxnManager().rollbackTxn();
+
+              String userFromUGI = DriverUtils.getUserFromUGI(driverContext);
+              driverContext.getTxnManager().openTxn(context, userFromUGI, driverContext.getTxnType());
+              lockAndRespond();
+            }
+            driverContext.setRetrial(true);
+            driverContext.getBackupContext().addSubContext(context);
+            driverContext.getBackupContext().setHiveLocks(context.getHiveLocks());
+            context = driverContext.getBackupContext();
+
+            driverContext.getConf().set(ValidTxnList.VALID_TXNS_KEY,
+              driverContext.getTxnManager().getValidTxns().toString());
+
+            if (driverContext.getPlan().hasAcidResourcesInQuery()) {
+              compileInternal(context.getCmd(), true);
+              driverTxnHandler.recordValidWriteIds();
+              driverTxnHandler.setWriteIdForAcidFileSinks();
+            }
+            // Since we're reusing the compiled plan, we need to update its start time for current run
+            driverContext.getPlan().setQueryStartTime(driverContext.getQueryDisplay().getQueryStartTime());
+          }
+          // Re-check snapshot only in case we had to release locks and open a new transaction,
+          // otherwise exclusive locks should protect output tables/partitions in snapshot from concurrent writes.
+        } while (driverContext.isOutdatedTxn() && ++retryShapshotCnt <= maxRetrySnapshotCnt);
+
+        if (retryShapshotCnt > maxRetrySnapshotCnt) {
+          // Throw exception
+          HiveException e = new HiveException(
+              "Operation could not be executed, " + SNAPSHOT_WAS_OUTDATED_WHEN_LOCKS_WERE_ACQUIRED + ".");
+          DriverUtils.handleHiveException(driverContext, e, 14, null);
+
+        } else if (retryShapshotCnt != 0) {
+          //Reset the PerfLogger
+          perfLogger = SessionState.getPerfLogger(true);
+
+          // the reason that we set the txn manager for the cxt here is because each
+          // query has its own ctx object. The txn mgr is shared across the
+          // same instance of Driver, which can run multiple queries.
+          context.setHiveTxnManager(driverContext.getTxnManager());
+        }
+      } catch (LockException | SemanticException e) {
+        DriverUtils.handleHiveException(driverContext, e, 13, null);
+      }
 
       try {
         taskQueue = new TaskQueue(context); // for canceling the query (should be bound to session?)
@@ -531,14 +359,280 @@ public class Driver implements IDriver {
     SessionState.getPerfLogger().cleanupPerfLogMetrics();
   }
 
+  public void lockAndRespond() throws CommandProcessorException {
+    // Assumes the query has already been compiled
+    if (driverContext.getPlan() == null) {
+      throw new IllegalStateException(
+          "No previously compiled query for driver - queryId=" + driverContext.getQueryState().getQueryId());
+    }
+
+    try {
+      driverTxnHandler.acquireLocksIfNeeded();
+    } catch (CommandProcessorException cpe) {
+      driverTxnHandler.rollback(cpe);
+      throw cpe;
+    }
+  }
+
+  @Override
+  public CommandProcessorResponse compileAndRespond(String command) throws CommandProcessorException {
+    return compileAndRespond(command, false);
+  }
+
+  public CommandProcessorResponse compileAndRespond(String command, boolean cleanupTxnList)
+      throws CommandProcessorException {
+    try {
+      compileInternal(command, false);
+      return new CommandProcessorResponse(getSchema(), null);
+    } catch (CommandProcessorException cpe) {
+      throw cpe;
+    } finally {
+      if (cleanupTxnList) {
+        // Valid txn list might be generated for a query compiled using this command, thus we need to reset it
+        driverTxnHandler.cleanupTxnList();
+      }
+    }
+  }
+
+  private void compileInternal(String command, boolean deferClose) throws CommandProcessorException {
+    Metrics metrics = MetricsFactory.getInstance();
+    if (metrics != null) {
+      metrics.incrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
+    }
+
+    PerfLogger perfLogger = SessionState.getPerfLogger(true);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.WAIT_COMPILE);
+
+    try (CompileLock compileLock = CompileLockFactory.newInstance(driverContext.getConf(), command)) {
+      boolean success = compileLock.tryAcquire();
+
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.WAIT_COMPILE);
+
+      if (metrics != null) {
+        metrics.decrementCounter(MetricsConstant.WAITING_COMPILE_OPS, 1);
+      }
+      if (!success) {
+        String errorMessage = ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCodedMsg();
+        throw DriverUtils.createProcessorException(driverContext, ErrorMsg.COMPILE_LOCK_TIMED_OUT.getErrorCode(),
+            errorMessage, null, null);
+      }
+
+      try {
+        compile(command, true, deferClose);
+      } catch (CommandProcessorException cpe) {
+        try {
+          driverTxnHandler.endTransactionAndCleanup(false);
+        } catch (LockException e) {
+          LOG.warn("Exception in releasing locks. " + StringUtils.stringifyException(e));
+        }
+        throw cpe;
+      }
+    }
+    //Save compile-time PerfLogging for WebUI.
+    //Execution-time Perf logs are done by either another thread's PerfLogger
+    //or a reset PerfLogger.
+    driverContext.getQueryDisplay().setPerfLogStarts(QueryDisplay.Phase.COMPILATION, perfLogger.getStartTimes());
+    driverContext.getQueryDisplay().setPerfLogEnds(QueryDisplay.Phase.COMPILATION, perfLogger.getEndTimes());
+  }
+
+  /**
+   * Compiles a new HQL command, but potentially resets taskID counter. Not resetting task counter is useful for
+   * generating re-entrant QL queries.
+   *
+   * @param command  The HiveQL query to compile
+   * @param resetTaskIds Resets taskID counter if true.
+   * @return 0 for ok
+   */
+  public int compile(String command, boolean resetTaskIds) {
+    try {
+      compile(command, resetTaskIds, false);
+      return 0;
+    } catch (CommandProcessorException cpr) {
+      return cpr.getErrorCode();
+    }
+  }
+
+  /**
+   * Compiles an HQL command, creates an execution plan for it.
+   *
+   * @param command  The HiveQL query to compile
+   * @param resetTaskIds Resets taskID counter if true.
+   * @param deferClose indicates if the close/destroy should be deferred when the process has been interrupted, it
+   *        should be set to true if the compile is called within another method like runInternal, which defers the
+   *        close to the called in that method.
+   */
+  @VisibleForTesting
+  public void compile(String command, boolean resetTaskIds, boolean deferClose) throws CommandProcessorException {
+    preparForCompile(resetTaskIds);
+
+    Compiler compiler = new Compiler(context, driverContext, driverState);
+    QueryPlan plan = compiler.compile(command, deferClose);
+    driverContext.setPlan(plan);
+
+    compileFinished(deferClose);
+  }
+
+  private void preparForCompile(boolean resetTaskIds) throws CommandProcessorException {
+    driverTxnHandler.createTxnManager();
+    DriverState.setDriverState(driverState);
+    prepareContext();
+    setQueryId();
+
+    if (resetTaskIds) {
+      TaskFactory.resetId();
+    }
+  }
+
+  private void prepareContext() throws CommandProcessorException {
+    if (context != null && context.getExplainAnalyze() != AnalyzeState.RUNNING) {
+      // close the existing ctx etc before compiling a new query, but does not destroy driver
+      closeInProcess(false);
+    }
+
+    try {
+      if (context == null) {
+        context = new Context(driverContext.getConf());
+      }
+    } catch (IOException e) {
+      throw new CommandProcessorException(e);
+    }
+
+    context.setHiveTxnManager(driverContext.getTxnManager());
+    context.setStatsSource(driverContext.getStatsSource());
+    context.setHDFSCleanup(true);
+
+    driverTxnHandler.setContext(context);
+  }
+
+  private void setQueryId() {
+    String queryId = Strings.isNullOrEmpty(driverContext.getQueryState().getQueryId()) ?
+        QueryPlan.makeQueryId() : driverContext.getQueryState().getQueryId();
+
+    SparkSession ss = SessionState.get().getSparkSession();
+    if (ss != null) {
+      ss.onQuerySubmission(queryId);
+    }
+    driverContext.getQueryDisplay().setQueryId(queryId);
+
+    setTriggerContext(queryId);
+  }
+
+  private void setTriggerContext(String queryId) {
+    long queryStartTime;
+    // query info is created by SQLOperation which will have start time of the operation. When JDBC Statement is not
+    // used queryInfo will be null, in which case we take creation of Driver instance as query start time (which is also
+    // the time when query display object is created)
+    if (driverContext.getQueryInfo() != null) {
+      queryStartTime = driverContext.getQueryInfo().getBeginTime();
+    } else {
+      queryStartTime = driverContext.getQueryDisplay().getQueryStartTime();
+    }
+    WmContext wmContext = new WmContext(queryStartTime, queryId);
+    context.setWmContext(wmContext);
+  }
+
+  private void compileFinished(boolean deferClose) {
+    if (DriverState.getDriverState().isAborted() && !deferClose) {
+      closeInProcess(true);
+    }
+  }
+
+  /**
+   * @return The current query plan associated with this Driver, if any.
+   */
+  @Override
+  public QueryPlan getPlan() {
+    return driverContext.getPlan();
+  }
+
+  /**
+   * @return The current FetchTask associated with the Driver's plan, if any.
+   */
+  @Override
+  public FetchTask getFetchTask() {
+    return driverContext.getFetchTask();
+  }
+
+  public void releaseLocksAndCommitOrRollback(boolean commit) throws LockException {
+    releaseLocksAndCommitOrRollback(commit, driverContext.getTxnManager());
+  }
+
+  /**
+   * @param commit if there is an open transaction and if true, commit,
+   *               if false rollback.  If there is no open transaction this parameter is ignored.
+   * @param txnManager an optional existing transaction manager retrieved earlier from the session
+   *
+   **/
+  @VisibleForTesting
+  public void releaseLocksAndCommitOrRollback(boolean commit, HiveTxnManager txnManager) throws LockException {
+    driverTxnHandler.endTransactionAndCleanup(commit, txnManager);
+  }
+
+  /**
+   * Release some resources after a query is executed while keeping the result around.
+   */
+  public void releaseResources() {
+    releasePlan();
+    releaseTaskQueue();
+  }
+
+  public PlanMapper getPlanMapper() {
+    return context.getPlanMapper();
+  }
+
   @Override
   public boolean isFetchingTable() {
     return driverContext.getFetchTask() != null;
   }
 
+  @Override
+  public Schema getSchema() {
+    return driverContext.getSchema();
+  }
+
+  @Override
+  public boolean hasResultSet() {
+    // TODO explain should use a FetchTask for reading
+    for (Task<?> task : driverContext.getPlan().getRootTasks()) {
+      if (task.getClass() == ExplainTask.class) {
+        return true;
+      }
+    }
+
+    return driverContext.getPlan().getFetchTask() != null && driverContext.getPlan().getResultSchema() != null &&
+        driverContext.getPlan().getResultSchema().isSetFieldSchemas();
+  }
+
+  @Override
+  public void resetFetch() throws IOException {
+    if (driverState.isDestroyed() || driverState.isClosed()) {
+      throw new IOException("FAILED: driver has been cancelled, closed or destroyed.");
+    }
+    if (isFetchingTable()) {
+      try {
+        driverContext.getFetchTask().clearFetch();
+      } catch (Exception e) {
+        throw new IOException("Error closing the current fetch task", e);
+      }
+      // FetchTask should not depend on the plan.
+      driverContext.getFetchTask().initialize(driverContext.getQueryState(), null, null, context);
+    } else {
+      context.resetStream();
+      driverContext.setResStream(null);
+    }
+  }
+
+  /**
+   * Set the maximum number of rows returned by getResults.
+   */
+  @Override
+  public void setMaxRows(int maxRows) {
+    this.maxRows = maxRows;
+  }
+
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
-  public boolean getResults(List res) throws IOException {
+  public boolean getResults(List results) throws IOException {
     if (driverState.isDestroyed() || driverState.isClosed()) {
       throw new IOException("FAILED: query has been cancelled, closed, or destroyed.");
     }
@@ -553,7 +647,7 @@ public class Driver implements IDriver {
         maxRows = 1;
       }
       driverContext.getFetchTask().setMaxRows(maxRows);
-      return driverContext.getFetchTask().fetch(res);
+      return driverContext.getFetchTask().fetch(results);
     }
 
     if (driverContext.getResStream() == null) {
@@ -564,7 +658,7 @@ public class Driver implements IDriver {
     }
 
     int numRows = 0;
-
+    ByteStream.Output bos = new ByteStream.Output();
     while (numRows < maxRows) {
       final String row;
 
@@ -586,7 +680,7 @@ public class Driver implements IDriver {
 
         if (row != null) {
           numRows++;
-          res.add(row);
+          results.add(row);
         }
       } catch (IOException e) {
         CONSOLE.printError("FAILED: Unexpected IO exception : " + e.getMessage());
@@ -600,23 +694,42 @@ public class Driver implements IDriver {
     return true;
   }
 
+  // Close and release resources within a running query process. Since it runs under
+  // driver state COMPILING, EXECUTING or INTERRUPT, it would not have race condition
+  // with the releases probably running in the other closing thread.
+  private int closeInProcess(boolean destroyed) {
+    releaseTaskQueue();
+    releasePlan();
+    releaseCachedResult();
+    releaseFetchTask();
+    releaseResStream();
+    releaseContext();
+    if (destroyed) {
+      driverTxnHandler.release();
+    }
+    return 0;
+  }
+
+  // is called to stop the query if it is running, clean query results, and release resources.
   @Override
-  public void resetFetch() throws IOException {
-    if (driverState.isDestroyed() || driverState.isClosed()) {
-      throw new IOException("FAILED: driver has been cancelled, closed or destroyed.");
-    }
-    if (isFetchingTable()) {
-      try {
-        driverContext.getFetchTask().clearFetch();
-      } catch (Exception e) {
-        throw new IOException("Error closing the current fetch task", e);
+  public void close() {
+    driverState.lock();
+    try {
+      releaseTaskQueue();
+      if (driverState.isCompiling() || driverState.isExecuting()) {
+        driverState.abort();
       }
-      // FetchTask should not depend on the plan.
-      driverContext.getFetchTask().initialize(driverContext.getQueryState(), null, null, context);
-    } else {
-      context.resetStream();
-      driverContext.setResStream(null);
+      releasePlan();
+      releaseContext();
+      releaseCachedResult();
+      releaseFetchTask();
+      releaseResStream();
+      driverState.closed();
+    } finally {
+      driverState.unlock();
+      DriverState.removeDriverState();
     }
+    destroy();
   }
 
   // TaskQueue could be released in the query and close processes at same
@@ -695,14 +808,6 @@ public class Driver implements IDriver {
     }
   }
 
-  private boolean hasBadCacheAttempt() {
-    // Check if the query results were cacheable, and created a pending cache entry.
-    // If we successfully saved the results, the usage would have changed to QUERY_USING_CACHE.
-    return (driverContext.getCacheUsage() != null &&
-        driverContext.getCacheUsage().getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
-        driverContext.getCacheUsage().getCacheEntry() != null);
-  }
-
   private void releaseCachedResult() {
     // Assumes the reader count has been incremented automatically by the results cache by either
     // lookup or creating the cache entry.
@@ -722,42 +827,12 @@ public class Driver implements IDriver {
     driverContext.setCacheUsage(null);
   }
 
-  // Close and release resources within a running query process. Since it runs under
-  // driver state COMPILING, EXECUTING or INTERRUPT, it would not have race condition
-  // with the releases probably running in the other closing thread.
-  private int closeInProcess(boolean destroyed) {
-    releaseTaskQueue();
-    releasePlan();
-    releaseCachedResult();
-    releaseFetchTask();
-    releaseResStream();
-    releaseContext();
-    if (destroyed) {
-      driverTxnHandler.release();
-    }
-    return 0;
-  }
-
-  // is called to stop the query if it is running, clean query results, and release resources.
-  @Override
-  public void close() {
-    driverState.lock();
-    try {
-      releaseTaskQueue();
-      if (driverState.isCompiling() || driverState.isExecuting()) {
-        driverState.abort();
-      }
-      releasePlan();
-      releaseContext();
-      releaseCachedResult();
-      releaseFetchTask();
-      releaseResStream();
-      driverState.closed();
-    } finally {
-      driverState.unlock();
-      DriverState.removeDriverState();
-    }
-    destroy();
+  private boolean hasBadCacheAttempt() {
+    // Check if the query results were cacheable, and created a pending cache entry.
+    // If we successfully saved the results, the usage would have changed to QUERY_USING_CACHE.
+    return (driverContext.getCacheUsage() != null &&
+        driverContext.getCacheUsage().getStatus() == CacheUsage.CacheStatus.CAN_CACHE_QUERY_RESULTS &&
+        driverContext.getCacheUsage().getCacheEntry() != null);
   }
 
   // is usually called after close() to commit or rollback a query and end the driver life cycle.
@@ -808,19 +883,5 @@ public class Driver implements IDriver {
 
   public StatsSource getStatsSource() {
     return driverContext.getStatsSource();
-  }
-
-  @Override
-  public boolean hasResultSet() {
-
-    // TODO explain should use a FetchTask for reading
-    for (Task<?> task : driverContext.getPlan().getRootTasks()) {
-      if (task.getClass() == ExplainTask.class) {
-        return true;
-      }
-    }
-
-    return driverContext.getPlan().getFetchTask() != null && driverContext.getPlan().getResultSchema() != null &&
-        driverContext.getPlan().getResultSchema().isSetFieldSchemas();
   }
 }

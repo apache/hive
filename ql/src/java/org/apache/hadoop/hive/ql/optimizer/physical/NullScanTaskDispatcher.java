@@ -24,17 +24,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
-import java.util.stream.Collectors;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.StringInternUtils;
+import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -50,6 +49,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.PreOrderOnceWalker;
 import org.apache.hadoop.hive.ql.lib.SemanticRule;
+import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.optimizer.physical.MetadataOnlyOptimizer.WalkerCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -91,51 +91,43 @@ public class NullScanTaskDispatcher implements SemanticDispatcher {
     return null;
   }
 
-  private PartitionDesc changePartitionToMetadataOnly(PartitionDesc desc,
-      Path path) {
-    if (desc == null) {
-      return null;
-    }
-    boolean isEmpty = false;
+  private void lookupAndProcessPath(MapWork work, Path path,
+                           Collection<String> aliasesToOptimize) {
     try {
-      isEmpty = Utilities.isEmptyPath(physicalContext.getConf(), path);
+      boolean isEmpty = Utilities.listNonHiddenFileStatus(physicalContext.getConf(), path).length == 0;
+      processPath(work, path, aliasesToOptimize, isEmpty);
     } catch (IOException e) {
-      LOG.error("Cannot determine if the table is empty", e);
+      LOG.warn("Could not determine if path {} was empty." +
+          "Cannot use null scan optimization for this path.", path, e);
     }
-    desc.setInputFileFormatClass(
-        isEmpty ? ZeroRowsInputFormat.class : OneNullRowInputFormat.class);
-    desc.setOutputFileFormatClass(HiveIgnoreKeyTextOutputFormat.class);
-    desc.getProperties().setProperty(serdeConstants.SERIALIZATION_LIB,
+  }
+
+  private void processPath(MapWork work, Path path, Collection<String> aliasesToOptimize,
+                           boolean isEmpty) {
+    PartitionDesc partDesc = work.getPathToPartitionInfo().get(path).clone();
+    partDesc.setInputFileFormatClass(isEmpty ? ZeroRowsInputFormat.class : OneNullRowInputFormat.class);
+    partDesc.setOutputFileFormatClass(HiveIgnoreKeyTextOutputFormat.class);
+    partDesc.getProperties().setProperty(serdeConstants.SERIALIZATION_LIB,
         NullStructSerDe.class.getName());
-    return desc;
-  }
-
-  private void processAlias(MapWork work, Path path,
-      Collection<String> aliasesAffected, Set<String> aliases) {
-    // the aliases that are allowed to map to a null scan.
-    Collection<String> allowed = aliasesAffected.stream()
-        .filter(a -> aliases.contains(a)).collect(Collectors.toList());
-    if (!allowed.isEmpty()) {
-      PartitionDesc partDesc = work.getPathToPartitionInfo().get(path).clone();
-      PartitionDesc newPartition =
-          changePartitionToMetadataOnly(partDesc, path);
-      // Prefix partition with something to avoid it being a hidden file.
-      Path fakePath =
-          new Path(NullScanFileSystem.getBase() + newPartition.getTableName()
-              + "/part" + encode(newPartition.getPartSpec()));
-      StringInternUtils.internUriStringsInPath(fakePath);
-      work.addPathToPartitionInfo(fakePath, newPartition);
-      work.addPathToAlias(fakePath, new ArrayList<>(allowed));
-      aliasesAffected.removeAll(allowed);
-      if (aliasesAffected.isEmpty()) {
-        work.removePathToAlias(path);
-        work.removePathToPartitionInfo(path);
-      }
+    Path fakePath =
+        new Path(NullScanFileSystem.getBase() + partDesc.getTableName()
+            + "/part" + encode(partDesc.getPartSpec()));
+    StringInternUtils.internUriStringsInPath(fakePath);
+    work.addPathToPartitionInfo(fakePath, partDesc);
+    work.addPathToAlias(fakePath, new ArrayList<>(aliasesToOptimize));
+    Collection<String> aliasesContainingPath = work.getPathToAliases().get(path);
+    aliasesContainingPath.removeAll(aliasesToOptimize);
+    if (aliasesContainingPath.isEmpty()) {
+      work.removePathToAlias(path);
+      work.removePathToPartitionInfo(path);
     }
   }
 
-  private void processAlias(MapWork work, Set<TableScanOperator> tableScans) {
-    Set<String> aliases = new HashSet<>();
+  private void processTableScans(MapWork work, Set<TableScanOperator> tableScans) {
+    Map<Path, Boolean> managedEmptyPathMap = new HashMap<>();
+    Map<Path, Collection<String>> candidatePathsToAliases = new HashMap<>();
+    Map<String, Boolean> aliasTypeMap = new HashMap<>();
+    Map<String, Map<Path, Partition>> allowedAliasesToPartitions = new HashMap<>();
     for (TableScanOperator tso : tableScans) {
       // use LinkedHashMap<String, Operator<? extends OperatorDesc>>
       // getAliasToWork() should not apply this for non-native table
@@ -143,20 +135,60 @@ public class NullScanTaskDispatcher implements SemanticDispatcher {
         continue;
       }
       String alias = getAliasForTableScanOperator(work, tso);
-      aliases.add(alias);
+      boolean isManagedTable = !MetaStoreUtils.isExternalTable(tso.getConf().getTableMetadata().getTTable());
+      aliasTypeMap.put(alias, isManagedTable);
+      allowedAliasesToPartitions.put(alias, getPathToPartitionMap(alias, tso));
       tso.getConf().setIsMetadataOnly(true);
     }
-    // group path alias according to work
-    Map<Path, List<String>> candidates = new HashMap<>();
+
     for (Path path : work.getPaths()) {
-      List<String> aliasesAffected = work.getPathToAliases().get(path);
-      if (CollectionUtils.isNotEmpty(aliasesAffected)) {
-        candidates.put(path, aliasesAffected);
+      List<String> aliases = work.getPathToAliases().get(path);
+      for (String alias: aliases) {
+        Map<Path, Partition> pathToPartitionMap = allowedAliasesToPartitions.get(alias);
+        if (pathToPartitionMap == null) {
+          continue;
+        }
+        candidatePathsToAliases.computeIfAbsent(path, k -> new ArrayList<>()).add(alias);
+        Partition partitionObject = pathToPartitionMap.get(path);
+        Map<String, String> partitionParameters = partitionObject != null ? partitionObject.getParameters() : null;
+        boolean isManagedTable = aliasTypeMap.get(alias);
+        if (isManagedTable && partitionParameters != null && StatsSetupConst.areBasicStatsUptoDate(partitionParameters)) {
+          long rwCount = Long.parseLong(partitionParameters.get(StatsSetupConst.ROW_COUNT));
+          if (rwCount == 0) {
+            managedEmptyPathMap.put(path, true);
+          } else {
+            managedEmptyPathMap.put(path, false);
+          }
+        }
       }
     }
-    for (Entry<Path, List<String>> entry : candidates.entrySet()) {
-      processAlias(work, entry.getKey(), entry.getValue(), aliases);
+
+    for (Entry<Path, Collection<String>> entry : candidatePathsToAliases.entrySet()) {
+      Path path = entry.getKey();
+      Collection<String> allowed = entry.getValue();
+      Boolean isEmpty = managedEmptyPathMap.get(path);
+      // if isEmpty is null, either stats are not up to date or this is external table
+      if (isEmpty == null) {
+        lookupAndProcessPath(work, path, allowed);
+      } else {
+        processPath(work, path, allowed, isEmpty);
+      }
     }
+  }
+
+  private Map<Path, Partition> getPathToPartitionMap(String alias, TableScanOperator tso) {
+    Map<Path, Partition> pathToPartitionMap = new HashMap<>();
+    try {
+      Set<Partition> partitions = physicalContext.getParseContext()
+          .getPrunedPartitions(alias, tso).getPartitions();
+      for (Partition partition : partitions) {
+        pathToPartitionMap.put(partition.getPartitionPath(), partition);
+      }
+    } catch (SemanticException e) {
+      LOG.warn("Error while determining partitions of {}." +
+          "We cannot determine its empty partitions from stats.", alias, e);
+    }
+    return pathToPartitionMap;
   }
 
   // considered using URLEncoder, but it seemed too much
@@ -217,7 +249,7 @@ public class NullScanTaskDispatcher implements SemanticDispatcher {
       int scanTableSize = walkerCtx.getMetadataOnlyTableScans().size();
       LOG.debug("Found {} null table scans", scanTableSize);
       if (scanTableSize > 0) {
-        processAlias(mapWork, walkerCtx.getMetadataOnlyTableScans());
+        processTableScans(mapWork, walkerCtx.getMetadataOnlyTableScans());
       }
     }
     return null;

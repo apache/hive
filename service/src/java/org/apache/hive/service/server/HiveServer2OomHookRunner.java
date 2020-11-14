@@ -15,26 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.hadoop.hive.ql.exec;
 
-/**
- * Exception thrown by any task processor to signal a problem with task
- * execution.
- */
-public class TaskExecutionException extends RuntimeException {
+package org.apache.hive.service.server;
 
-  private static final long serialVersionUID = 1L;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.hooks.HookContext.HookType;
+import org.apache.hadoop.hive.ql.hooks.HookUtils;
 
-  public TaskExecutionException(String msg) {
-    super(msg);
+import java.util.List;
+
+public class HiveServer2OomHookRunner implements Runnable {
+  private final HiveServer2 hiveServer2;
+
+  HiveServer2OomHookRunner(HiveServer2 hiveServer2) {
+    this.hiveServer2 = hiveServer2;
   }
 
-  public TaskExecutionException(String msg, Throwable cause) {
-    super(msg, cause);
-  }
-
-  public TaskExecutionException(Throwable cause) {
-    super(cause);
+  @Override
+  public synchronized void run() {
+    try {
+      HiveConf hiveConf = hiveServer2.getHiveConf();
+      List<Runnable> hooks = HookUtils.readHooksFromConf(hiveConf, HookType.HIVE_SERVER2_OOM_HOOKS);
+      for (Runnable runnable : hooks) {
+        runnable.run();
+      }
+    } finally {
+      hiveServer2.stop();
+    }
   }
 
 }

@@ -122,6 +122,15 @@ struct SQLCheckConstraint {
   9: bool rely_cstr      // Rely/No Rely
 }
 
+struct SQLAllTableConstraints {
+  1: optional list<SQLPrimaryKey> primaryKeys,
+  2: optional list<SQLForeignKey> foreignKeys,
+  3: optional list<SQLUniqueConstraint> uniqueConstraints,
+  4: optional list<SQLNotNullConstraint> notNullConstraints,
+  5: optional list<SQLDefaultConstraint> defaultConstraints,
+  6: optional list<SQLCheckConstraint> checkConstraints
+}
+
 struct Type {
   1: string          name,             // one of the types in PrimitiveTypes or CollectionTypes or User defined types
   2: optional string type1,            // object type if the name is 'list' (LIST_TYPE), key type if the name is 'map' (MAP_TYPE)
@@ -720,6 +729,15 @@ struct CheckConstraintsResponse {
   1: required list<SQLCheckConstraint> checkConstraints
 }
 
+struct AllTableConstraintsRequest {
+  1: required string dbName,
+  2: required string tblName,
+  3: required string catName
+}
+
+struct AllTableConstraintsResponse {
+  1: required SQLAllTableConstraints allTableConstraints
+}
 
 struct DropConstraintRequest {
   1: required string dbname, 
@@ -1014,6 +1032,7 @@ struct CommitTxnRequest {
     4: optional ReplLastIdInfo replLastIdInfo,
     // An optional key/value to store atomically with the transaction
     5: optional CommitTxnKeyValue keyValue,
+    6: optional bool exclWriteEnabled = true
 }
 
 struct ReplTblWriteIdStateRequest {
@@ -1125,6 +1144,7 @@ struct ShowLocksRequest {
     2: optional string tablename,
     3: optional string partname,
     4: optional bool isExtended=false,
+    5: optional i64 txnid,
 }
 
 struct ShowLocksResponseElement {
@@ -2070,6 +2090,25 @@ struct GetOpenTxnsRequest {
   1: optional list<TxnType> excludeTxnTypes;
 }
 
+struct StoredProcedureRequest {
+  1: required string catName,
+  2: required string dbName,
+  3: required string procName
+}
+
+struct ListStoredProcedureRequest {
+  1: required string catName
+  2: optional string dbName
+}
+
+struct StoredProcedure {
+  1: string           name,
+  2: string           dbName,
+  3: string           catName,
+  4: string           ownerName,
+  5: string           source
+}
+
 // Exceptions.
 
 exception MetaException {
@@ -2501,6 +2540,9 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
   CheckConstraintsResponse get_check_constraints(1:CheckConstraintsRequest request)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
+  // All table constrains
+  AllTableConstraintsResponse get_all_table_constraints(1:AllTableConstraintsRequest request)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // column statistics interfaces
 
@@ -2659,6 +2701,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void abort_txn(1:AbortTxnRequest rqst) throws (1:NoSuchTxnException o1)
   void abort_txns(1:AbortTxnsRequest rqst) throws (1:NoSuchTxnException o1)
   void commit_txn(1:CommitTxnRequest rqst) throws (1:NoSuchTxnException o1, 2:TxnAbortedException o2)
+  i64 get_latest_txnid_in_conflict(1:i64 txnId) throws (1:MetaException o1)
   void repl_tbl_writeid_state(1: ReplTblWriteIdStateRequest rqst)
   GetValidWriteIdsResponse get_valid_write_ids(1:GetValidWriteIdsRequest rqst)
       throws (1:NoSuchTxnException o1, 2:MetaException o2)
@@ -2808,6 +2851,11 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   void add_replication_metrics(1: ReplicationMetricList replicationMetricList) throws(1:MetaException o1)
   ReplicationMetricList get_replication_metrics(1: GetReplicationMetricsRequest rqst) throws(1:MetaException o1)
   GetOpenTxnsResponse get_open_txns_req(1: GetOpenTxnsRequest getOpenTxnsRequest)
+
+  void create_stored_procedure(1: StoredProcedure proc) throws(1:NoSuchObjectException o1, 2:MetaException o2)
+  StoredProcedure get_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
+  void drop_stored_procedure(1: StoredProcedureRequest request) throws (1:MetaException o1, 2:NoSuchObjectException o2)
+  list<string> get_all_stored_procedures(1: ListStoredProcedureRequest request) throws (1:MetaException o1)
 }
 
 // * Note about the DDL_TIME: When creating or altering a table or a partition,

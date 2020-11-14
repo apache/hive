@@ -200,9 +200,4 @@ public final class OpenCSVSerde extends AbstractSerDe {
   public Class<? extends Writable> getSerializedClass() {
     return Text.class;
   }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
-  }
 }

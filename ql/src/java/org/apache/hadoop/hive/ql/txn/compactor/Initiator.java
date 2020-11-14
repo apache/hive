@@ -219,7 +219,8 @@ public class Initiator extends MetaStoreCompactorThread {
         txnHandler.getValidWriteIds(rqst).getTblValidWriteIds().get(0));
   }
 
-  private String resolveUserToRunAs(Map<String, String> cache, Table t, Partition p)
+  @VisibleForTesting
+  protected String resolveUserToRunAs(Map<String, String> cache, Table t, Partition p)
       throws IOException, InterruptedException {
     //Figure out who we should run the file operations as
     String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());
@@ -312,7 +313,7 @@ public class Initiator extends MetaStoreCompactorThread {
 
   private CompactionType determineCompactionType(CompactionInfo ci, ValidWriteIdList writeIds,
                                                  StorageDescriptor sd, Map<String, String> tblproperties)
-      throws IOException, InterruptedException {
+      throws IOException {
 
     boolean noBase = false;
     Path location = new Path(sd.getLocation());
@@ -438,11 +439,10 @@ public class Initiator extends MetaStoreCompactorThread {
     return noAutoCompact != null && noAutoCompact.equalsIgnoreCase("true");
   }
 
-  // Check to see if this is a table level request on a partitioned table.  If so,
-  // then it's a dynamic partitioning case and we shouldn't check the table itself.
-  private static boolean checkDynPartitioning(Table t, CompactionInfo ci){
+  // Check if it's a dynamic partitioning case. If so, do not initiate compaction for streaming ingest, only for aborts.
+  private static boolean isDynPartIngest(Table t, CompactionInfo ci){
     if (t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0 &&
-            ci.partName  == null) {
+            ci.partName  == null && !ci.hasOldAbort) {
       LOG.info("Skipping entry for " + ci.getFullTableName() + " as it is from dynamic" +
               " partitioning");
       return  true;
@@ -481,7 +481,7 @@ public class Initiator extends MetaStoreCompactorThread {
             "=true so we will not compact it.");
         return false;
       }
-      if (checkDynPartitioning(t, ci)) {
+      if (isDynPartIngest(t, ci)) {
         return false;
       }
 

@@ -216,29 +216,38 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
 
     public void closeWriters(boolean abort) throws HiveException {
+      Exception exception = null;
       for (int idx = 0; idx < outWriters.length; idx++) {
         if (outWriters[idx] != null) {
           try {
             outWriters[idx].close(abort);
             updateProgress();
           } catch (IOException e) {
-            throw new HiveException(e);
+            exception = e;
+            LOG.error("Error closing " + outWriters[idx].toString(), e);
+            // continue closing others
           }
         }
       }
-      try {
-        for (int i = 0; i < updaters.length; i++) {
-          if (updaters[i] != null) {
-            SerDeStats stats = updaters[i].getStats();
-            // Ignore 0 row files except in case of insert overwrite
-            if (isDirectInsert && (stats.getRowCount() > 0 || isInsertOverwrite)) {
-              outPathsCommitted[i] = updaters[i].getUpdatedFilePath();
-            }
+      for (int i = 0; i < updaters.length; i++) {
+        if (updaters[i] != null) {
+          SerDeStats stats = updaters[i].getStats();
+          // Ignore 0 row files except in case of insert overwrite
+          if (isDirectInsert && (stats.getRowCount() > 0 || isInsertOverwrite)) {
+            outPathsCommitted[i] = updaters[i].getUpdatedFilePath();
+          }
+          try {
             updaters[i].close(abort);
+          } catch (IOException e) {
+            exception = e;
+            LOG.error("Error closing " + updaters[i].toString(), e);
+            // continue closing others
           }
         }
-      } catch (IOException e) {
-        throw new HiveException(e);
+      }
+      // Made an attempt to close all writers.
+      if (exception != null) {
+        throw new HiveException(exception);
       }
     }
 
@@ -1137,9 +1146,27 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
     } catch (IOException e) {
+      closeWriters(true);
       throw new HiveException(e);
     } catch (SerDeException e) {
+      closeWriters(true);
       throw new HiveException(e);
+    }
+  }
+
+  private void closeWriters(boolean abort) throws HiveException {
+    fpaths.closeWriters(true);
+    closeRecordwriters(true);
+  }
+
+  private void closeRecordwriters(boolean abort) {
+    for (RecordWriter writer : rowOutWriters) {
+      try {
+        LOG.info("Closing {} on exception", writer);
+        writer.close(abort);
+      } catch (IOException e) {
+        LOG.error("Error closing rowOutWriter" + writer, e);
+      }
     }
   }
 

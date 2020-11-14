@@ -59,6 +59,7 @@ public class DriverContext {
   // either initTxnMgr or from the SessionState, in that order.
   private HiveTxnManager txnManager;
   private TxnType txnType = TxnType.DEFAULT;
+  private boolean outdatedTxn;
   private StatsSource statsSource;
 
   // Boolean to store information about whether valid txn list was generated
@@ -70,6 +71,7 @@ public class DriverContext {
   private ValidWriteIdList compactionWriteIds = null;
   private long compactorTxnId = 0;
 
+  private Context backupContext = null;
   private boolean retrial = false;
 
   private DataInput resStream;
@@ -154,6 +156,14 @@ public class DriverContext {
     return txnType;
   }
 
+  public void setOutdatedTxn(boolean outdated) {
+    this.outdatedTxn = outdated;
+  }
+
+  public boolean isOutdatedTxn() {
+    return outdatedTxn;
+  }
+
   public void setTxnType(TxnType txnType) {
     this.txnType = txnType;
   }
@@ -204,6 +214,14 @@ public class DriverContext {
 
   public void setCompactorTxnId(long compactorTxnId) {
     this.compactorTxnId = compactorTxnId;
+  }
+
+  public Context getBackupContext() {
+    return backupContext;
+  }
+
+  public void setBackupContext(Context backupContext) {
+    this.backupContext = backupContext;
   }
 
   public boolean isRetrial() {

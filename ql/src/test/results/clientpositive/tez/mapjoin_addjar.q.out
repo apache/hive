@@ -17,11 +17,11 @@ POSTHOOK: Output: default@t1_n66
 PREHOOK: query: select * from t1_n66 l join t1_n66 r on l.key =r.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1_n66
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: select * from t1_n66 l join t1_n66 r on l.key =r.key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1_n66
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 238	val_238	238	val_238
 238	val_238	238	val_238
 86	val_86	86	val_86

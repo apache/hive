@@ -41,6 +41,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.CopyOnFirstWriteProperties;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
+import org.apache.hadoop.hive.llap.LlapOutputFormat;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorFileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
@@ -253,6 +254,7 @@ public class SerializationUtilities {
       kryo.register(SequenceFileInputFormat.class);
       kryo.register(RCFileInputFormat.class);
       kryo.register(HiveSequenceFileOutputFormat.class);
+      kryo.register(LlapOutputFormat.class);
       kryo.register(SparkEdgeProperty.class);
       kryo.register(SparkWork.class);
       kryo.register(Pair.class);

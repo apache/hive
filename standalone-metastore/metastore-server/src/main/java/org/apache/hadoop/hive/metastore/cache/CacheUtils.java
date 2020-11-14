@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -58,14 +59,12 @@ public class CacheUtils {
    *
    */
   public static String buildPartitionCacheKey(List<String> partVals) {
-    if (partVals == null || partVals.isEmpty()) {
-      return "";
-    }
-    return String.join(delimit, partVals);
+    return CollectionUtils.isNotEmpty(partVals) ? String.join(delimit, partVals) : "";
   }
 
   public static String buildTableKey(String catName, String dbName, String tableName) {
-    return buildKey(catName.toLowerCase(), dbName.toLowerCase(), tableName.toLowerCase());
+    return buildKey(StringUtils.normalizeIdentifier(catName), StringUtils.normalizeIdentifier(dbName),
+        StringUtils.normalizeIdentifier(tableName));
   }
 
   public static String buildTableColKey(String catName, String dbName, String tableName,

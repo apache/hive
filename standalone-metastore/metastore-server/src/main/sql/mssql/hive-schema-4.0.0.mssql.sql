@@ -1017,7 +1017,9 @@ CREATE TABLE COMPACTION_QUEUE(
     CQ_META_INFO varbinary(2048) NULL,
 	CQ_HADOOP_JOB_ID nvarchar(128) NULL,
 	CQ_ERROR_MESSAGE varchar(max) NULL,
-    CQ_NEXT_TXN_ID bigint NOT NULL,
+    CQ_NEXT_TXN_ID bigint NULL,
+    CQ_TXN_ID bigint NULL,
+    CQ_COMMIT_TIME bigint NULL
 PRIMARY KEY CLUSTERED
 (
 	CQ_ID ASC
@@ -1333,6 +1335,20 @@ CREATE TABLE "REPLICATION_METRICS" (
 -- Create indexes for the replication metrics table
 CREATE INDEX "POLICY_IDX" ON "REPLICATION_METRICS" ("RM_POLICY");
 CREATE INDEX "DUMP_IDX" ON "REPLICATION_METRICS" ("RM_DUMP_EXECUTION_ID");
+
+-- Create stored procedure tables
+CREATE TABLE "STORED_PROCS" (
+  "SP_ID" BIGINT NOT NULL,
+  "CREATE_TIME" int NOT NULL,
+  "DB_ID" BIGINT NOT NULL,
+  "NAME" nvarchar(256) NOT NULL,
+  "OWNER_NAME" nvarchar(128) NOT NULL,
+  "SOURCE" NTEXT NOT NULL,
+  PRIMARY KEY ("SP_ID")
+);
+
+CREATE UNIQUE INDEX "UNIQUESTOREDPROC" ON "STORED_PROCS" ("NAME", "DB_ID");
+ALTER TABLE "STORED_PROCS" ADD CONSTRAINT "STOREDPROC_FK1" FOREIGN KEY ("DB_ID") REFERENCES "DBS" ("DB_ID");
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script

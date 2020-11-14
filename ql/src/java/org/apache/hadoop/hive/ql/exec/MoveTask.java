@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.ddl.DDLUtils;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -464,14 +465,17 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           console.printInfo("\n", StringUtils.stringifyException(he),false);
         }
       }
-
       setException(he);
+      errorCode = ReplUtils.handleException(work.isReplication(), he, work.getDumpDirectory(),
+                                            work.getMetricCollector(), getName(), conf);
       return errorCode;
     } catch (Exception e) {
       console.printError("Failed with exception " + e.getMessage(), "\n"
           + StringUtils.stringifyException(e));
       setException(e);
-      return (1);
+      LOG.error("MoveTask failed", e);
+      return ReplUtils.handleException(work.isReplication(), e, work.getDumpDirectory(), work.getMetricCollector(),
+                                       getName(), conf);
     }
   }
 
@@ -531,7 +535,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       TaskInformation ti, DynamicPartitionCtx dpCtx) throws HiveException,
       IOException, InvalidOperationException {
     DataContainer dc;
-    List<LinkedHashMap<String, String>> dps = Utilities.getFullDPSpecs(conf, dpCtx);
+    List<LinkedHashMap<String, String>> dps = Utilities.getFullDPSpecs(conf, dpCtx,
+        work.getLoadTableWork().getWriteId(), tbd.isMmTable(), tbd.isDirectInsert(), tbd.isInsertOverwrite());
 
     console.printInfo(System.getProperty("line.separator"));
     long startTime = System.currentTimeMillis();

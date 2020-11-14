@@ -30,12 +30,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.metastore.DatabaseProduct;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.MetaStoreEventListenerConstants;
 import org.apache.hadoop.hive.metastore.RawStore;
@@ -48,6 +49,8 @@ import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
+import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
@@ -57,6 +60,8 @@ import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.events.AddCheckConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AddDefaultConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
@@ -88,6 +93,8 @@ import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.DeletePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.messaging.AbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.AcidWriteMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddCheckConstraintMessage;
+import org.apache.hadoop.hive.metastore.messaging.AddDefaultConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddForeignKeyMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddNotNullConstraintMessage;
 import org.apache.hadoop.hive.metastore.messaging.AddPrimaryKeyMessage;
@@ -126,7 +133,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.Lists;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.MYSQL;
 
 /**
  * An implementation of {@link org.apache.hadoop.hive.metastore.MetaStoreEventListener} that
@@ -157,6 +163,15 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     }
   }
 
+  @VisibleForTesting
+  public static synchronized void resetCleaner(HiveConf conf) throws Exception {
+    if(cleaner != null && conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)){
+      cleaner.stopRun();
+      cleaner = null;
+      init(conf);
+    }
+  }
+
   public DbNotificationListener(Configuration config) throws MetaException {
     super(config);
     conf = config;
@@ -180,8 +195,31 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
           TimeUnit.SECONDS);
       MetastoreConf.setTimeVar(getConf(), MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, time,
           TimeUnit.SECONDS);
-      cleaner.setTimeToLive(MetastoreConf.getTimeVar(getConf(),
-          MetastoreConf.ConfVars.EVENT_DB_LISTENER_TTL, TimeUnit.SECONDS));
+      boolean isReplEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.REPLCMENABLED);
+      if(!isReplEnabled){
+        cleaner.setTimeToLive(MetastoreConf.getTimeVar(getConf(), ConfVars.EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
+    } else if (key.equals(ConfVars.REPL_EVENT_DB_LISTENER_TTL.toString()) ||
+            key.equals(ConfVars.REPL_EVENT_DB_LISTENER_TTL.getHiveName())) {
+      long time = MetastoreConf.convertTimeStr(tableEvent.getNewValue(), TimeUnit.SECONDS,
+              TimeUnit.SECONDS);
+      boolean isReplEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.REPLCMENABLED);
+      if(isReplEnabled){
+        cleaner.setTimeToLive(time);
+      }
+    }
+
+    if (key.equals(ConfVars.REPLCMENABLED.toString()) || key.equals(ConfVars.REPLCMENABLED.getHiveName())) {
+      boolean isReplEnabled = MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED);
+      if(isReplEnabled){
+        cleaner.setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.REPL_EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
+      else {
+        cleaner.setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
     }
 
     if (key.equals(ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL.toString()) ||
@@ -704,6 +742,49 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   }
 
   /***
+   * @param addDefaultConstraintEvent add default constraint event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddDefaultConstraint(AddDefaultConstraintEvent addDefaultConstraintEvent) throws MetaException {
+    List<SQLDefaultConstraint> cols = addDefaultConstraintEvent.getDefaultConstraintCols();
+    if (cols.size() > 0) {
+      AddDefaultConstraintMessage colsInMsg = MessageBuilder.getInstance()
+        .buildAddDefaultConstraintMessage(cols);
+      NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.ADD_DEFAULTCONSTRAINT.toString(),
+          msgEncoder.getSerializer().serialize(colsInMsg)
+        );
+      event.setCatName(cols.get(0).isSetCatName() ? cols.get(0).getCatName() : DEFAULT_CATALOG_NAME);
+      event.setDbName(cols.get(0).getTable_db());
+      event.setTableName(cols.get(0).getTable_name());
+      process(event, addDefaultConstraintEvent);
+    }
+  }
+
+  /***
+   * @param addCheckConstraintEvent add check constraint event
+   * @throws MetaException
+   */
+  @Override
+  public void onAddCheckConstraint(AddCheckConstraintEvent addCheckConstraintEvent) throws MetaException {
+    LOG.info("Inside DBNotification listener for check constraint.");
+    List<SQLCheckConstraint> cols = addCheckConstraintEvent.getCheckConstraintCols();
+    if (cols.size() > 0) {
+      AddCheckConstraintMessage colsInMsg = MessageBuilder.getInstance()
+        .buildAddCheckConstraintMessage(cols);
+      NotificationEvent event =
+        new NotificationEvent(0, now(), EventType.ADD_CHECKCONSTRAINT.toString(),
+          msgEncoder.getSerializer().serialize(colsInMsg)
+        );
+      event.setCatName(cols.get(0).isSetCatName() ? cols.get(0).getCatName() : DEFAULT_CATALOG_NAME);
+      event.setDbName(cols.get(0).getTable_db());
+      event.setTableName(cols.get(0).getTable_name());
+      process(event, addCheckConstraintEvent);
+    }
+  }
+
+  /***
    * @param dropConstraintEvent drop constraint event
    * @throws MetaException
    */
@@ -910,8 +991,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
     try {
       stmt = dbConn.createStatement();
-      if (sqlGenerator.getDbProduct() == MYSQL) {
-        stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
+      String st = sqlGenerator.getDbProduct().getPrepareTxnStmt();
+      if (st != null) {
+        stmt.execute(st);
       }
 
       String s = sqlGenerator.addForUpdateClause("select \"WNL_FILES\", \"WNL_ID\" from" +
@@ -1005,14 +1087,14 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       stmt = dbConn.createStatement();
       event.setMessageFormat(msgEncoder.getMessageFormat());
 
-      if (sqlGenerator.getDbProduct() == MYSQL) {
+      if (sqlGenerator.getDbProduct().isMYSQL()) {
         stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
       }
 
       // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
       // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
       // only one row in the table, this shouldn't cause any performance degradation.
-      if (sqlGenerator.getDbProduct() == DatabaseProduct.DERBY) {
+      if (sqlGenerator.getDbProduct().isDERBY()) {
         String lockingQuery = "lock table \"NOTIFICATION_SEQUENCE\" in exclusive mode";
         LOG.info("Going to execute query <" + lockingQuery + ">");
         stmt.executeUpdate(lockingQuery);
@@ -1142,13 +1224,21 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   private static class CleanerThread extends Thread {
     private RawStore rs;
     private int ttl;
+    private boolean shouldRun = true;
     private long sleepTime;
 
     CleanerThread(Configuration conf, RawStore rs) {
       super("DB-Notification-Cleaner");
       this.rs = rs;
-      setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_TTL,
-          TimeUnit.SECONDS));
+      boolean isReplEnabled = MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED);
+      if(isReplEnabled){
+        setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.REPL_EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
+      else {
+        setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_TTL,
+                TimeUnit.SECONDS));
+      }
       setCleanupInterval(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL,
               TimeUnit.MILLISECONDS));
       setDaemon(true);
@@ -1156,7 +1246,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
     @Override
     public void run() {
-      while (true) {
+      while (shouldRun) {
         try {
           rs.cleanNotificationEvents(ttl);
           rs.cleanWriteNotificationEvents(ttl);
@@ -1187,5 +1277,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       sleepTime = configInterval;
     }
 
+    @VisibleForTesting
+    private synchronized void stopRun(){
+      shouldRun = false;
+    }
   }
 }

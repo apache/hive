@@ -47,6 +47,8 @@ public class EventHandlerFactory {
     register(MessageBuilder.ADD_FOREIGNKEY_EVENT, AddForeignKeyHandler.class);
     register(MessageBuilder.ADD_UNIQUECONSTRAINT_EVENT, AddUniqueConstraintHandler.class);
     register(MessageBuilder.ADD_NOTNULLCONSTRAINT_EVENT, AddNotNullConstraintHandler.class);
+    register(MessageBuilder.ADD_DEFAULTCONSTRAINT_EVENT, AddDefaultConstraintHandler.class);
+    register(MessageBuilder.ADD_CHECKCONSTRAINT_EVENT, AddCheckConstraintHandler.class);
     register(MessageBuilder.DROP_CONSTRAINT_EVENT, DropConstraintHandler.class);
     register(MessageBuilder.CREATE_DATABASE_EVENT, CreateDatabaseHandler.class);
     register(MessageBuilder.DROP_DATABASE_EVENT, DropDatabaseHandler.class);

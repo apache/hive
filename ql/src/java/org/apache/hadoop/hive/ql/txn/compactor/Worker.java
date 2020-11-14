@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.common.util.Ref;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -72,7 +73,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private String CLASS_NAME = Worker.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private long SLEEP_TIME = 10000;
-  private static final int NOT_SET = -1;
+  private static final int TXN_ID_NOT_SET = -1;
 
   private String workerName;
 
@@ -141,8 +142,18 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
   }
 
+  private void verifyTableIdHasNotChanged(CompactionInfo ci, Table originalTable) throws HiveException, MetaException {
+    Table currentTable = resolveTable(ci);
+    if (originalTable.getId() != currentTable.getId()) {
+      throw new HiveException("Table " + originalTable.getDbName() + "." + originalTable.getTableName()
+          + " id (" + currentTable.getId() + ") is not equal to its id when compaction started ("
+          + originalTable.getId() + "). The table might have been dropped and recreated while compaction was running."
+          + " Marking compaction as failed.");
+    }
+  }
+
   private void commitTxnIfSet(long compactorTxnId) {
-    if (compactorTxnId != NOT_SET) {
+    if (compactorTxnId != TXN_ID_NOT_SET) {
       try {
         if (msc != null) {
           msc.commitTxn(compactorTxnId);
@@ -355,7 +366,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
    * @return true if cleaning is needed
    */
   public static boolean needsCleaning(AcidUtils.Directory dir, StorageDescriptor sd) {
-    int numObsoleteDirs = dir.getObsolete().size();
+    int numObsoleteDirs = dir.getObsolete().size() + dir.getAbortedDirectories().size();
     boolean needsJustCleaning = numObsoleteDirs > 0;
     if (needsJustCleaning) {
       LOG.info("{} obsolete directories in {} found; marked for cleaning.", numObsoleteDirs,
@@ -392,7 +403,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     // so wrap it in a big catch Throwable statement.
     CompactionHeartbeater heartbeater = null;
     CompactionInfo ci = null;
-    long compactorTxnId = NOT_SET;
+    long compactorTxnId = TXN_ID_NOT_SET;
     try {
       if (msc == null) {
         try {
@@ -497,6 +508,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       jobName.append(ci.getFullPartitionName());
 
       // Don't start compaction or cleaning if not necessary
+      if (isDynPartAbort(t, ci)) {
+        msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
+        return false;
+      }
       AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
           tblValidWriteIds, Ref.from(false), true);
       if (!isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
@@ -540,27 +555,24 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           }
         }
         heartbeater.cancel();
+
+        verifyTableIdHasNotChanged(ci, t1);
+
         LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in txn "
             + JavaUtils.txnIdToString(compactorTxnId) + ", marking as compacted.");
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
-                      ".  Marking failed to avoid repeated failures", e);
-        ci.errorMessage = e.getMessage();
-        msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
-        msc.abortTxns(Collections.singletonList(compactorTxnId));
-        compactorTxnId = NOT_SET;
+            ".  Marking failed to avoid repeated failures", e);
+        abortCompactionAndMarkFailed(ci, compactorTxnId, e);
       }
     } catch (TException | IOException t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
       try {
-        if (msc != null && ci != null) {
-          ci.errorMessage = t.getMessage();
-          msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
-          compactorTxnId = NOT_SET;
-        }
+        abortCompactionAndMarkFailed(ci, compactorTxnId, t);
       } catch (TException e) {
-        LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, e);
+        LOG.error("Caught an exception while trying to mark compaction {} as failed: {}" +
+                (compactorTxnId != TXN_ID_NOT_SET ? " or abort txnId " + compactorTxnId : "") , ci, e);
       } finally {
         if (msc != null) {
           msc.close();
@@ -569,7 +581,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
-      compactorTxnId = NOT_SET;
     } finally {
       commitTxnIfSet(compactorTxnId);
       if (heartbeater != null) {
@@ -579,9 +590,26 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     return true;
   }
 
+  private void abortCompactionAndMarkFailed(CompactionInfo ci, long compactorTxnId, Throwable e) throws TException {
+    if (ci != null) {
+      ci.errorMessage = e.getMessage();
+    }
+    if (msc != null) {
+      msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
+      if (compactorTxnId != TXN_ID_NOT_SET) {
+        msc.abortTxns(Collections.singletonList(compactorTxnId));
+      }
+    }
+  }
+
   private void checkInterrupt() throws InterruptedException {
     if (Thread.interrupted()) {
       throw new InterruptedException("Compaction execution is interrupted");
     }
+  }
+
+  private static boolean isDynPartAbort(Table t, CompactionInfo ci) {
+    return t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0
+        && ci.partName == null;
   }
 }

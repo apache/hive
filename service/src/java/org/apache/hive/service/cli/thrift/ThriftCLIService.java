@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.security.auth.login.LoginException;
@@ -326,10 +327,12 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
       final int fetchSize = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);
 
+      Map<String, String> map = new HashMap<>();
+      map.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname, Integer.toString(fetchSize));
+      map.put(HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.varname,
+          String.valueOf(hiveConf.getBoolVar(ConfVars.HIVE_DEFAULT_NULLS_LAST)));
       resp.setSessionHandle(sessionHandle.toTSessionHandle());
-      resp.setConfiguration(Collections
-          .singletonMap(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname,
-              Integer.toString(fetchSize)));
+      resp.setConfiguration(map);
       resp.setStatus(OK_STATUS);
       ThriftCLIServerContext context =
         (ThriftCLIServerContext)currentServerContext.get();

@@ -1835,4 +1835,18 @@ public abstract class BaseSemanticAnalyzer {
     unparseTranslator.applyTranslations(ctx.getTokenRewriteStream());
   }
 
+  /**
+   * Called when we start analysis of a query.
+   */
+  public void startAnalysis() {
+    // Nothing to do
+  }
+
+  /**
+   * Called when we end analysis of a query.
+   */
+  public void endAnalysis() {
+    // Nothing to do
+  }
+
 }

@@ -431,13 +431,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 1: // ABORTED
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set746 = iprot.readSetBegin();
-                struct.aborted = new java.util.HashSet<java.lang.Long>(2*_set746.size);
-                long _elem747;
-                for (int _i748 = 0; _i748 < _set746.size; ++_i748)
+                org.apache.thrift.protocol.TSet _set794 = iprot.readSetBegin();
+                struct.aborted = new java.util.HashSet<java.lang.Long>(2*_set794.size);
+                long _elem795;
+                for (int _i796 = 0; _i796 < _set794.size; ++_i796)
                 {
-                  _elem747 = iprot.readI64();
-                  struct.aborted.add(_elem747);
+                  _elem795 = iprot.readI64();
+                  struct.aborted.add(_elem795);
                 }
                 iprot.readSetEnd();
               }
@@ -449,13 +449,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 2: // NOSUCH
             if (schemeField.type == org.apache.thrift.protocol.TType.SET) {
               {
-                org.apache.thrift.protocol.TSet _set749 = iprot.readSetBegin();
-                struct.nosuch = new java.util.HashSet<java.lang.Long>(2*_set749.size);
-                long _elem750;
-                for (int _i751 = 0; _i751 < _set749.size; ++_i751)
+                org.apache.thrift.protocol.TSet _set797 = iprot.readSetBegin();
+                struct.nosuch = new java.util.HashSet<java.lang.Long>(2*_set797.size);
+                long _elem798;
+                for (int _i799 = 0; _i799 < _set797.size; ++_i799)
                 {
-                  _elem750 = iprot.readI64();
-                  struct.nosuch.add(_elem750);
+                  _elem798 = iprot.readI64();
+                  struct.nosuch.add(_elem798);
                 }
                 iprot.readSetEnd();
               }
@@ -481,9 +481,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(ABORTED_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, struct.aborted.size()));
-          for (long _iter752 : struct.aborted)
+          for (long _iter800 : struct.aborted)
           {
-            oprot.writeI64(_iter752);
+            oprot.writeI64(_iter800);
           }
           oprot.writeSetEnd();
         }
@@ -493,9 +493,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(NOSUCH_FIELD_DESC);
         {
           oprot.writeSetBegin(new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, struct.nosuch.size()));
-          for (long _iter753 : struct.nosuch)
+          for (long _iter801 : struct.nosuch)
           {
-            oprot.writeI64(_iter753);
+            oprot.writeI64(_iter801);
           }
           oprot.writeSetEnd();
         }
@@ -520,16 +520,16 @@ package org.apache.hadoop.hive.metastore.api;
       org.apache.thrift.protocol.TTupleProtocol oprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
         oprot.writeI32(struct.aborted.size());
-        for (long _iter754 : struct.aborted)
+        for (long _iter802 : struct.aborted)
         {
-          oprot.writeI64(_iter754);
+          oprot.writeI64(_iter802);
         }
       }
       {
         oprot.writeI32(struct.nosuch.size());
-        for (long _iter755 : struct.nosuch)
+        for (long _iter803 : struct.nosuch)
         {
-          oprot.writeI64(_iter755);
+          oprot.writeI64(_iter803);
         }
       }
     }
@@ -538,24 +538,24 @@ package org.apache.hadoop.hive.metastore.api;
     public void read(org.apache.thrift.protocol.TProtocol prot, HeartbeatTxnRangeResponse struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TTupleProtocol iprot = (org.apache.thrift.protocol.TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TSet _set756 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.aborted = new java.util.HashSet<java.lang.Long>(2*_set756.size);
-        long _elem757;
-        for (int _i758 = 0; _i758 < _set756.size; ++_i758)
+        org.apache.thrift.protocol.TSet _set804 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.aborted = new java.util.HashSet<java.lang.Long>(2*_set804.size);
+        long _elem805;
+        for (int _i806 = 0; _i806 < _set804.size; ++_i806)
         {
-          _elem757 = iprot.readI64();
-          struct.aborted.add(_elem757);
+          _elem805 = iprot.readI64();
+          struct.aborted.add(_elem805);
         }
       }
       struct.setAbortedIsSet(true);
       {
-        org.apache.thrift.protocol.TSet _set759 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
-        struct.nosuch = new java.util.HashSet<java.lang.Long>(2*_set759.size);
-        long _elem760;
-        for (int _i761 = 0; _i761 < _set759.size; ++_i761)
+        org.apache.thrift.protocol.TSet _set807 = new org.apache.thrift.protocol.TSet(org.apache.thrift.protocol.TType.I64, iprot.readI32());
+        struct.nosuch = new java.util.HashSet<java.lang.Long>(2*_set807.size);
+        long _elem808;
+        for (int _i809 = 0; _i809 < _set807.size; ++_i809)
         {
-          _elem760 = iprot.readI64();
-          struct.nosuch.add(_elem760);
+          _elem808 = iprot.readI64();
+          struct.nosuch.add(_elem808);
         }
       }
       struct.setNosuchIsSet(true);

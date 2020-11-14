@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.exec.Registry;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator;
@@ -218,6 +219,24 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("no of columns used", 5, tableObj.getColumns().size());
     assertEquals("Columns used", Arrays.asList("city", "date", "i", "j", "k"),
         getSortedList(tableObj.getColumns()));
+  }
+
+  @Test
+  public void testWindowingFunction() throws Exception {
+
+    reset(mockedAuthorizer);
+    int status = driver.compile("select AVG(`i`) OVER (PARTITION BY `city`) AS iavg FROM " + tableName, true);
+    assertEquals(0, status);
+
+    List<HivePrivilegeObject> inputs = getHivePrivilegeObjectInputs().getLeft();
+    checkSingleTableInput(inputs);
+    HivePrivilegeObject tableObj = inputs.get(0);
+    // Make sure none of the hive privilege object contain DB name with WINDOW_FUNC_PREFIX prefix.
+    for (HivePrivilegeObject obj : inputs) {
+      assertTrue(!obj.getDbname().startsWith(Registry.WINDOW_FUNC_PREFIX));
+    }
+    assertEquals("no of columns used", 2, tableObj.getColumns().size());
+    assertEquals("Columns used", Arrays.asList("city", "i"), getSortedList(tableObj.getColumns()));
   }
 
   @Test
@@ -598,6 +617,23 @@ public class TestHiveAuthorizerCheckInvocation {
     assertEquals("input type", HivePrivilegeObjectType.TABLE_OR_VIEW, dbObj.getType());
     assertEquals("db name", dbName.toLowerCase(), dbObj.getDbname());
     assertEquals("table name", inDbTableName.toLowerCase(), dbObj.getObjectName());
+  }
+
+  @Test
+  public void showTablesInDB() throws Exception{
+    final String tableName1 = "table1";
+    driver.run("create table " + dbName+"."+tableName1 + "(eid int, yoj int)");
+    final String tableName2 = "table2";
+    driver.run("create table " + dbName+"."+tableName2 + "(eid int, ecode int)");
+    reset(mockedAuthorizer);
+
+    int status = driver.compile("show tables in "+dbName, true);
+    assertEquals(0, status);
+    Pair<List<HivePrivilegeObject>, List<HivePrivilegeObject>> io = getHivePrivilegeObjectInputs();
+    List<HivePrivilegeObject> inputs = io.getLeft();
+    HivePrivilegeObject dbObj = inputs.get(0);
+    assertEquals("input type", HivePrivilegeObjectType.DATABASE, dbObj.getType());
+    assertTrue(dbObj.getOwnerName() != null);
   }
 
   private void checkSingleTableInput(List<HivePrivilegeObject> inputs) {

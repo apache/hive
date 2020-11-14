@@ -162,21 +162,13 @@ public class TestCheckConstraint extends MetaStoreClientTest {
 
     rqst = new CheckConstraintsRequest(table.getCatName(), table.getDbName(), table.getTableName());
     fetched = client.getCheckConstraints(rqst);
-    Assert.assertEquals(1, fetched.size());
-    Assert.assertEquals(table.getDbName(), fetched.get(0).getTable_db());
-    Assert.assertEquals(table.getTableName(), fetched.get(0).getTable_name());
-    Assert.assertEquals("col1", fetched.get(0).getColumn_name());
-    Assert.assertEquals("= 5", fetched.get(0).getCheck_expression());
-    Assert.assertEquals(table.getTableName() + "_check_constraint", fetched.get(0).getDc_name());
-    String table0PkName = fetched.get(0).getDc_name();
-    Assert.assertTrue(fetched.get(0).isEnable_cstr());
-    Assert.assertFalse(fetched.get(0).isValidate_cstr());
-    Assert.assertFalse(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(table.getCatName(), fetched.get(0).getCatName());
+    cc.get(0).setDc_name(fetched.get(0).getDc_name());
+    Assert.assertEquals(cc, fetched);
+
 
     // Drop a primary key
     client.dropConstraint(table.getCatName(), table.getDbName(),
-        table.getTableName(), table0PkName);
+        table.getTableName(), cc.get(0).getDc_name());
     rqst = new CheckConstraintsRequest(table.getCatName(), table.getDbName(), table.getTableName());
     fetched = client.getCheckConstraints(rqst);
     Assert.assertTrue(fetched.isEmpty());
@@ -200,16 +192,7 @@ public class TestCheckConstraint extends MetaStoreClientTest {
     CheckConstraintsRequest rqst = new CheckConstraintsRequest(testTables[2].getCatName(),
         testTables[2].getDbName(), testTables[2].getTableName());
     List<SQLCheckConstraint> fetched = client.getCheckConstraints(rqst);
-    Assert.assertEquals(1, fetched.size());
-    Assert.assertEquals(testTables[2].getDbName(), fetched.get(0).getTable_db());
-    Assert.assertEquals(testTables[2].getTableName(), fetched.get(0).getTable_name());
-    Assert.assertEquals("col1", fetched.get(0).getColumn_name());
-    Assert.assertEquals("like s%", fetched.get(0).getCheck_expression());
-    Assert.assertEquals(constraintName, fetched.get(0).getDc_name());
-    Assert.assertTrue(fetched.get(0).isEnable_cstr());
-    Assert.assertFalse(fetched.get(0).isValidate_cstr());
-    Assert.assertFalse(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(testTables[2].getCatName(), fetched.get(0).getCatName());
+    Assert.assertEquals(cc, fetched);
 
     client.dropConstraint(testTables[2].getCatName(), testTables[2].getDbName(),
         testTables[2].getTableName(), constraintName);
@@ -238,16 +221,8 @@ public class TestCheckConstraint extends MetaStoreClientTest {
     client.createTableWithConstraints(table, null, null, null, null, null, cc);
     CheckConstraintsRequest rqst = new CheckConstraintsRequest(table.getCatName(), table.getDbName(), table.getTableName());
     List<SQLCheckConstraint> fetched = client.getCheckConstraints(rqst);
-    Assert.assertEquals(1, fetched.size());
-    Assert.assertEquals(table.getDbName(), fetched.get(0).getTable_db());
-    Assert.assertEquals(table.getTableName(), fetched.get(0).getTable_name());
-    Assert.assertEquals("col1", fetched.get(0).getColumn_name());
-    Assert.assertEquals("> 0", fetched.get(0).getCheck_expression());
-    Assert.assertEquals(constraintName, fetched.get(0).getDc_name());
-    Assert.assertTrue(fetched.get(0).isEnable_cstr());
-    Assert.assertFalse(fetched.get(0).isValidate_cstr());
-    Assert.assertFalse(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(table.getCatName(), fetched.get(0).getCatName());
+    Assert.assertEquals(cc, fetched);
+
 
     client.dropConstraint(table.getCatName(), table.getDbName(), table.getTableName(), constraintName);
     rqst = new CheckConstraintsRequest(table.getCatName(), table.getDbName(), table.getTableName());
@@ -274,19 +249,11 @@ public class TestCheckConstraint extends MetaStoreClientTest {
     client.createTableWithConstraints(table, null, null, null, null, null, cc);
     CheckConstraintsRequest rqst = new CheckConstraintsRequest(table.getCatName(), table.getDbName(), table.getTableName());
     List<SQLCheckConstraint> fetched = client.getCheckConstraints(rqst);
-    Assert.assertEquals(1, fetched.size());
-    Assert.assertEquals(table.getDbName(), fetched.get(0).getTable_db());
-    Assert.assertEquals(table.getTableName(), fetched.get(0).getTable_name());
-    Assert.assertEquals("col1", fetched.get(0).getColumn_name());
-    Assert.assertEquals("> 0", fetched.get(0).getCheck_expression());
-    Assert.assertEquals(table.getTableName() + "_check_constraint", fetched.get(0).getDc_name());
-    String tablePkName = fetched.get(0).getDc_name();
-    Assert.assertTrue(fetched.get(0).isEnable_cstr());
-    Assert.assertFalse(fetched.get(0).isValidate_cstr());
-    Assert.assertFalse(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(table.getCatName(), fetched.get(0).getCatName());
+    cc.get(0).setDc_name(fetched.get(0).getDc_name());
+    Assert.assertEquals(cc, fetched);
 
-    client.dropConstraint(table.getCatName(), table.getDbName(), table.getTableName(), tablePkName);
+
+    client.dropConstraint(table.getCatName(), table.getDbName(), table.getTableName(), cc.get(0).getDc_name());
     rqst = new CheckConstraintsRequest(table.getCatName(), table.getDbName(), table.getTableName());
     fetched = client.getCheckConstraints(rqst);
     Assert.assertTrue(fetched.isEmpty());

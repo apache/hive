@@ -244,6 +244,8 @@ class SQLDefaultConstraint; end
 
 class SQLCheckConstraint; end
 
+class SQLAllTableConstraints; end
+
 class Type; end
 
 class HiveObjectRef; end
@@ -381,6 +383,10 @@ class DefaultConstraintsResponse; end
 class CheckConstraintsRequest; end
 
 class CheckConstraintsResponse; end
+
+class AllTableConstraintsRequest; end
+
+class AllTableConstraintsResponse; end
 
 class DropConstraintRequest; end
 
@@ -766,6 +772,12 @@ class GetReplicationMetricsRequest; end
 
 class GetOpenTxnsRequest; end
 
+class StoredProcedureRequest; end
+
+class ListStoredProcedureRequest; end
+
+class StoredProcedure; end
+
 class MetaException < ::Thrift::Exception; end
 
 class UnknownTableException < ::Thrift::Exception; end
@@ -1026,6 +1038,32 @@ class SQLCheckConstraint
     ENABLE_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'enable_cstr'},
     VALIDATE_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'validate_cstr'},
     RELY_CSTR => {:type => ::Thrift::Types::BOOL, :name => 'rely_cstr'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class SQLAllTableConstraints
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PRIMARYKEYS = 1
+  FOREIGNKEYS = 2
+  UNIQUECONSTRAINTS = 3
+  NOTNULLCONSTRAINTS = 4
+  DEFAULTCONSTRAINTS = 5
+  CHECKCONSTRAINTS = 6
+
+  FIELDS = {
+    PRIMARYKEYS => {:type => ::Thrift::Types::LIST, :name => 'primaryKeys', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLPrimaryKey}, :optional => true},
+    FOREIGNKEYS => {:type => ::Thrift::Types::LIST, :name => 'foreignKeys', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLForeignKey}, :optional => true},
+    UNIQUECONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'uniqueConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLUniqueConstraint}, :optional => true},
+    NOTNULLCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'notNullConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLNotNullConstraint}, :optional => true},
+    DEFAULTCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'defaultConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLDefaultConstraint}, :optional => true},
+    CHECKCONSTRAINTS => {:type => ::Thrift::Types::LIST, :name => 'checkConstraints', :element => {:type => ::Thrift::Types::STRUCT, :class => ::SQLCheckConstraint}, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -2669,6 +2707,46 @@ class CheckConstraintsResponse
   ::Thrift::Struct.generate_accessors self
 end
 
+class AllTableConstraintsRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TBLNAME = 2
+  CATNAME = 3
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class AllTableConstraintsResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  ALLTABLECONSTRAINTS = 1
+
+  FIELDS = {
+    ALLTABLECONSTRAINTS => {:type => ::Thrift::Types::STRUCT, :name => 'allTableConstraints', :class => ::SQLAllTableConstraints}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field allTableConstraints is unset!') unless @allTableConstraints
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class DropConstraintRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DBNAME = 1
@@ -3561,13 +3639,15 @@ class CommitTxnRequest
   WRITEEVENTINFOS = 3
   REPLLASTIDINFO = 4
   KEYVALUE = 5
+  EXCLWRITEENABLED = 6
 
   FIELDS = {
     TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid'},
     REPLPOLICY => {:type => ::Thrift::Types::STRING, :name => 'replPolicy', :optional => true},
     WRITEEVENTINFOS => {:type => ::Thrift::Types::LIST, :name => 'writeEventInfos', :element => {:type => ::Thrift::Types::STRUCT, :class => ::WriteEventInfo}, :optional => true},
     REPLLASTIDINFO => {:type => ::Thrift::Types::STRUCT, :name => 'replLastIdInfo', :class => ::ReplLastIdInfo, :optional => true},
-    KEYVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'keyValue', :class => ::CommitTxnKeyValue, :optional => true}
+    KEYVALUE => {:type => ::Thrift::Types::STRUCT, :name => 'keyValue', :class => ::CommitTxnKeyValue, :optional => true},
+    EXCLWRITEENABLED => {:type => ::Thrift::Types::BOOL, :name => 'exclWriteEnabled', :default => true, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -3956,12 +4036,14 @@ class ShowLocksRequest
   TABLENAME = 2
   PARTNAME = 3
   ISEXTENDED = 4
+  TXNID = 5
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbname', :optional => true},
     TABLENAME => {:type => ::Thrift::Types::STRING, :name => 'tablename', :optional => true},
     PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partname', :optional => true},
-    ISEXTENDED => {:type => ::Thrift::Types::BOOL, :name => 'isExtended', :default => false, :optional => true}
+    ISEXTENDED => {:type => ::Thrift::Types::BOOL, :name => 'isExtended', :default => false, :optional => true},
+    TXNID => {:type => ::Thrift::Types::I64, :name => 'txnid', :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -6969,6 +7051,72 @@ class GetOpenTxnsRequest
 
   FIELDS = {
     EXCLUDETXNTYPES => {:type => ::Thrift::Types::LIST, :name => 'excludeTxnTypes', :element => {:type => ::Thrift::Types::I32, :enum_class => ::TxnType}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class StoredProcedureRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+  PROCNAME = 3
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    PROCNAME => {:type => ::Thrift::Types::STRING, :name => 'procName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field procName is unset!') unless @procName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ListStoredProcedureRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class StoredProcedure
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NAME = 1
+  DBNAME = 2
+  CATNAME = 3
+  OWNERNAME = 4
+  SOURCE = 5
+
+  FIELDS = {
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
+    SOURCE => {:type => ::Thrift::Types::STRING, :name => 'source'}
   }
 
   def struct_fields; FIELDS; end

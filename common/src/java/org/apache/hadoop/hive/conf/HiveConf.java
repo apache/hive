@@ -487,12 +487,12 @@ public class HiveConf extends Configuration {
    * in the underlying Hadoop configuration.
    */
   public static enum ConfVars {
-    MSC_CACHE_ENABLED("hive.metastore.client.cache.enabled", true,
-            "This property enables a Caffeiene Cache for Metastore client"),
-    MSC_CACHE_MAX_SIZE("hive.metastore.client.cache.maxSize", "1Gb", new SizeValidator(),
+    MSC_CACHE_ENABLED("hive.metastore.client.cache.v2.enabled", true,
+            "This property enables a Caffeine Cache for Metastore client"),
+    MSC_CACHE_MAX_SIZE("hive.metastore.client.cache.v2.maxSize", "1Gb", new SizeValidator(),
             "Set the maximum size (number of bytes) of the metastore client cache (DEFAULT: 1GB). " +
                     "Only in effect when the cache is enabled"),
-    MSC_CACHE_RECORD_STATS("hive.metastore.client.cache.recordStats", false,
+    MSC_CACHE_RECORD_STATS("hive.metastore.client.cache.v2.recordStats", false,
             "This property enables recording metastore client cache stats in DEBUG logs"),
     // QL execution stuff
     SCRIPTWRAPPER("hive.exec.script.wrapper", null, ""),
@@ -511,7 +511,7 @@ public class HiveConf extends Configuration {
         "Turn on ChangeManager, so delete files will go to cmrootdir."),
     REPLCMDIR("hive.repl.cmrootdir","/user/${system:user.name}/cmroot/",
         "Root dir for ChangeManager, used for deleted files."),
-    REPLCMRETIAN("hive.repl.cm.retain","7d",
+    REPLCMRETIAN("hive.repl.cm.retain","10d",
         new TimeValidator(TimeUnit.DAYS),
         "Time to retain removed files in cmrootdir."),
     REPLCMENCRYPTEDDIR("hive.repl.cm.encryptionzone.rootdir", ".cmroot",
@@ -522,6 +522,14 @@ public class HiveConf extends Configuration {
     REPLCMINTERVAL("hive.repl.cm.interval","3600s",
         new TimeValidator(TimeUnit.SECONDS),
         "Inteval for cmroot cleanup thread."),
+    REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE("hive.repl.ha.datapath.replace.remote.nameservice", false,
+            "When HDFS is HA enabled and both source and target clusters are configured with same nameservice name," +
+                    "enable this flag and provide a new unique logical name for representing the remote cluster " +
+                    "nameservice using config " + "'hive.repl.ha.datapath.replace.remote.nameservice.name'."),
+    REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE_NAME("hive.repl.ha.datapath.replace.remote.nameservice.name", null,
+            "When HDFS is HA enabled and both source and target clusters are configured with same nameservice name, " +
+                    "use this config to provide a unique logical name for nameservice on the remote cluster (should " +
+                    "be different from nameservice name on the local cluster)"),
     REPL_FUNCTIONS_ROOT_DIR("hive.repl.replica.functions.root.dir","/user/${system:user.name}/repl/functions/",
         "Root directory on the replica warehouse where the repl sub-system will store jars from the primary warehouse"),
     REPL_APPROX_MAX_LOAD_TASKS("hive.repl.approx.max.load.tasks", 10000,
@@ -540,6 +548,12 @@ public class HiveConf extends Configuration {
     REPL_DUMP_METADATA_ONLY("hive.repl.dump.metadata.only", false,
         "Indicates whether replication dump only metadata information or data + metadata. \n"
           + "This config makes hive.repl.include.external.tables config ineffective."),
+    REPL_RETAIN_PREV_DUMP_DIR("hive.repl.retain.prev.dump.dir", false,
+            "If this is set to false, then all previously used dump-directories will be deleted after repl-dump. " +
+             "If true, a number of latest dump-directories specified by hive.repl.retain.prev.dump.dir.count will be retained"),
+    REPL_RETAIN_PREV_DUMP_DIR_COUNT("hive.repl.retain.prev.dump.dir.count", 3,
+            "Indicates maximium number of latest previously used dump-directories which would be retained when " +
+             "hive.repl.retain.prev.dump.dir is set to true"),
     REPL_INCLUDE_MATERIALIZED_VIEWS("hive.repl.include.materialized.views", false,
             "Indicates whether replication of materialized views is enabled."),
     REPL_DUMP_SKIP_IMMUTABLE_DATA_COPY("hive.repl.dump.skip.immutable.data.copy", false,
@@ -582,18 +596,6 @@ public class HiveConf extends Configuration {
           + "'hive.repl.include.external.tables' when sets to true. If 'hive.repl.include.external.tables' is \n"
           + "set to false, then this config parameter has no effect. It should be set to true only once for \n"
           + "incremental repl dump on each existing replication policy after enabling external tables replication."),
-    REPL_ENABLE_MOVE_OPTIMIZATION("hive.repl.enable.move.optimization", false,
-          "If its set to true, REPL LOAD copies data files directly to the target table/partition location \n"
-          + "instead of copying to staging directory first and then move to target location. This optimizes \n"
-          + " the REPL LOAD on object data stores such as S3 or WASB where creating a directory and move \n"
-          + " files are costly operations. In file system like HDFS where move operation is atomic, this \n"
-          + " optimization should not be enabled as it may lead to inconsistent data read for non acid tables."),
-    REPL_MOVE_OPTIMIZED_FILE_SCHEMES("hive.repl.move.optimized.scheme", "s3a, wasb",
-        "Comma separated list of schemes for which move optimization will be enabled during repl load. \n"
-        + "This configuration overrides the value set using REPL_ENABLE_MOVE_OPTIMIZATION for the given schemes. \n"
-        + " Schemes of the file system which does not support atomic move (rename) can be specified here to \n "
-        + " speed up the repl load operation. In file system like HDFS where move operation is atomic, this \n"
-        + " optimization should not be enabled as it may lead to inconsistent data read for non acid tables."),
     REPL_EXTERNAL_TABLE_BASE_DIR("hive.repl.replica.external.table.base.dir", null,
         "This is the fully qualified base directory on the target/replica warehouse under which data for "
             + "external tables is stored. This is relative base path and hence prefixed to the source "
@@ -637,6 +639,20 @@ public class HiveConf extends Configuration {
       new TimeValidator(TimeUnit.HOURS),
       "Total allowed retry duration in hours inclusive of all retries. Once this is exhausted, " +
         "the policy instance will be marked as failed and will need manual intervention to restart."),
+    REPL_LOAD_PARTITIONS_BATCH_SIZE("hive.repl.load.partitions.batch.size", 10000,
+      "Provide the maximum number of partitions of a table that will be batched together during  \n"
+        + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
+        + "The data for these partitions will be copied before copying the metadata batch. "),
+    REPL_LOAD_PARTITIONS_WITH_DATA_COPY_BATCH_SIZE("hive.repl.load.partitions.with.data.copy.batch.size",1000,
+      "Provide the maximum number of partitions of a table that will be batched together during  \n"
+        + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
+        + "The data for these partitions will be copied before copying the metadata batch. "),
+    REPL_PARALLEL_COPY_TASKS("hive.repl.parallel.copy.tasks",100,
+      "Provide the maximum number of parallel copy operation(distcp or regular copy) launched for a table  \n"
+        + "or partition. This will create at max 100 threads which will run copy in parallel for the data files at \n"
+        + " table or partition level. If hive.exec.parallel \n"
+        + "is set to true then max worker threads created for copy can be hive.exec.parallel.thread.number(determines \n"
+        + "number of copy tasks in parallel) * hive.repl.parallel.copy.tasks "),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -1292,7 +1308,8 @@ public class HiveConf extends Configuration {
     @Deprecated
     METASTORE_EVENT_DB_LISTENER_TTL("hive.metastore.event.db.listener.timetolive", "86400s",
         new TimeValidator(TimeUnit.SECONDS),
-        "time after which events will be removed from the database listener queue"),
+        "time after which events will be removed from the database listener queue when repl.cm.enabled \n" +
+         "is set to false. When repl.cm.enabled is set to true, repl.event.db.listener.timetolive is used instead"),
 
     /**
      * @deprecated Use MetastoreConf.EVENT_DB_NOTIFICATION_API_AUTH
@@ -1756,6 +1773,8 @@ public class HiveConf extends Configuration {
     HIVE_STRICT_CHECKS_BUCKETING("hive.strict.checks.bucketing", true,
         "Enabling strict bucketing checks disallows the following:\n" +
         "  Load into bucketed tables."),
+    HIVE_STRICT_TIMESTAMP_CONVERSION("hive.strict.timestamp.conversion", true,
+        "Restricts unsafe numeric to timestamp conversions"),
     HIVE_LOAD_DATA_OWNER("hive.load.data.owner", "",
         "Set the owner of files loaded using load data in managed tables."),
 
@@ -1810,6 +1829,8 @@ public class HiveConf extends Configuration {
             "then joins back affected tables at top of tree to get rest of columns. " +
             "Set this to 0.0 to disable this optimization or increase it for more aggressive optimization."),
     AGGR_JOIN_TRANSPOSE("hive.transpose.aggr.join", false, "push aggregates through join"),
+    AGGR_JOIN_TRANSPOSE_UNIQUE("hive.transpose.aggr.join.unique", true, "push aggregates through join(s) in "
+        + "case data is regrouped on a previously unique column"),
     SEMIJOIN_CONVERSION("hive.optimize.semijoin.conversion", true, "convert group by followed by inner equi join into semijoin"),
     HIVE_COLUMN_ALIGNMENT("hive.order.columnalignment", true, "Flag to control whether we want to try to align" +
         "columns in operators such as Aggregate or Join so that we try to reduce the number of shuffling stages"),
@@ -2081,6 +2102,7 @@ public class HiveConf extends Configuration {
     HIVETESTCURRENTTIMESTAMP("hive.test.currenttimestamp", null, "current timestamp for test", false),
     HIVETESTMODEROLLBACKTXN("hive.test.rollbacktxn", false, "For testing only.  Will mark every ACID transaction aborted", false),
     HIVETESTMODEFAILCOMPACTION("hive.test.fail.compaction", false, "For testing only.  Will cause CompactorMR to fail.", false),
+    HIVETESTMODEFAILLOADDYNAMICPARTITION("hive.test.fail.load.dynamic.partition", false, "For testing only.  Will cause loadDynamicPartition to fail.", false),
     HIVETESTMODEFAILHEARTBEATER("hive.test.fail.heartbeater", false, "For testing only.  Will cause Heartbeater to fail.", false),
     TESTMODE_BUCKET_CODEC_VERSION("hive.test.bucketcodec.version", 1,
       "For testing only.  Will make ACID subsystem write RecordIdentifier.bucketId in specified\n" +
@@ -2570,6 +2592,11 @@ public class HiveConf extends Configuration {
         "When shared work optimizer is enabled, whether we should reuse the cache for the broadcast side\n" +
         "of mapjoin operators that share same broadcast input. Requires hive.optimize.shared.work\n" +
         "to be set to true. Tez only."),
+    HIVE_SHARED_WORK_DPPUNION_OPTIMIZATION("hive.optimize.shared.work.dppunion", true,
+        "Enables dppops unioning. This optimization will enable to merge multiple tablescans with different "
+            + "dynamic filters into a single one (with a more complex filter)"),
+    HIVE_SHARED_WORK_DOWNSTREAM_MERGE("hive.optimize.shared.work.downstream.merge", true,
+        "Analyzes and merges equiv downstream operators after a successful shared work optimization step."),
     HIVE_COMBINE_EQUIVALENT_WORK_OPTIMIZATION("hive.combine.equivalent.work.optimization", true, "Whether to " +
             "combine equivalent work objects during physical optimization.\n This optimization looks for equivalent " +
             "work objects and combines them if they meet certain preconditions. Spark only."),
@@ -2592,6 +2619,9 @@ public class HiveConf extends Configuration {
             + "The probe side for the row-level filtering is generated either statically in the case of expressions or dynamically for joins"
             + "e.g., use the cached MapJoin hashtable created on the small table side to filter out row columns that are not going "
             + "to be used when reading the large table data. This will result less CPU cycles spent for decoding unused data."),
+
+    HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED("hive.optimize.metadata.query.cache.enabled", true,
+        "This property enables caching metadata for repetitive requests on a per-query basis"),
 
     // CTE
     HIVE_CTE_MATERIALIZE_THRESHOLD("hive.optimize.cte.materialize.threshold", 3,
@@ -3065,6 +3095,12 @@ public class HiveConf extends Configuration {
 
     HIVE_COMPACTOR_CLEANER_RUN_INTERVAL("hive.compactor.cleaner.run.interval", "5000ms",
         new TimeValidator(TimeUnit.MILLISECONDS), "Time between runs of the cleaner thread"),
+    HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED("hive.compactor.delayed.cleanup.enabled", false,
+        "When enabled, cleanup of obsolete files/dirs after compaction can be delayed. This delay \n" +
+            " can be configured by hive configuration hive.compactor.cleaner.retention.time.seconds"),
+    HIVE_COMPACTOR_CLEANER_RETENTION_TIME("hive.compactor.cleaner.retention.time.seconds", "300s",
+        new TimeValidator(TimeUnit.SECONDS), "Time to wait before cleanup of obsolete files/dirs after compaction. \n"
+        + "This is the minimum amount of time the system will wait, since it will not clean before all open transactions are committed, that were opened before the compaction"),
     HIVE_COMPACTOR_CLEANER_THREADS_NUM("hive.compactor.cleaner.threads.num", 1,
       "Enables parallelization of the cleaning directories after compaction, that includes many file \n" +
       "related checks and may be expensive"),
@@ -3540,6 +3576,9 @@ public class HiveConf extends Configuration {
         "The parent node in ZooKeeper used by HiveServer2 when supporting dynamic service discovery."),
     HIVE_SERVER2_ZOOKEEPER_PUBLISH_CONFIGS("hive.server2.zookeeper.publish.configs", true,
         "Whether we should publish HiveServer2's configs to ZooKeeper."),
+    HIVE_SERVER2_OOM_HOOKS("hive.server2.oom.hooks", null,
+        "A comma separated list of hooks which implement Runnable. Will be run in the order specified \n" +
+        "before HiveServer2 stops due to OutOfMemoryError."),
 
     // HiveServer2 global init file location
     HIVE_SERVER2_GLOBAL_INIT_FILE_LOCATION("hive.server2.global.init.file.location", "${env:HIVE_CONF_DIR}",
@@ -3583,6 +3622,10 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore location for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD("hive.server2.webui.keystore.password", "",
         "SSL certificate keystore password for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE("hive.server2.webui.keystore.type", "",
+        "SSL certificate keystore type for HiveServer2 WebUI."),
+    HIVE_SERVER2_WEBUI_SSL_KEYMANAGERFACTORY_ALGORITHM("hive.server2.webui.keymanagerfactory.algorithm",
+        "","SSL certificate key manager factory algorithm for HiveServer2 WebUI."),
     HIVE_SERVER2_WEBUI_USE_SPNEGO("hive.server2.webui.use.spnego", false,
         "If true, the HiveServer2 WebUI will be secured with SPNEGO. Clients must authenticate with Kerberos."),
     HIVE_SERVER2_WEBUI_SPNEGO_KEYTAB("hive.server2.webui.spnego.keytab", "",
@@ -3947,6 +3990,10 @@ public class HiveConf extends Configuration {
         "SSL certificate keystore location."),
     HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", "",
         "SSL certificate keystore password."),
+    HIVE_SERVER2_SSL_KEYSTORE_TYPE("hive.server2.keystore.type", "",
+            "SSL certificate keystore type."),
+    HIVE_SERVER2_SSL_KEYMANAGERFACTORY_ALGORITHM("hive.server2.keymanagerfactory.algorithm", "",
+            "SSL certificate keystore algorithm."),
     HIVE_SERVER2_BUILTIN_UDF_WHITELIST("hive.server2.builtin.udf.whitelist", "",
         "Comma separated list of builtin udf names allowed in queries.\n" +
         "An empty whitelist allows all builtin udfs to be executed. " +
@@ -4027,7 +4074,11 @@ public class HiveConf extends Configuration {
         "               are produced by this query and finish earlier will be available for querying\n" +
         "               much earlier.  Since the locks are only released once the query finishes, this\n" +
         "               does not apply if concurrency is enabled."),
-
+    HIVE_HDFS_ENCRYPTION_SHIM_CACHE_ON("hive.hdfs.encryption.shim.cache.on", true,
+        "Hive keeps a cache of hdfs encryption shims in SessionState. Each encryption shim in the cache stores a "
+            + "FileSystem object. If one of these FileSystems is closed anywhere in the system and HDFS config"
+            + "fs.hdfs.impl.disable.cache is false, its encryption shim in the cache will be unusable. "
+            + "If this is config set to false, then the encryption shim cache will be disabled."),
     HIVE_INFER_BUCKET_SORT("hive.exec.infer.bucket.sort", false,
         "If this is set, when writing partitions, the metadata will include the bucketing/sorting\n" +
         "properties with which the data was written if any (this will not overwrite the metadata\n" +
@@ -5159,8 +5210,7 @@ public class HiveConf extends Configuration {
         "comma separated list of plugin can be used:\n"
             + "  overlay: hiveconf subtree 'reexec.overlay' is used as an overlay in case of an execution errors out\n"
             + "  reoptimize: collects operator statistics during execution and recompile the query after a failure\n"
-            + "  reexecute_lost_am: reexecutes query if it failed due to tez am node gets decommissioned\n"
-            + "  The retrylock strategy is always enabled: recompiles the query if snapshot becomes outdated before lock acquisition"),
+            + "  reexecute_lost_am: reexecutes query if it failed due to tez am node gets decommissioned"),
     HIVE_QUERY_REEXECUTION_STATS_PERSISTENCE("hive.query.reexecution.stats.persist.scope", "metastore",
         new StringSet("query", "hiveserver", "metastore"),
         "Sets the persistence scope of runtime statistics\n"
@@ -5168,13 +5218,11 @@ public class HiveConf extends Configuration {
             + "  hiveserver: runtime statistics are persisted in the hiveserver - all sessions share it\n"
             + "  metastore: runtime statistics are persisted in the metastore as well"),
 
+    HIVE_TXN_MAX_RETRYSNAPSHOT_COUNT("hive.txn.retrysnapshot.max.count", 5, new RangeValidator(1, 20),
+        "Maximum number of snapshot invalidate attempts per request."),
 
     HIVE_QUERY_MAX_REEXECUTION_COUNT("hive.query.reexecution.max.count", 1,
-        "Maximum number of re-executions for a single query."
-            + " The maximum re-execution retry is limited at 10"),
-    HIVE_QUERY_MAX_REEXECUTION_RETRYLOCK_COUNT("hive.query.reexecution.retrylock.max.count", 5,
-        "Maximum number of re-executions with retrylock strategy for a single query."
-            + " The maximum re-execution retry is limited at 10"),
+        "Maximum number of re-executions for a single query."),
     HIVE_QUERY_REEXECUTION_ALWAYS_COLLECT_OPERATOR_STATS("hive.query.reexecution.always.collect.operator.stats", false,
         "If sessionstats are enabled; this option can be used to collect statistics all the time"),
     HIVE_QUERY_REEXECUTION_STATS_CACHE_BATCH_SIZE("hive.query.reexecution.stats.cache.batch.size", -1,
@@ -5205,6 +5253,11 @@ public class HiveConf extends Configuration {
     HIVE_SCHEDULED_QUERIES_MAX_EXECUTORS("hive.scheduled.queries.max.executors", 4, new RangeValidator(1, null),
         "Maximal number of scheduled query executors to allow."),
 
+    HIVE_ASYNC_CLEANUP_SERVICE_THREAD_COUNT("hive.async.cleanup.service.thread.count", 10, new RangeValidator(0, null),
+        "Number of threads that run some eventual cleanup operations after queries/sessions close. 0 means cleanup is sync."),
+    HIVE_ASYNC_CLEANUP_SERVICE_QUEUE_SIZE("hive.async.cleanup.service.queue.size", 10000, new RangeValidator(10, Integer.MAX_VALUE),
+        "Size of the async cleanup queue. If cleanup queue is full, cleanup operations become synchronous. " +
+            "Applicable only when number of async cleanup is turned on."),
     HIVE_QUERY_RESULTS_CACHE_ENABLED("hive.query.results.cache.enabled", true,
         "If the query results cache is enabled. This will keep results of previously executed queries " +
         "to be reused if the same query is executed again."),

@@ -59,6 +59,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.apache.hadoop.hive.ql.ErrorMsg.CLIENT_POLLING_OPSTATUS_INTERRUPTED;
+
 /**
  * The object used for executing a static SQL statement and returning the
  * results it produces.
@@ -360,6 +362,10 @@ public class HiveStatement implements java.sql.Statement {
     // Poll on the operation status, till the operation is complete
     do {
       try {
+        if (Thread.currentThread().isInterrupted()) {
+          throw new SQLException(CLIENT_POLLING_OPSTATUS_INTERRUPTED.getMsg(),
+              CLIENT_POLLING_OPSTATUS_INTERRUPTED.getSQLState());
+        }
         /**
          * For an async SQLOperation, GetOperationStatus will use the long polling approach It will
          * essentially return after the HIVE_SERVER2_LONG_POLLING_TIMEOUT (a server config) expires

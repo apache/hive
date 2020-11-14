@@ -53,6 +53,11 @@ class CommitTxnRequest
             'type' => TType::STRUCT,
             'class' => '\metastore\CommitTxnKeyValue',
         ),
+        6 => array(
+            'var' => 'exclWriteEnabled',
+            'isRequired' => false,
+            'type' => TType::BOOL,
+        ),
     );
 
     /**
@@ -75,6 +80,10 @@ class CommitTxnRequest
      * @var \metastore\CommitTxnKeyValue
      */
     public $keyValue = null;
+    /**
+     * @var bool
+     */
+    public $exclWriteEnabled = true;
 
     public function __construct($vals = null)
     {
@@ -93,6 +102,9 @@ class CommitTxnRequest
             }
             if (isset($vals['keyValue'])) {
                 $this->keyValue = $vals['keyValue'];
+            }
+            if (isset($vals['exclWriteEnabled'])) {
+                $this->exclWriteEnabled = $vals['exclWriteEnabled'];
             }
         }
     }
@@ -133,14 +145,14 @@ class CommitTxnRequest
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->writeEventInfos = array();
-                        $_size587 = 0;
-                        $_etype590 = 0;
-                        $xfer += $input->readListBegin($_etype590, $_size587);
-                        for ($_i591 = 0; $_i591 < $_size587; ++$_i591) {
-                            $elem592 = null;
-                            $elem592 = new \metastore\WriteEventInfo();
-                            $xfer += $elem592->read($input);
-                            $this->writeEventInfos []= $elem592;
+                        $_size629 = 0;
+                        $_etype632 = 0;
+                        $xfer += $input->readListBegin($_etype632, $_size629);
+                        for ($_i633 = 0; $_i633 < $_size629; ++$_i633) {
+                            $elem634 = null;
+                            $elem634 = new \metastore\WriteEventInfo();
+                            $xfer += $elem634->read($input);
+                            $this->writeEventInfos []= $elem634;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -159,6 +171,13 @@ class CommitTxnRequest
                     if ($ftype == TType::STRUCT) {
                         $this->keyValue = new \metastore\CommitTxnKeyValue();
                         $xfer += $this->keyValue->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
+                case 6:
+                    if ($ftype == TType::BOOL) {
+                        $xfer += $input->readBool($this->exclWriteEnabled);
                     } else {
                         $xfer += $input->skip($ftype);
                     }
@@ -193,8 +212,8 @@ class CommitTxnRequest
             }
             $xfer += $output->writeFieldBegin('writeEventInfos', TType::LST, 3);
             $output->writeListBegin(TType::STRUCT, count($this->writeEventInfos));
-            foreach ($this->writeEventInfos as $iter593) {
-                $xfer += $iter593->write($output);
+            foreach ($this->writeEventInfos as $iter635) {
+                $xfer += $iter635->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -213,6 +232,11 @@ class CommitTxnRequest
             }
             $xfer += $output->writeFieldBegin('keyValue', TType::STRUCT, 5);
             $xfer += $this->keyValue->write($output);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->exclWriteEnabled !== null) {
+            $xfer += $output->writeFieldBegin('exclWriteEnabled', TType::BOOL, 6);
+            $xfer += $output->writeBool($this->exclWriteEnabled);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();

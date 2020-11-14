@@ -42,8 +42,8 @@ public class ShowColumnsAnalyzer extends BaseSemanticAnalyzer {
 
   @Override
   public void analyzeInternal(ASTNode root) throws SemanticException {
-    // table name has to be present so min child 1 and max child 4
-    if (root.getChildCount() > 4 || root.getChildCount() < 1) {
+    // table name has to be present so min child 1 and max child 5
+    if (root.getChildCount() > 5 || root.getChildCount() < 1) {
       throw new SemanticException(ErrorMsg.INVALID_AST_TREE.getMsg(root.toStringTree()));
     }
 
@@ -51,7 +51,13 @@ public class ShowColumnsAnalyzer extends BaseSemanticAnalyzer {
 
     String tableName = getUnescapedName((ASTNode) root.getChild(0));
     String pattern = null;
-    switch (root.getChildCount()) {
+    boolean isSorted = (root.getFirstChildWithType(HiveParser.KW_SORTED) != null);
+    int childCount = root.getChildCount();
+    // If isSorted exist, remove one child count from childCount
+    if (isSorted) {
+      childCount--;
+    }
+    switch (childCount) {
     case 1: //  only tablename no pattern and db
       break;
     case 2: // tablename and pattern
@@ -77,7 +83,7 @@ public class ShowColumnsAnalyzer extends BaseSemanticAnalyzer {
     Table table = getTable(tableName);
     inputs.add(new ReadEntity(table));
 
-    ShowColumnsDesc desc = new ShowColumnsDesc(ctx.getResFile(), tableName, pattern);
+    ShowColumnsDesc desc = new ShowColumnsDesc(ctx.getResFile(), tableName, pattern, isSorted);
     Task<DDLWork> task = TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc));
     rootTasks.add(task);
 

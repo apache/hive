@@ -18,14 +18,24 @@
 
 package org.apache.hadoop.hive.ql.exec.repl;
 
+import com.sun.jersey.api.client.ClientResponse;
+import org.apache.atlas.AtlasBaseClient;
+import org.apache.atlas.AtlasClientV2;
+import org.apache.atlas.AtlasServiceException;
+import org.apache.atlas.model.impexp.AtlasExportRequest;
+import org.apache.atlas.model.impexp.AtlasServer;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasReplInfo;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRequestBuilder;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClient;
+import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClientBuilder;
+import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasRestClientImpl;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.ReplState;
 import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,13 +48,24 @@ import org.powermock.reflect.Whitebox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.mockito.ArgumentMatchers.any;
+import javax.ws.rs.HttpMethod;
+import javax.ws.rs.core.Response;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
+
+import static org.mockito.Mockito.mock;
+import static org.powermock.api.mockito.PowerMockito.mockStatic;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Unit test class for testing Atlas metadata Dump.
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({LoggerFactory.class})
+@PrepareForTest({LoggerFactory.class, UserGroupInformation.class})
 public class TestAtlasDumpTask {
 
   @Mock
@@ -78,8 +99,9 @@ public class TestAtlasDumpTask {
     Logger logger = Mockito.mock(Logger.class);
     Whitebox.setInternalState(ReplState.class, logger);
     Mockito.doReturn(0L).when(atlasDumpTaskSpy)
-      .dumpAtlasMetaData(any(AtlasRequestBuilder.class), any(AtlasReplInfo.class));
-    Mockito.doNothing().when(atlasDumpTaskSpy).createDumpMetadata(any(AtlasReplInfo.class), any(Long.class));
+      .dumpAtlasMetaData(Mockito.any(AtlasRequestBuilder.class), Mockito.any(AtlasReplInfo.class));
+    Mockito.doNothing().when(atlasDumpTaskSpy).createDumpMetadata(Mockito.any(AtlasReplInfo.class),
+                                                                  Mockito.any(Long.class));
     int status = atlasDumpTaskSpy.execute();
     Assert.assertEquals(0, status);
     ArgumentCaptor<String> replStateCaptor = ArgumentCaptor.forClass(String.class);
@@ -95,5 +117,120 @@ public class TestAtlasDumpTask {
         .toString().contains("{\"dbName\":\"srcDB\",\"dumpStartTime"));
     Assert.assertTrue(eventDetailsCaptor
         .getAllValues().get(1).toString().contains("{\"dbName\":\"srcDB\",\"dumpEndTime\""));
+  }
+
+  @Test
+  public void testAtlasRestClientBuilder() throws SemanticException, IOException {
+    mockStatic(UserGroupInformation.class);
+    when(UserGroupInformation.getLoginUser()).thenReturn(mock(UserGroupInformation.class));
+    AtlasRestClientBuilder atlasRestCleintBuilder = new AtlasRestClientBuilder("http://localhost:31000");
+    AtlasRestClient atlasClient = atlasRestCleintBuilder.getClient(conf);
+    Assert.assertTrue(atlasClient != null);
+  }
+
+  @Test
+  public void testRetryingClientTimeBased() throws SemanticException, IOException, AtlasServiceException {
+    AtlasClientV2 atlasClientV2 = mock(AtlasClientV2.class);
+    AtlasExportRequest exportRequest = mock(AtlasExportRequest.class);
+    String exportResponseData = "dumpExportContent";
+    InputStream exportedMetadataIS = new ByteArrayInputStream(exportResponseData.getBytes(StandardCharsets.UTF_8));
+    when(atlasClientV2.exportData(Mockito.any(AtlasExportRequest.class))).thenReturn(exportedMetadataIS);
+    when(exportRequest.toString()).thenReturn("dummyExportRequest");
+    when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION, TimeUnit.SECONDS)).thenReturn(60L);
+    when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY, TimeUnit.SECONDS)).thenReturn(1L);
+    AtlasRestClient atlasClient = new AtlasRestClientImpl(atlasClientV2, conf);
+    AtlasRestClientImpl atlasRestClientImpl = (AtlasRestClientImpl)atlasClient;
+    InputStream inputStream = atlasRestClientImpl.exportData(exportRequest);
+    ArgumentCaptor<AtlasExportRequest> expReqCaptor = ArgumentCaptor.forClass(AtlasExportRequest.class);
+    Mockito.verify(atlasClientV2, Mockito.times(1)).exportData(expReqCaptor.capture());
+    Assert.assertEquals(expReqCaptor.getValue().toString(), "dummyExportRequest");
+    byte[] exportResponseDataReadBytes = new byte[exportResponseData.length()];
+    inputStream.read(exportResponseDataReadBytes);
+    String exportResponseDataReadString = new String(exportResponseDataReadBytes, StandardCharsets.UTF_8);
+    Assert.assertEquals(exportResponseData, exportResponseDataReadString);
+  }
+
+  @Test
+  public void testRetryingClientTimeBasedExhausted() throws AtlasServiceException {
+    AtlasClientV2 atlasClientV2 = mock(AtlasClientV2.class);
+    AtlasExportRequest exportRequest = mock(AtlasExportRequest.class);
+    AtlasServiceException atlasServiceException = mock(AtlasServiceException.class);
+    when(atlasServiceException.getMessage()).thenReturn("import or export is in progress");
+    when(atlasClientV2.exportData(Mockito.any(AtlasExportRequest.class))).thenThrow(atlasServiceException);
+    when(exportRequest.toString()).thenReturn("dummyExportRequest");
+    setupConfForRetry();
+    AtlasRestClient atlasClient = new AtlasRestClientImpl(atlasClientV2, conf);
+    AtlasRestClientImpl atlasRestClientImpl = (AtlasRestClientImpl)atlasClient;
+    InputStream inputStream = null;
+    try {
+      inputStream = atlasRestClientImpl.exportData(exportRequest);
+      Assert.fail("Should have thrown SemanticException.");
+    } catch (SemanticException ex) {
+      Assert.assertTrue(ex.getMessage().contains("Retry exhausted for retryable error code"));
+      Assert.assertTrue(atlasServiceException == ex.getCause());
+    }
+    ArgumentCaptor<AtlasExportRequest> expReqCaptor = ArgumentCaptor.forClass(AtlasExportRequest.class);
+    Mockito.verify(atlasClientV2, Mockito.times(3)).exportData(expReqCaptor.capture());
+    for (AtlasExportRequest atlasExportRequest: expReqCaptor.getAllValues()) {
+      Assert.assertEquals(atlasExportRequest.toString(), "dummyExportRequest");
+    }
+    Assert.assertTrue(inputStream == null);
+  }
+
+  @Test
+  public void testAtlasServerEntity() throws AtlasServiceException, SemanticException {
+    AtlasClientV2 atlasClientV2 = mock(AtlasClientV2.class);
+    AtlasServer atlasServer = mock(AtlasServer.class);
+    when(atlasClientV2.getServer(Mockito.anyString())).thenReturn(atlasServer);
+    AtlasRestClient atlasClient = new AtlasRestClientImpl(atlasClientV2, conf);
+    AtlasServer atlasServerRet = atlasClient.getServer("src", conf);
+    Assert.assertTrue(atlasServer == atlasServerRet);
+  }
+
+  @Test
+  public void testAtlasServerEntityNotFound() throws AtlasServiceException, SemanticException {
+    setupConfForRetry();
+    AtlasServiceException atlasServiceException = getAtlasServiceException(ClientResponse.Status.NOT_FOUND);
+    AtlasClientV2 atlasClientV2 = mock(AtlasClientV2.class);
+    when(atlasClientV2.getServer(Mockito.anyString())).thenThrow(atlasServiceException);
+    AtlasRestClient atlasClient = new AtlasRestClientImpl(atlasClientV2, conf);
+    AtlasServer atlasServerRet = atlasClient.getServer("src", conf);
+    Assert.assertNull(atlasServerRet);
+    ArgumentCaptor<String> getServerReqCaptor = ArgumentCaptor.forClass(String.class);
+    Mockito.verify(atlasClientV2, Mockito.times(1)).getServer(getServerReqCaptor.capture());
+  }
+
+  @Test
+  public void testAtlasServerEntityRetryExhausted() throws AtlasServiceException {
+    setupConfForRetry();
+    AtlasServiceException atlasServiceException = getAtlasServiceException(ClientResponse.Status.BAD_REQUEST);
+    AtlasClientV2 atlasClientV2 = mock(AtlasClientV2.class);
+    when(atlasClientV2.getServer(Mockito.anyString())).thenThrow(atlasServiceException);
+    AtlasRestClient atlasClient = new AtlasRestClientImpl(atlasClientV2, conf);
+    try {
+      atlasClient.getServer("src", conf);
+      Assert.fail("Should have thrown SemanticException.");
+    } catch (SemanticException ex) {
+      Assert.assertTrue(ex.getMessage().contains("Retry exhausted for retryable error code"));
+      Assert.assertTrue(atlasServiceException == ex.getCause());
+    }
+    ArgumentCaptor<String> getServerReqCaptor = ArgumentCaptor.forClass(String.class);
+    Mockito.verify(atlasClientV2, Mockito.times(4)).getServer(getServerReqCaptor.capture());
+  }
+
+  private void setupConfForRetry() {
+    when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_TOTAL_DURATION, TimeUnit.SECONDS)).thenReturn(60L);
+    when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_INTIAL_DELAY, TimeUnit.SECONDS)).thenReturn(10L);
+    when(conf.getTimeVar(HiveConf.ConfVars.REPL_RETRY_MAX_DELAY_BETWEEN_RETRIES, TimeUnit.SECONDS)).thenReturn(20L);
+    when(conf.getFloatVar(HiveConf.ConfVars.REPL_RETRY_BACKOFF_COEFFICIENT)).thenReturn(2.0f);
+  }
+
+  public AtlasServiceException getAtlasServiceException(ClientResponse.Status status) {
+    AtlasBaseClient.API api = new AtlasBaseClient.API("/api/atlas/admin", HttpMethod.POST,
+            Response.Status.fromStatusCode(status.getStatusCode()));
+    ClientResponse response = Mockito.mock(ClientResponse.class);
+    when(response.getStatus()).thenReturn(status.getStatusCode());
+    AtlasServiceException atlasServiceException = new AtlasServiceException(api, response);
+    return atlasServiceException;
   }
 }

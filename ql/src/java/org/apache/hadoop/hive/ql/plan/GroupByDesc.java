@@ -284,8 +284,13 @@ public class GroupByDesc extends AbstractOperatorDesc {
   // in which case the group by would execute as a single map-reduce job.
   // For the group-by, the group by keys should be: a,b,groupingSet(for rollup), c
   // So, the starting position of grouping set need to be known
+  @Explain(displayName = "grouping sets")
+  @Signature
   public List<Long> getListGroupingSets() {
-    return listGroupingSets;
+    if (groupingSetsPresent) {
+      return listGroupingSets;
+    }
+    return null;
   }
 
   public void setListGroupingSets(final List<Long> listGroupingSets) {

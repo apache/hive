@@ -128,7 +128,7 @@ Stage-0
                                   Select Operator [SEL_235] (rows=144002668 width=7)
                                     Output:["_col0","_col1"]
                                     Filter Operator [FIL_234] (rows=144002668 width=7)
-                                      predicate:(ws_order_number is not null and (ws_order_number is not null or ws_order_number is not null))
+                                      predicate:ws_order_number is not null
                                       TableScan [TS_22] (rows=144002668 width=7)
                                         default@web_sales,ws1,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_warehouse_sk","ws_order_number"]
                               <-Reducer 17 [SIMPLE_EDGE]
