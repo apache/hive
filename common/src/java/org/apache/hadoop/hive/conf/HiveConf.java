@@ -3621,7 +3621,7 @@ public class HiveConf extends Configuration {
         "any extra EXPLAIN configuration (e.g. hive.spark.explain.user, etc.). The explain " +
         "plan for each stage is truncated at 100,000 characters."),
 
-    // prefix used to auto generated column aliases (this should be s,tarted with '_')
+    // prefix used to auto generated column aliases (this should be started with '_')
     HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL("hive.autogen.columnalias.prefix.label", "_c",
         "String used as a prefix when auto generating column alias.\n" +
         "By default the prefix label will be appended with a column position number to form the column alias. \n" +
