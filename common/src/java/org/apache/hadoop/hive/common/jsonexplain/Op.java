@@ -93,9 +93,9 @@ public final class Op {
       // get the map for posToVertex
       Map<String, Vertex> posToVertex = new LinkedHashMap<>();
       if (opObject.has("input vertices:")) {
-        JSONObject verticeObj = opObject.getJSONObject("input vertices:");
-        for (String pos : JSONObject.getNames(verticeObj)) {
-          String vertexName = verticeObj.getString(pos);
+        JSONObject vertexObj = opObject.getJSONObject("input vertices:");
+        for (String pos : JSONObject.getNames(vertexObj)) {
+          String vertexName = vertexObj.getString(pos);
           // update the connection
           Connection c = null;
           for (Connection connection : vertex.parentConnections) {
