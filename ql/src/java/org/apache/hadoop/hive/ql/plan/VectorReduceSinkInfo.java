@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
  * A convenience data structure that has information needed to vectorize reduce sink.
  *
  * It is created by the Vectorizer when it is determining whether it can specialize so the
- * information doesn't have to be recreated again and agains by the VectorReduceSinkOperator's
+ * information doesn't have to be recreated again and against by the VectorReduceSinkOperator's
  * constructors and later during execution.
  */
 public class VectorReduceSinkInfo {
