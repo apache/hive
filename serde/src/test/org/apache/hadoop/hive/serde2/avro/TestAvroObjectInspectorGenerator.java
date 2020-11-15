@@ -162,7 +162,7 @@ public class TestAvroObjectInspectorGenerator {
       "  \"fields\": [\n" +
       "   {\n" +
       "      \"name\":\"baddies\",\n" +
-      "      \"type\":{\"type\":\"enum\",\"name\":\"villians\", \"symbols\": " +
+      "      \"type\":{\"type\":\"enum\",\"name\":\"villains\", \"symbols\": " +
           "[\"DALEKS\", \"CYBERMEN\", \"SLITHEEN\", \"JAGRAFESS\"]}\n" +
       "      \n" +
       "      \n" +
@@ -206,7 +206,7 @@ public class TestAvroObjectInspectorGenerator {
       "  \"fields\": [\n" +
       "   {\n" +
       "      \"name\":\"nullableEnum\",\n" +
-      "      \"type\": [\"null\", {\"type\":\"enum\",\"name\":\"villians\", \"symbols\": " +
+      "      \"type\": [\"null\", {\"type\":\"enum\",\"name\":\"villains\", \"symbols\": " +
           "[\"DALEKS\", \"CYBERMEN\", \"SLITHEEN\", \"JAGRAFESS\"]}]\n" +
       "      \n" +
       "      \n" +
