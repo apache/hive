@@ -4850,7 +4850,7 @@ public class HiveConf extends Configuration {
         "inputs into LLAP cache, if this feature is enabled."),
     LLAP_IO_ENCODE_SLICE_LRR("hive.llap.io.encode.slice.lrr", true,
         "Whether to separate cache slices when reading encoded data from text inputs via MR\n" +
-        "MR LineRecordRedader into LLAP cache, if this feature is enabled. Safety flag."),
+        "MR LineRecordReader into LLAP cache, if this feature is enabled. Safety flag."),
     LLAP_ORC_ENABLE_TIME_COUNTERS("hive.llap.io.orc.time.counters", true,
         "Whether to enable time counters for LLAP IO layer (time spent in HDFS, etc.)"),
     LLAP_IO_VRB_QUEUE_LIMIT_MAX("hive.llap.io.vrb.queue.limit.max", 50000,
