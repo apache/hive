@@ -6,17 +6,13 @@ import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.DERBY_TYPE;
-import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.MSSQL_TYPE;
-import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.MYSQL_TYPE;
-import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.ORACLE_TYPE;
-import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.POSTGRES_TYPE;
-import org.apache.hadoop.hive.metastore.dataconnector.jdbc.JDBCConnectorProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.apache.hadoop.hive.metastore.dataconnector.IDataConnectorProvider.*;
 
 public class DataConnectorProviderFactory {
   Logger LOG = LoggerFactory.getLogger(DataConnectorProviderFactory.class);
@@ -45,7 +41,7 @@ public class DataConnectorProviderFactory {
     }
 
     String scopedDb = (db.getRemote_dbname() != null) ? db.getRemote_dbname() : db.getName();
-    if (cache.containsKey(db.getConnector_name().toLowerCase() != null)) {
+    if (cache.containsKey(db.getConnector_name().toLowerCase())) {
       provider = cache.get(db.getConnector_name().toLowerCase());
       if (provider != null) {
         provider.setScope(scopedDb);
@@ -67,7 +63,8 @@ public class DataConnectorProviderFactory {
     case ORACLE_TYPE:
     case POSTGRES_TYPE:
       try {
-        provider = new JDBCConnectorProvider(scopedDb, connector);
+        provider = JDBCConnectorProviderFactory.get(scopedDb, connector);
+        cache.put(db.getConnector_name(), provider);
       } catch (Exception e) {
         throw new MetaException("Could not instantiate a provider for database " + db.getName());
       }
