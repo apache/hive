@@ -1422,8 +1422,6 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
   }
 
-  protected abstract CompactionInfo getCompactionByTxnId(Connection dbConn, long txnid) throws SQLException, MetaException;
-
   private boolean isUpdateOrDelete(Statement stmt, String conflictSQLSuffix) throws SQLException, MetaException {
     try (ResultSet rs = stmt.executeQuery(sqlGenerator.addLimitClause(1,
             "\"TC_OPERATION_TYPE\" " + conflictSQLSuffix))) {

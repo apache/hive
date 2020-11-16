@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
+import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAbortTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAcidWriteMessage;
 import org.apache.hadoop.hive.metastore.messaging.json.JSONAddCheckConstraintMessage;
@@ -330,10 +331,8 @@ public class MessageBuilder {
             colName, partName, partValues);
   }
 
-  public CommitCompactionMessage buildCommitCompactionMessage(Long txnid, Long compactionId, CompactionType type,
-      String dbname, String tableName, String partName) {
-    return new JSONCommitCompactionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), txnid, compactionId, type,
-        dbname, tableName, partName);
+  public CommitCompactionMessage buildCommitCompactionMessage(CommitCompactionEvent event) {
+    return new JSONCommitCompactionMessage(MS_SERVER_URL, MS_SERVICE_PRINCIPAL, now(), event);
   }
 
   private long now() {

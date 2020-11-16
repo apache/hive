@@ -1173,7 +1173,7 @@ class CompactionTxnHandler extends TxnHandler {
     }
   }
 
-  protected CompactionInfo getCompactionByTxnId(Connection dbConn, long txnid) throws SQLException, MetaException {
+  private CompactionInfo getCompactionByTxnId(Connection dbConn, long txnid) throws SQLException, MetaException {
     CompactionInfo info = null;
     try (PreparedStatement pStmt = dbConn.prepareStatement(SELECT_COMPACTION_QUEUE_BY_TXN_ID)) {
       pStmt.setLong(1, txnid);

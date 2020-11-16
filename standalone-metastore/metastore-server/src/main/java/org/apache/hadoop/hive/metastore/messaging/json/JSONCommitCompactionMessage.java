@@ -20,16 +20,9 @@
 package org.apache.hadoop.hive.metastore.messaging.json;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
-import org.apache.hadoop.hive.metastore.api.Partition;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.WriteEventInfo;
+import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.messaging.CommitCompactionMessage;
-import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
-import org.apache.hadoop.hive.metastore.messaging.MessageBuilder;
-
-import java.util.List;
 
 /**
  * JSON implementation of CommitCompactionMessage
@@ -69,17 +62,17 @@ public class JSONCommitCompactionMessage extends CommitCompactionMessage {
   public JSONCommitCompactionMessage() {
   }
 
-  public JSONCommitCompactionMessage(String server, String servicePrincipal, Long timestamp, Long txnid,
-      Long compactionId, CompactionType type, String dbname, String tableName, String partName) {
+  public JSONCommitCompactionMessage(String server, String servicePrincipal, long timestamp,
+      CommitCompactionEvent event) {
     this.timestamp = timestamp;
     this.server = server;
     this.servicePrincipal = servicePrincipal;
-    this.txnid = txnid;
-    this.compactionId = compactionId;
-    this.type = type;
-    this.dbname = dbname;
-    this.tableName = tableName;
-    this.partName = partName;
+    this.txnid = event.getTxnId();
+    this.compactionId = event.getCompactionId();
+    this.type = event.getType();
+    this.dbname = event.getDbname();
+    this.tableName = event.getTableName();
+    this.partName = event.getPartName();
   }
 
   @Override
