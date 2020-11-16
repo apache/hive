@@ -1,11 +1,19 @@
 package org.apache.hadoop.hive.metastore.dataconnector;
 
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.SerDeInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 
 import java.net.ConnectException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class AbstractDataConnectorProvider implements IDataConnectorProvider {
   protected String scoped_db = null;
@@ -68,4 +76,41 @@ public abstract class AbstractDataConnectorProvider implements IDataConnectorPro
   @Override public Table getTable(String tableName) throws MetaException {
     return null;
   }
+
+  protected Table buildTableFromColsList(String tableName, List<FieldSchema> cols) {
+    //Setting the storage descriptor.
+    StorageDescriptor sd = new StorageDescriptor();
+    sd.setCols(cols);
+    SerDeInfo serdeInfo = new SerDeInfo();
+    serdeInfo.setName(tableName);
+    serdeInfo.setSerializationLib("org.apache.hive.storage.jdbc.JdbcSerDe");
+    Map<String, String> serdeParams = new HashMap<String, String>();
+    serdeParams.put("serialization.format", "1");
+    serdeInfo.setParameters(serdeParams);
+
+    sd.setSerdeInfo(serdeInfo);
+    sd.setInputFormat("org.apache.hive.storage.jdbc.JdbcInputFormat"); // TODO
+    sd.setOutputFormat("org.apache.hive.storage.jdbc.JdbcOutputFormat"); // TODO
+    sd.setLocation("/tmp/some_dummy_path"); // TODO
+    sd.setBucketCols(new ArrayList<String>());
+    sd.setSortCols(new ArrayList<Order>());
+
+    //Setting the required table information
+    Table table = new Table();
+    table.setTableName(tableName);
+    table.setTableType(TableType.EXTERNAL_TABLE.toString());
+    table.setDbName(scoped_db);
+    table.setSd(sd);
+    // set table properties that subclasses can fill-in
+    table.setParameters(new HashMap<String, String>());
+    // set partition keys to empty
+    table.setPartitionKeys(new
+        ArrayList<FieldSchema>());
+
+    return table;
+  }
+
+  abstract protected String getInputClass();
+
+  abstract protected String getOutputClass();
 }

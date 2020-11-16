@@ -2,14 +2,12 @@ package org.apache.hadoop.hive.metastore.dataconnector;
 
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
-import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 
 import java.net.ConnectException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This interface provides a way for us to plugin different datasources into hive.
