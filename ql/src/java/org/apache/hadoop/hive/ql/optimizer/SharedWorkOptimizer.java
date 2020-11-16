@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -147,6 +148,13 @@ public class SharedWorkOptimizer extends Transform {
       LOG.debug("Before SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
     }
 
+    try {
+      new OperatorGraph(pctx).toDot(new File("/tmp/0.full.dot"));
+      new OperatorGraph(pctx).implode().toDot(new File("/tmp/0.joins.dot"));
+    } catch (Exception e1) {
+      throw new RuntimeException(e1);
+    }
+
     // We enforce a certain order when we do the reutilization.
     // In particular, we use size of table x number of reads to
     // rank the tables.
@@ -223,6 +231,13 @@ public class SharedWorkOptimizer extends Transform {
         }
       }
 
+    }
+
+    try {
+      new OperatorGraph(pctx).toDot(new File("/tmp/1.full.dot"));
+      new OperatorGraph(pctx).implode().toDot(new File("/tmp/1.joins.dot"));
+    } catch (Exception e1) {
+      throw new RuntimeException(e1);
     }
 
     if(pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE)) {
