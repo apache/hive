@@ -111,13 +111,20 @@ public class TestLowLevelLrfuCachePolicy {
     testHeapSize(64);
   }
 
-  private class EvictionTracker implements EvictionListener {
+  static class EvictionTracker implements EvictionListener {
     public List<LlapDataBuffer> evicted = new ArrayList<LlapDataBuffer>();
+    public List<LlapDataBuffer> proactivelyEvicted = new ArrayList<LlapDataBuffer>();
 
     @Override
     public void notifyEvicted(LlapCacheableBuffer buffer) {
       evicted.add((LlapDataBuffer)buffer);
     }
+
+    @Override
+    public void notifyProactivelyEvicted(LlapCacheableBuffer buffer) {
+      proactivelyEvicted.add((LlapDataBuffer)buffer);
+    }
+
   }
 
   @Test

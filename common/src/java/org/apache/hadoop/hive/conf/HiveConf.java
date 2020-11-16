@@ -4431,6 +4431,10 @@ public class HiveConf extends Configuration {
     LLAP_IO_PROACTIVE_EVICTION_ENABLED("hive.llap.io.proactive.eviction.enabled", true,
         "If true proactive cache eviction is enabled, thus LLAP will proactively evict buffers" +
          " that belong to dropped Hive entities (DBs, tables, partitions, or temp tables."),
+    LLAP_IO_PROACTIVE_EVICTION_SWEEP_INTERVAL("hive.llap.io.proactive.eviction.sweep.interval", "5s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "How frequently (in seconds) LLAP should check for buffers marked for proactive eviction and" +
+         "proceed with their eviction."),
     LLAP_IO_SHARE_OBJECT_POOLS("hive.llap.io.share.object.pools", false,
         "Whether to used shared object pools in LLAP IO. A safety flag."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,

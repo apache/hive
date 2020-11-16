@@ -128,11 +128,6 @@ public class TestLowLevelCacheImpl {
     }
 
     @Override
-    public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
-      return 0;
-    }
-
-    @Override
     public void debugDumpShort(StringBuilder sb) {
     }
   }

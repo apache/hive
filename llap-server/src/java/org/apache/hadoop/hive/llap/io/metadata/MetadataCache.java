@@ -539,8 +539,8 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
     }
 
     @Override
-    public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
-      evictionDispatcher.notifyEvicted(this);
+    public void notifyEvicted(EvictionDispatcher evictionDispatcher, boolean isProactiveEviction) {
+      evictionDispatcher.notifyEvicted(this, isProactiveEviction);
     }
 
     public T getKey() {

@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.llap.cache;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Predicate;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -239,12 +238,6 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   @Override
   public void setEvictionListener(EvictionListener listener) {
     this.evictionListener = listener;
-  }
-
-  @Override
-  public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
-    // TODO: HIVE-23197
-    return 0;
   }
 
   @Override
