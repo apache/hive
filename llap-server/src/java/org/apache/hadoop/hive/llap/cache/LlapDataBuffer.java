@@ -26,7 +26,7 @@ public final class LlapDataBuffer extends BaseLlapDataBuffer {
   public int declaredCachedLength = UNKNOWN_CACHED_LENGTH;
 
   @Override
-  public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
-    evictionDispatcher.notifyEvicted(this);
+  public void notifyEvicted(EvictionDispatcher evictionDispatcher, boolean isProactiveEviction) {
+    evictionDispatcher.notifyEvicted(this, isProactiveEviction);
   }
 }

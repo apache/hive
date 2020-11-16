@@ -647,6 +647,12 @@ public class HiveConf extends Configuration {
       "Provide the maximum number of partitions of a table that will be batched together during  \n"
         + "repl load. All the partitions in a batch will make a single metastore call to update the metadata. \n"
         + "The data for these partitions will be copied before copying the metadata batch. "),
+    REPL_PARALLEL_COPY_TASKS("hive.repl.parallel.copy.tasks",100,
+      "Provide the maximum number of parallel copy operation(distcp or regular copy) launched for a table  \n"
+        + "or partition. This will create at max 100 threads which will run copy in parallel for the data files at \n"
+        + " table or partition level. If hive.exec.parallel \n"
+        + "is set to true then max worker threads created for copy can be hive.exec.parallel.thread.number(determines \n"
+        + "number of copy tasks in parallel) * hive.repl.parallel.copy.tasks "),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir",
         "${system:java.io.tmpdir}" + File.separator + "${system:user.name}",
         "Local scratch space for Hive jobs"),
@@ -2589,6 +2595,8 @@ public class HiveConf extends Configuration {
     HIVE_SHARED_WORK_DPPUNION_OPTIMIZATION("hive.optimize.shared.work.dppunion", true,
         "Enables dppops unioning. This optimization will enable to merge multiple tablescans with different "
             + "dynamic filters into a single one (with a more complex filter)"),
+    HIVE_SHARED_WORK_DOWNSTREAM_MERGE("hive.optimize.shared.work.downstream.merge", true,
+        "Analyzes and merges equiv downstream operators after a successful shared work optimization step."),
     HIVE_COMBINE_EQUIVALENT_WORK_OPTIMIZATION("hive.combine.equivalent.work.optimization", true, "Whether to " +
             "combine equivalent work objects during physical optimization.\n This optimization looks for equivalent " +
             "work objects and combines them if they meet certain preconditions. Spark only."),
@@ -4569,6 +4577,10 @@ public class HiveConf extends Configuration {
     LLAP_IO_PROACTIVE_EVICTION_ENABLED("hive.llap.io.proactive.eviction.enabled", true,
         "If true proactive cache eviction is enabled, thus LLAP will proactively evict buffers" +
          " that belong to dropped Hive entities (DBs, tables, partitions, or temp tables."),
+    LLAP_IO_PROACTIVE_EVICTION_SWEEP_INTERVAL("hive.llap.io.proactive.eviction.sweep.interval", "5s",
+        new TimeValidator(TimeUnit.SECONDS),
+        "How frequently (in seconds) LLAP should check for buffers marked for proactive eviction and" +
+         "proceed with their eviction."),
     LLAP_IO_SHARE_OBJECT_POOLS("hive.llap.io.share.object.pools", false,
         "Whether to used shared object pools in LLAP IO. A safety flag."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,

@@ -27,10 +27,13 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Joiner;
+
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.Cluster;
 import org.apache.hadoop.hive.ql.optimizer.graph.OperatorGraph.OpEdge;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -93,6 +96,11 @@ public class DotExporter {
       TableScanOperator ts = (TableScanOperator) n;
       TableScanDesc conf = ts.getConf();
       rows.add(vBox(conf.getTableName(), conf.getAlias()));
+    }
+    if ((n instanceof FilterOperator)) {
+      FilterOperator fil = (FilterOperator) n;
+      FilterDesc conf = fil.getConf();
+      rows.add(vBox("filter:", conf.getPredicateString()));
     }
     return vBox(rows);
   }
