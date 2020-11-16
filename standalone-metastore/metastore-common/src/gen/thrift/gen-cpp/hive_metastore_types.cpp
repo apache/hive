@@ -18662,6 +18662,16 @@ void GetPartitionsByNamesRequest::__set_validWriteIdList(const std::string& val)
   this->validWriteIdList = val;
 __isset.validWriteIdList = true;
 }
+
+void GetPartitionsByNamesRequest::__set_getFileMetadata(const bool val) {
+  this->getFileMetadata = val;
+__isset.getFileMetadata = true;
+}
+
+void GetPartitionsByNamesRequest::__set_id(const int64_t val) {
+  this->id = val;
+__isset.id = true;
+}
 std::ostream& operator<<(std::ostream& out, const GetPartitionsByNamesRequest& obj)
 {
   obj.printTo(out);
@@ -18780,6 +18790,22 @@ uint32_t GetPartitionsByNamesRequest::read(::apache::thrift::protocol::TProtocol
           xfer += iprot->skip(ftype);
         }
         break;
+      case 9:
+        if (ftype == ::apache::thrift::protocol::T_BOOL) {
+          xfer += iprot->readBool(this->getFileMetadata);
+          this->__isset.getFileMetadata = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 10:
+        if (ftype == ::apache::thrift::protocol::T_I64) {
+          xfer += iprot->readI64(this->id);
+          this->__isset.id = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -18855,6 +18881,16 @@ uint32_t GetPartitionsByNamesRequest::write(::apache::thrift::protocol::TProtoco
     xfer += oprot->writeString(this->validWriteIdList);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.getFileMetadata) {
+    xfer += oprot->writeFieldBegin("getFileMetadata", ::apache::thrift::protocol::T_BOOL, 9);
+    xfer += oprot->writeBool(this->getFileMetadata);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.id) {
+    xfer += oprot->writeFieldBegin("id", ::apache::thrift::protocol::T_I64, 10);
+    xfer += oprot->writeI64(this->id);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -18870,6 +18906,8 @@ void swap(GetPartitionsByNamesRequest &a, GetPartitionsByNamesRequest &b) {
   swap(a.processorIdentifier, b.processorIdentifier);
   swap(a.engine, b.engine);
   swap(a.validWriteIdList, b.validWriteIdList);
+  swap(a.getFileMetadata, b.getFileMetadata);
+  swap(a.id, b.id);
   swap(a.__isset, b.__isset);
 }
 
@@ -18882,6 +18920,8 @@ GetPartitionsByNamesRequest::GetPartitionsByNamesRequest(const GetPartitionsByNa
   processorIdentifier = other714.processorIdentifier;
   engine = other714.engine;
   validWriteIdList = other714.validWriteIdList;
+  getFileMetadata = other714.getFileMetadata;
+  id = other714.id;
   __isset = other714.__isset;
 }
 GetPartitionsByNamesRequest& GetPartitionsByNamesRequest::operator=(const GetPartitionsByNamesRequest& other715) {
@@ -18893,6 +18933,8 @@ GetPartitionsByNamesRequest& GetPartitionsByNamesRequest::operator=(const GetPar
   processorIdentifier = other715.processorIdentifier;
   engine = other715.engine;
   validWriteIdList = other715.validWriteIdList;
+  getFileMetadata = other715.getFileMetadata;
+  id = other715.id;
   __isset = other715.__isset;
   return *this;
 }
@@ -18907,6 +18949,8 @@ void GetPartitionsByNamesRequest::printTo(std::ostream& out) const {
   out << ", " << "processorIdentifier="; (__isset.processorIdentifier ? (out << to_string(processorIdentifier)) : (out << "<null>"));
   out << ", " << "engine="; (__isset.engine ? (out << to_string(engine)) : (out << "<null>"));
   out << ", " << "validWriteIdList="; (__isset.validWriteIdList ? (out << to_string(validWriteIdList)) : (out << "<null>"));
+  out << ", " << "getFileMetadata="; (__isset.getFileMetadata ? (out << to_string(getFileMetadata)) : (out << "<null>"));
+  out << ", " << "id="; (__isset.id ? (out << to_string(id)) : (out << "<null>"));
   out << ")";
 }
 
