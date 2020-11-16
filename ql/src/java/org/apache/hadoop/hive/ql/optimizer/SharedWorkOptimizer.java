@@ -31,8 +31,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.PriorityQueue;
+import java.util.Queue;
 import java.util.Set;
-import java.util.TreeMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -159,12 +160,22 @@ public class SharedWorkOptimizer extends Transform {
     // Gather information about the DPP table scans and store it in the cache
     gatherDPPTableScanOps(pctx, optimizerCache);
 
+    BaseSharedWorkOptimizer swo;
+    if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
+      swo = new BaseSharedWorkOptimizer();
+    } else {
+      swo = new SchemaAwareSharedWorkOptimizer();
+    }
+    BaseSharedWorkOptimizer schemaAwareSharedWorkOptimizer = swo;
+
+
     for (Entry<String, Long> tablePair : sortedTables) {
       String tableName = tablePair.getKey();
       List<TableScanOperator> scans = tableNameToOps.get(tableName);
 
       // Execute shared work optimization
-      new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
+      //      new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
+      schemaAwareSharedWorkOptimizer.sharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("After SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
@@ -182,8 +193,8 @@ public class SharedWorkOptimizer extends Transform {
       if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_SEMIJOIN_OPTIMIZATION)) {
 
         // Execute shared work optimization with semijoin removal
-        boolean optimized = new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache,
-            scans, Mode.RemoveSemijoin);
+        boolean optimized =
+            schemaAwareSharedWorkOptimizer.sharedWorkOptimization(pctx, optimizerCache, scans, Mode.RemoveSemijoin);
         if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
           // If it was further optimized, execute a second round of extended shared work optimizer
           sharedWorkExtendedOptimization(pctx, optimizerCache);
@@ -194,30 +205,13 @@ public class SharedWorkOptimizer extends Transform {
         }
       }
 
-      if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
-        new BaseSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
-
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("After SharedWorkOptimizer merging TS schema:\n" + Operator.toString(pctx.getTopOps().values()));
-        }
-      }
-
       if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_DPPUNION_OPTIMIZATION)) {
-        BaseSharedWorkOptimizer swo;
-        if (pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_MERGE_TS_SCHEMA)) {
-          swo = new BaseSharedWorkOptimizer();
-        } else {
-          swo = new SchemaAwareSharedWorkOptimizer();
-        }
-
-        boolean optimized =
-            swo.sharedWorkOptimization(pctx, optimizerCache, scans, Mode.DPPUnion);
+        boolean optimized = swo.sharedWorkOptimization(pctx, optimizerCache, scans, Mode.DPPUnion);
 
         if (optimized && pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_EXTENDED_OPTIMIZATION)) {
           // If it was further optimized, do a round of extended shared work optimizer
           sharedWorkExtendedOptimization(pctx, optimizerCache);
         }
-
         if (LOG.isDebugEnabled()) {
           LOG.debug("After DPPUnion:\n" + Operator.toString(pctx.getTopOps().values()));
         }
@@ -559,7 +553,6 @@ public class SharedWorkOptimizer extends Transform {
               LOG.debug("Input operator removed: {}", op);
             }
           }
-
           // A shared TSop across branches can not have probeContext that utilizes single branch info
           // Filtered-out rows from one branch might be needed by another branch sharing a TSop
           if (retainableTsOp.getProbeDecodeContext() != null) {
@@ -630,21 +623,27 @@ public class SharedWorkOptimizer extends Transform {
         throws SemanticException {
       // If row limit does not match, we currently do not merge
       if (tsOp1.getConf().getRowLimit() != tsOp2.getConf().getRowLimit()) {
+        LOG.debug("rowlimit differ {} ~ {}", tsOp1.getConf().getRowLimit(), tsOp2.getConf().getRowLimit());
         return false;
       }
       // If table properties do not match, we currently do not merge
       if (!Objects.equals(tsOp1.getConf().getOpProps(), tsOp2.getConf().getOpProps())) {
+        LOG.debug("opProps differ {} ~ {}", tsOp1.getConf().getOpProps(), tsOp2.getConf().getOpProps());
         return false;
       }
       // If partitions do not match, we currently do not merge
       PrunedPartitionList prevTsOpPPList = pctx.getPrunedPartitions(tsOp1);
       PrunedPartitionList tsOpPPList = pctx.getPrunedPartitions(tsOp2);
       if (!prevTsOpPPList.getPartitions().equals(tsOpPPList.getPartitions())) {
+        LOG.debug("partitions differ {} ~ {}", prevTsOpPPList.getPartitions().size(),
+            tsOpPPList.getPartitions().size());
         return false;
       }
 
       if(!Objects.equals(tsOp1.getConf().getIncludedBuckets(),
           tsOp2.getConf().getIncludedBuckets())) {
+        LOG.debug("includedBuckets differ {} ~ {}", tsOp1.getConf().getIncludedBuckets(),
+            tsOp2.getConf().getIncludedBuckets());
         return false;
       }
 
@@ -1024,13 +1023,56 @@ public class SharedWorkOptimizer extends Transform {
     LOG.debug("DPP information stored in the cache: {}", optimizerCache.tableScanToDPPSource);
   }
 
+  /**
+   * Orders TS operators in decreasing order by "weight".
+   */
+  static class TSComparator implements Comparator<TableScanOperator> {
+
+    @Override
+    public int compare(TableScanOperator o1, TableScanOperator o2) {
+      int r;
+      r=cmpFiltered(o1,o2);
+      if(r!=0) {
+        return r;
+      }
+      r=cmpDataSize(o1,o2);
+      if(r!=0) {
+        return r;
+      }
+
+      return o1.toString().compareTo(o2.toString());
+    }
+
+    private int cmpFiltered(TableScanOperator o1, TableScanOperator o2) {
+      if (o1.getConf().getFilterExpr() == null ^ o2.getConf().getFilterExpr() == null) {
+            return (o1.getConf().getFilterExpr() == null) ? -1 : 1;
+      }
+      return 0;
+
+    }
+
+    private int cmpDataSize(TableScanOperator o1, TableScanOperator o2) {
+      long ds1 = o1.getStatistics() == null ? -1 : o1.getStatistics().getDataSize();
+      long ds2 = o2.getStatistics() == null ? -1 : o2.getStatistics().getDataSize();
+      if (ds1 == ds2) {
+        return 0;
+      }
+      if (ds1 < ds2) {
+        return 1;
+      } else {
+        return -1;
+      }
+    }
+  }
+
   private static ArrayListMultimap<String, TableScanOperator> splitTableScanOpsByTable(
           ParseContext pctx) {
     ArrayListMultimap<String, TableScanOperator> tableNameToOps = ArrayListMultimap.create();
     // Sort by operator ID so we get deterministic results
-    Map<String, TableScanOperator> sortedTopOps = new TreeMap<>(pctx.getTopOps());
-    for (Entry<String, TableScanOperator> e : sortedTopOps.entrySet()) {
-      TableScanOperator tsOp = e.getValue();
+    TSComparator comparator = new TSComparator();
+    Queue<TableScanOperator> sortedTopOps = new PriorityQueue<>(comparator);
+    sortedTopOps.addAll(pctx.getTopOps().values());
+    for (TableScanOperator tsOp : sortedTopOps) {
       tableNameToOps.put(tsOp.getTableName().toString(), tsOp);
     }
     return tableNameToOps;

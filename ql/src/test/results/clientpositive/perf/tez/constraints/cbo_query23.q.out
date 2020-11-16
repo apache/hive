@@ -1,5 +1,10 @@
+<<<<<<< HEAD
+Warning: Shuffle Join MERGEJOIN[360][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 12' is a cross product
+Warning: Shuffle Join MERGEJOIN[362][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 13' is a cross product
+=======
 Warning: Shuffle Join MERGEJOIN[360][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 18' is a cross product
 Warning: Shuffle Join MERGEJOIN[362][tables = [$hdt$_1, $hdt$_2]] in Stage 'Reducer 19' is a cross product
+>>>>>>> HIVE-24241-downstream-merge
 PREHOOK: query: explain cbo
 with frequent_ss_items as 
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt

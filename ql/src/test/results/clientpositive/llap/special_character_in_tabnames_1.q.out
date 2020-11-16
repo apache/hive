@@ -2899,11 +2899,12 @@ STAGE PLANS:
     Tez
 #### A masked pattern was here ####
       Edges:
-        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 6 (CUSTOM_SIMPLE_EDGE)
+        Reducer 2 <- Map 1 (CUSTOM_SIMPLE_EDGE), Reducer 7 (CUSTOM_SIMPLE_EDGE)
         Reducer 3 <- Reducer 2 (SIMPLE_EDGE), Reducer 5 (SIMPLE_EDGE)
         Reducer 4 <- Reducer 3 (SIMPLE_EDGE)
         Reducer 5 <- Map 1 (SIMPLE_EDGE)
-        Reducer 6 <- Reducer 5 (CUSTOM_SIMPLE_EDGE)
+        Reducer 6 <- Map 1 (SIMPLE_EDGE)
+        Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -2916,6 +2917,27 @@ STAGE PLANS:
                     sort order: 
                     Statistics: Num rows: 26 Data size: 5798 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: p_name (type: string), p_mfgr (type: string), p_size (type: int)
+                  Filter Operator
+                    predicate: (p_size < 10) (type: boolean)
+                    Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: p_mfgr (type: string), p_size (type: int)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
+                      Group By Operator
+                        aggregations: min(_col1)
+                        keys: _col0 (type: string)
+                        minReductionHashAggr: 0.6
+                        mode: hash
+                        outputColumnNames: _col0, _col1
+                        Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          key expressions: _col0 (type: string)
+                          null sort order: z
+                          sort order: +
+                          Map-reduce partition columns: _col0 (type: string)
+                          Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+                          value expressions: _col1 (type: int)
                   Filter Operator
                     predicate: (p_size < 10) (type: boolean)
                     Statistics: Num rows: 5 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3014,6 +3036,15 @@ STAGE PLANS:
                     sort order: ++
                     Map-reduce partition columns: _col0 (type: int), _col1 (type: string)
                     Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 6 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1
+                Statistics: Num rows: 2 Data size: 204 Basic stats: COMPLETE Column stats: COMPLETE
                 Filter Operator
                   predicate: (_col1 is null or _col0 is null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 102 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3030,7 +3061,7 @@ STAGE PLANS:
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: bigint)
-        Reducer 6 
+        Reducer 7 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -3304,12 +3335,12 @@ STAGE PLANS:
 #### A masked pattern was here ####
       Edges:
         Reducer 2 <- Map 1 (SIMPLE_EDGE)
-        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE), Reducer 7 (CUSTOM_SIMPLE_EDGE)
-        Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 8 (SIMPLE_EDGE)
+        Reducer 3 <- Reducer 2 (CUSTOM_SIMPLE_EDGE), Reducer 8 (CUSTOM_SIMPLE_EDGE)
+        Reducer 4 <- Reducer 3 (SIMPLE_EDGE), Reducer 6 (SIMPLE_EDGE)
         Reducer 5 <- Reducer 4 (SIMPLE_EDGE)
         Reducer 6 <- Map 1 (SIMPLE_EDGE)
-        Reducer 7 <- Reducer 6 (CUSTOM_SIMPLE_EDGE)
-        Reducer 8 <- Map 1 (SIMPLE_EDGE)
+        Reducer 7 <- Map 1 (SIMPLE_EDGE)
+        Reducer 8 <- Reducer 7 (CUSTOM_SIMPLE_EDGE)
 #### A masked pattern was here ####
       Vertices:
         Map 1 
@@ -3335,20 +3366,6 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 5 Data size: 530 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: double)
-                    Group By Operator
-                      aggregations: min(p_retailprice), max(p_retailprice), avg(p_retailprice)
-                      keys: p_mfgr (type: string)
-                      minReductionHashAggr: 0.8076923
-                      mode: hash
-                      outputColumnNames: _col0, _col1, _col2, _col3
-                      Statistics: Num rows: 5 Data size: 970 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string)
-                        null sort order: z
-                        sort order: +
-                        Map-reduce partition columns: _col0 (type: string)
-                        Statistics: Num rows: 5 Data size: 970 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: struct<count:bigint,sum:double,input:double>)
                   Group By Operator
                     aggregations: min(p_retailprice), max(p_retailprice), avg(p_retailprice)
                     keys: p_mfgr (type: string)
@@ -3363,6 +3380,24 @@ STAGE PLANS:
                       Map-reduce partition columns: _col0 (type: string)
                       Statistics: Num rows: 5 Data size: 970 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: struct<count:bigint,sum:double,input:double>)
+                  Select Operator
+                    expressions: p_mfgr (type: string), p_retailprice (type: double)
+                    outputColumnNames: p_mfgr, p_retailprice
+                    Statistics: Num rows: 26 Data size: 2756 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: min(p_retailprice), max(p_retailprice), avg(p_retailprice)
+                      keys: p_mfgr (type: string)
+                      minReductionHashAggr: 0.8076923
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 5 Data size: 970 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 5 Data size: 970 Basic stats: COMPLETE Column stats: COMPLETE
+                        value expressions: _col1 (type: double), _col2 (type: double), _col3 (type: struct<count:bigint,sum:double,input:double>)
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -3448,6 +3483,32 @@ STAGE PLANS:
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 5 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
+                    predicate: ((_col2 - _col1) > 600) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: double)
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 1 Data size: 106 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string), _col1 (type: double)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: double)
+                        Statistics: Num rows: 1 Data size: 106 Basic stats: COMPLETE Column stats: COMPLETE
+        Reducer 7 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: min(VALUE._col0), max(VALUE._col1), avg(VALUE._col2)
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics: Num rows: 5 Data size: 610 Basic stats: COMPLETE Column stats: COMPLETE
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: double), _col2 (type: double)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 5 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
                     predicate: (((_col2 - _col1) > 600) and (_col0 is null or _col1 is null)) (type: boolean)
                     Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
@@ -3463,7 +3524,7 @@ STAGE PLANS:
                           sort order: 
                           Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: bigint)
-        Reducer 7 
+        Reducer 8 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
@@ -3486,32 +3547,6 @@ STAGE PLANS:
                         null sort order: 
                         sort order: 
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
-        Reducer 8 
-            Execution mode: vectorized, llap
-            Reduce Operator Tree:
-              Group By Operator
-                aggregations: min(VALUE._col0), max(VALUE._col1), avg(VALUE._col2)
-                keys: KEY._col0 (type: string)
-                mode: mergepartial
-                outputColumnNames: _col0, _col1, _col2, _col3
-                Statistics: Num rows: 5 Data size: 610 Basic stats: COMPLETE Column stats: COMPLETE
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: double), _col2 (type: double)
-                  outputColumnNames: _col0, _col1, _col2
-                  Statistics: Num rows: 5 Data size: 570 Basic stats: COMPLETE Column stats: COMPLETE
-                  Filter Operator
-                    predicate: ((_col2 - _col1) > 600) (type: boolean)
-                    Statistics: Num rows: 1 Data size: 114 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: _col0 (type: string), _col1 (type: double)
-                      outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 1 Data size: 106 Basic stats: COMPLETE Column stats: COMPLETE
-                      Reduce Output Operator
-                        key expressions: _col0 (type: string), _col1 (type: double)
-                        null sort order: zz
-                        sort order: ++
-                        Map-reduce partition columns: _col0 (type: string), _col1 (type: double)
-                        Statistics: Num rows: 1 Data size: 106 Basic stats: COMPLETE Column stats: COMPLETE
 
   Stage: Stage-0
     Fetch Operator

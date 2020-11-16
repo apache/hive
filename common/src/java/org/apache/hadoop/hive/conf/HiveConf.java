@@ -2596,7 +2596,7 @@ public class HiveConf extends Configuration {
         "Enables dppops unioning. This optimization will enable to merge multiple tablescans with different "
             + "dynamic filters into a single one (with a more complex filter)"),
     HIVE_SHARED_WORK_DOWNSTREAM_MERGE("hive.optimize.shared.work.downstream.merge", true,
-        "Analyzes and merges equiv downstream operators after a successful shared work optimization step."),
+        "Analyzes and merges equiv downstream operators after a successfull shared work optimization step."),
     HIVE_COMBINE_EQUIVALENT_WORK_OPTIMIZATION("hive.combine.equivalent.work.optimization", true, "Whether to " +
             "combine equivalent work objects during physical optimization.\n This optimization looks for equivalent " +
             "work objects and combines them if they meet certain preconditions. Spark only."),

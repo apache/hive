@@ -296,6 +296,18 @@ Stage-3
     limit:100
     Stage-4
       Reducer 21 vectorized
+<<<<<<< HEAD
+      File Output Operator [FS_1304]
+        Limit [LIM_1303] (rows=100 width=253)
+          Number of rows:100
+          Select Operator [SEL_1302] (rows=205 width=253)
+            Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+          <-Reducer 20 [SIMPLE_EDGE] vectorized
+            SHUFFLE [RS_1301]
+              Select Operator [SEL_1300] (rows=205 width=253)
+                Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
+                Group By Operator [GBY_1299] (rows=205 width=253)
+=======
       File Output Operator [FS_1298]
         Limit [LIM_1297] (rows=100 width=253)
           Number of rows:100
@@ -306,6 +318,7 @@ Stage-3
               Select Operator [SEL_1294] (rows=205 width=253)
                 Output:["_col0","_col1","_col2","_col3","_col4","_col5"]
                 Group By Operator [GBY_1293] (rows=205 width=253)
+>>>>>>> HIVE-24241-downstream-merge
                   Output:["_col0","_col1","_col2","_col3","_col5","_col6"],aggregations:["sum(VALUE._col0)","sum(VALUE._col1)"],keys:KEY._col0, KEY._col1, KEY._col2, KEY._col3, KEY._col4
                 <-Union 19 [SIMPLE_EDGE]
                   <-Reducer 18 [CONTAINS]
@@ -347,10 +360,17 @@ Stage-3
                                                 Select Operator [SEL_1222] (rows=1 width=0)
                                                    Please refer to the previous TableScan [TS_137]
                               <-Reducer 31 [CUSTOM_SIMPLE_EDGE] vectorized
+<<<<<<< HEAD
+                                PARTITION_ONLY_SHUFFLE [RS_1298]
+                                  Filter Operator [FIL_1297] (rows=136 width=131)
+                                    predicate:_col3 is not null
+                                    Group By Operator [GBY_1296] (rows=136 width=131)
+=======
                                 PARTITION_ONLY_SHUFFLE [RS_1292]
                                   Filter Operator [FIL_1291] (rows=136 width=131)
                                     predicate:_col3 is not null
                                     Group By Operator [GBY_1290] (rows=136 width=131)
+>>>>>>> HIVE-24241-downstream-merge
                                       Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0, KEY._col1, KEY._col2
                                     <-Reducer 30 [SIMPLE_EDGE]
                                       SHUFFLE [RS_242]
@@ -360,9 +380,15 @@ Stage-3
                                           Select Operator [SEL_239] (rows=23620 width=11)
                                             Output:["_col0","_col1","_col2","_col3"]
                                             Merge Join Operator [MERGEJOIN_1139] (rows=23620 width=11)
+<<<<<<< HEAD
+                                              Conds:RS_236._col1=RS_1281._col0(Inner),Output:["_col2","_col3","_col13","_col14","_col15"]
+                                            <-Map 70 [SIMPLE_EDGE] vectorized
+                                              SHUFFLE [RS_1281]
+=======
                                               Conds:RS_236._col1=RS_1277._col0(Inner),Output:["_col2","_col3","_col13","_col14","_col15"]
                                             <-Map 70 [SIMPLE_EDGE] vectorized
                                               SHUFFLE [RS_1277]
+>>>>>>> HIVE-24241-downstream-merge
                                                 PartitionCols:_col0
                                                 Select Operator [SEL_1275] (rows=462000 width=15)
                                                   Output:["_col0","_col1","_col2","_col3"]
@@ -372,16 +398,28 @@ Stage-3
                                               SHUFFLE [RS_236]
                                                 PartitionCols:_col1
                                                 Merge Join Operator [MERGEJOIN_1138] (rows=23620 width=4)
+<<<<<<< HEAD
+                                                  Conds:RS_233._col6, _col7, _col8=RS_1295._col0, _col1, _col2(Inner),Output:["_col1","_col2","_col3"]
+=======
                                                   Conds:RS_233._col6, _col7, _col8=RS_1289._col0, _col1, _col2(Inner),Output:["_col1","_col2","_col3"]
+>>>>>>> HIVE-24241-downstream-merge
                                                 <-Reducer 28 [SIMPLE_EDGE]
                                                   SHUFFLE [RS_233]
                                                     PartitionCols:_col6, _col7, _col8
                                                     Merge Join Operator [MERGEJOIN_1131] (rows=14951676 width=15)
+<<<<<<< HEAD
+                                                      Conds:RS_230._col1=RS_1286._col0(Inner),Output:["_col1","_col2","_col3","_col6","_col7","_col8"]
+=======
                                                       Conds:RS_230._col1=RS_1280._col0(Inner),Output:["_col1","_col2","_col3","_col6","_col7","_col8"]
+>>>>>>> HIVE-24241-downstream-merge
                                                     <-Map 70 [SIMPLE_EDGE] vectorized
                                                       SHUFFLE [RS_1280]
                                                         PartitionCols:_col0
+<<<<<<< HEAD
+                                                        Select Operator [SEL_1280] (rows=458612 width=15)
+=======
                                                         Select Operator [SEL_1276] (rows=458612 width=15)
+>>>>>>> HIVE-24241-downstream-merge
                                                           Output:["_col0","_col1","_col2","_col3"]
                                                           Filter Operator [FIL_1274] (rows=458612 width=15)
                                                             predicate:(i_category_id is not null and i_brand_id is not null and i_class_id is not null)
@@ -436,6 +474,23 @@ Stage-3
                                                                                 predicate:d_year BETWEEN 1999 AND 2001
                                                                                  Please refer to the previous TableScan [TS_151]
                                                 <-Reducer 36 [SIMPLE_EDGE] vectorized
+<<<<<<< HEAD
+                                                  SHUFFLE [RS_1295]
+                                                    PartitionCols:_col0, _col1, _col2
+                                                    Select Operator [SEL_1294] (rows=1 width=12)
+                                                      Output:["_col0","_col1","_col2"]
+                                                      Filter Operator [FIL_1293] (rows=1 width=20)
+                                                        predicate:(_col3 = 3L)
+                                                        Group By Operator [GBY_1292] (rows=121728 width=19)
+                                                          Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
+                                                        <-Union 35 [SIMPLE_EDGE]
+                                                          <-Reducer 34 [CONTAINS] vectorized
+                                                            Reduce Output Operator [RS_1341]
+                                                              PartitionCols:_col0, _col1, _col2
+                                                              Group By Operator [GBY_1340] (rows=121728 width=19)
+                                                                Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
+                                                                Group By Operator [GBY_1339] (rows=121728 width=19)
+=======
                                                   SHUFFLE [RS_1289]
                                                     PartitionCols:_col0, _col1, _col2
                                                     Select Operator [SEL_1288] (rows=1 width=12)
@@ -451,6 +506,7 @@ Stage-3
                                                               Group By Operator [GBY_1334] (rows=121728 width=19)
                                                                 Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
                                                                 Group By Operator [GBY_1333] (rows=121728 width=19)
+>>>>>>> HIVE-24241-downstream-merge
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                 <-Reducer 33 [SIMPLE_EDGE]
                                                                   SHUFFLE [RS_174]
@@ -458,11 +514,19 @@ Stage-3
                                                                     Group By Operator [GBY_173] (rows=121728 width=19)
                                                                       Output:["_col0","_col1","_col2","_col3"],aggregations:["count()"],keys:_col4, _col5, _col6
                                                                       Merge Join Operator [MERGEJOIN_1133] (rows=14628613 width=11)
+<<<<<<< HEAD
+                                                                        Conds:RS_169._col1=RS_1287._col0(Inner),Output:["_col4","_col5","_col6"]
+=======
                                                                         Conds:RS_169._col1=RS_1281._col0(Inner),Output:["_col4","_col5","_col6"]
+>>>>>>> HIVE-24241-downstream-merge
                                                                       <-Map 70 [SIMPLE_EDGE] vectorized
                                                                         SHUFFLE [RS_1281]
                                                                           PartitionCols:_col0
+<<<<<<< HEAD
+                                                                           Please refer to the previous Select Operator [SEL_1280]
+=======
                                                                            Please refer to the previous Select Operator [SEL_1276]
+>>>>>>> HIVE-24241-downstream-merge
                                                                       <-Reducer 32 [SIMPLE_EDGE]
                                                                         SHUFFLE [RS_169]
                                                                           PartitionCols:_col1
@@ -481,11 +545,19 @@ Stage-3
                                                                                   predicate:(ss_sold_date_sk is not null and ss_sold_date_sk BETWEEN DynamicValue(RS_167_d1_d_date_sk_min) AND DynamicValue(RS_167_d1_d_date_sk_max) and in_bloom_filter(ss_sold_date_sk, DynamicValue(RS_167_d1_d_date_sk_bloom_filter)))
                                                                                    Please refer to the previous TableScan [TS_148]
                                                           <-Reducer 60 [CONTAINS] vectorized
+<<<<<<< HEAD
+                                                            Reduce Output Operator [RS_1350]
+                                                              PartitionCols:_col0, _col1, _col2
+                                                              Group By Operator [GBY_1349] (rows=121728 width=19)
+                                                                Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
+                                                                Group By Operator [GBY_1348] (rows=121728 width=19)
+=======
                                                             Reduce Output Operator [RS_1344]
                                                               PartitionCols:_col0, _col1, _col2
                                                               Group By Operator [GBY_1343] (rows=121728 width=19)
                                                                 Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
                                                                 Group By Operator [GBY_1342] (rows=121728 width=19)
+>>>>>>> HIVE-24241-downstream-merge
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                 <-Reducer 59 [SIMPLE_EDGE]
                                                                   SHUFFLE [RS_194]
@@ -493,16 +565,28 @@ Stage-3
                                                                     Group By Operator [GBY_193] (rows=121728 width=19)
                                                                       Output:["_col0","_col1","_col2","_col3"],aggregations:["count()"],keys:_col4, _col5, _col6
                                                                       Merge Join Operator [MERGEJOIN_1135] (rows=7620440 width=11)
+<<<<<<< HEAD
+                                                                        Conds:RS_189._col1=RS_1288._col0(Inner),Output:["_col4","_col5","_col6"]
+=======
                                                                         Conds:RS_189._col1=RS_1282._col0(Inner),Output:["_col4","_col5","_col6"]
+>>>>>>> HIVE-24241-downstream-merge
                                                                       <-Map 70 [SIMPLE_EDGE] vectorized
                                                                         SHUFFLE [RS_1282]
                                                                           PartitionCols:_col0
+<<<<<<< HEAD
+                                                                           Please refer to the previous Select Operator [SEL_1280]
+=======
                                                                            Please refer to the previous Select Operator [SEL_1276]
+>>>>>>> HIVE-24241-downstream-merge
                                                                       <-Reducer 58 [SIMPLE_EDGE]
                                                                         SHUFFLE [RS_189]
                                                                           PartitionCols:_col1
                                                                           Merge Join Operator [MERGEJOIN_1134] (rows=7676736 width=4)
+<<<<<<< HEAD
+                                                                            Conds:RS_1317._col0=RS_1248._col0(Inner),Output:["_col1"]
+=======
                                                                             Conds:RS_1311._col0=RS_1248._col0(Inner),Output:["_col1"]
+>>>>>>> HIVE-24241-downstream-merge
                                                                           <-Map 49 [SIMPLE_EDGE] vectorized
                                                                             PARTITION_ONLY_SHUFFLE [RS_1248]
                                                                               PartitionCols:_col0
@@ -551,26 +635,46 @@ Stage-3
                                                                     Group By Operator [GBY_214] (rows=121728 width=19)
                                                                       Output:["_col0","_col1","_col2","_col3"],aggregations:["count()"],keys:_col4, _col5, _col6
                                                                       Merge Join Operator [MERGEJOIN_1137] (rows=3828623 width=11)
+<<<<<<< HEAD
+                                                                        Conds:RS_210._col1=RS_1289._col0(Inner),Output:["_col4","_col5","_col6"]
+                                                                      <-Map 70 [SIMPLE_EDGE] vectorized
+                                                                        SHUFFLE [RS_1289]
+                                                                          PartitionCols:_col0
+                                                                           Please refer to the previous Select Operator [SEL_1280]
+=======
                                                                         Conds:RS_210._col1=RS_1283._col0(Inner),Output:["_col4","_col5","_col6"]
                                                                       <-Map 70 [SIMPLE_EDGE] vectorized
                                                                         SHUFFLE [RS_1283]
                                                                           PartitionCols:_col0
                                                                            Please refer to the previous Select Operator [SEL_1276]
+>>>>>>> HIVE-24241-downstream-merge
                                                                       <-Reducer 64 [SIMPLE_EDGE]
                                                                         SHUFFLE [RS_210]
                                                                           PartitionCols:_col1
                                                                           Merge Join Operator [MERGEJOIN_1136] (rows=3856907 width=4)
+<<<<<<< HEAD
+                                                                            Conds:RS_1334._col0=RS_1250._col0(Inner),Output:["_col1"]
+=======
                                                                             Conds:RS_1328._col0=RS_1250._col0(Inner),Output:["_col1"]
+>>>>>>> HIVE-24241-downstream-merge
                                                                           <-Map 49 [SIMPLE_EDGE] vectorized
                                                                             PARTITION_ONLY_SHUFFLE [RS_1250]
                                                                               PartitionCols:_col0
                                                                                Please refer to the previous Select Operator [SEL_1239]
                                                                           <-Map 72 [SIMPLE_EDGE] vectorized
+<<<<<<< HEAD
+                                                                            SHUFFLE [RS_1334]
+                                                                              PartitionCols:_col0
+                                                                              Select Operator [SEL_1332] (rows=143966864 width=7)
+                                                                                Output:["_col0","_col1"]
+                                                                                Filter Operator [FIL_1330] (rows=143966864 width=7)
+=======
                                                                             SHUFFLE [RS_1328]
                                                                               PartitionCols:_col0
                                                                               Select Operator [SEL_1326] (rows=143966864 width=7)
                                                                                 Output:["_col0","_col1"]
                                                                                 Filter Operator [FIL_1324] (rows=143966864 width=7)
+>>>>>>> HIVE-24241-downstream-merge
                                                                                   predicate:(ws_sold_date_sk is not null and ws_sold_date_sk BETWEEN DynamicValue(RS_208_d3_d_date_sk_min) AND DynamicValue(RS_208_d3_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_208_d3_d_date_sk_bloom_filter)))
                                                                                   TableScan [TS_198] (rows=144002668 width=7)
                                                                                     default@web_sales,web_sales,Tbl:COMPLETE,Col:COMPLETE,Output:["ws_sold_date_sk","ws_item_sk","ws_quantity","ws_list_price"]
@@ -620,10 +724,17 @@ Stage-3
                                     PARTITION_ONLY_SHUFFLE [RS_1234]
                                        Please refer to the previous Select Operator [SEL_1232]
                               <-Reducer 42 [CUSTOM_SIMPLE_EDGE] vectorized
+<<<<<<< HEAD
+                                PARTITION_ONLY_SHUFFLE [RS_1321]
+                                  Filter Operator [FIL_1320] (rows=72 width=131)
+                                    predicate:_col3 is not null
+                                    Group By Operator [GBY_1319] (rows=72 width=131)
+=======
                                 PARTITION_ONLY_SHUFFLE [RS_1315]
                                   Filter Operator [FIL_1314] (rows=72 width=131)
                                     predicate:_col3 is not null
                                     Group By Operator [GBY_1313] (rows=72 width=131)
+>>>>>>> HIVE-24241-downstream-merge
                                       Output:["_col0","_col1","_col2","_col3","_col4"],aggregations:["sum(VALUE._col0)","count(VALUE._col1)"],keys:KEY._col0, KEY._col1, KEY._col2
                                     <-Reducer 41 [SIMPLE_EDGE]
                                       SHUFFLE [RS_359]
@@ -633,15 +744,44 @@ Stage-3
                                           Select Operator [SEL_356] (rows=12217 width=10)
                                             Output:["_col0","_col1","_col2","_col3"]
                                             Merge Join Operator [MERGEJOIN_1150] (rows=12217 width=10)
+<<<<<<< HEAD
+                                              Conds:RS_353._col1=RS_1283._col0(Inner),Output:["_col2","_col3","_col13","_col14","_col15"]
+                                            <-Map 70 [SIMPLE_EDGE] vectorized
+                                              SHUFFLE [RS_1283]
+                                                PartitionCols:_col0
+                                                Select Operator [SEL_1277] (rows=462000 width=15)
+                                                  Output:["_col0","_col1","_col2","_col3"]
+                                                   Please refer to the previous TableScan [TS_154]
+=======
                                               Conds:RS_353._col1=RS_1278._col0(Inner),Output:["_col2","_col3","_col13","_col14","_col15"]
                                             <-Map 70 [SIMPLE_EDGE] vectorized
                                               SHUFFLE [RS_1278]
                                                 PartitionCols:_col0
                                                  Please refer to the previous Select Operator [SEL_1275]
+>>>>>>> HIVE-24241-downstream-merge
                                             <-Reducer 40 [SIMPLE_EDGE]
                                               SHUFFLE [RS_353]
                                                 PartitionCols:_col1
                                                 Merge Join Operator [MERGEJOIN_1149] (rows=12217 width=4)
+<<<<<<< HEAD
+                                                  Conds:RS_350._col6, _col7, _col8=RS_1308._col0, _col1, _col2(Inner),Output:["_col1","_col2","_col3"]
+                                                <-Reducer 39 [SIMPLE_EDGE] vectorized
+                                                  SHUFFLE [RS_1308]
+                                                    PartitionCols:_col0, _col1, _col2
+                                                    Select Operator [SEL_1307] (rows=1 width=12)
+                                                      Output:["_col0","_col1","_col2"]
+                                                      Filter Operator [FIL_1306] (rows=1 width=20)
+                                                        predicate:(_col3 = 3L)
+                                                        Group By Operator [GBY_1305] (rows=121728 width=19)
+                                                          Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
+                                                        <-Union 38 [SIMPLE_EDGE]
+                                                          <-Reducer 37 [CONTAINS] vectorized
+                                                            Reduce Output Operator [RS_1344]
+                                                              PartitionCols:_col0, _col1, _col2
+                                                              Group By Operator [GBY_1343] (rows=121728 width=19)
+                                                                Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
+                                                                Group By Operator [GBY_1342] (rows=121728 width=19)
+=======
                                                   Conds:RS_350._col6, _col7, _col8=RS_1302._col0, _col1, _col2(Inner),Output:["_col1","_col2","_col3"]
                                                 <-Reducer 39 [SIMPLE_EDGE] vectorized
                                                   SHUFFLE [RS_1302]
@@ -659,17 +799,26 @@ Stage-3
                                                               Group By Operator [GBY_1337] (rows=121728 width=19)
                                                                 Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
                                                                 Group By Operator [GBY_1336] (rows=121728 width=19)
+>>>>>>> HIVE-24241-downstream-merge
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                 <-Reducer 33 [SIMPLE_EDGE]
                                                                   SHUFFLE [RS_291]
                                                                     PartitionCols:_col0, _col1, _col2
                                                                      Please refer to the previous Group By Operator [GBY_173]
                                                           <-Reducer 61 [CONTAINS] vectorized
+<<<<<<< HEAD
+                                                            Reduce Output Operator [RS_1353]
+                                                              PartitionCols:_col0, _col1, _col2
+                                                              Group By Operator [GBY_1352] (rows=121728 width=19)
+                                                                Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
+                                                                Group By Operator [GBY_1351] (rows=121728 width=19)
+=======
                                                             Reduce Output Operator [RS_1347]
                                                               PartitionCols:_col0, _col1, _col2
                                                               Group By Operator [GBY_1346] (rows=121728 width=19)
                                                                 Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
                                                                 Group By Operator [GBY_1345] (rows=121728 width=19)
+>>>>>>> HIVE-24241-downstream-merge
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                 <-Reducer 59 [SIMPLE_EDGE]
                                                                   SHUFFLE [RS_311]
@@ -680,7 +829,11 @@ Stage-3
                                                               PartitionCols:_col0, _col1, _col2
                                                               Group By Operator [GBY_1355] (rows=121728 width=19)
                                                                 Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
+<<<<<<< HEAD
+                                                                Group By Operator [GBY_1360] (rows=121728 width=19)
+=======
                                                                 Group By Operator [GBY_1354] (rows=121728 width=19)
+>>>>>>> HIVE-24241-downstream-merge
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                 <-Reducer 65 [SIMPLE_EDGE]
                                                                   SHUFFLE [RS_332]
@@ -709,7 +862,11 @@ Stage-3
                                                             PartitionCols:_col0
                                                             Select Operator [SEL_1310] (rows=286549727 width=123)
                                                               Output:["_col0","_col1","_col2","_col3"]
+<<<<<<< HEAD
+                                                              Filter Operator [FIL_1314] (rows=286549727 width=123)
+=======
                                                               Filter Operator [FIL_1308] (rows=286549727 width=123)
+>>>>>>> HIVE-24241-downstream-merge
                                                                 predicate:(cs_sold_date_sk is not null and cs_sold_date_sk BETWEEN DynamicValue(RS_345_date_dim_d_date_sk_min) AND DynamicValue(RS_345_date_dim_d_date_sk_max) and in_bloom_filter(cs_sold_date_sk, DynamicValue(RS_345_date_dim_d_date_sk_bloom_filter)))
                                                                  Please refer to the previous TableScan [TS_177]
                   <-Reducer 25 [CONTAINS]
@@ -749,15 +906,44 @@ Stage-3
                                           Select Operator [SEL_474] (rows=6181 width=9)
                                             Output:["_col0","_col1","_col2","_col3"]
                                             Merge Join Operator [MERGEJOIN_1161] (rows=6181 width=9)
+<<<<<<< HEAD
+                                              Conds:RS_471._col1=RS_1285._col0(Inner),Output:["_col2","_col3","_col13","_col14","_col15"]
+                                            <-Map 70 [SIMPLE_EDGE] vectorized
+                                              SHUFFLE [RS_1285]
+                                                PartitionCols:_col0
+                                                Select Operator [SEL_1279] (rows=462000 width=15)
+                                                  Output:["_col0","_col1","_col2","_col3"]
+                                                   Please refer to the previous TableScan [TS_154]
+=======
                                               Conds:RS_471._col1=RS_1279._col0(Inner),Output:["_col2","_col3","_col13","_col14","_col15"]
                                             <-Map 70 [SIMPLE_EDGE] vectorized
                                               SHUFFLE [RS_1279]
                                                 PartitionCols:_col0
                                                  Please refer to the previous Select Operator [SEL_1275]
+>>>>>>> HIVE-24241-downstream-merge
                                             <-Reducer 46 [SIMPLE_EDGE]
                                               SHUFFLE [RS_471]
                                                 PartitionCols:_col1
                                                 Merge Join Operator [MERGEJOIN_1160] (rows=6181 width=4)
+<<<<<<< HEAD
+                                                  Conds:RS_468._col6, _col7, _col8=RS_1325._col0, _col1, _col2(Inner),Output:["_col1","_col2","_col3"]
+                                                <-Reducer 45 [SIMPLE_EDGE] vectorized
+                                                  SHUFFLE [RS_1325]
+                                                    PartitionCols:_col0, _col1, _col2
+                                                    Select Operator [SEL_1324] (rows=1 width=12)
+                                                      Output:["_col0","_col1","_col2"]
+                                                      Filter Operator [FIL_1323] (rows=1 width=20)
+                                                        predicate:(_col3 = 3L)
+                                                        Group By Operator [GBY_1322] (rows=121728 width=19)
+                                                          Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
+                                                        <-Union 44 [SIMPLE_EDGE]
+                                                          <-Reducer 43 [CONTAINS] vectorized
+                                                            Reduce Output Operator [RS_1347]
+                                                              PartitionCols:_col0, _col1, _col2
+                                                              Group By Operator [GBY_1346] (rows=121728 width=19)
+                                                                Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
+                                                                Group By Operator [GBY_1345] (rows=121728 width=19)
+=======
                                                   Conds:RS_468._col6, _col7, _col8=RS_1319._col0, _col1, _col2(Inner),Output:["_col1","_col2","_col3"]
                                                 <-Reducer 45 [SIMPLE_EDGE] vectorized
                                                   SHUFFLE [RS_1319]
@@ -775,17 +961,26 @@ Stage-3
                                                               Group By Operator [GBY_1340] (rows=121728 width=19)
                                                                 Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
                                                                 Group By Operator [GBY_1339] (rows=121728 width=19)
+>>>>>>> HIVE-24241-downstream-merge
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                 <-Reducer 33 [SIMPLE_EDGE]
                                                                   SHUFFLE [RS_409]
                                                                     PartitionCols:_col0, _col1, _col2
                                                                      Please refer to the previous Group By Operator [GBY_173]
                                                           <-Reducer 62 [CONTAINS] vectorized
+<<<<<<< HEAD
+                                                            Reduce Output Operator [RS_1356]
+                                                              PartitionCols:_col0, _col1, _col2
+                                                              Group By Operator [GBY_1355] (rows=121728 width=19)
+                                                                Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
+                                                                Group By Operator [GBY_1354] (rows=121728 width=19)
+=======
                                                             Reduce Output Operator [RS_1350]
                                                               PartitionCols:_col0, _col1, _col2
                                                               Group By Operator [GBY_1349] (rows=121728 width=19)
                                                                 Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
                                                                 Group By Operator [GBY_1348] (rows=121728 width=19)
+>>>>>>> HIVE-24241-downstream-merge
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                 <-Reducer 59 [SIMPLE_EDGE]
                                                                   SHUFFLE [RS_429]
@@ -796,7 +991,11 @@ Stage-3
                                                               PartitionCols:_col0, _col1, _col2
                                                               Group By Operator [GBY_1358] (rows=121728 width=19)
                                                                 Output:["_col0","_col1","_col2","_col3"],aggregations:["count(_col3)"],keys:_col0, _col1, _col2
+<<<<<<< HEAD
+                                                                Group By Operator [GBY_1363] (rows=121728 width=19)
+=======
                                                                 Group By Operator [GBY_1357] (rows=121728 width=19)
+>>>>>>> HIVE-24241-downstream-merge
                                                                   Output:["_col0","_col1","_col2","_col3"],aggregations:["count(VALUE._col0)"],keys:KEY._col0, KEY._col1, KEY._col2
                                                                 <-Reducer 65 [SIMPLE_EDGE]
                                                                   SHUFFLE [RS_450]
@@ -806,7 +1005,11 @@ Stage-3
                                                   SHUFFLE [RS_468]
                                                     PartitionCols:_col6, _col7, _col8
                                                     Merge Join Operator [MERGEJOIN_1153] (rows=3913176 width=130)
+<<<<<<< HEAD
+                                                      Conds:RS_465._col1=RS_1291._col0(Inner),Output:["_col1","_col2","_col3","_col6","_col7","_col8"]
+=======
                                                       Conds:RS_465._col1=RS_1285._col0(Inner),Output:["_col1","_col2","_col3","_col6","_col7","_col8"]
+>>>>>>> HIVE-24241-downstream-merge
                                                     <-Map 70 [SIMPLE_EDGE] vectorized
                                                       SHUFFLE [RS_1285]
                                                         PartitionCols:_col0
@@ -825,7 +1028,11 @@ Stage-3
                                                             PartitionCols:_col0
                                                             Select Operator [SEL_1327] (rows=143966864 width=123)
                                                               Output:["_col0","_col1","_col2","_col3"]
+<<<<<<< HEAD
+                                                              Filter Operator [FIL_1331] (rows=143966864 width=123)
+=======
                                                               Filter Operator [FIL_1325] (rows=143966864 width=123)
+>>>>>>> HIVE-24241-downstream-merge
                                                                 predicate:(ws_sold_date_sk is not null and ws_sold_date_sk BETWEEN DynamicValue(RS_463_date_dim_d_date_sk_min) AND DynamicValue(RS_463_date_dim_d_date_sk_max) and in_bloom_filter(ws_sold_date_sk, DynamicValue(RS_463_date_dim_d_date_sk_bloom_filter)))
                                                                  Please refer to the previous TableScan [TS_198]
         Stage-2
