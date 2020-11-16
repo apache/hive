@@ -80,8 +80,8 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
     public boolean isCached = false;
 
     @Override
-    public void notifyEvicted(EvictionDispatcher evictionDispatcher) {
-      evictionDispatcher.notifyEvicted(this);
+    public void notifyEvicted(EvictionDispatcher evictionDispatcher, boolean isProactiveEviction) {
+      evictionDispatcher.notifyEvicted(this, isProactiveEviction);
     }
   }
 
