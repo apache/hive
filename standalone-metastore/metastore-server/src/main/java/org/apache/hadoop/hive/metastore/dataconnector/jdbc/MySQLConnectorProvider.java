@@ -61,63 +61,6 @@ public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
       ResultSet rs = stmt.executeQuery(
           "SELECT table_name, column_name, is_nullable, data_type, character_maximum_length FROM INFORMATION_SCHEMA.Columns where table_schema='"
               + scoped_db + "' and table_name='" + tableName + "'");
-      /*
-      List<FieldSchema> cols = new ArrayList<>();
-      // TODO throw exception is RS is empty
-      while (rs.next()) {
-        FieldSchema fs = new FieldSchema();
-        fs.setName(rs.getString("COLUMN_NAME"));
-        fs.setType(getDataType(rs.getString("DATA_TYPE"), rs.getInt("CHARACTER_MAXIMUM_LENGTH")));
-        fs.setComment("inferred column type");
-        cols.add(fs);
-      }
-
-      //Setting the storage descriptor.
-      StorageDescriptor sd = new StorageDescriptor();
-      sd.setCols(cols);
-      // sd.se
-      SerDeInfo serdeInfo = new SerDeInfo();
-      serdeInfo.setName(tableName);
-      serdeInfo.setSerializationLib("org.apache.hive.storage.jdbc.JdbcSerDe");
-      Map<String, String> serdeParams = new HashMap<String, String>();
-      serdeParams.put("serialization.format", "1");
-      serdeInfo.setParameters(serdeParams);
-
-      // StorageHandler
-
-      // serdeInfo.setDeserializerClass();
-      sd.setSerdeInfo(serdeInfo);
-      // sd.getSerdeInfo().setName(tableName);
-      sd.setInputFormat("org.apache.hive.storage.jdbc.JdbcInputFormat"); // TODO
-      sd.setOutputFormat("org.apache.hive.storage.jdbc.JdbcOutputFormat"); // TODO
-      sd.setLocation("/tmp/some_dummy_path"); // TODO
-      sd.setBucketCols(new ArrayList<String>());
-      sd.setSortCols(new ArrayList<Order>());
-
-      //Setting the table properties.
-      Map<String, String> tblProps = new HashMap<>();
-      tblProps.put(Constants.JDBC_DATABASE_TYPE, this.type);
-      tblProps.put(Constants.JDBC_DRIVER, this.driverClassName);
-      tblProps.put(Constants.JDBC_URL, this.jdbcUrl); // "jdbc://localhost:3306/hive"
-      tblProps.put(Constants.JDBC_USERNAME, this.username);
-      tblProps.put(Constants.JDBC_PASSWORD, this.password);
-      tblProps.put(Constants.JDBC_TABLE, tableName);
-      tblProps.put(hive_metastoreConstants.META_TABLE_STORAGE, Constants.JDBC_HIVE_STORAGE_HANDLER_ID);
-      tblProps.put("EXTERNAL", "TRUE");
-      // TODO: Need to include schema, catalog info in the paramters list.
-
-      //Setting the required table information
-      Table table = new Table();
-      table.setTableName(tableName);
-      table.setTableType(TableType.EXTERNAL_TABLE.toString());
-      table.setDbName(scoped_db);
-      table.setSd(sd);
-      table.setParameters(tblProps);
-      // set partition keys to empty
-      table.setPartitionKeys(new ArrayList<FieldSchema>());
-
-      return table;
-       */
       return rs;
     } catch (Exception e) {
       LOG.warn("Exception retrieving remote table " + scoped_db + "." + tableName + " via data connector "
