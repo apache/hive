@@ -436,7 +436,11 @@ public class Compiler {
           context, driverContext.getConf());
       if (explainOutput != null) {
         if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT)) {
-          LOG.info("EXPLAIN output for queryid " + driverContext.getQueryId() + " : " + explainOutput);
+          if (driverContext.getConf().getBoolVar(ConfVars.HIVE_LOG_EXPLAIN_OUTPUT_TO_CONSOLE)) {
+            CONSOLE.printInfo("EXPLAIN output for queryid " + driverContext.getQueryId() + " : " + explainOutput);
+          } else {
+            LOG.info("EXPLAIN output for queryid " + driverContext.getQueryId() + " : " + explainOutput);
+          }
         }
         if (driverContext.getConf().isWebUiQueryInfoCacheEnabled() &&
             driverContext.getConf().getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_EXPLAIN_OUTPUT)) {

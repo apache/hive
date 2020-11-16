@@ -3451,6 +3451,11 @@ public class HiveConf extends Configuration {
     HIVE_LOG_EXPLAIN_OUTPUT("hive.log.explain.output", false,
         "Whether to log explain output for every query.\n"
             + "When enabled, will log EXPLAIN EXTENDED output for the query at INFO log4j log level."),
+    HIVE_LOG_EXPLAIN_OUTPUT_TO_CONSOLE("hive.log.explain.output.to.console", false,
+        "Weather to make output from hive.log.explain.output log " +
+            "to console instead of normal logger"),
+    HIVE_LOG_EXPLAIN_OUTPUT_INCLUDE_EXTENDED("hive.log.explain.output.include.extended", true,
+        "Weather to include details in explain printed from hive.log.explain.output"),
     HIVE_EXPLAIN_USER("hive.explain.user", true,
         "Whether to show explain result at user level.\n" +
         "When enabled, will log EXPLAIN output for the query at user level. Tez only."),
