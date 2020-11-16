@@ -912,10 +912,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   public void onCommitCompaction(CommitCompactionEvent commitCompactionEvent, Connection dbConn, SQLGenerator sqlGenerator)
       throws MetaException {
 
-    CommitCompactionMessage msg = MessageBuilder.getInstance()
-        .buildCommitCompactionMessage(commitCompactionEvent.getTxnId(), commitCompactionEvent.getCompactionId(),
-            commitCompactionEvent.getType(), commitCompactionEvent.getDbname(), commitCompactionEvent.getTableName(),
-            commitCompactionEvent.getPartName());
+    CommitCompactionMessage msg = MessageBuilder.getInstance().buildCommitCompactionMessage(commitCompactionEvent);
 
     NotificationEvent event = new NotificationEvent(0, now(), EventType.COMMIT_COMPACTION.toString(),
         msgEncoder.getSerializer().serialize(msg));
