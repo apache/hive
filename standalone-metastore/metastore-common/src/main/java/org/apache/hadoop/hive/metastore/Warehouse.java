@@ -193,7 +193,7 @@ public class Warehouse {
    */
   public Path determineDatabasePath(Catalog cat, Database db) throws MetaException {
     if (db.getType() == DatabaseType.REMOTE) {
-      return getRemoteDatabasePath();
+      return getDefaultDatabasePath(db.getName(), true);
     }
     if (db.isSetLocationUri()) {
       return getDnsPath(new Path(db.getLocationUri()));
@@ -298,10 +298,6 @@ public class Warehouse {
       }
       return new Path(getWhRoot(), dbName.toLowerCase() + DATABASE_WAREHOUSE_SUFFIX);
     }
-  }
-
-  public Path getRemoteDatabasePath() throws MetaException {
-    return new Path(getWhRootExternal(), "dummy_path_for_remote_database.db");
   }
 
   private boolean hasExternalWarehouseRoot() {

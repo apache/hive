@@ -89,9 +89,9 @@ public abstract class AbstractDataConnectorProvider implements IDataConnectorPro
     serdeInfo.setParameters(serdeParams);
 
     sd.setSerdeInfo(serdeInfo);
-    sd.setInputFormat("org.apache.hive.storage.jdbc.JdbcInputFormat"); // TODO
-    sd.setOutputFormat("org.apache.hive.storage.jdbc.JdbcOutputFormat"); // TODO
-    sd.setLocation("/tmp/some_dummy_path"); // TODO
+    sd.setInputFormat(getInputClass());
+    sd.setOutputFormat(getOutputClass());
+    sd.setLocation(getTableLocation(tableName));
     sd.setBucketCols(new ArrayList<String>());
     sd.setSortCols(new ArrayList<Order>());
 
@@ -113,4 +113,6 @@ public abstract class AbstractDataConnectorProvider implements IDataConnectorPro
   abstract protected String getInputClass();
 
   abstract protected String getOutputClass();
+
+  abstract protected String getTableLocation(String tblName);
 }

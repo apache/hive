@@ -1,5 +1,6 @@
 package org.apache.hadoop.hive.metastore.dataconnector.jdbc;
 
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -22,6 +23,7 @@ import java.util.Map;
 
 public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnectorProvider {
   private static Logger LOG = LoggerFactory.getLogger(AbstractJDBCConnectorProvider.class);
+  protected static Warehouse warehouse = null;
 
   // duplicate constants from Constants.java to avoid a dependency on hive-common
   public static final String JDBC_HIVE_STORAGE_HANDLER_ID =
@@ -72,6 +74,10 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
         LOG.warn("Could not read key value from keystore");
       }
     }
+
+    try {
+      warehouse = new Warehouse(MetastoreConf.newMetastoreConf());
+    } catch (MetaException e) { /* ignore */ }
   }
 
   @Override public void open() throws ConnectException {
@@ -165,48 +171,17 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     try {
       // rs = fetchTableMetadata(tableName);
       rs = fetchTableViaDBMetaData(tableName);
-      /*
-      Statement stmt = getConnection().createStatement();
-      rs = stmt.executeQuery(
-          "SELECT table_name, column_name, is_nullable, data_type, character_maximum_length FROM INFORMATION_SCHEMA.Columns where table_schema='"
-              + scoped_db + "' and table_name='" + tableName + "'");
-       */
       List<FieldSchema> cols = new ArrayList<>();
       // TODO throw exception is RS is empty
       while (rs.next()) {
         FieldSchema fs = new FieldSchema();
         fs.setName(rs.getString("COLUMN_NAME"));
-        // fs.setType(getDataType(rs.getString("DATA_TYPE"), rs.getInt("CHARACTER_MAXIMUM_LENGTH")));
         fs.setType(getDataType(rs.getString("TYPE_NAME"), rs.getInt("COLUMN_SIZE")));
         fs.setComment("inferred column type");
         cols.add(fs);
       }
 
       table = buildTableFromColsList(tableName, cols);
-      /*
-      //Setting the storage descriptor.
-      StorageDescriptor sd = new StorageDescriptor();
-      sd.setCols(cols);
-      // sd.se
-      SerDeInfo serdeInfo = new SerDeInfo();
-      serdeInfo.setName(tableName);
-      serdeInfo.setSerializationLib("org.apache.hive.storage.jdbc.JdbcSerDe");
-      Map<String, String> serdeParams = new HashMap<String, String>();
-      serdeParams.put("serialization.format", "1");
-      serdeInfo.setParameters(serdeParams);
-
-      // StorageHandler
-
-      // serdeInfo.setDeserializerClass();
-      sd.setSerdeInfo(serdeInfo);
-      // sd.getSerdeInfo().setName(tableName);
-      sd.setInputFormat("org.apache.hive.storage.jdbc.JdbcInputFormat"); // TODO
-      sd.setOutputFormat("org.apache.hive.storage.jdbc.JdbcOutputFormat"); // TODO
-      sd.setLocation("/tmp/some_dummy_path"); // TODO
-      sd.setBucketCols(new ArrayList<String>());
-      sd.setSortCols(new ArrayList<Order>());
-       */
-
       //Setting the table properties.
       table.getParameters().put(JDBC_DATABASE_TYPE, this.type);
       table.getParameters().put(JDBC_DRIVER, this.driverClassName);
@@ -220,19 +195,6 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
           table.getParameters().put(param, connectorParams.get(param));
         }
       }
-      // TODO: Need to include schema, catalog info in the parameters list.
-
-      //Setting the required table information
-      // Table table = new Table();
-      // table.setTableName(tableName);
-      // table.setTableType(TableType.EXTERNAL_TABLE.toString());
-      // table.setDbName(scoped_db);
-      // table.setSd(sd);
-      // set partition keys to empty
-      // table.setPartitionKeys(new
-          // ArrayList<FieldSchema>());
-
-      // table.setParameters(tblProps);
       return table;
     } catch (Exception e) {
       LOG.warn("Exception retrieving remote table " + scoped_db + "." + tableName + " via data connector "
@@ -334,5 +296,15 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
 
   @Override protected String getOutputClass() {
     return JDBC_INPUTFORMAT_CLASS;
+  }
+  @Override protected String getTableLocation(String tableName) {
+    if (warehouse != null) {
+      try {
+        return warehouse.getDefaultTablePath(scoped_db, tableName, true).toString();
+      } catch (MetaException e) {
+        LOG.info("Error determining default table path, cause:" + e.getMessage());
+      }
+    }
+    return "some_dummy_path";
   }
 }
