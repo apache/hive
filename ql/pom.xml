@@ -878,6 +878,8 @@
                   <include>org.apache.orc:orc-core</include>
                   <include>org.apache.orc:orc-tools</include>
                   <include>joda-time:joda-time</include>
+                  <include>org.apache.calcite:*</include>
+                  <include>org.apache.calcite.avatica:avatica</include>
                 </includes>
               </artifactSet>
               <relocations>
