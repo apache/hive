@@ -12311,8 +12311,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   protected Table getTableObjectByName(String tableName, boolean throwException) throws HiveException {
     if (!tabNameToTabObject.containsKey(tableName)) {
       Table table = db.getTable(tableName, throwException);
+
       if (table != null) {
         tabNameToTabObject.put(tableName, table);
+        table.fetchConstraints();
       }
       return table;
     } else {
