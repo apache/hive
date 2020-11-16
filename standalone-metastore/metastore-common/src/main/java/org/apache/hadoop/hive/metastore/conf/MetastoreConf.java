@@ -171,6 +171,7 @@ public class MetastoreConf {
       ConfVars.PWD,
       ConfVars.CONNECT_URL_HOOK,
       ConfVars.CONNECT_URL_KEY,
+      ConfVars.CUSTOM_SERVER_CLASS,
       ConfVars.SERVER_MIN_THREADS,
       ConfVars.SERVER_MAX_THREADS,
       ConfVars.TCP_KEEP_ALIVE,
@@ -418,6 +419,7 @@ public class MetastoreConf {
     COMPACTOR_RUN_AS_USER("metastore.compactor.run.as.user", "hive.compactor.run.as.user", "",
         "Specify the user to run compactor Initiator and Worker as. If empty string, defaults to table/partition " +
         "directory owner."),
+    CUSTOM_SERVER_CLASS("metastore.custom.server.class", "", "Driver class name for a custom Hive Metastore server."),
     METASTORE_HOUSEKEEPING_LEADER_HOSTNAME("metastore.housekeeping.leader.hostname",
             "hive.metastore.housekeeping.leader.hostname", "",
 "If there are multiple Thrift metastore services running, the hostname of Thrift metastore " +

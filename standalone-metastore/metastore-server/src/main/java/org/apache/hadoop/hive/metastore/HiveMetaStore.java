@@ -250,6 +250,15 @@ public class HiveMetaStore {
     }
     startupShutdownMessage(HiveMetaStore.class, args, LOG);
     List<MetastoreLauncher> serverLaunchers = new ArrayList<>();
+
+    String customServerClass = hiveconf.getProperty(ConfVars.CUSTOM_SERVER_CLASS));
+    if (!customServerClass.isEmpty()) {
+      Class<?> customServerLauncher = ClassLoader.getSystemClassLoader().loadClass(customServerClass);
+      LOG.info("Loaded class {} as server launcher", customServerClass.getCanonicalName());
+      MetastoreLauncher launcher = (MetastoreLauncher) customServerClass.newInstance();
+      serverLaunchers.add(launcher);
+    }
+
     serverLaunchers.add(new ThriftMetastoreLauncher());
     ExecutorService executorService = Executors.newFixedThreadPool(serverLaunchers.size());
     for (MetastoreLauncher serverLauncher : serverLaunchers) {
