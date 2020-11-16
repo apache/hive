@@ -81,11 +81,6 @@ public class TestOrcMetadataCache {
       return 0;
     }
 
-    @Override
-    public long evictEntity(Predicate<LlapCacheableBuffer> predicate) {
-      return 0;
-    }
-
     public void verifyEquals(int i) {
       assertEquals(i, lockCount);
       assertEquals(i, unlockCount);
