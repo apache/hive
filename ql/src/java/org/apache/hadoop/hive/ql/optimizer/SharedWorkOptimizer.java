@@ -174,7 +174,7 @@ public class SharedWorkOptimizer extends Transform {
       List<TableScanOperator> scans = tableNameToOps.get(tableName);
 
       // Execute shared work optimization
-      //      new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
+      new SchemaAwareSharedWorkOptimizer().sharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
       schemaAwareSharedWorkOptimizer.sharedWorkOptimization(pctx, optimizerCache, scans, Mode.SubtreeMerge);
 
       if (LOG.isDebugEnabled()) {
