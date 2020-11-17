@@ -51,6 +51,7 @@ import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
@@ -242,6 +243,32 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public List<String> getAllDatabases(String catName) throws MetaException {
     return objectStore.getAllDatabases(catName);
+  }
+
+  @Override
+  public List<String> getAllDataConnectors() throws MetaException {
+    return objectStore.getAllDataConnectors();
+  }
+
+  @Override
+  public DataConnector getDataConnector(String connectorName) throws NoSuchObjectException {
+    return objectStore.getDataConnector(connectorName);
+  }
+
+  @Override
+  public boolean alterDataConnector(String connectorName, DataConnector connector)
+      throws MetaException, NoSuchObjectException {
+    return objectStore.alterDataConnector(connectorName, connector);
+  }
+
+  @Override
+  public boolean dropDataConnector(String connector) throws MetaException, NoSuchObjectException {
+    return objectStore.dropDataConnector(connector);
+  }
+
+  @Override
+  public void createDataConnector(DataConnector connector) throws MetaException, InvalidObjectException {
+    objectStore.createDataConnector(connector);
   }
 
   @Override
