@@ -105,7 +105,7 @@ public final class ParseUtils {
     }
     ASTNode tree = parseResult.getTree();
     tree = findRootNonNullToken(tree);
-    handleSetColRefs(tree, ctx);
+    handleSetColRefs(tree);
     return tree;
   }
 
@@ -355,13 +355,13 @@ public final class ParseUtils {
     }
 
 
-    private static void handleSetColRefs(ASTNode tree, Context ctx) {
+    private static void handleSetColRefs(ASTNode tree) {
       CalcitePlanner.ASTSearcher astSearcher = new CalcitePlanner.ASTSearcher();
       while (true) {
         astSearcher.reset();
         ASTNode setCols = astSearcher.depthFirstSearch(tree, HiveParser.TOK_SETCOLREF);
         if (setCols == null) break;
-        processSetColsNode(setCols, astSearcher, ctx);
+        processSetColsNode(setCols, astSearcher);
       }
     }
 
@@ -374,7 +374,7 @@ public final class ParseUtils {
      * @param setCols TOK_SETCOLREF ASTNode.
      * @param searcher AST searcher to reuse.
      */
-    private static void processSetColsNode(ASTNode setCols, ASTSearcher searcher, Context ctx) {
+    private static void processSetColsNode(ASTNode setCols, ASTSearcher searcher) {
       searcher.reset();
       CommonTree rootNode = setCols;
       while (rootNode != null && rootNode.getType() != HiveParser.TOK_INSERT) {
@@ -460,8 +460,8 @@ public final class ParseUtils {
         switch (child.getType()) {
         case HiveParser.TOK_SETCOLREF:
           // We have a nested setcolref. Process that and start from scratch TODO: use stack?
-          processSetColsNode((ASTNode)child, searcher, ctx);
-          processSetColsNode(setCols, searcher, ctx);
+          processSetColsNode((ASTNode)child, searcher);
+          processSetColsNode(setCols, searcher);
           return;
         case HiveParser.TOK_ALLCOLREF:
           // We should find an alias of this insert and do (alias).*. This however won't fix e.g.
@@ -472,13 +472,13 @@ public final class ParseUtils {
         case HiveParser.TOK_TABLE_OR_COL:
           Tree idChild = child.getChild(0);
           assert idChild.getType() == HiveParser.Identifier : idChild;
-          if (!createChildColumnRef(idChild, alias, newChildren, aliases, ctx)) {
+          if (!createChildColumnRef(idChild, alias, newChildren, aliases)) {
             setCols.token.setType(HiveParser.TOK_ALLCOLREF);
             return;
           }
           break;
         case HiveParser.Identifier:
-          if (!createChildColumnRef(child, alias, newChildren, aliases, ctx)) {
+          if (!createChildColumnRef(child, alias, newChildren, aliases)) {
             setCols.token.setType(HiveParser.TOK_ALLCOLREF);
             return;
           }
@@ -486,7 +486,7 @@ public final class ParseUtils {
         case HiveParser.DOT: {
           Tree colChild = child.getChild(child.getChildCount() - 1);
           assert colChild.getType() == HiveParser.Identifier : colChild;
-          if (!createChildColumnRef(colChild, alias, newChildren, aliases, ctx)) {
+          if (!createChildColumnRef(colChild, alias, newChildren, aliases)) {
             setCols.token.setType(HiveParser.TOK_ALLCOLREF);
             return;
           }
@@ -514,12 +514,8 @@ public final class ParseUtils {
     }
 
     private static boolean createChildColumnRef(Tree child, String alias,
-        List<ASTNode> newChildren, HashSet<String> aliases, Context ctx) {
+        List<ASTNode> newChildren, HashSet<String> aliases) {
       String colAlias = child.getText();
-      if (SemanticAnalyzer.isRegex(colAlias, (HiveConf)ctx.getConf())) {
-        LOG.debug("Skip creating child column reference because of regexp used as alias: " + colAlias);
-        return false;
-      }
       if (!aliases.add(colAlias)) {
         // TODO: if a side of the union has 2 columns with the same name, noone on the higher
         //       level can refer to them. We could change the alias in the original node.

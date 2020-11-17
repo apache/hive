@@ -82,6 +82,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.ResultFileFormat;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -4452,7 +4453,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Returns whether the pattern is a regex expression (instead of a normal
    * string). Normal string is a string with all alphabets/digits and "_".
    */
-  static boolean isRegex(String pattern, HiveConf conf) {
+  boolean isRegex(String pattern, HiveConf conf) {
     String qIdSupport = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT);
     if (!"none".equals(qIdSupport)) {
       return false;
