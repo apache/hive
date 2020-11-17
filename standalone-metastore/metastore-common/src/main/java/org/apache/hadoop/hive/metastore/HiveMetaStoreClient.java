@@ -4669,9 +4669,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    */
   public static class GetPartitionProjectionsSpecBuilder {
 
-    java.util.List<java.lang.String> partitionList = null;
-    java.lang.String includePartitionPattern = null;
-    java.lang.String excludePartitionPattern = null;
+    private List<String> partitionList = null;
+    private String includePartitionPattern = null;
+    private String excludePartitionPattern = null;
 
     public void setPartitionList(List<String> partitionList) {
       this.partitionList = partitionList;
@@ -4695,9 +4695,9 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
    */
   public static class GetTableProjectionsSpecBuilder {
 
-    java.util.List<java.lang.String> columnList = null;
-    java.lang.String includeColumnPattern = null;
-    java.lang.String excludeColumnPattern = null;
+    private List<String> columnList = null;
+    private String includeColumnPattern = null;
+    private String excludeColumnPattern = null;
 
     public void setColumnList(List<String> columnList) {
       this.columnList = columnList;

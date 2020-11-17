@@ -1980,7 +1980,7 @@ struct GetPartitionsRequest {
    5: optional string user,
    6: optional list<string> groupNames,
    7: GetProjectionsSpec projectionSpec
-   8: GetPartitionsFilterSpec filterSpec, // TODO not yet implemented. Must be present but ignored
+   8: GetPartitionsFilterSpec filterSpec,
    9: optional list<string> processorCapabilities,
    10: optional string processorIdentifier,
    11: optional string validWriteIdList
