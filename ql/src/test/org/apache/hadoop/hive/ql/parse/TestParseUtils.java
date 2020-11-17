@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.TxnType;
+import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 
 import org.junit.Assert;
@@ -29,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -97,15 +99,15 @@ public class TestParseUtils {
   }
 
   @Test
-  public void testTxnTypeWithEnabledReadOnlyFeature() throws ParseException {
+  public void testTxnTypeWithEnabledReadOnlyFeature() throws Exception {
     enableReadOnlyTxnFeature(true);
-    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query)), txnType);
+    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query,new Context(conf))), txnType);
   }
 
   @Test
-  public void testTxnTypeWithDisabledReadOnlyFeature() throws ParseException {
+  public void testTxnTypeWithDisabledReadOnlyFeature() throws Exception {
     enableReadOnlyTxnFeature(false);
-    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query)),
+    Assert.assertEquals(AcidUtils.getTxnType(conf, ParseUtils.parse(query,new Context(conf))),
         txnType == TxnType.READ_ONLY ? TxnType.DEFAULT : txnType);
   }
 

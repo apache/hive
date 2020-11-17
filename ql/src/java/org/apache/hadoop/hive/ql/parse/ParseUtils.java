@@ -79,9 +79,6 @@ import org.slf4j.LoggerFactory;
 public final class ParseUtils {
   /** Parses the Hive query. */
   private static final Logger LOG = LoggerFactory.getLogger(ParseUtils.class);
-  public static ASTNode parse(String command) throws ParseException {
-    return parse(command, null);
-  }
 
   /** Parses the Hive query. */
   public static ASTNode parse(String command, Context ctx) throws ParseException {
