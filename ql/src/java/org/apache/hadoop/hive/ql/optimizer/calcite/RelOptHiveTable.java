@@ -454,7 +454,7 @@ public class RelOptHiveTable implements RelOptTable {
         // predicates
         try {
           RulePartitionPruner pruner = pruneRuleHelper.createRulePartitionPruner(this);
-          ppList = pruner.getPartitionPruneList(hiveTblMetadata, hiveConf, partitionCache);
+          ppList = pruner.getPartitionPruneList(hiveConf, partitionCache);
         } catch (HiveException e) {
           throw new RuntimeException(e);
         }
@@ -511,7 +511,7 @@ public class RelOptHiveTable implements RelOptTable {
       // This allows the VolcanoPlanner to explore plans where HivePartitionPruneRule
       // is applied first and then HiveFilterPartitionPruneRule is applied (which
       // should hopefully reduce the cost of the plan since filtering is now applied)
-      partitionList = pruner.getPartitionPruneList(hiveTblMetadata, hiveConf, partitionCache);
+      partitionList = pruner.getPartitionPruneList(hiveConf, partitionCache);
     } catch (HiveException he) {
       throw new RuntimeException(he);
     }
@@ -550,7 +550,7 @@ public class RelOptHiveTable implements RelOptTable {
         // We could be here either because its an unpartitioned table or because
         // there are no pruning predicates on a partitioned table.
         RulePartitionPruner pruner = pruneRuleHelper.createRulePartitionPruner(this);
-        ppList = pruner.getPartitionPruneList(hiveTblMetadata, hiveConf, partitionCache);
+        ppList = pruner.getPartitionPruneList(hiveConf, partitionCache);
       } catch (HiveException e) {
         throw new RuntimeException(e);
       }

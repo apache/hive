@@ -75,6 +75,10 @@ public class ImpalaPrunedPartitionList extends PrunedPartitionList {
     return Collections.unmodifiableList(impalaBasicPartitions);
   }
 
+  public org.apache.hadoop.hive.metastore.api.Table getMetaStoreTable() throws HiveException {
+    return getSourceTable().getTTable();
+  }
+
   public ImpalaBasicHdfsTable getTable() throws HiveException {
     return table;
   }

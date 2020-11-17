@@ -81,6 +81,14 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
 
   private final ValidWriteIdList validWriteIdList;
 
+  public ImpalaBasicHdfsTable(org.apache.hadoop.hive.metastore.api.Table msTbl, Database msDb,
+      ValidWriteIdList validWriteIdList) throws HiveException {
+    super(msTbl, new Db(msTbl.getDbName(), msDb), msTbl.getTableName(), msTbl.getOwner());
+    this.nullPartitionKeyValue = null;
+    this.validWriteIdList = validWriteIdList;
+    this.basicPartitionMap.put(ImpalaHdfsPartition.DUMMY_PARTITION, null);
+  }
+
   public ImpalaBasicHdfsTable(HiveConf conf, IMetaStoreClient client,
       org.apache.hadoop.hive.metastore.api.Table msTbl, Database msDb,
       ValidWriteIdList validWriteIdList) throws HiveException {

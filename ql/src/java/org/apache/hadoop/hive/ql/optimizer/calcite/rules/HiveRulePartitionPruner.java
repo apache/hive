@@ -62,22 +62,18 @@ public class HiveRulePartitionPruner implements RulePartitionPruner {
     this.pruneNode = pairPredicates == null ? null : pairPredicates.left;
   }
 
-  public PrunedPartitionList prune(HiveConf conf, Map<String, PrunedPartitionList> partitionCache)
-      throws HiveException {
-    if (pruneNode == null || InputFinder.bits(pruneNode).length() == 0) {
-      return getNonPruneList(conf, partitionCache);
+  public PrunedPartitionList getPartitionPruneList(HiveConf conf,
+      Map<String, PrunedPartitionList> partitionCache) throws HiveException {
+    if (pruneNode == null || !table.getHiveTableMD().isPartitioned() ||
+        InputFinder.bits(pruneNode).length() == 0) {
+      return PartitionPruner.prune(table.getHiveTableMD(), null, conf, table.getName(),
+        partitionCache);
     }
 
     ExprNodeDesc pruneExpr = pruneNode.accept(new ExprNodeConverter(table.getName(),
         table.getRowType(),  scan.getPartOrVirtualCols(), table.getTypeFactory()));
 
     return PartitionPruner.prune(table.getHiveTableMD(), pruneExpr, conf, table.getName(),
-        partitionCache);
-  }
-
-  public PrunedPartitionList getNonPruneList(HiveConf conf,
-      Map<String, PrunedPartitionList> partitionCache) throws HiveException {
-    return PartitionPruner.prune(table.getHiveTableMD(), null, conf, table.getName(),
         partitionCache);
   }
 }

@@ -30,26 +30,6 @@ import java.util.Map;
  * Used to retrieve an engine specific pruned PartitionList.
  */
 public interface RulePartitionPruner {
-
-  /**
-   * Return the PrunedPartitionList after pruning the partitions.
-   */
-  public PrunedPartitionList prune(HiveConf conf, Map<String, PrunedPartitionList> partitionCache)
-      throws HiveException;
-
-  /**
-   * Return the PrunedPartitionList. This method gets called when there is no pruning
-   * to be done, but there still may be a PrunedPartitionList that has to be returned
-   * in cases like if a dummy partition is created when there are no partitions or if
-   * the caller wants all the partitions to be returned.
-   */
-  public PrunedPartitionList getNonPruneList(HiveConf conf,
+  public PrunedPartitionList getPartitionPruneList(HiveConf conf,
       Map<String, PrunedPartitionList> partitionCache) throws HiveException;
-
-  public default PrunedPartitionList getPartitionPruneList(Table table, HiveConf conf,
-      Map<String, PrunedPartitionList> partitionCache) throws HiveException {
-    return table.isPartitioned()
-        ? prune(conf, partitionCache)
-        : getNonPruneList(conf, partitionCache);
-  }
 }

@@ -60,7 +60,10 @@ public class ImpalaPartitionPruneRuleHelper implements PartitionPruneRuleHelper 
         PartitionPruneRuleHelper defaultRuleHelper = new HivePartitionPruneRuleHelper();
         return defaultRuleHelper.createRulePartitionPruner(scan, table, filter);
       }
-      return new ImpalaRulePartitionPruner(table, filter, queryContext, rexBuilder);
+
+      return table.getHiveTableMD().isPartitioned()
+          ? new ImpalaRulePartitionPruner(table, filter, queryContext, rexBuilder)
+          : new ImpalaRuleNonPartitionedPruner(table, queryContext);
     } catch (ImpalaException|MetaException e) {
       throw new HiveException(e);
     }

@@ -39,21 +39,28 @@ import java.util.Set;
  */
 public class ImpalaBasicTableCreator {
 
-  public static ImpalaBasicHdfsTable createAndCache(RelOptHiveTable table,
+  public static ImpalaBasicHdfsTable createNonPartitionedTable(RelOptHiveTable table,
+      ImpalaQueryContext context) throws HiveException {
+    Table msTbl = table.getHiveTableMD().getTTable();
+    return new ImpalaBasicHdfsTable(msTbl, context.getDb(table), getValidWriteIdList(msTbl, context));
+  }
+
+  public static ImpalaBasicHdfsTable createPartitionedTable(RelOptHiveTable table,
       ImpalaQueryContext context, IMetaStoreClient client) throws HiveException {
     Table msTbl = table.getHiveTableMD().getTTable();
     // check if in cache
     ImpalaBasicHdfsTable basicTable = context.getBasicTable(msTbl);
-    if (basicTable != null) {
-      return basicTable;
-    }
     Database msDb = context.getDb(table);
     String tableName = msTbl.getDbName() + "." + msTbl.getTableName();
     HiveConf conf = context.getConf();
-    ValidWriteIdList validWriteIdList =
-        AcidUtils.isTransactionalTable(msTbl) ? context.getValidWriteIdList(conf, tableName) : null;
-    basicTable = new ImpalaBasicHdfsTable(conf, client, msTbl, msDb, validWriteIdList);
-    context.cacheBasicTable(msTbl, basicTable);
-    return basicTable;
+    ValidWriteIdList validWriteIdList = getValidWriteIdList(msTbl, context);
+    return new ImpalaBasicHdfsTable(conf, client, msTbl, msDb, validWriteIdList);
+  }
+
+  private static ValidWriteIdList getValidWriteIdList(Table msTbl,
+      ImpalaQueryContext context) throws HiveException {
+    HiveConf conf = context.getConf();
+    String tableName = msTbl.getDbName() + "." + msTbl.getTableName();
+    return AcidUtils.isTransactionalTable(msTbl) ? context.getValidWriteIdList(conf, tableName) : null;
   }
 }
