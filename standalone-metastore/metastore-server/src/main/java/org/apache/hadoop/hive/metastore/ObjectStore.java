@@ -1892,6 +1892,12 @@ public class ObjectStore implements RawStore, Configurable {
     return tables;
   }
 
+  @Override
+  public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names,
+          GetProjectionsSpec projectionsSpec) throws MetaException, UnknownDBException {
+    return getTableObjectsByName(catName, db, tbl_names, null);
+  }
+
   /** Makes shallow copy of a list to avoid DataNucleus mucking with our objects. */
   private <T> List<T> convertList(List<T> dnList) {
     return (dnList == null) ? null : Lists.newArrayList(dnList);

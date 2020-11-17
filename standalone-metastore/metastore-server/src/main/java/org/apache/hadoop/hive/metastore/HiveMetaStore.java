@@ -3571,19 +3571,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public List<Table> get_table_objects_by_name(final String dbName, final List<String> tableNames)
         throws MetaException, InvalidOperationException, UnknownDBException {
       String[] parsedDbName = parseDbName(dbName, conf);
-      return getTableObjectsInternal(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableNames, null);
+      return getTableObjectsInternal(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], tableNames, null, null);
     }
 
     @Override
     public GetTablesResult get_table_objects_by_name_req(GetTablesRequest req) throws TException {
       String catName = req.isSetCatName() ? req.getCatName() : getDefaultCatalog(conf);
       return new GetTablesResult(getTableObjectsInternal(catName, req.getDbName(),
-          req.getTblNames(), req.getCapabilities()));
+          req.getTblNames(), req.getCapabilities(), req.getProjectionSpec()));
     }
 
     private List<Table> getTableObjectsInternal(String catName, String dbName,
                                                 List<String> tableNames,
-                                                ClientCapabilities capabilities)
+                                                ClientCapabilities capabilities,
+                                                GetProjectionsSpec projectionsSpec)
             throws MetaException, InvalidOperationException, UnknownDBException {
       if (isInTest) {
         assertClientHasCapability(capabilities, ClientCapability.TEST_CAPABILITY,

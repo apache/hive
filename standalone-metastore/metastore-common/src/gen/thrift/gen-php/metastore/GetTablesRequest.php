@@ -60,6 +60,12 @@ class GetTablesRequest
             'isRequired' => false,
             'type' => TType::STRING,
         ),
+        7 => array(
+            'var' => 'projectionSpec',
+            'isRequired' => false,
+            'type' => TType::STRUCT,
+            'class' => '\metastore\GetProjectionsSpec',
+        ),
     );
 
     /**
@@ -86,6 +92,10 @@ class GetTablesRequest
      * @var string
      */
     public $processorIdentifier = null;
+    /**
+     * @var \metastore\GetProjectionsSpec
+     */
+    public $projectionSpec = null;
 
     public function __construct($vals = null)
     {
@@ -107,6 +117,9 @@ class GetTablesRequest
             }
             if (isset($vals['processorIdentifier'])) {
                 $this->processorIdentifier = $vals['processorIdentifier'];
+            }
+            if (isset($vals['projectionSpec'])) {
+                $this->projectionSpec = $vals['projectionSpec'];
             }
         }
     }
@@ -191,6 +204,14 @@ class GetTablesRequest
                         $xfer += $input->skip($ftype);
                     }
                     break;
+                case 7:
+                    if ($ftype == TType::STRUCT) {
+                        $this->projectionSpec = new \metastore\GetProjectionsSpec();
+                        $xfer += $this->projectionSpec->read($input);
+                    } else {
+                        $xfer += $input->skip($ftype);
+                    }
+                    break;
                 default:
                     $xfer += $input->skip($ftype);
                     break;
@@ -250,6 +271,14 @@ class GetTablesRequest
         if ($this->processorIdentifier !== null) {
             $xfer += $output->writeFieldBegin('processorIdentifier', TType::STRING, 6);
             $xfer += $output->writeString($this->processorIdentifier);
+            $xfer += $output->writeFieldEnd();
+        }
+        if ($this->projectionSpec !== null) {
+            if (!is_object($this->projectionSpec)) {
+                throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+            }
+            $xfer += $output->writeFieldBegin('projectionSpec', TType::STRUCT, 7);
+            $xfer += $this->projectionSpec->write($output);
             $xfer += $output->writeFieldEnd();
         }
         $xfer += $output->writeFieldStop();
