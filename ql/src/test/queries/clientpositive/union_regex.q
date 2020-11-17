@@ -1,4 +1,6 @@
-CREATE TABLE t (a1 INT, a2 INT);
+CREATE TABLE t (a1 INT, a2 INT, a1a int, a2a int);
+
+insert into t values (1,2,10,20);
 
 SET hive.support.quoted.identifiers=none;
 
