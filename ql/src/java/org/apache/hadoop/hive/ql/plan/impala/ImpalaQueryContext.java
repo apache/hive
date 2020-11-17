@@ -40,6 +40,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsTable;
 import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable;
 import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable.TableWithPartitionNames;
+import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicPartition;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.StmtMetadataLoader;
@@ -58,6 +59,7 @@ import org.apache.thrift.TException;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -165,15 +167,18 @@ public class ImpalaQueryContext {
 
   public void cacheBasicTable(Table msTbl, ImpalaBasicHdfsTable basicTable) {
     String tableName = getTableName(msTbl);
-    Preconditions.checkState(!cachedTables.containsKey(tableName));
+    // if cache already contains table, just return.  Table will always be the same.
+    if (cachedTables.containsKey(tableName)) {
+      return;
+    }
     cachedTables.put(tableName, new TableWithPartitionNames(basicTable));
   }
 
   public void addBasicTableNewNames(Table msTbl, ImpalaBasicHdfsTable basicTable,
-      Set<String> names) {
+      Collection<ImpalaBasicPartition> partitions) {
     String tableName = getTableName(msTbl);
     Preconditions.checkState(cachedTables.containsKey(tableName));
-    cachedTables.get(tableName).addNames(names);
+    cachedTables.get(tableName).addPartitionNames(partitions);
   }
 
   public List<TableWithPartitionNames> getBasicTables() {

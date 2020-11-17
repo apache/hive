@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.plan.impala.prune;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -155,6 +156,10 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
     return basicPartitionMap;
   }
 
+  public List<ImpalaBasicPartition> getAllPartitions() {
+    return new ArrayList(basicPartitionMap.values());
+  }
+
   /**
    * Called from Impala's HdfsPartitionPruner
    */
@@ -170,10 +175,10 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
   }
 
   public Set<Partition> fetchPartitions(IMetaStoreClient client, Table tableMD,
-      List<? extends FeFsPartition> partitions, HiveConf conf) throws HiveException {
+      Collection<ImpalaBasicPartition> partitions, HiveConf conf) throws HiveException {
     Set<Partition> msPartitions = Sets.newHashSet();
     Set<String> namesToFetch = Sets.newHashSet();
-    for (FeFsPartition partition : partitions) {
+    for (ImpalaBasicPartition partition : partitions) {
       namesToFetch.add(partition.getPartitionName());
     }
 
@@ -222,8 +227,10 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
       this.table = table;
     }
 
-    public void addNames(Set<String> newPartitionNames) {
-      partitionNames.addAll(newPartitionNames);
+    public void addPartitionNames(Collection<ImpalaBasicPartition> partitions) {
+      for (ImpalaBasicPartition partition : partitions) {
+        partitionNames.add(partition.getPartitionName());
+      }
     }
 
     public Set<String> getPartitionNames() {
