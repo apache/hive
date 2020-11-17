@@ -77,7 +77,7 @@ public final class EvictionDispatcher implements EvictionListener {
    */
   private void requestDeallocation(MemoryBuffer buffer, boolean isProactiveEviction) {
     if (isProactiveEviction) {
-      allocator.deallocate(buffer);
+      allocator.deallocateProactivelyEvicted(buffer);
     } else {
       allocator.deallocateEvicted(buffer);
     }

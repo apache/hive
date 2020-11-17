@@ -41,6 +41,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.cache.LowLevelCache.Priority;
 import org.apache.hadoop.hive.llap.metrics.LlapDaemonCacheMetrics;
@@ -128,10 +129,14 @@ public class TestLowLevelLrfuCachePolicy {
 
     @Override
     public void notifyProactivelyEvicted(LlapCacheableBuffer buffer) {
-      proactivelyEvicted.add((LlapDataBuffer)buffer);
-      if (mm != null) {
+      // In reality allocator.deallocateProactivelyEvicted is called which:
+      // * expects an invalidated buffer (must have FLAG_EVICTED)
+      // * and then removes it from memory (setting FLAG_REMOVED) (no-op if it finds FLAG_REMOVED set)
+      int res = ((LlapAllocatorBuffer) buffer).releaseInvalidated();
+      if (mm != null && res >= 0) {
         mm.releaseMemory(buffer.getMemoryUsage());
       }
+      proactivelyEvicted.add((LlapDataBuffer)buffer);
     }
 
   }

@@ -78,6 +78,10 @@ public class TestLowLevelCacheImpl {
     }
 
     @Override
+    public void deallocateProactivelyEvicted(MemoryBuffer buffer) {
+    }
+
+    @Override
     public boolean isDirectAlloc() {
       return false;
     }
