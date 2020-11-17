@@ -34,7 +34,6 @@ import javax.xml.crypto.Data;
 @Explain(displayName = "Create Database", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
 public class CreateDatabaseDesc implements DDLDesc, Serializable {
   private static final long serialVersionUID = 1L;
-  public static final String REMOTEDB_LOCATION = "REMOTE_LOCATION".intern();
 
   private final String databaseName;
   private final String comment;
@@ -57,9 +56,9 @@ public class CreateDatabaseDesc implements DDLDesc, Serializable {
     this.comment = comment;
     if (dbtype != null && dbtype.equalsIgnoreCase("REMOTE")) {
       this.dbType = DatabaseType.REMOTE;
-      this.locationUri = REMOTEDB_LOCATION; // this is non-null in the HMSDB
       this.connectorName = connectorName;
       this.remoteDbName = remoteDbName;
+      this.locationUri = null;
       this.managedLocationUri = null;
     } else {
       this.dbType = DatabaseType.NATIVE;
