@@ -17,6 +17,10 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+
 /**
  * JUnit TestRule for Postgres.
  */
@@ -63,7 +67,15 @@ public class Postgres extends DatabaseRule {
 
   @Override
   public boolean isContainerReady(String logOutput) {
-    return logOutput.contains("database system is ready to accept connections");
+    if (logOutput.contains("PostgreSQL init process complete; ready for start up")) {
+      try (Socket socket = new Socket()) {
+        socket.connect(new InetSocketAddress("localhost", 5432), 1000);
+        return true;
+      } catch (IOException e) {
+        return false;
+      }
+    }
+    return false;
   }
 
   @Override
