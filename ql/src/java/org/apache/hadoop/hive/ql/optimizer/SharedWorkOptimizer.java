@@ -1326,7 +1326,7 @@ public class SharedWorkOptimizer extends Transform {
           return false;
         }
       } else if (op.getConf() instanceof DynamicPruningEventDesc) {
-        return true;
+        // accept
       } else {
         return false;
       }
