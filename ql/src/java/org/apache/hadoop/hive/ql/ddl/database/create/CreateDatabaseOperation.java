@@ -54,14 +54,15 @@ public class CreateDatabaseOperation extends DDLOperation<CreateDatabaseDesc> {
         if (desc.getManagedLocationUri() != null) {
           database.setManagedLocationUri(desc.getManagedLocationUri());
         }
+        makeLocationQualified(database);
         if (database.getLocationUri().equalsIgnoreCase(database.getManagedLocationUri())) {
           throw new HiveException("Managed and external locations for database cannot be the same");
         }
       } else {
+        makeLocationQualified(database);
         database.setConnector_name(desc.getConnectorName());
         database.setRemote_dbname(desc.getRemoteDbName());
       }
-      makeLocationQualified(database);
       context.getDb().createDatabase(database, desc.getIfNotExists());
     } catch (AlreadyExistsException ex) {
       //it would be better if AlreadyExistsException had an errorCode field....
