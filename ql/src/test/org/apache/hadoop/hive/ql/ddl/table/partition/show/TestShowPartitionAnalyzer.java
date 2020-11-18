@@ -18,6 +18,11 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.partition.show;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -37,17 +42,28 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
 public class TestShowPartitionAnalyzer {
+
+  private HiveConf conf;
+
+  @Before
+  public void before() throws Exception {
+    conf = new HiveConf();
+    SessionState.start(conf);
+  }
+
+  @After
+  public void after() throws Exception {
+    SessionState.get().close();
+  }
 
   @Test
   public void testGetShowPartitionsFilter() throws Exception {
@@ -68,8 +84,7 @@ public class TestShowPartitionAnalyzer {
     String showPart1 = "show partitions databaseFoo.tableBar " +
         "where ds > '2010-03-03' and hr = '__HIVE_DEFAULT_PARTITION__' and "
         + "rs <= 421021";
-    Context ctx = new Context(new HiveConf());
-    ASTNode command = ParseUtils.parse(showPart1, ctx);
+    ASTNode command = ParseUtils.parse(showPart1, new Context(conf));
     ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc)genExprNodeByDefault(tcCtx, command);
     // the hr op '__HIVE_DEFAULT_PARTITION__' converts to null
     Assert.assertEquals(new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo,
@@ -114,7 +129,7 @@ public class TestShowPartitionAnalyzer {
     // invalid input
     String showPart2 = "show partitions databaseFoo.tableBar " +
         "where hr > 'a123' and hr <= '2346b'";
-    command = ParseUtils.parse(showPart2, ctx);
+    command = ParseUtils.parse(showPart2, new Context(conf));
     try {
       analyzer.getShowPartitionsFilter(table, command);
       Assert.fail("show throw semantic exception");
