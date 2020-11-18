@@ -1,0 +1,92 @@
+PREHOOK: query: create table foo_n10(x date, y timestamp) stored as orc
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@foo_n10
+POSTHOOK: query: create table foo_n10(x date, y timestamp) stored as orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@foo_n10
+PREHOOK: query: insert into foo_n10 values('1999-01-01', '1999-01-01 00:00:01'), ('2018-01-01', '2018-01-01 23:23:59')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@foo_n10
+POSTHOOK: query: insert into foo_n10 values('1999-01-01', '1999-01-01 00:00:01'), ('2018-01-01', '2018-01-01 23:23:59')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@foo_n10
+POSTHOOK: Lineage: foo_n10.x SCRIPT []
+POSTHOOK: Lineage: foo_n10.y SCRIPT []
+PREHOOK: query: analyze table foo_n10 compute statistics for columns
+PREHOOK: type: ANALYZE_TABLE
+PREHOOK: Input: default@foo_n10
+PREHOOK: Output: default@foo_n10
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table foo_n10 compute statistics for columns
+POSTHOOK: type: ANALYZE_TABLE
+POSTHOOK: Input: default@foo_n10
+POSTHOOK: Output: default@foo_n10
+#### A masked pattern was here ####
+Warning: Value had a \n character in it.
+PREHOOK: query: explain select max(y) from foo_n10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@foo_n10
+#### A masked pattern was here ####
+POSTHOOK: query: explain select max(y) from foo_n10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo_n10
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select count(y) from foo_n10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@foo_n10
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(y) from foo_n10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo_n10
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: explain select count(y), max(y), min(y) from foo_n10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@foo_n10
+#### A masked pattern was here ####
+POSTHOOK: query: explain select count(y), max(y), min(y) from foo_n10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo_n10
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: select count(y), max(y), min(y) from foo_n10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@foo_n10
+#### A masked pattern was here ####
+POSTHOOK: query: select count(y), max(y), min(y) from foo_n10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@foo_n10
+#### A masked pattern was here ####
+2	2018-01-01 23:23:59	1999-01-01 00:00:01

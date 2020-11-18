@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.ql.optimizer;
 import com.google.common.collect.Lists;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.DateColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.DoubleColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.LongColumnStatsData;
+import org.apache.hadoop.hive.metastore.api.TimestampColumnStatsData;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
@@ -156,6 +158,7 @@ public class StatsOptimizer extends Transform {
       Boolean,
       Binary,
       Date,
+      Timestamp,
       Unsupported
     }
 
@@ -187,6 +190,14 @@ public class StatsOptimizer extends Transform {
       abstract Object cast(long longValue);
     }
 
+    enum TimestampSubType {
+      SECONDS {@Override
+      Object cast(long longValue) {
+        return Timestamp.ofEpochSecond(longValue);
+      }};
+      abstract Object cast(long longValue);
+    }
+
     enum GbyKeyType {
       NULL, CONSTANT, OTHER
     }
@@ -205,6 +216,8 @@ public class StatsOptimizer extends Transform {
         return StatType.String;
       } else if (origType.equals(serdeConstants.DATE_TYPE_NAME)) {
         return StatType.Date;
+      } else if (origType.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+        return StatType.Timestamp;
       }
       return StatType.Unsupported;
     }
@@ -224,6 +237,8 @@ public class StatsOptimizer extends Transform {
         return statData.getBinaryStats().getNumNulls();
       case Date:
         return statData.getDateStats().getNumNulls();
+      case Timestamp:
+        return statData.getTimestampStats().getNumNulls();
       default:
         return null;
       }
@@ -570,6 +585,15 @@ public class StatsOptimizer extends Transform {
                   }
                   break;
                 }
+                case Timestamp: {
+                  TimestampColumnStatsData dstats = statData.getTimestampStats();
+                  if (dstats.isSetHighValue()) {
+                    oneRow.add(TimestampSubType.SECONDS.cast(dstats.getHighValue().getSecondsSinceEpoch()));
+                  } else {
+                    oneRow.add(null);
+                  }
+                  break;
+                }
                 default:
                   // unsupported type
                   Logger.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
@@ -657,6 +681,30 @@ public class StatsOptimizer extends Transform {
                   }
                   break;
                 }
+                case Timestamp: {
+                  Long maxVal = null;
+                  Collection<List<ColumnStatisticsObj>> result =
+                          verifyAndGetPartColumnStats(hive, tbl, colName, parts);
+                  if (result == null) {
+                    return null; // logging inside
+                  }
+                  for (List<ColumnStatisticsObj> statObj : result) {
+                    ColumnStatisticsData statData = validateSingleColStat(statObj);
+                    if (statData == null) return null;
+                    TimestampColumnStatsData dstats = statData.getTimestampStats();
+                    if (!dstats.isSetHighValue()) {
+                      continue;
+                    }
+                    long curVal = dstats.getHighValue().getSecondsSinceEpoch();
+                    maxVal = maxVal == null ? curVal : Math.max(maxVal, curVal);
+                  }
+                  if (maxVal != null) {
+                    oneRow.add(TimestampSubType.SECONDS.cast(maxVal));
+                  } else {
+                    oneRow.add(null);
+                  }
+                  break;
+                }
                 default:
                   Logger.debug("Unsupported type: " + colDesc.getTypeString() + " encountered in " +
                       "metadata optimizer for column : " + colName);
@@ -704,6 +752,15 @@ public class StatsOptimizer extends Transform {
                   DateColumnStatsData dstats = statData.getDateStats();
                   if (dstats.isSetLowValue()) {
                     oneRow.add(DateSubType.DAYS.cast(dstats.getLowValue().getDaysSinceEpoch()));
+                  } else {
+                    oneRow.add(null);
+                  }
+                  break;
+                }
+                case Timestamp: {
+                  TimestampColumnStatsData dstats = statData.getTimestampStats();
+                  if (dstats.isSetLowValue()) {
+                    oneRow.add(TimestampSubType.SECONDS.cast(dstats.getLowValue().getSecondsSinceEpoch()));
                   } else {
                     oneRow.add(null);
                   }
@@ -789,6 +846,30 @@ public class StatsOptimizer extends Transform {
                   }
                   if (minVal != null) {
                     oneRow.add(DateSubType.DAYS.cast(minVal));
+                  } else {
+                    oneRow.add(null);
+                  }
+                  break;
+                }
+                case Timestamp: {
+                  Long minVal = null;
+                  Collection<List<ColumnStatisticsObj>> result =
+                          verifyAndGetPartColumnStats(hive, tbl, colName, parts);
+                  if (result == null) {
+                    return null; // logging inside
+                  }
+                  for (List<ColumnStatisticsObj> statObj : result) {
+                    ColumnStatisticsData statData = validateSingleColStat(statObj);
+                    if (statData == null) return null;
+                    TimestampColumnStatsData dstats = statData.getTimestampStats();
+                    if (!dstats.isSetLowValue()) {
+                      continue;
+                    }
+                    long curVal = dstats.getLowValue().getSecondsSinceEpoch();
+                    minVal = minVal == null ? curVal : Math.min(minVal, curVal);
+                  }
+                  if (minVal != null) {
+                    oneRow.add(TimestampSubType.SECONDS.cast(minVal));
                   } else {
                     oneRow.add(null);
                   }
