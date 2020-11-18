@@ -855,6 +855,22 @@ public final class BuddyAllocator
     // Retrying/more defrag should take care of that.
   }
 
+  /**
+   * Quite similar as deallocateEvicted, however since this request was not originated from a reserveMemory call,
+   * MM state has to be maintained here.
+   * @param buffer
+   */
+  @Override
+  public void deallocateProactivelyEvicted(MemoryBuffer buffer) {
+    LlapAllocatorBuffer buf = (LlapAllocatorBuffer)buffer;
+    assert buf.isInvalid();
+    int arenaToRelease = buf.releaseInvalidated();
+    if (arenaToRelease < 0) return; // The block is being moved; the move will release memory.
+    long memUsage = buf.getMemoryUsage();
+    arenas[arenaToRelease].deallocate(buf, false);
+    memoryManager.releaseMemory(memUsage);
+  }
+
   @Override
   public boolean isDirectAlloc() {
     return isDirect;
