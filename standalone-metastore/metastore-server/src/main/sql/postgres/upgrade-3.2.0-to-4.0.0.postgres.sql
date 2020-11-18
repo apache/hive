@@ -253,6 +253,31 @@ ALTER TABLE "COMPACTION_QUEUE" ADD "CQ_TXN_ID" bigint;
 -- HIVE-24275
 ALTER TABLE "COMPACTION_QUEUE" ADD "CQ_COMMIT_TIME" bigint;
 
+-- HIVE-24396
+-- Create DataConnectors and DataConnector_Params tables
+CREATE TABLE "DATACONNECTORS" (
+  "NAME" character varying(128) NOT NULL,
+  "TYPE" character varying(32) NOT NULL,
+  "URL" character varying(4000) NOT NULL,
+  "COMMENT" character varying(256),
+  "OWNER_NAME" character varying(256),
+  "OWNER_TYPE" character varying(10),
+  "CREATE_TIME" INTEGER NOT NULL,
+  PRIMARY KEY ("NAME")
+);
+
+CREATE TABLE "DATACONNECTOR_PARAMS" (
+  "NAME" character varying(128) NOT NULL,
+  "PARAM_KEY" character varying(180) NOT NULL,
+  "PARAM_VALUE" character varying(4000),
+  PRIMARY KEY ("NAME", "PARAM_KEY"),
+  CONSTRAINT "DATACONNECTOR_NAME_FK1" FOREIGN KEY ("NAME") REFERENCES "DATACONNECTORS"("NAME") ON DELETE CASCADE
+);
+ALTER TABLE "DBS" ADD "TYPE" character varying(32);
+UPDATE "DBS" SET "TYPE"= 'NATIVE' WHERE "TYPE" IS NULL;
+ALTER TABLE "DBS" ADD "DATACONNECTOR_NAME" character varying(128);
+ALTER TABLE "DBS" ADD "REMOTE_DBNAME" character varying(128);
+
 -- These lines need to be last. Insert any changes above.
 UPDATE "VERSION" SET "SCHEMA_VERSION"='4.0.0', "VERSION_COMMENT"='Hive release version 4.0.0' where "VER_ID"=1;
 SELECT 'Finished upgrading MetaStore schema from 3.2.0 to 4.0.0';

@@ -83,7 +83,10 @@ CREATE TABLE "DBS" (
     "OWNER_TYPE" character varying(10) DEFAULT NULL::character varying,
     "CTLG_NAME" varchar(256) DEFAULT 'hive' NOT NULL,
     "CREATE_TIME" bigint,
-    "DB_MANAGED_LOCATION_URI" character varying(4000)
+    "DB_MANAGED_LOCATION_URI" character varying(4000),
+    "TYPE" character varying(32) DEFAULT 'NATIVE',
+    "DATACONNECTOR_NAME" character varying(128),
+    "REMOTE_DBNAME" character varying(128)
 );
 
 
@@ -1936,6 +1939,27 @@ CREATE TABLE "STORED_PROCS" (
 
 CREATE UNIQUE INDEX "UNIQUESTOREDPROC" ON "STORED_PROCS" ("NAME", "DB_ID");
 ALTER TABLE ONLY "STORED_PROCS" ADD CONSTRAINT "STOREDPROC_FK1" FOREIGN KEY ("DB_ID") REFERENCES "DBS" ("DB_ID") DEFERRABLE;
+
+-- HIVE-24396
+-- Create DataConnectors and DataConnector_Params tables
+CREATE TABLE "DATACONNECTORS" (
+  "NAME" character varying(128) NOT NULL,
+  "TYPE" character varying(32) NOT NULL,
+  "URL" character varying(4000) NOT NULL,
+  "COMMENT" character varying(256),
+  "OWNER_NAME" character varying(256),
+  "OWNER_TYPE" character varying(10),
+  "CREATE_TIME" INTEGER NOT NULL,
+  PRIMARY KEY ("NAME")
+);
+
+CREATE TABLE "DATACONNECTOR_PARAMS" (
+  "NAME" character varying(128) NOT NULL,
+  "PARAM_KEY" character varying(180) NOT NULL,
+  "PARAM_VALUE" character varying(4000),
+  PRIMARY KEY ("NAME", "PARAM_KEY"),
+  CONSTRAINT "DATACONNECTOR_NAME_FK1" FOREIGN KEY ("NAME") REFERENCES "DATACONNECTORS"("NAME") ON DELETE CASCADE
+);
 
 -- -----------------------------------------------------------------
 -- Record schema version. Should be the last step in the init script
