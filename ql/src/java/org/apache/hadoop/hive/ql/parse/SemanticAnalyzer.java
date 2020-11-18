@@ -7714,15 +7714,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         } else {
           tableDescriptor = PlanUtils.getDefaultTableDesc(qb.getDirectoryDesc(), cols, colTypes);
         }
-        // We need a specific rowObjectInspector in this case
-        try {
-          specificRowObjectInspector =
-              (StructObjectInspector) tableDescriptor.getDeserializer(conf).getObjectInspector();
-        } catch (Exception e) {
-          throw new SemanticException(e.getMessage(), e);
-        }
       } else {
         tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
+      }
+      // We need a specific rowObjectInspector in this case
+      try {
+        specificRowObjectInspector =
+            (StructObjectInspector) tableDescriptor.getDeserializer(conf).getObjectInspector();
+      } catch (Exception e) {
+        throw new SemanticException(e.getMessage(), e);
       }
 
       boolean isDfsDir = (destType == QBMetaData.DEST_DFS_FILE);
