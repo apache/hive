@@ -185,6 +185,10 @@ public class DatabaseProduct implements Configurable {
         || (isORACLE() && (e.getMessage() != null && (e.getMessage().contains("deadlock detected")
             || e.getMessage().contains("can't serialize access for this transaction"))));
   }
+  public boolean isTableNotExists(SQLException e) {
+    // TODO
+    return true;
+  }
 
   /**
    * Whether the RDBMS has restrictions on IN list size (explicit, or poor perf-based).

@@ -232,6 +232,7 @@ public final class TxnDbUtil {
       success &= truncateTable(conn, conf, stmt, "WRITE_SET");
       success &= truncateTable(conn, conf, stmt, "REPL_TXN_MAP");
       success &= truncateTable(conn, conf, stmt, "MATERIALIZATION_REBUILD_LOCKS");
+      success &= truncateTable(conn, conf, stmt, "MIN_HISTORY_LEVEL");
       try {
         resetTxnSequence(conn, conf, stmt);
         stmt.executeUpdate("INSERT INTO \"NEXT_LOCK_ID\" VALUES(1)");
