@@ -785,10 +785,10 @@ public class ObjectStore implements RawStore, Configurable {
     mdb.setOwnerName(db.getOwnerName());
     mdb.setDataConnectorName(db.getConnector_name());
     mdb.setRemoteDatabaseName(db.getRemote_dbname());
-    if (db.getType() == DatabaseType.NATIVE) {
+    if (db.getType() == null) {
       mdb.setType("NATIVE");
     } else {
-      mdb.setType("REMOTE");
+      mdb.setType(db.getType().toString());
     }
     PrincipalType ownerType = db.getOwnerType();
     mdb.setOwnerType((null == ownerType ? PrincipalType.USER.name() : ownerType.name()));

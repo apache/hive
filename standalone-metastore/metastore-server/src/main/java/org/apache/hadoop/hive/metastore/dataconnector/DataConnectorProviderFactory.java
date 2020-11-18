@@ -64,13 +64,12 @@ public class DataConnectorProviderFactory {
     case POSTGRES_TYPE:
       try {
         provider = JDBCConnectorProviderFactory.get(scopedDb, connector);
-        cache.put(db.getConnector_name(), provider);
       } catch (Exception e) {
         throw new MetaException("Could not instantiate a provider for database " + db.getName());
       }
-        ;
+      break;
     default:
-      ;
+      throw new MetaException("Data connector of type " + connector.getType() + " not implemented yet");
     }
     cache.put(connector.getName().toLowerCase(), provider);
     return provider;
@@ -94,6 +93,8 @@ public class DataConnectorProviderFactory {
         provider.close();
       } catch(Exception e) {
         LOG.warn("Exception invoking close on dataconnectorprovider:" + provider, e);
+      } finally {
+        cache.clear();
       }
     }
   }
