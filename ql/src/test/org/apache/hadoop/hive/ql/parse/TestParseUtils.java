@@ -23,8 +23,11 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -48,6 +51,16 @@ public class TestParseUtils {
     this.query = query;
     this.txnType = txnType;
     this.conf = new HiveConf();
+  }
+
+  @Before
+  public void before() {
+    SessionState.start((HiveConf) conf);
+  }
+
+  @After
+  public void after() throws Exception {
+    SessionState.get().close();
   }
 
   @Parameters
