@@ -5991,7 +5991,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String[] parsedDbName = parseDbName(dbname, conf);
       try {
         db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-        if (db != null) {
+        if (db != null && db.getType() != null) {
           if (db.getType().equals(DatabaseType.REMOTE)) {
             return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
           }
