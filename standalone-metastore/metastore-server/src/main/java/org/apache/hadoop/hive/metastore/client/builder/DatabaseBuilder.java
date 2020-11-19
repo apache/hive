@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -42,6 +43,7 @@ public class DatabaseBuilder {
   private String ownerName;
   private PrincipalType ownerType;
   private int createTime;
+  private DatabaseType type;
 
   public DatabaseBuilder() {
   }
@@ -101,6 +103,12 @@ public class DatabaseBuilder {
     return this;
   }
 
+  public DatabaseBuilder setType(DatabaseType type) {
+    if (type != null)
+      this.type = type;
+    return this;
+  }
+
   public Database build(Configuration conf) throws MetaException {
     if (name == null) throw new MetaException("You must name the database");
     if (catalogName == null) catalogName = MetaStoreUtils.getDefaultCatalog(conf);
@@ -114,6 +122,8 @@ public class DatabaseBuilder {
       db.setOwnerName(ownerName);
       if (ownerType == null) ownerType = PrincipalType.USER;
       db.setOwnerType(ownerType);
+      if (type == null) type = DatabaseType.NATIVE;
+      db.setType(type);
       return db;
     } catch (IOException e) {
       throw MetaStoreUtils.newMetaException(e);
