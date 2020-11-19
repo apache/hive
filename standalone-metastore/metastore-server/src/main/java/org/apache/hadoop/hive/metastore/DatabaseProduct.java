@@ -185,9 +185,18 @@ public class DatabaseProduct implements Configurable {
         || (isORACLE() && (e.getMessage() != null && (e.getMessage().contains("deadlock detected")
             || e.getMessage().contains("can't serialize access for this transaction"))));
   }
+
+  /**
+   * Is the given exception a table not found exception
+   * @param e Exception
+   * @return
+   */
   public boolean isTableNotExists(SQLException e) {
-    // TODO
-    return true;
+    return (isPOSTGRES() && "42P01".equalsIgnoreCase(e.getSQLState()))
+        || (isMYSQL() && "42S02".equalsIgnoreCase(e.getSQLState()))
+        || (isORACLE() && "42000".equalsIgnoreCase(e.getSQLState()) && e.getMessage().contains("ORA-00942"))
+        || (isSQLSERVER() && "S0002".equalsIgnoreCase(e.getSQLState()) && e.getMessage().contains("Invalid object"))
+        || (isDERBY() && "42X05".equalsIgnoreCase(e.getSQLState()));
   }
 
   /**

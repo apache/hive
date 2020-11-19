@@ -5195,6 +5195,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     }
     try (PreparedStatement pStmt = dbConn.prepareStatement("DELETE FROM \"MIN_HISTORY_LEVEL\" WHERE \"MHL_TXNID\" = ?")) {
       pStmt.setLong(1, txnid);
+      pStmt.executeUpdate();
       LOG.debug("Removed committed transaction txnId: (" + txnid + ") from MIN_HISTORY_LEVEL");
     } catch (SQLException e) {
       if (dbProduct.isTableNotExists(e)) {
