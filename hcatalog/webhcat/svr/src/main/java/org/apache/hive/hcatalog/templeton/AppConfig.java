@@ -110,7 +110,12 @@ public class AppConfig extends Configuration {
   public static final String MAPPER_MEMORY_MB    = "templeton.mapper.memory.mb";
   public static final String MR_AM_MEMORY_MB     = "templeton.mr.am.memory.mb";
   public static final String TEMPLETON_JOBSLIST_ORDER = "templeton.jobs.listorder";
-
+  public static final String USE_SSL = "templeton.use.ssl";
+  public static final String KEY_STORE_PATH = "templeton.keystore.path";
+  public static final String KEY_STORE_PASSWORD = "templeton.keystore.password";
+  public static final String SSL_PROTOCOL_BLACKLIST = "templeton.ssl.protocol.blacklist";
+  public static final String HOST = "templeton.host";
+  
   /*
    * These parameters controls the maximum number of concurrent job submit/status/list
    * operations in templeton service. If more number of concurrent requests comes then
@@ -191,8 +196,7 @@ public class AppConfig extends Configuration {
   public static final String HADOOP_END_INTERVAL_NAME = "job.end.retry.interval";
   public static final String HADOOP_END_RETRY_NAME    = "job.end.retry.attempts";
   public static final String HADOOP_END_URL_NAME      = "job.end.notification.url";
-  public static final String HADOOP_SPECULATIVE_NAME
-    = "mapred.map.tasks.speculative.execution";
+  public static final String HADOOP_SPECULATIVE_NAME = "mapred.map.tasks.speculative.execution";
   public static final String HADOOP_CHILD_JAVA_OPTS = "mapred.child.java.opts";
   public static final String HADOOP_MAP_MEMORY_MB = "mapreduce.map.memory.mb";
   public static final String HADOOP_MR_AM_JAVA_OPTS = "yarn.app.mapreduce.am.command-opts";
@@ -215,9 +219,9 @@ public class AppConfig extends Configuration {
   }
 
   private void init() {
-    for (Map.Entry<String, String> e : System.getenv().entrySet())
+    for (Map.Entry<String, String> e : System.getenv().entrySet()) {
       set("env." + e.getKey(), e.getValue());
-
+    }
     String templetonDir = getTempletonDir();
     for (String fname : TEMPLETON_CONF_FILENAMES) {
       logConfigLoadAttempt(templetonDir + File.separator + fname);
@@ -309,8 +313,7 @@ public class AppConfig extends Configuration {
     if (requestedOrder != null) {
       try {
         return JobsListOrder.valueOf(requestedOrder.toLowerCase());
-      }
-      catch(IllegalArgumentException ex) {
+      } catch(IllegalArgumentException ex) {
         LOG.warn("Ignoring setting " + TEMPLETON_JOBSLIST_ORDER + " configured with in-correct value " + requestedOrder);
       }
     }
