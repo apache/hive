@@ -42,7 +42,7 @@ import org.apache.hadoop.metrics2.impl.MsInfo;
  * that Subsumes the Least Recently Used (LRU) and Least Frequently Used (LFU) Policies".
  * Additionally, buffer locking has to be handled (locked buffer cannot be evicted).
  */
-public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
+public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.Impl implements LowLevelCachePolicy {
   private final double lambda;
   private double f(long x) {
     return Math.pow(0.5, lambda * x);
@@ -80,7 +80,7 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
   private final int maxQueueSize;
 
   public LowLevelLrfuCachePolicy(int minBufferSize, long maxSize, Configuration conf) {
-
+    super(conf);
     this.maxQueueSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_LRFU_BP_WRAPPER_SIZE);
     this.lambda = HiveConf.getFloatVar(conf, HiveConf.ConfVars.LLAP_LRFU_LAMBDA);
 
@@ -108,6 +108,11 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     LlapMetricsSystem.instance().register("LowLevelLrfuCachePolicy-" + MetricsUtils.getHostName(), null, metrics);
     threadLocalBuffers = ThreadLocal.withInitial(() -> new LlapCacheableBuffer[maxQueueSize]);
     threadLocalCount = ThreadLocal.withInitial(() -> 0);
+  }
+
+  @Override
+  public void evictProactively() {
+    evictOrPurge(false);
   }
 
   @Override
@@ -147,7 +152,9 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
 
   @Override
   public void notifyUnlock(LlapCacheableBuffer buffer) {
-
+    if (proactiveEvictionEnabled) {
+      buffer.removeProactiveEvictionMark();
+    }
     int count = threadLocalCount.get();
     final LlapCacheableBuffer[] cacheableBuffers = threadLocalBuffers.get() ;
     if (count < maxQueueSize) {
@@ -240,18 +247,38 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     this.evictionListener = listener;
   }
 
-  @Override
-  public long purge() {
+  private long evictOrPurge(boolean isPurge) {
     long evicted = 0;
     LlapCacheableBuffer oldTail;
     listLock.lock();
     try {
       LlapCacheableBuffer current = listTail;
+      LlapCacheableBuffer lockedHead = null;
+      LlapCacheableBuffer lockedTail = null;
       oldTail = listTail;
       while (current != null) {
-        boolean canEvict = LlapCacheableBuffer.INVALIDATE_OK == current.invalidate();
+        // Case for when there is proactive eviction, but current buffer is not marked -> thus need to be kept
+        if (!isPurge && !current.isMarkedForEviction()) {
+          LlapCacheableBuffer newCurrent = current.prev;
+          oldTail = removeFromLocalList(oldTail, current);
+
+          current.indexInHeap = LlapCacheableBuffer.IN_LIST;
+          if (lockedHead != null) {
+            current.next = lockedHead;
+            lockedHead.prev = current;
+            lockedHead = current;
+          } else {
+            lockedHead = current;
+            lockedTail = current;
+            current.next = null;
+          }
+
+          current = newCurrent;
+          continue;
+        }
+        int invalidateResult = current.invalidate();
         current.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
-        if (canEvict) {
+        if (invalidateResult == LlapCacheableBuffer.INVALIDATE_OK) {
           current = current.prev;
         } else {
           // Remove from the list.
@@ -260,8 +287,8 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
           current = newCurrent;
         }
       }
-      listHead = null;
-      listTail = null;
+      listHead = lockedHead;
+      listTail = lockedTail;
     } finally {
       listLock.unlock();
     }
@@ -276,6 +303,15 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       heapSize = 0;
       for (int i = 0; i < oldHeapSize; ++i) {
         LlapCacheableBuffer result = oldHeap[i];
+        // Case for when there is proactive eviction, but current buffer is not marked -> thus need to be kept
+        if (!isPurge && !result.isMarkedForEviction()) {
+          oldHeap[i] = null;
+          result.indexInHeap = heapSize;
+          heapifyUpUnderLock(result, result.lastUpdate);
+          ++heapSize;
+          continue;
+        }
+
         result.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
         int invalidateResult = result.invalidate();
         if (invalidateResult != LlapCacheableBuffer.INVALIDATE_OK) {
@@ -288,7 +324,11 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
     LlapCacheableBuffer current = oldTail;
     while (current != null) {
       evicted += current.getMemoryUsage();
-      evictionListener.notifyEvicted(current);
+      if (isPurge) {
+        evictionListener.notifyEvicted(current);
+      } else {
+        evictionListener.notifyProactivelyEvicted(current);
+      }
       current = current.prev;
     }
     for (int i = 0; i < oldHeapSize; ++i) {
@@ -297,11 +337,25 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
         continue;
       }
       evicted += current.getMemoryUsage();
-      evictionListener.notifyEvicted(current);
+      if (isPurge) {
+        evictionListener.notifyEvicted(current);
+      } else {
+        evictionListener.notifyProactivelyEvicted(current);
+      }
     }
-    LlapIoImpl.LOG.info("PURGE: evicted {} from LRFU policy",
-        LlapUtil.humanReadableByteCount(evicted));
+    if (isPurge) {
+      LlapIoImpl.LOG.info("PURGE: evicted {} from LRFU policy",
+          LlapUtil.humanReadableByteCount(evicted));
+    } else {
+      LlapIoImpl.LOG.info("PROACTIVE_EVICTION: evicted {} from LRFU policy",
+          LlapUtil.humanReadableByteCount(evicted));
+    }
     return evicted;
+  }
+
+  @Override
+  public long purge() {
+    return evictOrPurge(true);
   }
 
   private static LlapCacheableBuffer removeFromLocalList(
@@ -358,7 +412,8 @@ public final class LowLevelLrfuCachePolicy implements LowLevelCachePolicy {
       nextCandidate = listTail;
       firstCandidate = listTail;
       while (evicted < memoryToReserve && nextCandidate != null) {
-        if (LlapCacheableBuffer.INVALIDATE_OK != nextCandidate.invalidate()) {
+        int invalidateResult = nextCandidate.invalidate();
+        if (LlapCacheableBuffer.INVALIDATE_OK != invalidateResult) {
           // Locked, or invalidated, buffer was in the list - just drop it;
           // will be re-added on unlock.
           LlapCacheableBuffer lockedBuffer = nextCandidate;
