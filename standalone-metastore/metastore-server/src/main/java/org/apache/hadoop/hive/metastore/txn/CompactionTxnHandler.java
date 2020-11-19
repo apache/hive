@@ -1195,6 +1195,7 @@ class CompactionTxnHandler extends TxnHandler {
             }
           }
         }
+        dbConn.rollback();
         return minOpenTxn;
       } catch (SQLException e) {
         if (dbProduct.isTableNotExists(e)) {

@@ -414,15 +414,19 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       // don't check it if disabled
       return false;
     }
+    Connection dbConn = null;
     boolean tableExists = true;
-    try (Connection dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED)) {
+    try {
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
       try (Statement stmt = dbConn.createStatement()) {
         // Dummy query to see if table exists
         try (ResultSet rs = stmt.executeQuery("SELECT MIN(\"MHL_MIN_OPEN_TXNID\") FROM \"MIN_HISTORY_LEVEL\"")) {
           rs.next();
         }
       }
+      dbConn.rollback();
     } catch (SQLException e) {
+      rollbackDBConn(dbConn);
       LOG.debug("Catching sql exception in min history level check", e);
       if (dbProduct.isTableNotExists(e)) {
         tableExists = false;
@@ -430,7 +434,10 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         throw new MetaException(
             "Unable to select from transaction database: " + getMessage(e) + StringUtils.stringifyException(e));
       }
-    } return tableExists;
+    } finally {
+      closeDbConn(dbConn);
+    }
+    return tableExists;
   }
 
   @Override
@@ -672,6 +679,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         txnType = TxnType.REPL_CREATED;
       }
 
+      long minOpenTxnId = 0;
+      if (useMinHistoryLevel) {
+        minOpenTxnId = getMinOpenTxnIdWaterMark(dbConn);
+      }
+
       List<Long> txnIds = new ArrayList<>(numTxns);
       /*
        * The getGeneratedKeys are not supported in every dbms, after executing a multi line insert.
@@ -713,7 +725,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
       assert txnIds.size() == numTxns;
 
-      addTxnToMinHistoryLevel(dbConn, txnIds);
+      addTxnToMinHistoryLevel(dbConn, txnIds, minOpenTxnId);
 
       if (rqst.isSetReplPolicy()) {
         List<String> rowsRepl = new ArrayList<>(numTxns);
@@ -5146,18 +5158,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * @param dbConn Connection
    * @param txnIds new transaction ids
    * @deprecated Remove this method when min_history_level table is dropped
-   * @throws MetaException ex
    * @throws SQLException ex
    */
   @Deprecated
-  private void addTxnToMinHistoryLevel(Connection dbConn, List<Long> txnIds) throws MetaException, SQLException {
+  private void addTxnToMinHistoryLevel(Connection dbConn, List<Long> txnIds, long minOpenTxnId) throws SQLException {
     if (!useMinHistoryLevel) {
       return;
     }
     // Need to register minimum open txnid for current transactions into MIN_HISTORY table.
-    final long minOpenTxnId = getMinOpenTxnIdWaterMark(dbConn);
-    assert (minOpenTxnId > 0);
-
     try (Statement stmt = dbConn.createStatement()) {
 
       List<String> rows = txnIds.stream().map(txnId -> txnId + ", " + minOpenTxnId).collect(Collectors.toList());
