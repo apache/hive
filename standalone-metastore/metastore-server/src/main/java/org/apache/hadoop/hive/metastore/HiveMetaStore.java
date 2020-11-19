@@ -3733,9 +3733,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             return DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(name);
           }
         }
-      } catch (NoSuchObjectException notExists) {
-        throw new MetaException("Database could not be found:" + dbname);
-      }
+      } catch (Exception e) { /* appears exception is not thrown currently if db doesnt exist */ }
 
       try {
         t = getMS().getTable(catName, dbname, name, writeIdList);
@@ -6003,9 +6001,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
           }
         }
-      } catch (NoSuchObjectException notExists) {
-        throw new MetaException("Database could not be found:" + dbname);
-      }
+      } catch (Exception e) { /* appears we return empty set instead of throwing an exception */ }
 
       try {
         ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern);
@@ -6065,10 +6061,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         db = get_database_core(catName, dbname);
         if (db != null) {
-          if(db.getType().equals(DatabaseType.REMOTE)) {
+          if (db.getType().equals(DatabaseType.REMOTE)) {
             return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
           }
         }
+      } catch (Exception e) { /* ignore */ }
+
+      try {
         ret = getMS().getTables(catName, dbname, pattern, TableType.valueOf(tableType), -1);
       } catch (MetaException e) {
         ex = e;
