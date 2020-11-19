@@ -1945,8 +1945,10 @@ public class Hive {
     }
   }
 
-  public List<RelOptMaterialization> getMaterialization(String queryString) {
-    return HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(queryString);
+  public List<RelOptMaterialization> getMaterialization(
+          String queryString, List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
+    return filterAugmentMaterializedViews(
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(queryString), tablesUsed, txnMgr);
   }
 
   /**
