@@ -1947,8 +1947,14 @@ public class Hive {
 
   public List<RelOptMaterialization> getMaterialization(
           String queryString, List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
-    return filterAugmentMaterializedViews(
-            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(queryString), tablesUsed, txnMgr);
+
+    List<RelOptMaterialization> materializedViews =
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(queryString);
+    if (materializedViews.isEmpty()) {
+      return Collections.emptyList();
+    }
+
+    return filterAugmentMaterializedViews(materializedViews, tablesUsed, txnMgr);
   }
 
   /**
