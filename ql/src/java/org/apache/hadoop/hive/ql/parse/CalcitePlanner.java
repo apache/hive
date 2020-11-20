@@ -347,6 +347,7 @@ import java.util.stream.IntStream;
 import javax.sql.DataSource;
 
 import static java.util.Collections.singletonList;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
 
 
 public class CalcitePlanner extends SemanticAnalyzer {
@@ -2380,13 +2381,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
                 expandedQueryText, getTablesUsed(calciteGenPlan), getTxnMgr());
         for (RelOptMaterialization relOptMaterialization : relOptMaterializationList) {
           try {
-            HiveTableScan mvScan;
-            if (relOptMaterialization.tableRel instanceof Project) {
-              mvScan = (HiveTableScan) relOptMaterialization.tableRel.getInput(0);
-            } else {
-              mvScan = (HiveTableScan) relOptMaterialization.tableRel;
-            }
-            Table hiveTableMD = ((RelOptHiveTable) mvScan.getTable()).getHiveTableMD();
+            Table hiveTableMD = extractTable(relOptMaterialization);
             if (db.validateMaterializedViewsFromRegistry(
                     singletonList(hiveTableMD),
                     singletonList(hiveTableMD.getFullyQualifiedName()),
@@ -2394,11 +2389,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
               return copyMaterializationToNewCluster(optCluster, relOptMaterialization).tableRel;
             }
           } catch (HiveException e) {
-            LOG.warn("Exception validating materialized views", e);
+            LOG.warn("Skipping materialized view due to validation failure: " +
+                    relOptMaterialization.qualifiedTableName, e);
           }
         }
       } catch (HiveException e) {
-        LOG.warn(String.format("Exception while loading materialized views for query '%s'", expandedQueryText), e);
+        LOG.warn(String.format("Exception while looking up materialized views for query '%s'", expandedQueryText), e);
       }
 
       return null;
