@@ -307,7 +307,7 @@ public class TestGetPartitionsUsingProjectionAndFilterSpecs {
     Assert.assertNotNull(partitionWithoutSDS);
     Assert.assertEquals(partitionWithoutSDS.size(), origPartitions.size());
     comparePartitionForSingleValuedFields(projectedFields, sharedSD, partitionWithoutSDS, 0);
-  }
+    }
 
   /**
    * Confirms if the partitionWithoutSD object at partitionWithoutSDSIndex index has all the

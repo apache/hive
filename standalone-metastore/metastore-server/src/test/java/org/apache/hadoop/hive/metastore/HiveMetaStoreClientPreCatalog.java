@@ -1534,6 +1534,18 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
 
   /** {@inheritDoc} */
   @Override
+  public List<Table> getTableObjectsByRequest(GetTablesRequest req)
+          throws MetaException, InvalidOperationException, UnknownDBException, TException {
+    if (req.getCapabilities() == null) {
+      req.setCapabilities(version);
+    }
+    List<Table> tabs = client.get_table_objects_by_name_req(req).getTables();
+    return fastpath ? tabs : deepCopyTables(filterHook.filterTables(tabs));
+  }
+
+
+  /** {@inheritDoc} */
+  @Override
   public List<ExtendedTableInfo> getTablesExt(String catName, String dbName, String tablePattern,
                  int requestedFields, int limit) throws MetaException, TException {
     GetTablesExtRequest req = new GetTablesExtRequest(catName, dbName, tablePattern, requestedFields);

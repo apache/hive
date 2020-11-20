@@ -3623,11 +3623,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         while (startIndex < distinctTableNames.size()) {
           int endIndex = Math.min(startIndex + tableBatchSize, distinctTableNames.size());
           tables.addAll(ms.getTableObjectsByName(catName, dbName, distinctTableNames.subList(
-              startIndex, endIndex)));
+              startIndex, endIndex), projectionsSpec));
           startIndex = endIndex;
         }
         for (Table t : tables) {
-          if (MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
+          if (t.getParameters() != null && MetaStoreUtils.isInsertOnlyTableParam(t.getParameters())) {
             assertClientHasCapability(capabilities, ClientCapability.INSERT_ONLY_TABLES,
                 "insert-only tables", "get_table_req");
           }

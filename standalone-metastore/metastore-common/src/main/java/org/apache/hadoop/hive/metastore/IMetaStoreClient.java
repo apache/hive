@@ -733,6 +733,27 @@ public interface IMetaStoreClient {
   List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
       throws MetaException, InvalidOperationException, UnknownDBException, TException;
 
+
+  /**
+   * Get tables as objects (rather than just fetching their names).  This is more expensive and
+   * should only be used if you actually need all the information about the tables.
+   * @param request GetTablesRequest Object.
+   * @return A list of objects representing the tables.
+   *          Only the tables that can be retrieved from the database are returned.  For example,
+   *          if none of the requested tables could be retrieved, an empty list is returned.
+   *          There is no guarantee of ordering of the returned tables.
+   * @throws InvalidOperationException
+   *          The input to this operation is invalid (e.g., the list of tables names is null)
+   * @throws UnknownDBException
+   *          The requested database could not be fetched.
+   * @throws TException
+   *          A thrift communication error occurred
+   * @throws MetaException
+   *          Any other errors
+   */
+  List<Table> getTableObjectsByRequest(GetTablesRequest request)
+          throws MetaException, InvalidOperationException, UnknownDBException, TException;
+
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
    * should only be used if you actually need all the information about the tables.

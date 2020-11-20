@@ -22,13 +22,7 @@ import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
-import org.apache.hadoop.hive.metastore.api.Catalog;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
-import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
-import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.api.UnknownDBException;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
@@ -44,10 +38,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
 
@@ -400,6 +391,132 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     client.getTableObjectsByName(OTHER_DATABASE, tableNames);
     Assert.assertEquals("Found tables", 0, tables.size());
 
+  }
+
+  @Test
+  public void testGetTableObjectsWithProjectionOfSingleField() throws Exception {
+    List<String> tableNames = new ArrayList<>();
+    tableNames.add(testTables[0].getTableName());
+    tableNames.add(testTables[1].getTableName());
+
+    GetTablesRequest request = new GetTablesRequest();
+    request.setProjectionSpec(new GetProjectionsSpec());
+    request.setTblNames(tableNames);
+    request.setDbName(DEFAULT_DATABASE);
+
+    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    List<String> projectedFields = Collections.singletonList("sd.location");
+    projectSpec.setFieldList(projectedFields);
+
+    List<Table> tables = client.getTableObjectsByRequest(request);
+
+    Assert.assertEquals("Found tables", 2, tables.size());
+
+    for(Table table : tables) {
+      Assert.assertFalse(table.isSetDbName());
+      Assert.assertFalse(table.isSetCatName());
+      Assert.assertFalse(table.isSetTableName());
+      Assert.assertTrue(table.isSetSd());
+    }
+  }
+
+  @Test
+  public void testGetTableObjectsWithNullProjectionSpec() throws Exception {
+    List<String> tableNames = new ArrayList<>();
+    tableNames.add(testTables[0].getTableName());
+    tableNames.add(testTables[1].getTableName());
+
+    GetTablesRequest request = new GetTablesRequest();
+    request.setProjectionSpec(null);
+    request.setTblNames(tableNames);
+    request.setDbName(DEFAULT_DATABASE);
+
+    Assert.assertThrows(Exception.class, ()->client.getTableObjectsByRequest(request));
+  }
+
+  @Test
+  public void testGetTableObjectsWithNonExistentColumn() throws Exception {
+    List<String> tableNames = new ArrayList<>();
+    tableNames.add(testTables[0].getTableName());
+    tableNames.add(testTables[1].getTableName());
+
+    GetTablesRequest request = new GetTablesRequest();
+    request.setProjectionSpec(new GetProjectionsSpec());
+    request.setTblNames(tableNames);
+    request.setDbName(DEFAULT_DATABASE);
+
+    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    List<String> projectedFields = Arrays.asList("Invalid1");
+    projectSpec.setFieldList(projectedFields);
+
+    Assert.assertThrows(Exception.class, ()->client.getTableObjectsByRequest(request));
+  }
+
+
+  @Test
+  public void testGetTableObjectsWithNonExistentColumns() throws Exception {
+    List<String> tableNames = new ArrayList<>();
+    tableNames.add(testTables[0].getTableName());
+    tableNames.add(testTables[1].getTableName());
+
+    GetTablesRequest request = new GetTablesRequest();
+    request.setProjectionSpec(new GetProjectionsSpec());
+    request.setTblNames(tableNames);
+    request.setDbName(DEFAULT_DATABASE);
+
+    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    List<String> projectedFields = Arrays.asList("Invalid1", "Invalid2");
+    projectSpec.setFieldList(projectedFields);
+
+    Assert.assertThrows(Exception.class, ()->client.getTableObjectsByRequest(request));
+  }
+
+  @Test
+  public void testGetTableObjectsWithEmptyProjection() throws Exception {
+    List<String> tableNames = new ArrayList<>();
+    tableNames.add(testTables[0].getTableName());
+    tableNames.add(testTables[1].getTableName());
+
+    GetTablesRequest request = new GetTablesRequest();
+    request.setProjectionSpec(new GetProjectionsSpec());
+    request.setTblNames(tableNames);
+    request.setDbName(DEFAULT_DATABASE);
+
+    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    List<String> projectedFields = Arrays.asList();
+    projectSpec.setFieldList(projectedFields);
+
+    List<Table> tables = client.getTableObjectsByRequest(request);
+
+    Assert.assertEquals("Found tables", 0, tables.size());
+  }
+
+  @Test
+  public void testGetTableObjectsWithProjectionOfMultipleField() throws Exception {
+    List<String> tableNames = new ArrayList<>();
+    tableNames.add(testTables[0].getTableName());
+    tableNames.add(testTables[1].getTableName());
+
+    GetTablesRequest request = new GetTablesRequest();
+    request.setProjectionSpec(new GetProjectionsSpec());
+    request.setTblNames(tableNames);
+    request.setDbName(DEFAULT_DATABASE);
+
+    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    List<String> projectedFields = Arrays.asList("database", "tableName", "createTime", "lastAccessTime");
+    projectSpec.setFieldList(projectedFields);
+
+    List<Table> tables = client.getTableObjectsByRequest(request);
+
+    Assert.assertEquals("Found tables", 2, tables.size());
+
+    for(Table table : tables) {
+      Assert.assertTrue(table.isSetDbName());
+      Assert.assertTrue(table.isSetCatName());
+      Assert.assertTrue(table.isSetTableName());
+      Assert.assertTrue(table.isSetLastAccessTime());
+      Assert.assertFalse(table.isSetSd());
+    }
   }
 
   @Test
