@@ -44,6 +44,8 @@ import java.lang.reflect.*;
 import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.Sets;
+import org.apache.hadoop.hive.metastore.api.DataConnector;
+import org.apache.hadoop.hive.metastore.api.DatabaseType;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
@@ -55,6 +57,7 @@ import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.dataconnector.jdbc.AbstractJDBCConnectorProvider;
 import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.hadoop.hive.metastore.utils.MetastoreVersionInfo;
@@ -105,6 +108,7 @@ import com.google.common.collect.Lists;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -3487,5 +3491,137 @@ public abstract class TestHiveMetaStore {
     client.alter_table(dbName, tblName, tblUpdated);
 
     silentDropDatabase(dbName);
+  }
+
+  @Test
+  public void testDataConnector() throws Throwable {
+    final String connector_name1 = "test_connector1";
+    final String connector_name2 = "test_connector2";
+    final String mysql_type = "mysql";
+    final String mysql_url = "jdbc:mysql://nightly1.apache.org:3306/hive1";
+    final String postgres_type = "postgres";
+    final String postgres_url = "jdbc:postgresql://localhost:5432";
+
+    try {
+      DataConnector connector = new DataConnector(connector_name1, mysql_type, mysql_url);
+      Map<String, String> params = new HashMap<>();
+      params.put(AbstractJDBCConnectorProvider.JDBC_USERNAME, "hive");
+      params.put(AbstractJDBCConnectorProvider.JDBC_PASSWORD, "hive");
+      connector.setParameters(params);
+      client.createDataConnector(connector);
+
+      DataConnector dConn = client.getDataConnector(connector_name1);
+      assertNotNull(dConn);
+      assertEquals("name of returned data connector is different from that of inserted connector", connector_name1,
+          dConn.getName());
+      assertEquals("type of data connector returned is different from the type inserted", mysql_type, dConn.getType());
+      assertEquals("url of the data connector returned is different from the url inserted", mysql_url, dConn.getUrl());
+      assertEquals(SecurityUtils.getUser(), dConn.getOwnerName());
+      assertEquals(PrincipalType.USER, dConn.getOwnerType());
+      assertNotEquals("Size of data connector parameters not as expected", 0, dConn.getParametersSize());
+
+      try {
+        client.createDataConnector(connector);
+        fail("Creating duplicate connector should fail");
+      } catch (Exception e) { /* as expected */ }
+
+      connector = new DataConnector(connector_name2, postgres_type, postgres_url);
+      params = new HashMap<>();
+      params.put(AbstractJDBCConnectorProvider.JDBC_USERNAME, "hive");
+      params.put(AbstractJDBCConnectorProvider.JDBC_PASSWORD, "hive");
+      connector.setParameters(params);
+      client.createDataConnector(connector);
+
+      dConn = client.getDataConnector(connector_name2);
+      assertEquals("name of returned data connector is different from that of inserted connector", connector_name2,
+          dConn.getName());
+      assertEquals("type of data connector returned is different from the type inserted", postgres_type, dConn.getType());
+      assertEquals("url of the data connector returned is different from the url inserted", postgres_url, dConn.getUrl());
+
+      List<String> connectors = client.getAllDataConnectors();
+      assertEquals("Number of dataconnectors returned is not as expected", 2, connectors.size());
+
+      DataConnector connector1 = new DataConnector(connector);
+      connector1.setUrl(mysql_url);
+      client.alterDataConnector(connector.getName(), connector1);
+
+      dConn = client.getDataConnector(connector.getName());
+      assertEquals("url of the data connector returned is different from the url inserted", mysql_url, dConn.getUrl());
+
+      // alter data connector parameters
+      params.put(AbstractJDBCConnectorProvider.JDBC_NUM_PARTITIONS, "5");
+      connector1.setParameters(params);
+      client.alterDataConnector(connector.getName(), connector1);
+
+      dConn = client.getDataConnector(connector.getName());
+      assertEquals("Size of data connector parameters not as expected", 3, dConn.getParametersSize());
+
+      // alter data connector parameters
+      connector1.setOwnerName("hiveadmin");
+      connector1.setOwnerType(PrincipalType.ROLE);
+      client.alterDataConnector(connector.getName(), connector1);
+
+      dConn = client.getDataConnector(connector.getName());
+      assertEquals("Data connector owner name not as expected", "hiveadmin", dConn.getOwnerName());
+      assertEquals("Data connector owner type not as expected", PrincipalType.ROLE, dConn.getOwnerType());
+
+      client.dropDataConnector(connector_name1, false, false);
+      connectors = client.getAllDataConnectors();
+      assertEquals("Number of dataconnectors returned is not as expected", 1, connectors.size());
+
+      client.dropDataConnector(connector_name2, false, false);
+      connectors = client.getAllDataConnectors();
+      assertEquals("Number of dataconnectors returned is not as expected", 0, connectors.size());
+    } catch (Throwable e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testDataConnector() failed.");
+      throw e;
+    }
+  }
+
+  @Test
+  public void testRemoteDatabase() throws Throwable {
+    final String connector_name1 = "test_connector1";
+    final String mysql_type = "mysql";
+    final String mysql_url = "jdbc:mysql://nightly1.apache.org:3306/hive1";
+    final String db_name = "mysql_remote";
+    final String db2 = "mysql_dup";
+
+    try {
+      DataConnector connector = new DataConnector(connector_name1, mysql_type, mysql_url);
+      Map<String, String> params = new HashMap<>();
+      params.put(AbstractJDBCConnectorProvider.JDBC_USERNAME, "hive");
+      params.put(AbstractJDBCConnectorProvider.JDBC_PASSWORD, "hive");
+      connector.setParameters(params);
+      client.createDataConnector(connector);
+
+      DataConnector dConn = client.getDataConnector(connector_name1);
+      new DatabaseBuilder().setName(db_name).setType(DatabaseType.REMOTE).setConnectorName(connector_name1)
+          .setRemoteDBName(db_name).create(client, conf);
+
+      Database db = client.getDatabase(db_name);
+      assertNotNull(db);
+      assertEquals(db.getType(), DatabaseType.REMOTE);
+      assertEquals(db.getConnector_name(), connector_name1);
+      assertEquals(db.getRemote_dbname(), db_name);
+
+      // new db in hive pointing to same remote db.
+      new DatabaseBuilder().setName(db2).setType(DatabaseType.REMOTE).setConnectorName(connector_name1)
+          .setRemoteDBName(db_name).create(client, conf);
+
+      db = client.getDatabase(db2);
+      assertNotNull(db);
+      assertEquals(db.getType(), DatabaseType.REMOTE);
+      assertEquals(db.getConnector_name(), connector_name1);
+      assertEquals(db.getRemote_dbname(), db_name);
+
+      client.dropDataConnector(connector_name1, false, false);
+      client.dropDatabase(db_name);
+      client.dropDatabase(db2);
+    } catch (Throwable e) {
+      System.err.println(StringUtils.stringifyException(e));
+      System.err.println("testRemoteDatabase() failed.");
+      throw e;
+    }
   }
 }
