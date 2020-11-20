@@ -146,7 +146,7 @@ public class ImpalaPlanner {
 
     } catch (ImpalaException e) {
       // Catch and wrap Impala exception types
-      throw new HiveException("Failed creating plan", e);
+      throw new HiveException(e);
     }
   }
 
@@ -244,7 +244,7 @@ public class ImpalaPlanner {
             }
             hdfsTable = HdfsTable.createCtasTarget(new org.apache.impala.catalog.Db(msTbl.getDbName(), msDb),  msTbl);
           } catch (Exception e) {
-            throw new HiveException("Failed to create CTAS target", e);
+            throw new HiveException(e);
           }
         } else {
           // Load the target table
