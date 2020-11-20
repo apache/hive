@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -8377,10 +8378,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (listeners != null && !listeners.isEmpty()) {
         MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_TXN,
                 new CommitTxnEvent(rqst.getTxnid(), this));
-        CompactionInfo compactionInfo = getTxnHandler().getCompactionByTxnId(rqst.getTxnid());
-        if (compactionInfo != null) {
+        Optional<CompactionInfo> compactionInfo = getTxnHandler().getCompactionByTxnId(rqst.getTxnid());
+        if (compactionInfo.isPresent()) {
           MetaStoreListenerNotifier.notifyEvent(listeners, EventType.COMMIT_COMPACTION,
-              new CommitCompactionEvent(rqst.getTxnid(), compactionInfo, this));
+              new CommitCompactionEvent(rqst.getTxnid(), compactionInfo.get(), this));
         }
       }
     }

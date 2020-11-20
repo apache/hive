@@ -1187,7 +1187,7 @@ class CompactionTxnHandler extends TxnHandler {
     }
   }
 
-  private CompactionInfo getCompactionByTxnId(Connection dbConn, long txnid) throws SQLException, MetaException {
+  private Optional<CompactionInfo> getCompactionByTxnId(Connection dbConn, long txnid) throws SQLException, MetaException {
     CompactionInfo info = null;
     try (PreparedStatement pStmt = dbConn.prepareStatement(SELECT_COMPACTION_QUEUE_BY_TXN_ID)) {
       pStmt.setLong(1, txnid);
@@ -1197,11 +1197,11 @@ class CompactionTxnHandler extends TxnHandler {
         }
       }
     }
-    return info;
+    return Optional.ofNullable(info);
   }
 
   @Override
-  public CompactionInfo getCompactionByTxnId(long txnId) throws MetaException {
+  public Optional<CompactionInfo> getCompactionByTxnId(long txnId) throws MetaException {
     Connection dbConn = null;
     try {
       try {
@@ -1225,11 +1225,11 @@ class CompactionTxnHandler extends TxnHandler {
       throws MetaException, SQLException {
     super.createCommitNotificationEvent(dbConn, txnid, txnType);
     if (transactionalListeners != null) {
-      CompactionInfo compactionInfo = getCompactionByTxnId(dbConn, txnid);
-      if (compactionInfo != null) {
+      Optional<CompactionInfo> compactionInfo = getCompactionByTxnId(dbConn, txnid);
+      if (compactionInfo.isPresent()) {
         MetaStoreListenerNotifier
             .notifyEventWithDirectSql(transactionalListeners, EventMessage.EventType.COMMIT_COMPACTION,
-                new CommitCompactionEvent(txnid, compactionInfo), dbConn, sqlGenerator);
+                new CommitCompactionEvent(txnid, compactionInfo.get()), dbConn, sqlGenerator);
       } else {
         LOG.warn("No compaction queue record found for Compaction type transaction commit. txnId:" + txnid);
       }

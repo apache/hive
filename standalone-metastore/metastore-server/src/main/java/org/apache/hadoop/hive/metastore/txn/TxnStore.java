@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -563,5 +564,5 @@ public interface TxnStore extends Configurable {
    * @throws MetaException ex
    */
   @RetrySemantics.ReadOnly
-  CompactionInfo getCompactionByTxnId(long txnId) throws MetaException;
+  Optional<CompactionInfo> getCompactionByTxnId(long txnId) throws MetaException;
 }
