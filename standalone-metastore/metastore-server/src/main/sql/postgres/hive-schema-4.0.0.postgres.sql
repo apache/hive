@@ -84,7 +84,7 @@ CREATE TABLE "DBS" (
     "CTLG_NAME" varchar(256) DEFAULT 'hive' NOT NULL,
     "CREATE_TIME" bigint,
     "DB_MANAGED_LOCATION_URI" character varying(4000),
-    "TYPE" character varying(32) DEFAULT 'NATIVE',
+    "TYPE" character varying(32) DEFAULT 'NATIVE' NOT NULL,
     "DATACONNECTOR_NAME" character varying(128),
     "REMOTE_DBNAME" character varying(128)
 );

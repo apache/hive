@@ -919,12 +919,12 @@ struct GetPartitionsByNamesResult {
 }
 
 struct DataConnector {
-  1: string name
-  2: string type
-  3: string url
-  4: optional string description
-  5: optional map<string,string> parameters
-  6: optional string ownerName
+  1: string name,
+  2: string type,
+  3: string url,
+  4: optional string description,
+  5: optional map<string,string> parameters,
+  6: optional string ownerName,
   7: optional PrincipalType ownerType,
   8: optional i32 createTime
 }
