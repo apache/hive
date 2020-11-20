@@ -1875,38 +1875,10 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
       perfLogger.perfLogEnd(this.getClass().getName(), PerfLogger.OPTIMIZER, "Calcite: Plan generation");
 
-      if (conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_QUERY_TEXT) &&
-              mvRebuildMode == MaterializationRebuildMode.NONE &&
-              !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
-              getQB().getIsQuery() &&
-              getQB().hasTableDefined()) {
-        unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
-        String expandedQueryText = ctx.getTokenRewriteStream()
-            .toString(EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
-        try {
-          List<RelOptMaterialization> relOptMaterializationList = db.getMaterialization(
-                  expandedQueryText, getTablesUsed(calciteGenPlan), getTxnMgr());
-          for (RelOptMaterialization relOptMaterialization : relOptMaterializationList) {
-            try {
-              HiveTableScan mvScan;
-              if (relOptMaterialization.tableRel instanceof Project) {
-                mvScan = (HiveTableScan) relOptMaterialization.tableRel.getInput(0);
-              } else {
-                mvScan = (HiveTableScan) relOptMaterialization.tableRel;
-              }
-              Table hiveTableMD = ((RelOptHiveTable) mvScan.getTable()).getHiveTableMD();
-              if (db.validateMaterializedViewsFromRegistry(
-                      singletonList(hiveTableMD),
-                      singletonList(hiveTableMD.getFullyQualifiedName()),
-                      getTxnMgr())) {
-                return copyMaterializationToNewCluster(optCluster, relOptMaterialization).tableRel;
-              }
-            } catch (HiveException e) {
-              LOG.warn("Exception validating materialized views", e);
-            }
-          }
-        } catch (HiveException e) {
-          LOG.warn(String.format("Exception while loading materialized views for query '%s'", expandedQueryText), e);
+      if (isMaterializedViewRewritingByTextEnabled()) {
+        RelNode rewrittenPlan = applyMaterializedViewRewritingByText(calciteGenPlan, optCluster);
+        if (rewrittenPlan != null) {
+          return rewrittenPlan;
         }
       }
 
@@ -2388,7 +2360,48 @@ public class CalcitePlanner extends SemanticAnalyzer {
       final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
               optCluster, viewScan);
       return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
-          materialization.qualifiedTableName);
+              materialization.qualifiedTableName);
+    }
+
+    private boolean isMaterializedViewRewritingByTextEnabled() {
+      return conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_QUERY_TEXT) &&
+              mvRebuildMode == MaterializationRebuildMode.NONE &&
+              !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
+              getQB().getIsQuery() &&
+              getQB().hasTableDefined();
+    }
+
+    private RelNode applyMaterializedViewRewritingByText(RelNode calciteGenPlan, RelOptCluster optCluster) {
+      unparseTranslator.applyTranslations(ctx.getTokenRewriteStream(), EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM);
+      String expandedQueryText = ctx.getTokenRewriteStream()
+              .toString(EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
+      try {
+        List<RelOptMaterialization> relOptMaterializationList = db.getMaterialization(
+                expandedQueryText, getTablesUsed(calciteGenPlan), getTxnMgr());
+        for (RelOptMaterialization relOptMaterialization : relOptMaterializationList) {
+          try {
+            HiveTableScan mvScan;
+            if (relOptMaterialization.tableRel instanceof Project) {
+              mvScan = (HiveTableScan) relOptMaterialization.tableRel.getInput(0);
+            } else {
+              mvScan = (HiveTableScan) relOptMaterialization.tableRel;
+            }
+            Table hiveTableMD = ((RelOptHiveTable) mvScan.getTable()).getHiveTableMD();
+            if (db.validateMaterializedViewsFromRegistry(
+                    singletonList(hiveTableMD),
+                    singletonList(hiveTableMD.getFullyQualifiedName()),
+                    getTxnMgr())) {
+              return copyMaterializationToNewCluster(optCluster, relOptMaterialization).tableRel;
+            }
+          } catch (HiveException e) {
+            LOG.warn("Exception validating materialized views", e);
+          }
+        }
+      } catch (HiveException e) {
+        LOG.warn(String.format("Exception while loading materialized views for query '%s'", expandedQueryText), e);
+      }
+
+      return null;
     }
 
     /**
