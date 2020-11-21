@@ -22,6 +22,7 @@ import com.google.common.base.Stopwatch;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.TimeZone;
@@ -88,12 +89,13 @@ public class TestTimestampTZ {
 
   @Test
   public void testPerformance() {
+    // Warm up the jvm before measuring.
     for (int i = 0; i < 100; i++) {
       TimestampTZUtil.parse("2017-01-01 13:33:00", ZoneId.of("UTC"));
     }
     Stopwatch sw = Stopwatch.createStarted();
     for (int i = 0; i < 10000; i++) {
-      TimestampTZUtil.parse("2017-01-01 13:33:00", ZoneId.of("UTC"));
+      TimestampTZUtil.parse(LocalDate.of(2020, 11, 10).minusDays(i).toString(), ZoneId.of("UTC"));
     }
     System.out.println(sw.elapsed(TimeUnit.MILLISECONDS));
   }
