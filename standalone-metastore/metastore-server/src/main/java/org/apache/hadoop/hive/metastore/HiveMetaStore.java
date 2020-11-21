@@ -1713,6 +1713,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ms.openTransaction();
         db = ms.getDatabase(catName, name);
+        if (db.getType() == DatabaseType.REMOTE) {
+          success = drop_remote_database_core(ms, db);
+          return;
+        }
         isReplicated = isDbReplicationTarget(db);
 
         if (!isInTest && ReplChangeManager.isSourceOfReplication(db)) {
@@ -1899,6 +1903,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
+    private boolean drop_remote_database_core(RawStore ms, final Database db) throws MetaException, NoSuchObjectException {
+      boolean success = false;
+      firePreEvent(new PreDropDatabaseEvent(db, this));
+
+      if (ms.dropDatabase(db.getCatalogName(), db.getName())) {
+        success = ms.commitTransaction();
+      }
+      return success;
+    }
+
     @Override
     public void drop_database(final String dbName, final boolean deleteData, final boolean cascade)
         throws NoSuchObjectException, InvalidOperationException, MetaException {
@@ -1983,14 +1997,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
     }
 
-    // Assumes that the catalog has already been set.
     private void create_dataconnector_core(RawStore ms, final DataConnector connector)
         throws AlreadyExistsException, InvalidObjectException, MetaException {
       if (!MetaStoreUtils.validateName(connector.getName(), conf)) {
         throw new InvalidObjectException(connector.getName() + " is not a valid dataconnector name");
       }
 
-      // connector.setLocationUri(dbPath.toString());
       if (connector.getOwnerName() == null){
         try {
           connector.setOwnerName(SecurityUtils.getUGI().getShortUserName());
@@ -2001,7 +2013,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       long time = System.currentTimeMillis()/1000;
       connector.setCreateTime((int) time);
       boolean success = false;
-      boolean madeDir = false;
       Map<String, String> transactionalListenersResponses = Collections.emptyMap();
       try {
         firePreEvent(new PreCreateDataConnectorEvent(connector, this));
