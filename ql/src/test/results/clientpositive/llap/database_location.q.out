@@ -10,7 +10,7 @@ PREHOOK: Input: database:db1
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED db1
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:db1
-db1		location/in/test		hive_test_user	USER	
+db1		location/in/test		hive_test_user	USER			
 PREHOOK: query: USE db1
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:db1
@@ -72,20 +72,20 @@ COMMENT 'database 2'
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:db2
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: CREATE DATABASE db2
 COMMENT 'database 2'
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:db2
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DESCRIBE DATABASE EXTENDED db2
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:db2
 POSTHOOK: query: DESCRIBE DATABASE EXTENDED db2
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:db2
-db2	database 2	location/in/test		hive_test_user	USER	
+db2	database 2	location/in/test		hive_test_user	USER			
 PREHOOK: query: USE db2
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:db2
@@ -147,32 +147,38 @@ CREATE DATABASE db3
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:db3
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 CREATE DATABASE db3
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:db3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-0
     Create Database
-#### A masked pattern was here ####
+      database type:
+      locationUri: hdfs://### HDFS PATH ###
+      managed location uri: hdfs://### HDFS PATH ###
       name: db3
 
 PREHOOK: query: CREATE DATABASE db3
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:db3
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: CREATE DATABASE db3
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:db3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: SHOW CREATE DATABASE db3
 PREHOOK: type: SHOW_CREATEDATABASE
 PREHOOK: Input: database:db3
@@ -181,26 +187,26 @@ POSTHOOK: type: SHOW_CREATEDATABASE
 POSTHOOK: Input: database:db3
 CREATE DATABASE `db3`
 LOCATION
-#### A masked pattern was here ####
+  'hdfs://### HDFS PATH ###'
 MANAGEDLOCATION
-#### A masked pattern was here ####
+  'hdfs://### HDFS PATH ###'
 PREHOOK: query: DESCRIBE DATABASE db3
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:db3
 POSTHOOK: query: DESCRIBE DATABASE db3
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:db3
-#### A masked pattern was here ####
+db3		location/in/test	hdfs://### HDFS PATH ###	hive_test_user	USER		
 PREHOOK: query: EXPLAIN
 #### A masked pattern was here ####
 PREHOOK: type: ALTERDATABASE_LOCATION
 PREHOOK: Output: database:db3
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERDATABASE_LOCATION
 POSTHOOK: Output: database:db3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -208,32 +214,33 @@ STAGE PLANS:
   Stage: Stage-0
 #### A masked pattern was here ####
       name: db3
-#### A masked pattern was here ####
+      location: hdfs://### HDFS PATH ###
 
 #### A masked pattern was here ####
 PREHOOK: type: ALTERDATABASE_LOCATION
 PREHOOK: Output: database:db3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERDATABASE_LOCATION
 POSTHOOK: Output: database:db3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DESCRIBE DATABASE db3
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:db3
 POSTHOOK: query: DESCRIBE DATABASE db3
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:db3
-#### A masked pattern was here ####
+db3		location/in/test	hdfs://### HDFS PATH ###	hive_test_user	USER		
 PREHOOK: query: EXPLAIN
 #### A masked pattern was here ####
 PREHOOK: type: ALTERDATABASE_LOCATION
 PREHOOK: Output: database:db3
-#### A masked pattern was here ####
+PREHOOK: Output: hdfs://### HDFS PATH ###
 POSTHOOK: query: EXPLAIN
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERDATABASE_LOCATION
 POSTHOOK: Output: database:db3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -241,19 +248,20 @@ STAGE PLANS:
   Stage: Stage-0
 #### A masked pattern was here ####
       name: db3
-#### A masked pattern was here ####
+      managed location: hdfs://### HDFS PATH ###
 
 #### A masked pattern was here ####
 PREHOOK: type: ALTERDATABASE_LOCATION
 PREHOOK: Output: database:db3
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: ALTERDATABASE_LOCATION
 POSTHOOK: Output: database:db3
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: DESCRIBE DATABASE db3
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:db3
 POSTHOOK: query: DESCRIBE DATABASE db3
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:db3
-#### A masked pattern was here ####
+db3		location/in/test	hdfs://### HDFS PATH ###	hive_test_user	USER		

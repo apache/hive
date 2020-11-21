@@ -1,17 +1,18 @@
 #### A masked pattern was here ####
 PREHOOK: type: CREATEDATABASE
 PREHOOK: Output: database:newDB
+PREHOOK: Output: hdfs://### HDFS PATH ###
 #### A masked pattern was here ####
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:newDB
-#### A masked pattern was here ####
+POSTHOOK: Output: hdfs://### HDFS PATH ###
 PREHOOK: query: describe database extended newDB
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:newdb
 POSTHOOK: query: describe database extended newDB
 POSTHOOK: type: DESCDATABASE
 POSTHOOK: Input: database:newdb
-newdb		location/in/test		hive_test_user	USER	
+newdb		location/in/test		hive_test_user	USER			
 PREHOOK: query: use newDB
 PREHOOK: type: SWITCHDATABASE
 PREHOOK: Input: database:newdb
