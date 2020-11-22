@@ -1907,27 +1907,27 @@ public class ObjectStore implements RawStore, Configurable {
           mtables.add(mtable);
         }
       }
+
+      //TODO: Verify
+      // If mtables were null due to an exception, this code will not be hit. However if the pattern did not match in
+      // the query and mtables were null then we can verify if this happened because the DB was not found.
+      if (mtables == null || mtables.isEmpty()) {
+        verifyDBExists(catName, db);
+      } else {
+        for (Iterator iter = mtables.iterator(); iter.hasNext(); ) {
+          Table tbl = convertToTable((MTable) iter.next());
+          // Retrieve creation metadata if needed
+          if (TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
+            tbl.setCreationMetadata(
+                    convertToCreationMetadata(
+                            getCreationMetadata(tbl.getCatName(), tbl.getDbName(), tbl.getTableName())));
+          }
+          tables.add(tbl);
+        }
+      }
       committed = commitTransaction();
     } finally {
       rollbackAndCleanup(committed, query);
-    }
-
-    //TODO: Verify
-    // If mtables were null due to an exception, this code will not be hit. However if the pattern did not match in
-    // the query and mtables were null then we can verify if this happened because the DB was not found.
-    if (mtables == null || mtables.isEmpty()) {
-      verifyDBExists(catName, db);
-    } else {
-      for (Iterator iter = mtables.iterator(); iter.hasNext(); ) {
-        Table tbl = convertToTable((MTable) iter.next());
-        // Retrieve creation metadata if needed
-        if (TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
-          tbl.setCreationMetadata(
-              convertToCreationMetadata(
-                  getCreationMetadata(tbl.getCatName(), tbl.getDbName(), tbl.getTableName())));
-        }
-        tables.add(tbl);
-      }
     }
     return tables;
   }
