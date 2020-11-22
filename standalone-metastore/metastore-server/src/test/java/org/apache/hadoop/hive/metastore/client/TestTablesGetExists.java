@@ -431,7 +431,9 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     request.setTblNames(tableNames);
     request.setDbName(DEFAULT_DATABASE);
 
-    Assert.assertThrows(Exception.class, ()->client.getTableObjectsByRequest(request));
+    List<Table> tables = client.getTableObjectsByRequest(request);
+
+    Assert.assertEquals("Found tables", 2, tables.size());
   }
 
   @Test
