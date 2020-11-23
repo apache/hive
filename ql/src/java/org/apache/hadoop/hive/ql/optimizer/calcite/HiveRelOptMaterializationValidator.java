@@ -231,8 +231,8 @@ public class HiveRelOptMaterializationValidator extends HiveRelShuttleImpl {
     return visitChildren(union);
   }
 
-  // Note: Not currently part of the HiveRelNode interface
-  private RelNode visit(HiveSortLimit sort) {
+  @Override
+  public RelNode visit(HiveSortLimit sort) {
     setAutomaticRewritingInvalidReason("Statement has unsupported clause: order by.");
     checkExpr(sort.getFetchExpr());
     checkExpr(sort.getOffsetExpr());

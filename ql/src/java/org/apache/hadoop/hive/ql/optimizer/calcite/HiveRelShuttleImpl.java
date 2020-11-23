@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveSortLimit;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -144,6 +145,11 @@ public class HiveRelShuttleImpl implements HiveRelShuttle {
 
     public RelNode visit(LogicalMatch match) {
       return visitChildren(match);
+    }
+
+    @Override
+    public RelNode visit(HiveSortLimit hiveSortLimit) {
+        return visitChildren(hiveSortLimit);
     }
 }
 
