@@ -604,12 +604,9 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           UserGroupInformation.getLoginUser());
       final Partition fp = p;
       final CompactionInfo fci = ci;
-      ugi.doAs(new PrivilegedExceptionAction<Object>() {
-        @Override
-        public Object run() throws Exception {
-          mr.run(conf, jobName.toString(), t, fp, sd, tblValidWriteIds, fci, su, msc, dir);
-          return null;
-        }
+      ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
+        mr.run(conf, jobName.toString(), t, fp, sd, tblValidWriteIds, fci, su, msc, dir);
+        return null;
       });
       try {
         FileSystem.closeAllForUGI(ugi);
