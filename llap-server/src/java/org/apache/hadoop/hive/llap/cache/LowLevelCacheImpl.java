@@ -179,7 +179,7 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
   }
 
   @Override
-  public long markBuffersForProactiveEviction(Predicate<CacheTag> predicate) {
+  public long markBuffersForProactiveEviction(Predicate<CacheTag> predicate, boolean isInstantDeallocation) {
     long markedBytes = 0;
     // Proactive eviction does not need to be perfectly accurate - the iterator returned here might be missing some
     // concurrent inserts / removals but it's fine for us here.
@@ -191,6 +191,9 @@ public class LowLevelCacheImpl implements LowLevelCache, BufferUsageManager, Lla
           Collection<LlapDataBuffer> buffers = fileCache.getCache().values();
           for (LlapDataBuffer buffer : buffers) {
             markedBytes += buffer.markForEviction();
+            if (isInstantDeallocation) {
+              allocator.deallocate(buffer);
+            }
           }
         } finally {
           fileCache.decRef();

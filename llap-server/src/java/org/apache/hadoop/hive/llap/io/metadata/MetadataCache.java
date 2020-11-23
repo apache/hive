@@ -126,7 +126,7 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
   }
 
   @Override
-  public long markBuffersForProactiveEviction(Predicate<CacheTag> predicate) {
+  public long markBuffersForProactiveEviction(Predicate<CacheTag> predicate, boolean isInstantDeallocation) {
     long markedBytes = 0;
 
     Collection<LlapBufferOrBuffers> metadataBufferGroups = metadata.values();
@@ -135,6 +135,9 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
       if (singleBuffer != null) {
         if (predicate.test(singleBuffer.getTag())) {
           markedBytes += singleBuffer.markForEviction();
+          if (isInstantDeallocation) {
+            allocator.deallocate(singleBuffer);
+          }
         }
         continue;
       }
@@ -143,6 +146,9 @@ public class MetadataCache implements LlapIoDebugDump, FileMetadataCache {
       if (predicate.test(buffers[0].getTag())) {
         for (LlapAllocatorBuffer buffer : buffers) {
           markedBytes += buffer.markForEviction();
+          if (isInstantDeallocation) {
+            allocator.deallocate(buffer);
+          }
         }
       }
     }
