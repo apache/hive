@@ -122,7 +122,7 @@ POSTHOOK: type: SHOW_CREATEDATABASE
 POSTHOOK: Input: database:d
 CREATE DATABASE `d`
 LOCATION
-  'hdfs://### HDFS PATH ###'
+#### A masked pattern was here ####
 WITH DBPROPERTIES (
   'test'='yesthisis')
 PREHOOK: query: EXPLAIN USE d
