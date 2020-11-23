@@ -356,7 +356,7 @@ public class TestOrcMetadataCache {
     assertEquals(INVALIDATE_OK, table1Buffers2.getMultipleLlapBuffers()[1].invalidate());
 
     // table1Buffers1:27 (allocated as 32) + table1Buffers2[0]:64 (also allocated as 64)
-    assertEquals(96, cache.markBuffersForProactiveEviction(predicate));
+    assertEquals(96, cache.markBuffersForProactiveEviction(predicate, false));
 
     // Single buffer for file1 should be marked as per predicate
     assertTrue(table1Buffers1.getSingleLlapBuffer().isMarkedForEviction());

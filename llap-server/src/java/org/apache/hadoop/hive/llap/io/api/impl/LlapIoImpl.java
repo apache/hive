@@ -260,12 +260,14 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     final ProactiveEviction.Request request = ProactiveEviction.Request.Builder.create()
         .fromProtoRequest(protoRequest).build();
     Predicate<CacheTag> predicate = tag -> request.isTagMatch(tag);
+    boolean isInstantDeallocation = HiveConf.getBoolVar(daemonConf,
+        HiveConf.ConfVars.LLAP_IO_PROACTIVE_EVICTION_INSTANT_DEALLOC);
     LOG.debug("Starting proactive eviction.");
     long time = System.currentTimeMillis();
 
-    long markedBytes = dataCache.markBuffersForProactiveEviction(predicate);
-    markedBytes += fileMetadataCache.markBuffersForProactiveEviction(predicate);
-    markedBytes += serdeCache.markBuffersForProactiveEviction(predicate);
+    long markedBytes = dataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    markedBytes += fileMetadataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    markedBytes += serdeCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
 
     // Signal mark phase of proactive eviction was done
     if (markedBytes > 0) {
