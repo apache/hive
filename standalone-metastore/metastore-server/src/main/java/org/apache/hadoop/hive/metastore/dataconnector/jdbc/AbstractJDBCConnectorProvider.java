@@ -1,5 +1,6 @@
 package org.apache.hadoop.hive.metastore.dataconnector.jdbc;
 
+import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -219,16 +220,13 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
     return rs;
   }
 
-  private String wrapSize(int size) {
+  protected String wrapSize(int size) {
     return "(" + size + ")";
   }
 
-  protected abstract String getDataType(String dbType, int size);
-
-  /*
-  private String getDataType(String mySqlType, int size) {
-    //TODO: Geomentric, network, bit, array data types of postgresql needs to be supported.
-    switch(mySqlType)
+  // subclasses call this first, anything that is not mappable by this code is mapped in the subclass
+  protected String getDataType(String mySqlType, int size) {
+    switch(mySqlType.toLowerCase())
     {
     case "char":
       return ColumnType.CHAR_TYPE_NAME + wrapSize(size);
@@ -288,7 +286,6 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       return ColumnType.VOID_TYPE_NAME;
     }
   }
- */
 
   @Override protected String getInputClass() {
     return JDBC_INPUTFORMAT_CLASS;

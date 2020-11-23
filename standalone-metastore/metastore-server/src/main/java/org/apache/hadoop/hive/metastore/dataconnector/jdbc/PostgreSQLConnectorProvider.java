@@ -45,72 +45,23 @@ public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
     return null;
   }
 
-  private String wrapSize(int size) {
-    return "(" + size + ")";
-  }
-
   protected String getDataType(String dbDataType, int size) {
-    //TODO: Geomentric, network, bit, array data types of postgresql needs to be supported.
-    switch(dbDataType.toLowerCase())
-    {
-    case "char":
-    case "bpchar":
-      return ColumnType.CHAR_TYPE_NAME + wrapSize(size);
-    case "varchar":
-    case "tinytext":
-      return ColumnType.VARCHAR_TYPE_NAME + wrapSize(size);
-    case "text":
-    case "mediumtext":
-    case "enum":
-    case "set":
-    case "tsvector":
-    case "tsquery":
-    case "uuid":
-    case "json":
-      return ColumnType.STRING_TYPE_NAME;
-    case "blob":
-    case "mediumblob":
-    case "longblob":
-    case "bytea":
-      return ColumnType.BINARY_TYPE_NAME;
-    case "tinyint":
-      return ColumnType.TINYINT_TYPE_NAME;
-    case "smallint":
-    case "smallserial":
-      return ColumnType.SMALLINT_TYPE_NAME;
-    case "mediumint":
-    case "int":
-    case "serial":
-      return ColumnType.INT_TYPE_NAME;
-    case "bigint":
-    case "bigserial":
-    case "int8":
-    case "money":
-      return ColumnType.BIGINT_TYPE_NAME;
-    case "float":
-    case "real":
-      return ColumnType.FLOAT_TYPE_NAME;
-    case "double":
-    case "double precision":
-      return ColumnType.DOUBLE_TYPE_NAME;
-    case "decimal":
-    case "numeric":
-      return ColumnType.DECIMAL_TYPE_NAME;
-    case "date":
-      return ColumnType.DATE_TYPE_NAME;
-    case "datetime":
-      return ColumnType.DATETIME_TYPE_NAME;
-    case "timestamp":
-    case "time":
-    case "interval":
-      return ColumnType.TIMESTAMP_TYPE_NAME;
-    case "timestampz":
-    case "timez":
-      return ColumnType.TIMESTAMPTZ_TYPE_NAME;
-    case "boolean":
-      return ColumnType.BOOLEAN_TYPE_NAME;
-    default:
-      return ColumnType.VOID_TYPE_NAME;
+    String mappedType = super.getDataType(dbDataType, size);
+    if (!mappedType.equalsIgnoreCase(ColumnType.VOID_TYPE_NAME)) {
+      return mappedType;
     }
+
+    // map any db specific types here.
+    //TODO: Geomentric, network, bit, array data types of postgresql needs to be supported.
+    switch (dbDataType.toLowerCase())
+    {
+    case "bpchar":
+      mappedType = ColumnType.CHAR_TYPE_NAME + wrapSize(size);
+    case "int8":
+      mappedType = ColumnType.BIGINT_TYPE_NAME;
+    default:
+      mappedType = ColumnType.VOID_TYPE_NAME;
+    }
+    return mappedType;
   }
 }
