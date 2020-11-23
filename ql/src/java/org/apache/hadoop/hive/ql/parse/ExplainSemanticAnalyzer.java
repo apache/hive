@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.exec.ExplainTask;
+import org.apache.hadoop.hive.ql.exec.impala.ImpalaTask;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -228,6 +229,10 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     ExplainTask explTask = (ExplainTask) TaskFactory.get(work);
 
     fieldList = ExplainTask.getResultSchema();
+    if (HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_EXECUTION_ENGINE).equals("impala") && !conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST)) {
+        assert tasks.size() == 1 && tasks.get(0) instanceof ImpalaTask;
+        explTask.addDependentTask(tasks.get(0));
+    }
     rootTasks.add(explTask);
   }
 

@@ -187,6 +187,9 @@ public class ImpalaPlanner {
     // to mimic Impala's behavior, use EXTENDED mode explain except for EXPLAIN statements
     TExplainLevel explainLevel = isExplain ? ctx_.getQueryOptions().getExplain_level() :
         TExplainLevel.EXTENDED;
+    if (isExplain) {
+      result.setStmt_type(TStmtType.EXPLAIN);
+    }
     queryExecRequest.setQuery_plan(getExplainString(allFragments, explainLevel));
 
 

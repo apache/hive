@@ -32,7 +32,7 @@ public class ImpalaCompiledPlan {
   private final EventSequence timeline;
   private ImpalaPlanner planner;
   private PlanNode planNode;
-  private boolean isExplain;
+  private final boolean isExplain;
 
   public ImpalaCompiledPlan(ImpalaPlanner planner, PlanNode planNode, EventSequence timeline, boolean isExplain) {
     this.timeline = timeline;
@@ -43,6 +43,10 @@ public class ImpalaCompiledPlan {
 
   public EventSequence getTimeline() {
     return timeline;
+  }
+
+  public boolean getIsExplain() {
+    return isExplain;
   }
 
   public String getExplain() {

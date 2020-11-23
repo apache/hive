@@ -90,7 +90,7 @@ public class ImpalaTask extends Task<ImpalaWork> implements Serializable {
             }
 
             FetchTask fetch = work.getFetch();
-            if(fetch != null) {
+            if(fetch != null && (work.getType() != ImpalaWork.WorkType.COMPILED_PLAN || !work.getCompiledPlan().getIsExplain())) {
               if (fetch.getFetchOp() instanceof ImpalaStreamingFetchOperator) {
                   Preconditions.checkState(isStreaming);
                   ImpalaStreamingFetchOperator impFetchOp = (ImpalaStreamingFetchOperator) fetch.getFetchOp();

@@ -104,8 +104,8 @@ public class ImpalaCompiler extends TaskCompiler {
         }
 
         Task task = TaskFactory.get(work);
-        if (isPlanned && moveTask != null) {
-          task.addDependentTask(moveTask);
+        if (isPlanned && moveTask != null && !work.getCompiledPlan().getIsExplain()) {
+            task.addDependentTask(moveTask);
         }
         rootTasks.add(task);
     }
