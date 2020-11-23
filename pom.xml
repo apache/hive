@@ -190,7 +190,6 @@
     <mina.version>2.0.0-M5</mina.version>
     <netty.version>4.1.48.Final</netty.version>
     <netty3.version>3.10.5.Final</netty3.version>
-    <netty.hadoop.version>4.0.52.Final</netty.hadoop.version>
     <parquet.version>1.10.0</parquet.version>
     <pig.version>0.16.0</pig.version>
     <plexus.version>1.5.6</plexus.version>
@@ -772,6 +771,10 @@
             <groupId>com.codahale.metrics</groupId>
             <artifactId>metrics-core</artifactId>
           </exclusion>
+            <exclusion>
+              <groupId>io.netty</groupId>
+              <artifactId>netty-all</artifactId>
+            </exclusion>
         </exclusions>
      </dependency>
       <dependency>
@@ -787,6 +790,10 @@
             <groupId>commmons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
+           <exclusion>
+             <groupId>io.netty</groupId>
+             <artifactId>netty-all</artifactId>
+           </exclusion>
         </exclusions>
      </dependency>
       <dependency>
@@ -802,12 +809,22 @@
             <groupId>commmons-logging</groupId>
             <artifactId>commons-logging</artifactId>
           </exclusion>
+           <exclusion>
+             <groupId>io.netty</groupId>
+             <artifactId>netty-all</artifactId>
+           </exclusion>
         </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-minikdc</artifactId>
         <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -838,6 +855,12 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-yarn-server-web-proxy</artifactId>
         <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hbase</groupId>
