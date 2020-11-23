@@ -4581,6 +4581,11 @@ public class HiveConf extends Configuration {
         new TimeValidator(TimeUnit.SECONDS),
         "How frequently (in seconds) LLAP should check for buffers marked for proactive eviction and" +
          "proceed with their eviction."),
+    LLAP_IO_PROACTIVE_EVICTION_INSTANT_DEALLOC("hive.llap.io.proactive.eviction.instant.dealloc", false,
+        "Experimental feature: when set to true, buffer deallocation will happen as soon as proactive eviction " +
+         "notifications are received by the daemon. Sweep phase of proactive eviction will only do the cache policy " +
+         "cleanup in this case. This can increase cache hit ratio but might scale bad in a workload that generates " +
+         "many proactive eviction events."),
     LLAP_IO_SHARE_OBJECT_POOLS("hive.llap.io.share.object.pools", false,
         "Whether to used shared object pools in LLAP IO. A safety flag."),
     LLAP_AUTO_ALLOW_UBER("hive.llap.auto.allow.uber", false,

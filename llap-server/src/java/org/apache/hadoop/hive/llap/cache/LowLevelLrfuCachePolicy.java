@@ -152,7 +152,9 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
 
   @Override
   public void notifyUnlock(LlapCacheableBuffer buffer) {
-    if (proactiveEvictionEnabled) {
+    // In the very rare chance that a buffer was marked but then accessed again we remove the mark from it
+    // - except if instant deallocation is turned on of course -
+    if (proactiveEvictionEnabled && !instantProactiveEviction) {
       buffer.removeProactiveEvictionMark();
     }
     int count = threadLocalCount.get();
@@ -280,7 +282,23 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
         current.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
         if (invalidateResult == LlapCacheableBuffer.INVALIDATE_OK) {
           current = current.prev;
-        } else {
+        }
+        if (invalidateResult == LlapCacheableBuffer.INVALIDATE_ALREADY_INVALID && instantProactiveEviction &&
+            current.isMarkedForEviction()) {
+          // Found a marked and instantly deallocated buffer. If this is a purge we need to do a proper cleanup of
+          // this buffer. If this is a proactive sweep, cleanup will be done later in this method.
+          if (isPurge) {
+            evictionListener.notifyProactivelyEvicted(current);
+          } else {
+            current = current.prev;
+            continue;
+          }
+        }
+
+        // Runs if invalidation didn't succeed due to a non-proactive eviction cause (e.g. buffer is locked and
+        // currently being used). Also runs if there was proactive eviction (+instant dealloc) and this is a purge run.
+        // In either case we need to remove this buffer from the list of to-be-removed buffers.
+        if (invalidateResult != LlapCacheableBuffer.INVALIDATE_OK) {
           // Remove from the list.
           LlapCacheableBuffer newCurrent = current.prev;
           oldTail = removeFromLocalList(oldTail, current);
@@ -315,7 +333,18 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
         result.indexInHeap = LlapCacheableBuffer.NOT_IN_CACHE;
         int invalidateResult = result.invalidate();
         if (invalidateResult != LlapCacheableBuffer.INVALIDATE_OK) {
-          oldHeap[i] = null; // Removed from heap without evicting.
+          if (invalidateResult == LlapCacheableBuffer.INVALIDATE_ALREADY_INVALID && instantProactiveEviction &&
+              result.isMarkedForEviction()) {
+            // Found a marked and instantly deallocated buffer. If this is a purge we need to do a proper cleanup of
+            // this buffer. If this is a proactive sweep cleanup will be done later in this method.
+            if (isPurge) {
+              oldHeap[i] = null;
+              evictionListener.notifyProactivelyEvicted(result);
+            }
+          } else {
+            // Other - non proactive eviction relating cases
+            oldHeap[i] = null; // Removed from heap without evicting.
+          }
         }
       }
     } finally {
@@ -422,6 +451,11 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
           }
           nextCandidate = nextCandidate.prev;
           removeFromListUnderLock(lockedBuffer);
+          if (instantProactiveEviction && LlapCacheableBuffer.INVALIDATE_ALREADY_INVALID == invalidateResult &&
+              lockedBuffer.isMarkedForEviction()) {
+            // Cleanup an already marked and deallocated buffer - this call is needed for administration purposes
+            evictionListener.notifyProactivelyEvicted(lockedBuffer);
+          }
           continue;
         }
         // Update the state to removed-from-list, so that parallel notifyUnlock doesn't modify us.
@@ -501,6 +535,11 @@ public final class LowLevelLrfuCachePolicy extends ProactiveEvictingCachePolicy.
         newRoot.lastUpdate = time;
       }
       heapifyDownUnderLock(newRoot, time);
+    }
+    if (instantProactiveEviction && LlapCacheableBuffer.INVALIDATE_ALREADY_INVALID == invalidateResult &&
+        result.isMarkedForEviction()) {
+      // Cleanup an already marked and deallocated buffer - this call is needed for administration purposes
+      evictionListener.notifyProactivelyEvicted(result);
     }
     // Otherwise we just removed a locked/invalid item from heap; we continue.
     return canEvict ? result : null;
