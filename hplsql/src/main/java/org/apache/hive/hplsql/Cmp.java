@@ -84,12 +84,8 @@ public class Cmp implements Runnable {
       }
       cmp1 = new Cmp(exec, ctx, sql1, conn1.toString(), queryExecutor);
       cmp2 = new Cmp(exec, ctx, sql2, conn2.toString(), queryExecutor);
-      Thread t1 = new Thread(cmp1);
-      Thread t2 = new Thread(cmp2);
-      t1.start();
-      t2.start();
-      t1.join();
-      t2.join();
+      cmp1.run();
+      cmp2.run();
       equal = compare(cmp1.result, cmp2.result);
     }
     catch(Exception e) {
@@ -161,11 +157,11 @@ public class Cmp implements Runnable {
       int cnt2 = rm2.columnCount();
       tests = cnt1;
       while (query1.next() && query2.next()) {
-        for (int i = 1; i <= tests; i++) {
+        for (int i = 0; i < tests; i++) {
           Var v1 = new Var(Var.Type.DERIVED_TYPE);
           Var v2 = new Var(Var.Type.DERIVED_TYPE);
           v1.setValue(query1, i);
-          if (i <= cnt2) {
+          if (i < cnt2) {
             v2.setValue(query2, i);
           }
           boolean e = true;

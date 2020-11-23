@@ -83,7 +83,7 @@ public class JdbcQueryExecutor implements QueryExecutor {
     @Override
     public <T> T get(int columnIndex, Class<T> type) {
       try {
-        return resultSet.getObject(columnIndex, type);
+        return resultSet.getObject(columnIndex + 1, type);
       } catch (SQLException e) {
         throw new QueryException(e);
       }

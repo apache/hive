@@ -41,6 +41,10 @@ public class QueryResult {
     return metadata().columnCount();
   }
 
+  /**
+   * Get the nth column from the row result.
+   * The index is 0 based unlike in JDBC.
+   */
   public <T> T column(int columnIndex, Class<T> type) {
     return rows.get(columnIndex, type);
   }

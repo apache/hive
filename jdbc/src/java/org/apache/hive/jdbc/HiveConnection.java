@@ -18,7 +18,9 @@
 
 package org.apache.hive.jdbc;
 
-import static org.apache.hadoop.hive.conf.Constants.HPLSQL_MODE;
+import static org.apache.hadoop.hive.conf.Constants.MODE;
+import static org.apache.hive.service.cli.operation.hplsql.HplSqlQueryExecutor.HPLSQL;
+
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.File;
@@ -132,7 +134,6 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class HiveConnection implements java.sql.Connection {
   public static final Logger LOG = LoggerFactory.getLogger(HiveConnection.class.getName());
-
   private String jdbcUriString;
   private String host;
   private int port;
@@ -884,7 +885,7 @@ public class HiveConnection implements java.sql.Connection {
           sessConfMap.get(JdbcConnectionParams.CREATE_TABLE_AS_EXTERNAL).toLowerCase());
     }
     if (isHplSqlMode()) {
-      openConf.put("set:hivevar:hplsqlMode", "true");
+      openConf.put("set:hivevar:mode", HPLSQL);
     }
 
     openReq.setConfiguration(openConf);
@@ -931,7 +932,7 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   public boolean isHplSqlMode() {
-    return Boolean.valueOf(sessConfMap.getOrDefault(HPLSQL_MODE, "false"));
+    return HPLSQL.equalsIgnoreCase(sessConfMap.getOrDefault(MODE, ""));
   }
 
   @VisibleForTesting

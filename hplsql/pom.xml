@@ -45,11 +45,6 @@
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-standalone-metastore-common</artifactId>
-      <version>${project.version}</version>
-    </dependency>
       <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-exec</artifactId>

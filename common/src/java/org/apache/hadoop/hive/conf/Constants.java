@@ -86,5 +86,5 @@ public class Constants {
   public static final String COMPACTOR_INTIATOR_THREAD_NAME_FORMAT = "Initiator-executor-thread-%d";
   public static final String COMPACTOR_CLEANER_THREAD_NAME_FORMAT = "Cleaner-executor-thread-%d";
 
-  public static final String HPLSQL_MODE = "hplsqlMode";
+  public static final String MODE = "mode";
 }

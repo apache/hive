@@ -151,7 +151,7 @@ public class TestHplSqlViaBeeLine {
   }
 
   @Test
-    public void testDbChange() throws Throwable {
+  public void testDbChange() throws Throwable {
     String SCRIPT_TEXT =
         "DROP TABLE IF EXISTS result;\n" +
         "CREATE TABLE result (n int);\n" +
@@ -167,7 +167,7 @@ public class TestHplSqlViaBeeLine {
 
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
-            "-u", miniHS2.getBaseJdbcURL() + ";hplsqlMode=true", "-n", userName);
+            "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);
   }
 
   private static String testCommandLineScript(List<String> argList, InputStream inputStream)

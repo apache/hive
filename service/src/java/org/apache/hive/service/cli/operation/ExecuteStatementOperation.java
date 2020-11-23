@@ -17,7 +17,7 @@
  */
 package org.apache.hive.service.cli.operation;
 
-import static org.apache.hadoop.hive.conf.Constants.HPLSQL_MODE;
+import static org.apache.hadoop.hive.conf.Constants.MODE;
 import static org.apache.hive.service.cli.operation.hplsql.HplSqlQueryExecutor.HPLSQL;
 import static org.apache.hive.service.cli.operation.hplsql.HplSqlQueryExecutor.QUERY_EXECUTOR;
 
@@ -96,8 +96,8 @@ public abstract class ExecuteStatementOperation extends Operation {
     return confOverlay != null && !HPLSQL.equals(confOverlay.get(QUERY_EXECUTOR));
   }
 
-  public static Boolean hplSqlMode() {
-    return Boolean.valueOf(SessionState.get().getHiveVariables().getOrDefault(HPLSQL_MODE, "false"));
+  public static boolean hplSqlMode() {
+    return HPLSQL.equalsIgnoreCase(SessionState.get().getHiveVariables().getOrDefault(MODE, ""));
   }
 
   private static class HiveHplSqlSessionState implements HplSqlSessionState {
