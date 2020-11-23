@@ -386,8 +386,8 @@ public class SQLOperation extends ExecuteStatementOperation {
         String queryId = queryState.getQueryId();
         if (success) {
           log.info("The running operation has been successfully interrupted: {}", queryId);
-        } else {
-          log.info("The running operation could not be cancelled, typically because it has already completed normally: {}", queryId);
+        } else if (log.isDebugEnabled()) {
+          log.debug("The running operation could not be cancelled, typically because it has already completed normally: {}", queryId);
         }
       }
     }
