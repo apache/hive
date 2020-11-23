@@ -1382,8 +1382,8 @@ public final class GenMapRedUtils {
     // concatenate. Keeping the old logic for non-MM tables with temp directories and stuff.
     Path fsopPath = srcMmWriteId != null ? fsInputDesc.getFinalDirName() : finalName;
 
-    Task<MoveWork> mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(
-        mvTasks, fsopPath, fsInputDesc.isMmTable(), fsInputDesc.isDirectInsert(), fsInputDesc.getMoveTaskId());
+    Task<MoveWork> mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fsopPath, fsInputDesc.isMmTable(),
+        fsInputDesc.isDirectInsert(), fsInputDesc.getMoveTaskId(), fsInputDesc.getAcidOperation());
     ConditionalTask cndTsk = GenMapRedUtils.createCondTask(conf, currTask, dummyMv, work,
         fsInputDesc.getMergeInputDirName(), finalName, mvTask, dependencyTask, lineageState);
 
@@ -1873,22 +1873,26 @@ public final class GenMapRedUtils {
   }
 
   public static Task<MoveWork> findMoveTaskForFsopOutput(List<Task<MoveWork>> mvTasks, Path fsopFinalDir,
-      boolean isMmFsop, boolean isDirectInsert, String fsoMoveTaskId) {
+      boolean isMmFsop, boolean isDirectInsert, String fsoMoveTaskId, AcidUtils.Operation acidOperation) {
     // find the move task
     for (Task<MoveWork> mvTsk : mvTasks) {
       MoveWork mvWork = mvTsk.getWork();
       Path srcDir = null;
       boolean isLfd = false;
       String moveTaskId = null;
+      AcidUtils.Operation moveTaskWriteType = null;
       if (mvWork.getLoadFileWork() != null) {
         srcDir = mvWork.getLoadFileWork().getSourcePath();
         isLfd = true;
         if (isMmFsop || isDirectInsert) {
           srcDir = srcDir.getParent();
         }
+        moveTaskId = mvWork.getLoadFileWork().getMoveTaskId();
+        moveTaskWriteType = mvWork.getLoadFileWork().getWriteType();
       } else if (mvWork.getLoadTableWork() != null) {
         srcDir = mvWork.getLoadTableWork().getSourcePath();
         moveTaskId = mvWork.getLoadTableWork().getMoveTaskId();
+        moveTaskWriteType = mvWork.getLoadTableWork().getWriteType();
       }
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("Observing MoveWork " + System.identityHashCode(mvWork)
@@ -1898,10 +1902,14 @@ public final class GenMapRedUtils {
 
       if ((srcDir != null) && srcDir.equals(fsopFinalDir)) {
         if (isDirectInsert) {
-          if (moveTaskId != null && moveTaskId.equals(fsoMoveTaskId)) {
+          if (moveTaskId != null && fsoMoveTaskId != null && moveTaskId.equals(fsoMoveTaskId)) {
             // If the ACID direct insert is on, the MoveTasks cannot be identified by the srcDir as
             // in this case the srcDir is always the root directory of the table.
             // We need to consider the ACID write type to identify the MoveTasks.
+            return mvTsk;
+          }
+          if ((moveTaskId == null || fsoMoveTaskId == null) && moveTaskWriteType != null
+              && moveTaskWriteType.equals(acidOperation)) {
             return mvTsk;
           }
         } else {
@@ -1925,7 +1933,7 @@ public final class GenMapRedUtils {
     // no need of merging if the move is to a local file system
     // We are looking based on the original FSOP, so use the original path as is.
     MoveTask mvTask = (MoveTask) GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fsOp.getConf().getFinalDirName(),
-        fsOp.getConf().isMmTable(), fsOp.getConf().isDirectInsert(), fsOp.getConf().getMoveTaskId());
+        fsOp.getConf().isMmTable(), fsOp.getConf().isDirectInsert(), fsOp.getConf().getMoveTaskId(), fsOp.getConf().getAcidOperation());
 
     // TODO: wtf?!! why is this in this method? This has nothing to do with anything.
     if (isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)
@@ -2039,7 +2047,7 @@ public final class GenMapRedUtils {
 
     if (!chDir) {
       mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fsOp.getConf().getFinalDirName(), isMmTable,
-          isDirectInsert, fsOp.getConf().getMoveTaskId());
+          isDirectInsert, fsOp.getConf().getMoveTaskId(), fsOp.getConf().getAcidOperation());
     }
 
     // Set the move task to be dependent on the current task

@@ -7323,7 +7323,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOp);
       acidOperation = acidOp;
       queryTmpdir = getTmpDir(isNonNativeTable, isMmTable, isDirectInsert, destinationPath);
-      moveTaskId = getMoveTaskId(isDirectInsert);
+      moveTaskId = getMoveTaskId();
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("create filesink w/DEST_TABLE specifying " + queryTmpdir
             + " from " + destinationPath);
@@ -7474,7 +7474,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOp);
       acidOperation = acidOp;
       queryTmpdir = getTmpDir(isNonNativeTable, isMmTable, isDirectInsert, destinationPath);
-      moveTaskId = getMoveTaskId(isDirectInsert);
+      moveTaskId = getMoveTaskId();
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("create filesink w/DEST_PARTITION specifying "
             + queryTmpdir + " from " + destinationPath);
@@ -7740,6 +7740,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         input = genMaterializedViewDataOrgPlan(sortColInfos, distributeColInfos, inputRR, input);
       }
 
+      moveTaskId = getMoveTaskId();
+
       if (isPartitioned) {
         // Create a SELECT that may reorder the columns if needed
         RowResolver rowResolver = new RowResolver();
@@ -7789,16 +7791,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ltd.setInsertOverwrite(false);
           ltd.setLoadFileType(LoadFileType.KEEP_EXISTING);
         }
+        ltd.setMoveTaskId(moveTaskId);
         ltd.setMdTable(destinationTable);
         WriteEntity output = generateTableWriteEntity(dest, destinationTable, dpCtx.getPartSpec(), ltd, dpCtx);
         ctx.getLoadTableOutputMap().put(ltd, output);
       } else {
         // Create LFD even for MM CTAS - it's a no-op move, but it still seems to be used for stats.
-        loadFileWork.add(new LoadFileDesc(tblDesc, viewDesc, queryTmpdir, destinationPath, isDfsDir, cols,
+        LoadFileDesc loadFileDesc = new LoadFileDesc(tblDesc, viewDesc, queryTmpdir, destinationPath, isDfsDir, cols,
             colTypes,
             destTableIsFullAcid ?//there is a change here - prev version had 'transactional', one before 'acid'
                 Operation.INSERT : Operation.NOT_ACID,
-            isMmCreate));
+            isMmCreate);
+        loadFileDesc.setMoveTaskId(moveTaskId);
+        loadFileWork.add(loadFileDesc);
         if (!outputs.add(new WriteEntity(destinationPath, !isDfsDir, isDestTempFile))) {
           throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
               .getMsg(destinationPath.toUri().toString()));
@@ -7945,11 +7950,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private String getMoveTaskId(boolean isDirectInsert) {
-    if (isDirectInsert) {
-      return ctx.getMoveTaskId();
-    }
-    return null;
+  private String getMoveTaskId() {
+    return ctx.getMoveTaskId();
   }
 
   private boolean useBatchingSerializer(String serdeClassName) {

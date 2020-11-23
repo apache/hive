@@ -74,6 +74,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * MoveTask implementation.
@@ -407,8 +408,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
           int statementId = tbd.getStmtId();
           if (tbd.isDirectInsert()) {
-            statementId =
-                queryPlan.getStatementIdForAcidWriteType(work.getLoadTableWork().getWriteId(), tbd.getMoveTaskId());
+            statementId = queryPlan.getStatementIdForAcidWriteType(work.getLoadTableWork().getWriteId(),
+                tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
             LOG.debug("The statementId used when loading the dynamic partitions is " + statementId);
           }
 
@@ -542,9 +543,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       TaskInformation ti, DynamicPartitionCtx dpCtx) throws HiveException,
       IOException, InvalidOperationException {
     DataContainer dc;
+
+    Set<String> dynamiPartitionSpecs = queryPlan.getDynamicPartitionSpecs(work.getLoadTableWork().getWriteId(),
+          tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
     List<LinkedHashMap<String, String>> dps =
         Utilities.getFullDPSpecs(conf, dpCtx, work.getLoadTableWork().getWriteId(), tbd.isMmTable(),
-            tbd.isDirectInsert(), tbd.isInsertOverwrite(), work.getLoadTableWork().getWriteType());
+            tbd.isDirectInsert(), tbd.isInsertOverwrite(), work.getLoadTableWork().getWriteType(), dynamiPartitionSpecs);
 
     console.printInfo(System.getProperty("line.separator"));
     long startTime = System.currentTimeMillis();
@@ -557,7 +561,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     // we could restrict the file listing to the directory the particular MoveTask is responsible for.
     int statementId = tbd.getStmtId();
     if (tbd.isDirectInsert()) {
-      statementId = queryPlan.getStatementIdForAcidWriteType(work.getLoadTableWork().getWriteId(), tbd.getMoveTaskId());
+      statementId = queryPlan.getStatementIdForAcidWriteType(work.getLoadTableWork().getWriteId(),
+          tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
       LOG.debug("The statementId used when loading the dynamic partitions is " + statementId);
     }
     
@@ -583,7 +588,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         resetStatisticsProps(table),
         work.getLoadTableWork().getWriteType(),
         tbd.isInsertOverwrite(),
-        tbd.isDirectInsert()
+        tbd.isDirectInsert(),
+        dynamiPartitionSpecs
         );
 
     // publish DP columns to its subscribers

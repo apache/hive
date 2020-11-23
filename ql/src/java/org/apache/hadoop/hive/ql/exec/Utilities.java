@@ -2851,7 +2851,7 @@ public final class Utilities {
    * corresponding to these dynamic partitions.
    */
   public static List<LinkedHashMap<String, String>> getFullDPSpecs(Configuration conf, DynamicPartitionCtx dpCtx,
-      long writeId, boolean isMmTable, boolean isDirectInsert, boolean isInsertOverwrite, AcidUtils.Operation acidOperation) throws HiveException {
+      long writeId, boolean isMmTable, boolean isDirectInsert, boolean isInsertOverwrite, AcidUtils.Operation acidOperation, Set<String> dynamiPartitionSpecs) throws HiveException {
 
     try {
       Path loadPath = dpCtx.getRootPath();
@@ -2863,7 +2863,8 @@ public final class Utilities {
             conf, isInsertOverwrite, acidOperation);
         for (Path p : leafStatus) {
           Path dpPath = p.getParent();
-          if (!path.contains(dpPath)) {
+          if (!path.contains(dpPath) && (dynamiPartitionSpecs == null || dynamiPartitionSpecs.isEmpty()
+              || dynamiPartitionSpecs.contains(dpPath.getName()))) {
             path.add(dpPath);
           }
         }
@@ -4464,7 +4465,7 @@ public final class Utilities {
   public static void handleDirectInsertTableFinalPath(Path specPath, String unionSuffix, Configuration hconf,
       boolean success, int dpLevels, int lbLevels, MissingBucketsContext mbc, long writeId, int stmtId,
       Reporter reporter, boolean isMmTable, boolean isMmCtas, boolean isInsertOverwrite, boolean isDirectInsert,
-      String staticSpec, AcidUtils.Operation acidOperation) throws IOException, HiveException {
+      String staticSpec, AcidUtils.Operation acidOperation, FileSinkDesc conf) throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
     boolean isDelete = AcidUtils.Operation.DELETE.equals(acidOperation);
     Path manifestDir = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite, staticSpec, isDelete);
@@ -4558,6 +4559,8 @@ public final class Utilities {
     if (!directInsertDirectories.isEmpty()) {
       cleanDirectInsertDirectoriesConcurrently(directInsertDirectories, committed, fs, hconf, unionSuffix, lbLevels);
     }
+
+    conf.setDynPartitionValues(dynamicPartitionSpecs);
 
     if (!committed.isEmpty()) {
       throw new HiveException("The following files were committed but not found: " + committed);

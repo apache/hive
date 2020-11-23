@@ -1564,7 +1564,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
               conf.getTableInfo(), numBuckets, conf.getCompressed());
           Utilities.handleDirectInsertTableFinalPath(specPath, unionSuffix, hconf, success, dpLevels, lbLevels, mbc,
               conf.getTableWriteId(), conf.getStatementId(), reporter, conf.isMmTable(), conf.isMmCtas(), conf
-                  .getInsertOverwrite(), conf.isDirectInsert(), conf.getStaticSpec(), conf.getAcidOperation());
+                  .getInsertOverwrite(), conf.isDirectInsert(), conf.getStaticSpec(), conf.getAcidOperation(), conf);
         }
       }
     } catch (IOException e) {

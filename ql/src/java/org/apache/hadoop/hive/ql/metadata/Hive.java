@@ -2704,7 +2704,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    */
   private Set<Path> getValidPartitionsInPath(
       int numDP, int numLB, Path loadPath, Long writeId, int stmtId,
-      boolean isMmTable, boolean isInsertOverwrite, boolean isDirectInsert, AcidUtils.Operation operation) throws HiveException {
+      boolean isMmTable, boolean isInsertOverwrite, boolean isDirectInsert, AcidUtils.Operation operation, Set<String> dynamiPartitionSpecs) throws HiveException {
     Set<Path> validPartitions = new HashSet<Path>();
     try {
       FileSystem fs = loadPath.getFileSystem(conf);
@@ -2737,7 +2737,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
           if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
             Utilities.FILE_OP_LOGGER.trace("Found DP " + dpPath);
           }
-          validPartitions.add(dpPath);
+          if (dynamiPartitionSpecs == null || dynamiPartitionSpecs.isEmpty()
+              || dynamiPartitionSpecs.contains(dpPath.getName())) {
+            validPartitions.add(dpPath);
+          }
         }
       }
     } catch (IOException e) {
@@ -2778,7 +2781,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       final String tableName, final Map<String, String> partSpec, final LoadFileType loadFileType,
       final int numDP, final int numLB, final boolean isAcid, final long writeId, final int stmtId,
       final boolean resetStatistics, final AcidUtils.Operation operation,
-      boolean isInsertOverwrite, boolean isDirectInsert) throws HiveException {
+      boolean isInsertOverwrite, boolean isDirectInsert, Set<String> dynamiPartitionSpecs) throws HiveException {
 
     PerfLogger perfLogger = SessionState.getPerfLogger();
     perfLogger.perfLogBegin("MoveTask", PerfLogger.LOAD_DYNAMIC_PARTITIONS);
@@ -2786,7 +2789,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // Get all valid partition paths and existing partitions for them (if any)
     final Table tbl = getTable(tableName);
     final Set<Path> validPartitions = getValidPartitionsInPath(numDP, numLB, loadPath, writeId, stmtId,
-        AcidUtils.isInsertOnlyTable(tbl.getParameters()), isInsertOverwrite, isDirectInsert, operation);
+        AcidUtils.isInsertOnlyTable(tbl.getParameters()), isInsertOverwrite, isDirectInsert, operation, dynamiPartitionSpecs);
 
     final int partsToLoad = validPartitions.size();
     final AtomicInteger partitionsLoaded = new AtomicInteger(0);

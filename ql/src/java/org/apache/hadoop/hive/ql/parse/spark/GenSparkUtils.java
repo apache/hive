@@ -445,7 +445,7 @@ public class GenSparkUtils {
 
     if (!chDir) {
       mvTask = GenMapRedUtils.findMoveTaskForFsopOutput(mvTasks, fileSinkDesc.getFinalDirName(), false,
-          fileSinkDesc.isDirectInsert(), fileSinkDesc.getMoveTaskId());
+          fileSinkDesc.isDirectInsert(), fileSinkDesc.getMoveTaskId(), fileSinkDesc.getAcidOperation());
     }
 
     // Set the move task to be dependent on the current task

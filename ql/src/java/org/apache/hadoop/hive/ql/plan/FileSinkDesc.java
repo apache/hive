@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -104,6 +105,8 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
   private boolean isMmCtas;
 
   private Set<FileStatus> filesToFetch = null;
+
+  private Set<String> dynPartitionValues = new HashSet<>();
 
   /**
    * Whether is a HiveServer query, and the destination table is
@@ -192,6 +195,7 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
     ret.setIsCTASorCM(isCTASorCM);
     ret.setIsDirectInsert(isDirectInsert);
     ret.setAcidOperation(acidOperation);
+    ret.setMoveTaskId(moveTaskId);
     return ret;
   }
 
@@ -693,6 +697,14 @@ public class FileSinkDesc extends AbstractOperatorDesc implements IStatsGatherDe
 
   public void setMoveTaskId(String moveTaskId) {
     this.moveTaskId = moveTaskId;
+  }
+
+  public Set<String> getDynPartitionValues() {
+    return dynPartitionValues;
+  }
+
+  public void setDynPartitionValues(Set<String> dynPartitionValues) {
+    this.dynPartitionValues = dynPartitionValues;
   }
 
 }

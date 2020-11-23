@@ -343,7 +343,7 @@ public abstract class AbstractFileMergeOperator<T extends FileMergeDesc>
         // We don't expect missing buckets from mere (actually there should be no buckets),
         // so just pass null as bucketing context. Union suffix should also be accounted for.
         Utilities.handleDirectInsertTableFinalPath(outputDir.getParent(), null, hconf, success, dpLevels, lbLevels,
-            null, mmWriteId, stmtId, reporter, isMmTable, false, false, false, null, AcidUtils.Operation.NOT_ACID);
+            null, mmWriteId, stmtId, reporter, isMmTable, false, false, false, null, AcidUtils.Operation.NOT_ACID, null);
       }
 
     } catch (IOException e) {

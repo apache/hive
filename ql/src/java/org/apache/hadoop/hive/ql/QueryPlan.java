@@ -191,13 +191,26 @@ public class QueryPlan implements Serializable {
     return acidSinks;
   }
 
-  public Integer getStatementIdForAcidWriteType(long writeId, String moveTaskId) {
+  public Integer getStatementIdForAcidWriteType(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
     for (FileSinkDesc acidSink : acidSinks) {
-      if (moveTaskId.equals(acidSink.getMoveTaskId()) && acidSink.getTableWriteId() == writeId) {
+      if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
+          && acidSink.getTableWriteId() == writeId
+          && (moveTaskId == null || acidSink.getMoveTaskId() == null || moveTaskId.equals(acidSink.getMoveTaskId()))) {
         return acidSink.getStatementId();
       }
     }
     return -1;
+  }
+
+  public Set<String> getDynamicPartitionSpecs(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
+    for (FileSinkDesc acidSink : acidSinks) {
+      if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
+          && acidSink.getTableWriteId() == writeId
+          && (moveTaskId == null || acidSink.getMoveTaskId() == null || moveTaskId.equals(acidSink.getMoveTaskId()))) {
+        return acidSink.getDynPartitionValues();
+      }
+    }
+    return null;
   }
 
   DDLDescWithWriteId getAcidDdlDesc() {
