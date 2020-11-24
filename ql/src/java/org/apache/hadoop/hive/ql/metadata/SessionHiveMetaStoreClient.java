@@ -114,9 +114,10 @@ import org.apache.hadoop.hive.metastore.localcache.PartitionCacheHelper;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.metastore.utils.SecurityUtils;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -1961,7 +1962,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.CONFIG_VALUE, name, defaultValue);
+      CacheKey cacheKey = CacheKey.create(KeyType.CONFIG_VALUE, name, defaultValue);
       String v = (String) queryCache.get(cacheKey);
       if (v == null) {
         v = super.getConfigValueInternal(name, defaultValue);
@@ -1983,7 +1984,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.DATABASE, request);
+      CacheKey cacheKey = CacheKey.create(KeyType.DATABASE, request);
       Database v = (Database) queryCache.get(cacheKey);
       if (v == null) {
         v = super.getDatabaseInternal(request);
@@ -2005,7 +2006,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.TABLE, req.getDbName(),
+      CacheKey cacheKey = CacheKey.create(KeyType.TABLE, req.getDbName(),
           req.getTblName(), null, req.isGetFileMetadata(), req.getEngine(), req.isGetColumnStats(),
           req.getId());
       GetTableResult v = (GetTableResult) queryCache.get(cacheKey);
@@ -2029,7 +2030,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.PRIMARY_KEYS, req);
+      CacheKey cacheKey = CacheKey.create(KeyType.PRIMARY_KEYS, req);
       PrimaryKeysResponse v = (PrimaryKeysResponse) queryCache.get(cacheKey);
       if (v == null) {
         v = super.getPrimaryKeysInternal(req);
@@ -2051,7 +2052,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.FOREIGN_KEYS, req);
+      CacheKey cacheKey = CacheKey.create(KeyType.FOREIGN_KEYS, req);
       ForeignKeysResponse v = (ForeignKeysResponse) queryCache.get(cacheKey);
       if (v == null) {
         v = super.getForeignKeysInternal(req);
@@ -2073,7 +2074,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.UNIQUE_CONSTRAINTS, req);
+      CacheKey cacheKey = CacheKey.create(KeyType.UNIQUE_CONSTRAINTS, req);
       UniqueConstraintsResponse v = (UniqueConstraintsResponse) queryCache.get(cacheKey);
       if (v == null) {
         v = super.getUniqueConstraintsInternal(req);
@@ -2095,7 +2096,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.NOT_NULL_CONSTRAINTS, req);
+      CacheKey cacheKey = CacheKey.create(KeyType.NOT_NULL_CONSTRAINTS, req);
       NotNullConstraintsResponse v = (NotNullConstraintsResponse) queryCache.get(cacheKey);
       if (v == null) {
         v = super.getNotNullConstraintsInternal(req);
@@ -2120,7 +2121,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       List<String> columnNamesMissing = new ArrayList<>();
       List<ColumnStatisticsObj> columnStatsFound = new ArrayList<>();
       // 1) Retrieve from the cache those ids present, gather the rest
-      getTableColumnStatisticsCache(cache, rqst, null, columnNamesMissing, columnStatsFound);
+      getTableColumnStatisticsCache(null, cache, rqst, null, columnNamesMissing, columnStatsFound);
       // 2) If they were all present in the cache, return
       if (columnNamesMissing.isEmpty()) {
         return new TableStatsResult(columnStatsFound);
@@ -2131,7 +2132,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       TableStatsResult r = super.getTableColumnStatisticsInternal(newRqst);
       // 4) Populate the cache
       List<ColumnStatisticsObj> newColumnStats = new ArrayList<>();
-      loadTableColumnStatisticsCache(cache, r, rqst, null, newColumnStats);
+      loadTableColumnStatisticsCache(null, cache, r, rqst, null, newColumnStats);
       // 5) Sort result (in case there is any assumption) and return
       return computeTableColumnStatisticsFinal(rqst, columnStatsFound, newColumnStats);
     }
@@ -2143,7 +2144,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, req);
+      CacheKey cacheKey = CacheKey.create(KeyType.AGGR_COL_STATS, req);
       AggrStats v = (AggrStats) queryCache.get(cacheKey);
       if (v == null) {
         v = super.getAggrStatsForInternal(req);
@@ -2165,7 +2166,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, req);
+      CacheKey cacheKey = CacheKey.create(KeyType.PARTITIONS_BY_EXPR, req);
       PartitionsByExprResult v = (PartitionsByExprResult) queryCache.get(cacheKey);
       if (v == null) {
         v = super.getPartitionsByExprInternal(req);
@@ -2188,7 +2189,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_ALL,
+      CacheKey cacheKey = CacheKey.create(KeyType.LIST_PARTITIONS_ALL,
           catName, dbName, tableName, maxParts);
       List<String> v = (List<String>) queryCache.get(cacheKey);
       if (v == null) {
@@ -2211,7 +2212,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS,
+      CacheKey cacheKey = CacheKey.create(KeyType.LIST_PARTITIONS,
           catName, dbName, tableName, partVals, maxParts);
       List<String> v = (List<String>) queryCache.get(cacheKey);
       if (v == null) {
@@ -2235,7 +2236,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_REQ, req);
+      CacheKey cacheKey = CacheKey.create(KeyType.LIST_PARTITIONS_REQ, req);
       GetPartitionNamesPsResponse v = (GetPartitionNamesPsResponse) queryCache.get(cacheKey);
       if (v == null) {
         v = super.listPartitionNamesRequestInternal(req);
@@ -2258,7 +2259,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO_ALL,
+      CacheKey cacheKey = CacheKey.create(KeyType.LIST_PARTITIONS_AUTH_INFO_ALL,
           catName, dbName, tableName, maxParts, userName, groupNames);
       List<Partition> v = (List<Partition>) queryCache.get(cacheKey);
       if (v == null) {
@@ -2283,7 +2284,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO,
+      CacheKey cacheKey = CacheKey.create(KeyType.LIST_PARTITIONS_AUTH_INFO,
           catName, dbName, tableName, partialPvals, maxParts, userName, groupNames);
       List<Partition> v = (List<Partition>) queryCache.get(cacheKey);
       if (v == null) {
@@ -2307,7 +2308,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     Map<Object, Object> queryCache = getQueryCache();
     if (queryCache != null) {
       // Retrieve or populate cache
-      CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_AUTH_INFO_REQ, req);
+      CacheKey cacheKey = CacheKey.create(KeyType.LIST_PARTITIONS_AUTH_INFO_REQ, req);
       GetPartitionsPsWithAuthResponse v = (GetPartitionsPsWithAuthResponse) queryCache.get(cacheKey);
       if (v == null) {
         v = super.listPartitionsWithAuthInfoRequestInternal(req);
@@ -2344,7 +2345,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     MapWrapper cache = new MapWrapper(queryCache);
     String dbName = MetaStoreUtils.parseDbName(rqst.getDb_name(), conf)[1];
     org.apache.hadoop.hive.metastore.api.Table table = getTable(dbName, rqst.getTbl_name());
-    CacheKey key = new CacheKey(KeyType.PARTITIONS_BY_NAMES, rqst.getDb_name(),
+    CacheKey key = CacheKey.create(KeyType.PARTITIONS_BY_NAMES, rqst.getDb_name(),
         rqst.getTbl_name(), null, rqst.isGetFileMetadata());
     PartitionCacheHelper.CacheValue cacheValue =
         (PartitionCacheHelper.CacheValue) cache.get(key);
@@ -2378,7 +2379,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       MapWrapper cache = new MapWrapper(queryCache);
       // 1) Retrieve from the cache those ids present, gather the rest
       Pair<List<TableValidWriteIds>, List<String>> p = getValidWriteIdsCache(
-          cache, rqst);
+          null, cache, rqst);
       List<String> fullTableNamesMissing = p.getRight();
       List<TableValidWriteIds> tblValidWriteIds = p.getLeft();
       // 2) If they were all present in the cache, return
@@ -2391,7 +2392,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
       GetValidWriteIdsResponse r = super.getValidWriteIdsInternal(newRqst);
       // 4) Populate the cache
       List<TableValidWriteIds> newTblValidWriteIds = loadValidWriteIdsCache(
-          cache, r, rqst);
+          null, cache, r, rqst);
       // 5) Sort result (in case there is any assumption) and return
       return computeValidWriteIdsFinal(rqst, tblValidWriteIds, newTblValidWriteIds);
     }
@@ -2442,6 +2443,22 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     } catch (HiveException e) {
       LOG.error("Error getting query id. Query level HMS caching will be disabled", e);
       return null;
+    }
+  }
+
+  // CDPD-19806: We're overriding both this method and the getValidWriteIdList at the
+  // session level. We should either be passing this information in the request or
+  // passing it through the conf.
+  @Override
+  protected Long getTxnId(String dbName, String tblName) {
+    try {
+      HiveTxnManager txnMgr = SessionState.get().getTxnMgr();
+      if (txnMgr == null) {
+        return super.getTxnId(dbName, tblName);
+      }
+      return txnMgr.getCurrentTxnId();
+    } catch (Exception e) {
+      throw new RuntimeException("Exception getting txn id", e);
     }
   }
 

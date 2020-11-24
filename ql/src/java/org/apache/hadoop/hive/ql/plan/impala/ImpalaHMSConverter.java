@@ -20,14 +20,20 @@ package org.apache.hadoop.hive.ql.plan.impala;
 
 import org.apache.hadoop.hive.metastore.HMSConverter;
 import org.apache.hadoop.hive.metastore.localcache.HMSPartitionConverter;
+import org.apache.hadoop.hive.metastore.localcache.HMSPartitionNamesConverter;
 import org.apache.hadoop.hive.metastore.localcache.HMSTableConverter;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaPartitionConverter;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaPartitionConverter.ImpalaGetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaTableConverter;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaTableConverter.ImpalaGetTableRequest;
+import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaPartitionNamesConverter;
+import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaPartitionNamesConverter.ImpalaPartitionNamesRequest;
+import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaPartitionNamesConverter.ImpalaPartitionNamesResult;
 
 import java.util.List;
 /**
@@ -35,6 +41,7 @@ import java.util.List;
  */
 public class ImpalaHMSConverter implements HMSConverter {
 
+  @Override
   public HMSPartitionConverter getPartitionConverter(GetPartitionsByNamesRequest rqst,
       Table table) {
     // Not gonna handle conversions when there is no file metadata.
@@ -47,6 +54,7 @@ public class ImpalaHMSConverter implements HMSConverter {
     return new ImpalaPartitionConverter(rqst, table);
   }
 
+  @Override
   public HMSTableConverter getTableConverter(GetTableRequest rqst) {
     // Not gonna handle conversions when there is no file metadata.
     if (!rqst.isGetFileMetadata()) {
@@ -56,5 +64,19 @@ public class ImpalaHMSConverter implements HMSConverter {
       return null;
     }
     return new ImpalaTableConverter(rqst);
+  }
+
+  @Override
+  public HMSPartitionNamesConverter getPartitionNamesConverter(GetPartitionNamesPsRequest rqst,
+      GetPartitionNamesPsResponse result) {
+    if (!(rqst instanceof ImpalaPartitionNamesRequest)) {
+      return null;
+    }
+    // if the result is already of type ImpalaPartitionNamesResult, there is no need for a
+    // conversion so no need to create a converter.
+    if (result instanceof ImpalaPartitionNamesResult) {
+      return null;
+    }
+    return new ImpalaPartitionNamesConverter(rqst);
   }
 }

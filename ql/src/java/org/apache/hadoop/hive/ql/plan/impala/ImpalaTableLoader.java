@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsTable;
 import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable;
+import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable.TableWithPartitionNames;
 import org.apache.impala.catalog.Db;
 import org.apache.impala.catalog.HdfsTable;
 import org.apache.impala.common.ImpalaException;
@@ -89,7 +90,8 @@ public class ImpalaTableLoader {
   public void loadTablesAndPartitions(Hive db, ValidTxnWriteIdList txnWriteIdList) throws HiveException {
     timeline.markEvent("Metadata load started, loading " + queryContext.getBasicTables().size() +
         " tables.");
-    for (ImpalaBasicHdfsTable basicTable : queryContext.getBasicTables()) {
+    for (TableWithPartitionNames tableWithNames : queryContext.getBasicTables()) {
+      ImpalaBasicHdfsTable basicTable = tableWithNames.getTable();
       LOG.info("Loading metadata for table " + basicTable.getName());
       try {
         ValidWriteIdList validWriteIdList = null;
@@ -98,7 +100,7 @@ public class ImpalaTableLoader {
           validWriteIdList = txnWriteIdList.getTableValidWriteIdList(basicTable.getFullName());
         }
         tableMap.put(basicTable.getMetaStoreTable(), ImpalaHdfsTable.create(queryContext.getConf(),
-            basicTable, db.getMSC(), validWriteIdList));
+            basicTable, tableWithNames.getPartitionNames(), db.getMSC(), validWriteIdList));
       } catch (ImpalaException|MetaException e) {
         timeline.markEvent("Metadata load failed for table " + basicTable.getName() + ". Completed" +
             " for " + tableMap.entrySet().size() + " tables.");

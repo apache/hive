@@ -19,9 +19,12 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
 import org.apache.hadoop.hive.metastore.api.GetTableRequest;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.localcache.HMSPartitionConverter;
+import org.apache.hadoop.hive.metastore.localcache.HMSPartitionNamesConverter;
 import org.apache.hadoop.hive.metastore.localcache.HMSTableConverter;
 
 import java.util.List;
@@ -41,4 +44,10 @@ public interface HMSConverter {
    * Get the Table converter.
    */
   public HMSTableConverter getTableConverter(GetTableRequest rqst);
+
+  /**
+   * Get the PartitionNames converter.
+   */
+  public HMSPartitionNamesConverter getPartitionNamesConverter(GetPartitionNamesPsRequest rqst,
+      GetPartitionNamesPsResponse result);
 }

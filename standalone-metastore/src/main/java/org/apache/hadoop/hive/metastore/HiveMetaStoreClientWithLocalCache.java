@@ -23,13 +23,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
+import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysRequest;
 import org.apache.hadoop.hive.metastore.api.ForeignKeysResponse;
@@ -45,6 +49,7 @@ import org.apache.hadoop.hive.metastore.api.GetTableResult;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsResponse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.NotNullConstraintsResponse;
 import org.apache.hadoop.hive.metastore.api.ObjectDictionary;
@@ -58,9 +63,12 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableStatsRequest;
 import org.apache.hadoop.hive.metastore.api.TableStatsResult;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
+import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsRequest;
 import org.apache.hadoop.hive.metastore.api.UniqueConstraintsResponse;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.localcache.HMSPartitionNamesConverter;
 import org.apache.hadoop.hive.metastore.localcache.PartitionCacheHelper;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator;
 import org.apache.hadoop.hive.ql.util.IncrementalObjectSizeEstimator.ObjectEstimator;
@@ -82,6 +90,11 @@ import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.parseDbName;
  * improve HMS throughput for multi-tenant workloads by reducing the number of calls it needs to serve.
  */
 public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient implements IMetaStoreClient {
+
+  // OPEN_WRITE_TXNS contains the transactions that are involved in a write operation. When this happens,
+  // we do not want to cache any read information since it may not contain the writes included in this
+  // transaction.
+  private static final Map<Long, Boolean> OPEN_WRITE_TXNS = new ConcurrentHashMap<>();
 
   private static final Logger LOG = LoggerFactory.getLogger(HiveMetaStoreClientWithLocalCache.class);
 
@@ -199,11 +212,17 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   /**
    * CacheKey objects are used as key for the cache.
    */
-  public static class CacheKey{
+  public static class CacheKey {
+
+    // openTxnCacheKeyMap maps cache keys to an open transaction.  If the open transaction
+    // has writes in it, we want to delete all the cache information associate with the
+    // transaction because the cache might not contain the write information.
+    private static Map<Long, List<CacheKey>> openTxnCacheKeyMap = new ConcurrentHashMap<>();
+
     KeyType IDENTIFIER;
     List<Object> obj;
 
-    public CacheKey(KeyType IDENTIFIER, Object... objs) {
+    private CacheKey(KeyType IDENTIFIER, Object... objs) {
       this.IDENTIFIER = IDENTIFIER;
       this.obj = Collections.unmodifiableList(Arrays.asList(objs));
     }
@@ -229,6 +248,30 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     @Override
     public String toString() {
       return "CacheKey {" + IDENTIFIER.name() + " @@ " + obj.toString() + "}";
+    }
+
+    public static void clearTransactionInfo(long txnId, boolean removeCacheEntries) {
+      if (removeCacheEntries && openTxnCacheKeyMap.containsKey(txnId)) {
+        List<CacheKey> cacheKeys = openTxnCacheKeyMap.get(txnId);
+        for (CacheKey cacheKey : cacheKeys) {
+          mscLocalCache.invalidate(cacheKey);
+        }
+      }
+      openTxnCacheKeyMap.remove(txnId);
+    }
+
+    public static CacheKey create(KeyType IDENTIFIER, Object... objs) {
+      return create(null, IDENTIFIER, objs);
+    }
+
+    public static CacheKey create(Long txnId, KeyType IDENTIFIER, Object... objs) {
+      CacheKey cacheKey = new CacheKey(IDENTIFIER, objs);
+      if (txnId != null) {
+        List<CacheKey> cacheKeys =
+            openTxnCacheKeyMap.computeIfAbsent(txnId, k -> new ArrayList<>());
+        cacheKeys.add(cacheKey);
+      }
+      return cacheKey;
     }
   }
 
@@ -270,7 +313,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
       TableWatermark watermark = new TableWatermark(
           req.getValidWriteIdList(), req.getId());
       if (watermark.isValid()) {
-        CacheKey cacheKey = new CacheKey(KeyType.TABLE, req.getDbName(),
+        Long txnId = getTxnId(req.getDbName(), req.getTblName());
+        CacheKey cacheKey = CacheKey.create(txnId, KeyType.TABLE, req.getDbName(),
             req.getTblName(), watermark, req.isGetFileMetadata(), req.getEngine(),
             req.isGetColumnStats(), req.getId());
         GetTableResult r = (GetTableResult) mscLocalCache.getIfPresent(cacheKey);
@@ -302,7 +346,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
       TableWatermark watermark = new TableWatermark(
           req.getValidWriteIdList(), getTable(req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
-        CacheKey cacheKey = new CacheKey(KeyType.PARTITIONS_BY_EXPR, watermark, req);
+        Long txnId = getTxnId(req.getDbName(), req.getTblName());
+        CacheKey cacheKey = CacheKey.create(txnId, KeyType.PARTITIONS_BY_EXPR, watermark, req);
         PartitionsByExprResult r = (PartitionsByExprResult) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
           r = super.getPartitionsByExprInternal(req);
@@ -327,6 +372,55 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   }
 
   @Override
+  protected GetPartitionNamesPsResponse listPartitionNamesRequestInternal(
+      GetPartitionNamesPsRequest request) throws TException {
+    if (isCacheEnabledAndInitialized()) {
+      String catName = request.getCatName();
+      String dbName = request.getDbName();
+      String tableName = request.getTblName();
+      int maxParts = request.getMaxParts();
+      List<String> partValues = request.getPartValues();
+      String validWriteIdList = getValidWriteIdList(dbName, tableName);
+      TableWatermark watermark = new TableWatermark(validWriteIdList,
+          getTable(dbName, tableName).getId());
+      if (watermark.isValid()) {
+        Long txnId = getTxnId(dbName, tableName);
+        CacheKey cacheKey = CacheKey.create(txnId, KeyType.LIST_PARTITIONS_REQ, watermark,
+            catName, dbName, tableName, maxParts, partValues);
+        GetPartitionNamesPsResponse r =
+            (GetPartitionNamesPsResponse) mscLocalCache.getIfPresent(cacheKey);
+        boolean isInCache = (r != null);
+        if (!isInCache) {
+          r = super.listPartitionNamesRequestInternal(request);
+        }
+        HMSPartitionNamesConverter converter = getPartitionNamesConverter(request, r);
+        if (converter != null) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug(
+                "HS2 level HMS conversion needed: method=listPartitionNamesInternal, " +
+                "dbName={}, tblName={}", dbName, tableName);
+          }
+          r = converter.convertPartitionNames(r);
+        }
+        if (!isInCache || converter != null) {
+          mscLocalCache.put(cacheKey, r);
+        } else {
+          LOG.debug(
+              "HS2 level HMS cache: method=listPartitionNamesInternal, dbName={}, tblName={}",
+              dbName, tableName);
+        }
+        if (LOG.isDebugEnabled() && recordStats) {
+          LOG.debug(cacheObjName + ": " + mscLocalCache.stats().toString());
+        }
+        return r;
+      }
+    }
+    GetPartitionNamesPsResponse r = super.listPartitionNamesRequestInternal(request);
+    HMSPartitionNamesConverter converter = getPartitionNamesConverter(request, r);
+    return converter == null ? r : converter.convertPartitionNames(r);
+  }
+
+  @Override
   protected List<String> listPartitionNamesInternal(String catName, String dbName, String tableName,
       int maxParts) throws TException {
     if (isCacheEnabledAndInitialized()) {
@@ -334,7 +428,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           getValidWriteIdList(dbName, tableName),
           getTable(dbName, tableName).getId());
       if (watermark.isValid()) {
-        CacheKey cacheKey = new CacheKey(KeyType.LIST_PARTITIONS_ALL, watermark,
+        Long txnId = getTxnId(dbName, tableName);
+        CacheKey cacheKey = CacheKey.create(txnId, KeyType.LIST_PARTITIONS_ALL, watermark,
             catName, dbName, tableName, maxParts);
         PartitionNamesWrapper r = (PartitionNamesWrapper) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
@@ -377,7 +472,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           getValidWriteIdList(req.getDb_name(), req.getTbl_name()),
           getTable(req.getDb_name(), req.getTbl_name()).getId());
       if (watermark.isValid()) {
-        CacheKey cacheKey = new CacheKey(KeyType.PRIMARY_KEYS, watermark, req);
+        Long txnId = getTxnId(req.getDb_name(), req.getTbl_name());
+        CacheKey cacheKey = CacheKey.create(txnId, KeyType.PRIMARY_KEYS, watermark, req);
         PrimaryKeysResponse r = (PrimaryKeysResponse) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
           r = super.getPrimaryKeysInternal(req);
@@ -409,7 +505,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           getValidWriteIdList(req.getForeign_db_name(), req.getForeign_tbl_name()),
           getTable(req.getForeign_db_name(), req.getForeign_tbl_name()).getId());
       if (watermark.isValid()) {
-        CacheKey cacheKey = new CacheKey(KeyType.FOREIGN_KEYS, watermark, req);
+        Long txnId = getTxnId(req.getForeign_db_name(), req.getForeign_tbl_name());
+        CacheKey cacheKey = CacheKey.create(txnId, KeyType.FOREIGN_KEYS, watermark, req);
         ForeignKeysResponse r = (ForeignKeysResponse) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
           r = super.getForeignKeysInternal(req);
@@ -441,7 +538,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           getValidWriteIdList(req.getDb_name(), req.getTbl_name()),
           getTable(req.getDb_name(), req.getTbl_name()).getId());
       if (watermark.isValid()) {
-        CacheKey cacheKey = new CacheKey(KeyType.UNIQUE_CONSTRAINTS, watermark, req);
+        Long txnId = getTxnId(req.getDb_name(), req.getTbl_name());
+        CacheKey cacheKey = CacheKey.create(txnId, KeyType.UNIQUE_CONSTRAINTS, watermark, req);
         UniqueConstraintsResponse r = (UniqueConstraintsResponse) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
           r = super.getUniqueConstraintsInternal(req);
@@ -473,7 +571,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           getValidWriteIdList(req.getDb_name(), req.getTbl_name()),
           getTable(req.getDb_name(), req.getTbl_name()).getId());
       if (watermark.isValid()) {
-        CacheKey cacheKey = new CacheKey(KeyType.NOT_NULL_CONSTRAINTS, watermark, req);
+        Long txnId = getTxnId(req.getDb_name(), req.getTbl_name());
+        CacheKey cacheKey = CacheKey.create(txnId, KeyType.NOT_NULL_CONSTRAINTS, watermark, req);
         NotNullConstraintsResponse r = (NotNullConstraintsResponse) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
           r = super.getNotNullConstraintsInternal(req);
@@ -503,11 +602,12 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
           getValidWriteIdList(req.getDbName(), req.getTblName()),
           getTable(req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
+        Long txnId = getTxnId(req.getDbName(), req.getTblName());
         CacheWrapper cache = new CacheWrapper(mscLocalCache);
         List<String> columnNamesMissing = new ArrayList<>();
         List<ColumnStatisticsObj> columnStatsFound = new ArrayList<>();
         // 1) Retrieve from the cache those ids present, gather the rest
-        getTableColumnStatisticsCache(cache, req, watermark, columnNamesMissing, columnStatsFound);
+        getTableColumnStatisticsCache(txnId, cache, req, watermark, columnNamesMissing, columnStatsFound);
         // 2) If they were all present in the cache, return
         if (columnNamesMissing.isEmpty()) {
           return new TableStatsResult(columnStatsFound);
@@ -518,7 +618,7 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
         TableStatsResult r = super.getTableColumnStatisticsInternal(newRqst);
         // 4) Populate the cache
         List<ColumnStatisticsObj> newColumnStats = new ArrayList<>();
-        loadTableColumnStatisticsCache(cache, r, req, watermark, newColumnStats);
+        loadTableColumnStatisticsCache(txnId, cache, r, req, watermark, newColumnStats);
         // 5) Sort result (in case there is any assumption) and return
         TableStatsResult result = computeTableColumnStatisticsFinal(req, columnStatsFound, newColumnStats);
 
@@ -537,7 +637,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
       TableWatermark watermark = new TableWatermark(
           req.getValidWriteIdList(), getTable(req.getDbName(), req.getTblName()).getId());
       if (watermark.isValid()) {
-        CacheKey cacheKey = new CacheKey(KeyType.AGGR_COL_STATS, watermark, req);
+        Long txnId = getTxnId(req.getDbName(), req.getTblName());
+        CacheKey cacheKey = CacheKey.create(txnId, KeyType.AGGR_COL_STATS, watermark, req);
         AggrStats r = (AggrStats) mscLocalCache.getIfPresent(cacheKey);
         if (r == null) {
           r = super.getAggrStatsForInternal(req);
@@ -568,7 +669,8 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
       TableWatermark watermark = new TableWatermark(
           rqst.getValidWriteIdList(), table.getId());
       if (watermark.isValid()) {
-        CacheKey key = new CacheKey(KeyType.PARTITIONS_BY_NAMES, rqst.getDb_name(),
+        Long txnId = getTxnId(dbName, rqst.getTbl_name());
+        CacheKey key = CacheKey.create(txnId, KeyType.PARTITIONS_BY_NAMES, rqst.getDb_name(),
             rqst.getTbl_name(), watermark, rqst.isGetFileMetadata());
         // check cache for value
         PartitionCacheHelper.CacheValue cacheValue =
@@ -610,10 +712,10 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
   }
 
 
-  protected final void getTableColumnStatisticsCache(CacheI cache,
+  protected final void getTableColumnStatisticsCache(Long txnId, CacheI cache,
       TableStatsRequest rqst, TableWatermark watermark, List<String> columnNamesMissing,
       List<ColumnStatisticsObj> columnStatsFound) {
-    CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS, watermark,
+    CacheKey cacheKey = CacheKey.create(txnId, KeyType.TABLE_COLUMN_STATS, watermark,
         rqst.getDbName(), rqst.getTblName());
     Map<String, ColumnStatisticsObj> cacheValue =
         (Map<String, ColumnStatisticsObj>) cache.get(cacheKey);
@@ -649,10 +751,10 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     }
   }
 
-  protected final void loadTableColumnStatisticsCache(CacheI cache,
+  protected final void loadTableColumnStatisticsCache(Long txnId, CacheI cache,
       TableStatsResult r, TableStatsRequest rqst, TableWatermark watermark,
       List<ColumnStatisticsObj> newColumnStats) {
-    CacheKey cacheKey = new CacheKey(KeyType.TABLE_COLUMN_STATS, watermark,
+    CacheKey cacheKey = CacheKey.create(txnId, KeyType.TABLE_COLUMN_STATS, watermark,
         rqst.getDbName(), rqst.getTblName());
     Map<String, ColumnStatisticsObj> cacheValue;
     if (cache instanceof CacheWrapper) {
@@ -704,6 +806,15 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     return null;
   }
 
+  private HMSPartitionNamesConverter getPartitionNamesConverter(
+      GetPartitionNamesPsRequest request,
+      GetPartitionNamesPsResponse result) throws MetaException {
+    if (getHMSConverter() == null) {
+      return null;
+    }
+    return getHMSConverter().getPartitionNamesConverter(request, result);
+  }
+
   protected final GetTableResult convertTableRequest(
       GetTableRequest rqst, GetTableResult result) {
     if (getHMSConverter() == null || getHMSConverter().getTableConverter(rqst) == null) {
@@ -713,12 +824,12 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     return getHMSConverter().getTableConverter(rqst).convertTable(result);
   }
 
-  protected final Pair<List<TableValidWriteIds>, List<String>> getValidWriteIdsCache(CacheI cache,
-      GetValidWriteIdsRequest rqst) throws TException {
+  protected final Pair<List<TableValidWriteIds>, List<String>> getValidWriteIdsCache(Long txnId,
+      CacheI cache, GetValidWriteIdsRequest rqst) throws TException {
     List<String> fullTableNamesMissing = new ArrayList<>();
     List<TableValidWriteIds> tblValidWriteIds = new ArrayList<>();
     for (String fullTableName : rqst.getFullTableNames()) {
-      CacheKey cacheKey = new CacheKey(KeyType.VALID_WRITE_IDS,
+      CacheKey cacheKey = CacheKey.create(KeyType.VALID_WRITE_IDS,
           fullTableName, rqst.getValidTxnList(), rqst.getWriteId());
       TableValidWriteIds v = (TableValidWriteIds) cache.get(cacheKey);
       if (v == null) {
@@ -735,14 +846,14 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     return Pair.of(tblValidWriteIds, fullTableNamesMissing);
   }
 
-  protected final List<TableValidWriteIds> loadValidWriteIdsCache(CacheI cache,
+  protected final List<TableValidWriteIds> loadValidWriteIdsCache(Long txnId, CacheI cache,
       GetValidWriteIdsResponse r, GetValidWriteIdsRequest rqst)
       throws TException {
     List<TableValidWriteIds> newTblValidWriteIds = new ArrayList<>();
     for (TableValidWriteIds tableValidWriteIds : r.getTblValidWriteIds()) {
       newTblValidWriteIds.add(tableValidWriteIds);
       // Add to the cache
-      CacheKey cacheKey = new CacheKey(KeyType.VALID_WRITE_IDS,
+      CacheKey cacheKey = CacheKey.create(txnId, KeyType.VALID_WRITE_IDS,
           tableValidWriteIds.getFullTableName(), rqst.getValidTxnList(), rqst.getWriteId());
       cache.put(cacheKey, tableValidWriteIds);
     }
@@ -776,6 +887,59 @@ public class HiveMetaStoreClientWithLocalCache extends HiveMetaStoreClient imple
     return new GetValidWriteIdsResponse(result);
   }
 
+  @Override
+  protected List<TxnToWriteId> allocateTableWriteIdsBatchIntr(AllocateTableWriteIdsRequest rqst) throws TException {
+    List<TxnToWriteId> txnToWriteIds = super.allocateTableWriteIdsBatchIntr(rqst);
+    if (rqst.getTxnIds() != null) {
+      for (Long txnId : rqst.getTxnIds()) {
+        OPEN_WRITE_TXNS.put(txnId, true);
+      }
+    }
+    return txnToWriteIds;
+  }
+
+  @Override
+  public void rollbackTxn(long txnid) throws NoSuchTxnException, TException {
+    try {
+      super.rollbackTxn(txnid);
+    } finally {
+      CacheKey.clearTransactionInfo(txnid, OPEN_WRITE_TXNS.containsKey(txnid));
+      OPEN_WRITE_TXNS.remove(txnid);
+    }
+  }
+
+  @Override
+  public void replRollbackTxn(long srcTxnId, String replPolicy) throws NoSuchTxnException, TException {
+    try {
+      super.replRollbackTxn(srcTxnId, replPolicy);
+    } finally {
+      CacheKey.clearTransactionInfo(srcTxnId, OPEN_WRITE_TXNS.containsKey(srcTxnId));
+      OPEN_WRITE_TXNS.remove(srcTxnId);
+    }
+  }
+
+  @Override
+  public void commitTxn(long txnid)
+          throws NoSuchTxnException, TxnAbortedException, TException {
+    try {
+      super.commitTxn(txnid);
+    } finally {
+      CacheKey.clearTransactionInfo(txnid, OPEN_WRITE_TXNS.containsKey(txnid));
+      OPEN_WRITE_TXNS.remove(txnid);
+    }
+  }
+
+  @Override
+  public void abortTxns(List<Long> txnids) throws NoSuchTxnException, TException {
+    try {
+      super.abortTxns(txnids);
+    } finally {
+      for (Long txnid : txnids) {
+        CacheKey.clearTransactionInfo(txnid, OPEN_WRITE_TXNS.containsKey(txnid));
+        OPEN_WRITE_TXNS.remove(txnid);
+      }
+    }
+  }
 
   /**
    * Wrapper to create a cache around a Caffeine Cache.

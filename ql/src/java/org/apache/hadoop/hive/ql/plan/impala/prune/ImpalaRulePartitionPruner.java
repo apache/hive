@@ -53,6 +53,7 @@ import org.apache.impala.planner.HdfsPartitionPruner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -147,11 +148,16 @@ public class ImpalaRulePartitionPruner implements RulePartitionPruner {
       // The partitions retrieved go through Impala's code which is of type "FeFsPartition".
       // However, we need it to be of type ImpalaBasicPartition, so we need to iterate and
       // cast.
+      Set<String> partitionNames = new HashSet<>();
       for (FeFsPartition p : pair.first) {
         impalaPartitions.add((ImpalaBasicPartition) p);
+        partitionNames.add(((ImpalaBasicPartition) p).getPartitionName());
       }
 
       LOG.info("Partition pruned expressions: " + ImpalaConjuncts.toString(pair.second));
+
+      queryContext.addBasicTableNewNames(table.getHiveTableMD().getTTable(), impalaTable,
+          partitionNames);
 
       Set<Partition> msPartitions = impalaTable.fetchPartitions(table.getMSC(),
           table.getHiveTableMD(), pair.first, conf);

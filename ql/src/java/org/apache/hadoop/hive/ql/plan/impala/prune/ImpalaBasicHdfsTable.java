@@ -17,8 +17,9 @@
  */
 package org.apache.hadoop.hive.ql.plan.impala.prune;
 
-import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,28 +28,29 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsByNamesResult;
-import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsPartitionLoader;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsPartition;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsTable;
+import org.apache.impala.analysis.LiteralExpr;
 import org.apache.impala.catalog.CatalogException;
 import org.apache.impala.catalog.Db;
+import org.apache.impala.catalog.FeCatalogUtils;
 import org.apache.impala.catalog.FeFsPartition;
 import org.apache.impala.catalog.HdfsPartition;
-import org.apache.impala.catalog.HdfsStorageDescriptor;
 import org.apache.impala.catalog.HdfsTable;
-import org.apache.impala.catalog.PrunablePartition;
 import org.apache.thrift.TException;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 /**
@@ -66,26 +68,22 @@ import com.google.common.collect.Sets;
 public class ImpalaBasicHdfsTable extends HdfsTable {
 
   // helper map to allow retrieval of the id through the name.
-  private final Map<String, Long> nameToIdMap = Maps.newHashMap();
+  private final Map<String, Long> nameToIdMap;
 
-  // track the partition names that need to be retrieved from HMS
-  private final Set<String> namesToLoad = Sets.newHashSet();
-
-  private final Map<String, ImpalaBasicPartition> basicPartitionMap = Maps.newHashMap();
-
-  private final Set<HdfsPartition> partitionsToLoad = Sets.newHashSet();
+  private final Map<String, ImpalaBasicPartition> basicPartitionMap;
 
   private final String nullPartitionKeyValue;
 
-  private final Map<String, Partition> cachedPartitions = Maps.newHashMap();
-
   private final ValidWriteIdList validWriteIdList;
 
-  public ImpalaBasicHdfsTable(org.apache.hadoop.hive.metastore.api.Table msTbl, Database msDb,
+  public ImpalaBasicHdfsTable(
+      org.apache.hadoop.hive.metastore.api.Table msTbl, Database msDb,
       ValidWriteIdList validWriteIdList) throws HiveException {
     super(msTbl, new Db(msTbl.getDbName(), msDb), msTbl.getTableName(), msTbl.getOwner());
     this.nullPartitionKeyValue = null;
     this.validWriteIdList = validWriteIdList;
+    this.nameToIdMap = ImmutableMap.of();
+    this.basicPartitionMap = new HashMap<>();
     this.basicPartitionMap.put(ImpalaHdfsPartition.DUMMY_PARTITION, null);
   }
 
@@ -94,27 +92,43 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
       ValidWriteIdList validWriteIdList) throws HiveException {
     super(msTbl, new Db(msTbl.getDbName(), msDb), msTbl.getTableName(), msTbl.getOwner());
     try {
+      loadSchema(msTable_);
+      this.nullPartitionKeyValue = null;
+      this.validWriteIdList = validWriteIdList;
+      this.nameToIdMap = ImmutableMap.of();
+      this.basicPartitionMap = new HashMap<>();
+      this.basicPartitionMap.put(ImpalaHdfsPartition.DUMMY_PARTITION, null);
+    } catch (CatalogException e) {
+      throw new HiveException(e);
+    }
+  }
+
+  public ImpalaBasicHdfsTable(org.apache.hadoop.hive.metastore.api.Table msTbl, Database msDb,
+      List<String> partitionNames, ValidWriteIdList validWriteIdList,
+      String defaultPartitionName) throws HiveException {
+    super(msTbl, new Db(msTbl.getDbName(), msDb), msTbl.getTableName(), msTbl.getOwner());
+    try {
       this.validWriteIdList = validWriteIdList;
       // some hdfs table initialization needed since we are using partitions.
       loadSchema(msTable_);
-      this.nullPartitionKeyValue = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+      this.nullPartitionKeyValue = defaultPartitionName;
       initializePartitionMetadata(msTbl);
 
-      // initialize basic partitions
-      if (getNumClusteringCols() > 0) {
-        List<String> partitionNames =
-            client.listPartitionNames(msTable_.getDbName(), msTable_.getTableName(), (short) -1);
-        for (String partitionName : partitionNames) {
-          ImpalaBasicPartition partition = new ImpalaBasicPartition(this, partitionName, null);
-          partitionMap_.put(partition.getId(), partition);
-          updatePartitionMdAndColStats(partition);
-          this.nameToIdMap.put(partitionName, partition.getId());
-          this.basicPartitionMap.put(partitionName, partition);
-        }
-      } else {
-        // need the dummy name in the map
-        this.basicPartitionMap.put(ImpalaHdfsPartition.DUMMY_PARTITION, null);
+      Preconditions.checkState(getNumClusteringCols() > 0);
+      ImmutableMap.Builder<String, Long> nameToIdMapBuilder = ImmutableMap.builder();
+      ImmutableMap.Builder<String, ImpalaBasicPartition> basicPartitionMapBuilder =
+          ImmutableMap.builder();
+      for (String partitionName : partitionNames) {
+        List<LiteralExpr> partitionExprs = FeCatalogUtils.parsePartitionKeyValues(this,
+            Warehouse.getPartValuesFromPartName(partitionName));
+        ImpalaBasicPartition partition = new ImpalaBasicPartition(partitionName, partitionExprs);
+        partitionMap_.put(partition.getId(), partition);
+        updatePartitionMdAndColStats(partition);
+        nameToIdMapBuilder.put(partitionName, partition.getId());
+        basicPartitionMapBuilder.put(partitionName, partition);
       }
+      this.nameToIdMap = nameToIdMapBuilder.build();
+      this.basicPartitionMap = basicPartitionMapBuilder.build();
     } catch (CatalogException|TException e) {
       throw new HiveException(e);
     }
@@ -123,10 +137,6 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
   @Override
   public String getNullPartitionKeyValue() {
     return nullPartitionKeyValue;
-  }
-
-  public Set<String> getNamesToLoad() {
-    return namesToLoad;
   }
 
   public Long getIdFromName(String partitionName) {
@@ -155,9 +165,6 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
     for (Long id : ids) {
       FeFsPartition partition = (FeFsPartition) getPartitionMap().get(id);
       partitions.add(partition);
-      // track this name as one we will need to retrieve from HMS at translation time.
-      namesToLoad.add(partition.getPartitionName());
-      partitionsToLoad.add((HdfsPartition) partition);
     }
     return partitions;
   }
@@ -167,19 +174,12 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
     Set<Partition> msPartitions = Sets.newHashSet();
     Set<String> namesToFetch = Sets.newHashSet();
     for (FeFsPartition partition : partitions) {
-      String partitionName = partition.getPartitionName();
-      if (cachedPartitions.containsKey(partitionName)) {
-        msPartitions.add(cachedPartitions.get(partitionName));
-      } else {
-        namesToFetch.add(partitionName);
-      }
+      namesToFetch.add(partition.getPartitionName());
     }
-    if (!namesToFetch.isEmpty()) {
-      List<Partition> newPartitions = fetchPartitionsFromHMS(client, tableMD, namesToFetch, conf);
-      for (Partition p : newPartitions) {
-        cachedPartitions.put(p.getName(), p);
-        msPartitions.add(p);
-      }
+
+    List<Partition> newPartitions = fetchPartitionsFromHMS(client, tableMD, namesToFetch, conf);
+    for (Partition p : newPartitions) {
+      msPartitions.add(p);
     }
     return msPartitions;
   }
@@ -195,21 +195,15 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
         ? new GetPartitionsByNamesResult()
         : client.getPartitionsByNames(request);
       List<Partition> partitions = Lists.newArrayList();
-      for (org.apache.hadoop.hive.metastore.api.Partition p : result.getPartitions()) {
-        partitions.add(new Partition(table, p));
+      if (result.getPartitions() != null) {
+        for (org.apache.hadoop.hive.metastore.api.Partition p : result.getPartitions()) {
+          partitions.add(new Partition(table, p));
+        }
       }
       return partitions;
     } catch (TException e) {
       throw new HiveException(e);
     }
-  }
-
-  public Set<HdfsPartition> getPartitionsNotToLoad() {
-    Set<HdfsPartition> allPartitions = Sets.newHashSet();
-    for (PrunablePartition p : getPartitions()) {
-      allPartitions.add((HdfsPartition) p);
-    }
-    return Sets.difference(allPartitions, partitionsToLoad);
   }
 
   /**
@@ -218,5 +212,26 @@ public class ImpalaBasicHdfsTable extends HdfsTable {
   @Override
   public boolean isStoredInImpaladCatalogCache() {
     return true;
+  }
+
+  public static class TableWithPartitionNames {
+    private final ImpalaBasicHdfsTable table;
+    private final Set<String> partitionNames = new HashSet<>();
+
+    public TableWithPartitionNames(ImpalaBasicHdfsTable table) {
+      this.table = table;
+    }
+
+    public void addNames(Set<String> newPartitionNames) {
+      partitionNames.addAll(newPartitionNames);
+    }
+
+    public Set<String> getPartitionNames() {
+      return ImmutableSet.copyOf(partitionNames);
+    }
+
+    public ImpalaBasicHdfsTable getTable() {
+      return table;
+    }
   }
 }

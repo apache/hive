@@ -39,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -47,6 +48,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -3607,7 +3609,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     return allocateTableWriteIdsBatchIntr(rqst);
   }
 
-  private List<TxnToWriteId> allocateTableWriteIdsBatchIntr(AllocateTableWriteIdsRequest rqst) throws TException {
+  protected List<TxnToWriteId> allocateTableWriteIdsBatchIntr(AllocateTableWriteIdsRequest rqst) throws TException {
     return client.allocate_table_write_ids(rqst).getTxnToWriteIds();
   }
 
@@ -4396,6 +4398,15 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     ValidWriteIdList writeIdList = validTxnWriteIdList.getTableValidWriteIdList(
         TableName.getDbTable(dbName, tblName));
     return writeIdList!=null?writeIdList.toString():null;
+  }
+
+  protected Long getTxnId(String dbName, String tblName) {
+    String validTxnWriteIdListString = conf.get(ValidTxnWriteIdList.VALID_TABLES_WRITEIDS_KEY);
+    if (validTxnWriteIdListString == null) {
+      return null;
+    }
+    String[] tblWriteIdStrList = validTxnWriteIdListString.split("\\$");
+    return Long.parseLong(tblWriteIdStrList[0]);
   }
 
   private short shrinkMaxtoShort(int max) {

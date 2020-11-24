@@ -62,10 +62,10 @@ public class ImpalaHdfsPartitionLoader {
    * will be returned.
    */
   public static PartitionInfo fetchPartitionInfoFromHMS (
-      HiveConf conf, ImpalaBasicHdfsTable basicHdfsTable, IMetaStoreClient client,
-      ValidWriteIdList compileTimeWriteIdList) throws HiveException {
+      HiveConf conf, ImpalaBasicHdfsTable basicHdfsTable, Set<String> partitionNames,
+      IMetaStoreClient client, ValidWriteIdList compileTimeWriteIdList) throws HiveException {
     return (basicHdfsTable.getNumClusteringCols() > 0)
-        ? getPartitionInfoFromPartitionedTable(conf, basicHdfsTable, client,
+        ? getPartitionInfoFromPartitionedTable(conf, basicHdfsTable, partitionNames, client,
             compileTimeWriteIdList)
         : getPartitionInfoFromNonPartitionedTable(conf, basicHdfsTable, client,
             compileTimeWriteIdList);
@@ -75,12 +75,11 @@ public class ImpalaHdfsPartitionLoader {
    * Load the partition and file metadata from HMS for a partitioned table
    */
   private static PartitionInfo getPartitionInfoFromPartitionedTable(
-      HiveConf conf, ImpalaBasicHdfsTable basicHdfsTable, IMetaStoreClient client,
-      ValidWriteIdList compileTimeWriteIdList) throws HiveException {
+      HiveConf conf, ImpalaBasicHdfsTable basicHdfsTable, Set<String> partitionNames,
+      IMetaStoreClient client, ValidWriteIdList compileTimeWriteIdList) throws HiveException {
     try {
       GetPartitionsByNamesRequest request = getPartitionsByNamesRequest(
-          basicHdfsTable.getNamesToLoad(), basicHdfsTable, conf,
-           true, compileTimeWriteIdList);
+          partitionNames, basicHdfsTable, conf, true, compileTimeWriteIdList);
       // CDPD-16617: HIVE_IN_TEST mode, we avoid the call to HMS and return
       // an empty partition list.
       ImpalaGetPartitionsByNamesResult result = conf.getBoolVar(ConfVars.HIVE_IN_TEST)

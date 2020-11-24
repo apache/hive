@@ -175,10 +175,10 @@ public class ImpalaHdfsTable extends HdfsTable {
   }
 
   public static ImpalaHdfsTable create(HiveConf conf, ImpalaBasicHdfsTable basicHdfsTable,
-      IMetaStoreClient client, ValidWriteIdList compileTimeWriteIdList)
+      Set<String> partitionNames, IMetaStoreClient client, ValidWriteIdList compileTimeWriteIdList)
       throws HiveException, ImpalaException, MetaException {
     PartitionInfo partitionInfo = ImpalaHdfsPartitionLoader.fetchPartitionInfoFromHMS(conf,
-        basicHdfsTable, client, compileTimeWriteIdList);
+        basicHdfsTable, partitionNames, client, compileTimeWriteIdList);
     return new ImpalaHdfsTable(basicHdfsTable, client, compileTimeWriteIdList, partitionInfo, conf);
   }
 }

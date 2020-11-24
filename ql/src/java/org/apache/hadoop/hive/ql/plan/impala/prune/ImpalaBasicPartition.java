@@ -20,11 +20,10 @@ package org.apache.hadoop.hive.ql.plan.impala.prune;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.fs.Path;
+import org.apache.impala.analysis.LiteralExpr;
 import org.apache.impala.catalog.CatalogException;
-import org.apache.impala.catalog.FeCatalogUtils;
 import org.apache.impala.catalog.HdfsFileFormat;
 import org.apache.impala.catalog.HdfsPartition;
 import org.apache.impala.catalog.HdfsStorageDescriptor;
@@ -49,13 +48,9 @@ public class ImpalaBasicPartition extends HdfsPartition {
 
   private final String partitionName;
 
-  public ImpalaBasicPartition(HdfsTable table, String partitionName,
-      HdfsStorageDescriptor fileFormatDescriptor) throws MetaException, CatalogException {
-    super(
-        table,
-        FeCatalogUtils.parsePartitionKeyValues(table,
-            Warehouse.getPartValuesFromPartName(partitionName)),
-        fileFormatDescriptor);
+  public ImpalaBasicPartition(String partitionName, List<LiteralExpr> partitionExprs)
+      throws MetaException, CatalogException {
+    super(null, partitionExprs, null);
     this.partitionName = partitionName;
   }
 

@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.plan.impala;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaHdfsTable;
 import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable;
+import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable.TableWithPartitionNames;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.impala.analysis.Analyzer;
 import org.apache.impala.analysis.StmtMetadataLoader;
@@ -69,7 +71,7 @@ public class ImpalaQueryContext {
   private final ImpalaBasicAnalyzer pruneAnalyzer;
   private final List<TNetworkAddress> hostLocations = Lists.newArrayList();
   private final TQueryCtx queryCtx;
-  private final Map<String, ImpalaBasicHdfsTable> cachedTables = Maps.newHashMap();
+  private final Map<String, TableWithPartitionNames> cachedTables = Maps.newHashMap();
   private final Map<String, Database> cachedDbs = Maps.newHashMap();
   private final AuthorizationFactory authFactory;
   private final HiveTxnManager txnMgr;
@@ -155,14 +157,26 @@ public class ImpalaQueryContext {
   }
 
   public ImpalaBasicHdfsTable getBasicTable(Table msTbl) {
-    return cachedTables.get(getTableName(msTbl));
+    String tableName = getTableName(msTbl);
+    return cachedTables.containsKey(tableName)
+        ? cachedTables.get(tableName).getTable()
+        : null;
   }
 
   public void cacheBasicTable(Table msTbl, ImpalaBasicHdfsTable basicTable) {
-    cachedTables.put(getTableName(msTbl),basicTable);
+    String tableName = getTableName(msTbl);
+    Preconditions.checkState(!cachedTables.containsKey(tableName));
+    cachedTables.put(tableName, new TableWithPartitionNames(basicTable));
   }
 
-  public List<ImpalaBasicHdfsTable> getBasicTables() {
+  public void addBasicTableNewNames(Table msTbl, ImpalaBasicHdfsTable basicTable,
+      Set<String> names) {
+    String tableName = getTableName(msTbl);
+    Preconditions.checkState(cachedTables.containsKey(tableName));
+    cachedTables.get(tableName).addNames(names);
+  }
+
+  public List<TableWithPartitionNames> getBasicTables() {
     return ImmutableList.copyOf(cachedTables.values());
   }
 

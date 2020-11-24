@@ -22,6 +22,8 @@ import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsRequest;
+import org.apache.hadoop.hive.metastore.api.GetPartitionNamesPsResponse;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -29,8 +31,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.plan.impala.ImpalaQueryContext;
-import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable;
+import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaPartitionNamesConverter.ImpalaPartitionNamesRequest;
+import org.apache.hadoop.hive.ql.plan.impala.catalog.ImpalaPartitionNamesConverter.ImpalaPartitionNamesResult;
+import org.apache.hadoop.hive.ql.plan.impala.prune.ImpalaBasicHdfsTable.TableWithPartitionNames;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -47,14 +53,23 @@ public class ImpalaBasicTableCreator {
 
   public static ImpalaBasicHdfsTable createPartitionedTable(RelOptHiveTable table,
       ImpalaQueryContext context, IMetaStoreClient client) throws HiveException {
-    Table msTbl = table.getHiveTableMD().getTTable();
-    // check if in cache
-    ImpalaBasicHdfsTable basicTable = context.getBasicTable(msTbl);
-    Database msDb = context.getDb(table);
-    String tableName = msTbl.getDbName() + "." + msTbl.getTableName();
-    HiveConf conf = context.getConf();
-    ValidWriteIdList validWriteIdList = getValidWriteIdList(msTbl, context);
-    return new ImpalaBasicHdfsTable(conf, client, msTbl, msDb, validWriteIdList);
+    try {
+      Table msTbl = table.getHiveTableMD().getTTable();
+      Database msDb = context.getDb(table);
+
+      String tableName = msTbl.getDbName() + "." + msTbl.getTableName();
+      ValidWriteIdList validWriteIdList = getValidWriteIdList(msTbl, context);
+
+      HiveConf conf = context.getConf();
+      GetPartitionNamesPsRequest request = new ImpalaPartitionNamesRequest(msTbl, msDb,
+        validWriteIdList, conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
+        table.getPartColumns().size());
+      GetPartitionNamesPsResponse psResponse = client.listPartitionNamesRequest(request);
+      ImpalaPartitionNamesResult impalaResult = (ImpalaPartitionNamesResult) psResponse;
+      return impalaResult.basicTable;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
 
   private static ValidWriteIdList getValidWriteIdList(Table msTbl,
