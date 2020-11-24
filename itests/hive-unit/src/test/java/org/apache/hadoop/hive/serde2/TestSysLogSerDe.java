@@ -36,7 +36,7 @@ public class TestSysLogSerDe {
   @Test
   public void testAllValid() throws Exception {
     SyslogSerDe serde = new SyslogSerDe();
-    serde.initialize(null, null);
+    serde.initialize(null, null, null);
 
     Text rowText = new Text(
             "<14>1 2020-05-12T08:48:05.299Z hostname.cluster.local coordinator testProc" +
@@ -79,7 +79,7 @@ public class TestSysLogSerDe {
   @Test
   public void testWithMissingFields() throws Exception {
     SyslogSerDe serde = new SyslogSerDe();
-    serde.initialize(null, null);
+    serde.initialize(null, null, null);
 
     Text rowText = new Text(
             "<14>1 2020-05-12T08:48:05.299Z hostname.cluster.local - -" +

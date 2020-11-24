@@ -112,8 +112,8 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         valueTableDesc[tag] = gWork.getTagToValueDesc().get(tag);
         AbstractSerDe sd = ReflectionUtils.newInstance(valueTableDesc[tag].getSerDeClass(), null);
         sd.initialize(null, valueTableDesc[tag].getProperties(), null);
-        valueObjectInspector[tag] = inputValueDeserializer[tag].getObjectInspector();
         inputValueDeserializer[tag] = sd;
+        valueObjectInspector[tag] = inputValueDeserializer[tag].getObjectInspector();
 
         ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
         ois.add(keyObjectInspector);
