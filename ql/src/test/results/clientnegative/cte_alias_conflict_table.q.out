@@ -1,0 +1,25 @@
+PREHOOK: query: drop table if exists game_info
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists game_info
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table if exists game_info_extend
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists game_info_extend
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table game_info (game_name string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@game_info
+POSTHOOK: query: create table game_info (game_name string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@game_info
+PREHOOK: query: create table game_info_extend (ext_id bigint, dev_app_id bigint, game_name string, app_type string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@game_info_extend
+POSTHOOK: query: create table game_info_extend (ext_id bigint, dev_app_id bigint, game_name string, app_type string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@game_info_extend
+FAILED: SemanticException The CTE alias: game_info is conflicted with the table name

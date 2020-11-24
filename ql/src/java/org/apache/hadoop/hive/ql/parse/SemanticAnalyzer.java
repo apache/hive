@@ -2188,6 +2188,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Get table details from tabNameToTabObject cache
       Table tab = getTableObjectByName(tabName, false);
       if (tab != null) {
+        if (findCTEFromName(qb, cteName) != null) {
+          throw new SemanticException("The CTE alias: " + cteName + " is conflicted with the table name");
+        }
         Table newTab = tab.makeCopy();
         tab = newTab;
       }
