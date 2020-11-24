@@ -442,7 +442,7 @@ Table Parameters:
 	numFiles            	4                   
 	numRows             	2                   
 	rawDataSize         	0                   
-	totalSize           	2698                
+	totalSize           	2703                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -506,7 +506,7 @@ Table Parameters:
 	numFiles            	6                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	4063                
+	totalSize           	4074                
 	transactional       	true                
 	transactional_properties	default             
 #### A masked pattern was here ####
@@ -1896,12 +1896,12 @@ POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
 2	2	1
 1	99	1
-3	98	1
 4	4	1
-6	6	1
+3	98	1
 5	97	1
-8	8	1
+6	6	1
 7	96	1
+8	8	1
 PREHOOK: query: create table t3(a int, b int default 1) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true')
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default

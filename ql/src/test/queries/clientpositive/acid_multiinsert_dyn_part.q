@@ -79,6 +79,8 @@ sort by a.c
 
 select * from multiinsert_test_acid_nondi order by a;
 
+set hive.acid.direct.insert.enabled=true;
+
 drop table if exists multiinsert_test_acid;
 drop table if exists multiinsert_test_mm;
 drop table if exists multiinsert_test_acid_nondi;
@@ -135,6 +137,74 @@ select
  a.c
  where a.c is not null
 insert overwrite table multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+;
+
+select * from multiinsert_test_acid_nondi order by a;
+
+set hive.acid.direct.insert.enabled=true;
+
+drop table if exists multiinsert_test_acid;
+drop table if exists multiinsert_test_mm;
+drop table if exists multiinsert_test_acid_nondi;
+
+create table multiinsert_test_acid (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true');
+
+create table multiinsert_test_mm (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true', 'transactional_properties'='insert_only');
+
+create table multiinsert_test_acid_nondi (a int, b int) partitioned by (c int) stored as orc tblproperties('transactional'='true');
+
+from multiinsert_test_text a
+insert into multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert into multiinsert_test_acid partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+;
+
+select * from multiinsert_test_acid order by a;
+
+from multiinsert_test_text a
+insert into multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert into multiinsert_test_mm partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+where a.c is null
+sort by a.c
+;
+
+select * from multiinsert_test_mm order by a;
+
+set hive.acid.direct.insert.enabled=false;
+
+from multiinsert_test_text a
+insert into multiinsert_test_acid_nondi partition (c)
+select
+ a.a,
+ a.b,
+ a.c
+ where a.c is not null
+insert into multiinsert_test_acid_nondi partition (c)
 select
  a.a,
  a.b,

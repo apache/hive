@@ -2737,8 +2737,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
           if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
             Utilities.FILE_OP_LOGGER.trace("Found DP " + dpPath);
           }
-          if (dynamiPartitionSpecs == null || dynamiPartitionSpecs.isEmpty()
-              || dynamiPartitionSpecs.contains(dpPath.getName())) {
+          String partitionSpec = dpPath.toString().substring(loadPath.toString().length() + 1);
+          if (isInsertOverwrite) {
+            if (dynamiPartitionSpecs == null || dynamiPartitionSpecs.contains(partitionSpec)) {
+              validPartitions.add(dpPath);
+            }
+          }
+          else {
             validPartitions.add(dpPath);
           }
         }

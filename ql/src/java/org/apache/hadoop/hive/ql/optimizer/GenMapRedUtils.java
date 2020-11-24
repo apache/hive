@@ -1901,7 +1901,7 @@ public final class GenMapRedUtils {
       }
 
       if ((srcDir != null) && srcDir.equals(fsopFinalDir)) {
-        if (isDirectInsert) {
+        if (isDirectInsert || isMmFsop) {
           if (moveTaskId != null && fsoMoveTaskId != null && moveTaskId.equals(fsoMoveTaskId)) {
             // If the ACID direct insert is on, the MoveTasks cannot be identified by the srcDir as
             // in this case the srcDir is always the root directory of the table.

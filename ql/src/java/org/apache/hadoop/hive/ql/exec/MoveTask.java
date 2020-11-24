@@ -407,7 +407,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           }
 
           int statementId = tbd.getStmtId();
-          if (tbd.isDirectInsert()) {
+          if (tbd.isDirectInsert() || tbd.isMmTable()) {
             statementId = queryPlan.getStatementIdForAcidWriteType(work.getLoadTableWork().getWriteId(),
                 tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
             LOG.debug("The statementId used when loading the dynamic partitions is " + statementId);
@@ -560,7 +560,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     // only the table dir. So all partitions and all deltas will be listed by all MoveTasks. If we have the statementId
     // we could restrict the file listing to the directory the particular MoveTask is responsible for.
     int statementId = tbd.getStmtId();
-    if (tbd.isDirectInsert()) {
+    if (tbd.isDirectInsert() || tbd.isMmTable()) {
       statementId = queryPlan.getStatementIdForAcidWriteType(work.getLoadTableWork().getWriteId(),
           tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
       LOG.debug("The statementId used when loading the dynamic partitions is " + statementId);

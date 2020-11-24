@@ -2863,9 +2863,16 @@ public final class Utilities {
             conf, isInsertOverwrite, acidOperation);
         for (Path p : leafStatus) {
           Path dpPath = p.getParent();
-          if (!path.contains(dpPath) && (dynamiPartitionSpecs == null || dynamiPartitionSpecs.isEmpty()
-              || dynamiPartitionSpecs.contains(dpPath.getName()))) {
-            path.add(dpPath);
+          String partitionSpec = dpPath.toString().substring(loadPath.toString().length() + 1);
+          if (!path.contains(dpPath)) {
+            if (isInsertOverwrite) {
+              if (dynamiPartitionSpecs == null || dynamiPartitionSpecs.contains(partitionSpec)) {
+                path.add(dpPath);
+              }
+            }
+            else {
+              path.add(dpPath);
+            }
           }
         }
       } else {
