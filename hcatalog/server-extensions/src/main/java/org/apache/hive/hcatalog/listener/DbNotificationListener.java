@@ -29,6 +29,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -972,28 +973,36 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     }
   }
 
-  private long getNextNLId(Statement stmt, SQLGenerator sqlGenerator, String sequence)
+  private long getNextNLId(Connection con, SQLGenerator sqlGenerator, String sequence)
           throws SQLException, MetaException {
-    String s = sqlGenerator.addForUpdateClause("select \"NEXT_VAL\" from " +
-            "\"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = " + quoteString(sequence));
-    LOG.debug("Going to execute query <" + s + ">");
-    ResultSet rs = null;
-    try {
-      rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        throw new MetaException("Transaction database not properly configured, can't find next NL id.");
-      }
+    final String seq_sql = "select \"NEXT_VAL\" from \"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = ?";
+    final String upd_sql = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = ? where \"SEQUENCE_NAME\" = ?";
 
-      long nextNLId = rs.getLong(1);
-      long updatedNLId = nextNLId + 1;
-      s = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = " + updatedNLId + " where \"SEQUENCE_NAME\" = " +
-              quoteString(sequence);
-      LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
-      return nextNLId;
-    }finally {
-      close(rs);
+    final String sou_sql = sqlGenerator.addForUpdateClause(seq_sql);
+    Optional<Long> sequenceValue = Optional.empty();
+
+    LOG.debug("Going to execute query <{}>", sou_sql);
+    try (PreparedStatement stmt = con.prepareStatement(sou_sql)) {
+      stmt.setString(1, sequence);
+      try (ResultSet rs = stmt.executeQuery()) {
+        if (rs.next()) {
+          sequenceValue = Optional.of(rs.getLong(1));
+        }
+      }
     }
+
+    final long updatedNLId = 1L + sequenceValue.orElseThrow(
+        () -> new MetaException("Transaction database not properly configured, failed to determine next NL ID"));
+
+    LOG.debug("Going to execute query <{}>", upd_sql);
+    try (PreparedStatement stmt = con.prepareStatement(upd_sql)) {
+      stmt.setLong(1, updatedNLId);
+      stmt.setString(2, sequence);
+      final int rowCount = stmt.executeUpdate();
+      LOG.debug("Updated {} rows for sequnce {}", rowCount, sequence);
+    }
+
+    return updatedNLId;
   }
 
   private void addWriteNotificationLog(NotificationEvent event, AcidWriteEvent acidWriteEvent, Connection dbConn,
@@ -1030,7 +1039,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       rs = pst.executeQuery();
       if (!rs.next()) {
         // if rs is empty then no lock is taken and thus it can not cause deadlock.
-        long nextNLId = getNextNLId(stmt, sqlGenerator,
+        long nextNLId = getNextNLId(dbConn, sqlGenerator,
                 "org.apache.hadoop.hive.metastore.model.MTxnWriteNotificationLog");
         s = "insert into \"TXN_WRITE_NOTIFICATION_LOG\" " +
                 "(\"WNL_ID\", \"WNL_TXNID\", \"WNL_WRITEID\", \"WNL_DATABASE\", \"WNL_TABLE\", " +
@@ -1135,7 +1144,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       LOG.debug("Going to execute update <" + s + ">");
       stmt.executeUpdate(s);
 
-      long nextNLId = getNextNLId(stmt, sqlGenerator,
+      long nextNLId = getNextNLId(dbConn, sqlGenerator,
               "org.apache.hadoop.hive.metastore.model.MNotificationLog");
 
       String insertVal;
