@@ -33,7 +33,6 @@ import org.apache.orc.CompressionCodec;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.InStream;
 import org.apache.orc.impl.PositionProvider;
-import org.apache.orc.impl.SettableUncompressedStream;
 import org.apache.orc.impl.TreeReaderFactory;
 import org.apache.orc.OrcProto;
 import org.slf4j.Logger;
