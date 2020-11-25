@@ -414,7 +414,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>${postgres.version}</version>
+      <version>9.3-1102-jdbc41</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
