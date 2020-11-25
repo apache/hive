@@ -739,7 +739,7 @@ public class TestHiveMetastoreTransformer {
 
       StringBuilder table_params = new StringBuilder();
       List<String> capabilities = new ArrayList<>();
-      TableType type = TableType.EXTERNAL_TABLE;
+      TableType type = TableType.MANAGED_TABLE;
 
       capabilities.add("HIVEFULLACIDWRITE");
       capabilities.add("HIVEFULLACIDREAD");
@@ -759,10 +759,8 @@ public class TestHiveMetastoreTransformer {
       LOG.debug("Return list size=" + extTables.size() + ",bitValue=" + requestedFields);
       assertEquals("Return list size does not match expected size:extTables", count, extTables.size());
       for (ExtendedTableInfo tableInfo : extTables) {
-        assertEquals("Return object should have read capabilities", 1, tableInfo.getRequiredReadCapabilities().size());
-        assertEquals("EXTREAD", tableInfo.getRequiredReadCapabilities().get(0));
-        assertEquals("Return object should have write capabilities", 1, tableInfo.getRequiredWriteCapabilities().size());
-        assertEquals("EXTWRITE", tableInfo.getRequiredWriteCapabilities().get(0));
+        assertNull("Return object should not have read capabilities", tableInfo.getRequiredReadCapabilities());
+        assertNull("Return object should not have write capabilities", tableInfo.getRequiredWriteCapabilities());
         assertEquals("AccessType not expected to be set", 0, tableInfo.getAccessType());
       }
 
@@ -865,7 +863,7 @@ public class TestHiveMetastoreTransformer {
       properties.append(";");
       properties.append(CAPABILITIES_KEY).append("=").append("HIVEBUCKET2,EXTREAD,EXTWRITE");
       tProps.put("TBLNAME", tblName);
-      tProps.put("TBLTYPE", TableType.EXTERNAL_TABLE);
+      tProps.put("TBLTYPE", TableType.MANAGED_TABLE);
       tProps.put("BUCKETS", bucketCount);
       tProps.put("PROPERTIES", properties.toString());
       table = createTableWithCapabilities(tProps);
@@ -899,6 +897,8 @@ public class TestHiveMetastoreTransformer {
 
       tblName = "test_parts_mgd_insert_wc";
       properties = new StringBuilder();
+      properties.append("transactional=true");
+      properties.append(";");
       properties.append(CAPABILITIES_KEY).append("=").append("HIVEMANAGEDINSERTREAD,HIVEMANAGEDINSERTWRITE,HIVECACHEINVALIDATE,")
                 .append("HIVEMANAGEDSTATS,CONNECTORREAD,CONNECTORWRITE");
       properties.append(";");

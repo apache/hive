@@ -112,7 +112,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       }
 
       Map<String, String> params = table.getParameters();
-      String tableType = table.getTableType();
+      String tableType = getTableType(table);
       String tCapabilities = params.get(OBJCAPABILITIES);
       int numBuckets = table.isSetSd()? table.getSd().getNumBuckets() : 0;
       boolean isBucketed = (numBuckets > 0) ? true : false;
@@ -467,7 +467,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       Map<String, String> params = table.getParameters();
       if (params == null)
         params = new HashMap<>();
-      String tableType = table.getTableType();
+      String tableType = getTableType(table);
       String tCapabilities = params.get(OBJCAPABILITIES);
       if (partition.getSd() != null) {
         partBuckets = partition.getSd().getNumBuckets();
@@ -570,7 +570,7 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
     Map<String, String> params = table.getParameters();
     if (params == null)
       params = new HashMap<>();
-    String tableType = newTable.getTableType();
+    String tableType = getTableType(newTable);
     String txnal = null;
     String txn_properties = null;
     boolean isInsertAcid = false;
@@ -837,5 +837,13 @@ public class MetastoreDefaultTransformer implements IMetaStoreMetadataTransforme
       }
     }
     return table;
+  }
+
+  private String getTableType(Table table) {
+    if (MetaStoreUtils.isExternalTable(table)) {
+      return "EXTERNAL_TABLE";
+    } else {
+      return table.getTableType();
+    }
   }
 }

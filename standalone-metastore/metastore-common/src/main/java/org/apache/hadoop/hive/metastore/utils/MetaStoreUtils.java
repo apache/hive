@@ -241,17 +241,14 @@ public class MetaStoreUtils {
     if (table == null) {
       return false;
     }
-    String tableType = table.getTableType();
-    if (tableType != null && tableType.equals(TableType.EXTERNAL_TABLE.name())) {
-      return true;
-    }
     Map<String, String> params = table.getParameters();
-    if (params == null) {
-      return false;
+    if (params != null && params.containsKey(EXTERNAL_TABLE_PROP)) {
+      return Boolean.parseBoolean(params.get(EXTERNAL_TABLE_PROP));
+    } else {
+      return TableType.EXTERNAL_TABLE.name().equals(table.getTableType());
     }
-
-    return Boolean.parseBoolean(params.get(EXTERNAL_TABLE_PROP));
   }
+
 
   /**
    * Determines whether an table needs to be purged or not.
