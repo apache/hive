@@ -214,7 +214,6 @@ import com.facebook.fb303.fb_status;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
-import com.google.common.util.concurrent.Striped;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
@@ -282,7 +281,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     static AtomicInteger databaseCount, tableCount, partCount;
 
     private Warehouse wh; // hdfs warehouse
-    private static Striped<Lock> tablelocks;
     private static final ThreadLocal<RawStore> threadLocalMS =
         new ThreadLocal<RawStore>() {
           @Override
@@ -489,9 +487,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           threadPool = Executors.newFixedThreadPool(numThreads,
               new ThreadFactoryBuilder().setDaemon(true)
                   .setNameFormat("HMSHandler #%d").build());
-          int numTableLocks = HiveConf.getIntVar(conf,
-              ConfVars.METASTORE_NUM_STRIPED_TABLE_LOCKS);
-          tablelocks = Striped.lock(numTableLocks);
         }
       }
       if (init) {
@@ -3922,14 +3917,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
       Database db = null;
 
-<<<<<<< ours
       List<ColumnStatistics> partsColStats = new ArrayList<>(parts.size());
       List<Long> partsWriteIds = new ArrayList<>(parts.size());
 
-=======
-      Lock tableLock = tablelocks.get(dbName + tblName);
-      tableLock.lock();
->>>>>>> theirs
       try {
         ms.openTransaction();
         tbl = ms.getTable(catName, dbName, tblName, null);
@@ -4024,7 +4014,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         success = ms.commitTransaction();
       } finally {
-        tableLock.unlock();
         if (!success) {
           ms.rollbackTransaction();
           cleanupPartitionFolders(addedPartitions, db);
@@ -4318,8 +4307,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Table tbl = null;
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
       Database db = null;
-      Lock tableLock = tablelocks.get(dbName + tblName);
-      tableLock.lock();
       try {
         ms.openTransaction();
         tbl = ms.getTable(catName, dbName, tblName, null);
@@ -4359,7 +4346,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         success = ms.commitTransaction();
         return addedPartitions.size();
       } finally {
-        tableLock.unlock();
         if (!success) {
           ms.rollbackTransaction();
           cleanupPartitionFolders(addedPartitions, db);
