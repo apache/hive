@@ -17,10 +17,12 @@
 package org.apache.hadoop.hive.llap.tezplugins.helpers;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -54,27 +56,54 @@ public class LlapTaskUmbilicalServer {
 
   public LlapTaskUmbilicalServer(Configuration conf, LlapTaskUmbilicalProtocol umbilical, int numHandlers) throws IOException {
     jobTokenSecretManager = new JobTokenSecretManager();
-    int umbilicalPort = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT);
-    if (umbilicalPort <= 0) {
-      umbilicalPort = 0;
-    }
-    server = new RPC.Builder(conf)
-        .setProtocol(LlapTaskUmbilicalProtocol.class)
-        .setBindAddress("0.0.0.0")
-        .setPort(umbilicalPort)
-        .setInstance(umbilical)
-        .setNumHandlers(numHandlers)
-        .setSecretManager(jobTokenSecretManager).build();
 
-    if (conf.getBoolean(CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION, false)) {
-      server.refreshServiceAcl(conf, new LlapUmbilicalExternalPolicyProvider());
+    String[] portRange =
+        conf.get(HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT.varname)
+            .split("-");
+
+    int minPort = Integer.parseInt(portRange[0]);
+    boolean portFound = false;
+    IOException e = null;
+    if (portRange.length == 1) {
+      // Single port specified, not Range.
+      startServer(conf, umbilical, numHandlers, minPort);
+      portFound = true;
+    } else {
+      int maxPort = Integer.parseInt(portRange[1]);
+      for (int i = minPort; i < maxPort; i++) {
+        try {
+          startServer(conf, umbilical, numHandlers, i);
+          portFound = true;
+          break;
+        } catch (BindException be) {
+          // Ignore and move ahead, in search of a free port.
+          e = be;
+        }
+      }
+    }
+    if (!portFound) {
+      throw e;
     }
 
-    server.start();
     this.address = NetUtils.getConnectAddress(server);
     LOG.info(
         "Started TaskUmbilicalServer: " + umbilical.getClass().getName() + " at address: " + address +
-        " with numHandlers=" + numHandlers);
+            " with numHandlers=" + numHandlers);
+  }
+
+  private void startServer(Configuration conf,
+      LlapTaskUmbilicalProtocol umbilical, int numHandlers, int port)
+      throws IOException {
+    server = new RPC.Builder(conf).setProtocol(LlapTaskUmbilicalProtocol.class)
+        .setBindAddress("0.0.0.0").setPort(port).setInstance(umbilical)
+        .setNumHandlers(numHandlers).setSecretManager(jobTokenSecretManager)
+        .build();
+    if (conf
+        .getBoolean(CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION,
+            false)) {
+      server.refreshServiceAcl(conf, new LlapUmbilicalExternalPolicyProvider());
+    }
+    server.start();
   }
 
   public InetSocketAddress getAddress() {

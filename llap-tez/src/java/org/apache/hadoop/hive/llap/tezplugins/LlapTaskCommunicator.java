@@ -22,10 +22,12 @@ import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.BooleanArr
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol.TezAttemptArray;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -257,23 +259,32 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
 
       int numHandlers =
           HiveConf.getIntVar(conf, ConfVars.LLAP_TASK_COMMUNICATOR_LISTENER_THREAD_COUNT);
-      int umbilicalPort = HiveConf.getIntVar(conf, ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT);
-      if (umbilicalPort <= 0) {
-        umbilicalPort = 0;
+      String[] portRange =
+          conf.get(HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT.varname)
+              .split("-");
+      boolean portFound = false;
+      IOException ioe = null;
+      int minPort = Integer.parseInt(portRange[0]);
+      if (portRange.length == 1) {
+        // Single port specified, not range.
+        startServerInternal(conf, minPort, numHandlers, jobTokenSecretManager);
+        portFound = true;
+      } else {
+        int maxPort = Integer.parseInt(portRange[1]);
+        for (int i = minPort; i < maxPort; i++) {
+          try {
+            startServerInternal(conf, i, numHandlers, jobTokenSecretManager);
+            portFound = true;
+            break;
+          } catch (BindException be) {
+            // Ignore and move ahead, in search of a free port.
+            ioe = be;
+          }
+        }
       }
-      server = new RPC.Builder(conf)
-          .setProtocol(LlapTaskUmbilicalProtocol.class)
-          .setBindAddress("0.0.0.0")
-          .setPort(umbilicalPort)
-          .setInstance(umbilical)
-          .setNumHandlers(numHandlers)
-          .setSecretManager(jobTokenSecretManager).build();
-
-      if (conf.getBoolean(CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION, false)) {
-        server.refreshServiceAcl(conf, new LlapUmbilicalPolicyProvider());
+      if(!portFound) {
+        throw ioe;
       }
-
-      server.start();
       this.address = NetUtils.getConnectAddress(server);
       this.amHost = LlapUtil.getAmHostNameFromAddress(address, conf);
       LOG.info("Started LlapUmbilical: " + umbilical.getClass().getName() + " at address: "
@@ -281,6 +292,23 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
     } catch (IOException e) {
       throw new TezUncheckedException(e);
     }
+  }
+
+  private void startServerInternal(Configuration conf, int umbilicalPort,
+      int numHandlers, JobTokenSecretManager jobTokenSecretManager)
+      throws IOException {
+    server = new RPC.Builder(conf).setProtocol(LlapTaskUmbilicalProtocol.class)
+        .setBindAddress("0.0.0.0").setPort(umbilicalPort).setInstance(umbilical)
+        .setNumHandlers(numHandlers).setSecretManager(jobTokenSecretManager)
+        .build();
+
+    if (conf
+        .getBoolean(CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION,
+            false)) {
+      server.refreshServiceAcl(conf, new LlapUmbilicalPolicyProvider());
+    }
+
+    server.start();
   }
 
   @VisibleForTesting
