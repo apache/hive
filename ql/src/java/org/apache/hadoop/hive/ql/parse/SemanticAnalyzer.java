@@ -1112,7 +1112,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ASTNode tableTree = (ASTNode) (tabref.getChild(0));
 
-    String tabIdName = getUnescapedName(tableTree).toLowerCase();
+    String tabIdName = getUnescapedName(tableTree);
 
     String alias = findSimpleTableName(tabref, aliasIndex);
 
