@@ -513,7 +513,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         return false;
       }
       AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
-          tblValidWriteIds, Ref.from(false), false);
+          tblValidWriteIds, Ref.from(false), true);
       if (!isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
         if (needsCleaning(dir, sd)) {
           msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
@@ -531,7 +531,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       final StatsUpdater su = computeStats ? StatsUpdater.init(ci, msc.findColumnsWithStats(
           CompactionInfo.compactionInfoToStruct(ci)), conf,
           runJobAsSelf(ci.runAs) ? ci.runAs : t.getOwner()) : null;
-      
+
       try {
         failCompactionIfSetForTest();
 
@@ -600,19 +600,16 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     if (runJobAsSelf(ci.runAs)) {
       mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
     } else {
-      UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
-          UserGroupInformation.getLoginUser());
-      final Partition fp = p;
-      final CompactionInfo fci = ci;
+      UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs, UserGroupInformation.getLoginUser());
       ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
-        mr.run(conf, jobName.toString(), t, fp, sd, tblValidWriteIds, fci, su, msc, dir);
+        mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
         return null;
       });
       try {
         FileSystem.closeAllForUGI(ugi);
       } catch (IOException exception) {
-        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " +
-                      ci.getFullPartitionName(), exception);
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + ci.getFullPartitionName(),
+            exception);
       }
     }
   }
