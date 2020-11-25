@@ -121,7 +121,7 @@ public class TestRangerRestClient {
             TimeUnit.MILLISECONDS)).thenReturn(500L);
     Mockito.when(mockClient.getRangerClient(Mockito.any(HiveConf.class))).thenCallRealMethod();
     Client client =mockClient.getRangerClient(conf);
-    Assert.assertEquals("20", client.getProperties().get(ClientConfig.PROPERTY_CONNECT_TIMEOUT));
-    Assert.assertEquals("500", client.getProperties().get(ClientConfig.PROPERTY_READ_TIMEOUT));
+    Assert.assertEquals(20, client.getProperties().get(ClientConfig.PROPERTY_CONNECT_TIMEOUT));
+    Assert.assertEquals(500, client.getProperties().get(ClientConfig.PROPERTY_READ_TIMEOUT));
   }
 }

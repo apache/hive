@@ -278,10 +278,10 @@ public class RangerRestClientImpl implements RangerRestClient {
     ClientConfig config = new DefaultClientConfig();
     config.getClasses().add(MultiPartWriter.class);
     config.getProperties().put(ClientConfig.PROPERTY_FOLLOW_REDIRECTS, true);
-    config.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT, String.valueOf(
-            hiveConf.getTimeVar(HiveConf.ConfVars.REPL_EXTERNAL_CLIENT_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS)));
-    config.getProperties().put(ClientConfig.PROPERTY_READ_TIMEOUT, String.valueOf(
-            hiveConf.getTimeVar(HiveConf.ConfVars.REPL_RANGER_CLIENT_READ_TIMEOUT, TimeUnit.MILLISECONDS)));
+    config.getProperties().put(ClientConfig.PROPERTY_CONNECT_TIMEOUT,
+            (int) hiveConf.getTimeVar(HiveConf.ConfVars.REPL_EXTERNAL_CLIENT_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS));
+    config.getProperties().put(ClientConfig.PROPERTY_READ_TIMEOUT,
+            (int) hiveConf.getTimeVar(HiveConf.ConfVars.REPL_RANGER_CLIENT_READ_TIMEOUT, TimeUnit.MILLISECONDS));
     ret = Client.create(config);
     return ret;
   }
