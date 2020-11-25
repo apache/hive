@@ -973,25 +973,33 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     }
   }
 
+  /**
+   * Get the next notification log ID.
+   *
+   * @return The next ID to use for a notification log message
+   * @throws SQLException if a database access error occurs or this method is
+   *           called on a closed connection
+   * @throws MetaException if the sequence table is not properly initialized
+   */
   private long getNextNLId(Connection con, SQLGenerator sqlGenerator, String sequence)
           throws SQLException, MetaException {
     final String seq_sql = "select \"NEXT_VAL\" from \"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = ?";
     final String upd_sql = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = ? where \"SEQUENCE_NAME\" = ?";
 
     final String sou_sql = sqlGenerator.addForUpdateClause(seq_sql);
-    Optional<Long> sequenceValue = Optional.empty();
+    Optional<Long> nextSequenceValue = Optional.empty();
 
     LOG.debug("Going to execute query <{}>", sou_sql);
     try (PreparedStatement stmt = con.prepareStatement(sou_sql)) {
       stmt.setString(1, sequence);
       try (ResultSet rs = stmt.executeQuery()) {
         if (rs.next()) {
-          sequenceValue = Optional.of(rs.getLong(1));
+          nextSequenceValue = Optional.of(rs.getLong(1));
         }
       }
     }
 
-    final long updatedNLId = 1L + sequenceValue.orElseThrow(
+    final long updatedNLId = 1L + nextSequenceValue.orElseThrow(
         () -> new MetaException("Transaction database not properly configured, failed to determine next NL ID"));
 
     LOG.debug("Going to execute query <{}>", upd_sql);
@@ -1002,7 +1010,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       LOG.debug("Updated {} rows for sequnce {}", rowCount, sequence);
     }
 
-    return updatedNLId;
+    return nextSequenceValue.get();
   }
 
   private void addWriteNotificationLog(NotificationEvent event, AcidWriteEvent acidWriteEvent, Connection dbConn,
