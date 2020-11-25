@@ -93,7 +93,7 @@ import org.apache.hadoop.hive.metastore.api.FileMetadataExprType;
 import org.apache.hadoop.hive.metastore.api.Function;
 import org.apache.hadoop.hive.metastore.api.FunctionType;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsProjectionSpec;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.HiveObjectType;
@@ -4224,7 +4224,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   @Override
   public List<Partition> getPartitionSpecsByFilterAndProjection(final Table table,
-      GetPartitionsProjectionSpec partitionsProjectSpec,
+      GetProjectionsSpec partitionsProjectSpec,
       final GetPartitionsFilterSpec filterSpec) throws MetaException, NoSuchObjectException {
     List<String> fieldList = null;
     String inputIncludePattern = null;
@@ -9374,7 +9374,7 @@ public class ObjectStore implements RawStore, Configurable {
       GetPartitionsFilterSpec fs = new GetPartitionsFilterSpec();
       fs.setFilterMode(PartitionFilterMode.BY_NAMES);
       fs.setFilters(partNames);
-      GetPartitionsProjectionSpec ps = new GetPartitionsProjectionSpec();
+      GetProjectionsSpec ps = new GetProjectionsSpec();
       ps.setIncludeParamKeyPattern(StatsSetupConst.COLUMN_STATS_ACCURATE + '%');
       ps.setFieldList(Lists.newArrayList("writeId", "parameters", "values"));
       List<Partition> parts = getPartitionSpecsByFilterAndProjection(table, ps, fs);

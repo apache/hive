@@ -32,7 +32,7 @@ import javax.management.ObjectName;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
-import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
+import org.apache.hadoop.hive.llap.cache.ProactiveEvictingCachePolicy;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,8 +151,10 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       LowLevelCachePolicy
           realCachePolicy =
           useLrfu ? new LowLevelLrfuCachePolicy(minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
-      // TODO: if realCachePolicy is not something that supports proactive caching
-      // turn the feature off (LLAP_IO_PROACTIVE_EVICTION_ENABLED) and log it
+      if (!(realCachePolicy instanceof ProactiveEvictingCachePolicy.Impl)) {
+        HiveConf.setBoolVar(this.daemonConf, ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED, false);
+        LOG.info("Turning off proactive cache eviction, as selected cache policy does not support it.");
+      }
       boolean trackUsage = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_TRACK_CACHE_USAGE);
       LowLevelCachePolicy cachePolicyWrapper;
       if (trackUsage) {
@@ -258,12 +260,14 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     final ProactiveEviction.Request request = ProactiveEviction.Request.Builder.create()
         .fromProtoRequest(protoRequest).build();
     Predicate<CacheTag> predicate = tag -> request.isTagMatch(tag);
+    boolean isInstantDeallocation = HiveConf.getBoolVar(daemonConf,
+        HiveConf.ConfVars.LLAP_IO_PROACTIVE_EVICTION_INSTANT_DEALLOC);
     LOG.debug("Starting proactive eviction.");
     long time = System.currentTimeMillis();
 
-    long markedBytes = dataCache.markBuffersForProactiveEviction(predicate);
-    markedBytes += fileMetadataCache.markBuffersForProactiveEviction(predicate);
-    markedBytes += serdeCache.markBuffersForProactiveEviction(predicate);
+    long markedBytes = dataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    markedBytes += fileMetadataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    markedBytes += serdeCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
 
     // Signal mark phase of proactive eviction was done
     if (markedBytes > 0) {

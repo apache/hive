@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.metastore.events.AddUniqueConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AlterDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
 import org.apache.hadoop.hive.metastore.events.CreateFunctionEvent;
@@ -103,6 +104,7 @@ import org.apache.hadoop.hive.metastore.messaging.AllocWriteIdMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterPartitionMessage;
 import org.apache.hadoop.hive.metastore.messaging.AlterTableMessage;
+import org.apache.hadoop.hive.metastore.messaging.CommitCompactionMessage;
 import org.apache.hadoop.hive.metastore.messaging.CommitTxnMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateDatabaseMessage;
 import org.apache.hadoop.hive.metastore.messaging.CreateFunctionMessage;
@@ -904,6 +906,24 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     event.setDbName(deletePartColStatEvent.getDBName());
     event.setTableName(deletePartColStatEvent.getTableName());
     process(event, deletePartColStatEvent);
+  }
+
+  @Override
+  public void onCommitCompaction(CommitCompactionEvent commitCompactionEvent, Connection dbConn, SQLGenerator sqlGenerator)
+      throws MetaException {
+
+    CommitCompactionMessage msg = MessageBuilder.getInstance().buildCommitCompactionMessage(commitCompactionEvent);
+
+    NotificationEvent event = new NotificationEvent(0, now(), EventType.COMMIT_COMPACTION.toString(),
+        msgEncoder.getSerializer().serialize(msg));
+    event.setDbName(commitCompactionEvent.getDbname());
+    event.setTableName(commitCompactionEvent.getTableName());
+
+    try {
+      addNotificationLog(event, commitCompactionEvent, dbConn, sqlGenerator);
+    } catch (SQLException e) {
+      throw new MetaException("Unable to execute direct SQL " + StringUtils.stringifyException(e));
+    }
   }
 
   @Override

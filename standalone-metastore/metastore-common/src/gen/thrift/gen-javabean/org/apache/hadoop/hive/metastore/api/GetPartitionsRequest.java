@@ -32,7 +32,7 @@ package org.apache.hadoop.hive.metastore.api;
   private boolean withAuth; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String user; // optional
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> groupNames; // optional
-  private @org.apache.thrift.annotation.Nullable GetPartitionsProjectionSpec projectionSpec; // required
+  private @org.apache.thrift.annotation.Nullable GetProjectionsSpec projectionSpec; // required
   private @org.apache.thrift.annotation.Nullable GetPartitionsFilterSpec filterSpec; // required
   private @org.apache.thrift.annotation.Nullable java.util.List<java.lang.String> processorCapabilities; // optional
   private @org.apache.thrift.annotation.Nullable java.lang.String processorIdentifier; // optional
@@ -149,7 +149,7 @@ package org.apache.hadoop.hive.metastore.api;
         new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.PROJECTION_SPEC, new org.apache.thrift.meta_data.FieldMetaData("projectionSpec", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, GetPartitionsProjectionSpec.class)));
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, GetProjectionsSpec.class)));
     tmpMap.put(_Fields.FILTER_SPEC, new org.apache.thrift.meta_data.FieldMetaData("filterSpec", org.apache.thrift.TFieldRequirementType.DEFAULT, 
         new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, GetPartitionsFilterSpec.class)));
     tmpMap.put(_Fields.PROCESSOR_CAPABILITIES, new org.apache.thrift.meta_data.FieldMetaData("processorCapabilities", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
@@ -169,7 +169,7 @@ package org.apache.hadoop.hive.metastore.api;
   public GetPartitionsRequest(
     java.lang.String dbName,
     java.lang.String tblName,
-    GetPartitionsProjectionSpec projectionSpec,
+    GetProjectionsSpec projectionSpec,
     GetPartitionsFilterSpec filterSpec)
   {
     this();
@@ -202,7 +202,7 @@ package org.apache.hadoop.hive.metastore.api;
       this.groupNames = __this__groupNames;
     }
     if (other.isSetProjectionSpec()) {
-      this.projectionSpec = new GetPartitionsProjectionSpec(other.projectionSpec);
+      this.projectionSpec = new GetProjectionsSpec(other.projectionSpec);
     }
     if (other.isSetFilterSpec()) {
       this.filterSpec = new GetPartitionsFilterSpec(other.filterSpec);
@@ -398,11 +398,11 @@ package org.apache.hadoop.hive.metastore.api;
   }
 
   @org.apache.thrift.annotation.Nullable
-  public GetPartitionsProjectionSpec getProjectionSpec() {
+  public GetProjectionsSpec getProjectionSpec() {
     return this.projectionSpec;
   }
 
-  public void setProjectionSpec(@org.apache.thrift.annotation.Nullable GetPartitionsProjectionSpec projectionSpec) {
+  public void setProjectionSpec(@org.apache.thrift.annotation.Nullable GetProjectionsSpec projectionSpec) {
     this.projectionSpec = projectionSpec;
   }
 
@@ -587,7 +587,7 @@ package org.apache.hadoop.hive.metastore.api;
       if (value == null) {
         unsetProjectionSpec();
       } else {
-        setProjectionSpec((GetPartitionsProjectionSpec)value);
+        setProjectionSpec((GetProjectionsSpec)value);
       }
       break;
 
@@ -1214,7 +1214,7 @@ package org.apache.hadoop.hive.metastore.api;
             break;
           case 7: // PROJECTION_SPEC
             if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.projectionSpec = new GetPartitionsProjectionSpec();
+              struct.projectionSpec = new GetProjectionsSpec();
               struct.projectionSpec.read(iprot);
               struct.setProjectionSpecIsSet(true);
             } else { 
@@ -1495,7 +1495,7 @@ package org.apache.hadoop.hive.metastore.api;
         struct.setGroupNamesIsSet(true);
       }
       if (incoming.get(6)) {
-        struct.projectionSpec = new GetPartitionsProjectionSpec();
+        struct.projectionSpec = new GetProjectionsSpec();
         struct.projectionSpec.read(iprot);
         struct.setProjectionSpecIsSet(true);
       }

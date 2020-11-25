@@ -105,7 +105,7 @@ public class SimpleBufferManager implements BufferUsageManager, LowLevelCache {
   }
 
   @Override
-  public long markBuffersForProactiveEviction(Predicate<CacheTag> predicate) {
+  public long markBuffersForProactiveEviction(Predicate<CacheTag> predicate, boolean isInstantDeallocation) {
     throw new UnsupportedOperationException("Buffer manager doesn't have cache");
   }
 }
