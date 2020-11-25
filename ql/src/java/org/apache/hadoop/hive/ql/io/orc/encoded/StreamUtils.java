@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.common.DiskRangeInfo;
 import org.apache.hadoop.hive.common.io.DiskRangeList;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
+import org.apache.orc.impl.SettableUncompressedStream;
 import org.apache.orc.impl.BufferChunk;
 
 /**
