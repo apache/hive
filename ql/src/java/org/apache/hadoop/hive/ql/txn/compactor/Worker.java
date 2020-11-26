@@ -548,29 +548,26 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       final StatsUpdater su = computeStats ? StatsUpdater.init(ci, msc.findColumnsWithStats(
           CompactionInfo.compactionInfoToStruct(ci)), conf,
           runJobAsSelf(ci.runAs) ? ci.runAs : t.getOwner()) : null;
-      final CompactorMR mr = new CompactorMR();
+
       try {
-        if (runJobAsSelf(ci.runAs)) {
-          mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
+        failCompactionIfSetForTest();
+
+        /*
+        First try to run compaction via HiveQL queries.
+        Compaction for MM tables happens here, or run compaction for Crud tables if query-based compaction is enabled.
+        todo Find a more generic approach to collecting files in the same logical bucket to compact within the same
+        task (currently we're using Tez split grouping).
+        */
+        QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
+        if (queryCompactor != null) {
+          LOG.info("Will compact id: " + ci.id + " with query-based compactor class: "
+              + queryCompactor.getClass().getName());
+          queryCompactor.runCompaction(conf, t, p, sd, tblValidWriteIds, ci, dir);
         } else {
-          UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
-              UserGroupInformation.getLoginUser());
-          final Partition fp = p;
-          final CompactionInfo fci = ci;
-          ugi.doAs(new PrivilegedExceptionAction<Object>() {
-            @Override
-            public Object run() throws Exception {
-              mr.run(conf, jobName.toString(), t, fp, sd, tblValidWriteIds, fci, su, msc, dir);
-              return null;
-            }
-          });
-          try {
-            FileSystem.closeAllForUGI(ugi);
-          } catch (IOException exception) {
-            LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " +
-                          ci.getFullPartitionName(), exception);
-          }
+          LOG.info("Will compact id: " + ci.id + " via MR job");
+          runCompactionViaMrJob(ci, t, p, sd, tblValidWriteIds, jobName, dir, su);
         }
+
         heartbeater.cancel();
 
         verifyTableIdHasNotChanged(ci, t1);
@@ -610,6 +607,33 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     }
     return true;
+  }
+
+  private void failCompactionIfSetForTest() {
+    if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
+      throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
+    }
+  }
+
+  private void runCompactionViaMrJob(CompactionInfo ci, Table t, Partition p, StorageDescriptor sd,
+      ValidCompactorWriteIdList tblValidWriteIds, StringBuilder jobName, AcidUtils.Directory dir, StatsUpdater su)
+      throws IOException, HiveException, InterruptedException {
+    final CompactorMR mr = new CompactorMR();
+    if (runJobAsSelf(ci.runAs)) {
+      mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
+    } else {
+      UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs, UserGroupInformation.getLoginUser());
+      ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
+        mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
+        return null;
+      });
+      try {
+        FileSystem.closeAllForUGI(ugi);
+      } catch (IOException exception) {
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + ci.getFullPartitionName(),
+            exception);
+      }
+    }
   }
 
   private void abortCompactionAndMarkFailed(CompactionInfo ci, long compactorTxnId, Throwable e) throws TException {

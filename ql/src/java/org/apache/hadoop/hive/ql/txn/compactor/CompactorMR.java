@@ -215,25 +215,7 @@ public class CompactorMR {
    * @throws java.io.IOException if the job fails
    */
   void run(HiveConf conf, String jobName, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
-           CompactionInfo ci, Worker.StatsUpdater su, IMetaStoreClient msc, Directory dir)
-      throws IOException, HiveException {
-
-    if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
-      throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
-    }
-
-    /*
-     Try to run compaction via HiveQL queries.
-     Compaction for MM tables happens here, or run compaction for Crud tables if query-based compaction is enabled.
-     todo Find a more generic approach to collecting files in the same logical bucket to compact within the same task
-     (currently we're using Tez split grouping).
-     */
-    QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
-    if (queryCompactor != null) {
-      LOG.info("Will compact with  " + queryCompactor.getClass().getName());
-      queryCompactor.runCompaction(conf, t, p, sd, writeIds, ci);
-      return;
-    }
+           CompactionInfo ci, Worker.StatsUpdater su, IMetaStoreClient msc, Directory dir) throws IOException {
 
     JobConf job = createBaseJobConf(conf, jobName, t, sd, writeIds, ci);
 
