@@ -64,12 +64,7 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
     initCalendar();
   }
 
-  private long getField(byte[] bytes, int start, int length) throws ParseException {
-    // Validate
-    return doGetField(bytes, start, length);
-  }
-
-  protected long doGetField(byte[] bytes, int start, int length) throws ParseException {
+  protected long getField(byte[] bytes, int start, int length) throws ParseException {
     int field = 0;
     for (int i = 0; i < length; i++) {
       char ch = (char) bytes[start + i];
