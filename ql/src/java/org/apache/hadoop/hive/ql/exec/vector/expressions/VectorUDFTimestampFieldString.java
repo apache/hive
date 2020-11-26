@@ -66,6 +66,11 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
 
   private long getField(byte[] bytes, int start, int length) throws ParseException {
     // Validate
+    return doGetField(bytes, start, length);
+  }
+
+  protected long doGetField(byte[] bytes, int start, int length) throws ParseException {
+    int field = 0;
     for (int i = 0; i < length; i++) {
       char ch = (char) bytes[start + i];
       if (ch < patternMin.charAt(i) || ch > patternMax.charAt(i)) {
@@ -73,11 +78,6 @@ public abstract class VectorUDFTimestampFieldString extends VectorExpression {
       }
     }
 
-    return doGetField(bytes, start, length);
-  }
-
-  protected long doGetField(byte[] bytes, int start, int length) throws ParseException {
-    int field = 0;
     if (length < fieldLength) {
       throw new ParseException("A timestamp string should be longer.", 0);
     }
