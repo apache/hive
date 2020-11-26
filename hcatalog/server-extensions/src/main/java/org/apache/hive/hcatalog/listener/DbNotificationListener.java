@@ -152,6 +152,10 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
 public class DbNotificationListener extends TransactionalMetaStoreEventListener {
 
   private static final Logger LOG = LoggerFactory.getLogger(DbNotificationListener.class.getName());
+
+  private static final String NL_SEL_SQL = "select \"NEXT_VAL\" from \"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = ?";
+  private static final String NL_UPD_SQL = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = ? where \"SEQUENCE_NAME\" = ?";
+
   private static CleanerThread cleaner = null;
 
   private Configuration conf;
@@ -983,27 +987,24 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
    */
   private long getNextNLId(Connection con, SQLGenerator sqlGenerator, String sequence)
           throws SQLException, MetaException {
-    final String seq_sql = "select \"NEXT_VAL\" from \"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = ?";
-    final String upd_sql = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = ? where \"SEQUENCE_NAME\" = ?";
 
-    final String sou_sql = sqlGenerator.addForUpdateClause(seq_sql);
+    final String sfuSql = sqlGenerator.addForUpdateClause(NL_SEL_SQL);
     Optional<Long> nextSequenceValue = Optional.empty();
 
-    LOG.debug("Going to execute query <{}>", sou_sql);
-    try (PreparedStatement stmt = con.prepareStatement(sou_sql)) {
+    LOG.debug("Going to execute query [{}][1={}]", sfuSql, sequence);
+    try (PreparedStatement stmt = con.prepareStatement(sfuSql)) {
       stmt.setString(1, sequence);
-      try (ResultSet rs = stmt.executeQuery()) {
-        if (rs.next()) {
-          nextSequenceValue = Optional.of(rs.getLong(1));
-        }
+      ResultSet rs = stmt.executeQuery();
+      if (rs.next()) {
+        nextSequenceValue = Optional.of(rs.getLong(1));
       }
     }
 
     final long updatedNLId = 1L + nextSequenceValue.orElseThrow(
         () -> new MetaException("Transaction database not properly configured, failed to determine next NL ID"));
 
-    LOG.debug("Going to execute query <{}>", upd_sql);
-    try (PreparedStatement stmt = con.prepareStatement(upd_sql)) {
+    LOG.debug("Going to execute query [{}][1={}][2={}]", NL_UPD_SQL, updatedNLId, sequence);
+    try (PreparedStatement stmt = con.prepareStatement(NL_UPD_SQL)) {
       stmt.setLong(1, updatedNLId);
       stmt.setString(2, sequence);
       final int rowCount = stmt.executeUpdate();
