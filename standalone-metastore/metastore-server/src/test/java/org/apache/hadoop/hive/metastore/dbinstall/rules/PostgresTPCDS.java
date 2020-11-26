@@ -17,13 +17,19 @@
  */
 package org.apache.hadoop.hive.metastore.dbinstall.rules;
 
+import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
+
 /**
  * JUnit TestRule for Postgres metastore with TPCDS schema and stat information.
  */
 public class PostgresTPCDS extends Postgres {
   @Override
   public String getDockerImageName() {
-    return "zabetak/postgres-tpcds-metastore:1.1";
+    return "zabetak/postgres-tpcds-metastore:1.2";
   }
 
   @Override
@@ -43,8 +49,21 @@ public class PostgresTPCDS extends Postgres {
 
   @Override
   public void install() {
-    // Do not do anything since the postgres container contains a fully initialized
-    // metastore
+    // Upgrade the metastore to latest by running explicitly a script.
+    try (InputStream script = PostgresTPCDS.class.getClassLoader()
+        .getResourceAsStream("sql/postgres/upgrade-3.1.3000-to-4.0.0.postgres.sql")) {
+      new MetastoreSchemaTool().runScript(
+          buildArray(
+              "-upgradeSchema",
+              "-dbType", getDbType(),
+              "-userName", getHiveUser(),
+              "-passWord", getHivePassword(),
+              "-url", getJdbcUrl(),
+              "-driver", getJdbcDriver()),
+          script);
+    } catch (IOException exception) {
+      throw new UncheckedIOException(exception);
+    }
   }
 }
 
