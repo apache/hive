@@ -437,6 +437,23 @@ public class TestTablesGetExists extends MetaStoreClientTest {
   }
 
   @Test
+  public void testGetTableObjectsWithIncludePattern() throws Exception {
+    List<String> tableNames = new ArrayList<>();
+    tableNames.add(testTables[0].getTableName());
+    tableNames.add(testTables[1].getTableName());
+
+    GetTablesRequest request = new GetTablesRequest();
+    request.setProjectionSpec(new GetProjectionsSpec());
+    request.setTblNames(tableNames);
+    request.setDbName(DEFAULT_DATABASE);
+
+    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    projectSpec.setExcludeParamKeyPattern("foo");
+
+    Assert.assertThrows(Exception.class, ()->client.getTableObjectsByRequest(request));
+  }
+
+  @Test
   public void testGetTableObjectsWithNonExistentColumn() throws Exception {
     List<String> tableNames = new ArrayList<>();
     tableNames.add(testTables[0].getTableName());
@@ -490,7 +507,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
 
     List<Table> tables = client.getTableObjectsByRequest(request);
 
-    Assert.assertEquals("Found tables", 0, tables.size());
+    Assert.assertEquals("Found tables", 2, tables.size());
   }
 
   @Test
@@ -505,7 +522,63 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     request.setDbName(DEFAULT_DATABASE);
 
     GetProjectionsSpec projectSpec = request.getProjectionSpec();
-    List<String> projectedFields = Arrays.asList("database", "tableName", "createTime", "lastAccessTime");
+    List<String> projectedFields = Arrays.asList("dbName", "tableName", "createTime", "lastAccessTime");
+    projectSpec.setFieldList(projectedFields);
+
+    List<Table> tables = client.getTableObjectsByRequest(request);
+
+    Assert.assertEquals("Found tables", 2, tables.size());
+
+    for(Table table : tables) {
+      Assert.assertTrue(table.isSetDbName());
+      Assert.assertTrue(table.isSetTableName());
+      Assert.assertTrue(table.isSetCreateTime());
+      Assert.assertFalse(table.isSetSd());
+    }
+  }
+
+  @Test
+  public void testGetTableObjectsWithProjectionOfSerDeInfoSingleValuedFields() throws Exception {
+    List<String> tableNames = new ArrayList<>();
+    tableNames.add(testTables[0].getTableName());
+    tableNames.add(testTables[1].getTableName());
+
+    GetTablesRequest request = new GetTablesRequest();
+    request.setProjectionSpec(new GetProjectionsSpec());
+    request.setTblNames(tableNames);
+    request.setDbName(DEFAULT_DATABASE);
+
+    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    List<String> projectedFields = Arrays.asList("sd.serdeInfo.name", "sd.serdeInfo.serializationLib", "sd.serdeInfo.description");
+    projectSpec.setFieldList(projectedFields);
+
+    List<Table> tables = client.getTableObjectsByRequest(request);
+
+    Assert.assertEquals("Found tables", 2, tables.size());
+
+    for(Table table : tables) {
+      Assert.assertFalse(table.isSetDbName());
+      Assert.assertTrue(table.isSetSd());
+      StorageDescriptor sd = table.getSd();
+      Assert.assertFalse(sd.isSetCols());
+      Assert.assertTrue(sd.isSetSerdeInfo());
+      SerDeInfo serDeInfo = sd.getSerdeInfo();
+    }
+  }
+
+  @Test
+  public void testGetTableObjectsWithProjectionOfMultiValuedFields() throws Exception {
+    List<String> tableNames = new ArrayList<>();
+    tableNames.add(testTables[0].getTableName());
+    tableNames.add(testTables[1].getTableName());
+
+    GetTablesRequest request = new GetTablesRequest();
+    request.setProjectionSpec(new GetProjectionsSpec());
+    request.setTblNames(tableNames);
+    request.setDbName(DEFAULT_DATABASE);
+
+    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    List<String> projectedFields = Arrays.asList("sd.cols.name", "sd.serdeInfo.name", "sd.serdeInfo.serializationLib", "sd.serdeInfo.parameters");
     projectSpec.setFieldList(projectedFields);
 
     List<Table> tables = client.getTableObjectsByRequest(request);
@@ -517,7 +590,13 @@ public class TestTablesGetExists extends MetaStoreClientTest {
       Assert.assertTrue(table.isSetCatName());
       Assert.assertTrue(table.isSetTableName());
       Assert.assertTrue(table.isSetLastAccessTime());
-      Assert.assertFalse(table.isSetSd());
+      Assert.assertTrue(table.isSetSd());
+      StorageDescriptor sd = table.getSd();
+      Assert.assertTrue(sd.isSetCols());
+      Assert.assertTrue(sd.isSetSerdeInfo());
+      Assert.assertTrue(sd.isSetBucketCols());
+      Assert.assertTrue(sd.isSetCompressed());
+      Assert.assertTrue(sd.isSetInputFormat());
     }
   }
 

@@ -1874,43 +1874,52 @@ public class ObjectStore implements RawStore, Configurable {
       query.setFilter("database.name == db && database.catalogName == cat && tbl_names.contains(tableName)");
       query.declareParameters("java.lang.String db, java.lang.String cat, java.util.Collection tbl_names");
 
-      if (projectionSpec == null) {
+      List<String> projectionFields = null;
+
+      // If a projection specification has been set, validate it and translate it to JDO columns.
+      if (projectionSpec != null) {
+        //Validate the projection fields for multi-valued fields.
+        projectionFields = TableFields.getMFieldNames(projectionSpec.getFieldList());
+      }
+
+      // If the JDO translation resulted in valid JDO columns names, use it to create a projection for the JDO query.
+      if (projectionFields != null) {
+        // fetch partially filled tables using result clause
+        query.setResult(Joiner.on(',').join(projectionFields));
+      }
+
+      if (projectionFields == null) {
         mtables = (List<MTable>) query.execute(db, catName, lowered_tbl_names);
       }
-      else if(projectionSpec.getFieldList() != null && projectionSpec.getFieldList().size() > 1) {
-        // fetch partially filled tables using result clause
-        query.setResult(Joiner.on(',').join(projectionSpec.getFieldList()));
-        // Execute the query to fetch the partial results.
-        List<Object[]> results = (List<Object[]>) query.execute(db, catName, lowered_tbl_names);
-        // Declare the tables array to return the list of tables
-        mtables = new ArrayList<>(results.size());
-        // Iterate through each row of the result and create the MTable object.
-        for (Object[] row : results) {
-          MTable mtable = new MTable();
-          int i = 0;
-          for (Object val : row) {
-            MetaStoreServerUtils.setNestedProperty(mtable, projectionSpec.getFieldList().get(i), val, true);
-            i++;
+      else {
+        if (projectionFields.size() > 1) {
+          // Execute the query to fetch the partial results.
+          List<Object[]> results = (List<Object[]>) query.execute(db, catName, lowered_tbl_names);
+          // Declare the tables array to return the list of tables
+          mtables = new ArrayList<>(results.size());
+          // Iterate through each row of the result and create the MTable object.
+          for (Object[] row : results) {
+            MTable mtable = new MTable();
+            int i = 0;
+            for (Object val : row) {
+              MetaStoreServerUtils.setNestedProperty(mtable, projectionFields.get(i), val, true);
+              i++;
+            }
+            mtables.add(mtable);
           }
-          mtables.add(mtable);
-        }
-      }
-      else if(projectionSpec.getFieldList() != null && projectionSpec.getFieldList().size() == 1) {
-        // fetch partially filled tables using result clause
-        query.setResult(Joiner.on(',').join(projectionSpec.getFieldList()));
-        // Execute the query to fetch the partial results.
-        List<Object> results = (List<Object>) query.execute(db, catName, lowered_tbl_names);
-        mtables = new ArrayList<>(results.size());
-        for (Object row : results) {
-          MTable mtable = new MTable();
-          MetaStoreServerUtils.setNestedProperty(mtable, projectionSpec.getFieldList().get(0), row, true);
-          mtables.add(mtable);
+        } else if (projectionFields.size() == 1) {
+          // Execute the query to fetch the partial results.
+          List<Object> results = (List<Object>) query.execute(db, catName, lowered_tbl_names);
+          // Iterate through each row of the result and create the MTable object.
+          mtables = new ArrayList<>(results.size());
+          for (Object row : results) {
+            MTable mtable = new MTable();
+            MetaStoreServerUtils.setNestedProperty(mtable, projectionFields.get(0), row, true);
+            mtables.add(mtable);
+          }
         }
       }
 
-      //TODO: Verify
-      // If mtables were null due to an exception, this code will not be hit. However if the pattern did not match in
-      // the query and mtables were null then we can verify if this happened because the DB was not found.
       if (mtables == null || mtables.isEmpty()) {
         verifyDBExists(catName, db);
       } else {

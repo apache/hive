@@ -3590,6 +3590,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         assertClientHasCapability(capabilities, ClientCapability.TEST_CAPABILITY,
             "Hive tests", "get_table_objects_by_name_req");
       }
+
+      if (projectionsSpec != null) {
+        if (!projectionsSpec.isSetFieldList() && (projectionsSpec.isSetIncludeParamKeyPattern() ||
+                projectionsSpec.isSetExcludeParamKeyPattern())) {
+          throw new InvalidOperationException("Include and Exclude Param key are not supported.");
+        }
+      }
+
       List<Table> tables = new ArrayList<>();
       startMultiTableFunction("get_multi_table", dbName, tableNames);
       Exception ex = null;
