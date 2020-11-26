@@ -408,6 +408,42 @@ public class TestInitiator extends CompactorTest {
   }
 
   @Test
+  public void compactCamelCasePartitionValue() throws Exception {
+    Table t = newTable("default", "test_table", true);
+    Partition p = newPartition(t, "ToDay");
+
+    addBaseFile(t, p, 20L, 20);
+    addDeltaFile(t, p, 21L, 22L, 2);
+    addDeltaFile(t, p, 23L, 24L, 2);
+
+    burnThroughTransactions("default", "test_table", 23);
+
+    long txnid = openTxn();
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.PARTITION, "default");
+    comp.setTablename("test_table");
+    comp.setPartitionname("dS=ToDay");
+    comp.setOperationType(DataOperationType.UPDATE);
+    List<LockComponent> components = new ArrayList<LockComponent>(1);
+    components.add(comp);
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnid);
+    LockResponse res = txnHandler.lock(req);
+    long writeid = allocateWriteId("default", "test_table", txnid);
+    Assert.assertEquals(24, writeid);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    startInitiator();
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("initiated", compacts.get(0).getState());
+    Assert.assertEquals("test_table", compacts.get(0).getTablename());
+    Assert.assertEquals("ds=ToDay", compacts.get(0).getPartitionname());
+    Assert.assertEquals(CompactionType.MAJOR, compacts.get(0).getType());
+  }
+
+  @Test
   public void noCompactTableDeltaPctNotHighEnough() throws Exception {
     Table t = newTable("default", "nctdpnhe", false);
 

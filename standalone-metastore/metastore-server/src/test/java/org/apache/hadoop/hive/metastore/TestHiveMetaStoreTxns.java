@@ -216,7 +216,7 @@ public class TestHiveMetaStoreTxns {
     rqstBuilder.addLockComponent(new LockComponentBuilder()
         .setDbName("mydb")
         .setTableName("mytable")
-        .setPartitionName("mypartition")
+        .setPartitionName("MyPartition=MyValue")
         .setExclusive()
         .setOperationType(DataOperationType.NO_TXN)
         .build());
@@ -255,7 +255,7 @@ public class TestHiveMetaStoreTxns {
       .addLockComponent(new LockComponentBuilder()
         .setDbName("mydb")
         .setTableName("mytable")
-        .setPartitionName("mypartition")
+        .setPartitionName("MyPartition=MyValue")
         .setSharedWrite()
         .setOperationType(DataOperationType.UPDATE)
         .build())
