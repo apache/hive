@@ -243,7 +243,7 @@ public class TypeInfoToSchema {
       }
     } else {
       fields.add(new Schema.Field(schemaField.name(), schemaField.schema(), schemaField.doc(),
-        nullDefault));
+          nullDefault));
     }
 
     return fields;
