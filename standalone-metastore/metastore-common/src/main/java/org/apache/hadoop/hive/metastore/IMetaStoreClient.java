@@ -751,7 +751,7 @@ public interface IMetaStoreClient {
    * @throws MetaException
    *          Any other errors
    */
-  List<Table> getTableObjectsByRequest(GetTablesRequest request)
+  GetTablesResult getTables(GetTablesRequest request)
           throws MetaException, InvalidOperationException, UnknownDBException, TException;
 
   /**

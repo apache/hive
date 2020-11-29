@@ -2366,7 +2366,7 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public List<Table> getTableObjectsByRequest(GetTablesRequest req) throws TException {
+  public GetTablesResult getTables(GetTablesRequest req) throws TException {
     if (processorCapabilities != null)
       req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
     if (processorIdentifier != null)
@@ -2376,7 +2376,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     }
     req.setCapabilities(version);
     List<Table> tabs = client.get_table_objects_by_name_req(req).getTables();
-    return deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
+    return new GetTablesResult(deepCopyTables(
+            FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs)));
   }
 
   @Override
