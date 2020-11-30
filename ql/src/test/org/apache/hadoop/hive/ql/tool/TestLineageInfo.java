@@ -40,8 +40,8 @@ public class TestLineageInfo {
 
   @Before
   public void before() throws Exception {
-
     HiveConf conf = new HiveConf();
+    SessionState.start(conf);
     ctx = new Context(conf);
   }
 
