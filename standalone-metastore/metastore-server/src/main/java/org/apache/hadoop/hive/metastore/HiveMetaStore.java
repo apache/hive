@@ -3744,20 +3744,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Table t = null;
       try {
         db = get_database_core(catName, dbname);
-      } catch (Exception e) {
-        LOG.info("Database {} does exist, exception: {}", dbname, e.getMessage());
-        return null;
-      }
-      try {
         if (db != null) {
           if (db.getType().equals(DatabaseType.REMOTE)) {
             return DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(name);
           }
         }
-      } catch (Exception e) {
-        LOG.info("Error occurred when retrieving table {} from remote source, exception: {}", name, e.getMessage());
-        return null;
-      }
+      } catch (Exception e) { /* appears exception is not thrown currently if db doesnt exist */ }
 
       try {
         t = getMS().getTable(catName, dbname, name, writeIdList);
@@ -6046,18 +6038,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String[] parsedDbName = parseDbName(dbname, conf);
       try {
         db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
-      } catch (Exception e) {
-        /* appears we return empty set instead of throwing an exception */
-      }
-      try {
         if (db != null && db.getType() != null) {
           if (db.getType().equals(DatabaseType.REMOTE)) {
             return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
           }
         }
-      } catch (Exception e) {
-        throw newMetaException(e);
-      }
+      } catch (Exception e) { /* appears we return empty set instead of throwing an exception */ }
 
       try {
         ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern);
@@ -6116,21 +6102,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Database db = null;
       try {
         db = get_database_core(catName, dbname);
-      } catch (Exception e) {
-        // do not throw an exception as getTables() call returns empty list if db does not exist.
-        LOG.info("Database {} not found", dbname);
-        return null;
-      }
-      try {
         if (db != null) {
           if (db.getType().equals(DatabaseType.REMOTE)) {
             return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
           }
         }
-      } catch (Exception e) {
-        LOG.warn("Error retrieving tables from remote data source: {} {}", dbname, pattern);
-        return null;
-      }
+      } catch (Exception e) { /* ignore */ }
 
       try {
         ret = getMS().getTables(catName, dbname, pattern, TableType.valueOf(tableType), -1);
