@@ -7255,6 +7255,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Path queryTmpdir = null; // the intermediate destination directory
     Path destinationPath = null; // the final destination directory
     TableDesc tableDescriptor = null;
+    StructObjectInspector specificRowObjectInspector = null;
     int currentTableId = 0;
     boolean isLocal = false;
     SortBucketRSCtx rsCtx = new SortBucketRSCtx();
@@ -7332,7 +7333,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       input = genConstraintsPlan(dest, qb, input);
 
       if (!qb.getIsQuery()) {
-        input = genConversionSelectOperator(dest, qb, input, tableDescriptor, dpCtx, parts);
+        input = genConversionSelectOperator(dest, qb, input, destinationTable.getDeserializer(), dpCtx, parts);
       }
 
       if (destinationTable.isMaterializedView() &&
@@ -7476,7 +7477,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       input = genConstraintsPlan(dest, qb, input);
 
       if (!qb.getIsQuery()) {
-        input = genConversionSelectOperator(dest, qb, input, tableDescriptor, dpCtx, null);
+        input = genConversionSelectOperator(dest, qb, input, destinationTable.getDeserializer(), dpCtx, null);
       }
 
       if (destinationTable.isMaterializedView() &&
@@ -7715,6 +7716,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
       }
+      // We need a specific rowObjectInspector in this case
+      try {
+        specificRowObjectInspector =
+            (StructObjectInspector) tableDescriptor.getDeserializer(conf).getObjectInspector();
+      } catch (Exception e) {
+        throw new SemanticException(e.getMessage(), e);
+      }
 
       boolean isDfsDir = (destType == QBMetaData.DEST_DFS_FILE);
 
@@ -7811,8 +7819,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           "", true));
     } else {
       try {
-        StructObjectInspector rowObjectInspector = (StructObjectInspector) tableDescriptor
-            .getDeserializer(conf).getObjectInspector();
+        // If we already have a specific inspector (view or directory as a target) use that
+        // Otherwise use the table deserializer to get the inspector
+        StructObjectInspector rowObjectInspector = specificRowObjectInspector != null ? specificRowObjectInspector :
+            (StructObjectInspector) destinationTable.getDeserializer().getObjectInspector();
         List<? extends StructField> fields = rowObjectInspector
             .getAllStructFieldRefs();
         for (StructField field : fields) {
@@ -8370,13 +8380,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * types that are expected by the table_desc.
    */
   private Operator genConversionSelectOperator(String dest, QB qb, Operator input,
-      TableDesc table_desc, DynamicPartitionCtx dpCtx, List<FieldSchema> parts)
+      Deserializer deserializer, DynamicPartitionCtx dpCtx, List<FieldSchema> parts)
       throws SemanticException {
     StructObjectInspector oi = null;
     try {
-      Deserializer deserializer = table_desc.getDeserializerClass()
-          .newInstance();
-      SerDeUtils.initializeSerDe(deserializer, conf, table_desc.getProperties(), null);
       oi = (StructObjectInspector) deserializer.getObjectInspector();
     } catch (Exception e) {
       throw new SemanticException(e);
@@ -8408,9 +8415,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // MetadataTypedColumnsetSerDe does not need type conversions because it
     // does the conversion to String by itself.
-    boolean isMetaDataSerDe = table_desc.getDeserializerClass().equals(
-        MetadataTypedColumnsetSerDe.class);
-    if (!isMetaDataSerDe && !deleting(dest)) {
+    if (!(deserializer instanceof MetadataTypedColumnsetSerDe) && !deleting(dest)) {
 
       // If we're updating, add the ROW__ID expression, then make the following column accesses
       // offset by 1 so that we don't try to convert the ROW__ID
