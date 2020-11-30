@@ -192,25 +192,46 @@ public class QueryPlan implements Serializable {
   }
 
   public Integer getStatementIdForAcidWriteType(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
+    FileSinkDesc result = null;
     for (FileSinkDesc acidSink : acidSinks) {
       if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
           && acidSink.getTableWriteId() == writeId
           && (moveTaskId == null || acidSink.getMoveTaskId() == null || moveTaskId.equals(acidSink.getMoveTaskId()))) {
-        return acidSink.getStatementId();
+        // There is a problem with the union all optimisation. In this case, there will be multiple FileSinkOperators
+        // with the same operation, writeId and moveTaskId. But one of these FSOs doesn't write data and its statementId
+        // is not valid, so if this FSO is selected and its statementId is returned, the file listing will find nothing.
+        // So check the acidSinks and if two of them have the same writeId, path and moveTaskId, then return -1 as statementId.
+        // Like this, the file listing will find all partitions and files correctly.
+        if (result != null) {
+          return -1;
+        }
+        result = acidSink;
       }
     }
-    return -1;
+    if (result != null) {
+      return result.getStatementId();
+    } else {
+      return -1;
+    }
   }
 
   public Set<String> getDynamicPartitionSpecs(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
+    FileSinkDesc result = null;
     for (FileSinkDesc acidSink : acidSinks) {
       if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
           && acidSink.getTableWriteId() == writeId
           && (moveTaskId == null || acidSink.getMoveTaskId() == null || moveTaskId.equals(acidSink.getMoveTaskId()))) {
-        return acidSink.getDynPartitionValues();
+        if (result != null) {
+          return null;
+        }
+        result = acidSink;
       }
     }
-    return null;
+    if (result != null) {
+      return result.getDynPartitionValues();
+    } else {
+      return null;
+    }
   }
 
   DDLDescWithWriteId getAcidDdlDesc() {

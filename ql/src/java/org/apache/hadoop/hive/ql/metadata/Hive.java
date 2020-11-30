@@ -2270,13 +2270,7 @@ public class Hive {
           if (!isMmTableWrite && !isDirectInsert) {
             isInsertOverwrite = false;
           }
-          listFilesCreatedByQuery(loadPath, writeId, stmtId, isInsertOverwrite, newFiles, false);
-          if (isDirectInsert) {
-            // If the direct insert is on, we need to check for the delete_delta folders as well.
-            // One file listing call only checks either the delete_delta or the delta folders, but
-            // in case of an ACID update, both has to be checked.
-            listFilesCreatedByQuery(loadPath, writeId, stmtId, isInsertOverwrite, newFiles, true);
-          }
+          listFilesCreatedByQuery(loadPath, writeId, stmtId, isInsertOverwrite, newFiles);
         }
         if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
           Utilities.FILE_OP_LOGGER.trace("maybe deleting stuff from " + oldPartPath
@@ -2512,10 +2506,15 @@ public class Hive {
     return destPath;
   }
 
-  public static void listFilesInsideAcidDirectory(Path acidDir, FileSystem srcFs, List<Path> newFiles)
+  public static void listFilesInsideAcidDirectory(Path acidDir, FileSystem srcFs, List<Path> newFiles, PathFilter filter)
           throws IOException {
     // list out all the files/directory in the path
-    FileStatus[] acidFiles = srcFs.listStatus(acidDir);
+    FileStatus[] acidFiles = null;
+    if (filter != null) {
+      acidFiles = srcFs.listStatus(acidDir, filter);
+    } else {
+      acidFiles = srcFs.listStatus(acidDir);
+    }
 
     if (acidFiles == null) {
       LOG.debug("No files added by this query in: " + acidDir);
@@ -2527,23 +2526,19 @@ public class Hive {
       if (!acidFile.isDirectory()) {
         newFiles.add(acidFile.getPath());
       } else {
-        listFilesInsideAcidDirectory(acidFile.getPath(), srcFs, newFiles);
+        listFilesInsideAcidDirectory(acidFile.getPath(), srcFs, newFiles, null);
       }
     }
   }
 
-  private void listFilesCreatedByQuery(Path loadPath, long writeId, int stmtId,
-                                             boolean isInsertOverwrite, List<Path> newFiles, boolean delete) throws HiveException {
-    Path acidDir = new Path(loadPath, AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
-    if (delete) {
-      acidDir = new Path(loadPath, AcidUtils.deleteDeltaSubdir(writeId, writeId, stmtId));
-    }
-
+  private void listFilesCreatedByQuery(Path loadPath, long writeId, int stmtId, boolean isInsertOverwrite,
+      List<Path> newFiles) throws HiveException {
     try {
       FileSystem srcFs = loadPath.getFileSystem(conf);
-      listFilesInsideAcidDirectory(acidDir, srcFs, newFiles);
+      PathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId);
+      listFilesInsideAcidDirectory(loadPath, srcFs, newFiles, filter);
     } catch (FileNotFoundException e) {
-      LOG.info("directory does not exist: " + acidDir);
+      LOG.info("directory does not exist: " + loadPath);
     } catch (IOException e) {
       LOG.error("Error listing files", e);
       throw new HiveException(e);
@@ -3055,13 +3050,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         if (!isMmTable && !isDirectInsert) {
           isInsertOverwrite = false;
         }
-        listFilesCreatedByQuery(loadPath, writeId, stmtId, isInsertOverwrite, newFiles, false);
-        if (isDirectInsert) {
-          // If the direct insert is on, we need to check for the delete_delta folders as well.
-          // One file listing call only checks either the delete_delta or the delta folders, but
-          // in case of an ACID update, both has to be checked.
-          listFilesCreatedByQuery(loadPath, writeId, stmtId, isInsertOverwrite, newFiles, true);
-        }
+        listFilesCreatedByQuery(loadPath, writeId, stmtId, isInsertOverwrite, newFiles);
       }
     } else {
       // Either a non-MM query, or a load into MM table from an external source.
