@@ -273,6 +273,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
         startServerInternal(conf, minPort, numHandlers, jobTokenSecretManager,
             isHadoopSecurityAuthorizationEnabled);
         portFound = true;
+        LOG.info("Successfully bound to port {}", minPort);
       } else {
         int maxPort = Integer.parseInt(portRange[1]);
         // Validate the range specified is valid. i.e the ports lie between
@@ -284,6 +285,7 @@ public class LlapTaskCommunicator extends TezTaskCommunicatorImpl {
             startServerInternal(conf, i, numHandlers, jobTokenSecretManager,
                 isHadoopSecurityAuthorizationEnabled);
             portFound = true;
+            LOG.info("Successfully bound to port {}", i);
             break;
           } catch (BindException be) {
             // Ignore and move ahead, in search of a free port.
