@@ -573,7 +573,7 @@ public class TestCleaner extends CompactorTest {
     List<Path> paths = getDirectories(conf, t, null);
     Assert.assertEquals(8, paths.size());
     Collections.sort(paths);
-    Assert.assertEquals("base_0000025_v0000026", paths.get(0).getName());
+    Assert.assertEquals("base_0000025_v0000027", paths.get(0).getName());
     Assert.assertEquals("base_0000029_v0000032", paths.get(1).getName());
     Assert.assertEquals("base_20", paths.get(2).getName());
     Assert.assertEquals("delta_0000021_0000022", paths.get(3).getName());

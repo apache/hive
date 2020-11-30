@@ -329,14 +329,15 @@ public class Cleaner extends MetaStoreCompactorThread {
    * @return number of dirs left for the cleaner to clean – eventually
    * @throws IOException
    */
-  private int getNumEventuallyObsoleteDirs(String location, Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots)
+  private int getNumEventuallyObsoleteDirs(String location, Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots,
+      FileSystem fileSystem)
       throws IOException {
     ValidTxnList validTxnList = new ValidReadTxnList();
     //save it so that getAcidState() sees it
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     ValidReaderWriteIdList validWriteIdList = new ValidReaderWriteIdList();
     Path locPath = new Path(location);
-    AcidUtils.Directory dir = AcidUtils.getAcidState(locPath.getFileSystem(conf), locPath, conf, validWriteIdList,
+    AcidUtils.Directory dir = AcidUtils.getAcidState(fileSystem, locPath, conf, validWriteIdList,
         Ref.from(false), false, dirSnapshots);
     return dir.getObsolete().size();
   }
