@@ -1123,6 +1123,9 @@ public class MetastoreConf {
         "metastore.  SEQUENTIAL implies that the first valid metastore from the URIs specified " +
         "through hive.metastore.uris will be picked.  RANDOM implies that the metastore " +
         "will be picked randomly"),
+    THRIFT_SOCKET_BUFFER_SIZE("metastore.thrift.socket.buffer.size",
+        "hive.metastore.thrift.socket.buffer.size", 8192,
+        "Buffer size for the thrift socket from the metastore client"),
     TOKEN_SIGNATURE("metastore.token.signature", "hive.metastore.token.signature", "",
         "The delegation token service name to match when selecting a token from the current user's tokens."),
     METASTORE_CACHE_CAN_USE_EVENT("metastore.cache.can.use.event", "hive.metastore.cache.can.use.event", false,

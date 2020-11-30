@@ -97,28 +97,19 @@ public class ImpalaSession {
     private boolean fetchEOF = false;
     /* Shutdown request */
     private Boolean pendingCancel = new Boolean(false);
-
+    /* Buffer size for socket stream */
+    private int socketBufferSize;
 
     public ImpalaSession(HiveConf conf) { init(conf); }
     public void init(HiveConf conf) {
-        init(conf.getVar(HiveConf.ConfVars.HIVE_IMPALA_ADDRESS),
-                conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_RPC_START_RETRY_SLEEP),
-                conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_RPC_MAX_RETRY_SLEEP),
-                conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_RPC_RETRY_LIMIT),
-                conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_ROW_FETCH_RETRY_SLEEP),
-                conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_ROW_FETCH_MAX_RETRY),
-                conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_RPC_TIMEOUT));
-    }
-
-    void init(String address, int startSleep, int maxSleep, int maxRetries, int rowFetchSleep,
-                  int rowFetchMaxRetries, int connectionTimeout) {
-        this.address = address;
-        this.startSleep = startSleep;
-        this.maxSleep = maxSleep;
-        this.maxRetries = maxRetries;
-        this.rowFetchSleep = rowFetchSleep;
-        this.rowFetchMaxRetries = rowFetchMaxRetries;
-        this.connectionTimeout = connectionTimeout;
+      this.address = conf.getVar(HiveConf.ConfVars.HIVE_IMPALA_ADDRESS);
+      this.startSleep = conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_RPC_START_RETRY_SLEEP);
+      this.maxSleep = conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_RPC_MAX_RETRY_SLEEP);
+      this.maxRetries = conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_RPC_RETRY_LIMIT);
+      this.rowFetchSleep = conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_ROW_FETCH_RETRY_SLEEP);
+      this.rowFetchMaxRetries = conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_ROW_FETCH_MAX_RETRY);
+      this.connectionTimeout = conf.getIntVar(HiveConf.ConfVars.HIVE_IMPALA_RPC_TIMEOUT);
+      this.socketBufferSize = conf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_SOCKET_BUFFER_SIZE);
     }
 
     /* Calculates the next sleep time for retryRPC. Uses an exponential backoff with jitter approach. */
@@ -412,7 +403,7 @@ public class ImpalaSession {
     }
 
     private void connectClient() throws HiveException {
-        connection = new ImpalaConnection(address, connectionTimeout);
+        connection = new ImpalaConnection(socketBufferSize, address, connectionTimeout);
         client = connection.getClient();
     }
     /* Retrieve BackendConfig from impalad */

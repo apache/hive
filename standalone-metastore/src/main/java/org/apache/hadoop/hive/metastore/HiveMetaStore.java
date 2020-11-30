@@ -171,6 +171,7 @@ import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
 import org.apache.hadoop.hive.metastore.security.MetastoreDelegationTokenManager;
+import org.apache.hadoop.hive.metastore.thrift.TCustomServerSocket;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
@@ -10534,7 +10535,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
       IHMSHandler handler = newRetryingHMSHandler(baseHandler, conf);
 
-      TServerSocket serverSocket;
+      TCustomServerSocket serverSocket;
 
       if (useSasl) {
         processor = saslServer.wrapProcessor(
@@ -10557,7 +10558,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       }
 
       if (!useSSL) {
-        serverSocket = SecurityUtils.getServerSocket(msHost, port);
+        serverSocket = SecurityUtils.getServerSocket(conf, msHost, port);
       } else {
         String keyStorePath = MetastoreConf.getVar(conf, ConfVars.SSL_KEYSTORE_PATH).trim();
         if (keyStorePath.isEmpty()) {
@@ -10573,7 +10574,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           sslVersionBlacklist.add(sslVersion);
         }
 
-        serverSocket = SecurityUtils.getServerSSLSocket(msHost, port, keyStorePath,
+        serverSocket = SecurityUtils.getServerSSLSocket(conf, msHost, port, keyStorePath,
             keyStorePassword, sslVersionBlacklist);
       }
 

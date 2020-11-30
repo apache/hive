@@ -833,7 +833,12 @@ public class HiveConf extends Configuration {
 
     HIVE_FILE_MAX_FOOTER("hive.file.max.footer", 100,
         "maximum number of lines for footer user can define for a table file"),
-
+    HIVE_METASTORE_THRIFT_SOCKET_BUFFER_SIZE(
+        "hive.metastore.thrift.socket.buffer.size", 8192,
+        "Buffer size for the thrift socket from the metastore client"),
+    HIVE_SERVER2_THRIFT_SOCKET_BUFFER_SIZE(
+        "hive.server2.thrift.socket.buffer.size", 8192,
+        "Buffer size for the thrift socket for the server2 results socket"),
     HIVE_RESULTSET_USE_UNIQUE_COLUMN_NAMES("hive.resultset.use.unique.column.names", true,
         "Make column names unique in the result set by qualifying column names with table alias if needed.\n" +
         "Table alias will be added to column names for queries of type \"select *\" or \n" +

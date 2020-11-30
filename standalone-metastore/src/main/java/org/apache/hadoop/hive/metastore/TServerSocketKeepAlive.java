@@ -20,8 +20,13 @@ package org.apache.hadoop.hive.metastore;
 
 import java.net.SocketException;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.thrift.TCustomServerSocket;
+import org.apache.hadoop.hive.metastore.thrift.TCustomSocket;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 /**
@@ -29,9 +34,14 @@ import org.apache.thrift.transport.TTransportException;
  * accepted sockets.
  *
  */
-public class TServerSocketKeepAlive extends TServerSocket {
+public class TServerSocketKeepAlive extends TCustomServerSocket {
+  public TServerSocketKeepAlive(TCustomServerSocket serverSocket) throws TTransportException {
+    super(serverSocket.getServerSocket(), serverSocket.getTimeout(), serverSocket.getBufferSize());
+  }
+
   public TServerSocketKeepAlive(TServerSocket serverSocket) throws TTransportException {
-    super(serverSocket.getServerSocket());
+    super(serverSocket.getServerSocket(), 0,
+        ((Long) MetastoreConf.ConfVars.THRIFT_SOCKET_BUFFER_SIZE.getDefaultVal()).intValue());
   }
 
   @Override

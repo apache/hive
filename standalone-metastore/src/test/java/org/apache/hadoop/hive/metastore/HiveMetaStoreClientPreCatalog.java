@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.hooks.URIResolverHook;
 import org.apache.hadoop.hive.metastore.partition.spec.PartitionSpecProxy;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
+import org.apache.hadoop.hive.metastore.thrift.TCustomSocket;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
@@ -78,7 +79,6 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TCompactProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.TFramedTransport;
-import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.slf4j.Logger;
@@ -456,7 +456,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
                   MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
 
               // Create an SSL socket and connect
-              transport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
+              transport = SecurityUtils.getSSLSocket(conf, store.getHost(), store.getPort(), clientSocketTimeout,
                   trustStorePath, trustStorePassword );
               LOG.info("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
             } catch(IOException e) {
@@ -466,7 +466,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
               throw new MetaException(e.toString());
             }
           } else {
-            transport = new TSocket(store.getHost(), store.getPort(), clientSocketTimeout);
+            int bufferSize = MetastoreConf.getIntVar(conf, ConfVars.THRIFT_SOCKET_BUFFER_SIZE);
+            transport = new TCustomSocket(store.getHost(), store.getPort(),
+                clientSocketTimeout, clientSocketTimeout, bufferSize);
           }
 
           if (useSasl) {
