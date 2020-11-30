@@ -64,4 +64,30 @@ public interface IDataConnectorProvider {
    * @throws MetaException To indicate any failures with executing this API
    */
   Table getTable(String tableName) throws MetaException;
+
+  /**
+   * Creates a table with the given name in the remote data source. Conversion between hive data types
+   * and native data types is handled by the provider.
+   * @param table A Hive table object to translate and create in remote data source.
+   * @return boolean True if the operation succeeded or false otherwise
+   * @throws MetaException To indicate any failures in executing this operation.
+   */
+  boolean createTable(Table table) throws  MetaException;
+
+  /**
+   * Drop an existing table with the given name in the remote data source.
+   * @param tableName Table name to drop from the remote data source.
+   * @return boolean True if the operation succeeded or false otherwise
+   * @throws MetaException To indicate any failures in executing this operation.
+   */
+  boolean dropTable(String tableName) throws MetaException;
+
+  /**
+   * Alter an existing table in the remote data source.
+   * @param tableName Table name to alter in the remote datasource.
+   * @param newTable New Table object to modify the existing table with.
+   * @return boolean True if the operation succeeded or false otherwise.
+   * @throws MetaException To indicate any failures in executing this operation.
+   */
+  boolean alterTable(String tableName, Table newTable) throws MetaException;
 }

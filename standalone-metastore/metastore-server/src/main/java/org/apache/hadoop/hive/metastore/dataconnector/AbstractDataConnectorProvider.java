@@ -77,6 +77,21 @@ public abstract class AbstractDataConnectorProvider implements IDataConnectorPro
     return null;
   }
 
+  @Override
+  public boolean createTable(Table table) throws MetaException {
+    throw new MetaException("Creation of table in remote datasource is not supported.");
+  }
+
+  @Override
+  public boolean dropTable(String tableName) throws MetaException {
+    throw new MetaException("Deletion of table in remote datasource is not supported.");
+  }
+
+  @Override
+  public boolean alterTable(String tableName, Table table) throws MetaException {
+    throw new MetaException("Alter table in remote datasource is not supported.");
+  }
+
   protected Table buildTableFromColsList(String tableName, List<FieldSchema> cols) {
     //Setting the storage descriptor.
     StorageDescriptor sd = new StorageDescriptor();
