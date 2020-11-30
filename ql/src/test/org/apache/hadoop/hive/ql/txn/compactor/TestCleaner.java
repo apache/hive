@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.AbortTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
@@ -524,6 +525,80 @@ public class TestCleaner extends CompactorTest {
   @After
   public void tearDown() throws Exception {
     compactorTestCleanup();
+  }
+
+  /**
+   * Run 2 compactions with cleaning.
+   * Cleaning on the first compaction queue entry is blocked by an open transaction. By the time the Cleaner runs
+   * for the second time, the blocking txn is closed. Check that in this case both compaction queue entries end up in
+   * "succeeded" state.
+   * @throws Exception
+   */
+  @Test public void testCleanerStaysInQueueUntilItCanRun2Compactions() throws Exception {
+    Table t = newTable("default", "camtc", false);
+
+    // write into table
+    addBaseFile(t, null, 20L, 20);
+    addDeltaFile(t, null, 21L, 22L, 2);
+    addDeltaFile(t, null, 23L, 24L, 2);
+    addDeltaFile(t, null, 24L, 25L, 2);
+    burnThroughTransactions("default", "camtc", 25);
+
+    // open a txn, leave it open
+    long openTxn = openTxn();
+
+    // compact, don't clean
+    CompactionRequest rqst = new CompactionRequest("default", "camtc", CompactionType.MAJOR);
+    txnHandler.compact(rqst);
+    startWorker();
+
+    // clean
+    startCleaner();
+
+    // Check that compaction is still in the queue, with status "ready for cleaning"
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+
+    // write another couple deltas
+    addDeltaFile(t, null, 26L, 27L, 2);
+    addDeltaFile(t, null, 28L, 29L, 2);
+    burnThroughTransactions("default", "camtc", 4);
+
+    // compact
+    txnHandler.compact(rqst);
+    startWorker();
+
+    // check directories before cleaning
+    List<Path> paths = getDirectories(conf, t, null);
+    Assert.assertEquals(8, paths.size());
+    Collections.sort(paths);
+    Assert.assertEquals("base_0000025_v0000026", paths.get(0).getName());
+    Assert.assertEquals("base_0000029_v0000032", paths.get(1).getName());
+    Assert.assertEquals("base_20", paths.get(2).getName());
+    Assert.assertEquals("delta_0000021_0000022", paths.get(3).getName());
+    Assert.assertEquals("delta_0000023_0000024", paths.get(4).getName());
+    Assert.assertEquals("delta_0000024_0000025", paths.get(5).getName());
+    Assert.assertEquals("delta_0000026_0000027", paths.get(6).getName());
+    Assert.assertEquals("delta_0000028_0000029", paths.get(7).getName());
+
+
+    // abort the open txn (doesn't matter if aborted or committed, the point is it's no longer open)
+    txnHandler.abortTxn(new AbortTxnRequest(openTxn));
+
+    // clean again
+    startCleaner();
+
+    // Check there are no compactions requests left.
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(2, rsp.getCompactsSize());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(1).getState());
+
+    // Check that all files are removed except the last base
+    paths = getDirectories(conf, t, null);
+    Assert.assertEquals(1, paths.size());
+    Assert.assertEquals("base_0000029_v0000032", paths.get(0).getName());
   }
 
 }

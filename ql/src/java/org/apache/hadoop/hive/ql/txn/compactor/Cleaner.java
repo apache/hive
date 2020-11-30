@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.txn.compactor;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.metastore.ReplChangeManager;
 import org.apache.hadoop.hive.metastore.api.GetValidWriteIdsRequest;
@@ -200,15 +201,15 @@ public class Cleaner extends MetaStoreCompactorThread {
         LOG.debug("Cleaning based on writeIdList: " + validWriteIdList);
       }
 
-      Ref<Boolean> removedFiles = Ref.from(false);
+      Ref<Boolean> cleanedAllFiles = Ref.from(false);
       if (runJobAsSelf(ci.runAs)) {
-        removedFiles.value = removeFiles(location, validWriteIdList, ci);
+        cleanedAllFiles.value = removeFiles(location, validWriteIdList, ci);
       } else {
         LOG.info("Cleaning as user " + ci.runAs + " for " + ci.getFullPartitionName());
         UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs,
             UserGroupInformation.getLoginUser());
         ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
-          removedFiles.value = removeFiles(location, validWriteIdList, ci);
+          cleanedAllFiles.value = removeFiles(location, validWriteIdList, ci);
           return null;
         });
         try {
@@ -218,7 +219,7 @@ public class Cleaner extends MetaStoreCompactorThread {
               ci.getFullPartitionName() + idWatermark(ci), exception);
         }
       }
-      if (removedFiles.value || isDynPartAbort(t, ci)) {
+      if (cleanedAllFiles.value || isDynPartAbort(t, ci)) {
         txnHandler.markCleaned(ci);
       } else {
         LOG.warn("No files were removed. Leaving queue entry " + ci + " in ready for cleaning state.");
@@ -265,7 +266,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   }
 
   /**
-   * @return true if any files were removed
+   * @return true if the cleaner has removed all files rendered obsolete by compaction
    */
   private boolean removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
       throws IOException, NoSuchObjectException, MetaException {
@@ -300,11 +301,6 @@ public class Cleaner extends MetaStoreCompactorThread {
     extraDebugInfo.setCharAt(extraDebugInfo.length() - 1, ']');
     LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
          " obsolete directories from " + location + ". " + extraDebugInfo.toString());
-    if (filesToDelete.size() < 1) {
-      LOG.warn("Hmm, nothing to delete in the cleaner for directory " + location +
-          ", that hardly seems right.");
-      return false;
-    }
 
     FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
@@ -316,6 +312,29 @@ public class Cleaner extends MetaStoreCompactorThread {
       }
       fs.delete(dead, true);
     }
-    return true;
+    // Check if there will be more obsolete directories to clean when possible. We will only mark cleaned when this
+    // number reaches 0.
+    return getNumEventuallyObsoleteDirs(location) == 0;
+  }
+
+  /**
+   * Get the number of base/delta directories the Cleaner should remove eventually. If we check this after cleaning
+   * we can see if the Cleaner has further work to do in this table/partition directory that it hasn't been able to
+   * finish, e.g. because of an open transaction at the time of compaction.
+   * We do this by assuming that there are no open transactions anywhere and then calling getAcidState. If there are
+   * obsolete directories, then the Cleaner has more work to do.
+   * @param location location of table
+   * @return number of dirs left for the cleaner to clean – eventually
+   * @throws IOException
+   */
+  private int getNumEventuallyObsoleteDirs(String location) throws IOException {
+    ValidTxnList validTxnList = new ValidReadTxnList();
+    //save it so that getAcidState() sees it
+    conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
+    ValidReaderWriteIdList validWriteIdList = new ValidReaderWriteIdList();
+    Path locPath = new Path(location);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(locPath.getFileSystem(conf), locPath, conf, validWriteIdList,
+        Ref.from(false), false);
+    return dir.getObsolete().size();
   }
 }
