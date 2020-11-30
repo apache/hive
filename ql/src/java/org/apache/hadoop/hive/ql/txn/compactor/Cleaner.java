@@ -272,7 +272,8 @@ public class Cleaner extends MetaStoreCompactorThread {
   private boolean removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
       throws IOException, NoSuchObjectException, MetaException {
     Path locPath = new Path(location);
-    Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = null;
+    FileSystem fs = locPath.getFileSystem(conf);
+    Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, locPath);
     AcidUtils.Directory dir = AcidUtils.getAcidState(locPath.getFileSystem(conf), locPath, conf, writeIdList, Ref.from(
         false), false, dirSnapshots);
     List<Path> obsoleteDirs = dir.getObsolete();
@@ -304,7 +305,6 @@ public class Cleaner extends MetaStoreCompactorThread {
     LOG.info(idWatermark(ci) + " About to remove " + filesToDelete.size() +
          " obsolete directories from " + location + ". " + extraDebugInfo.toString());
 
-    FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
 
     for (Path dead : filesToDelete) {
