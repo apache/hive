@@ -166,7 +166,7 @@ POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(quartile=[CAST($0):DECIMAL(12, 1)], total=[$1])
+  HiveProject(quartile=[$0], total=[$1])
     HiveTableScan(table=[[arc_view, mv_tv_view_data_av1]], table:alias=[arc_view.mv_tv_view_data_av1])
 
 PREHOOK: query: select
@@ -203,8 +203,8 @@ POSTHOOK: Input: arc_view@mv_tv_view_data_av1
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
-1.5	1300000
-4.5	15000000
+1.5000	1300000
+4.5000	15000000
 PREHOOK: query: insert into tv_view_data values ('scream', 20000000)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -476,7 +476,7 @@ POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(quartile=[CAST($0):DECIMAL(12, 1)], total=[$1])
+  HiveProject(quartile=[$0], total=[$1])
     HiveTableScan(table=[[arc_view, mv_tv_view_data_av1]], table:alias=[arc_view.mv_tv_view_data_av1])
 
 PREHOOK: query: select
@@ -513,9 +513,9 @@ POSTHOOK: Input: arc_view@mv_tv_view_data_av1
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
-1.5	1300000
-4.5	15000000
-6.0	20000000
+1.5000	1300000
+4.5000	15000000
+6.0000	20000000
 PREHOOK: query: insert into tv_view_data values ('scream2', 30000000)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -787,7 +787,7 @@ POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
 CBO PLAN:
 HiveSortLimit(sort0=[$0], dir0=[ASC])
-  HiveProject(quartile=[CAST($0):DECIMAL(12, 1)], total=[$1])
+  HiveProject(quartile=[$0], total=[$1])
     HiveTableScan(table=[[arc_view, mv_tv_view_data_av1]], table:alias=[arc_view.mv_tv_view_data_av1])
 
 PREHOOK: query: select
@@ -824,10 +824,10 @@ POSTHOOK: Input: arc_view@mv_tv_view_data_av1
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
-1.5	1300000
-4.5	15000000
-6.0	20000000
-7.5	30000000
+1.5000	1300000
+4.5000	15000000
+6.0000	20000000
+7.5000	30000000
 PREHOOK: query: drop materialized view mv_tv_view_data_av1
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: arc_view@mv_tv_view_data_av1
