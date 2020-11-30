@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -167,8 +168,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
   @VisibleForTesting
   public static synchronized void resetCleaner(HiveConf conf) throws Exception {
-    if(cleaner != null && conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)){
-      cleaner.stopRun();
+    if (cleaner != null && conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST_REPL)) {
+      cleaner.interrupt();
+      cleaner.join();
       cleaner = null;
       init(conf);
     }
@@ -1242,64 +1244,50 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   }
 
   private static class CleanerThread extends Thread {
-    private RawStore rs;
+    private final RawStore rs;
     private int ttl;
-    private boolean shouldRun = true;
     private long sleepTime;
 
     CleanerThread(Configuration conf, RawStore rs) {
       super("DB-Notification-Cleaner");
-      this.rs = rs;
-      boolean isReplEnabled = MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED);
-      if(isReplEnabled){
-        setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.REPL_EVENT_DB_LISTENER_TTL,
-                TimeUnit.SECONDS));
-      }
-      else {
-        setTimeToLive(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_TTL,
-                TimeUnit.SECONDS));
-      }
-      setCleanupInterval(MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL,
-              TimeUnit.MILLISECONDS));
       setDaemon(true);
+      this.rs = Objects.requireNonNull(rs);
+
+      boolean isReplEnabled = MetastoreConf.getBoolVar(conf, ConfVars.REPLCMENABLED);
+      ConfVars ttlConf = (isReplEnabled) ?  ConfVars.REPL_EVENT_DB_LISTENER_TTL : ConfVars.EVENT_DB_LISTENER_TTL;
+      setTimeToLive(MetastoreConf.getTimeVar(conf, ttlConf, TimeUnit.SECONDS));
+      setCleanupInterval(
+          MetastoreConf.getTimeVar(conf, ConfVars.EVENT_DB_LISTENER_CLEAN_INTERVAL, TimeUnit.MILLISECONDS));
     }
 
     @Override
     public void run() {
-      while (shouldRun) {
+      while (true) {
+        LOG.debug("Cleaner thread running");
         try {
           rs.cleanNotificationEvents(ttl);
           rs.cleanWriteNotificationEvents(ttl);
         } catch (Exception ex) {
-          //catching exceptions here makes sure that the thread doesn't die in case of unexpected
-          //exceptions
-          LOG.warn("Exception received while cleaning notifications: ", ex);
+          LOG.warn("Exception received while cleaning notifications", ex);
         }
-
         LOG.debug("Cleaner thread done");
+
         try {
+          LOG.debug("Sleeping {}ms", sleepTime);
           Thread.sleep(sleepTime);
         } catch (InterruptedException e) {
-          LOG.info("Cleaner thread sleep interrupted", e);
+          LOG.info("Cleaner thread interrupted. Exiting.");
+          return;
         }
       }
     }
 
     public void setTimeToLive(long configTtl) {
-      if (configTtl > Integer.MAX_VALUE) {
-        ttl = Integer.MAX_VALUE;
-      } else {
-        ttl = (int)configTtl;
-      }
+      this.ttl = (int) Math.min(Integer.MAX_VALUE, configTtl);
     }
 
     public void setCleanupInterval(long configInterval) {
       sleepTime = configInterval;
-    }
-
-    @VisibleForTesting
-    private synchronized void stopRun(){
-      shouldRun = false;
     }
   }
 }
