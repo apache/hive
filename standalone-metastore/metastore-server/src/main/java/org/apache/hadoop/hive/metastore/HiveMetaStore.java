@@ -2366,6 +2366,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<String> processorCapabilities = req.getProcessorCapabilities();
       String processorId = req.getProcessorIdentifier();
 
+      Database db = null;
+      try {
+        db = get_database_core(tbl.getCatName(), tbl.getDbName());
+      } catch (Exception e) {
+        LOG.info("Database {} does exist, exception: {}", tbl.getDbName(), e.getMessage());
+        return;
+      }
+      if (db != null && db.getType().equals(DatabaseType.REMOTE)) {
+        boolean success = DataConnectorProviderFactory.getDataConnectorProvider(db).createTable(tbl);
+        return;
+      }
+
       if (transformer != null && !isInTest) {
         tbl = transformer.transformCreateTable(tbl, processorCapabilities, processorId);
       }
@@ -3023,6 +3035,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       try {
         ms.openTransaction();
         db = ms.getDatabase(catName, dbname);
+        if (db.getType() == DatabaseType.REMOTE) {
+          return DataConnectorProviderFactory.getDataConnectorProvider(db).dropTable(name);
+        }
         isReplicated = isDbReplicationTarget(db);
 
         // drop any partitions
@@ -3732,12 +3747,20 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Table t = null;
       try {
         db = get_database_core(catName, dbname);
+      } catch (Exception e) {
+        LOG.info("Database {} does exist, exception: {}", dbname, e.getMessage());
+        return null;
+      }
+      try {
         if (db != null) {
           if (db.getType().equals(DatabaseType.REMOTE)) {
             return DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(name);
           }
         }
-      } catch (Exception e) { /* appears exception is not thrown currently if db doesnt exist */ }
+      } catch (Exception e) {
+        LOG.info("Error occurred when retrieving table {} from remote source, exception: {}", name, e.getMessage());
+        return null;
+      }
 
       try {
         t = getMS().getTable(catName, dbname, name, writeIdList);
@@ -4130,6 +4153,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<ColumnStatistics> partsColStats = new ArrayList<>(parts.size());
       List<Long> partsWriteIds = new ArrayList<>(parts.size());
 
+      throwUnsupportedExceptionIfRemoteDB(dbName, "add_partitions");
+
       try {
         ms.openTransaction();
         tbl = ms.getTable(catName, dbName, tblName, null);
@@ -4519,12 +4544,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Database db = null;
       try {
         ms.openTransaction();
+        db = ms.getDatabase(catName, dbName);
+        if (db.getType() == DatabaseType.REMOTE)
+          throw new MetaException("Operation add_partitions_pspec not supported on tables in REMOTE database");
         tbl = ms.getTable(catName, dbName, tblName, null);
         if (tbl == null) {
           throw new InvalidObjectException("Unable to add partitions because "
               + "database or table " + dbName + "." + tblName + " does not exist");
         }
-        db = ms.getDatabase(catName, dbName);
         firePreEvent(new PreAddPartitionEvent(tbl, partitionSpecProxy, this));
         Set<PartValEqWrapperLite> partsToAdd = new HashSet<>(partitionSpecProxy.size());
         List<Partition> partitionsToAdd = new ArrayList<>(partitionSpecProxy.size());
@@ -4710,6 +4737,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       if (!part.isSetCatName()) {
         part.setCatName(getDefaultCatalog(conf));
       }
+
+      throwUnsupportedExceptionIfRemoteDB(part.getDbName(), "add_partition");
       try {
         ms.openTransaction();
         tbl = ms.getTable(part.getCatName(), part.getDbName(), part.getTableName(), null);
@@ -5101,6 +5130,26 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       return ((envContext != null) && Boolean.parseBoolean(envContext.getProperties().get("ifPurge")))
           || MetaStoreUtils.isSkipTrash(tbl.getParameters());
     }
+
+    private void throwUnsupportedExceptionIfRemoteDB(String dbName, String operationName) throws MetaException {
+      if (isDatabaseRemote(dbName)) {
+        throw new MetaException("Operation " + operationName + " not supported for REMOTE database " + dbName);
+      }
+    }
+
+    private boolean isDatabaseRemote(String name) {
+      try {
+        String[] parsedDbName = parseDbName(name, conf);
+        Database db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+        if (db != null && db.getType() == DatabaseType.REMOTE) {
+          return true;
+        }
+      } catch (Exception e) {
+        return false;
+      }
+      return false;
+    }
+
     private void deleteParentRecursive(Path parent, int depth, boolean mustPurge, boolean needRecycle)
             throws IOException, MetaException {
       if (depth > 0 && parent != null && wh.isWritable(parent)) {
@@ -6000,12 +6049,18 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       String[] parsedDbName = parseDbName(dbname, conf);
       try {
         db = get_database_core(parsedDbName[CAT_NAME], parsedDbName[DB_NAME]);
+      } catch (Exception e) {
+        /* appears we return empty set instead of throwing an exception */
+      }
+      try {
         if (db != null && db.getType() != null) {
           if (db.getType().equals(DatabaseType.REMOTE)) {
             return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
           }
         }
-      } catch (Exception e) { /* appears we return empty set instead of throwing an exception */ }
+      } catch (Exception e) {
+        throw newMetaException(e);
+      }
 
       try {
         ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern);
@@ -6064,12 +6119,21 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Database db = null;
       try {
         db = get_database_core(catName, dbname);
+      } catch (Exception e) {
+        // do not throw an exception as getTables() call returns empty list if db does not exist.
+        LOG.info("Database {} not found", dbname);
+        return null;
+      }
+      try {
         if (db != null) {
           if (db.getType().equals(DatabaseType.REMOTE)) {
             return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
           }
         }
-      } catch (Exception e) { /* ignore */ }
+      } catch (Exception e) {
+        LOG.warn("Error retrieving tables from remote data source: {} {}", dbname, pattern);
+        return null;
+      }
 
       try {
         ret = getMS().getTables(catName, dbname, pattern, TableType.valueOf(tableType), -1);
@@ -8293,6 +8357,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           throw new NoSuchObjectException("The database " + func.getDbName() + " does not exist");
         }
 
+        if (db.getType() == DatabaseType.REMOTE) {
+          throw new MetaException("Operation create_function not support for REMOTE database");
+        }
+
         Function existingFunc = ms.getFunction(catName, func.getDbName(), func.getFunctionName());
         if (existingFunc != null) {
           throw new AlreadyExistsException(
@@ -10415,6 +10483,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public void create_stored_procedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
       startFunction("create_stored_procedure");
       Exception ex = null;
+
+      throwUnsupportedExceptionIfRemoteDB(proc.getDbName(), "create_stored_procedure");
       try {
         getMS().createOrUpdateStoredProcedure(proc);
       } catch (Exception e) {
