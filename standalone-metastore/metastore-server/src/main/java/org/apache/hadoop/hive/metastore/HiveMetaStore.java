@@ -2368,7 +2368,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
       Database db = null;
       try {
-        db = get_database_core(tbl.getCatName(), tbl.getDbName());
+        db = ms.getDatabase(tbl.getCatName(), tbl.getDbName());
       } catch (Exception e) {
         LOG.info("Database {} does exist, exception: {}", tbl.getDbName(), e.getMessage());
         return;
@@ -2430,7 +2430,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
       Path tblPath = null;
       boolean success = false, madeDir = false;
-      Database db = null;
       boolean isReplicated = false;
       try {
         if (!tbl.isSetCatName()) {
@@ -2439,8 +2438,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         firePreEvent(new PreCreateTableEvent(tbl, this));
 
         ms.openTransaction();
-
-        db = ms.getDatabase(tbl.getCatName(), tbl.getDbName());
         isReplicated = isDbReplicationTarget(db);
 
         // get_table checks whether database exists, it should be moved here
