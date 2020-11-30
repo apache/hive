@@ -59425,10 +59425,10 @@ class get_all_packages_result(object):
             if fid == 0:
                 if ftype == TType.LIST:
                     self.success = []
-                    (_etype1720, _size1717) = iprot.readListBegin()
-                    for _i1721 in range(_size1717):
-                        _elem1722 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
-                        self.success.append(_elem1722)
+                    (_etype1745, _size1742) = iprot.readListBegin()
+                    for _i1746 in range(_size1742):
+                        _elem1747 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        self.success.append(_elem1747)
                     iprot.readListEnd()
                 else:
                     iprot.skip(ftype)
@@ -59451,8 +59451,8 @@ class get_all_packages_result(object):
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.LIST, 0)
             oprot.writeListBegin(TType.STRING, len(self.success))
-            for iter1723 in self.success:
-                oprot.writeString(iter1723.encode('utf-8') if sys.version_info[0] == 2 else iter1723)
+            for iter1748 in self.success:
+                oprot.writeString(iter1748.encode('utf-8') if sys.version_info[0] == 2 else iter1748)
             oprot.writeListEnd()
             oprot.writeFieldEnd()
         if self.o1 is not None:

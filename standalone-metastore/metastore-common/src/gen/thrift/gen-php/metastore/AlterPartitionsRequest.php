@@ -163,25 +163,14 @@ class AlterPartitionsRequest
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->partitions = array();
-<<<<<<< HEAD
-                        $_size1057 = 0;
-                        $_etype1060 = 0;
-                        $xfer += $input->readListBegin($_etype1060, $_size1057);
-                        for ($_i1061 = 0; $_i1061 < $_size1057; ++$_i1061) {
-                            $elem1062 = null;
-                            $elem1062 = new \metastore\Partition();
-                            $xfer += $elem1062->read($input);
-                            $this->partitions []= $elem1062;
-=======
-                        $_size1068 = 0;
-                        $_etype1071 = 0;
-                        $xfer += $input->readListBegin($_etype1071, $_size1068);
-                        for ($_i1072 = 0; $_i1072 < $_size1068; ++$_i1072) {
-                            $elem1073 = null;
-                            $elem1073 = new \metastore\Partition();
-                            $xfer += $elem1073->read($input);
-                            $this->partitions []= $elem1073;
->>>>>>> External metastore: clean after rebase
+                        $_size1075 = 0;
+                        $_etype1078 = 0;
+                        $xfer += $input->readListBegin($_etype1078, $_size1075);
+                        for ($_i1079 = 0; $_i1079 < $_size1075; ++$_i1079) {
+                            $elem1080 = null;
+                            $elem1080 = new \metastore\Partition();
+                            $xfer += $elem1080->read($input);
+                            $this->partitions []= $elem1080;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -245,13 +234,8 @@ class AlterPartitionsRequest
             }
             $xfer += $output->writeFieldBegin('partitions', TType::LST, 4);
             $output->writeListBegin(TType::STRUCT, count($this->partitions));
-<<<<<<< HEAD
-            foreach ($this->partitions as $iter1063) {
-                $xfer += $iter1063->write($output);
-=======
-            foreach ($this->partitions as $iter1074) {
-                $xfer += $iter1074->write($output);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->partitions as $iter1081) {
+                $xfer += $iter1081->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

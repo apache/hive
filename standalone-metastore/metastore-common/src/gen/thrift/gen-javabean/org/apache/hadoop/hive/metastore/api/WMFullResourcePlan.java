@@ -735,25 +735,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 2: // POOLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list1064 = iprot.readListBegin();
-                struct.pools = new java.util.ArrayList<WMPool>(_list1064.size);
-                @org.apache.thrift.annotation.Nullable WMPool _elem1065;
-                for (int _i1066 = 0; _i1066 < _list1064.size; ++_i1066)
+                org.apache.thrift.protocol.TList _list1074 = iprot.readListBegin();
+                struct.pools = new java.util.ArrayList<WMPool>(_list1074.size);
+                @org.apache.thrift.annotation.Nullable WMPool _elem1075;
+                for (int _i1076 = 0; _i1076 < _list1074.size; ++_i1076)
                 {
-                  _elem1065 = new WMPool();
-                  _elem1065.read(iprot);
-                  struct.pools.add(_elem1065);
-=======
-                org.apache.thrift.protocol.TList _list1066 = iprot.readListBegin();
-                struct.pools = new java.util.ArrayList<WMPool>(_list1066.size);
-                @org.apache.thrift.annotation.Nullable WMPool _elem1067;
-                for (int _i1068 = 0; _i1068 < _list1066.size; ++_i1068)
-                {
-                  _elem1067 = new WMPool();
-                  _elem1067.read(iprot);
-                  struct.pools.add(_elem1067);
->>>>>>> External metastore: clean after rebase
+                  _elem1075 = new WMPool();
+                  _elem1075.read(iprot);
+                  struct.pools.add(_elem1075);
                 }
                 iprot.readListEnd();
               }
@@ -765,25 +754,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 3: // MAPPINGS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list1067 = iprot.readListBegin();
-                struct.mappings = new java.util.ArrayList<WMMapping>(_list1067.size);
-                @org.apache.thrift.annotation.Nullable WMMapping _elem1068;
-                for (int _i1069 = 0; _i1069 < _list1067.size; ++_i1069)
+                org.apache.thrift.protocol.TList _list1077 = iprot.readListBegin();
+                struct.mappings = new java.util.ArrayList<WMMapping>(_list1077.size);
+                @org.apache.thrift.annotation.Nullable WMMapping _elem1078;
+                for (int _i1079 = 0; _i1079 < _list1077.size; ++_i1079)
                 {
-                  _elem1068 = new WMMapping();
-                  _elem1068.read(iprot);
-                  struct.mappings.add(_elem1068);
-=======
-                org.apache.thrift.protocol.TList _list1069 = iprot.readListBegin();
-                struct.mappings = new java.util.ArrayList<WMMapping>(_list1069.size);
-                @org.apache.thrift.annotation.Nullable WMMapping _elem1070;
-                for (int _i1071 = 0; _i1071 < _list1069.size; ++_i1071)
-                {
-                  _elem1070 = new WMMapping();
-                  _elem1070.read(iprot);
-                  struct.mappings.add(_elem1070);
->>>>>>> External metastore: clean after rebase
+                  _elem1078 = new WMMapping();
+                  _elem1078.read(iprot);
+                  struct.mappings.add(_elem1078);
                 }
                 iprot.readListEnd();
               }
@@ -795,25 +773,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 4: // TRIGGERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list1070 = iprot.readListBegin();
-                struct.triggers = new java.util.ArrayList<WMTrigger>(_list1070.size);
-                @org.apache.thrift.annotation.Nullable WMTrigger _elem1071;
-                for (int _i1072 = 0; _i1072 < _list1070.size; ++_i1072)
+                org.apache.thrift.protocol.TList _list1080 = iprot.readListBegin();
+                struct.triggers = new java.util.ArrayList<WMTrigger>(_list1080.size);
+                @org.apache.thrift.annotation.Nullable WMTrigger _elem1081;
+                for (int _i1082 = 0; _i1082 < _list1080.size; ++_i1082)
                 {
-                  _elem1071 = new WMTrigger();
-                  _elem1071.read(iprot);
-                  struct.triggers.add(_elem1071);
-=======
-                org.apache.thrift.protocol.TList _list1072 = iprot.readListBegin();
-                struct.triggers = new java.util.ArrayList<WMTrigger>(_list1072.size);
-                @org.apache.thrift.annotation.Nullable WMTrigger _elem1073;
-                for (int _i1074 = 0; _i1074 < _list1072.size; ++_i1074)
-                {
-                  _elem1073 = new WMTrigger();
-                  _elem1073.read(iprot);
-                  struct.triggers.add(_elem1073);
->>>>>>> External metastore: clean after rebase
+                  _elem1081 = new WMTrigger();
+                  _elem1081.read(iprot);
+                  struct.triggers.add(_elem1081);
                 }
                 iprot.readListEnd();
               }
@@ -825,25 +792,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 5: // POOL_TRIGGERS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list1073 = iprot.readListBegin();
-                struct.poolTriggers = new java.util.ArrayList<WMPoolTrigger>(_list1073.size);
-                @org.apache.thrift.annotation.Nullable WMPoolTrigger _elem1074;
-                for (int _i1075 = 0; _i1075 < _list1073.size; ++_i1075)
+                org.apache.thrift.protocol.TList _list1083 = iprot.readListBegin();
+                struct.poolTriggers = new java.util.ArrayList<WMPoolTrigger>(_list1083.size);
+                @org.apache.thrift.annotation.Nullable WMPoolTrigger _elem1084;
+                for (int _i1085 = 0; _i1085 < _list1083.size; ++_i1085)
                 {
-                  _elem1074 = new WMPoolTrigger();
-                  _elem1074.read(iprot);
-                  struct.poolTriggers.add(_elem1074);
-=======
-                org.apache.thrift.protocol.TList _list1075 = iprot.readListBegin();
-                struct.poolTriggers = new java.util.ArrayList<WMPoolTrigger>(_list1075.size);
-                @org.apache.thrift.annotation.Nullable WMPoolTrigger _elem1076;
-                for (int _i1077 = 0; _i1077 < _list1075.size; ++_i1077)
-                {
-                  _elem1076 = new WMPoolTrigger();
-                  _elem1076.read(iprot);
-                  struct.poolTriggers.add(_elem1076);
->>>>>>> External metastore: clean after rebase
+                  _elem1084 = new WMPoolTrigger();
+                  _elem1084.read(iprot);
+                  struct.poolTriggers.add(_elem1084);
                 }
                 iprot.readListEnd();
               }
@@ -874,15 +830,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(POOLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.pools.size()));
-<<<<<<< HEAD
-          for (WMPool _iter1076 : struct.pools)
+          for (WMPool _iter1086 : struct.pools)
           {
-            _iter1076.write(oprot);
-=======
-          for (WMPool _iter1078 : struct.pools)
-          {
-            _iter1078.write(oprot);
->>>>>>> External metastore: clean after rebase
+            _iter1086.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -893,15 +843,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(MAPPINGS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.mappings.size()));
-<<<<<<< HEAD
-            for (WMMapping _iter1077 : struct.mappings)
+            for (WMMapping _iter1087 : struct.mappings)
             {
-              _iter1077.write(oprot);
-=======
-            for (WMMapping _iter1079 : struct.mappings)
-            {
-              _iter1079.write(oprot);
->>>>>>> External metastore: clean after rebase
+              _iter1087.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -913,15 +857,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(TRIGGERS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.triggers.size()));
-<<<<<<< HEAD
-            for (WMTrigger _iter1078 : struct.triggers)
+            for (WMTrigger _iter1088 : struct.triggers)
             {
-              _iter1078.write(oprot);
-=======
-            for (WMTrigger _iter1080 : struct.triggers)
-            {
-              _iter1080.write(oprot);
->>>>>>> External metastore: clean after rebase
+              _iter1088.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -933,15 +871,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(POOL_TRIGGERS_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.poolTriggers.size()));
-<<<<<<< HEAD
-            for (WMPoolTrigger _iter1079 : struct.poolTriggers)
+            for (WMPoolTrigger _iter1089 : struct.poolTriggers)
             {
-              _iter1079.write(oprot);
-=======
-            for (WMPoolTrigger _iter1081 : struct.poolTriggers)
-            {
-              _iter1081.write(oprot);
->>>>>>> External metastore: clean after rebase
+              _iter1089.write(oprot);
             }
             oprot.writeListEnd();
           }
@@ -968,15 +900,9 @@ package org.apache.hadoop.hive.metastore.api;
       struct.plan.write(oprot);
       {
         oprot.writeI32(struct.pools.size());
-<<<<<<< HEAD
-        for (WMPool _iter1080 : struct.pools)
+        for (WMPool _iter1090 : struct.pools)
         {
-          _iter1080.write(oprot);
-=======
-        for (WMPool _iter1082 : struct.pools)
-        {
-          _iter1082.write(oprot);
->>>>>>> External metastore: clean after rebase
+          _iter1090.write(oprot);
         }
       }
       java.util.BitSet optionals = new java.util.BitSet();
@@ -993,45 +919,27 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetMappings()) {
         {
           oprot.writeI32(struct.mappings.size());
-<<<<<<< HEAD
-          for (WMMapping _iter1081 : struct.mappings)
+          for (WMMapping _iter1091 : struct.mappings)
           {
-            _iter1081.write(oprot);
-=======
-          for (WMMapping _iter1083 : struct.mappings)
-          {
-            _iter1083.write(oprot);
->>>>>>> External metastore: clean after rebase
+            _iter1091.write(oprot);
           }
         }
       }
       if (struct.isSetTriggers()) {
         {
           oprot.writeI32(struct.triggers.size());
-<<<<<<< HEAD
-          for (WMTrigger _iter1082 : struct.triggers)
+          for (WMTrigger _iter1092 : struct.triggers)
           {
-            _iter1082.write(oprot);
-=======
-          for (WMTrigger _iter1084 : struct.triggers)
-          {
-            _iter1084.write(oprot);
->>>>>>> External metastore: clean after rebase
+            _iter1092.write(oprot);
           }
         }
       }
       if (struct.isSetPoolTriggers()) {
         {
           oprot.writeI32(struct.poolTriggers.size());
-<<<<<<< HEAD
-          for (WMPoolTrigger _iter1083 : struct.poolTriggers)
+          for (WMPoolTrigger _iter1093 : struct.poolTriggers)
           {
-            _iter1083.write(oprot);
-=======
-          for (WMPoolTrigger _iter1085 : struct.poolTriggers)
-          {
-            _iter1085.write(oprot);
->>>>>>> External metastore: clean after rebase
+            _iter1093.write(oprot);
           }
         }
       }
@@ -1044,100 +952,56 @@ package org.apache.hadoop.hive.metastore.api;
       struct.plan.read(iprot);
       struct.setPlanIsSet(true);
       {
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list1084 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.pools = new java.util.ArrayList<WMPool>(_list1084.size);
-        @org.apache.thrift.annotation.Nullable WMPool _elem1085;
-        for (int _i1086 = 0; _i1086 < _list1084.size; ++_i1086)
+        org.apache.thrift.protocol.TList _list1094 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.pools = new java.util.ArrayList<WMPool>(_list1094.size);
+        @org.apache.thrift.annotation.Nullable WMPool _elem1095;
+        for (int _i1096 = 0; _i1096 < _list1094.size; ++_i1096)
         {
-          _elem1085 = new WMPool();
-          _elem1085.read(iprot);
-          struct.pools.add(_elem1085);
-=======
-        org.apache.thrift.protocol.TList _list1086 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.pools = new java.util.ArrayList<WMPool>(_list1086.size);
-        @org.apache.thrift.annotation.Nullable WMPool _elem1087;
-        for (int _i1088 = 0; _i1088 < _list1086.size; ++_i1088)
-        {
-          _elem1087 = new WMPool();
-          _elem1087.read(iprot);
-          struct.pools.add(_elem1087);
->>>>>>> External metastore: clean after rebase
+          _elem1095 = new WMPool();
+          _elem1095.read(iprot);
+          struct.pools.add(_elem1095);
         }
       }
       struct.setPoolsIsSet(true);
       java.util.BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         {
-<<<<<<< HEAD
-          org.apache.thrift.protocol.TList _list1087 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.mappings = new java.util.ArrayList<WMMapping>(_list1087.size);
-          @org.apache.thrift.annotation.Nullable WMMapping _elem1088;
-          for (int _i1089 = 0; _i1089 < _list1087.size; ++_i1089)
+          org.apache.thrift.protocol.TList _list1097 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.mappings = new java.util.ArrayList<WMMapping>(_list1097.size);
+          @org.apache.thrift.annotation.Nullable WMMapping _elem1098;
+          for (int _i1099 = 0; _i1099 < _list1097.size; ++_i1099)
           {
-            _elem1088 = new WMMapping();
-            _elem1088.read(iprot);
-            struct.mappings.add(_elem1088);
-=======
-          org.apache.thrift.protocol.TList _list1089 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.mappings = new java.util.ArrayList<WMMapping>(_list1089.size);
-          @org.apache.thrift.annotation.Nullable WMMapping _elem1090;
-          for (int _i1091 = 0; _i1091 < _list1089.size; ++_i1091)
-          {
-            _elem1090 = new WMMapping();
-            _elem1090.read(iprot);
-            struct.mappings.add(_elem1090);
->>>>>>> External metastore: clean after rebase
+            _elem1098 = new WMMapping();
+            _elem1098.read(iprot);
+            struct.mappings.add(_elem1098);
           }
         }
         struct.setMappingsIsSet(true);
       }
       if (incoming.get(1)) {
         {
-<<<<<<< HEAD
-          org.apache.thrift.protocol.TList _list1090 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.triggers = new java.util.ArrayList<WMTrigger>(_list1090.size);
-          @org.apache.thrift.annotation.Nullable WMTrigger _elem1091;
-          for (int _i1092 = 0; _i1092 < _list1090.size; ++_i1092)
+          org.apache.thrift.protocol.TList _list1100 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.triggers = new java.util.ArrayList<WMTrigger>(_list1100.size);
+          @org.apache.thrift.annotation.Nullable WMTrigger _elem1101;
+          for (int _i1102 = 0; _i1102 < _list1100.size; ++_i1102)
           {
-            _elem1091 = new WMTrigger();
-            _elem1091.read(iprot);
-            struct.triggers.add(_elem1091);
-=======
-          org.apache.thrift.protocol.TList _list1092 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.triggers = new java.util.ArrayList<WMTrigger>(_list1092.size);
-          @org.apache.thrift.annotation.Nullable WMTrigger _elem1093;
-          for (int _i1094 = 0; _i1094 < _list1092.size; ++_i1094)
-          {
-            _elem1093 = new WMTrigger();
-            _elem1093.read(iprot);
-            struct.triggers.add(_elem1093);
->>>>>>> External metastore: clean after rebase
+            _elem1101 = new WMTrigger();
+            _elem1101.read(iprot);
+            struct.triggers.add(_elem1101);
           }
         }
         struct.setTriggersIsSet(true);
       }
       if (incoming.get(2)) {
         {
-<<<<<<< HEAD
-          org.apache.thrift.protocol.TList _list1093 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.poolTriggers = new java.util.ArrayList<WMPoolTrigger>(_list1093.size);
-          @org.apache.thrift.annotation.Nullable WMPoolTrigger _elem1094;
-          for (int _i1095 = 0; _i1095 < _list1093.size; ++_i1095)
+          org.apache.thrift.protocol.TList _list1103 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.poolTriggers = new java.util.ArrayList<WMPoolTrigger>(_list1103.size);
+          @org.apache.thrift.annotation.Nullable WMPoolTrigger _elem1104;
+          for (int _i1105 = 0; _i1105 < _list1103.size; ++_i1105)
           {
-            _elem1094 = new WMPoolTrigger();
-            _elem1094.read(iprot);
-            struct.poolTriggers.add(_elem1094);
-=======
-          org.apache.thrift.protocol.TList _list1095 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.poolTriggers = new java.util.ArrayList<WMPoolTrigger>(_list1095.size);
-          @org.apache.thrift.annotation.Nullable WMPoolTrigger _elem1096;
-          for (int _i1097 = 0; _i1097 < _list1095.size; ++_i1097)
-          {
-            _elem1096 = new WMPoolTrigger();
-            _elem1096.read(iprot);
-            struct.poolTriggers.add(_elem1096);
->>>>>>> External metastore: clean after rebase
+            _elem1104 = new WMPoolTrigger();
+            _elem1104.read(iprot);
+            struct.poolTriggers.add(_elem1104);
           }
         }
         struct.setPoolTriggersIsSet(true);

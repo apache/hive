@@ -858,23 +858,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 6: // PROCESSOR_CAPABILITIES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list1032 = iprot.readListBegin();
-                struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1032.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1033;
-                for (int _i1034 = 0; _i1034 < _list1032.size; ++_i1034)
+                org.apache.thrift.protocol.TList _list1042 = iprot.readListBegin();
+                struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1042.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1043;
+                for (int _i1044 = 0; _i1044 < _list1042.size; ++_i1044)
                 {
-                  _elem1033 = iprot.readString();
-                  struct.processorCapabilities.add(_elem1033);
-=======
-                org.apache.thrift.protocol.TList _list1034 = iprot.readListBegin();
-                struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1034.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1035;
-                for (int _i1036 = 0; _i1036 < _list1034.size; ++_i1036)
-                {
-                  _elem1035 = iprot.readString();
-                  struct.processorCapabilities.add(_elem1035);
->>>>>>> External metastore: clean after rebase
+                  _elem1043 = iprot.readString();
+                  struct.processorCapabilities.add(_elem1043);
                 }
                 iprot.readListEnd();
               }
@@ -932,15 +922,9 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(PROCESSOR_CAPABILITIES_FIELD_DESC);
           {
             oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.processorCapabilities.size()));
-<<<<<<< HEAD
-            for (java.lang.String _iter1035 : struct.processorCapabilities)
+            for (java.lang.String _iter1045 : struct.processorCapabilities)
             {
-              oprot.writeString(_iter1035);
-=======
-            for (java.lang.String _iter1037 : struct.processorCapabilities)
-            {
-              oprot.writeString(_iter1037);
->>>>>>> External metastore: clean after rebase
+              oprot.writeString(_iter1045);
             }
             oprot.writeListEnd();
           }
@@ -992,15 +976,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetProcessorCapabilities()) {
         {
           oprot.writeI32(struct.processorCapabilities.size());
-<<<<<<< HEAD
-          for (java.lang.String _iter1036 : struct.processorCapabilities)
+          for (java.lang.String _iter1046 : struct.processorCapabilities)
           {
-            oprot.writeString(_iter1036);
-=======
-          for (java.lang.String _iter1038 : struct.processorCapabilities)
-          {
-            oprot.writeString(_iter1038);
->>>>>>> External metastore: clean after rebase
+            oprot.writeString(_iter1046);
           }
         }
       }
@@ -1027,23 +1005,13 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(1)) {
         {
-<<<<<<< HEAD
-          org.apache.thrift.protocol.TList _list1037 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1037.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem1038;
-          for (int _i1039 = 0; _i1039 < _list1037.size; ++_i1039)
+          org.apache.thrift.protocol.TList _list1047 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1047.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _elem1048;
+          for (int _i1049 = 0; _i1049 < _list1047.size; ++_i1049)
           {
-            _elem1038 = iprot.readString();
-            struct.processorCapabilities.add(_elem1038);
-=======
-          org.apache.thrift.protocol.TList _list1039 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.processorCapabilities = new java.util.ArrayList<java.lang.String>(_list1039.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _elem1040;
-          for (int _i1041 = 0; _i1041 < _list1039.size; ++_i1041)
-          {
-            _elem1040 = iprot.readString();
-            struct.processorCapabilities.add(_elem1040);
->>>>>>> External metastore: clean after rebase
+            _elem1048 = iprot.readString();
+            struct.processorCapabilities.add(_elem1048);
           }
         }
         struct.setProcessorCapabilitiesIsSet(true);

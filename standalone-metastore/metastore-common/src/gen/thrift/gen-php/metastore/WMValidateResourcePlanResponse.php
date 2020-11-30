@@ -84,23 +84,13 @@ class WMValidateResourcePlanResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->errors = array();
-<<<<<<< HEAD
-                        $_size973 = 0;
-                        $_etype976 = 0;
-                        $xfer += $input->readListBegin($_etype976, $_size973);
-                        for ($_i977 = 0; $_i977 < $_size973; ++$_i977) {
-                            $elem978 = null;
-                            $xfer += $input->readString($elem978);
-                            $this->errors []= $elem978;
-=======
-                        $_size975 = 0;
-                        $_etype978 = 0;
-                        $xfer += $input->readListBegin($_etype978, $_size975);
-                        for ($_i979 = 0; $_i979 < $_size975; ++$_i979) {
-                            $elem980 = null;
-                            $xfer += $input->readString($elem980);
-                            $this->errors []= $elem980;
->>>>>>> External metastore: clean after rebase
+                        $_size982 = 0;
+                        $_etype985 = 0;
+                        $xfer += $input->readListBegin($_etype985, $_size982);
+                        for ($_i986 = 0; $_i986 < $_size982; ++$_i986) {
+                            $elem987 = null;
+                            $xfer += $input->readString($elem987);
+                            $this->errors []= $elem987;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -110,23 +100,13 @@ class WMValidateResourcePlanResponse
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->warnings = array();
-<<<<<<< HEAD
-                        $_size979 = 0;
-                        $_etype982 = 0;
-                        $xfer += $input->readListBegin($_etype982, $_size979);
-                        for ($_i983 = 0; $_i983 < $_size979; ++$_i983) {
-                            $elem984 = null;
-                            $xfer += $input->readString($elem984);
-                            $this->warnings []= $elem984;
-=======
-                        $_size981 = 0;
-                        $_etype984 = 0;
-                        $xfer += $input->readListBegin($_etype984, $_size981);
-                        for ($_i985 = 0; $_i985 < $_size981; ++$_i985) {
-                            $elem986 = null;
-                            $xfer += $input->readString($elem986);
-                            $this->warnings []= $elem986;
->>>>>>> External metastore: clean after rebase
+                        $_size988 = 0;
+                        $_etype991 = 0;
+                        $xfer += $input->readListBegin($_etype991, $_size988);
+                        for ($_i992 = 0; $_i992 < $_size988; ++$_i992) {
+                            $elem993 = null;
+                            $xfer += $input->readString($elem993);
+                            $this->warnings []= $elem993;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -153,13 +133,8 @@ class WMValidateResourcePlanResponse
             }
             $xfer += $output->writeFieldBegin('errors', TType::LST, 1);
             $output->writeListBegin(TType::STRING, count($this->errors));
-<<<<<<< HEAD
-            foreach ($this->errors as $iter985) {
-                $xfer += $output->writeString($iter985);
-=======
-            foreach ($this->errors as $iter987) {
-                $xfer += $output->writeString($iter987);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->errors as $iter994) {
+                $xfer += $output->writeString($iter994);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -170,13 +145,8 @@ class WMValidateResourcePlanResponse
             }
             $xfer += $output->writeFieldBegin('warnings', TType::LST, 2);
             $output->writeListBegin(TType::STRING, count($this->warnings));
-<<<<<<< HEAD
-            foreach ($this->warnings as $iter986) {
-                $xfer += $output->writeString($iter986);
-=======
-            foreach ($this->warnings as $iter988) {
-                $xfer += $output->writeString($iter988);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->warnings as $iter995) {
+                $xfer += $output->writeString($iter995);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

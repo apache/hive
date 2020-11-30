@@ -69,25 +69,14 @@ class GetTablesResult
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->tables = array();
-<<<<<<< HEAD
-                        $_size903 = 0;
-                        $_etype906 = 0;
-                        $xfer += $input->readListBegin($_etype906, $_size903);
-                        for ($_i907 = 0; $_i907 < $_size903; ++$_i907) {
-                            $elem908 = null;
-                            $elem908 = new \metastore\Table();
-                            $xfer += $elem908->read($input);
-                            $this->tables []= $elem908;
-=======
-                        $_size905 = 0;
-                        $_etype908 = 0;
-                        $xfer += $input->readListBegin($_etype908, $_size905);
-                        for ($_i909 = 0; $_i909 < $_size905; ++$_i909) {
-                            $elem910 = null;
-                            $elem910 = new \metastore\Table();
-                            $xfer += $elem910->read($input);
-                            $this->tables []= $elem910;
->>>>>>> External metastore: clean after rebase
+                        $_size912 = 0;
+                        $_etype915 = 0;
+                        $xfer += $input->readListBegin($_etype915, $_size912);
+                        for ($_i916 = 0; $_i916 < $_size912; ++$_i916) {
+                            $elem917 = null;
+                            $elem917 = new \metastore\Table();
+                            $xfer += $elem917->read($input);
+                            $this->tables []= $elem917;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -114,13 +103,8 @@ class GetTablesResult
             }
             $xfer += $output->writeFieldBegin('tables', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->tables));
-<<<<<<< HEAD
-            foreach ($this->tables as $iter909) {
-                $xfer += $iter909->write($output);
-=======
-            foreach ($this->tables as $iter911) {
-                $xfer += $iter911->write($output);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->tables as $iter918) {
+                $xfer += $iter918->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

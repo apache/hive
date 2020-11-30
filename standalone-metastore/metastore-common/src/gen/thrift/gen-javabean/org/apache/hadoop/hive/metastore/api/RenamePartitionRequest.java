@@ -773,23 +773,13 @@ package org.apache.hadoop.hive.metastore.api;
           case 4: // PART_VALS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list1208 = iprot.readListBegin();
-                struct.partVals = new java.util.ArrayList<java.lang.String>(_list1208.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1209;
-                for (int _i1210 = 0; _i1210 < _list1208.size; ++_i1210)
+                org.apache.thrift.protocol.TList _list1228 = iprot.readListBegin();
+                struct.partVals = new java.util.ArrayList<java.lang.String>(_list1228.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _elem1229;
+                for (int _i1230 = 0; _i1230 < _list1228.size; ++_i1230)
                 {
-                  _elem1209 = iprot.readString();
-                  struct.partVals.add(_elem1209);
-=======
-                org.apache.thrift.protocol.TList _list1220 = iprot.readListBegin();
-                struct.partVals = new java.util.ArrayList<java.lang.String>(_list1220.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _elem1221;
-                for (int _i1222 = 0; _i1222 < _list1220.size; ++_i1222)
-                {
-                  _elem1221 = iprot.readString();
-                  struct.partVals.add(_elem1221);
->>>>>>> External metastore: clean after rebase
+                  _elem1229 = iprot.readString();
+                  struct.partVals.add(_elem1229);
                 }
                 iprot.readListEnd();
               }
@@ -849,15 +839,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(PART_VALS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, struct.partVals.size()));
-<<<<<<< HEAD
-          for (java.lang.String _iter1211 : struct.partVals)
+          for (java.lang.String _iter1231 : struct.partVals)
           {
-            oprot.writeString(_iter1211);
-=======
-          for (java.lang.String _iter1223 : struct.partVals)
-          {
-            oprot.writeString(_iter1223);
->>>>>>> External metastore: clean after rebase
+            oprot.writeString(_iter1231);
           }
           oprot.writeListEnd();
         }
@@ -896,15 +880,9 @@ package org.apache.hadoop.hive.metastore.api;
       oprot.writeString(struct.tableName);
       {
         oprot.writeI32(struct.partVals.size());
-<<<<<<< HEAD
-        for (java.lang.String _iter1212 : struct.partVals)
+        for (java.lang.String _iter1232 : struct.partVals)
         {
-          oprot.writeString(_iter1212);
-=======
-        for (java.lang.String _iter1224 : struct.partVals)
-        {
-          oprot.writeString(_iter1224);
->>>>>>> External metastore: clean after rebase
+          oprot.writeString(_iter1232);
         }
       }
       struct.newPart.write(oprot);
@@ -932,23 +910,13 @@ package org.apache.hadoop.hive.metastore.api;
       struct.tableName = iprot.readString();
       struct.setTableNameIsSet(true);
       {
-<<<<<<< HEAD
-        org.apache.thrift.protocol.TList _list1213 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.partVals = new java.util.ArrayList<java.lang.String>(_list1213.size);
-        @org.apache.thrift.annotation.Nullable java.lang.String _elem1214;
-        for (int _i1215 = 0; _i1215 < _list1213.size; ++_i1215)
+        org.apache.thrift.protocol.TList _list1233 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+        struct.partVals = new java.util.ArrayList<java.lang.String>(_list1233.size);
+        @org.apache.thrift.annotation.Nullable java.lang.String _elem1234;
+        for (int _i1235 = 0; _i1235 < _list1233.size; ++_i1235)
         {
-          _elem1214 = iprot.readString();
-          struct.partVals.add(_elem1214);
-=======
-        org.apache.thrift.protocol.TList _list1225 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-        struct.partVals = new java.util.ArrayList<java.lang.String>(_list1225.size);
-        @org.apache.thrift.annotation.Nullable java.lang.String _elem1226;
-        for (int _i1227 = 0; _i1227 < _list1225.size; ++_i1227)
-        {
-          _elem1226 = iprot.readString();
-          struct.partVals.add(_elem1226);
->>>>>>> External metastore: clean after rebase
+          _elem1234 = iprot.readString();
+          struct.partVals.add(_elem1234);
         }
       }
       struct.setPartValsIsSet(true);

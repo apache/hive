@@ -141,25 +141,14 @@ class WMFullResourcePlan
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->pools = array();
-<<<<<<< HEAD
-                        $_size938 = 0;
-                        $_etype941 = 0;
-                        $xfer += $input->readListBegin($_etype941, $_size938);
-                        for ($_i942 = 0; $_i942 < $_size938; ++$_i942) {
-                            $elem943 = null;
-                            $elem943 = new \metastore\WMPool();
-                            $xfer += $elem943->read($input);
-                            $this->pools []= $elem943;
-=======
-                        $_size940 = 0;
-                        $_etype943 = 0;
-                        $xfer += $input->readListBegin($_etype943, $_size940);
-                        for ($_i944 = 0; $_i944 < $_size940; ++$_i944) {
-                            $elem945 = null;
-                            $elem945 = new \metastore\WMPool();
-                            $xfer += $elem945->read($input);
-                            $this->pools []= $elem945;
->>>>>>> External metastore: clean after rebase
+                        $_size947 = 0;
+                        $_etype950 = 0;
+                        $xfer += $input->readListBegin($_etype950, $_size947);
+                        for ($_i951 = 0; $_i951 < $_size947; ++$_i951) {
+                            $elem952 = null;
+                            $elem952 = new \metastore\WMPool();
+                            $xfer += $elem952->read($input);
+                            $this->pools []= $elem952;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -169,25 +158,14 @@ class WMFullResourcePlan
                 case 3:
                     if ($ftype == TType::LST) {
                         $this->mappings = array();
-<<<<<<< HEAD
-                        $_size944 = 0;
-                        $_etype947 = 0;
-                        $xfer += $input->readListBegin($_etype947, $_size944);
-                        for ($_i948 = 0; $_i948 < $_size944; ++$_i948) {
-                            $elem949 = null;
-                            $elem949 = new \metastore\WMMapping();
-                            $xfer += $elem949->read($input);
-                            $this->mappings []= $elem949;
-=======
-                        $_size946 = 0;
-                        $_etype949 = 0;
-                        $xfer += $input->readListBegin($_etype949, $_size946);
-                        for ($_i950 = 0; $_i950 < $_size946; ++$_i950) {
-                            $elem951 = null;
-                            $elem951 = new \metastore\WMMapping();
-                            $xfer += $elem951->read($input);
-                            $this->mappings []= $elem951;
->>>>>>> External metastore: clean after rebase
+                        $_size953 = 0;
+                        $_etype956 = 0;
+                        $xfer += $input->readListBegin($_etype956, $_size953);
+                        for ($_i957 = 0; $_i957 < $_size953; ++$_i957) {
+                            $elem958 = null;
+                            $elem958 = new \metastore\WMMapping();
+                            $xfer += $elem958->read($input);
+                            $this->mappings []= $elem958;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -197,25 +175,14 @@ class WMFullResourcePlan
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->triggers = array();
-<<<<<<< HEAD
-                        $_size950 = 0;
-                        $_etype953 = 0;
-                        $xfer += $input->readListBegin($_etype953, $_size950);
-                        for ($_i954 = 0; $_i954 < $_size950; ++$_i954) {
-                            $elem955 = null;
-                            $elem955 = new \metastore\WMTrigger();
-                            $xfer += $elem955->read($input);
-                            $this->triggers []= $elem955;
-=======
-                        $_size952 = 0;
-                        $_etype955 = 0;
-                        $xfer += $input->readListBegin($_etype955, $_size952);
-                        for ($_i956 = 0; $_i956 < $_size952; ++$_i956) {
-                            $elem957 = null;
-                            $elem957 = new \metastore\WMTrigger();
-                            $xfer += $elem957->read($input);
-                            $this->triggers []= $elem957;
->>>>>>> External metastore: clean after rebase
+                        $_size959 = 0;
+                        $_etype962 = 0;
+                        $xfer += $input->readListBegin($_etype962, $_size959);
+                        for ($_i963 = 0; $_i963 < $_size959; ++$_i963) {
+                            $elem964 = null;
+                            $elem964 = new \metastore\WMTrigger();
+                            $xfer += $elem964->read($input);
+                            $this->triggers []= $elem964;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -225,25 +192,14 @@ class WMFullResourcePlan
                 case 5:
                     if ($ftype == TType::LST) {
                         $this->poolTriggers = array();
-<<<<<<< HEAD
-                        $_size956 = 0;
-                        $_etype959 = 0;
-                        $xfer += $input->readListBegin($_etype959, $_size956);
-                        for ($_i960 = 0; $_i960 < $_size956; ++$_i960) {
-                            $elem961 = null;
-                            $elem961 = new \metastore\WMPoolTrigger();
-                            $xfer += $elem961->read($input);
-                            $this->poolTriggers []= $elem961;
-=======
-                        $_size958 = 0;
-                        $_etype961 = 0;
-                        $xfer += $input->readListBegin($_etype961, $_size958);
-                        for ($_i962 = 0; $_i962 < $_size958; ++$_i962) {
-                            $elem963 = null;
-                            $elem963 = new \metastore\WMPoolTrigger();
-                            $xfer += $elem963->read($input);
-                            $this->poolTriggers []= $elem963;
->>>>>>> External metastore: clean after rebase
+                        $_size965 = 0;
+                        $_etype968 = 0;
+                        $xfer += $input->readListBegin($_etype968, $_size965);
+                        for ($_i969 = 0; $_i969 < $_size965; ++$_i969) {
+                            $elem970 = null;
+                            $elem970 = new \metastore\WMPoolTrigger();
+                            $xfer += $elem970->read($input);
+                            $this->poolTriggers []= $elem970;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -278,13 +234,8 @@ class WMFullResourcePlan
             }
             $xfer += $output->writeFieldBegin('pools', TType::LST, 2);
             $output->writeListBegin(TType::STRUCT, count($this->pools));
-<<<<<<< HEAD
-            foreach ($this->pools as $iter962) {
-                $xfer += $iter962->write($output);
-=======
-            foreach ($this->pools as $iter964) {
-                $xfer += $iter964->write($output);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->pools as $iter971) {
+                $xfer += $iter971->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -295,13 +246,8 @@ class WMFullResourcePlan
             }
             $xfer += $output->writeFieldBegin('mappings', TType::LST, 3);
             $output->writeListBegin(TType::STRUCT, count($this->mappings));
-<<<<<<< HEAD
-            foreach ($this->mappings as $iter963) {
-                $xfer += $iter963->write($output);
-=======
-            foreach ($this->mappings as $iter965) {
-                $xfer += $iter965->write($output);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->mappings as $iter972) {
+                $xfer += $iter972->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -312,13 +258,8 @@ class WMFullResourcePlan
             }
             $xfer += $output->writeFieldBegin('triggers', TType::LST, 4);
             $output->writeListBegin(TType::STRUCT, count($this->triggers));
-<<<<<<< HEAD
-            foreach ($this->triggers as $iter964) {
-                $xfer += $iter964->write($output);
-=======
-            foreach ($this->triggers as $iter966) {
-                $xfer += $iter966->write($output);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->triggers as $iter973) {
+                $xfer += $iter973->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -329,13 +270,8 @@ class WMFullResourcePlan
             }
             $xfer += $output->writeFieldBegin('poolTriggers', TType::LST, 5);
             $output->writeListBegin(TType::STRUCT, count($this->poolTriggers));
-<<<<<<< HEAD
-            foreach ($this->poolTriggers as $iter965) {
-                $xfer += $iter965->write($output);
-=======
-            foreach ($this->poolTriggers as $iter967) {
-                $xfer += $iter967->write($output);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->poolTriggers as $iter974) {
+                $xfer += $iter974->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

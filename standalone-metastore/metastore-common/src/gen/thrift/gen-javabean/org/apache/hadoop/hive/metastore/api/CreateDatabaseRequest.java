@@ -1253,15 +1253,15 @@ package org.apache.hadoop.hive.metastore.api;
           case 4: // PARAMETERS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map1202 = iprot.readMapBegin();
-                struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map1202.size);
-                @org.apache.thrift.annotation.Nullable java.lang.String _key1203;
-                @org.apache.thrift.annotation.Nullable java.lang.String _val1204;
-                for (int _i1205 = 0; _i1205 < _map1202.size; ++_i1205)
+                org.apache.thrift.protocol.TMap _map1210 = iprot.readMapBegin();
+                struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map1210.size);
+                @org.apache.thrift.annotation.Nullable java.lang.String _key1211;
+                @org.apache.thrift.annotation.Nullable java.lang.String _val1212;
+                for (int _i1213 = 0; _i1213 < _map1210.size; ++_i1213)
                 {
-                  _key1203 = iprot.readString();
-                  _val1204 = iprot.readString();
-                  struct.parameters.put(_key1203, _val1204);
+                  _key1211 = iprot.readString();
+                  _val1212 = iprot.readString();
+                  struct.parameters.put(_key1211, _val1212);
                 }
                 iprot.readMapEnd();
               }
@@ -1372,10 +1372,10 @@ package org.apache.hadoop.hive.metastore.api;
           oprot.writeFieldBegin(PARAMETERS_FIELD_DESC);
           {
             oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, struct.parameters.size()));
-            for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter1206 : struct.parameters.entrySet())
+            for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter1214 : struct.parameters.entrySet())
             {
-              oprot.writeString(_iter1206.getKey());
-              oprot.writeString(_iter1206.getValue());
+              oprot.writeString(_iter1214.getKey());
+              oprot.writeString(_iter1214.getValue());
             }
             oprot.writeMapEnd();
           }
@@ -1498,10 +1498,10 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetParameters()) {
         {
           oprot.writeI32(struct.parameters.size());
-          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter1207 : struct.parameters.entrySet())
+          for (java.util.Map.Entry<java.lang.String, java.lang.String> _iter1215 : struct.parameters.entrySet())
           {
-            oprot.writeString(_iter1207.getKey());
-            oprot.writeString(_iter1207.getValue());
+            oprot.writeString(_iter1215.getKey());
+            oprot.writeString(_iter1215.getValue());
           }
         }
       }
@@ -1547,15 +1547,15 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(2)) {
         {
-          org.apache.thrift.protocol.TMap _map1208 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
-          struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map1208.size);
-          @org.apache.thrift.annotation.Nullable java.lang.String _key1209;
-          @org.apache.thrift.annotation.Nullable java.lang.String _val1210;
-          for (int _i1211 = 0; _i1211 < _map1208.size; ++_i1211)
+          org.apache.thrift.protocol.TMap _map1216 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
+          struct.parameters = new java.util.HashMap<java.lang.String,java.lang.String>(2*_map1216.size);
+          @org.apache.thrift.annotation.Nullable java.lang.String _key1217;
+          @org.apache.thrift.annotation.Nullable java.lang.String _val1218;
+          for (int _i1219 = 0; _i1219 < _map1216.size; ++_i1219)
           {
-            _key1209 = iprot.readString();
-            _val1210 = iprot.readString();
-            struct.parameters.put(_key1209, _val1210);
+            _key1217 = iprot.readString();
+            _val1218 = iprot.readString();
+            struct.parameters.put(_key1217, _val1218);
           }
         }
         struct.setParametersIsSet(true);

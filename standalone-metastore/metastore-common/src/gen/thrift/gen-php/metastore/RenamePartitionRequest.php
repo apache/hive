@@ -150,23 +150,13 @@ class RenamePartitionRequest
                 case 4:
                     if ($ftype == TType::LST) {
                         $this->partVals = array();
-<<<<<<< HEAD
-                        $_size1064 = 0;
-                        $_etype1067 = 0;
-                        $xfer += $input->readListBegin($_etype1067, $_size1064);
-                        for ($_i1068 = 0; $_i1068 < $_size1064; ++$_i1068) {
-                            $elem1069 = null;
-                            $xfer += $input->readString($elem1069);
-                            $this->partVals []= $elem1069;
-=======
-                        $_size1075 = 0;
-                        $_etype1078 = 0;
-                        $xfer += $input->readListBegin($_etype1078, $_size1075);
-                        for ($_i1079 = 0; $_i1079 < $_size1075; ++$_i1079) {
-                            $elem1080 = null;
-                            $xfer += $input->readString($elem1080);
-                            $this->partVals []= $elem1080;
->>>>>>> External metastore: clean after rebase
+                        $_size1082 = 0;
+                        $_etype1085 = 0;
+                        $xfer += $input->readListBegin($_etype1085, $_size1082);
+                        for ($_i1086 = 0; $_i1086 < $_size1082; ++$_i1086) {
+                            $elem1087 = null;
+                            $xfer += $input->readString($elem1087);
+                            $this->partVals []= $elem1087;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -223,13 +213,8 @@ class RenamePartitionRequest
             }
             $xfer += $output->writeFieldBegin('partVals', TType::LST, 4);
             $output->writeListBegin(TType::STRING, count($this->partVals));
-<<<<<<< HEAD
-            foreach ($this->partVals as $iter1070) {
-                $xfer += $output->writeString($iter1070);
-=======
-            foreach ($this->partVals as $iter1081) {
-                $xfer += $output->writeString($iter1081);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->partVals as $iter1088) {
+                $xfer += $output->writeString($iter1088);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

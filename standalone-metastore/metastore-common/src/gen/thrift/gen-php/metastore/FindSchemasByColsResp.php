@@ -69,25 +69,14 @@ class FindSchemasByColsResp
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->schemaVersions = array();
-<<<<<<< HEAD
-                        $_size1001 = 0;
-                        $_etype1004 = 0;
-                        $xfer += $input->readListBegin($_etype1004, $_size1001);
-                        for ($_i1005 = 0; $_i1005 < $_size1001; ++$_i1005) {
-                            $elem1006 = null;
-                            $elem1006 = new \metastore\SchemaVersionDescriptor();
-                            $xfer += $elem1006->read($input);
-                            $this->schemaVersions []= $elem1006;
-=======
-                        $_size1003 = 0;
-                        $_etype1006 = 0;
-                        $xfer += $input->readListBegin($_etype1006, $_size1003);
-                        for ($_i1007 = 0; $_i1007 < $_size1003; ++$_i1007) {
-                            $elem1008 = null;
-                            $elem1008 = new \metastore\SchemaVersionDescriptor();
-                            $xfer += $elem1008->read($input);
-                            $this->schemaVersions []= $elem1008;
->>>>>>> External metastore: clean after rebase
+                        $_size1010 = 0;
+                        $_etype1013 = 0;
+                        $xfer += $input->readListBegin($_etype1013, $_size1010);
+                        for ($_i1014 = 0; $_i1014 < $_size1010; ++$_i1014) {
+                            $elem1015 = null;
+                            $elem1015 = new \metastore\SchemaVersionDescriptor();
+                            $xfer += $elem1015->read($input);
+                            $this->schemaVersions []= $elem1015;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -114,13 +103,8 @@ class FindSchemasByColsResp
             }
             $xfer += $output->writeFieldBegin('schemaVersions', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->schemaVersions));
-<<<<<<< HEAD
-            foreach ($this->schemaVersions as $iter1007) {
-                $xfer += $iter1007->write($output);
-=======
-            foreach ($this->schemaVersions as $iter1009) {
-                $xfer += $iter1009->write($output);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->schemaVersions as $iter1016) {
+                $xfer += $iter1016->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

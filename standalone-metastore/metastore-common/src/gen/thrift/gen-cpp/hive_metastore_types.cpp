@@ -19008,6 +19008,7 @@ void swap(GetPartitionsByNamesRequest &a, GetPartitionsByNamesRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 GetPartitionsByNamesRequest::GetPartitionsByNamesRequest(const GetPartitionsByNamesRequest& other714) {
   db_name = other714.db_name;
   tbl_name = other714.tbl_name;
@@ -19022,6 +19023,9 @@ GetPartitionsByNamesRequest::GetPartitionsByNamesRequest(const GetPartitionsByNa
   __isset = other714.__isset;
 }
 GetPartitionsByNamesRequest& GetPartitionsByNamesRequest::operator=(const GetPartitionsByNamesRequest& other715) {
+=======
+GetPartitionsByNamesRequest::GetPartitionsByNamesRequest(const GetPartitionsByNamesRequest& other715) {
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
   db_name = other715.db_name;
   tbl_name = other715.tbl_name;
   names = other715.names;
@@ -19043,6 +19047,8 @@ GetPartitionsByNamesRequest& GetPartitionsByNamesRequest::operator=(const GetPar
   processorIdentifier = other716.processorIdentifier;
   engine = other716.engine;
   validWriteIdList = other716.validWriteIdList;
+  getFileMetadata = other716.getFileMetadata;
+  id = other716.id;
   __isset = other716.__isset;
   return *this;
 }
@@ -30967,14 +30973,14 @@ uint32_t GetProjectionsSpec::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->fieldList.clear();
-            uint32_t _size1134;
-            ::apache::thrift::protocol::TType _etype1137;
-            xfer += iprot->readListBegin(_etype1137, _size1134);
-            this->fieldList.resize(_size1134);
-            uint32_t _i1138;
-            for (_i1138 = 0; _i1138 < _size1134; ++_i1138)
+            uint32_t _size1146;
+            ::apache::thrift::protocol::TType _etype1149;
+            xfer += iprot->readListBegin(_etype1149, _size1146);
+            this->fieldList.resize(_size1146);
+            uint32_t _i1150;
+            for (_i1150 = 0; _i1150 < _size1146; ++_i1150)
             {
-              xfer += iprot->readString(this->fieldList[_i1138]);
+              xfer += iprot->readString(this->fieldList[_i1150]);
             }
             xfer += iprot->readListEnd();
           }
@@ -31019,10 +31025,10 @@ uint32_t GetProjectionsSpec::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeFieldBegin("fieldList", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->fieldList.size()));
-    std::vector<std::string> ::const_iterator _iter1139;
-    for (_iter1139 = this->fieldList.begin(); _iter1139 != this->fieldList.end(); ++_iter1139)
+    std::vector<std::string> ::const_iterator _iter1151;
+    for (_iter1151 = this->fieldList.begin(); _iter1151 != this->fieldList.end(); ++_iter1151)
     {
-      xfer += oprot->writeString((*_iter1139));
+      xfer += oprot->writeString((*_iter1151));
     }
     xfer += oprot->writeListEnd();
   }
@@ -31049,17 +31055,17 @@ void swap(GetProjectionsSpec &a, GetProjectionsSpec &b) {
   swap(a.__isset, b.__isset);
 }
 
-GetProjectionsSpec::GetProjectionsSpec(const GetProjectionsSpec& other1140) {
-  fieldList = other1140.fieldList;
-  includeParamKeyPattern = other1140.includeParamKeyPattern;
-  excludeParamKeyPattern = other1140.excludeParamKeyPattern;
-  __isset = other1140.__isset;
+GetProjectionsSpec::GetProjectionsSpec(const GetProjectionsSpec& other1152) {
+  fieldList = other1152.fieldList;
+  includeParamKeyPattern = other1152.includeParamKeyPattern;
+  excludeParamKeyPattern = other1152.excludeParamKeyPattern;
+  __isset = other1152.__isset;
 }
-GetProjectionsSpec& GetProjectionsSpec::operator=(const GetProjectionsSpec& other1141) {
-  fieldList = other1141.fieldList;
-  includeParamKeyPattern = other1141.includeParamKeyPattern;
-  excludeParamKeyPattern = other1141.excludeParamKeyPattern;
-  __isset = other1141.__isset;
+GetProjectionsSpec& GetProjectionsSpec::operator=(const GetProjectionsSpec& other1153) {
+  fieldList = other1153.fieldList;
+  includeParamKeyPattern = other1153.includeParamKeyPattern;
+  excludeParamKeyPattern = other1153.excludeParamKeyPattern;
+  __isset = other1153.__isset;
   return *this;
 }
 void GetProjectionsSpec::printTo(std::ostream& out) const {
@@ -31205,6 +31211,7 @@ uint32_t GetTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->processorCapabilities.clear();
+<<<<<<< HEAD
             uint32_t _size1142;
             ::apache::thrift::protocol::TType _etype1145;
             xfer += iprot->readListBegin(_etype1145, _size1142);
@@ -31213,6 +31220,16 @@ uint32_t GetTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i1146 = 0; _i1146 < _size1142; ++_i1146)
             {
               xfer += iprot->readString(this->processorCapabilities[_i1146]);
+=======
+            uint32_t _size1154;
+            ::apache::thrift::protocol::TType _etype1157;
+            xfer += iprot->readListBegin(_etype1157, _size1154);
+            this->processorCapabilities.resize(_size1154);
+            uint32_t _i1158;
+            for (_i1158 = 0; _i1158 < _size1154; ++_i1158)
+            {
+              xfer += iprot->readString(this->processorCapabilities[_i1158]);
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -31298,10 +31315,17 @@ uint32_t GetTableRequest::write(::apache::thrift::protocol::TProtocol* oprot) co
     xfer += oprot->writeFieldBegin("processorCapabilities", ::apache::thrift::protocol::T_LIST, 8);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->processorCapabilities.size()));
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1147;
       for (_iter1147 = this->processorCapabilities.begin(); _iter1147 != this->processorCapabilities.end(); ++_iter1147)
       {
         xfer += oprot->writeString((*_iter1147));
+=======
+      std::vector<std::string> ::const_iterator _iter1159;
+      for (_iter1159 = this->processorCapabilities.begin(); _iter1159 != this->processorCapabilities.end(); ++_iter1159)
+      {
+        xfer += oprot->writeString((*_iter1159));
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
       }
       xfer += oprot->writeListEnd();
     }
@@ -31342,6 +31366,7 @@ void swap(GetTableRequest &a, GetTableRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 GetTableRequest::GetTableRequest(const GetTableRequest& other1148) {
   dbName = other1148.dbName;
   tblName = other1148.tblName;
@@ -31367,6 +31392,33 @@ GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other1149) {
   engine = other1149.engine;
   id = other1149.id;
   __isset = other1149.__isset;
+=======
+GetTableRequest::GetTableRequest(const GetTableRequest& other1160) {
+  dbName = other1160.dbName;
+  tblName = other1160.tblName;
+  capabilities = other1160.capabilities;
+  catName = other1160.catName;
+  validWriteIdList = other1160.validWriteIdList;
+  getColumnStats = other1160.getColumnStats;
+  processorCapabilities = other1160.processorCapabilities;
+  processorIdentifier = other1160.processorIdentifier;
+  engine = other1160.engine;
+  id = other1160.id;
+  __isset = other1160.__isset;
+}
+GetTableRequest& GetTableRequest::operator=(const GetTableRequest& other1161) {
+  dbName = other1161.dbName;
+  tblName = other1161.tblName;
+  capabilities = other1161.capabilities;
+  catName = other1161.catName;
+  validWriteIdList = other1161.validWriteIdList;
+  getColumnStats = other1161.getColumnStats;
+  processorCapabilities = other1161.processorCapabilities;
+  processorIdentifier = other1161.processorIdentifier;
+  engine = other1161.engine;
+  id = other1161.id;
+  __isset = other1161.__isset;
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
   return *this;
 }
 void GetTableRequest::printTo(std::ostream& out) const {
@@ -31483,6 +31535,7 @@ void swap(GetTableResult &a, GetTableResult &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 GetTableResult::GetTableResult(const GetTableResult& other1150) {
   table = other1150.table;
   isStatsCompliant = other1150.isStatsCompliant;
@@ -31492,6 +31545,17 @@ GetTableResult& GetTableResult::operator=(const GetTableResult& other1151) {
   table = other1151.table;
   isStatsCompliant = other1151.isStatsCompliant;
   __isset = other1151.__isset;
+=======
+GetTableResult::GetTableResult(const GetTableResult& other1162) {
+  table = other1162.table;
+  isStatsCompliant = other1162.isStatsCompliant;
+  __isset = other1162.__isset;
+}
+GetTableResult& GetTableResult::operator=(const GetTableResult& other1163) {
+  table = other1163.table;
+  isStatsCompliant = other1163.isStatsCompliant;
+  __isset = other1163.__isset;
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
   return *this;
 }
 void GetTableResult::printTo(std::ostream& out) const {
@@ -31581,6 +31645,7 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tblNames.clear();
+<<<<<<< HEAD
             uint32_t _size1152;
             ::apache::thrift::protocol::TType _etype1155;
             xfer += iprot->readListBegin(_etype1155, _size1152);
@@ -31589,6 +31654,16 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i1156 = 0; _i1156 < _size1152; ++_i1156)
             {
               xfer += iprot->readString(this->tblNames[_i1156]);
+=======
+            uint32_t _size1164;
+            ::apache::thrift::protocol::TType _etype1167;
+            xfer += iprot->readListBegin(_etype1167, _size1164);
+            this->tblNames.resize(_size1164);
+            uint32_t _i1168;
+            for (_i1168 = 0; _i1168 < _size1164; ++_i1168)
+            {
+              xfer += iprot->readString(this->tblNames[_i1168]);
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -31617,6 +31692,7 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->processorCapabilities.clear();
+<<<<<<< HEAD
             uint32_t _size1157;
             ::apache::thrift::protocol::TType _etype1160;
             xfer += iprot->readListBegin(_etype1160, _size1157);
@@ -31625,6 +31701,16 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i1161 = 0; _i1161 < _size1157; ++_i1161)
             {
               xfer += iprot->readString(this->processorCapabilities[_i1161]);
+=======
+            uint32_t _size1169;
+            ::apache::thrift::protocol::TType _etype1172;
+            xfer += iprot->readListBegin(_etype1172, _size1169);
+            this->processorCapabilities.resize(_size1169);
+            uint32_t _i1173;
+            for (_i1173 = 0; _i1173 < _size1169; ++_i1173)
+            {
+              xfer += iprot->readString(this->processorCapabilities[_i1173]);
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -31676,10 +31762,17 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeFieldBegin("tblNames", ::apache::thrift::protocol::T_LIST, 2);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->tblNames.size()));
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1162;
       for (_iter1162 = this->tblNames.begin(); _iter1162 != this->tblNames.end(); ++_iter1162)
       {
         xfer += oprot->writeString((*_iter1162));
+=======
+      std::vector<std::string> ::const_iterator _iter1174;
+      for (_iter1174 = this->tblNames.begin(); _iter1174 != this->tblNames.end(); ++_iter1174)
+      {
+        xfer += oprot->writeString((*_iter1174));
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
       }
       xfer += oprot->writeListEnd();
     }
@@ -31699,10 +31792,17 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeFieldBegin("processorCapabilities", ::apache::thrift::protocol::T_LIST, 5);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->processorCapabilities.size()));
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1163;
       for (_iter1163 = this->processorCapabilities.begin(); _iter1163 != this->processorCapabilities.end(); ++_iter1163)
       {
         xfer += oprot->writeString((*_iter1163));
+=======
+      std::vector<std::string> ::const_iterator _iter1175;
+      for (_iter1175 = this->processorCapabilities.begin(); _iter1175 != this->processorCapabilities.end(); ++_iter1175)
+      {
+        xfer += oprot->writeString((*_iter1175));
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
       }
       xfer += oprot->writeListEnd();
     }
@@ -31735,6 +31835,7 @@ void swap(GetTablesRequest &a, GetTablesRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 GetTablesRequest::GetTablesRequest(const GetTablesRequest& other1164) {
   dbName = other1164.dbName;
   tblNames = other1164.tblNames;
@@ -31754,6 +31855,27 @@ GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other1165)
   processorIdentifier = other1165.processorIdentifier;
   projectionSpec = other1165.projectionSpec;
   __isset = other1165.__isset;
+=======
+GetTablesRequest::GetTablesRequest(const GetTablesRequest& other1176) {
+  dbName = other1176.dbName;
+  tblNames = other1176.tblNames;
+  capabilities = other1176.capabilities;
+  catName = other1176.catName;
+  processorCapabilities = other1176.processorCapabilities;
+  processorIdentifier = other1176.processorIdentifier;
+  projectionSpec = other1176.projectionSpec;
+  __isset = other1176.__isset;
+}
+GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other1177) {
+  dbName = other1177.dbName;
+  tblNames = other1177.tblNames;
+  capabilities = other1177.capabilities;
+  catName = other1177.catName;
+  processorCapabilities = other1177.processorCapabilities;
+  processorIdentifier = other1177.processorIdentifier;
+  projectionSpec = other1177.projectionSpec;
+  __isset = other1177.__isset;
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
   return *this;
 }
 void GetTablesRequest::printTo(std::ostream& out) const {
@@ -31810,6 +31932,7 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->tables.clear();
+<<<<<<< HEAD
             uint32_t _size1166;
             ::apache::thrift::protocol::TType _etype1169;
             xfer += iprot->readListBegin(_etype1169, _size1166);
@@ -31818,6 +31941,16 @@ uint32_t GetTablesResult::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i1170 = 0; _i1170 < _size1166; ++_i1170)
             {
               xfer += this->tables[_i1170].read(iprot);
+=======
+            uint32_t _size1178;
+            ::apache::thrift::protocol::TType _etype1181;
+            xfer += iprot->readListBegin(_etype1181, _size1178);
+            this->tables.resize(_size1178);
+            uint32_t _i1182;
+            for (_i1182 = 0; _i1182 < _size1178; ++_i1182)
+            {
+              xfer += this->tables[_i1182].read(iprot);
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -31848,10 +31981,17 @@ uint32_t GetTablesResult::write(::apache::thrift::protocol::TProtocol* oprot) co
   xfer += oprot->writeFieldBegin("tables", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->tables.size()));
+<<<<<<< HEAD
     std::vector<Table> ::const_iterator _iter1171;
     for (_iter1171 = this->tables.begin(); _iter1171 != this->tables.end(); ++_iter1171)
     {
       xfer += (*_iter1171).write(oprot);
+=======
+    std::vector<Table> ::const_iterator _iter1183;
+    for (_iter1183 = this->tables.begin(); _iter1183 != this->tables.end(); ++_iter1183)
+    {
+      xfer += (*_iter1183).write(oprot);
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
     }
     xfer += oprot->writeListEnd();
   }
@@ -31867,11 +32007,19 @@ void swap(GetTablesResult &a, GetTablesResult &b) {
   swap(a.tables, b.tables);
 }
 
+<<<<<<< HEAD
 GetTablesResult::GetTablesResult(const GetTablesResult& other1172) {
   tables = other1172.tables;
 }
 GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other1173) {
   tables = other1173.tables;
+=======
+GetTablesResult::GetTablesResult(const GetTablesResult& other1184) {
+  tables = other1184.tables;
+}
+GetTablesResult& GetTablesResult::operator=(const GetTablesResult& other1185) {
+  tables = other1185.tables;
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
   return *this;
 }
 void GetTablesResult::printTo(std::ostream& out) const {
@@ -31992,6 +32140,7 @@ uint32_t GetTablesExtRequest::read(::apache::thrift::protocol::TProtocol* iprot)
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->processorCapabilities.clear();
+<<<<<<< HEAD
             uint32_t _size1174;
             ::apache::thrift::protocol::TType _etype1177;
             xfer += iprot->readListBegin(_etype1177, _size1174);
@@ -32000,6 +32149,16 @@ uint32_t GetTablesExtRequest::read(::apache::thrift::protocol::TProtocol* iprot)
             for (_i1178 = 0; _i1178 < _size1174; ++_i1178)
             {
               xfer += iprot->readString(this->processorCapabilities[_i1178]);
+=======
+            uint32_t _size1186;
+            ::apache::thrift::protocol::TType _etype1189;
+            xfer += iprot->readListBegin(_etype1189, _size1186);
+            this->processorCapabilities.resize(_size1186);
+            uint32_t _i1190;
+            for (_i1190 = 0; _i1190 < _size1186; ++_i1190)
+            {
+              xfer += iprot->readString(this->processorCapabilities[_i1190]);
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -32066,10 +32225,17 @@ uint32_t GetTablesExtRequest::write(::apache::thrift::protocol::TProtocol* oprot
     xfer += oprot->writeFieldBegin("processorCapabilities", ::apache::thrift::protocol::T_LIST, 6);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->processorCapabilities.size()));
+<<<<<<< HEAD
       std::vector<std::string> ::const_iterator _iter1179;
       for (_iter1179 = this->processorCapabilities.begin(); _iter1179 != this->processorCapabilities.end(); ++_iter1179)
       {
         xfer += oprot->writeString((*_iter1179));
+=======
+      std::vector<std::string> ::const_iterator _iter1191;
+      for (_iter1191 = this->processorCapabilities.begin(); _iter1191 != this->processorCapabilities.end(); ++_iter1191)
+      {
+        xfer += oprot->writeString((*_iter1191));
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
       }
       xfer += oprot->writeListEnd();
     }
@@ -32097,6 +32263,7 @@ void swap(GetTablesExtRequest &a, GetTablesExtRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
+<<<<<<< HEAD
 GetTablesExtRequest::GetTablesExtRequest(const GetTablesExtRequest& other1180) {
   catalog = other1180.catalog;
   database = other1180.database;
@@ -32116,6 +32283,27 @@ GetTablesExtRequest& GetTablesExtRequest::operator=(const GetTablesExtRequest& o
   processorCapabilities = other1181.processorCapabilities;
   processorIdentifier = other1181.processorIdentifier;
   __isset = other1181.__isset;
+=======
+GetTablesExtRequest::GetTablesExtRequest(const GetTablesExtRequest& other1192) {
+  catalog = other1192.catalog;
+  database = other1192.database;
+  tableNamePattern = other1192.tableNamePattern;
+  requestedFields = other1192.requestedFields;
+  limit = other1192.limit;
+  processorCapabilities = other1192.processorCapabilities;
+  processorIdentifier = other1192.processorIdentifier;
+  __isset = other1192.__isset;
+}
+GetTablesExtRequest& GetTablesExtRequest::operator=(const GetTablesExtRequest& other1193) {
+  catalog = other1193.catalog;
+  database = other1193.database;
+  tableNamePattern = other1193.tableNamePattern;
+  requestedFields = other1193.requestedFields;
+  limit = other1193.limit;
+  processorCapabilities = other1193.processorCapabilities;
+  processorIdentifier = other1193.processorIdentifier;
+  __isset = other1193.__isset;
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
   return *this;
 }
 void GetTablesExtRequest::printTo(std::ostream& out) const {
@@ -32203,6 +32391,7 @@ uint32_t ExtendedTableInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->requiredReadCapabilities.clear();
+<<<<<<< HEAD
             uint32_t _size1182;
             ::apache::thrift::protocol::TType _etype1185;
             xfer += iprot->readListBegin(_etype1185, _size1182);
@@ -32211,6 +32400,16 @@ uint32_t ExtendedTableInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i1186 = 0; _i1186 < _size1182; ++_i1186)
             {
               xfer += iprot->readString(this->requiredReadCapabilities[_i1186]);
+=======
+            uint32_t _size1194;
+            ::apache::thrift::protocol::TType _etype1197;
+            xfer += iprot->readListBegin(_etype1197, _size1194);
+            this->requiredReadCapabilities.resize(_size1194);
+            uint32_t _i1198;
+            for (_i1198 = 0; _i1198 < _size1194; ++_i1198)
+            {
+              xfer += iprot->readString(this->requiredReadCapabilities[_i1198]);
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -32223,6 +32422,7 @@ uint32_t ExtendedTableInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->requiredWriteCapabilities.clear();
+<<<<<<< HEAD
             uint32_t _size1187;
             ::apache::thrift::protocol::TType _etype1190;
             xfer += iprot->readListBegin(_etype1190, _size1187);
@@ -32231,6 +32431,16 @@ uint32_t ExtendedTableInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
             for (_i1191 = 0; _i1191 < _size1187; ++_i1191)
             {
               xfer += iprot->readString(this->requiredWriteCapabilities[_i1191]);
+=======
+            uint32_t _size1199;
+            ::apache::thrift::protocol::TType _etype1202;
+            xfer += iprot->readListBegin(_etype1202, _size1199);
+            this->requiredWriteCapabilities.resize(_size1199);
+            uint32_t _i1203;
+            for (_i1203 = 0; _i1203 < _size1199; ++_i1203)
+            {
+              xfer += iprot->readString(this->requiredWriteCapabilities[_i1203]);
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
             }
             xfer += iprot->readListEnd();
           }
@@ -32271,17 +32481,10 @@ uint32_t ExtendedTableInfo::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += oprot->writeFieldBegin("requiredReadCapabilities", ::apache::thrift::protocol::T_LIST, 3);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->requiredReadCapabilities.size()));
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1192;
-      for (_iter1192 = this->requiredReadCapabilities.begin(); _iter1192 != this->requiredReadCapabilities.end(); ++_iter1192)
+      std::vector<std::string> ::const_iterator _iter1204;
+      for (_iter1204 = this->requiredReadCapabilities.begin(); _iter1204 != this->requiredReadCapabilities.end(); ++_iter1204)
       {
-        xfer += oprot->writeString((*_iter1192));
-=======
-      std::vector<std::string> ::const_iterator _iter1196;
-      for (_iter1196 = this->requiredReadCapabilities.begin(); _iter1196 != this->requiredReadCapabilities.end(); ++_iter1196)
-      {
-        xfer += oprot->writeString((*_iter1196));
->>>>>>> External metastore: clean after rebase
+        xfer += oprot->writeString((*_iter1204));
       }
       xfer += oprot->writeListEnd();
     }
@@ -32291,17 +32494,10 @@ uint32_t ExtendedTableInfo::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += oprot->writeFieldBegin("requiredWriteCapabilities", ::apache::thrift::protocol::T_LIST, 4);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->requiredWriteCapabilities.size()));
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1193;
-      for (_iter1193 = this->requiredWriteCapabilities.begin(); _iter1193 != this->requiredWriteCapabilities.end(); ++_iter1193)
+      std::vector<std::string> ::const_iterator _iter1205;
+      for (_iter1205 = this->requiredWriteCapabilities.begin(); _iter1205 != this->requiredWriteCapabilities.end(); ++_iter1205)
       {
-        xfer += oprot->writeString((*_iter1193));
-=======
-      std::vector<std::string> ::const_iterator _iter1197;
-      for (_iter1197 = this->requiredWriteCapabilities.begin(); _iter1197 != this->requiredWriteCapabilities.end(); ++_iter1197)
-      {
-        xfer += oprot->writeString((*_iter1197));
->>>>>>> External metastore: clean after rebase
+        xfer += oprot->writeString((*_iter1205));
       }
       xfer += oprot->writeListEnd();
     }
@@ -32321,35 +32517,19 @@ void swap(ExtendedTableInfo &a, ExtendedTableInfo &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-ExtendedTableInfo::ExtendedTableInfo(const ExtendedTableInfo& other1194) {
-  tblName = other1194.tblName;
-  accessType = other1194.accessType;
-  requiredReadCapabilities = other1194.requiredReadCapabilities;
-  requiredWriteCapabilities = other1194.requiredWriteCapabilities;
-  __isset = other1194.__isset;
+ExtendedTableInfo::ExtendedTableInfo(const ExtendedTableInfo& other1206) {
+  tblName = other1206.tblName;
+  accessType = other1206.accessType;
+  requiredReadCapabilities = other1206.requiredReadCapabilities;
+  requiredWriteCapabilities = other1206.requiredWriteCapabilities;
+  __isset = other1206.__isset;
 }
-ExtendedTableInfo& ExtendedTableInfo::operator=(const ExtendedTableInfo& other1195) {
-  tblName = other1195.tblName;
-  accessType = other1195.accessType;
-  requiredReadCapabilities = other1195.requiredReadCapabilities;
-  requiredWriteCapabilities = other1195.requiredWriteCapabilities;
-  __isset = other1195.__isset;
-=======
-ExtendedTableInfo::ExtendedTableInfo(const ExtendedTableInfo& other1198) {
-  tblName = other1198.tblName;
-  accessType = other1198.accessType;
-  requiredReadCapabilities = other1198.requiredReadCapabilities;
-  requiredWriteCapabilities = other1198.requiredWriteCapabilities;
-  __isset = other1198.__isset;
-}
-ExtendedTableInfo& ExtendedTableInfo::operator=(const ExtendedTableInfo& other1199) {
-  tblName = other1199.tblName;
-  accessType = other1199.accessType;
-  requiredReadCapabilities = other1199.requiredReadCapabilities;
-  requiredWriteCapabilities = other1199.requiredWriteCapabilities;
-  __isset = other1199.__isset;
->>>>>>> External metastore: clean after rebase
+ExtendedTableInfo& ExtendedTableInfo::operator=(const ExtendedTableInfo& other1207) {
+  tblName = other1207.tblName;
+  accessType = other1207.accessType;
+  requiredReadCapabilities = other1207.requiredReadCapabilities;
+  requiredWriteCapabilities = other1207.requiredWriteCapabilities;
+  __isset = other1207.__isset;
   return *this;
 }
 void ExtendedTableInfo::printTo(std::ostream& out) const {
@@ -32434,25 +32614,14 @@ uint32_t GetDatabaseRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->processorCapabilities.clear();
-<<<<<<< HEAD
-            uint32_t _size1196;
-            ::apache::thrift::protocol::TType _etype1199;
-            xfer += iprot->readListBegin(_etype1199, _size1196);
-            this->processorCapabilities.resize(_size1196);
-            uint32_t _i1200;
-            for (_i1200 = 0; _i1200 < _size1196; ++_i1200)
+            uint32_t _size1208;
+            ::apache::thrift::protocol::TType _etype1211;
+            xfer += iprot->readListBegin(_etype1211, _size1208);
+            this->processorCapabilities.resize(_size1208);
+            uint32_t _i1212;
+            for (_i1212 = 0; _i1212 < _size1208; ++_i1212)
             {
-              xfer += iprot->readString(this->processorCapabilities[_i1200]);
-=======
-            uint32_t _size1200;
-            ::apache::thrift::protocol::TType _etype1203;
-            xfer += iprot->readListBegin(_etype1203, _size1200);
-            this->processorCapabilities.resize(_size1200);
-            uint32_t _i1204;
-            for (_i1204 = 0; _i1204 < _size1200; ++_i1204)
-            {
-              xfer += iprot->readString(this->processorCapabilities[_i1204]);
->>>>>>> External metastore: clean after rebase
+              xfer += iprot->readString(this->processorCapabilities[_i1212]);
             }
             xfer += iprot->readListEnd();
           }
@@ -32500,17 +32669,10 @@ uint32_t GetDatabaseRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("processorCapabilities", ::apache::thrift::protocol::T_LIST, 3);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->processorCapabilities.size()));
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1201;
-      for (_iter1201 = this->processorCapabilities.begin(); _iter1201 != this->processorCapabilities.end(); ++_iter1201)
+      std::vector<std::string> ::const_iterator _iter1213;
+      for (_iter1213 = this->processorCapabilities.begin(); _iter1213 != this->processorCapabilities.end(); ++_iter1213)
       {
-        xfer += oprot->writeString((*_iter1201));
-=======
-      std::vector<std::string> ::const_iterator _iter1205;
-      for (_iter1205 = this->processorCapabilities.begin(); _iter1205 != this->processorCapabilities.end(); ++_iter1205)
-      {
-        xfer += oprot->writeString((*_iter1205));
->>>>>>> External metastore: clean after rebase
+        xfer += oprot->writeString((*_iter1213));
       }
       xfer += oprot->writeListEnd();
     }
@@ -32535,35 +32697,19 @@ void swap(GetDatabaseRequest &a, GetDatabaseRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-GetDatabaseRequest::GetDatabaseRequest(const GetDatabaseRequest& other1202) {
-  name = other1202.name;
-  catalogName = other1202.catalogName;
-  processorCapabilities = other1202.processorCapabilities;
-  processorIdentifier = other1202.processorIdentifier;
-  __isset = other1202.__isset;
+GetDatabaseRequest::GetDatabaseRequest(const GetDatabaseRequest& other1214) {
+  name = other1214.name;
+  catalogName = other1214.catalogName;
+  processorCapabilities = other1214.processorCapabilities;
+  processorIdentifier = other1214.processorIdentifier;
+  __isset = other1214.__isset;
 }
-GetDatabaseRequest& GetDatabaseRequest::operator=(const GetDatabaseRequest& other1203) {
-  name = other1203.name;
-  catalogName = other1203.catalogName;
-  processorCapabilities = other1203.processorCapabilities;
-  processorIdentifier = other1203.processorIdentifier;
-  __isset = other1203.__isset;
-=======
-GetDatabaseRequest::GetDatabaseRequest(const GetDatabaseRequest& other1206) {
-  name = other1206.name;
-  catalogName = other1206.catalogName;
-  processorCapabilities = other1206.processorCapabilities;
-  processorIdentifier = other1206.processorIdentifier;
-  __isset = other1206.__isset;
-}
-GetDatabaseRequest& GetDatabaseRequest::operator=(const GetDatabaseRequest& other1207) {
-  name = other1207.name;
-  catalogName = other1207.catalogName;
-  processorCapabilities = other1207.processorCapabilities;
-  processorIdentifier = other1207.processorIdentifier;
-  __isset = other1207.__isset;
->>>>>>> External metastore: clean after rebase
+GetDatabaseRequest& GetDatabaseRequest::operator=(const GetDatabaseRequest& other1215) {
+  name = other1215.name;
+  catalogName = other1215.catalogName;
+  processorCapabilities = other1215.processorCapabilities;
+  processorIdentifier = other1215.processorIdentifier;
+  __isset = other1215.__isset;
   return *this;
 }
 void GetDatabaseRequest::printTo(std::ostream& out) const {
@@ -32674,23 +32820,13 @@ void swap(CmRecycleRequest &a, CmRecycleRequest &b) {
   swap(a.purge, b.purge);
 }
 
-<<<<<<< HEAD
-CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other1204) {
-  dataPath = other1204.dataPath;
-  purge = other1204.purge;
+CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other1216) {
+  dataPath = other1216.dataPath;
+  purge = other1216.purge;
 }
-CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other1205) {
-  dataPath = other1205.dataPath;
-  purge = other1205.purge;
-=======
-CmRecycleRequest::CmRecycleRequest(const CmRecycleRequest& other1208) {
-  dataPath = other1208.dataPath;
-  purge = other1208.purge;
-}
-CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other1209) {
-  dataPath = other1209.dataPath;
-  purge = other1209.purge;
->>>>>>> External metastore: clean after rebase
+CmRecycleRequest& CmRecycleRequest::operator=(const CmRecycleRequest& other1217) {
+  dataPath = other1217.dataPath;
+  purge = other1217.purge;
   return *this;
 }
 void CmRecycleRequest::printTo(std::ostream& out) const {
@@ -32756,19 +32892,11 @@ void swap(CmRecycleResponse &a, CmRecycleResponse &b) {
   (void) b;
 }
 
-<<<<<<< HEAD
-CmRecycleResponse::CmRecycleResponse(const CmRecycleResponse& other1206) {
-  (void) other1206;
+CmRecycleResponse::CmRecycleResponse(const CmRecycleResponse& other1218) {
+  (void) other1218;
 }
-CmRecycleResponse& CmRecycleResponse::operator=(const CmRecycleResponse& other1207) {
-  (void) other1207;
-=======
-CmRecycleResponse::CmRecycleResponse(const CmRecycleResponse& other1210) {
-  (void) other1210;
-}
-CmRecycleResponse& CmRecycleResponse::operator=(const CmRecycleResponse& other1211) {
-  (void) other1211;
->>>>>>> External metastore: clean after rebase
+CmRecycleResponse& CmRecycleResponse::operator=(const CmRecycleResponse& other1219) {
+  (void) other1219;
   return *this;
 }
 void CmRecycleResponse::printTo(std::ostream& out) const {
@@ -32942,39 +33070,21 @@ void swap(TableMeta &a, TableMeta &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-TableMeta::TableMeta(const TableMeta& other1208) {
-  dbName = other1208.dbName;
-  tableName = other1208.tableName;
-  tableType = other1208.tableType;
-  comments = other1208.comments;
-  catName = other1208.catName;
-  __isset = other1208.__isset;
+TableMeta::TableMeta(const TableMeta& other1220) {
+  dbName = other1220.dbName;
+  tableName = other1220.tableName;
+  tableType = other1220.tableType;
+  comments = other1220.comments;
+  catName = other1220.catName;
+  __isset = other1220.__isset;
 }
-TableMeta& TableMeta::operator=(const TableMeta& other1209) {
-  dbName = other1209.dbName;
-  tableName = other1209.tableName;
-  tableType = other1209.tableType;
-  comments = other1209.comments;
-  catName = other1209.catName;
-  __isset = other1209.__isset;
-=======
-TableMeta::TableMeta(const TableMeta& other1212) {
-  dbName = other1212.dbName;
-  tableName = other1212.tableName;
-  tableType = other1212.tableType;
-  comments = other1212.comments;
-  catName = other1212.catName;
-  __isset = other1212.__isset;
-}
-TableMeta& TableMeta::operator=(const TableMeta& other1213) {
-  dbName = other1213.dbName;
-  tableName = other1213.tableName;
-  tableType = other1213.tableType;
-  comments = other1213.comments;
-  catName = other1213.catName;
-  __isset = other1213.__isset;
->>>>>>> External metastore: clean after rebase
+TableMeta& TableMeta::operator=(const TableMeta& other1221) {
+  dbName = other1221.dbName;
+  tableName = other1221.tableName;
+  tableType = other1221.tableType;
+  comments = other1221.comments;
+  catName = other1221.catName;
+  __isset = other1221.__isset;
   return *this;
 }
 void TableMeta::printTo(std::ostream& out) const {
@@ -33079,6 +33189,7 @@ void swap(Materialization &a, Materialization &b) {
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Materialization::Materialization(const Materialization& other1210) {
   sourceTablesUpdateDeleteModified = other1210.sourceTablesUpdateDeleteModified;
   sourceTablesCompacted = other1210.sourceTablesCompacted;
@@ -33096,6 +33207,13 @@ Materialization& Materialization::operator=(const Materialization& other1215) {
   sourceTablesUpdateDeleteModified = other1215.sourceTablesUpdateDeleteModified;
 >>>>>>> External metastore: clean after rebase
 >>>>>>> External metastore: clean after rebase
+=======
+Materialization::Materialization(const Materialization& other1222) {
+  sourceTablesUpdateDeleteModified = other1222.sourceTablesUpdateDeleteModified;
+}
+Materialization& Materialization::operator=(const Materialization& other1223) {
+  sourceTablesUpdateDeleteModified = other1223.sourceTablesUpdateDeleteModified;
+>>>>>>> HIVE-24396: Build failure due to duplicate db definitions
   return *this;
 }
 void Materialization::printTo(std::ostream& out) const {
@@ -33173,15 +33291,9 @@ uint32_t WMResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-<<<<<<< HEAD
-          int32_t ecast1212;
-          xfer += iprot->readI32(ecast1212);
-          this->status = (WMResourcePlanStatus::type)ecast1212;
-=======
-          int32_t ecast1216;
-          xfer += iprot->readI32(ecast1216);
-          this->status = (WMResourcePlanStatus::type)ecast1216;
->>>>>>> External metastore: clean after rebase
+          int32_t ecast1224;
+          xfer += iprot->readI32(ecast1224);
+          this->status = (WMResourcePlanStatus::type)ecast1224;
           this->__isset.status = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -33269,39 +33381,21 @@ void swap(WMResourcePlan &a, WMResourcePlan &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMResourcePlan::WMResourcePlan(const WMResourcePlan& other1213) {
-  name = other1213.name;
-  status = other1213.status;
-  queryParallelism = other1213.queryParallelism;
-  defaultPoolPath = other1213.defaultPoolPath;
-  ns = other1213.ns;
-  __isset = other1213.__isset;
+WMResourcePlan::WMResourcePlan(const WMResourcePlan& other1225) {
+  name = other1225.name;
+  status = other1225.status;
+  queryParallelism = other1225.queryParallelism;
+  defaultPoolPath = other1225.defaultPoolPath;
+  ns = other1225.ns;
+  __isset = other1225.__isset;
 }
-WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other1214) {
-  name = other1214.name;
-  status = other1214.status;
-  queryParallelism = other1214.queryParallelism;
-  defaultPoolPath = other1214.defaultPoolPath;
-  ns = other1214.ns;
-  __isset = other1214.__isset;
-=======
-WMResourcePlan::WMResourcePlan(const WMResourcePlan& other1217) {
-  name = other1217.name;
-  status = other1217.status;
-  queryParallelism = other1217.queryParallelism;
-  defaultPoolPath = other1217.defaultPoolPath;
-  ns = other1217.ns;
-  __isset = other1217.__isset;
-}
-WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other1218) {
-  name = other1218.name;
-  status = other1218.status;
-  queryParallelism = other1218.queryParallelism;
-  defaultPoolPath = other1218.defaultPoolPath;
-  ns = other1218.ns;
-  __isset = other1218.__isset;
->>>>>>> External metastore: clean after rebase
+WMResourcePlan& WMResourcePlan::operator=(const WMResourcePlan& other1226) {
+  name = other1226.name;
+  status = other1226.status;
+  queryParallelism = other1226.queryParallelism;
+  defaultPoolPath = other1226.defaultPoolPath;
+  ns = other1226.ns;
+  __isset = other1226.__isset;
   return *this;
 }
 void WMResourcePlan::printTo(std::ostream& out) const {
@@ -33392,15 +33486,9 @@ uint32_t WMNullableResourcePlan::read(::apache::thrift::protocol::TProtocol* ipr
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-<<<<<<< HEAD
-          int32_t ecast1215;
-          xfer += iprot->readI32(ecast1215);
-          this->status = (WMResourcePlanStatus::type)ecast1215;
-=======
-          int32_t ecast1219;
-          xfer += iprot->readI32(ecast1219);
-          this->status = (WMResourcePlanStatus::type)ecast1219;
->>>>>>> External metastore: clean after rebase
+          int32_t ecast1227;
+          xfer += iprot->readI32(ecast1227);
+          this->status = (WMResourcePlanStatus::type)ecast1227;
           this->__isset.status = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -33515,47 +33603,25 @@ void swap(WMNullableResourcePlan &a, WMNullableResourcePlan &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMNullableResourcePlan::WMNullableResourcePlan(const WMNullableResourcePlan& other1216) {
-  name = other1216.name;
-  status = other1216.status;
-  queryParallelism = other1216.queryParallelism;
-  isSetQueryParallelism = other1216.isSetQueryParallelism;
-  defaultPoolPath = other1216.defaultPoolPath;
-  isSetDefaultPoolPath = other1216.isSetDefaultPoolPath;
-  ns = other1216.ns;
-  __isset = other1216.__isset;
+WMNullableResourcePlan::WMNullableResourcePlan(const WMNullableResourcePlan& other1228) {
+  name = other1228.name;
+  status = other1228.status;
+  queryParallelism = other1228.queryParallelism;
+  isSetQueryParallelism = other1228.isSetQueryParallelism;
+  defaultPoolPath = other1228.defaultPoolPath;
+  isSetDefaultPoolPath = other1228.isSetDefaultPoolPath;
+  ns = other1228.ns;
+  __isset = other1228.__isset;
 }
-WMNullableResourcePlan& WMNullableResourcePlan::operator=(const WMNullableResourcePlan& other1217) {
-  name = other1217.name;
-  status = other1217.status;
-  queryParallelism = other1217.queryParallelism;
-  isSetQueryParallelism = other1217.isSetQueryParallelism;
-  defaultPoolPath = other1217.defaultPoolPath;
-  isSetDefaultPoolPath = other1217.isSetDefaultPoolPath;
-  ns = other1217.ns;
-  __isset = other1217.__isset;
-=======
-WMNullableResourcePlan::WMNullableResourcePlan(const WMNullableResourcePlan& other1220) {
-  name = other1220.name;
-  status = other1220.status;
-  queryParallelism = other1220.queryParallelism;
-  isSetQueryParallelism = other1220.isSetQueryParallelism;
-  defaultPoolPath = other1220.defaultPoolPath;
-  isSetDefaultPoolPath = other1220.isSetDefaultPoolPath;
-  ns = other1220.ns;
-  __isset = other1220.__isset;
-}
-WMNullableResourcePlan& WMNullableResourcePlan::operator=(const WMNullableResourcePlan& other1221) {
-  name = other1221.name;
-  status = other1221.status;
-  queryParallelism = other1221.queryParallelism;
-  isSetQueryParallelism = other1221.isSetQueryParallelism;
-  defaultPoolPath = other1221.defaultPoolPath;
-  isSetDefaultPoolPath = other1221.isSetDefaultPoolPath;
-  ns = other1221.ns;
-  __isset = other1221.__isset;
->>>>>>> External metastore: clean after rebase
+WMNullableResourcePlan& WMNullableResourcePlan::operator=(const WMNullableResourcePlan& other1229) {
+  name = other1229.name;
+  status = other1229.status;
+  queryParallelism = other1229.queryParallelism;
+  isSetQueryParallelism = other1229.isSetQueryParallelism;
+  defaultPoolPath = other1229.defaultPoolPath;
+  isSetDefaultPoolPath = other1229.isSetDefaultPoolPath;
+  ns = other1229.ns;
+  __isset = other1229.__isset;
   return *this;
 }
 void WMNullableResourcePlan::printTo(std::ostream& out) const {
@@ -33746,43 +33812,23 @@ void swap(WMPool &a, WMPool &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMPool::WMPool(const WMPool& other1218) {
-  resourcePlanName = other1218.resourcePlanName;
-  poolPath = other1218.poolPath;
-  allocFraction = other1218.allocFraction;
-  queryParallelism = other1218.queryParallelism;
-  schedulingPolicy = other1218.schedulingPolicy;
-  ns = other1218.ns;
-  __isset = other1218.__isset;
+WMPool::WMPool(const WMPool& other1230) {
+  resourcePlanName = other1230.resourcePlanName;
+  poolPath = other1230.poolPath;
+  allocFraction = other1230.allocFraction;
+  queryParallelism = other1230.queryParallelism;
+  schedulingPolicy = other1230.schedulingPolicy;
+  ns = other1230.ns;
+  __isset = other1230.__isset;
 }
-WMPool& WMPool::operator=(const WMPool& other1219) {
-  resourcePlanName = other1219.resourcePlanName;
-  poolPath = other1219.poolPath;
-  allocFraction = other1219.allocFraction;
-  queryParallelism = other1219.queryParallelism;
-  schedulingPolicy = other1219.schedulingPolicy;
-  ns = other1219.ns;
-  __isset = other1219.__isset;
-=======
-WMPool::WMPool(const WMPool& other1222) {
-  resourcePlanName = other1222.resourcePlanName;
-  poolPath = other1222.poolPath;
-  allocFraction = other1222.allocFraction;
-  queryParallelism = other1222.queryParallelism;
-  schedulingPolicy = other1222.schedulingPolicy;
-  ns = other1222.ns;
-  __isset = other1222.__isset;
-}
-WMPool& WMPool::operator=(const WMPool& other1223) {
-  resourcePlanName = other1223.resourcePlanName;
-  poolPath = other1223.poolPath;
-  allocFraction = other1223.allocFraction;
-  queryParallelism = other1223.queryParallelism;
-  schedulingPolicy = other1223.schedulingPolicy;
-  ns = other1223.ns;
-  __isset = other1223.__isset;
->>>>>>> External metastore: clean after rebase
+WMPool& WMPool::operator=(const WMPool& other1231) {
+  resourcePlanName = other1231.resourcePlanName;
+  poolPath = other1231.poolPath;
+  allocFraction = other1231.allocFraction;
+  queryParallelism = other1231.queryParallelism;
+  schedulingPolicy = other1231.schedulingPolicy;
+  ns = other1231.ns;
+  __isset = other1231.__isset;
   return *this;
 }
 void WMPool::printTo(std::ostream& out) const {
@@ -33991,47 +34037,25 @@ void swap(WMNullablePool &a, WMNullablePool &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMNullablePool::WMNullablePool(const WMNullablePool& other1220) {
-  resourcePlanName = other1220.resourcePlanName;
-  poolPath = other1220.poolPath;
-  allocFraction = other1220.allocFraction;
-  queryParallelism = other1220.queryParallelism;
-  schedulingPolicy = other1220.schedulingPolicy;
-  isSetSchedulingPolicy = other1220.isSetSchedulingPolicy;
-  ns = other1220.ns;
-  __isset = other1220.__isset;
+WMNullablePool::WMNullablePool(const WMNullablePool& other1232) {
+  resourcePlanName = other1232.resourcePlanName;
+  poolPath = other1232.poolPath;
+  allocFraction = other1232.allocFraction;
+  queryParallelism = other1232.queryParallelism;
+  schedulingPolicy = other1232.schedulingPolicy;
+  isSetSchedulingPolicy = other1232.isSetSchedulingPolicy;
+  ns = other1232.ns;
+  __isset = other1232.__isset;
 }
-WMNullablePool& WMNullablePool::operator=(const WMNullablePool& other1221) {
-  resourcePlanName = other1221.resourcePlanName;
-  poolPath = other1221.poolPath;
-  allocFraction = other1221.allocFraction;
-  queryParallelism = other1221.queryParallelism;
-  schedulingPolicy = other1221.schedulingPolicy;
-  isSetSchedulingPolicy = other1221.isSetSchedulingPolicy;
-  ns = other1221.ns;
-  __isset = other1221.__isset;
-=======
-WMNullablePool::WMNullablePool(const WMNullablePool& other1224) {
-  resourcePlanName = other1224.resourcePlanName;
-  poolPath = other1224.poolPath;
-  allocFraction = other1224.allocFraction;
-  queryParallelism = other1224.queryParallelism;
-  schedulingPolicy = other1224.schedulingPolicy;
-  isSetSchedulingPolicy = other1224.isSetSchedulingPolicy;
-  ns = other1224.ns;
-  __isset = other1224.__isset;
-}
-WMNullablePool& WMNullablePool::operator=(const WMNullablePool& other1225) {
-  resourcePlanName = other1225.resourcePlanName;
-  poolPath = other1225.poolPath;
-  allocFraction = other1225.allocFraction;
-  queryParallelism = other1225.queryParallelism;
-  schedulingPolicy = other1225.schedulingPolicy;
-  isSetSchedulingPolicy = other1225.isSetSchedulingPolicy;
-  ns = other1225.ns;
-  __isset = other1225.__isset;
->>>>>>> External metastore: clean after rebase
+WMNullablePool& WMNullablePool::operator=(const WMNullablePool& other1233) {
+  resourcePlanName = other1233.resourcePlanName;
+  poolPath = other1233.poolPath;
+  allocFraction = other1233.allocFraction;
+  queryParallelism = other1233.queryParallelism;
+  schedulingPolicy = other1233.schedulingPolicy;
+  isSetSchedulingPolicy = other1233.isSetSchedulingPolicy;
+  ns = other1233.ns;
+  __isset = other1233.__isset;
   return *this;
 }
 void WMNullablePool::printTo(std::ostream& out) const {
@@ -34222,43 +34246,23 @@ void swap(WMTrigger &a, WMTrigger &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMTrigger::WMTrigger(const WMTrigger& other1222) {
-  resourcePlanName = other1222.resourcePlanName;
-  triggerName = other1222.triggerName;
-  triggerExpression = other1222.triggerExpression;
-  actionExpression = other1222.actionExpression;
-  isInUnmanaged = other1222.isInUnmanaged;
-  ns = other1222.ns;
-  __isset = other1222.__isset;
+WMTrigger::WMTrigger(const WMTrigger& other1234) {
+  resourcePlanName = other1234.resourcePlanName;
+  triggerName = other1234.triggerName;
+  triggerExpression = other1234.triggerExpression;
+  actionExpression = other1234.actionExpression;
+  isInUnmanaged = other1234.isInUnmanaged;
+  ns = other1234.ns;
+  __isset = other1234.__isset;
 }
-WMTrigger& WMTrigger::operator=(const WMTrigger& other1223) {
-  resourcePlanName = other1223.resourcePlanName;
-  triggerName = other1223.triggerName;
-  triggerExpression = other1223.triggerExpression;
-  actionExpression = other1223.actionExpression;
-  isInUnmanaged = other1223.isInUnmanaged;
-  ns = other1223.ns;
-  __isset = other1223.__isset;
-=======
-WMTrigger::WMTrigger(const WMTrigger& other1226) {
-  resourcePlanName = other1226.resourcePlanName;
-  triggerName = other1226.triggerName;
-  triggerExpression = other1226.triggerExpression;
-  actionExpression = other1226.actionExpression;
-  isInUnmanaged = other1226.isInUnmanaged;
-  ns = other1226.ns;
-  __isset = other1226.__isset;
-}
-WMTrigger& WMTrigger::operator=(const WMTrigger& other1227) {
-  resourcePlanName = other1227.resourcePlanName;
-  triggerName = other1227.triggerName;
-  triggerExpression = other1227.triggerExpression;
-  actionExpression = other1227.actionExpression;
-  isInUnmanaged = other1227.isInUnmanaged;
-  ns = other1227.ns;
-  __isset = other1227.__isset;
->>>>>>> External metastore: clean after rebase
+WMTrigger& WMTrigger::operator=(const WMTrigger& other1235) {
+  resourcePlanName = other1235.resourcePlanName;
+  triggerName = other1235.triggerName;
+  triggerExpression = other1235.triggerExpression;
+  actionExpression = other1235.actionExpression;
+  isInUnmanaged = other1235.isInUnmanaged;
+  ns = other1235.ns;
+  __isset = other1235.__isset;
   return *this;
 }
 void WMTrigger::printTo(std::ostream& out) const {
@@ -34449,43 +34453,23 @@ void swap(WMMapping &a, WMMapping &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMMapping::WMMapping(const WMMapping& other1224) {
-  resourcePlanName = other1224.resourcePlanName;
-  entityType = other1224.entityType;
-  entityName = other1224.entityName;
-  poolPath = other1224.poolPath;
-  ordering = other1224.ordering;
-  ns = other1224.ns;
-  __isset = other1224.__isset;
+WMMapping::WMMapping(const WMMapping& other1236) {
+  resourcePlanName = other1236.resourcePlanName;
+  entityType = other1236.entityType;
+  entityName = other1236.entityName;
+  poolPath = other1236.poolPath;
+  ordering = other1236.ordering;
+  ns = other1236.ns;
+  __isset = other1236.__isset;
 }
-WMMapping& WMMapping::operator=(const WMMapping& other1225) {
-  resourcePlanName = other1225.resourcePlanName;
-  entityType = other1225.entityType;
-  entityName = other1225.entityName;
-  poolPath = other1225.poolPath;
-  ordering = other1225.ordering;
-  ns = other1225.ns;
-  __isset = other1225.__isset;
-=======
-WMMapping::WMMapping(const WMMapping& other1228) {
-  resourcePlanName = other1228.resourcePlanName;
-  entityType = other1228.entityType;
-  entityName = other1228.entityName;
-  poolPath = other1228.poolPath;
-  ordering = other1228.ordering;
-  ns = other1228.ns;
-  __isset = other1228.__isset;
-}
-WMMapping& WMMapping::operator=(const WMMapping& other1229) {
-  resourcePlanName = other1229.resourcePlanName;
-  entityType = other1229.entityType;
-  entityName = other1229.entityName;
-  poolPath = other1229.poolPath;
-  ordering = other1229.ordering;
-  ns = other1229.ns;
-  __isset = other1229.__isset;
->>>>>>> External metastore: clean after rebase
+WMMapping& WMMapping::operator=(const WMMapping& other1237) {
+  resourcePlanName = other1237.resourcePlanName;
+  entityType = other1237.entityType;
+  entityName = other1237.entityName;
+  poolPath = other1237.poolPath;
+  ordering = other1237.ordering;
+  ns = other1237.ns;
+  __isset = other1237.__isset;
   return *this;
 }
 void WMMapping::printTo(std::ostream& out) const {
@@ -34618,31 +34602,17 @@ void swap(WMPoolTrigger &a, WMPoolTrigger &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other1226) {
-  pool = other1226.pool;
-  trigger = other1226.trigger;
-  ns = other1226.ns;
-  __isset = other1226.__isset;
+WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other1238) {
+  pool = other1238.pool;
+  trigger = other1238.trigger;
+  ns = other1238.ns;
+  __isset = other1238.__isset;
 }
-WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other1227) {
-  pool = other1227.pool;
-  trigger = other1227.trigger;
-  ns = other1227.ns;
-  __isset = other1227.__isset;
-=======
-WMPoolTrigger::WMPoolTrigger(const WMPoolTrigger& other1230) {
-  pool = other1230.pool;
-  trigger = other1230.trigger;
-  ns = other1230.ns;
-  __isset = other1230.__isset;
-}
-WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other1231) {
-  pool = other1231.pool;
-  trigger = other1231.trigger;
-  ns = other1231.ns;
-  __isset = other1231.__isset;
->>>>>>> External metastore: clean after rebase
+WMPoolTrigger& WMPoolTrigger::operator=(const WMPoolTrigger& other1239) {
+  pool = other1239.pool;
+  trigger = other1239.trigger;
+  ns = other1239.ns;
+  __isset = other1239.__isset;
   return *this;
 }
 void WMPoolTrigger::printTo(std::ostream& out) const {
@@ -34723,25 +34693,14 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->pools.clear();
-<<<<<<< HEAD
-            uint32_t _size1228;
-            ::apache::thrift::protocol::TType _etype1231;
-            xfer += iprot->readListBegin(_etype1231, _size1228);
-            this->pools.resize(_size1228);
-            uint32_t _i1232;
-            for (_i1232 = 0; _i1232 < _size1228; ++_i1232)
+            uint32_t _size1240;
+            ::apache::thrift::protocol::TType _etype1243;
+            xfer += iprot->readListBegin(_etype1243, _size1240);
+            this->pools.resize(_size1240);
+            uint32_t _i1244;
+            for (_i1244 = 0; _i1244 < _size1240; ++_i1244)
             {
-              xfer += this->pools[_i1232].read(iprot);
-=======
-            uint32_t _size1232;
-            ::apache::thrift::protocol::TType _etype1235;
-            xfer += iprot->readListBegin(_etype1235, _size1232);
-            this->pools.resize(_size1232);
-            uint32_t _i1236;
-            for (_i1236 = 0; _i1236 < _size1232; ++_i1236)
-            {
-              xfer += this->pools[_i1236].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->pools[_i1244].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -34754,25 +34713,14 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->mappings.clear();
-<<<<<<< HEAD
-            uint32_t _size1233;
-            ::apache::thrift::protocol::TType _etype1236;
-            xfer += iprot->readListBegin(_etype1236, _size1233);
-            this->mappings.resize(_size1233);
-            uint32_t _i1237;
-            for (_i1237 = 0; _i1237 < _size1233; ++_i1237)
+            uint32_t _size1245;
+            ::apache::thrift::protocol::TType _etype1248;
+            xfer += iprot->readListBegin(_etype1248, _size1245);
+            this->mappings.resize(_size1245);
+            uint32_t _i1249;
+            for (_i1249 = 0; _i1249 < _size1245; ++_i1249)
             {
-              xfer += this->mappings[_i1237].read(iprot);
-=======
-            uint32_t _size1237;
-            ::apache::thrift::protocol::TType _etype1240;
-            xfer += iprot->readListBegin(_etype1240, _size1237);
-            this->mappings.resize(_size1237);
-            uint32_t _i1241;
-            for (_i1241 = 0; _i1241 < _size1237; ++_i1241)
-            {
-              xfer += this->mappings[_i1241].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->mappings[_i1249].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -34785,25 +34733,14 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->triggers.clear();
-<<<<<<< HEAD
-            uint32_t _size1238;
-            ::apache::thrift::protocol::TType _etype1241;
-            xfer += iprot->readListBegin(_etype1241, _size1238);
-            this->triggers.resize(_size1238);
-            uint32_t _i1242;
-            for (_i1242 = 0; _i1242 < _size1238; ++_i1242)
+            uint32_t _size1250;
+            ::apache::thrift::protocol::TType _etype1253;
+            xfer += iprot->readListBegin(_etype1253, _size1250);
+            this->triggers.resize(_size1250);
+            uint32_t _i1254;
+            for (_i1254 = 0; _i1254 < _size1250; ++_i1254)
             {
-              xfer += this->triggers[_i1242].read(iprot);
-=======
-            uint32_t _size1242;
-            ::apache::thrift::protocol::TType _etype1245;
-            xfer += iprot->readListBegin(_etype1245, _size1242);
-            this->triggers.resize(_size1242);
-            uint32_t _i1246;
-            for (_i1246 = 0; _i1246 < _size1242; ++_i1246)
-            {
-              xfer += this->triggers[_i1246].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->triggers[_i1254].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -34816,25 +34753,14 @@ uint32_t WMFullResourcePlan::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->poolTriggers.clear();
-<<<<<<< HEAD
-            uint32_t _size1243;
-            ::apache::thrift::protocol::TType _etype1246;
-            xfer += iprot->readListBegin(_etype1246, _size1243);
-            this->poolTriggers.resize(_size1243);
-            uint32_t _i1247;
-            for (_i1247 = 0; _i1247 < _size1243; ++_i1247)
+            uint32_t _size1255;
+            ::apache::thrift::protocol::TType _etype1258;
+            xfer += iprot->readListBegin(_etype1258, _size1255);
+            this->poolTriggers.resize(_size1255);
+            uint32_t _i1259;
+            for (_i1259 = 0; _i1259 < _size1255; ++_i1259)
             {
-              xfer += this->poolTriggers[_i1247].read(iprot);
-=======
-            uint32_t _size1247;
-            ::apache::thrift::protocol::TType _etype1250;
-            xfer += iprot->readListBegin(_etype1250, _size1247);
-            this->poolTriggers.resize(_size1247);
-            uint32_t _i1251;
-            for (_i1251 = 0; _i1251 < _size1247; ++_i1251)
-            {
-              xfer += this->poolTriggers[_i1251].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->poolTriggers[_i1259].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -34871,17 +34797,10 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
   xfer += oprot->writeFieldBegin("pools", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->pools.size()));
-<<<<<<< HEAD
-    std::vector<WMPool> ::const_iterator _iter1248;
-    for (_iter1248 = this->pools.begin(); _iter1248 != this->pools.end(); ++_iter1248)
+    std::vector<WMPool> ::const_iterator _iter1260;
+    for (_iter1260 = this->pools.begin(); _iter1260 != this->pools.end(); ++_iter1260)
     {
-      xfer += (*_iter1248).write(oprot);
-=======
-    std::vector<WMPool> ::const_iterator _iter1252;
-    for (_iter1252 = this->pools.begin(); _iter1252 != this->pools.end(); ++_iter1252)
-    {
-      xfer += (*_iter1252).write(oprot);
->>>>>>> External metastore: clean after rebase
+      xfer += (*_iter1260).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -34891,17 +34810,10 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("mappings", ::apache::thrift::protocol::T_LIST, 3);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->mappings.size()));
-<<<<<<< HEAD
-      std::vector<WMMapping> ::const_iterator _iter1249;
-      for (_iter1249 = this->mappings.begin(); _iter1249 != this->mappings.end(); ++_iter1249)
+      std::vector<WMMapping> ::const_iterator _iter1261;
+      for (_iter1261 = this->mappings.begin(); _iter1261 != this->mappings.end(); ++_iter1261)
       {
-        xfer += (*_iter1249).write(oprot);
-=======
-      std::vector<WMMapping> ::const_iterator _iter1253;
-      for (_iter1253 = this->mappings.begin(); _iter1253 != this->mappings.end(); ++_iter1253)
-      {
-        xfer += (*_iter1253).write(oprot);
->>>>>>> External metastore: clean after rebase
+        xfer += (*_iter1261).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -34911,17 +34823,10 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("triggers", ::apache::thrift::protocol::T_LIST, 4);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->triggers.size()));
-<<<<<<< HEAD
-      std::vector<WMTrigger> ::const_iterator _iter1250;
-      for (_iter1250 = this->triggers.begin(); _iter1250 != this->triggers.end(); ++_iter1250)
+      std::vector<WMTrigger> ::const_iterator _iter1262;
+      for (_iter1262 = this->triggers.begin(); _iter1262 != this->triggers.end(); ++_iter1262)
       {
-        xfer += (*_iter1250).write(oprot);
-=======
-      std::vector<WMTrigger> ::const_iterator _iter1254;
-      for (_iter1254 = this->triggers.begin(); _iter1254 != this->triggers.end(); ++_iter1254)
-      {
-        xfer += (*_iter1254).write(oprot);
->>>>>>> External metastore: clean after rebase
+        xfer += (*_iter1262).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -34931,17 +34836,10 @@ uint32_t WMFullResourcePlan::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("poolTriggers", ::apache::thrift::protocol::T_LIST, 5);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->poolTriggers.size()));
-<<<<<<< HEAD
-      std::vector<WMPoolTrigger> ::const_iterator _iter1251;
-      for (_iter1251 = this->poolTriggers.begin(); _iter1251 != this->poolTriggers.end(); ++_iter1251)
+      std::vector<WMPoolTrigger> ::const_iterator _iter1263;
+      for (_iter1263 = this->poolTriggers.begin(); _iter1263 != this->poolTriggers.end(); ++_iter1263)
       {
-        xfer += (*_iter1251).write(oprot);
-=======
-      std::vector<WMPoolTrigger> ::const_iterator _iter1255;
-      for (_iter1255 = this->poolTriggers.begin(); _iter1255 != this->poolTriggers.end(); ++_iter1255)
-      {
-        xfer += (*_iter1255).write(oprot);
->>>>>>> External metastore: clean after rebase
+        xfer += (*_iter1263).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -34962,39 +34860,21 @@ void swap(WMFullResourcePlan &a, WMFullResourcePlan &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMFullResourcePlan::WMFullResourcePlan(const WMFullResourcePlan& other1252) {
-  plan = other1252.plan;
-  pools = other1252.pools;
-  mappings = other1252.mappings;
-  triggers = other1252.triggers;
-  poolTriggers = other1252.poolTriggers;
-  __isset = other1252.__isset;
+WMFullResourcePlan::WMFullResourcePlan(const WMFullResourcePlan& other1264) {
+  plan = other1264.plan;
+  pools = other1264.pools;
+  mappings = other1264.mappings;
+  triggers = other1264.triggers;
+  poolTriggers = other1264.poolTriggers;
+  __isset = other1264.__isset;
 }
-WMFullResourcePlan& WMFullResourcePlan::operator=(const WMFullResourcePlan& other1253) {
-  plan = other1253.plan;
-  pools = other1253.pools;
-  mappings = other1253.mappings;
-  triggers = other1253.triggers;
-  poolTriggers = other1253.poolTriggers;
-  __isset = other1253.__isset;
-=======
-WMFullResourcePlan::WMFullResourcePlan(const WMFullResourcePlan& other1256) {
-  plan = other1256.plan;
-  pools = other1256.pools;
-  mappings = other1256.mappings;
-  triggers = other1256.triggers;
-  poolTriggers = other1256.poolTriggers;
-  __isset = other1256.__isset;
-}
-WMFullResourcePlan& WMFullResourcePlan::operator=(const WMFullResourcePlan& other1257) {
-  plan = other1257.plan;
-  pools = other1257.pools;
-  mappings = other1257.mappings;
-  triggers = other1257.triggers;
-  poolTriggers = other1257.poolTriggers;
-  __isset = other1257.__isset;
->>>>>>> External metastore: clean after rebase
+WMFullResourcePlan& WMFullResourcePlan::operator=(const WMFullResourcePlan& other1265) {
+  plan = other1265.plan;
+  pools = other1265.pools;
+  mappings = other1265.mappings;
+  triggers = other1265.triggers;
+  poolTriggers = other1265.poolTriggers;
+  __isset = other1265.__isset;
   return *this;
 }
 void WMFullResourcePlan::printTo(std::ostream& out) const {
@@ -35105,27 +34985,15 @@ void swap(WMCreateResourcePlanRequest &a, WMCreateResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other1254) {
-  resourcePlan = other1254.resourcePlan;
-  copyFrom = other1254.copyFrom;
-  __isset = other1254.__isset;
+WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other1266) {
+  resourcePlan = other1266.resourcePlan;
+  copyFrom = other1266.copyFrom;
+  __isset = other1266.__isset;
 }
-WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCreateResourcePlanRequest& other1255) {
-  resourcePlan = other1255.resourcePlan;
-  copyFrom = other1255.copyFrom;
-  __isset = other1255.__isset;
-=======
-WMCreateResourcePlanRequest::WMCreateResourcePlanRequest(const WMCreateResourcePlanRequest& other1258) {
-  resourcePlan = other1258.resourcePlan;
-  copyFrom = other1258.copyFrom;
-  __isset = other1258.__isset;
-}
-WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCreateResourcePlanRequest& other1259) {
-  resourcePlan = other1259.resourcePlan;
-  copyFrom = other1259.copyFrom;
-  __isset = other1259.__isset;
->>>>>>> External metastore: clean after rebase
+WMCreateResourcePlanRequest& WMCreateResourcePlanRequest::operator=(const WMCreateResourcePlanRequest& other1267) {
+  resourcePlan = other1267.resourcePlan;
+  copyFrom = other1267.copyFrom;
+  __isset = other1267.__isset;
   return *this;
 }
 void WMCreateResourcePlanRequest::printTo(std::ostream& out) const {
@@ -35191,19 +35059,11 @@ void swap(WMCreateResourcePlanResponse &a, WMCreateResourcePlanResponse &b) {
   (void) b;
 }
 
-<<<<<<< HEAD
-WMCreateResourcePlanResponse::WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse& other1256) {
-  (void) other1256;
+WMCreateResourcePlanResponse::WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse& other1268) {
+  (void) other1268;
 }
-WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCreateResourcePlanResponse& other1257) {
-  (void) other1257;
-=======
-WMCreateResourcePlanResponse::WMCreateResourcePlanResponse(const WMCreateResourcePlanResponse& other1260) {
-  (void) other1260;
-}
-WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCreateResourcePlanResponse& other1261) {
-  (void) other1261;
->>>>>>> External metastore: clean after rebase
+WMCreateResourcePlanResponse& WMCreateResourcePlanResponse::operator=(const WMCreateResourcePlanResponse& other1269) {
+  (void) other1269;
   return *this;
 }
 void WMCreateResourcePlanResponse::printTo(std::ostream& out) const {
@@ -35290,23 +35150,13 @@ void swap(WMGetActiveResourcePlanRequest &a, WMGetActiveResourcePlanRequest &b) 
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMGetActiveResourcePlanRequest::WMGetActiveResourcePlanRequest(const WMGetActiveResourcePlanRequest& other1258) {
-  ns = other1258.ns;
-  __isset = other1258.__isset;
+WMGetActiveResourcePlanRequest::WMGetActiveResourcePlanRequest(const WMGetActiveResourcePlanRequest& other1270) {
+  ns = other1270.ns;
+  __isset = other1270.__isset;
 }
-WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const WMGetActiveResourcePlanRequest& other1259) {
-  ns = other1259.ns;
-  __isset = other1259.__isset;
-=======
-WMGetActiveResourcePlanRequest::WMGetActiveResourcePlanRequest(const WMGetActiveResourcePlanRequest& other1262) {
-  ns = other1262.ns;
-  __isset = other1262.__isset;
-}
-WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const WMGetActiveResourcePlanRequest& other1263) {
-  ns = other1263.ns;
-  __isset = other1263.__isset;
->>>>>>> External metastore: clean after rebase
+WMGetActiveResourcePlanRequest& WMGetActiveResourcePlanRequest::operator=(const WMGetActiveResourcePlanRequest& other1271) {
+  ns = other1271.ns;
+  __isset = other1271.__isset;
   return *this;
 }
 void WMGetActiveResourcePlanRequest::printTo(std::ostream& out) const {
@@ -35394,23 +35244,13 @@ void swap(WMGetActiveResourcePlanResponse &a, WMGetActiveResourcePlanResponse &b
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActiveResourcePlanResponse& other1260) {
-  resourcePlan = other1260.resourcePlan;
-  __isset = other1260.__isset;
+WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActiveResourcePlanResponse& other1272) {
+  resourcePlan = other1272.resourcePlan;
+  __isset = other1272.__isset;
 }
-WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(const WMGetActiveResourcePlanResponse& other1261) {
-  resourcePlan = other1261.resourcePlan;
-  __isset = other1261.__isset;
-=======
-WMGetActiveResourcePlanResponse::WMGetActiveResourcePlanResponse(const WMGetActiveResourcePlanResponse& other1264) {
-  resourcePlan = other1264.resourcePlan;
-  __isset = other1264.__isset;
-}
-WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(const WMGetActiveResourcePlanResponse& other1265) {
-  resourcePlan = other1265.resourcePlan;
-  __isset = other1265.__isset;
->>>>>>> External metastore: clean after rebase
+WMGetActiveResourcePlanResponse& WMGetActiveResourcePlanResponse::operator=(const WMGetActiveResourcePlanResponse& other1273) {
+  resourcePlan = other1273.resourcePlan;
+  __isset = other1273.__isset;
   return *this;
 }
 void WMGetActiveResourcePlanResponse::printTo(std::ostream& out) const {
@@ -35517,27 +35357,15 @@ void swap(WMGetResourcePlanRequest &a, WMGetResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanRequest& other1262) {
-  resourcePlanName = other1262.resourcePlanName;
-  ns = other1262.ns;
-  __isset = other1262.__isset;
+WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanRequest& other1274) {
+  resourcePlanName = other1274.resourcePlanName;
+  ns = other1274.ns;
+  __isset = other1274.__isset;
 }
-WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourcePlanRequest& other1263) {
-  resourcePlanName = other1263.resourcePlanName;
-  ns = other1263.ns;
-  __isset = other1263.__isset;
-=======
-WMGetResourcePlanRequest::WMGetResourcePlanRequest(const WMGetResourcePlanRequest& other1266) {
-  resourcePlanName = other1266.resourcePlanName;
-  ns = other1266.ns;
-  __isset = other1266.__isset;
-}
-WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourcePlanRequest& other1267) {
-  resourcePlanName = other1267.resourcePlanName;
-  ns = other1267.ns;
-  __isset = other1267.__isset;
->>>>>>> External metastore: clean after rebase
+WMGetResourcePlanRequest& WMGetResourcePlanRequest::operator=(const WMGetResourcePlanRequest& other1275) {
+  resourcePlanName = other1275.resourcePlanName;
+  ns = other1275.ns;
+  __isset = other1275.__isset;
   return *this;
 }
 void WMGetResourcePlanRequest::printTo(std::ostream& out) const {
@@ -35626,23 +35454,13 @@ void swap(WMGetResourcePlanResponse &a, WMGetResourcePlanResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResponse& other1264) {
-  resourcePlan = other1264.resourcePlan;
-  __isset = other1264.__isset;
+WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResponse& other1276) {
+  resourcePlan = other1276.resourcePlan;
+  __isset = other1276.__isset;
 }
-WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResourcePlanResponse& other1265) {
-  resourcePlan = other1265.resourcePlan;
-  __isset = other1265.__isset;
-=======
-WMGetResourcePlanResponse::WMGetResourcePlanResponse(const WMGetResourcePlanResponse& other1268) {
-  resourcePlan = other1268.resourcePlan;
-  __isset = other1268.__isset;
-}
-WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResourcePlanResponse& other1269) {
-  resourcePlan = other1269.resourcePlan;
-  __isset = other1269.__isset;
->>>>>>> External metastore: clean after rebase
+WMGetResourcePlanResponse& WMGetResourcePlanResponse::operator=(const WMGetResourcePlanResponse& other1277) {
+  resourcePlan = other1277.resourcePlan;
+  __isset = other1277.__isset;
   return *this;
 }
 void WMGetResourcePlanResponse::printTo(std::ostream& out) const {
@@ -35730,23 +35548,13 @@ void swap(WMGetAllResourcePlanRequest &a, WMGetAllResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMGetAllResourcePlanRequest::WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest& other1266) {
-  ns = other1266.ns;
-  __isset = other1266.__isset;
+WMGetAllResourcePlanRequest::WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest& other1278) {
+  ns = other1278.ns;
+  __isset = other1278.__isset;
 }
-WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetAllResourcePlanRequest& other1267) {
-  ns = other1267.ns;
-  __isset = other1267.__isset;
-=======
-WMGetAllResourcePlanRequest::WMGetAllResourcePlanRequest(const WMGetAllResourcePlanRequest& other1270) {
-  ns = other1270.ns;
-  __isset = other1270.__isset;
-}
-WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetAllResourcePlanRequest& other1271) {
-  ns = other1271.ns;
-  __isset = other1271.__isset;
->>>>>>> External metastore: clean after rebase
+WMGetAllResourcePlanRequest& WMGetAllResourcePlanRequest::operator=(const WMGetAllResourcePlanRequest& other1279) {
+  ns = other1279.ns;
+  __isset = other1279.__isset;
   return *this;
 }
 void WMGetAllResourcePlanRequest::printTo(std::ostream& out) const {
@@ -35797,25 +35605,14 @@ uint32_t WMGetAllResourcePlanResponse::read(::apache::thrift::protocol::TProtoco
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->resourcePlans.clear();
-<<<<<<< HEAD
-            uint32_t _size1268;
-            ::apache::thrift::protocol::TType _etype1271;
-            xfer += iprot->readListBegin(_etype1271, _size1268);
-            this->resourcePlans.resize(_size1268);
-            uint32_t _i1272;
-            for (_i1272 = 0; _i1272 < _size1268; ++_i1272)
+            uint32_t _size1280;
+            ::apache::thrift::protocol::TType _etype1283;
+            xfer += iprot->readListBegin(_etype1283, _size1280);
+            this->resourcePlans.resize(_size1280);
+            uint32_t _i1284;
+            for (_i1284 = 0; _i1284 < _size1280; ++_i1284)
             {
-              xfer += this->resourcePlans[_i1272].read(iprot);
-=======
-            uint32_t _size1272;
-            ::apache::thrift::protocol::TType _etype1275;
-            xfer += iprot->readListBegin(_etype1275, _size1272);
-            this->resourcePlans.resize(_size1272);
-            uint32_t _i1276;
-            for (_i1276 = 0; _i1276 < _size1272; ++_i1276)
-            {
-              xfer += this->resourcePlans[_i1276].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->resourcePlans[_i1284].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -35845,17 +35642,10 @@ uint32_t WMGetAllResourcePlanResponse::write(::apache::thrift::protocol::TProtoc
     xfer += oprot->writeFieldBegin("resourcePlans", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->resourcePlans.size()));
-<<<<<<< HEAD
-      std::vector<WMResourcePlan> ::const_iterator _iter1273;
-      for (_iter1273 = this->resourcePlans.begin(); _iter1273 != this->resourcePlans.end(); ++_iter1273)
+      std::vector<WMResourcePlan> ::const_iterator _iter1285;
+      for (_iter1285 = this->resourcePlans.begin(); _iter1285 != this->resourcePlans.end(); ++_iter1285)
       {
-        xfer += (*_iter1273).write(oprot);
-=======
-      std::vector<WMResourcePlan> ::const_iterator _iter1277;
-      for (_iter1277 = this->resourcePlans.begin(); _iter1277 != this->resourcePlans.end(); ++_iter1277)
-      {
-        xfer += (*_iter1277).write(oprot);
->>>>>>> External metastore: clean after rebase
+        xfer += (*_iter1285).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -35872,23 +35662,13 @@ void swap(WMGetAllResourcePlanResponse &a, WMGetAllResourcePlanResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse& other1274) {
-  resourcePlans = other1274.resourcePlans;
-  __isset = other1274.__isset;
+WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse& other1286) {
+  resourcePlans = other1286.resourcePlans;
+  __isset = other1286.__isset;
 }
-WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGetAllResourcePlanResponse& other1275) {
-  resourcePlans = other1275.resourcePlans;
-  __isset = other1275.__isset;
-=======
-WMGetAllResourcePlanResponse::WMGetAllResourcePlanResponse(const WMGetAllResourcePlanResponse& other1278) {
-  resourcePlans = other1278.resourcePlans;
-  __isset = other1278.__isset;
-}
-WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGetAllResourcePlanResponse& other1279) {
-  resourcePlans = other1279.resourcePlans;
-  __isset = other1279.__isset;
->>>>>>> External metastore: clean after rebase
+WMGetAllResourcePlanResponse& WMGetAllResourcePlanResponse::operator=(const WMGetAllResourcePlanResponse& other1287) {
+  resourcePlans = other1287.resourcePlans;
+  __isset = other1287.__isset;
   return *this;
 }
 void WMGetAllResourcePlanResponse::printTo(std::ostream& out) const {
@@ -36071,43 +35851,23 @@ void swap(WMAlterResourcePlanRequest &a, WMAlterResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest& other1276) {
-  resourcePlanName = other1276.resourcePlanName;
-  resourcePlan = other1276.resourcePlan;
-  isEnableAndActivate = other1276.isEnableAndActivate;
-  isForceDeactivate = other1276.isForceDeactivate;
-  isReplace = other1276.isReplace;
-  ns = other1276.ns;
-  __isset = other1276.__isset;
+WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest& other1288) {
+  resourcePlanName = other1288.resourcePlanName;
+  resourcePlan = other1288.resourcePlan;
+  isEnableAndActivate = other1288.isEnableAndActivate;
+  isForceDeactivate = other1288.isForceDeactivate;
+  isReplace = other1288.isReplace;
+  ns = other1288.ns;
+  __isset = other1288.__isset;
 }
-WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterResourcePlanRequest& other1277) {
-  resourcePlanName = other1277.resourcePlanName;
-  resourcePlan = other1277.resourcePlan;
-  isEnableAndActivate = other1277.isEnableAndActivate;
-  isForceDeactivate = other1277.isForceDeactivate;
-  isReplace = other1277.isReplace;
-  ns = other1277.ns;
-  __isset = other1277.__isset;
-=======
-WMAlterResourcePlanRequest::WMAlterResourcePlanRequest(const WMAlterResourcePlanRequest& other1280) {
-  resourcePlanName = other1280.resourcePlanName;
-  resourcePlan = other1280.resourcePlan;
-  isEnableAndActivate = other1280.isEnableAndActivate;
-  isForceDeactivate = other1280.isForceDeactivate;
-  isReplace = other1280.isReplace;
-  ns = other1280.ns;
-  __isset = other1280.__isset;
-}
-WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterResourcePlanRequest& other1281) {
-  resourcePlanName = other1281.resourcePlanName;
-  resourcePlan = other1281.resourcePlan;
-  isEnableAndActivate = other1281.isEnableAndActivate;
-  isForceDeactivate = other1281.isForceDeactivate;
-  isReplace = other1281.isReplace;
-  ns = other1281.ns;
-  __isset = other1281.__isset;
->>>>>>> External metastore: clean after rebase
+WMAlterResourcePlanRequest& WMAlterResourcePlanRequest::operator=(const WMAlterResourcePlanRequest& other1289) {
+  resourcePlanName = other1289.resourcePlanName;
+  resourcePlan = other1289.resourcePlan;
+  isEnableAndActivate = other1289.isEnableAndActivate;
+  isForceDeactivate = other1289.isForceDeactivate;
+  isReplace = other1289.isReplace;
+  ns = other1289.ns;
+  __isset = other1289.__isset;
   return *this;
 }
 void WMAlterResourcePlanRequest::printTo(std::ostream& out) const {
@@ -36200,23 +35960,13 @@ void swap(WMAlterResourcePlanResponse &a, WMAlterResourcePlanResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse& other1278) {
-  fullResourcePlan = other1278.fullResourcePlan;
-  __isset = other1278.__isset;
+WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse& other1290) {
+  fullResourcePlan = other1290.fullResourcePlan;
+  __isset = other1290.__isset;
 }
-WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlterResourcePlanResponse& other1279) {
-  fullResourcePlan = other1279.fullResourcePlan;
-  __isset = other1279.__isset;
-=======
-WMAlterResourcePlanResponse::WMAlterResourcePlanResponse(const WMAlterResourcePlanResponse& other1282) {
-  fullResourcePlan = other1282.fullResourcePlan;
-  __isset = other1282.__isset;
-}
-WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlterResourcePlanResponse& other1283) {
-  fullResourcePlan = other1283.fullResourcePlan;
-  __isset = other1283.__isset;
->>>>>>> External metastore: clean after rebase
+WMAlterResourcePlanResponse& WMAlterResourcePlanResponse::operator=(const WMAlterResourcePlanResponse& other1291) {
+  fullResourcePlan = other1291.fullResourcePlan;
+  __isset = other1291.__isset;
   return *this;
 }
 void WMAlterResourcePlanResponse::printTo(std::ostream& out) const {
@@ -36323,27 +36073,15 @@ void swap(WMValidateResourcePlanRequest &a, WMValidateResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest& other1280) {
-  resourcePlanName = other1280.resourcePlanName;
-  ns = other1280.ns;
-  __isset = other1280.__isset;
+WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest& other1292) {
+  resourcePlanName = other1292.resourcePlanName;
+  ns = other1292.ns;
+  __isset = other1292.__isset;
 }
-WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WMValidateResourcePlanRequest& other1281) {
-  resourcePlanName = other1281.resourcePlanName;
-  ns = other1281.ns;
-  __isset = other1281.__isset;
-=======
-WMValidateResourcePlanRequest::WMValidateResourcePlanRequest(const WMValidateResourcePlanRequest& other1284) {
-  resourcePlanName = other1284.resourcePlanName;
-  ns = other1284.ns;
-  __isset = other1284.__isset;
-}
-WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WMValidateResourcePlanRequest& other1285) {
-  resourcePlanName = other1285.resourcePlanName;
-  ns = other1285.ns;
-  __isset = other1285.__isset;
->>>>>>> External metastore: clean after rebase
+WMValidateResourcePlanRequest& WMValidateResourcePlanRequest::operator=(const WMValidateResourcePlanRequest& other1293) {
+  resourcePlanName = other1293.resourcePlanName;
+  ns = other1293.ns;
+  __isset = other1293.__isset;
   return *this;
 }
 void WMValidateResourcePlanRequest::printTo(std::ostream& out) const {
@@ -36400,25 +36138,14 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->errors.clear();
-<<<<<<< HEAD
-            uint32_t _size1282;
-            ::apache::thrift::protocol::TType _etype1285;
-            xfer += iprot->readListBegin(_etype1285, _size1282);
-            this->errors.resize(_size1282);
-            uint32_t _i1286;
-            for (_i1286 = 0; _i1286 < _size1282; ++_i1286)
+            uint32_t _size1294;
+            ::apache::thrift::protocol::TType _etype1297;
+            xfer += iprot->readListBegin(_etype1297, _size1294);
+            this->errors.resize(_size1294);
+            uint32_t _i1298;
+            for (_i1298 = 0; _i1298 < _size1294; ++_i1298)
             {
-              xfer += iprot->readString(this->errors[_i1286]);
-=======
-            uint32_t _size1286;
-            ::apache::thrift::protocol::TType _etype1289;
-            xfer += iprot->readListBegin(_etype1289, _size1286);
-            this->errors.resize(_size1286);
-            uint32_t _i1290;
-            for (_i1290 = 0; _i1290 < _size1286; ++_i1290)
-            {
-              xfer += iprot->readString(this->errors[_i1290]);
->>>>>>> External metastore: clean after rebase
+              xfer += iprot->readString(this->errors[_i1298]);
             }
             xfer += iprot->readListEnd();
           }
@@ -36431,25 +36158,14 @@ uint32_t WMValidateResourcePlanResponse::read(::apache::thrift::protocol::TProto
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->warnings.clear();
-<<<<<<< HEAD
-            uint32_t _size1287;
-            ::apache::thrift::protocol::TType _etype1290;
-            xfer += iprot->readListBegin(_etype1290, _size1287);
-            this->warnings.resize(_size1287);
-            uint32_t _i1291;
-            for (_i1291 = 0; _i1291 < _size1287; ++_i1291)
+            uint32_t _size1299;
+            ::apache::thrift::protocol::TType _etype1302;
+            xfer += iprot->readListBegin(_etype1302, _size1299);
+            this->warnings.resize(_size1299);
+            uint32_t _i1303;
+            for (_i1303 = 0; _i1303 < _size1299; ++_i1303)
             {
-              xfer += iprot->readString(this->warnings[_i1291]);
-=======
-            uint32_t _size1291;
-            ::apache::thrift::protocol::TType _etype1294;
-            xfer += iprot->readListBegin(_etype1294, _size1291);
-            this->warnings.resize(_size1291);
-            uint32_t _i1295;
-            for (_i1295 = 0; _i1295 < _size1291; ++_i1295)
-            {
-              xfer += iprot->readString(this->warnings[_i1295]);
->>>>>>> External metastore: clean after rebase
+              xfer += iprot->readString(this->warnings[_i1303]);
             }
             xfer += iprot->readListEnd();
           }
@@ -36479,17 +36195,10 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
     xfer += oprot->writeFieldBegin("errors", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->errors.size()));
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1292;
-      for (_iter1292 = this->errors.begin(); _iter1292 != this->errors.end(); ++_iter1292)
+      std::vector<std::string> ::const_iterator _iter1304;
+      for (_iter1304 = this->errors.begin(); _iter1304 != this->errors.end(); ++_iter1304)
       {
-        xfer += oprot->writeString((*_iter1292));
-=======
-      std::vector<std::string> ::const_iterator _iter1296;
-      for (_iter1296 = this->errors.begin(); _iter1296 != this->errors.end(); ++_iter1296)
-      {
-        xfer += oprot->writeString((*_iter1296));
->>>>>>> External metastore: clean after rebase
+        xfer += oprot->writeString((*_iter1304));
       }
       xfer += oprot->writeListEnd();
     }
@@ -36499,17 +36208,10 @@ uint32_t WMValidateResourcePlanResponse::write(::apache::thrift::protocol::TProt
     xfer += oprot->writeFieldBegin("warnings", ::apache::thrift::protocol::T_LIST, 2);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->warnings.size()));
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1293;
-      for (_iter1293 = this->warnings.begin(); _iter1293 != this->warnings.end(); ++_iter1293)
+      std::vector<std::string> ::const_iterator _iter1305;
+      for (_iter1305 = this->warnings.begin(); _iter1305 != this->warnings.end(); ++_iter1305)
       {
-        xfer += oprot->writeString((*_iter1293));
-=======
-      std::vector<std::string> ::const_iterator _iter1297;
-      for (_iter1297 = this->warnings.begin(); _iter1297 != this->warnings.end(); ++_iter1297)
-      {
-        xfer += oprot->writeString((*_iter1297));
->>>>>>> External metastore: clean after rebase
+        xfer += oprot->writeString((*_iter1305));
       }
       xfer += oprot->writeListEnd();
     }
@@ -36527,27 +36229,15 @@ void swap(WMValidateResourcePlanResponse &a, WMValidateResourcePlanResponse &b) 
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMValidateResourcePlanResponse::WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse& other1294) {
-  errors = other1294.errors;
-  warnings = other1294.warnings;
-  __isset = other1294.__isset;
+WMValidateResourcePlanResponse::WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse& other1306) {
+  errors = other1306.errors;
+  warnings = other1306.warnings;
+  __isset = other1306.__isset;
 }
-WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const WMValidateResourcePlanResponse& other1295) {
-  errors = other1295.errors;
-  warnings = other1295.warnings;
-  __isset = other1295.__isset;
-=======
-WMValidateResourcePlanResponse::WMValidateResourcePlanResponse(const WMValidateResourcePlanResponse& other1298) {
-  errors = other1298.errors;
-  warnings = other1298.warnings;
-  __isset = other1298.__isset;
-}
-WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const WMValidateResourcePlanResponse& other1299) {
-  errors = other1299.errors;
-  warnings = other1299.warnings;
-  __isset = other1299.__isset;
->>>>>>> External metastore: clean after rebase
+WMValidateResourcePlanResponse& WMValidateResourcePlanResponse::operator=(const WMValidateResourcePlanResponse& other1307) {
+  errors = other1307.errors;
+  warnings = other1307.warnings;
+  __isset = other1307.__isset;
   return *this;
 }
 void WMValidateResourcePlanResponse::printTo(std::ostream& out) const {
@@ -36655,27 +36345,15 @@ void swap(WMDropResourcePlanRequest &a, WMDropResourcePlanRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanRequest& other1296) {
-  resourcePlanName = other1296.resourcePlanName;
-  ns = other1296.ns;
-  __isset = other1296.__isset;
+WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanRequest& other1308) {
+  resourcePlanName = other1308.resourcePlanName;
+  ns = other1308.ns;
+  __isset = other1308.__isset;
 }
-WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropResourcePlanRequest& other1297) {
-  resourcePlanName = other1297.resourcePlanName;
-  ns = other1297.ns;
-  __isset = other1297.__isset;
-=======
-WMDropResourcePlanRequest::WMDropResourcePlanRequest(const WMDropResourcePlanRequest& other1300) {
-  resourcePlanName = other1300.resourcePlanName;
-  ns = other1300.ns;
-  __isset = other1300.__isset;
-}
-WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropResourcePlanRequest& other1301) {
-  resourcePlanName = other1301.resourcePlanName;
-  ns = other1301.ns;
-  __isset = other1301.__isset;
->>>>>>> External metastore: clean after rebase
+WMDropResourcePlanRequest& WMDropResourcePlanRequest::operator=(const WMDropResourcePlanRequest& other1309) {
+  resourcePlanName = other1309.resourcePlanName;
+  ns = other1309.ns;
+  __isset = other1309.__isset;
   return *this;
 }
 void WMDropResourcePlanRequest::printTo(std::ostream& out) const {
@@ -36741,19 +36419,11 @@ void swap(WMDropResourcePlanResponse &a, WMDropResourcePlanResponse &b) {
   (void) b;
 }
 
-<<<<<<< HEAD
-WMDropResourcePlanResponse::WMDropResourcePlanResponse(const WMDropResourcePlanResponse& other1298) {
-  (void) other1298;
+WMDropResourcePlanResponse::WMDropResourcePlanResponse(const WMDropResourcePlanResponse& other1310) {
+  (void) other1310;
 }
-WMDropResourcePlanResponse& WMDropResourcePlanResponse::operator=(const WMDropResourcePlanResponse& other1299) {
-  (void) other1299;
-=======
-WMDropResourcePlanResponse::WMDropResourcePlanResponse(const WMDropResourcePlanResponse& other1302) {
-  (void) other1302;
-}
-WMDropResourcePlanResponse& WMDropResourcePlanResponse::operator=(const WMDropResourcePlanResponse& other1303) {
-  (void) other1303;
->>>>>>> External metastore: clean after rebase
+WMDropResourcePlanResponse& WMDropResourcePlanResponse::operator=(const WMDropResourcePlanResponse& other1311) {
+  (void) other1311;
   return *this;
 }
 void WMDropResourcePlanResponse::printTo(std::ostream& out) const {
@@ -36840,23 +36510,13 @@ void swap(WMCreateTriggerRequest &a, WMCreateTriggerRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& other1300) {
-  trigger = other1300.trigger;
-  __isset = other1300.__isset;
+WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& other1312) {
+  trigger = other1312.trigger;
+  __isset = other1312.__isset;
 }
-WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerRequest& other1301) {
-  trigger = other1301.trigger;
-  __isset = other1301.__isset;
-=======
-WMCreateTriggerRequest::WMCreateTriggerRequest(const WMCreateTriggerRequest& other1304) {
-  trigger = other1304.trigger;
-  __isset = other1304.__isset;
-}
-WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerRequest& other1305) {
-  trigger = other1305.trigger;
-  __isset = other1305.__isset;
->>>>>>> External metastore: clean after rebase
+WMCreateTriggerRequest& WMCreateTriggerRequest::operator=(const WMCreateTriggerRequest& other1313) {
+  trigger = other1313.trigger;
+  __isset = other1313.__isset;
   return *this;
 }
 void WMCreateTriggerRequest::printTo(std::ostream& out) const {
@@ -36921,19 +36581,11 @@ void swap(WMCreateTriggerResponse &a, WMCreateTriggerResponse &b) {
   (void) b;
 }
 
-<<<<<<< HEAD
-WMCreateTriggerResponse::WMCreateTriggerResponse(const WMCreateTriggerResponse& other1302) {
-  (void) other1302;
+WMCreateTriggerResponse::WMCreateTriggerResponse(const WMCreateTriggerResponse& other1314) {
+  (void) other1314;
 }
-WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTriggerResponse& other1303) {
-  (void) other1303;
-=======
-WMCreateTriggerResponse::WMCreateTriggerResponse(const WMCreateTriggerResponse& other1306) {
-  (void) other1306;
-}
-WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTriggerResponse& other1307) {
-  (void) other1307;
->>>>>>> External metastore: clean after rebase
+WMCreateTriggerResponse& WMCreateTriggerResponse::operator=(const WMCreateTriggerResponse& other1315) {
+  (void) other1315;
   return *this;
 }
 void WMCreateTriggerResponse::printTo(std::ostream& out) const {
@@ -37020,23 +36672,13 @@ void swap(WMAlterTriggerRequest &a, WMAlterTriggerRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1304) {
-  trigger = other1304.trigger;
-  __isset = other1304.__isset;
+WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1316) {
+  trigger = other1316.trigger;
+  __isset = other1316.__isset;
 }
-WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequest& other1305) {
-  trigger = other1305.trigger;
-  __isset = other1305.__isset;
-=======
-WMAlterTriggerRequest::WMAlterTriggerRequest(const WMAlterTriggerRequest& other1308) {
-  trigger = other1308.trigger;
-  __isset = other1308.__isset;
-}
-WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequest& other1309) {
-  trigger = other1309.trigger;
-  __isset = other1309.__isset;
->>>>>>> External metastore: clean after rebase
+WMAlterTriggerRequest& WMAlterTriggerRequest::operator=(const WMAlterTriggerRequest& other1317) {
+  trigger = other1317.trigger;
+  __isset = other1317.__isset;
   return *this;
 }
 void WMAlterTriggerRequest::printTo(std::ostream& out) const {
@@ -37101,19 +36743,11 @@ void swap(WMAlterTriggerResponse &a, WMAlterTriggerResponse &b) {
   (void) b;
 }
 
-<<<<<<< HEAD
-WMAlterTriggerResponse::WMAlterTriggerResponse(const WMAlterTriggerResponse& other1306) {
-  (void) other1306;
+WMAlterTriggerResponse::WMAlterTriggerResponse(const WMAlterTriggerResponse& other1318) {
+  (void) other1318;
 }
-WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerResponse& other1307) {
-  (void) other1307;
-=======
-WMAlterTriggerResponse::WMAlterTriggerResponse(const WMAlterTriggerResponse& other1310) {
-  (void) other1310;
-}
-WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerResponse& other1311) {
-  (void) other1311;
->>>>>>> External metastore: clean after rebase
+WMAlterTriggerResponse& WMAlterTriggerResponse::operator=(const WMAlterTriggerResponse& other1319) {
+  (void) other1319;
   return *this;
 }
 void WMAlterTriggerResponse::printTo(std::ostream& out) const {
@@ -37238,31 +36872,17 @@ void swap(WMDropTriggerRequest &a, WMDropTriggerRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMDropTriggerRequest::WMDropTriggerRequest(const WMDropTriggerRequest& other1308) {
-  resourcePlanName = other1308.resourcePlanName;
-  triggerName = other1308.triggerName;
-  ns = other1308.ns;
-  __isset = other1308.__isset;
+WMDropTriggerRequest::WMDropTriggerRequest(const WMDropTriggerRequest& other1320) {
+  resourcePlanName = other1320.resourcePlanName;
+  triggerName = other1320.triggerName;
+  ns = other1320.ns;
+  __isset = other1320.__isset;
 }
-WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest& other1309) {
-  resourcePlanName = other1309.resourcePlanName;
-  triggerName = other1309.triggerName;
-  ns = other1309.ns;
-  __isset = other1309.__isset;
-=======
-WMDropTriggerRequest::WMDropTriggerRequest(const WMDropTriggerRequest& other1312) {
-  resourcePlanName = other1312.resourcePlanName;
-  triggerName = other1312.triggerName;
-  ns = other1312.ns;
-  __isset = other1312.__isset;
-}
-WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest& other1313) {
-  resourcePlanName = other1313.resourcePlanName;
-  triggerName = other1313.triggerName;
-  ns = other1313.ns;
-  __isset = other1313.__isset;
->>>>>>> External metastore: clean after rebase
+WMDropTriggerRequest& WMDropTriggerRequest::operator=(const WMDropTriggerRequest& other1321) {
+  resourcePlanName = other1321.resourcePlanName;
+  triggerName = other1321.triggerName;
+  ns = other1321.ns;
+  __isset = other1321.__isset;
   return *this;
 }
 void WMDropTriggerRequest::printTo(std::ostream& out) const {
@@ -37329,19 +36949,11 @@ void swap(WMDropTriggerResponse &a, WMDropTriggerResponse &b) {
   (void) b;
 }
 
-<<<<<<< HEAD
-WMDropTriggerResponse::WMDropTriggerResponse(const WMDropTriggerResponse& other1310) {
-  (void) other1310;
+WMDropTriggerResponse::WMDropTriggerResponse(const WMDropTriggerResponse& other1322) {
+  (void) other1322;
 }
-WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerResponse& other1311) {
-  (void) other1311;
-=======
-WMDropTriggerResponse::WMDropTriggerResponse(const WMDropTriggerResponse& other1314) {
-  (void) other1314;
-}
-WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerResponse& other1315) {
-  (void) other1315;
->>>>>>> External metastore: clean after rebase
+WMDropTriggerResponse& WMDropTriggerResponse::operator=(const WMDropTriggerResponse& other1323) {
+  (void) other1323;
   return *this;
 }
 void WMDropTriggerResponse::printTo(std::ostream& out) const {
@@ -37447,27 +37059,15 @@ void swap(WMGetTriggersForResourePlanRequest &a, WMGetTriggersForResourePlanRequ
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMGetTriggersForResourePlanRequest& other1312) {
-  resourcePlanName = other1312.resourcePlanName;
-  ns = other1312.ns;
-  __isset = other1312.__isset;
+WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMGetTriggersForResourePlanRequest& other1324) {
+  resourcePlanName = other1324.resourcePlanName;
+  ns = other1324.ns;
+  __isset = other1324.__isset;
 }
-WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator=(const WMGetTriggersForResourePlanRequest& other1313) {
-  resourcePlanName = other1313.resourcePlanName;
-  ns = other1313.ns;
-  __isset = other1313.__isset;
-=======
-WMGetTriggersForResourePlanRequest::WMGetTriggersForResourePlanRequest(const WMGetTriggersForResourePlanRequest& other1316) {
-  resourcePlanName = other1316.resourcePlanName;
-  ns = other1316.ns;
-  __isset = other1316.__isset;
-}
-WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator=(const WMGetTriggersForResourePlanRequest& other1317) {
-  resourcePlanName = other1317.resourcePlanName;
-  ns = other1317.ns;
-  __isset = other1317.__isset;
->>>>>>> External metastore: clean after rebase
+WMGetTriggersForResourePlanRequest& WMGetTriggersForResourePlanRequest::operator=(const WMGetTriggersForResourePlanRequest& other1325) {
+  resourcePlanName = other1325.resourcePlanName;
+  ns = other1325.ns;
+  __isset = other1325.__isset;
   return *this;
 }
 void WMGetTriggersForResourePlanRequest::printTo(std::ostream& out) const {
@@ -37519,25 +37119,14 @@ uint32_t WMGetTriggersForResourePlanResponse::read(::apache::thrift::protocol::T
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->triggers.clear();
-<<<<<<< HEAD
-            uint32_t _size1314;
-            ::apache::thrift::protocol::TType _etype1317;
-            xfer += iprot->readListBegin(_etype1317, _size1314);
-            this->triggers.resize(_size1314);
-            uint32_t _i1318;
-            for (_i1318 = 0; _i1318 < _size1314; ++_i1318)
+            uint32_t _size1326;
+            ::apache::thrift::protocol::TType _etype1329;
+            xfer += iprot->readListBegin(_etype1329, _size1326);
+            this->triggers.resize(_size1326);
+            uint32_t _i1330;
+            for (_i1330 = 0; _i1330 < _size1326; ++_i1330)
             {
-              xfer += this->triggers[_i1318].read(iprot);
-=======
-            uint32_t _size1318;
-            ::apache::thrift::protocol::TType _etype1321;
-            xfer += iprot->readListBegin(_etype1321, _size1318);
-            this->triggers.resize(_size1318);
-            uint32_t _i1322;
-            for (_i1322 = 0; _i1322 < _size1318; ++_i1322)
-            {
-              xfer += this->triggers[_i1322].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->triggers[_i1330].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -37567,17 +37156,10 @@ uint32_t WMGetTriggersForResourePlanResponse::write(::apache::thrift::protocol::
     xfer += oprot->writeFieldBegin("triggers", ::apache::thrift::protocol::T_LIST, 1);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->triggers.size()));
-<<<<<<< HEAD
-      std::vector<WMTrigger> ::const_iterator _iter1319;
-      for (_iter1319 = this->triggers.begin(); _iter1319 != this->triggers.end(); ++_iter1319)
+      std::vector<WMTrigger> ::const_iterator _iter1331;
+      for (_iter1331 = this->triggers.begin(); _iter1331 != this->triggers.end(); ++_iter1331)
       {
-        xfer += (*_iter1319).write(oprot);
-=======
-      std::vector<WMTrigger> ::const_iterator _iter1323;
-      for (_iter1323 = this->triggers.begin(); _iter1323 != this->triggers.end(); ++_iter1323)
-      {
-        xfer += (*_iter1323).write(oprot);
->>>>>>> External metastore: clean after rebase
+        xfer += (*_iter1331).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -37594,23 +37176,13 @@ void swap(WMGetTriggersForResourePlanResponse &a, WMGetTriggersForResourePlanRes
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const WMGetTriggersForResourePlanResponse& other1320) {
-  triggers = other1320.triggers;
-  __isset = other1320.__isset;
+WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const WMGetTriggersForResourePlanResponse& other1332) {
+  triggers = other1332.triggers;
+  __isset = other1332.__isset;
 }
-WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operator=(const WMGetTriggersForResourePlanResponse& other1321) {
-  triggers = other1321.triggers;
-  __isset = other1321.__isset;
-=======
-WMGetTriggersForResourePlanResponse::WMGetTriggersForResourePlanResponse(const WMGetTriggersForResourePlanResponse& other1324) {
-  triggers = other1324.triggers;
-  __isset = other1324.__isset;
-}
-WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operator=(const WMGetTriggersForResourePlanResponse& other1325) {
-  triggers = other1325.triggers;
-  __isset = other1325.__isset;
->>>>>>> External metastore: clean after rebase
+WMGetTriggersForResourePlanResponse& WMGetTriggersForResourePlanResponse::operator=(const WMGetTriggersForResourePlanResponse& other1333) {
+  triggers = other1333.triggers;
+  __isset = other1333.__isset;
   return *this;
 }
 void WMGetTriggersForResourePlanResponse::printTo(std::ostream& out) const {
@@ -37698,23 +37270,13 @@ void swap(WMCreatePoolRequest &a, WMCreatePoolRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1322) {
-  pool = other1322.pool;
-  __isset = other1322.__isset;
+WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1334) {
+  pool = other1334.pool;
+  __isset = other1334.__isset;
 }
-WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& other1323) {
-  pool = other1323.pool;
-  __isset = other1323.__isset;
-=======
-WMCreatePoolRequest::WMCreatePoolRequest(const WMCreatePoolRequest& other1326) {
-  pool = other1326.pool;
-  __isset = other1326.__isset;
-}
-WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& other1327) {
-  pool = other1327.pool;
-  __isset = other1327.__isset;
->>>>>>> External metastore: clean after rebase
+WMCreatePoolRequest& WMCreatePoolRequest::operator=(const WMCreatePoolRequest& other1335) {
+  pool = other1335.pool;
+  __isset = other1335.__isset;
   return *this;
 }
 void WMCreatePoolRequest::printTo(std::ostream& out) const {
@@ -37779,19 +37341,11 @@ void swap(WMCreatePoolResponse &a, WMCreatePoolResponse &b) {
   (void) b;
 }
 
-<<<<<<< HEAD
-WMCreatePoolResponse::WMCreatePoolResponse(const WMCreatePoolResponse& other1324) {
-  (void) other1324;
+WMCreatePoolResponse::WMCreatePoolResponse(const WMCreatePoolResponse& other1336) {
+  (void) other1336;
 }
-WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse& other1325) {
-  (void) other1325;
-=======
-WMCreatePoolResponse::WMCreatePoolResponse(const WMCreatePoolResponse& other1328) {
-  (void) other1328;
-}
-WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse& other1329) {
-  (void) other1329;
->>>>>>> External metastore: clean after rebase
+WMCreatePoolResponse& WMCreatePoolResponse::operator=(const WMCreatePoolResponse& other1337) {
+  (void) other1337;
   return *this;
 }
 void WMCreatePoolResponse::printTo(std::ostream& out) const {
@@ -37897,27 +37451,15 @@ void swap(WMAlterPoolRequest &a, WMAlterPoolRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMAlterPoolRequest::WMAlterPoolRequest(const WMAlterPoolRequest& other1326) {
-  pool = other1326.pool;
-  poolPath = other1326.poolPath;
-  __isset = other1326.__isset;
+WMAlterPoolRequest::WMAlterPoolRequest(const WMAlterPoolRequest& other1338) {
+  pool = other1338.pool;
+  poolPath = other1338.poolPath;
+  __isset = other1338.__isset;
 }
-WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& other1327) {
-  pool = other1327.pool;
-  poolPath = other1327.poolPath;
-  __isset = other1327.__isset;
-=======
-WMAlterPoolRequest::WMAlterPoolRequest(const WMAlterPoolRequest& other1330) {
-  pool = other1330.pool;
-  poolPath = other1330.poolPath;
-  __isset = other1330.__isset;
-}
-WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& other1331) {
-  pool = other1331.pool;
-  poolPath = other1331.poolPath;
-  __isset = other1331.__isset;
->>>>>>> External metastore: clean after rebase
+WMAlterPoolRequest& WMAlterPoolRequest::operator=(const WMAlterPoolRequest& other1339) {
+  pool = other1339.pool;
+  poolPath = other1339.poolPath;
+  __isset = other1339.__isset;
   return *this;
 }
 void WMAlterPoolRequest::printTo(std::ostream& out) const {
@@ -37983,19 +37525,11 @@ void swap(WMAlterPoolResponse &a, WMAlterPoolResponse &b) {
   (void) b;
 }
 
-<<<<<<< HEAD
-WMAlterPoolResponse::WMAlterPoolResponse(const WMAlterPoolResponse& other1328) {
-  (void) other1328;
+WMAlterPoolResponse::WMAlterPoolResponse(const WMAlterPoolResponse& other1340) {
+  (void) other1340;
 }
-WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& other1329) {
-  (void) other1329;
-=======
-WMAlterPoolResponse::WMAlterPoolResponse(const WMAlterPoolResponse& other1332) {
-  (void) other1332;
-}
-WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& other1333) {
-  (void) other1333;
->>>>>>> External metastore: clean after rebase
+WMAlterPoolResponse& WMAlterPoolResponse::operator=(const WMAlterPoolResponse& other1341) {
+  (void) other1341;
   return *this;
 }
 void WMAlterPoolResponse::printTo(std::ostream& out) const {
@@ -38120,31 +37654,17 @@ void swap(WMDropPoolRequest &a, WMDropPoolRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMDropPoolRequest::WMDropPoolRequest(const WMDropPoolRequest& other1330) {
-  resourcePlanName = other1330.resourcePlanName;
-  poolPath = other1330.poolPath;
-  ns = other1330.ns;
-  __isset = other1330.__isset;
+WMDropPoolRequest::WMDropPoolRequest(const WMDropPoolRequest& other1342) {
+  resourcePlanName = other1342.resourcePlanName;
+  poolPath = other1342.poolPath;
+  ns = other1342.ns;
+  __isset = other1342.__isset;
 }
-WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other1331) {
-  resourcePlanName = other1331.resourcePlanName;
-  poolPath = other1331.poolPath;
-  ns = other1331.ns;
-  __isset = other1331.__isset;
-=======
-WMDropPoolRequest::WMDropPoolRequest(const WMDropPoolRequest& other1334) {
-  resourcePlanName = other1334.resourcePlanName;
-  poolPath = other1334.poolPath;
-  ns = other1334.ns;
-  __isset = other1334.__isset;
-}
-WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other1335) {
-  resourcePlanName = other1335.resourcePlanName;
-  poolPath = other1335.poolPath;
-  ns = other1335.ns;
-  __isset = other1335.__isset;
->>>>>>> External metastore: clean after rebase
+WMDropPoolRequest& WMDropPoolRequest::operator=(const WMDropPoolRequest& other1343) {
+  resourcePlanName = other1343.resourcePlanName;
+  poolPath = other1343.poolPath;
+  ns = other1343.ns;
+  __isset = other1343.__isset;
   return *this;
 }
 void WMDropPoolRequest::printTo(std::ostream& out) const {
@@ -38211,19 +37731,11 @@ void swap(WMDropPoolResponse &a, WMDropPoolResponse &b) {
   (void) b;
 }
 
-<<<<<<< HEAD
-WMDropPoolResponse::WMDropPoolResponse(const WMDropPoolResponse& other1332) {
-  (void) other1332;
+WMDropPoolResponse::WMDropPoolResponse(const WMDropPoolResponse& other1344) {
+  (void) other1344;
 }
-WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& other1333) {
-  (void) other1333;
-=======
-WMDropPoolResponse::WMDropPoolResponse(const WMDropPoolResponse& other1336) {
-  (void) other1336;
-}
-WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& other1337) {
-  (void) other1337;
->>>>>>> External metastore: clean after rebase
+WMDropPoolResponse& WMDropPoolResponse::operator=(const WMDropPoolResponse& other1345) {
+  (void) other1345;
   return *this;
 }
 void WMDropPoolResponse::printTo(std::ostream& out) const {
@@ -38329,27 +37841,15 @@ void swap(WMCreateOrUpdateMappingRequest &a, WMCreateOrUpdateMappingRequest &b) 
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMCreateOrUpdateMappingRequest::WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest& other1334) {
-  mapping = other1334.mapping;
-  update = other1334.update;
-  __isset = other1334.__isset;
+WMCreateOrUpdateMappingRequest::WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest& other1346) {
+  mapping = other1346.mapping;
+  update = other1346.update;
+  __isset = other1346.__isset;
 }
-WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const WMCreateOrUpdateMappingRequest& other1335) {
-  mapping = other1335.mapping;
-  update = other1335.update;
-  __isset = other1335.__isset;
-=======
-WMCreateOrUpdateMappingRequest::WMCreateOrUpdateMappingRequest(const WMCreateOrUpdateMappingRequest& other1338) {
-  mapping = other1338.mapping;
-  update = other1338.update;
-  __isset = other1338.__isset;
-}
-WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const WMCreateOrUpdateMappingRequest& other1339) {
-  mapping = other1339.mapping;
-  update = other1339.update;
-  __isset = other1339.__isset;
->>>>>>> External metastore: clean after rebase
+WMCreateOrUpdateMappingRequest& WMCreateOrUpdateMappingRequest::operator=(const WMCreateOrUpdateMappingRequest& other1347) {
+  mapping = other1347.mapping;
+  update = other1347.update;
+  __isset = other1347.__isset;
   return *this;
 }
 void WMCreateOrUpdateMappingRequest::printTo(std::ostream& out) const {
@@ -38415,19 +37915,11 @@ void swap(WMCreateOrUpdateMappingResponse &a, WMCreateOrUpdateMappingResponse &b
   (void) b;
 }
 
-<<<<<<< HEAD
-WMCreateOrUpdateMappingResponse::WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse& other1336) {
-  (void) other1336;
+WMCreateOrUpdateMappingResponse::WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse& other1348) {
+  (void) other1348;
 }
-WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(const WMCreateOrUpdateMappingResponse& other1337) {
-  (void) other1337;
-=======
-WMCreateOrUpdateMappingResponse::WMCreateOrUpdateMappingResponse(const WMCreateOrUpdateMappingResponse& other1340) {
-  (void) other1340;
-}
-WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(const WMCreateOrUpdateMappingResponse& other1341) {
-  (void) other1341;
->>>>>>> External metastore: clean after rebase
+WMCreateOrUpdateMappingResponse& WMCreateOrUpdateMappingResponse::operator=(const WMCreateOrUpdateMappingResponse& other1349) {
+  (void) other1349;
   return *this;
 }
 void WMCreateOrUpdateMappingResponse::printTo(std::ostream& out) const {
@@ -38514,23 +38006,13 @@ void swap(WMDropMappingRequest &a, WMDropMappingRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1338) {
-  mapping = other1338.mapping;
-  __isset = other1338.__isset;
+WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1350) {
+  mapping = other1350.mapping;
+  __isset = other1350.__isset;
 }
-WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest& other1339) {
-  mapping = other1339.mapping;
-  __isset = other1339.__isset;
-=======
-WMDropMappingRequest::WMDropMappingRequest(const WMDropMappingRequest& other1342) {
-  mapping = other1342.mapping;
-  __isset = other1342.__isset;
-}
-WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest& other1343) {
-  mapping = other1343.mapping;
-  __isset = other1343.__isset;
->>>>>>> External metastore: clean after rebase
+WMDropMappingRequest& WMDropMappingRequest::operator=(const WMDropMappingRequest& other1351) {
+  mapping = other1351.mapping;
+  __isset = other1351.__isset;
   return *this;
 }
 void WMDropMappingRequest::printTo(std::ostream& out) const {
@@ -38595,19 +38077,11 @@ void swap(WMDropMappingResponse &a, WMDropMappingResponse &b) {
   (void) b;
 }
 
-<<<<<<< HEAD
-WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1340) {
-  (void) other1340;
+WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1352) {
+  (void) other1352;
 }
-WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingResponse& other1341) {
-  (void) other1341;
-=======
-WMDropMappingResponse::WMDropMappingResponse(const WMDropMappingResponse& other1344) {
-  (void) other1344;
-}
-WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingResponse& other1345) {
-  (void) other1345;
->>>>>>> External metastore: clean after rebase
+WMDropMappingResponse& WMDropMappingResponse::operator=(const WMDropMappingResponse& other1353) {
+  (void) other1353;
   return *this;
 }
 void WMDropMappingResponse::printTo(std::ostream& out) const {
@@ -38770,39 +38244,21 @@ void swap(WMCreateOrDropTriggerToPoolMappingRequest &a, WMCreateOrDropTriggerToP
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-WMCreateOrDropTriggerToPoolMappingRequest::WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest& other1342) {
-  resourcePlanName = other1342.resourcePlanName;
-  triggerName = other1342.triggerName;
-  poolPath = other1342.poolPath;
-  drop = other1342.drop;
-  ns = other1342.ns;
-  __isset = other1342.__isset;
+WMCreateOrDropTriggerToPoolMappingRequest::WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest& other1354) {
+  resourcePlanName = other1354.resourcePlanName;
+  triggerName = other1354.triggerName;
+  poolPath = other1354.poolPath;
+  drop = other1354.drop;
+  ns = other1354.ns;
+  __isset = other1354.__isset;
 }
-WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingRequest::operator=(const WMCreateOrDropTriggerToPoolMappingRequest& other1343) {
-  resourcePlanName = other1343.resourcePlanName;
-  triggerName = other1343.triggerName;
-  poolPath = other1343.poolPath;
-  drop = other1343.drop;
-  ns = other1343.ns;
-  __isset = other1343.__isset;
-=======
-WMCreateOrDropTriggerToPoolMappingRequest::WMCreateOrDropTriggerToPoolMappingRequest(const WMCreateOrDropTriggerToPoolMappingRequest& other1346) {
-  resourcePlanName = other1346.resourcePlanName;
-  triggerName = other1346.triggerName;
-  poolPath = other1346.poolPath;
-  drop = other1346.drop;
-  ns = other1346.ns;
-  __isset = other1346.__isset;
-}
-WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingRequest::operator=(const WMCreateOrDropTriggerToPoolMappingRequest& other1347) {
-  resourcePlanName = other1347.resourcePlanName;
-  triggerName = other1347.triggerName;
-  poolPath = other1347.poolPath;
-  drop = other1347.drop;
-  ns = other1347.ns;
-  __isset = other1347.__isset;
->>>>>>> External metastore: clean after rebase
+WMCreateOrDropTriggerToPoolMappingRequest& WMCreateOrDropTriggerToPoolMappingRequest::operator=(const WMCreateOrDropTriggerToPoolMappingRequest& other1355) {
+  resourcePlanName = other1355.resourcePlanName;
+  triggerName = other1355.triggerName;
+  poolPath = other1355.poolPath;
+  drop = other1355.drop;
+  ns = other1355.ns;
+  __isset = other1355.__isset;
   return *this;
 }
 void WMCreateOrDropTriggerToPoolMappingRequest::printTo(std::ostream& out) const {
@@ -38871,19 +38327,11 @@ void swap(WMCreateOrDropTriggerToPoolMappingResponse &a, WMCreateOrDropTriggerTo
   (void) b;
 }
 
-<<<<<<< HEAD
-WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1344) {
-  (void) other1344;
+WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1356) {
+  (void) other1356;
 }
-WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingResponse::operator=(const WMCreateOrDropTriggerToPoolMappingResponse& other1345) {
-  (void) other1345;
-=======
-WMCreateOrDropTriggerToPoolMappingResponse::WMCreateOrDropTriggerToPoolMappingResponse(const WMCreateOrDropTriggerToPoolMappingResponse& other1348) {
-  (void) other1348;
-}
-WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingResponse::operator=(const WMCreateOrDropTriggerToPoolMappingResponse& other1349) {
-  (void) other1349;
->>>>>>> External metastore: clean after rebase
+WMCreateOrDropTriggerToPoolMappingResponse& WMCreateOrDropTriggerToPoolMappingResponse::operator=(const WMCreateOrDropTriggerToPoolMappingResponse& other1357) {
+  (void) other1357;
   return *this;
 }
 void WMCreateOrDropTriggerToPoolMappingResponse::printTo(std::ostream& out) const {
@@ -38964,15 +38412,9 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-<<<<<<< HEAD
-          int32_t ecast1346;
-          xfer += iprot->readI32(ecast1346);
-          this->schemaType = (SchemaType::type)ecast1346;
-=======
-          int32_t ecast1350;
-          xfer += iprot->readI32(ecast1350);
-          this->schemaType = (SchemaType::type)ecast1350;
->>>>>>> External metastore: clean after rebase
+          int32_t ecast1358;
+          xfer += iprot->readI32(ecast1358);
+          this->schemaType = (SchemaType::type)ecast1358;
           this->__isset.schemaType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -39004,15 +38446,9 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 5:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-<<<<<<< HEAD
-          int32_t ecast1347;
-          xfer += iprot->readI32(ecast1347);
-          this->compatibility = (SchemaCompatibility::type)ecast1347;
-=======
-          int32_t ecast1351;
-          xfer += iprot->readI32(ecast1351);
-          this->compatibility = (SchemaCompatibility::type)ecast1351;
->>>>>>> External metastore: clean after rebase
+          int32_t ecast1359;
+          xfer += iprot->readI32(ecast1359);
+          this->compatibility = (SchemaCompatibility::type)ecast1359;
           this->__isset.compatibility = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -39020,15 +38456,9 @@ uint32_t ISchema::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 6:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-<<<<<<< HEAD
-          int32_t ecast1348;
-          xfer += iprot->readI32(ecast1348);
-          this->validationLevel = (SchemaValidation::type)ecast1348;
-=======
-          int32_t ecast1352;
-          xfer += iprot->readI32(ecast1352);
-          this->validationLevel = (SchemaValidation::type)ecast1352;
->>>>>>> External metastore: clean after rebase
+          int32_t ecast1360;
+          xfer += iprot->readI32(ecast1360);
+          this->validationLevel = (SchemaValidation::type)ecast1360;
           this->__isset.validationLevel = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -39132,55 +38562,29 @@ void swap(ISchema &a, ISchema &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-ISchema::ISchema(const ISchema& other1349) {
-  schemaType = other1349.schemaType;
-  name = other1349.name;
-  catName = other1349.catName;
-  dbName = other1349.dbName;
-  compatibility = other1349.compatibility;
-  validationLevel = other1349.validationLevel;
-  canEvolve = other1349.canEvolve;
-  schemaGroup = other1349.schemaGroup;
-  description = other1349.description;
-  __isset = other1349.__isset;
+ISchema::ISchema(const ISchema& other1361) {
+  schemaType = other1361.schemaType;
+  name = other1361.name;
+  catName = other1361.catName;
+  dbName = other1361.dbName;
+  compatibility = other1361.compatibility;
+  validationLevel = other1361.validationLevel;
+  canEvolve = other1361.canEvolve;
+  schemaGroup = other1361.schemaGroup;
+  description = other1361.description;
+  __isset = other1361.__isset;
 }
-ISchema& ISchema::operator=(const ISchema& other1350) {
-  schemaType = other1350.schemaType;
-  name = other1350.name;
-  catName = other1350.catName;
-  dbName = other1350.dbName;
-  compatibility = other1350.compatibility;
-  validationLevel = other1350.validationLevel;
-  canEvolve = other1350.canEvolve;
-  schemaGroup = other1350.schemaGroup;
-  description = other1350.description;
-  __isset = other1350.__isset;
-=======
-ISchema::ISchema(const ISchema& other1353) {
-  schemaType = other1353.schemaType;
-  name = other1353.name;
-  catName = other1353.catName;
-  dbName = other1353.dbName;
-  compatibility = other1353.compatibility;
-  validationLevel = other1353.validationLevel;
-  canEvolve = other1353.canEvolve;
-  schemaGroup = other1353.schemaGroup;
-  description = other1353.description;
-  __isset = other1353.__isset;
-}
-ISchema& ISchema::operator=(const ISchema& other1354) {
-  schemaType = other1354.schemaType;
-  name = other1354.name;
-  catName = other1354.catName;
-  dbName = other1354.dbName;
-  compatibility = other1354.compatibility;
-  validationLevel = other1354.validationLevel;
-  canEvolve = other1354.canEvolve;
-  schemaGroup = other1354.schemaGroup;
-  description = other1354.description;
-  __isset = other1354.__isset;
->>>>>>> External metastore: clean after rebase
+ISchema& ISchema::operator=(const ISchema& other1362) {
+  schemaType = other1362.schemaType;
+  name = other1362.name;
+  catName = other1362.catName;
+  dbName = other1362.dbName;
+  compatibility = other1362.compatibility;
+  validationLevel = other1362.validationLevel;
+  canEvolve = other1362.canEvolve;
+  schemaGroup = other1362.schemaGroup;
+  description = other1362.description;
+  __isset = other1362.__isset;
   return *this;
 }
 void ISchema::printTo(std::ostream& out) const {
@@ -39308,31 +38712,17 @@ void swap(ISchemaName &a, ISchemaName &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-ISchemaName::ISchemaName(const ISchemaName& other1351) {
-  catName = other1351.catName;
-  dbName = other1351.dbName;
-  schemaName = other1351.schemaName;
-  __isset = other1351.__isset;
+ISchemaName::ISchemaName(const ISchemaName& other1363) {
+  catName = other1363.catName;
+  dbName = other1363.dbName;
+  schemaName = other1363.schemaName;
+  __isset = other1363.__isset;
 }
-ISchemaName& ISchemaName::operator=(const ISchemaName& other1352) {
-  catName = other1352.catName;
-  dbName = other1352.dbName;
-  schemaName = other1352.schemaName;
-  __isset = other1352.__isset;
-=======
-ISchemaName::ISchemaName(const ISchemaName& other1355) {
-  catName = other1355.catName;
-  dbName = other1355.dbName;
-  schemaName = other1355.schemaName;
-  __isset = other1355.__isset;
-}
-ISchemaName& ISchemaName::operator=(const ISchemaName& other1356) {
-  catName = other1356.catName;
-  dbName = other1356.dbName;
-  schemaName = other1356.schemaName;
-  __isset = other1356.__isset;
->>>>>>> External metastore: clean after rebase
+ISchemaName& ISchemaName::operator=(const ISchemaName& other1364) {
+  catName = other1364.catName;
+  dbName = other1364.dbName;
+  schemaName = other1364.schemaName;
+  __isset = other1364.__isset;
   return *this;
 }
 void ISchemaName::printTo(std::ostream& out) const {
@@ -39437,27 +38827,15 @@ void swap(AlterISchemaRequest &a, AlterISchemaRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-AlterISchemaRequest::AlterISchemaRequest(const AlterISchemaRequest& other1353) {
-  name = other1353.name;
-  newSchema = other1353.newSchema;
-  __isset = other1353.__isset;
+AlterISchemaRequest::AlterISchemaRequest(const AlterISchemaRequest& other1365) {
+  name = other1365.name;
+  newSchema = other1365.newSchema;
+  __isset = other1365.__isset;
 }
-AlterISchemaRequest& AlterISchemaRequest::operator=(const AlterISchemaRequest& other1354) {
-  name = other1354.name;
-  newSchema = other1354.newSchema;
-  __isset = other1354.__isset;
-=======
-AlterISchemaRequest::AlterISchemaRequest(const AlterISchemaRequest& other1357) {
-  name = other1357.name;
-  newSchema = other1357.newSchema;
-  __isset = other1357.__isset;
-}
-AlterISchemaRequest& AlterISchemaRequest::operator=(const AlterISchemaRequest& other1358) {
-  name = other1358.name;
-  newSchema = other1358.newSchema;
-  __isset = other1358.__isset;
->>>>>>> External metastore: clean after rebase
+AlterISchemaRequest& AlterISchemaRequest::operator=(const AlterISchemaRequest& other1366) {
+  name = other1366.name;
+  newSchema = other1366.newSchema;
+  __isset = other1366.__isset;
   return *this;
 }
 void AlterISchemaRequest::printTo(std::ostream& out) const {
@@ -39574,25 +38952,14 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->cols.clear();
-<<<<<<< HEAD
-            uint32_t _size1355;
-            ::apache::thrift::protocol::TType _etype1358;
-            xfer += iprot->readListBegin(_etype1358, _size1355);
-            this->cols.resize(_size1355);
-            uint32_t _i1359;
-            for (_i1359 = 0; _i1359 < _size1355; ++_i1359)
+            uint32_t _size1367;
+            ::apache::thrift::protocol::TType _etype1370;
+            xfer += iprot->readListBegin(_etype1370, _size1367);
+            this->cols.resize(_size1367);
+            uint32_t _i1371;
+            for (_i1371 = 0; _i1371 < _size1367; ++_i1371)
             {
-              xfer += this->cols[_i1359].read(iprot);
-=======
-            uint32_t _size1359;
-            ::apache::thrift::protocol::TType _etype1362;
-            xfer += iprot->readListBegin(_etype1362, _size1359);
-            this->cols.resize(_size1359);
-            uint32_t _i1363;
-            for (_i1363 = 0; _i1363 < _size1359; ++_i1363)
-            {
-              xfer += this->cols[_i1363].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->cols[_i1371].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -39603,15 +38970,9 @@ uint32_t SchemaVersion::read(::apache::thrift::protocol::TProtocol* iprot) {
         break;
       case 5:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-<<<<<<< HEAD
-          int32_t ecast1360;
-          xfer += iprot->readI32(ecast1360);
-          this->state = (SchemaVersionState::type)ecast1360;
-=======
-          int32_t ecast1364;
-          xfer += iprot->readI32(ecast1364);
-          this->state = (SchemaVersionState::type)ecast1364;
->>>>>>> External metastore: clean after rebase
+          int32_t ecast1372;
+          xfer += iprot->readI32(ecast1372);
+          this->state = (SchemaVersionState::type)ecast1372;
           this->__isset.state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -39689,17 +39050,10 @@ uint32_t SchemaVersion::write(::apache::thrift::protocol::TProtocol* oprot) cons
   xfer += oprot->writeFieldBegin("cols", ::apache::thrift::protocol::T_LIST, 4);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->cols.size()));
-<<<<<<< HEAD
-    std::vector<FieldSchema> ::const_iterator _iter1361;
-    for (_iter1361 = this->cols.begin(); _iter1361 != this->cols.end(); ++_iter1361)
+    std::vector<FieldSchema> ::const_iterator _iter1373;
+    for (_iter1373 = this->cols.begin(); _iter1373 != this->cols.end(); ++_iter1373)
     {
-      xfer += (*_iter1361).write(oprot);
-=======
-    std::vector<FieldSchema> ::const_iterator _iter1365;
-    for (_iter1365 = this->cols.begin(); _iter1365 != this->cols.end(); ++_iter1365)
-    {
-      xfer += (*_iter1365).write(oprot);
->>>>>>> External metastore: clean after rebase
+      xfer += (*_iter1373).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -39755,59 +39109,31 @@ void swap(SchemaVersion &a, SchemaVersion &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-SchemaVersion::SchemaVersion(const SchemaVersion& other1362) {
-  schema = other1362.schema;
-  version = other1362.version;
-  createdAt = other1362.createdAt;
-  cols = other1362.cols;
-  state = other1362.state;
-  description = other1362.description;
-  schemaText = other1362.schemaText;
-  fingerprint = other1362.fingerprint;
-  name = other1362.name;
-  serDe = other1362.serDe;
-  __isset = other1362.__isset;
+SchemaVersion::SchemaVersion(const SchemaVersion& other1374) {
+  schema = other1374.schema;
+  version = other1374.version;
+  createdAt = other1374.createdAt;
+  cols = other1374.cols;
+  state = other1374.state;
+  description = other1374.description;
+  schemaText = other1374.schemaText;
+  fingerprint = other1374.fingerprint;
+  name = other1374.name;
+  serDe = other1374.serDe;
+  __isset = other1374.__isset;
 }
-SchemaVersion& SchemaVersion::operator=(const SchemaVersion& other1363) {
-  schema = other1363.schema;
-  version = other1363.version;
-  createdAt = other1363.createdAt;
-  cols = other1363.cols;
-  state = other1363.state;
-  description = other1363.description;
-  schemaText = other1363.schemaText;
-  fingerprint = other1363.fingerprint;
-  name = other1363.name;
-  serDe = other1363.serDe;
-  __isset = other1363.__isset;
-=======
-SchemaVersion::SchemaVersion(const SchemaVersion& other1366) {
-  schema = other1366.schema;
-  version = other1366.version;
-  createdAt = other1366.createdAt;
-  cols = other1366.cols;
-  state = other1366.state;
-  description = other1366.description;
-  schemaText = other1366.schemaText;
-  fingerprint = other1366.fingerprint;
-  name = other1366.name;
-  serDe = other1366.serDe;
-  __isset = other1366.__isset;
-}
-SchemaVersion& SchemaVersion::operator=(const SchemaVersion& other1367) {
-  schema = other1367.schema;
-  version = other1367.version;
-  createdAt = other1367.createdAt;
-  cols = other1367.cols;
-  state = other1367.state;
-  description = other1367.description;
-  schemaText = other1367.schemaText;
-  fingerprint = other1367.fingerprint;
-  name = other1367.name;
-  serDe = other1367.serDe;
-  __isset = other1367.__isset;
->>>>>>> External metastore: clean after rebase
+SchemaVersion& SchemaVersion::operator=(const SchemaVersion& other1375) {
+  schema = other1375.schema;
+  version = other1375.version;
+  createdAt = other1375.createdAt;
+  cols = other1375.cols;
+  state = other1375.state;
+  description = other1375.description;
+  schemaText = other1375.schemaText;
+  fingerprint = other1375.fingerprint;
+  name = other1375.name;
+  serDe = other1375.serDe;
+  __isset = other1375.__isset;
   return *this;
 }
 void SchemaVersion::printTo(std::ostream& out) const {
@@ -39919,27 +39245,15 @@ void swap(SchemaVersionDescriptor &a, SchemaVersionDescriptor &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-SchemaVersionDescriptor::SchemaVersionDescriptor(const SchemaVersionDescriptor& other1364) {
-  schema = other1364.schema;
-  version = other1364.version;
-  __isset = other1364.__isset;
+SchemaVersionDescriptor::SchemaVersionDescriptor(const SchemaVersionDescriptor& other1376) {
+  schema = other1376.schema;
+  version = other1376.version;
+  __isset = other1376.__isset;
 }
-SchemaVersionDescriptor& SchemaVersionDescriptor::operator=(const SchemaVersionDescriptor& other1365) {
-  schema = other1365.schema;
-  version = other1365.version;
-  __isset = other1365.__isset;
-=======
-SchemaVersionDescriptor::SchemaVersionDescriptor(const SchemaVersionDescriptor& other1368) {
-  schema = other1368.schema;
-  version = other1368.version;
-  __isset = other1368.__isset;
-}
-SchemaVersionDescriptor& SchemaVersionDescriptor::operator=(const SchemaVersionDescriptor& other1369) {
-  schema = other1369.schema;
-  version = other1369.version;
-  __isset = other1369.__isset;
->>>>>>> External metastore: clean after rebase
+SchemaVersionDescriptor& SchemaVersionDescriptor::operator=(const SchemaVersionDescriptor& other1377) {
+  schema = other1377.schema;
+  version = other1377.version;
+  __isset = other1377.__isset;
   return *this;
 }
 void SchemaVersionDescriptor::printTo(std::ostream& out) const {
@@ -40066,31 +39380,17 @@ void swap(FindSchemasByColsRqst &a, FindSchemasByColsRqst &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-FindSchemasByColsRqst::FindSchemasByColsRqst(const FindSchemasByColsRqst& other1366) {
-  colName = other1366.colName;
-  colNamespace = other1366.colNamespace;
-  type = other1366.type;
-  __isset = other1366.__isset;
+FindSchemasByColsRqst::FindSchemasByColsRqst(const FindSchemasByColsRqst& other1378) {
+  colName = other1378.colName;
+  colNamespace = other1378.colNamespace;
+  type = other1378.type;
+  __isset = other1378.__isset;
 }
-FindSchemasByColsRqst& FindSchemasByColsRqst::operator=(const FindSchemasByColsRqst& other1367) {
-  colName = other1367.colName;
-  colNamespace = other1367.colNamespace;
-  type = other1367.type;
-  __isset = other1367.__isset;
-=======
-FindSchemasByColsRqst::FindSchemasByColsRqst(const FindSchemasByColsRqst& other1370) {
-  colName = other1370.colName;
-  colNamespace = other1370.colNamespace;
-  type = other1370.type;
-  __isset = other1370.__isset;
-}
-FindSchemasByColsRqst& FindSchemasByColsRqst::operator=(const FindSchemasByColsRqst& other1371) {
-  colName = other1371.colName;
-  colNamespace = other1371.colNamespace;
-  type = other1371.type;
-  __isset = other1371.__isset;
->>>>>>> External metastore: clean after rebase
+FindSchemasByColsRqst& FindSchemasByColsRqst::operator=(const FindSchemasByColsRqst& other1379) {
+  colName = other1379.colName;
+  colNamespace = other1379.colNamespace;
+  type = other1379.type;
+  __isset = other1379.__isset;
   return *this;
 }
 void FindSchemasByColsRqst::printTo(std::ostream& out) const {
@@ -40142,25 +39442,14 @@ uint32_t FindSchemasByColsResp::read(::apache::thrift::protocol::TProtocol* ipro
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->schemaVersions.clear();
-<<<<<<< HEAD
-            uint32_t _size1368;
-            ::apache::thrift::protocol::TType _etype1371;
-            xfer += iprot->readListBegin(_etype1371, _size1368);
-            this->schemaVersions.resize(_size1368);
-            uint32_t _i1372;
-            for (_i1372 = 0; _i1372 < _size1368; ++_i1372)
+            uint32_t _size1380;
+            ::apache::thrift::protocol::TType _etype1383;
+            xfer += iprot->readListBegin(_etype1383, _size1380);
+            this->schemaVersions.resize(_size1380);
+            uint32_t _i1384;
+            for (_i1384 = 0; _i1384 < _size1380; ++_i1384)
             {
-              xfer += this->schemaVersions[_i1372].read(iprot);
-=======
-            uint32_t _size1372;
-            ::apache::thrift::protocol::TType _etype1375;
-            xfer += iprot->readListBegin(_etype1375, _size1372);
-            this->schemaVersions.resize(_size1372);
-            uint32_t _i1376;
-            for (_i1376 = 0; _i1376 < _size1372; ++_i1376)
-            {
-              xfer += this->schemaVersions[_i1376].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->schemaVersions[_i1384].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -40189,17 +39478,10 @@ uint32_t FindSchemasByColsResp::write(::apache::thrift::protocol::TProtocol* opr
   xfer += oprot->writeFieldBegin("schemaVersions", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->schemaVersions.size()));
-<<<<<<< HEAD
-    std::vector<SchemaVersionDescriptor> ::const_iterator _iter1373;
-    for (_iter1373 = this->schemaVersions.begin(); _iter1373 != this->schemaVersions.end(); ++_iter1373)
+    std::vector<SchemaVersionDescriptor> ::const_iterator _iter1385;
+    for (_iter1385 = this->schemaVersions.begin(); _iter1385 != this->schemaVersions.end(); ++_iter1385)
     {
-      xfer += (*_iter1373).write(oprot);
-=======
-    std::vector<SchemaVersionDescriptor> ::const_iterator _iter1377;
-    for (_iter1377 = this->schemaVersions.begin(); _iter1377 != this->schemaVersions.end(); ++_iter1377)
-    {
-      xfer += (*_iter1377).write(oprot);
->>>>>>> External metastore: clean after rebase
+      xfer += (*_iter1385).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -40216,23 +39498,13 @@ void swap(FindSchemasByColsResp &a, FindSchemasByColsResp &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-FindSchemasByColsResp::FindSchemasByColsResp(const FindSchemasByColsResp& other1374) {
-  schemaVersions = other1374.schemaVersions;
-  __isset = other1374.__isset;
+FindSchemasByColsResp::FindSchemasByColsResp(const FindSchemasByColsResp& other1386) {
+  schemaVersions = other1386.schemaVersions;
+  __isset = other1386.__isset;
 }
-FindSchemasByColsResp& FindSchemasByColsResp::operator=(const FindSchemasByColsResp& other1375) {
-  schemaVersions = other1375.schemaVersions;
-  __isset = other1375.__isset;
-=======
-FindSchemasByColsResp::FindSchemasByColsResp(const FindSchemasByColsResp& other1378) {
-  schemaVersions = other1378.schemaVersions;
-  __isset = other1378.__isset;
-}
-FindSchemasByColsResp& FindSchemasByColsResp::operator=(const FindSchemasByColsResp& other1379) {
-  schemaVersions = other1379.schemaVersions;
-  __isset = other1379.__isset;
->>>>>>> External metastore: clean after rebase
+FindSchemasByColsResp& FindSchemasByColsResp::operator=(const FindSchemasByColsResp& other1387) {
+  schemaVersions = other1387.schemaVersions;
+  __isset = other1387.__isset;
   return *this;
 }
 void FindSchemasByColsResp::printTo(std::ostream& out) const {
@@ -40335,27 +39607,15 @@ void swap(MapSchemaVersionToSerdeRequest &a, MapSchemaVersionToSerdeRequest &b) 
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-MapSchemaVersionToSerdeRequest::MapSchemaVersionToSerdeRequest(const MapSchemaVersionToSerdeRequest& other1376) {
-  schemaVersion = other1376.schemaVersion;
-  serdeName = other1376.serdeName;
-  __isset = other1376.__isset;
+MapSchemaVersionToSerdeRequest::MapSchemaVersionToSerdeRequest(const MapSchemaVersionToSerdeRequest& other1388) {
+  schemaVersion = other1388.schemaVersion;
+  serdeName = other1388.serdeName;
+  __isset = other1388.__isset;
 }
-MapSchemaVersionToSerdeRequest& MapSchemaVersionToSerdeRequest::operator=(const MapSchemaVersionToSerdeRequest& other1377) {
-  schemaVersion = other1377.schemaVersion;
-  serdeName = other1377.serdeName;
-  __isset = other1377.__isset;
-=======
-MapSchemaVersionToSerdeRequest::MapSchemaVersionToSerdeRequest(const MapSchemaVersionToSerdeRequest& other1380) {
-  schemaVersion = other1380.schemaVersion;
-  serdeName = other1380.serdeName;
-  __isset = other1380.__isset;
-}
-MapSchemaVersionToSerdeRequest& MapSchemaVersionToSerdeRequest::operator=(const MapSchemaVersionToSerdeRequest& other1381) {
-  schemaVersion = other1381.schemaVersion;
-  serdeName = other1381.serdeName;
-  __isset = other1381.__isset;
->>>>>>> External metastore: clean after rebase
+MapSchemaVersionToSerdeRequest& MapSchemaVersionToSerdeRequest::operator=(const MapSchemaVersionToSerdeRequest& other1389) {
+  schemaVersion = other1389.schemaVersion;
+  serdeName = other1389.serdeName;
+  __isset = other1389.__isset;
   return *this;
 }
 void MapSchemaVersionToSerdeRequest::printTo(std::ostream& out) const {
@@ -40416,15 +39676,9 @@ uint32_t SetSchemaVersionStateRequest::read(::apache::thrift::protocol::TProtoco
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-<<<<<<< HEAD
-          int32_t ecast1378;
-          xfer += iprot->readI32(ecast1378);
-          this->state = (SchemaVersionState::type)ecast1378;
-=======
-          int32_t ecast1382;
-          xfer += iprot->readI32(ecast1382);
-          this->state = (SchemaVersionState::type)ecast1382;
->>>>>>> External metastore: clean after rebase
+          int32_t ecast1390;
+          xfer += iprot->readI32(ecast1390);
+          this->state = (SchemaVersionState::type)ecast1390;
           this->__isset.state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -40467,27 +39721,15 @@ void swap(SetSchemaVersionStateRequest &a, SetSchemaVersionStateRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-SetSchemaVersionStateRequest::SetSchemaVersionStateRequest(const SetSchemaVersionStateRequest& other1379) {
-  schemaVersion = other1379.schemaVersion;
-  state = other1379.state;
-  __isset = other1379.__isset;
+SetSchemaVersionStateRequest::SetSchemaVersionStateRequest(const SetSchemaVersionStateRequest& other1391) {
+  schemaVersion = other1391.schemaVersion;
+  state = other1391.state;
+  __isset = other1391.__isset;
 }
-SetSchemaVersionStateRequest& SetSchemaVersionStateRequest::operator=(const SetSchemaVersionStateRequest& other1380) {
-  schemaVersion = other1380.schemaVersion;
-  state = other1380.state;
-  __isset = other1380.__isset;
-=======
-SetSchemaVersionStateRequest::SetSchemaVersionStateRequest(const SetSchemaVersionStateRequest& other1383) {
-  schemaVersion = other1383.schemaVersion;
-  state = other1383.state;
-  __isset = other1383.__isset;
-}
-SetSchemaVersionStateRequest& SetSchemaVersionStateRequest::operator=(const SetSchemaVersionStateRequest& other1384) {
-  schemaVersion = other1384.schemaVersion;
-  state = other1384.state;
-  __isset = other1384.__isset;
->>>>>>> External metastore: clean after rebase
+SetSchemaVersionStateRequest& SetSchemaVersionStateRequest::operator=(const SetSchemaVersionStateRequest& other1392) {
+  schemaVersion = other1392.schemaVersion;
+  state = other1392.state;
+  __isset = other1392.__isset;
   return *this;
 }
 void SetSchemaVersionStateRequest::printTo(std::ostream& out) const {
@@ -40574,23 +39816,13 @@ void swap(GetSerdeRequest &a, GetSerdeRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-GetSerdeRequest::GetSerdeRequest(const GetSerdeRequest& other1381) {
-  serdeName = other1381.serdeName;
-  __isset = other1381.__isset;
+GetSerdeRequest::GetSerdeRequest(const GetSerdeRequest& other1393) {
+  serdeName = other1393.serdeName;
+  __isset = other1393.__isset;
 }
-GetSerdeRequest& GetSerdeRequest::operator=(const GetSerdeRequest& other1382) {
-  serdeName = other1382.serdeName;
-  __isset = other1382.__isset;
-=======
-GetSerdeRequest::GetSerdeRequest(const GetSerdeRequest& other1385) {
-  serdeName = other1385.serdeName;
-  __isset = other1385.__isset;
-}
-GetSerdeRequest& GetSerdeRequest::operator=(const GetSerdeRequest& other1386) {
-  serdeName = other1386.serdeName;
-  __isset = other1386.__isset;
->>>>>>> External metastore: clean after rebase
+GetSerdeRequest& GetSerdeRequest::operator=(const GetSerdeRequest& other1394) {
+  serdeName = other1394.serdeName;
+  __isset = other1394.__isset;
   return *this;
 }
 void GetSerdeRequest::printTo(std::ostream& out) const {
@@ -40718,31 +39950,17 @@ void swap(RuntimeStat &a, RuntimeStat &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-RuntimeStat::RuntimeStat(const RuntimeStat& other1383) {
-  createTime = other1383.createTime;
-  weight = other1383.weight;
-  payload = other1383.payload;
-  __isset = other1383.__isset;
+RuntimeStat::RuntimeStat(const RuntimeStat& other1395) {
+  createTime = other1395.createTime;
+  weight = other1395.weight;
+  payload = other1395.payload;
+  __isset = other1395.__isset;
 }
-RuntimeStat& RuntimeStat::operator=(const RuntimeStat& other1384) {
-  createTime = other1384.createTime;
-  weight = other1384.weight;
-  payload = other1384.payload;
-  __isset = other1384.__isset;
-=======
-RuntimeStat::RuntimeStat(const RuntimeStat& other1387) {
-  createTime = other1387.createTime;
-  weight = other1387.weight;
-  payload = other1387.payload;
-  __isset = other1387.__isset;
-}
-RuntimeStat& RuntimeStat::operator=(const RuntimeStat& other1388) {
-  createTime = other1388.createTime;
-  weight = other1388.weight;
-  payload = other1388.payload;
-  __isset = other1388.__isset;
->>>>>>> External metastore: clean after rebase
+RuntimeStat& RuntimeStat::operator=(const RuntimeStat& other1396) {
+  createTime = other1396.createTime;
+  weight = other1396.weight;
+  payload = other1396.payload;
+  __isset = other1396.__isset;
   return *this;
 }
 void RuntimeStat::printTo(std::ostream& out) const {
@@ -40852,23 +40070,13 @@ void swap(GetRuntimeStatsRequest &a, GetRuntimeStatsRequest &b) {
   swap(a.maxCreateTime, b.maxCreateTime);
 }
 
-<<<<<<< HEAD
-GetRuntimeStatsRequest::GetRuntimeStatsRequest(const GetRuntimeStatsRequest& other1385) {
-  maxWeight = other1385.maxWeight;
-  maxCreateTime = other1385.maxCreateTime;
+GetRuntimeStatsRequest::GetRuntimeStatsRequest(const GetRuntimeStatsRequest& other1397) {
+  maxWeight = other1397.maxWeight;
+  maxCreateTime = other1397.maxCreateTime;
 }
-GetRuntimeStatsRequest& GetRuntimeStatsRequest::operator=(const GetRuntimeStatsRequest& other1386) {
-  maxWeight = other1386.maxWeight;
-  maxCreateTime = other1386.maxCreateTime;
-=======
-GetRuntimeStatsRequest::GetRuntimeStatsRequest(const GetRuntimeStatsRequest& other1389) {
-  maxWeight = other1389.maxWeight;
-  maxCreateTime = other1389.maxCreateTime;
-}
-GetRuntimeStatsRequest& GetRuntimeStatsRequest::operator=(const GetRuntimeStatsRequest& other1390) {
-  maxWeight = other1390.maxWeight;
-  maxCreateTime = other1390.maxCreateTime;
->>>>>>> External metastore: clean after rebase
+GetRuntimeStatsRequest& GetRuntimeStatsRequest::operator=(const GetRuntimeStatsRequest& other1398) {
+  maxWeight = other1398.maxWeight;
+  maxCreateTime = other1398.maxCreateTime;
   return *this;
 }
 void GetRuntimeStatsRequest::printTo(std::ostream& out) const {
@@ -40981,25 +40189,14 @@ uint32_t CreateTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->primaryKeys.clear();
-<<<<<<< HEAD
-            uint32_t _size1387;
-            ::apache::thrift::protocol::TType _etype1390;
-            xfer += iprot->readListBegin(_etype1390, _size1387);
-            this->primaryKeys.resize(_size1387);
-            uint32_t _i1391;
-            for (_i1391 = 0; _i1391 < _size1387; ++_i1391)
+            uint32_t _size1399;
+            ::apache::thrift::protocol::TType _etype1402;
+            xfer += iprot->readListBegin(_etype1402, _size1399);
+            this->primaryKeys.resize(_size1399);
+            uint32_t _i1403;
+            for (_i1403 = 0; _i1403 < _size1399; ++_i1403)
             {
-              xfer += this->primaryKeys[_i1391].read(iprot);
-=======
-            uint32_t _size1391;
-            ::apache::thrift::protocol::TType _etype1394;
-            xfer += iprot->readListBegin(_etype1394, _size1391);
-            this->primaryKeys.resize(_size1391);
-            uint32_t _i1395;
-            for (_i1395 = 0; _i1395 < _size1391; ++_i1395)
-            {
-              xfer += this->primaryKeys[_i1395].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->primaryKeys[_i1403].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -41012,25 +40209,14 @@ uint32_t CreateTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->foreignKeys.clear();
-<<<<<<< HEAD
-            uint32_t _size1392;
-            ::apache::thrift::protocol::TType _etype1395;
-            xfer += iprot->readListBegin(_etype1395, _size1392);
-            this->foreignKeys.resize(_size1392);
-            uint32_t _i1396;
-            for (_i1396 = 0; _i1396 < _size1392; ++_i1396)
+            uint32_t _size1404;
+            ::apache::thrift::protocol::TType _etype1407;
+            xfer += iprot->readListBegin(_etype1407, _size1404);
+            this->foreignKeys.resize(_size1404);
+            uint32_t _i1408;
+            for (_i1408 = 0; _i1408 < _size1404; ++_i1408)
             {
-              xfer += this->foreignKeys[_i1396].read(iprot);
-=======
-            uint32_t _size1396;
-            ::apache::thrift::protocol::TType _etype1399;
-            xfer += iprot->readListBegin(_etype1399, _size1396);
-            this->foreignKeys.resize(_size1396);
-            uint32_t _i1400;
-            for (_i1400 = 0; _i1400 < _size1396; ++_i1400)
-            {
-              xfer += this->foreignKeys[_i1400].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->foreignKeys[_i1408].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -41043,25 +40229,14 @@ uint32_t CreateTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->uniqueConstraints.clear();
-<<<<<<< HEAD
-            uint32_t _size1397;
-            ::apache::thrift::protocol::TType _etype1400;
-            xfer += iprot->readListBegin(_etype1400, _size1397);
-            this->uniqueConstraints.resize(_size1397);
-            uint32_t _i1401;
-            for (_i1401 = 0; _i1401 < _size1397; ++_i1401)
+            uint32_t _size1409;
+            ::apache::thrift::protocol::TType _etype1412;
+            xfer += iprot->readListBegin(_etype1412, _size1409);
+            this->uniqueConstraints.resize(_size1409);
+            uint32_t _i1413;
+            for (_i1413 = 0; _i1413 < _size1409; ++_i1413)
             {
-              xfer += this->uniqueConstraints[_i1401].read(iprot);
-=======
-            uint32_t _size1401;
-            ::apache::thrift::protocol::TType _etype1404;
-            xfer += iprot->readListBegin(_etype1404, _size1401);
-            this->uniqueConstraints.resize(_size1401);
-            uint32_t _i1405;
-            for (_i1405 = 0; _i1405 < _size1401; ++_i1405)
-            {
-              xfer += this->uniqueConstraints[_i1405].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->uniqueConstraints[_i1413].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -41074,25 +40249,14 @@ uint32_t CreateTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->notNullConstraints.clear();
-<<<<<<< HEAD
-            uint32_t _size1402;
-            ::apache::thrift::protocol::TType _etype1405;
-            xfer += iprot->readListBegin(_etype1405, _size1402);
-            this->notNullConstraints.resize(_size1402);
-            uint32_t _i1406;
-            for (_i1406 = 0; _i1406 < _size1402; ++_i1406)
+            uint32_t _size1414;
+            ::apache::thrift::protocol::TType _etype1417;
+            xfer += iprot->readListBegin(_etype1417, _size1414);
+            this->notNullConstraints.resize(_size1414);
+            uint32_t _i1418;
+            for (_i1418 = 0; _i1418 < _size1414; ++_i1418)
             {
-              xfer += this->notNullConstraints[_i1406].read(iprot);
-=======
-            uint32_t _size1406;
-            ::apache::thrift::protocol::TType _etype1409;
-            xfer += iprot->readListBegin(_etype1409, _size1406);
-            this->notNullConstraints.resize(_size1406);
-            uint32_t _i1410;
-            for (_i1410 = 0; _i1410 < _size1406; ++_i1410)
-            {
-              xfer += this->notNullConstraints[_i1410].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->notNullConstraints[_i1418].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -41105,25 +40269,14 @@ uint32_t CreateTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->defaultConstraints.clear();
-<<<<<<< HEAD
-            uint32_t _size1407;
-            ::apache::thrift::protocol::TType _etype1410;
-            xfer += iprot->readListBegin(_etype1410, _size1407);
-            this->defaultConstraints.resize(_size1407);
-            uint32_t _i1411;
-            for (_i1411 = 0; _i1411 < _size1407; ++_i1411)
+            uint32_t _size1419;
+            ::apache::thrift::protocol::TType _etype1422;
+            xfer += iprot->readListBegin(_etype1422, _size1419);
+            this->defaultConstraints.resize(_size1419);
+            uint32_t _i1423;
+            for (_i1423 = 0; _i1423 < _size1419; ++_i1423)
             {
-              xfer += this->defaultConstraints[_i1411].read(iprot);
-=======
-            uint32_t _size1411;
-            ::apache::thrift::protocol::TType _etype1414;
-            xfer += iprot->readListBegin(_etype1414, _size1411);
-            this->defaultConstraints.resize(_size1411);
-            uint32_t _i1415;
-            for (_i1415 = 0; _i1415 < _size1411; ++_i1415)
-            {
-              xfer += this->defaultConstraints[_i1415].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->defaultConstraints[_i1423].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -41136,25 +40289,14 @@ uint32_t CreateTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->checkConstraints.clear();
-<<<<<<< HEAD
-            uint32_t _size1412;
-            ::apache::thrift::protocol::TType _etype1415;
-            xfer += iprot->readListBegin(_etype1415, _size1412);
-            this->checkConstraints.resize(_size1412);
-            uint32_t _i1416;
-            for (_i1416 = 0; _i1416 < _size1412; ++_i1416)
+            uint32_t _size1424;
+            ::apache::thrift::protocol::TType _etype1427;
+            xfer += iprot->readListBegin(_etype1427, _size1424);
+            this->checkConstraints.resize(_size1424);
+            uint32_t _i1428;
+            for (_i1428 = 0; _i1428 < _size1424; ++_i1428)
             {
-              xfer += this->checkConstraints[_i1416].read(iprot);
-=======
-            uint32_t _size1416;
-            ::apache::thrift::protocol::TType _etype1419;
-            xfer += iprot->readListBegin(_etype1419, _size1416);
-            this->checkConstraints.resize(_size1416);
-            uint32_t _i1420;
-            for (_i1420 = 0; _i1420 < _size1416; ++_i1420)
-            {
-              xfer += this->checkConstraints[_i1420].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->checkConstraints[_i1428].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -41167,25 +40309,14 @@ uint32_t CreateTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) 
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->processorCapabilities.clear();
-<<<<<<< HEAD
-            uint32_t _size1417;
-            ::apache::thrift::protocol::TType _etype1420;
-            xfer += iprot->readListBegin(_etype1420, _size1417);
-            this->processorCapabilities.resize(_size1417);
-            uint32_t _i1421;
-            for (_i1421 = 0; _i1421 < _size1417; ++_i1421)
+            uint32_t _size1429;
+            ::apache::thrift::protocol::TType _etype1432;
+            xfer += iprot->readListBegin(_etype1432, _size1429);
+            this->processorCapabilities.resize(_size1429);
+            uint32_t _i1433;
+            for (_i1433 = 0; _i1433 < _size1429; ++_i1433)
             {
-              xfer += iprot->readString(this->processorCapabilities[_i1421]);
-=======
-            uint32_t _size1421;
-            ::apache::thrift::protocol::TType _etype1424;
-            xfer += iprot->readListBegin(_etype1424, _size1421);
-            this->processorCapabilities.resize(_size1421);
-            uint32_t _i1425;
-            for (_i1425 = 0; _i1425 < _size1421; ++_i1425)
-            {
-              xfer += iprot->readString(this->processorCapabilities[_i1425]);
->>>>>>> External metastore: clean after rebase
+              xfer += iprot->readString(this->processorCapabilities[_i1433]);
             }
             xfer += iprot->readListEnd();
           }
@@ -41234,17 +40365,10 @@ uint32_t CreateTableRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("primaryKeys", ::apache::thrift::protocol::T_LIST, 3);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->primaryKeys.size()));
-<<<<<<< HEAD
-      std::vector<SQLPrimaryKey> ::const_iterator _iter1422;
-      for (_iter1422 = this->primaryKeys.begin(); _iter1422 != this->primaryKeys.end(); ++_iter1422)
+      std::vector<SQLPrimaryKey> ::const_iterator _iter1434;
+      for (_iter1434 = this->primaryKeys.begin(); _iter1434 != this->primaryKeys.end(); ++_iter1434)
       {
-        xfer += (*_iter1422).write(oprot);
-=======
-      std::vector<SQLPrimaryKey> ::const_iterator _iter1426;
-      for (_iter1426 = this->primaryKeys.begin(); _iter1426 != this->primaryKeys.end(); ++_iter1426)
-      {
-        xfer += (*_iter1426).write(oprot);
->>>>>>> External metastore: clean after rebase
+        xfer += (*_iter1434).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -41254,17 +40378,10 @@ uint32_t CreateTableRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("foreignKeys", ::apache::thrift::protocol::T_LIST, 4);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->foreignKeys.size()));
-<<<<<<< HEAD
-      std::vector<SQLForeignKey> ::const_iterator _iter1423;
-      for (_iter1423 = this->foreignKeys.begin(); _iter1423 != this->foreignKeys.end(); ++_iter1423)
+      std::vector<SQLForeignKey> ::const_iterator _iter1435;
+      for (_iter1435 = this->foreignKeys.begin(); _iter1435 != this->foreignKeys.end(); ++_iter1435)
       {
-        xfer += (*_iter1423).write(oprot);
-=======
-      std::vector<SQLForeignKey> ::const_iterator _iter1427;
-      for (_iter1427 = this->foreignKeys.begin(); _iter1427 != this->foreignKeys.end(); ++_iter1427)
-      {
-        xfer += (*_iter1427).write(oprot);
->>>>>>> External metastore: clean after rebase
+        xfer += (*_iter1435).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -41274,17 +40391,10 @@ uint32_t CreateTableRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("uniqueConstraints", ::apache::thrift::protocol::T_LIST, 5);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->uniqueConstraints.size()));
-<<<<<<< HEAD
-      std::vector<SQLUniqueConstraint> ::const_iterator _iter1424;
-      for (_iter1424 = this->uniqueConstraints.begin(); _iter1424 != this->uniqueConstraints.end(); ++_iter1424)
+      std::vector<SQLUniqueConstraint> ::const_iterator _iter1436;
+      for (_iter1436 = this->uniqueConstraints.begin(); _iter1436 != this->uniqueConstraints.end(); ++_iter1436)
       {
-        xfer += (*_iter1424).write(oprot);
-=======
-      std::vector<SQLUniqueConstraint> ::const_iterator _iter1428;
-      for (_iter1428 = this->uniqueConstraints.begin(); _iter1428 != this->uniqueConstraints.end(); ++_iter1428)
-      {
-        xfer += (*_iter1428).write(oprot);
->>>>>>> External metastore: clean after rebase
+        xfer += (*_iter1436).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -41294,17 +40404,10 @@ uint32_t CreateTableRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("notNullConstraints", ::apache::thrift::protocol::T_LIST, 6);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->notNullConstraints.size()));
-<<<<<<< HEAD
-      std::vector<SQLNotNullConstraint> ::const_iterator _iter1425;
-      for (_iter1425 = this->notNullConstraints.begin(); _iter1425 != this->notNullConstraints.end(); ++_iter1425)
+      std::vector<SQLNotNullConstraint> ::const_iterator _iter1437;
+      for (_iter1437 = this->notNullConstraints.begin(); _iter1437 != this->notNullConstraints.end(); ++_iter1437)
       {
-        xfer += (*_iter1425).write(oprot);
-=======
-      std::vector<SQLNotNullConstraint> ::const_iterator _iter1429;
-      for (_iter1429 = this->notNullConstraints.begin(); _iter1429 != this->notNullConstraints.end(); ++_iter1429)
-      {
-        xfer += (*_iter1429).write(oprot);
->>>>>>> External metastore: clean after rebase
+        xfer += (*_iter1437).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -41314,17 +40417,10 @@ uint32_t CreateTableRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("defaultConstraints", ::apache::thrift::protocol::T_LIST, 7);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->defaultConstraints.size()));
-<<<<<<< HEAD
-      std::vector<SQLDefaultConstraint> ::const_iterator _iter1426;
-      for (_iter1426 = this->defaultConstraints.begin(); _iter1426 != this->defaultConstraints.end(); ++_iter1426)
+      std::vector<SQLDefaultConstraint> ::const_iterator _iter1438;
+      for (_iter1438 = this->defaultConstraints.begin(); _iter1438 != this->defaultConstraints.end(); ++_iter1438)
       {
-        xfer += (*_iter1426).write(oprot);
-=======
-      std::vector<SQLDefaultConstraint> ::const_iterator _iter1430;
-      for (_iter1430 = this->defaultConstraints.begin(); _iter1430 != this->defaultConstraints.end(); ++_iter1430)
-      {
-        xfer += (*_iter1430).write(oprot);
->>>>>>> External metastore: clean after rebase
+        xfer += (*_iter1438).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -41334,17 +40430,10 @@ uint32_t CreateTableRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("checkConstraints", ::apache::thrift::protocol::T_LIST, 8);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->checkConstraints.size()));
-<<<<<<< HEAD
-      std::vector<SQLCheckConstraint> ::const_iterator _iter1427;
-      for (_iter1427 = this->checkConstraints.begin(); _iter1427 != this->checkConstraints.end(); ++_iter1427)
+      std::vector<SQLCheckConstraint> ::const_iterator _iter1439;
+      for (_iter1439 = this->checkConstraints.begin(); _iter1439 != this->checkConstraints.end(); ++_iter1439)
       {
-        xfer += (*_iter1427).write(oprot);
-=======
-      std::vector<SQLCheckConstraint> ::const_iterator _iter1431;
-      for (_iter1431 = this->checkConstraints.begin(); _iter1431 != this->checkConstraints.end(); ++_iter1431)
-      {
-        xfer += (*_iter1431).write(oprot);
->>>>>>> External metastore: clean after rebase
+        xfer += (*_iter1439).write(oprot);
       }
       xfer += oprot->writeListEnd();
     }
@@ -41354,17 +40443,10 @@ uint32_t CreateTableRequest::write(::apache::thrift::protocol::TProtocol* oprot)
     xfer += oprot->writeFieldBegin("processorCapabilities", ::apache::thrift::protocol::T_LIST, 9);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->processorCapabilities.size()));
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1428;
-      for (_iter1428 = this->processorCapabilities.begin(); _iter1428 != this->processorCapabilities.end(); ++_iter1428)
+      std::vector<std::string> ::const_iterator _iter1440;
+      for (_iter1440 = this->processorCapabilities.begin(); _iter1440 != this->processorCapabilities.end(); ++_iter1440)
       {
-        xfer += oprot->writeString((*_iter1428));
-=======
-      std::vector<std::string> ::const_iterator _iter1432;
-      for (_iter1432 = this->processorCapabilities.begin(); _iter1432 != this->processorCapabilities.end(); ++_iter1432)
-      {
-        xfer += oprot->writeString((*_iter1432));
->>>>>>> External metastore: clean after rebase
+        xfer += oprot->writeString((*_iter1440));
       }
       xfer += oprot->writeListEnd();
     }
@@ -41395,59 +40477,31 @@ void swap(CreateTableRequest &a, CreateTableRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-CreateTableRequest::CreateTableRequest(const CreateTableRequest& other1429) {
-  table = other1429.table;
-  envContext = other1429.envContext;
-  primaryKeys = other1429.primaryKeys;
-  foreignKeys = other1429.foreignKeys;
-  uniqueConstraints = other1429.uniqueConstraints;
-  notNullConstraints = other1429.notNullConstraints;
-  defaultConstraints = other1429.defaultConstraints;
-  checkConstraints = other1429.checkConstraints;
-  processorCapabilities = other1429.processorCapabilities;
-  processorIdentifier = other1429.processorIdentifier;
-  __isset = other1429.__isset;
+CreateTableRequest::CreateTableRequest(const CreateTableRequest& other1441) {
+  table = other1441.table;
+  envContext = other1441.envContext;
+  primaryKeys = other1441.primaryKeys;
+  foreignKeys = other1441.foreignKeys;
+  uniqueConstraints = other1441.uniqueConstraints;
+  notNullConstraints = other1441.notNullConstraints;
+  defaultConstraints = other1441.defaultConstraints;
+  checkConstraints = other1441.checkConstraints;
+  processorCapabilities = other1441.processorCapabilities;
+  processorIdentifier = other1441.processorIdentifier;
+  __isset = other1441.__isset;
 }
-CreateTableRequest& CreateTableRequest::operator=(const CreateTableRequest& other1430) {
-  table = other1430.table;
-  envContext = other1430.envContext;
-  primaryKeys = other1430.primaryKeys;
-  foreignKeys = other1430.foreignKeys;
-  uniqueConstraints = other1430.uniqueConstraints;
-  notNullConstraints = other1430.notNullConstraints;
-  defaultConstraints = other1430.defaultConstraints;
-  checkConstraints = other1430.checkConstraints;
-  processorCapabilities = other1430.processorCapabilities;
-  processorIdentifier = other1430.processorIdentifier;
-  __isset = other1430.__isset;
-=======
-CreateTableRequest::CreateTableRequest(const CreateTableRequest& other1433) {
-  table = other1433.table;
-  envContext = other1433.envContext;
-  primaryKeys = other1433.primaryKeys;
-  foreignKeys = other1433.foreignKeys;
-  uniqueConstraints = other1433.uniqueConstraints;
-  notNullConstraints = other1433.notNullConstraints;
-  defaultConstraints = other1433.defaultConstraints;
-  checkConstraints = other1433.checkConstraints;
-  processorCapabilities = other1433.processorCapabilities;
-  processorIdentifier = other1433.processorIdentifier;
-  __isset = other1433.__isset;
-}
-CreateTableRequest& CreateTableRequest::operator=(const CreateTableRequest& other1434) {
-  table = other1434.table;
-  envContext = other1434.envContext;
-  primaryKeys = other1434.primaryKeys;
-  foreignKeys = other1434.foreignKeys;
-  uniqueConstraints = other1434.uniqueConstraints;
-  notNullConstraints = other1434.notNullConstraints;
-  defaultConstraints = other1434.defaultConstraints;
-  checkConstraints = other1434.checkConstraints;
-  processorCapabilities = other1434.processorCapabilities;
-  processorIdentifier = other1434.processorIdentifier;
-  __isset = other1434.__isset;
->>>>>>> External metastore: clean after rebase
+CreateTableRequest& CreateTableRequest::operator=(const CreateTableRequest& other1442) {
+  table = other1442.table;
+  envContext = other1442.envContext;
+  primaryKeys = other1442.primaryKeys;
+  foreignKeys = other1442.foreignKeys;
+  uniqueConstraints = other1442.uniqueConstraints;
+  notNullConstraints = other1442.notNullConstraints;
+  defaultConstraints = other1442.defaultConstraints;
+  checkConstraints = other1442.checkConstraints;
+  processorCapabilities = other1442.processorCapabilities;
+  processorIdentifier = other1442.processorIdentifier;
+  __isset = other1442.__isset;
   return *this;
 }
 void CreateTableRequest::printTo(std::ostream& out) const {
@@ -41586,17 +40640,17 @@ uint32_t CreateDatabaseRequest::read(::apache::thrift::protocol::TProtocol* ipro
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->parameters.clear();
-            uint32_t _size1435;
-            ::apache::thrift::protocol::TType _ktype1436;
-            ::apache::thrift::protocol::TType _vtype1437;
-            xfer += iprot->readMapBegin(_ktype1436, _vtype1437, _size1435);
-            uint32_t _i1439;
-            for (_i1439 = 0; _i1439 < _size1435; ++_i1439)
+            uint32_t _size1443;
+            ::apache::thrift::protocol::TType _ktype1444;
+            ::apache::thrift::protocol::TType _vtype1445;
+            xfer += iprot->readMapBegin(_ktype1444, _vtype1445, _size1443);
+            uint32_t _i1447;
+            for (_i1447 = 0; _i1447 < _size1443; ++_i1447)
             {
-              std::string _key1440;
-              xfer += iprot->readString(_key1440);
-              std::string& _val1441 = this->parameters[_key1440];
-              xfer += iprot->readString(_val1441);
+              std::string _key1448;
+              xfer += iprot->readString(_key1448);
+              std::string& _val1449 = this->parameters[_key1448];
+              xfer += iprot->readString(_val1449);
             }
             xfer += iprot->readMapEnd();
           }
@@ -41623,9 +40677,9 @@ uint32_t CreateDatabaseRequest::read(::apache::thrift::protocol::TProtocol* ipro
         break;
       case 7:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-          int32_t ecast1442;
-          xfer += iprot->readI32(ecast1442);
-          this->ownerType = (PrincipalType::type)ecast1442;
+          int32_t ecast1450;
+          xfer += iprot->readI32(ecast1450);
+          this->ownerType = (PrincipalType::type)ecast1450;
           this->__isset.ownerType = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -41708,11 +40762,11 @@ uint32_t CreateDatabaseRequest::write(::apache::thrift::protocol::TProtocol* opr
     xfer += oprot->writeFieldBegin("parameters", ::apache::thrift::protocol::T_MAP, 4);
     {
       xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRING, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->parameters.size()));
-      std::map<std::string, std::string> ::const_iterator _iter1443;
-      for (_iter1443 = this->parameters.begin(); _iter1443 != this->parameters.end(); ++_iter1443)
+      std::map<std::string, std::string> ::const_iterator _iter1451;
+      for (_iter1451 = this->parameters.begin(); _iter1451 != this->parameters.end(); ++_iter1451)
       {
-        xfer += oprot->writeString(_iter1443->first);
-        xfer += oprot->writeString(_iter1443->second);
+        xfer += oprot->writeString(_iter1451->first);
+        xfer += oprot->writeString(_iter1451->second);
       }
       xfer += oprot->writeMapEnd();
     }
@@ -41780,35 +40834,35 @@ void swap(CreateDatabaseRequest &a, CreateDatabaseRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-CreateDatabaseRequest::CreateDatabaseRequest(const CreateDatabaseRequest& other1444) {
-  databaseName = other1444.databaseName;
-  description = other1444.description;
-  locationUri = other1444.locationUri;
-  parameters = other1444.parameters;
-  privileges = other1444.privileges;
-  ownerName = other1444.ownerName;
-  ownerType = other1444.ownerType;
-  catalogName = other1444.catalogName;
-  createTime = other1444.createTime;
-  managedLocationUri = other1444.managedLocationUri;
-  type = other1444.type;
-  dataConnectorName = other1444.dataConnectorName;
-  __isset = other1444.__isset;
+CreateDatabaseRequest::CreateDatabaseRequest(const CreateDatabaseRequest& other1452) {
+  databaseName = other1452.databaseName;
+  description = other1452.description;
+  locationUri = other1452.locationUri;
+  parameters = other1452.parameters;
+  privileges = other1452.privileges;
+  ownerName = other1452.ownerName;
+  ownerType = other1452.ownerType;
+  catalogName = other1452.catalogName;
+  createTime = other1452.createTime;
+  managedLocationUri = other1452.managedLocationUri;
+  type = other1452.type;
+  dataConnectorName = other1452.dataConnectorName;
+  __isset = other1452.__isset;
 }
-CreateDatabaseRequest& CreateDatabaseRequest::operator=(const CreateDatabaseRequest& other1445) {
-  databaseName = other1445.databaseName;
-  description = other1445.description;
-  locationUri = other1445.locationUri;
-  parameters = other1445.parameters;
-  privileges = other1445.privileges;
-  ownerName = other1445.ownerName;
-  ownerType = other1445.ownerType;
-  catalogName = other1445.catalogName;
-  createTime = other1445.createTime;
-  managedLocationUri = other1445.managedLocationUri;
-  type = other1445.type;
-  dataConnectorName = other1445.dataConnectorName;
-  __isset = other1445.__isset;
+CreateDatabaseRequest& CreateDatabaseRequest::operator=(const CreateDatabaseRequest& other1453) {
+  databaseName = other1453.databaseName;
+  description = other1453.description;
+  locationUri = other1453.locationUri;
+  parameters = other1453.parameters;
+  privileges = other1453.privileges;
+  ownerName = other1453.ownerName;
+  ownerType = other1453.ownerType;
+  catalogName = other1453.catalogName;
+  createTime = other1453.createTime;
+  managedLocationUri = other1453.managedLocationUri;
+  type = other1453.type;
+  dataConnectorName = other1453.dataConnectorName;
+  __isset = other1453.__isset;
   return *this;
 }
 void CreateDatabaseRequest::printTo(std::ostream& out) const {
@@ -41905,13 +40959,13 @@ void swap(CreateDataConnectorRequest &a, CreateDataConnectorRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-CreateDataConnectorRequest::CreateDataConnectorRequest(const CreateDataConnectorRequest& other1446) {
-  connector = other1446.connector;
-  __isset = other1446.__isset;
+CreateDataConnectorRequest::CreateDataConnectorRequest(const CreateDataConnectorRequest& other1454) {
+  connector = other1454.connector;
+  __isset = other1454.__isset;
 }
-CreateDataConnectorRequest& CreateDataConnectorRequest::operator=(const CreateDataConnectorRequest& other1447) {
-  connector = other1447.connector;
-  __isset = other1447.__isset;
+CreateDataConnectorRequest& CreateDataConnectorRequest::operator=(const CreateDataConnectorRequest& other1455) {
+  connector = other1455.connector;
+  __isset = other1455.__isset;
   return *this;
 }
 void CreateDataConnectorRequest::printTo(std::ostream& out) const {
@@ -41999,11 +41053,11 @@ void swap(GetDataConnectorRequest &a, GetDataConnectorRequest &b) {
   swap(a.connectorName, b.connectorName);
 }
 
-GetDataConnectorRequest::GetDataConnectorRequest(const GetDataConnectorRequest& other1448) {
-  connectorName = other1448.connectorName;
+GetDataConnectorRequest::GetDataConnectorRequest(const GetDataConnectorRequest& other1456) {
+  connectorName = other1456.connectorName;
 }
-GetDataConnectorRequest& GetDataConnectorRequest::operator=(const GetDataConnectorRequest& other1449) {
-  connectorName = other1449.connectorName;
+GetDataConnectorRequest& GetDataConnectorRequest::operator=(const GetDataConnectorRequest& other1457) {
+  connectorName = other1457.connectorName;
   return *this;
 }
 void GetDataConnectorRequest::printTo(std::ostream& out) const {
@@ -42091,19 +41145,11 @@ void swap(ScheduledQueryPollRequest &a, ScheduledQueryPollRequest &b) {
   swap(a.clusterNamespace, b.clusterNamespace);
 }
 
-<<<<<<< HEAD
-ScheduledQueryPollRequest::ScheduledQueryPollRequest(const ScheduledQueryPollRequest& other1431) {
-  clusterNamespace = other1431.clusterNamespace;
+ScheduledQueryPollRequest::ScheduledQueryPollRequest(const ScheduledQueryPollRequest& other1458) {
+  clusterNamespace = other1458.clusterNamespace;
 }
-ScheduledQueryPollRequest& ScheduledQueryPollRequest::operator=(const ScheduledQueryPollRequest& other1432) {
-  clusterNamespace = other1432.clusterNamespace;
-=======
-ScheduledQueryPollRequest::ScheduledQueryPollRequest(const ScheduledQueryPollRequest& other1450) {
-  clusterNamespace = other1450.clusterNamespace;
-}
-ScheduledQueryPollRequest& ScheduledQueryPollRequest::operator=(const ScheduledQueryPollRequest& other1451) {
-  clusterNamespace = other1451.clusterNamespace;
->>>>>>> External metastore: clean after rebase
+ScheduledQueryPollRequest& ScheduledQueryPollRequest::operator=(const ScheduledQueryPollRequest& other1459) {
+  clusterNamespace = other1459.clusterNamespace;
   return *this;
 }
 void ScheduledQueryPollRequest::printTo(std::ostream& out) const {
@@ -42211,23 +41257,13 @@ void swap(ScheduledQueryKey &a, ScheduledQueryKey &b) {
   swap(a.clusterNamespace, b.clusterNamespace);
 }
 
-<<<<<<< HEAD
-ScheduledQueryKey::ScheduledQueryKey(const ScheduledQueryKey& other1433) {
-  scheduleName = other1433.scheduleName;
-  clusterNamespace = other1433.clusterNamespace;
+ScheduledQueryKey::ScheduledQueryKey(const ScheduledQueryKey& other1460) {
+  scheduleName = other1460.scheduleName;
+  clusterNamespace = other1460.clusterNamespace;
 }
-ScheduledQueryKey& ScheduledQueryKey::operator=(const ScheduledQueryKey& other1434) {
-  scheduleName = other1434.scheduleName;
-  clusterNamespace = other1434.clusterNamespace;
-=======
-ScheduledQueryKey::ScheduledQueryKey(const ScheduledQueryKey& other1452) {
-  scheduleName = other1452.scheduleName;
-  clusterNamespace = other1452.clusterNamespace;
-}
-ScheduledQueryKey& ScheduledQueryKey::operator=(const ScheduledQueryKey& other1453) {
-  scheduleName = other1453.scheduleName;
-  clusterNamespace = other1453.clusterNamespace;
->>>>>>> External metastore: clean after rebase
+ScheduledQueryKey& ScheduledQueryKey::operator=(const ScheduledQueryKey& other1461) {
+  scheduleName = other1461.scheduleName;
+  clusterNamespace = other1461.clusterNamespace;
   return *this;
 }
 void ScheduledQueryKey::printTo(std::ostream& out) const {
@@ -42373,35 +41409,19 @@ void swap(ScheduledQueryPollResponse &a, ScheduledQueryPollResponse &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-ScheduledQueryPollResponse::ScheduledQueryPollResponse(const ScheduledQueryPollResponse& other1435) {
-  scheduleKey = other1435.scheduleKey;
-  executionId = other1435.executionId;
-  query = other1435.query;
-  user = other1435.user;
-  __isset = other1435.__isset;
+ScheduledQueryPollResponse::ScheduledQueryPollResponse(const ScheduledQueryPollResponse& other1462) {
+  scheduleKey = other1462.scheduleKey;
+  executionId = other1462.executionId;
+  query = other1462.query;
+  user = other1462.user;
+  __isset = other1462.__isset;
 }
-ScheduledQueryPollResponse& ScheduledQueryPollResponse::operator=(const ScheduledQueryPollResponse& other1436) {
-  scheduleKey = other1436.scheduleKey;
-  executionId = other1436.executionId;
-  query = other1436.query;
-  user = other1436.user;
-  __isset = other1436.__isset;
-=======
-ScheduledQueryPollResponse::ScheduledQueryPollResponse(const ScheduledQueryPollResponse& other1454) {
-  scheduleKey = other1454.scheduleKey;
-  executionId = other1454.executionId;
-  query = other1454.query;
-  user = other1454.user;
-  __isset = other1454.__isset;
-}
-ScheduledQueryPollResponse& ScheduledQueryPollResponse::operator=(const ScheduledQueryPollResponse& other1455) {
-  scheduleKey = other1455.scheduleKey;
-  executionId = other1455.executionId;
-  query = other1455.query;
-  user = other1455.user;
-  __isset = other1455.__isset;
->>>>>>> External metastore: clean after rebase
+ScheduledQueryPollResponse& ScheduledQueryPollResponse::operator=(const ScheduledQueryPollResponse& other1463) {
+  scheduleKey = other1463.scheduleKey;
+  executionId = other1463.executionId;
+  query = other1463.query;
+  user = other1463.user;
+  __isset = other1463.__isset;
   return *this;
 }
 void ScheduledQueryPollResponse::printTo(std::ostream& out) const {
@@ -42588,43 +41608,23 @@ void swap(ScheduledQuery &a, ScheduledQuery &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-ScheduledQuery::ScheduledQuery(const ScheduledQuery& other1437) {
-  scheduleKey = other1437.scheduleKey;
-  enabled = other1437.enabled;
-  schedule = other1437.schedule;
-  user = other1437.user;
-  query = other1437.query;
-  nextExecution = other1437.nextExecution;
-  __isset = other1437.__isset;
+ScheduledQuery::ScheduledQuery(const ScheduledQuery& other1464) {
+  scheduleKey = other1464.scheduleKey;
+  enabled = other1464.enabled;
+  schedule = other1464.schedule;
+  user = other1464.user;
+  query = other1464.query;
+  nextExecution = other1464.nextExecution;
+  __isset = other1464.__isset;
 }
-ScheduledQuery& ScheduledQuery::operator=(const ScheduledQuery& other1438) {
-  scheduleKey = other1438.scheduleKey;
-  enabled = other1438.enabled;
-  schedule = other1438.schedule;
-  user = other1438.user;
-  query = other1438.query;
-  nextExecution = other1438.nextExecution;
-  __isset = other1438.__isset;
-=======
-ScheduledQuery::ScheduledQuery(const ScheduledQuery& other1456) {
-  scheduleKey = other1456.scheduleKey;
-  enabled = other1456.enabled;
-  schedule = other1456.schedule;
-  user = other1456.user;
-  query = other1456.query;
-  nextExecution = other1456.nextExecution;
-  __isset = other1456.__isset;
-}
-ScheduledQuery& ScheduledQuery::operator=(const ScheduledQuery& other1457) {
-  scheduleKey = other1457.scheduleKey;
-  enabled = other1457.enabled;
-  schedule = other1457.schedule;
-  user = other1457.user;
-  query = other1457.query;
-  nextExecution = other1457.nextExecution;
-  __isset = other1457.__isset;
->>>>>>> External metastore: clean after rebase
+ScheduledQuery& ScheduledQuery::operator=(const ScheduledQuery& other1465) {
+  scheduleKey = other1465.scheduleKey;
+  enabled = other1465.enabled;
+  schedule = other1465.schedule;
+  user = other1465.user;
+  query = other1465.query;
+  nextExecution = other1465.nextExecution;
+  __isset = other1465.__isset;
   return *this;
 }
 void ScheduledQuery::printTo(std::ostream& out) const {
@@ -42683,15 +41683,9 @@ uint32_t ScheduledQueryMaintenanceRequest::read(::apache::thrift::protocol::TPro
     {
       case 1:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-<<<<<<< HEAD
-          int32_t ecast1439;
-          xfer += iprot->readI32(ecast1439);
-          this->type = (ScheduledQueryMaintenanceRequestType::type)ecast1439;
-=======
-          int32_t ecast1458;
-          xfer += iprot->readI32(ecast1458);
-          this->type = (ScheduledQueryMaintenanceRequestType::type)ecast1458;
->>>>>>> External metastore: clean after rebase
+          int32_t ecast1466;
+          xfer += iprot->readI32(ecast1466);
+          this->type = (ScheduledQueryMaintenanceRequestType::type)ecast1466;
           isset_type = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -42745,23 +41739,13 @@ void swap(ScheduledQueryMaintenanceRequest &a, ScheduledQueryMaintenanceRequest 
   swap(a.scheduledQuery, b.scheduledQuery);
 }
 
-<<<<<<< HEAD
-ScheduledQueryMaintenanceRequest::ScheduledQueryMaintenanceRequest(const ScheduledQueryMaintenanceRequest& other1440) {
-  type = other1440.type;
-  scheduledQuery = other1440.scheduledQuery;
+ScheduledQueryMaintenanceRequest::ScheduledQueryMaintenanceRequest(const ScheduledQueryMaintenanceRequest& other1467) {
+  type = other1467.type;
+  scheduledQuery = other1467.scheduledQuery;
 }
-ScheduledQueryMaintenanceRequest& ScheduledQueryMaintenanceRequest::operator=(const ScheduledQueryMaintenanceRequest& other1441) {
-  type = other1441.type;
-  scheduledQuery = other1441.scheduledQuery;
-=======
-ScheduledQueryMaintenanceRequest::ScheduledQueryMaintenanceRequest(const ScheduledQueryMaintenanceRequest& other1459) {
-  type = other1459.type;
-  scheduledQuery = other1459.scheduledQuery;
-}
-ScheduledQueryMaintenanceRequest& ScheduledQueryMaintenanceRequest::operator=(const ScheduledQueryMaintenanceRequest& other1460) {
-  type = other1460.type;
-  scheduledQuery = other1460.scheduledQuery;
->>>>>>> External metastore: clean after rebase
+ScheduledQueryMaintenanceRequest& ScheduledQueryMaintenanceRequest::operator=(const ScheduledQueryMaintenanceRequest& other1468) {
+  type = other1468.type;
+  scheduledQuery = other1468.scheduledQuery;
   return *this;
 }
 void ScheduledQueryMaintenanceRequest::printTo(std::ostream& out) const {
@@ -42834,15 +41818,9 @@ uint32_t ScheduledQueryProgressInfo::read(::apache::thrift::protocol::TProtocol*
         break;
       case 2:
         if (ftype == ::apache::thrift::protocol::T_I32) {
-<<<<<<< HEAD
-          int32_t ecast1442;
-          xfer += iprot->readI32(ecast1442);
-          this->state = (QueryState::type)ecast1442;
-=======
-          int32_t ecast1461;
-          xfer += iprot->readI32(ecast1461);
-          this->state = (QueryState::type)ecast1461;
->>>>>>> External metastore: clean after rebase
+          int32_t ecast1469;
+          xfer += iprot->readI32(ecast1469);
+          this->state = (QueryState::type)ecast1469;
           isset_state = true;
         } else {
           xfer += iprot->skip(ftype);
@@ -42918,35 +41896,19 @@ void swap(ScheduledQueryProgressInfo &a, ScheduledQueryProgressInfo &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-ScheduledQueryProgressInfo::ScheduledQueryProgressInfo(const ScheduledQueryProgressInfo& other1443) {
-  scheduledExecutionId = other1443.scheduledExecutionId;
-  state = other1443.state;
-  executorQueryId = other1443.executorQueryId;
-  errorMessage = other1443.errorMessage;
-  __isset = other1443.__isset;
+ScheduledQueryProgressInfo::ScheduledQueryProgressInfo(const ScheduledQueryProgressInfo& other1470) {
+  scheduledExecutionId = other1470.scheduledExecutionId;
+  state = other1470.state;
+  executorQueryId = other1470.executorQueryId;
+  errorMessage = other1470.errorMessage;
+  __isset = other1470.__isset;
 }
-ScheduledQueryProgressInfo& ScheduledQueryProgressInfo::operator=(const ScheduledQueryProgressInfo& other1444) {
-  scheduledExecutionId = other1444.scheduledExecutionId;
-  state = other1444.state;
-  executorQueryId = other1444.executorQueryId;
-  errorMessage = other1444.errorMessage;
-  __isset = other1444.__isset;
-=======
-ScheduledQueryProgressInfo::ScheduledQueryProgressInfo(const ScheduledQueryProgressInfo& other1462) {
-  scheduledExecutionId = other1462.scheduledExecutionId;
-  state = other1462.state;
-  executorQueryId = other1462.executorQueryId;
-  errorMessage = other1462.errorMessage;
-  __isset = other1462.__isset;
-}
-ScheduledQueryProgressInfo& ScheduledQueryProgressInfo::operator=(const ScheduledQueryProgressInfo& other1463) {
-  scheduledExecutionId = other1463.scheduledExecutionId;
-  state = other1463.state;
-  executorQueryId = other1463.executorQueryId;
-  errorMessage = other1463.errorMessage;
-  __isset = other1463.__isset;
->>>>>>> External metastore: clean after rebase
+ScheduledQueryProgressInfo& ScheduledQueryProgressInfo::operator=(const ScheduledQueryProgressInfo& other1471) {
+  scheduledExecutionId = other1471.scheduledExecutionId;
+  state = other1471.state;
+  executorQueryId = other1471.executorQueryId;
+  errorMessage = other1471.errorMessage;
+  __isset = other1471.__isset;
   return *this;
 }
 void ScheduledQueryProgressInfo::printTo(std::ostream& out) const {
@@ -43054,25 +42016,14 @@ uint32_t AlterPartitionsRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partitions.clear();
-<<<<<<< HEAD
-            uint32_t _size1445;
-            ::apache::thrift::protocol::TType _etype1448;
-            xfer += iprot->readListBegin(_etype1448, _size1445);
-            this->partitions.resize(_size1445);
-            uint32_t _i1449;
-            for (_i1449 = 0; _i1449 < _size1445; ++_i1449)
+            uint32_t _size1472;
+            ::apache::thrift::protocol::TType _etype1475;
+            xfer += iprot->readListBegin(_etype1475, _size1472);
+            this->partitions.resize(_size1472);
+            uint32_t _i1476;
+            for (_i1476 = 0; _i1476 < _size1472; ++_i1476)
             {
-              xfer += this->partitions[_i1449].read(iprot);
-=======
-            uint32_t _size1464;
-            ::apache::thrift::protocol::TType _etype1467;
-            xfer += iprot->readListBegin(_etype1467, _size1464);
-            this->partitions.resize(_size1464);
-            uint32_t _i1468;
-            for (_i1468 = 0; _i1468 < _size1464; ++_i1468)
-            {
-              xfer += this->partitions[_i1468].read(iprot);
->>>>>>> External metastore: clean after rebase
+              xfer += this->partitions[_i1476].read(iprot);
             }
             xfer += iprot->readListEnd();
           }
@@ -43144,17 +42095,10 @@ uint32_t AlterPartitionsRequest::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("partitions", ::apache::thrift::protocol::T_LIST, 4);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRUCT, static_cast<uint32_t>(this->partitions.size()));
-<<<<<<< HEAD
-    std::vector<Partition> ::const_iterator _iter1450;
-    for (_iter1450 = this->partitions.begin(); _iter1450 != this->partitions.end(); ++_iter1450)
+    std::vector<Partition> ::const_iterator _iter1477;
+    for (_iter1477 = this->partitions.begin(); _iter1477 != this->partitions.end(); ++_iter1477)
     {
-      xfer += (*_iter1450).write(oprot);
-=======
-    std::vector<Partition> ::const_iterator _iter1469;
-    for (_iter1469 = this->partitions.begin(); _iter1469 != this->partitions.end(); ++_iter1469)
-    {
-      xfer += (*_iter1469).write(oprot);
->>>>>>> External metastore: clean after rebase
+      xfer += (*_iter1477).write(oprot);
     }
     xfer += oprot->writeListEnd();
   }
@@ -43192,47 +42136,25 @@ void swap(AlterPartitionsRequest &a, AlterPartitionsRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-AlterPartitionsRequest::AlterPartitionsRequest(const AlterPartitionsRequest& other1451) {
-  catName = other1451.catName;
-  dbName = other1451.dbName;
-  tableName = other1451.tableName;
-  partitions = other1451.partitions;
-  environmentContext = other1451.environmentContext;
-  writeId = other1451.writeId;
-  validWriteIdList = other1451.validWriteIdList;
-  __isset = other1451.__isset;
+AlterPartitionsRequest::AlterPartitionsRequest(const AlterPartitionsRequest& other1478) {
+  catName = other1478.catName;
+  dbName = other1478.dbName;
+  tableName = other1478.tableName;
+  partitions = other1478.partitions;
+  environmentContext = other1478.environmentContext;
+  writeId = other1478.writeId;
+  validWriteIdList = other1478.validWriteIdList;
+  __isset = other1478.__isset;
 }
-AlterPartitionsRequest& AlterPartitionsRequest::operator=(const AlterPartitionsRequest& other1452) {
-  catName = other1452.catName;
-  dbName = other1452.dbName;
-  tableName = other1452.tableName;
-  partitions = other1452.partitions;
-  environmentContext = other1452.environmentContext;
-  writeId = other1452.writeId;
-  validWriteIdList = other1452.validWriteIdList;
-  __isset = other1452.__isset;
-=======
-AlterPartitionsRequest::AlterPartitionsRequest(const AlterPartitionsRequest& other1470) {
-  catName = other1470.catName;
-  dbName = other1470.dbName;
-  tableName = other1470.tableName;
-  partitions = other1470.partitions;
-  environmentContext = other1470.environmentContext;
-  writeId = other1470.writeId;
-  validWriteIdList = other1470.validWriteIdList;
-  __isset = other1470.__isset;
-}
-AlterPartitionsRequest& AlterPartitionsRequest::operator=(const AlterPartitionsRequest& other1471) {
-  catName = other1471.catName;
-  dbName = other1471.dbName;
-  tableName = other1471.tableName;
-  partitions = other1471.partitions;
-  environmentContext = other1471.environmentContext;
-  writeId = other1471.writeId;
-  validWriteIdList = other1471.validWriteIdList;
-  __isset = other1471.__isset;
->>>>>>> External metastore: clean after rebase
+AlterPartitionsRequest& AlterPartitionsRequest::operator=(const AlterPartitionsRequest& other1479) {
+  catName = other1479.catName;
+  dbName = other1479.dbName;
+  tableName = other1479.tableName;
+  partitions = other1479.partitions;
+  environmentContext = other1479.environmentContext;
+  writeId = other1479.writeId;
+  validWriteIdList = other1479.validWriteIdList;
+  __isset = other1479.__isset;
   return *this;
 }
 void AlterPartitionsRequest::printTo(std::ostream& out) const {
@@ -43303,19 +42225,11 @@ void swap(AlterPartitionsResponse &a, AlterPartitionsResponse &b) {
   (void) b;
 }
 
-<<<<<<< HEAD
-AlterPartitionsResponse::AlterPartitionsResponse(const AlterPartitionsResponse& other1453) {
-  (void) other1453;
+AlterPartitionsResponse::AlterPartitionsResponse(const AlterPartitionsResponse& other1480) {
+  (void) other1480;
 }
-AlterPartitionsResponse& AlterPartitionsResponse::operator=(const AlterPartitionsResponse& other1454) {
-  (void) other1454;
-=======
-AlterPartitionsResponse::AlterPartitionsResponse(const AlterPartitionsResponse& other1472) {
-  (void) other1472;
-}
-AlterPartitionsResponse& AlterPartitionsResponse::operator=(const AlterPartitionsResponse& other1473) {
-  (void) other1473;
->>>>>>> External metastore: clean after rebase
+AlterPartitionsResponse& AlterPartitionsResponse::operator=(const AlterPartitionsResponse& other1481) {
+  (void) other1481;
   return *this;
 }
 void AlterPartitionsResponse::printTo(std::ostream& out) const {
@@ -43414,25 +42328,14 @@ uint32_t RenamePartitionRequest::read(::apache::thrift::protocol::TProtocol* ipr
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->partVals.clear();
-<<<<<<< HEAD
-            uint32_t _size1455;
-            ::apache::thrift::protocol::TType _etype1458;
-            xfer += iprot->readListBegin(_etype1458, _size1455);
-            this->partVals.resize(_size1455);
-            uint32_t _i1459;
-            for (_i1459 = 0; _i1459 < _size1455; ++_i1459)
+            uint32_t _size1482;
+            ::apache::thrift::protocol::TType _etype1485;
+            xfer += iprot->readListBegin(_etype1485, _size1482);
+            this->partVals.resize(_size1482);
+            uint32_t _i1486;
+            for (_i1486 = 0; _i1486 < _size1482; ++_i1486)
             {
-              xfer += iprot->readString(this->partVals[_i1459]);
-=======
-            uint32_t _size1474;
-            ::apache::thrift::protocol::TType _etype1477;
-            xfer += iprot->readListBegin(_etype1477, _size1474);
-            this->partVals.resize(_size1474);
-            uint32_t _i1478;
-            for (_i1478 = 0; _i1478 < _size1474; ++_i1478)
-            {
-              xfer += iprot->readString(this->partVals[_i1478]);
->>>>>>> External metastore: clean after rebase
+              xfer += iprot->readString(this->partVals[_i1486]);
             }
             xfer += iprot->readListEnd();
           }
@@ -43498,17 +42401,10 @@ uint32_t RenamePartitionRequest::write(::apache::thrift::protocol::TProtocol* op
   xfer += oprot->writeFieldBegin("partVals", ::apache::thrift::protocol::T_LIST, 4);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->partVals.size()));
-<<<<<<< HEAD
-    std::vector<std::string> ::const_iterator _iter1460;
-    for (_iter1460 = this->partVals.begin(); _iter1460 != this->partVals.end(); ++_iter1460)
+    std::vector<std::string> ::const_iterator _iter1487;
+    for (_iter1487 = this->partVals.begin(); _iter1487 != this->partVals.end(); ++_iter1487)
     {
-      xfer += oprot->writeString((*_iter1460));
-=======
-    std::vector<std::string> ::const_iterator _iter1479;
-    for (_iter1479 = this->partVals.begin(); _iter1479 != this->partVals.end(); ++_iter1479)
-    {
-      xfer += oprot->writeString((*_iter1479));
->>>>>>> External metastore: clean after rebase
+      xfer += oprot->writeString((*_iter1487));
     }
     xfer += oprot->writeListEnd();
   }
@@ -43539,43 +42435,23 @@ void swap(RenamePartitionRequest &a, RenamePartitionRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-RenamePartitionRequest::RenamePartitionRequest(const RenamePartitionRequest& other1461) {
-  catName = other1461.catName;
-  dbName = other1461.dbName;
-  tableName = other1461.tableName;
-  partVals = other1461.partVals;
-  newPart = other1461.newPart;
-  validWriteIdList = other1461.validWriteIdList;
-  __isset = other1461.__isset;
+RenamePartitionRequest::RenamePartitionRequest(const RenamePartitionRequest& other1488) {
+  catName = other1488.catName;
+  dbName = other1488.dbName;
+  tableName = other1488.tableName;
+  partVals = other1488.partVals;
+  newPart = other1488.newPart;
+  validWriteIdList = other1488.validWriteIdList;
+  __isset = other1488.__isset;
 }
-RenamePartitionRequest& RenamePartitionRequest::operator=(const RenamePartitionRequest& other1462) {
-  catName = other1462.catName;
-  dbName = other1462.dbName;
-  tableName = other1462.tableName;
-  partVals = other1462.partVals;
-  newPart = other1462.newPart;
-  validWriteIdList = other1462.validWriteIdList;
-  __isset = other1462.__isset;
-=======
-RenamePartitionRequest::RenamePartitionRequest(const RenamePartitionRequest& other1480) {
-  catName = other1480.catName;
-  dbName = other1480.dbName;
-  tableName = other1480.tableName;
-  partVals = other1480.partVals;
-  newPart = other1480.newPart;
-  validWriteIdList = other1480.validWriteIdList;
-  __isset = other1480.__isset;
-}
-RenamePartitionRequest& RenamePartitionRequest::operator=(const RenamePartitionRequest& other1481) {
-  catName = other1481.catName;
-  dbName = other1481.dbName;
-  tableName = other1481.tableName;
-  partVals = other1481.partVals;
-  newPart = other1481.newPart;
-  validWriteIdList = other1481.validWriteIdList;
-  __isset = other1481.__isset;
->>>>>>> External metastore: clean after rebase
+RenamePartitionRequest& RenamePartitionRequest::operator=(const RenamePartitionRequest& other1489) {
+  catName = other1489.catName;
+  dbName = other1489.dbName;
+  tableName = other1489.tableName;
+  partVals = other1489.partVals;
+  newPart = other1489.newPart;
+  validWriteIdList = other1489.validWriteIdList;
+  __isset = other1489.__isset;
   return *this;
 }
 void RenamePartitionRequest::printTo(std::ostream& out) const {
@@ -43645,19 +42521,11 @@ void swap(RenamePartitionResponse &a, RenamePartitionResponse &b) {
   (void) b;
 }
 
-<<<<<<< HEAD
-RenamePartitionResponse::RenamePartitionResponse(const RenamePartitionResponse& other1463) {
-  (void) other1463;
+RenamePartitionResponse::RenamePartitionResponse(const RenamePartitionResponse& other1490) {
+  (void) other1490;
 }
-RenamePartitionResponse& RenamePartitionResponse::operator=(const RenamePartitionResponse& other1464) {
-  (void) other1464;
-=======
-RenamePartitionResponse::RenamePartitionResponse(const RenamePartitionResponse& other1482) {
-  (void) other1482;
-}
-RenamePartitionResponse& RenamePartitionResponse::operator=(const RenamePartitionResponse& other1483) {
-  (void) other1483;
->>>>>>> External metastore: clean after rebase
+RenamePartitionResponse& RenamePartitionResponse::operator=(const RenamePartitionResponse& other1491) {
+  (void) other1491;
   return *this;
 }
 void RenamePartitionResponse::printTo(std::ostream& out) const {
@@ -43803,25 +42671,14 @@ uint32_t AlterTableRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->processorCapabilities.clear();
-<<<<<<< HEAD
-            uint32_t _size1465;
-            ::apache::thrift::protocol::TType _etype1468;
-            xfer += iprot->readListBegin(_etype1468, _size1465);
-            this->processorCapabilities.resize(_size1465);
-            uint32_t _i1469;
-            for (_i1469 = 0; _i1469 < _size1465; ++_i1469)
+            uint32_t _size1492;
+            ::apache::thrift::protocol::TType _etype1495;
+            xfer += iprot->readListBegin(_etype1495, _size1492);
+            this->processorCapabilities.resize(_size1492);
+            uint32_t _i1496;
+            for (_i1496 = 0; _i1496 < _size1492; ++_i1496)
             {
-              xfer += iprot->readString(this->processorCapabilities[_i1469]);
-=======
-            uint32_t _size1484;
-            ::apache::thrift::protocol::TType _etype1487;
-            xfer += iprot->readListBegin(_etype1487, _size1484);
-            this->processorCapabilities.resize(_size1484);
-            uint32_t _i1488;
-            for (_i1488 = 0; _i1488 < _size1484; ++_i1488)
-            {
-              xfer += iprot->readString(this->processorCapabilities[_i1488]);
->>>>>>> External metastore: clean after rebase
+              xfer += iprot->readString(this->processorCapabilities[_i1496]);
             }
             xfer += iprot->readListEnd();
           }
@@ -43897,17 +42754,10 @@ uint32_t AlterTableRequest::write(::apache::thrift::protocol::TProtocol* oprot) 
     xfer += oprot->writeFieldBegin("processorCapabilities", ::apache::thrift::protocol::T_LIST, 8);
     {
       xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->processorCapabilities.size()));
-<<<<<<< HEAD
-      std::vector<std::string> ::const_iterator _iter1470;
-      for (_iter1470 = this->processorCapabilities.begin(); _iter1470 != this->processorCapabilities.end(); ++_iter1470)
+      std::vector<std::string> ::const_iterator _iter1497;
+      for (_iter1497 = this->processorCapabilities.begin(); _iter1497 != this->processorCapabilities.end(); ++_iter1497)
       {
-        xfer += oprot->writeString((*_iter1470));
-=======
-      std::vector<std::string> ::const_iterator _iter1489;
-      for (_iter1489 = this->processorCapabilities.begin(); _iter1489 != this->processorCapabilities.end(); ++_iter1489)
-      {
-        xfer += oprot->writeString((*_iter1489));
->>>>>>> External metastore: clean after rebase
+        xfer += oprot->writeString((*_iter1497));
       }
       xfer += oprot->writeListEnd();
     }
@@ -43937,55 +42787,29 @@ void swap(AlterTableRequest &a, AlterTableRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-AlterTableRequest::AlterTableRequest(const AlterTableRequest& other1471) {
-  catName = other1471.catName;
-  dbName = other1471.dbName;
-  tableName = other1471.tableName;
-  table = other1471.table;
-  environmentContext = other1471.environmentContext;
-  writeId = other1471.writeId;
-  validWriteIdList = other1471.validWriteIdList;
-  processorCapabilities = other1471.processorCapabilities;
-  processorIdentifier = other1471.processorIdentifier;
-  __isset = other1471.__isset;
+AlterTableRequest::AlterTableRequest(const AlterTableRequest& other1498) {
+  catName = other1498.catName;
+  dbName = other1498.dbName;
+  tableName = other1498.tableName;
+  table = other1498.table;
+  environmentContext = other1498.environmentContext;
+  writeId = other1498.writeId;
+  validWriteIdList = other1498.validWriteIdList;
+  processorCapabilities = other1498.processorCapabilities;
+  processorIdentifier = other1498.processorIdentifier;
+  __isset = other1498.__isset;
 }
-AlterTableRequest& AlterTableRequest::operator=(const AlterTableRequest& other1472) {
-  catName = other1472.catName;
-  dbName = other1472.dbName;
-  tableName = other1472.tableName;
-  table = other1472.table;
-  environmentContext = other1472.environmentContext;
-  writeId = other1472.writeId;
-  validWriteIdList = other1472.validWriteIdList;
-  processorCapabilities = other1472.processorCapabilities;
-  processorIdentifier = other1472.processorIdentifier;
-  __isset = other1472.__isset;
-=======
-AlterTableRequest::AlterTableRequest(const AlterTableRequest& other1490) {
-  catName = other1490.catName;
-  dbName = other1490.dbName;
-  tableName = other1490.tableName;
-  table = other1490.table;
-  environmentContext = other1490.environmentContext;
-  writeId = other1490.writeId;
-  validWriteIdList = other1490.validWriteIdList;
-  processorCapabilities = other1490.processorCapabilities;
-  processorIdentifier = other1490.processorIdentifier;
-  __isset = other1490.__isset;
-}
-AlterTableRequest& AlterTableRequest::operator=(const AlterTableRequest& other1491) {
-  catName = other1491.catName;
-  dbName = other1491.dbName;
-  tableName = other1491.tableName;
-  table = other1491.table;
-  environmentContext = other1491.environmentContext;
-  writeId = other1491.writeId;
-  validWriteIdList = other1491.validWriteIdList;
-  processorCapabilities = other1491.processorCapabilities;
-  processorIdentifier = other1491.processorIdentifier;
-  __isset = other1491.__isset;
->>>>>>> External metastore: clean after rebase
+AlterTableRequest& AlterTableRequest::operator=(const AlterTableRequest& other1499) {
+  catName = other1499.catName;
+  dbName = other1499.dbName;
+  tableName = other1499.tableName;
+  table = other1499.table;
+  environmentContext = other1499.environmentContext;
+  writeId = other1499.writeId;
+  validWriteIdList = other1499.validWriteIdList;
+  processorCapabilities = other1499.processorCapabilities;
+  processorIdentifier = other1499.processorIdentifier;
+  __isset = other1499.__isset;
   return *this;
 }
 void AlterTableRequest::printTo(std::ostream& out) const {
@@ -44058,19 +42882,11 @@ void swap(AlterTableResponse &a, AlterTableResponse &b) {
   (void) b;
 }
 
-<<<<<<< HEAD
-AlterTableResponse::AlterTableResponse(const AlterTableResponse& other1473) {
-  (void) other1473;
+AlterTableResponse::AlterTableResponse(const AlterTableResponse& other1500) {
+  (void) other1500;
 }
-AlterTableResponse& AlterTableResponse::operator=(const AlterTableResponse& other1474) {
-  (void) other1474;
-=======
-AlterTableResponse::AlterTableResponse(const AlterTableResponse& other1492) {
-  (void) other1492;
-}
-AlterTableResponse& AlterTableResponse::operator=(const AlterTableResponse& other1493) {
-  (void) other1493;
->>>>>>> External metastore: clean after rebase
+AlterTableResponse& AlterTableResponse::operator=(const AlterTableResponse& other1501) {
+  (void) other1501;
   return *this;
 }
 void AlterTableResponse::printTo(std::ostream& out) const {
@@ -44080,161 +42896,6 @@ void AlterTableResponse::printTo(std::ostream& out) const {
 }
 
 
-<<<<<<< HEAD
-=======
-GetProjectionsSpec::~GetProjectionsSpec() noexcept {
-}
-
-
-void GetProjectionsSpec::__set_fieldList(const std::vector<std::string> & val) {
-  this->fieldList = val;
-}
-
-void GetProjectionsSpec::__set_includeParamKeyPattern(const std::string& val) {
-  this->includeParamKeyPattern = val;
-}
-
-void GetProjectionsSpec::__set_excludeParamKeyPattern(const std::string& val) {
-  this->excludeParamKeyPattern = val;
-}
-std::ostream& operator<<(std::ostream& out, const GetProjectionsSpec& obj)
-{
-  obj.printTo(out);
-  return out;
-}
-
-
-uint32_t GetProjectionsSpec::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  ::apache::thrift::protocol::TInputRecursionTracker tracker(*iprot);
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
-          {
-            this->fieldList.clear();
-            uint32_t _size1494;
-            ::apache::thrift::protocol::TType _etype1497;
-            xfer += iprot->readListBegin(_etype1497, _size1494);
-            this->fieldList.resize(_size1494);
-            uint32_t _i1498;
-            for (_i1498 = 0; _i1498 < _size1494; ++_i1498)
-            {
-              xfer += iprot->readString(this->fieldList[_i1498]);
-            }
-            xfer += iprot->readListEnd();
-          }
-          this->__isset.fieldList = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 2:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->includeParamKeyPattern);
-          this->__isset.includeParamKeyPattern = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      case 3:
-        if (ftype == ::apache::thrift::protocol::T_STRING) {
-          xfer += iprot->readString(this->excludeParamKeyPattern);
-          this->__isset.excludeParamKeyPattern = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t GetProjectionsSpec::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  ::apache::thrift::protocol::TOutputRecursionTracker tracker(*oprot);
-  xfer += oprot->writeStructBegin("GetProjectionsSpec");
-
-  xfer += oprot->writeFieldBegin("fieldList", ::apache::thrift::protocol::T_LIST, 1);
-  {
-    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->fieldList.size()));
-    std::vector<std::string> ::const_iterator _iter1499;
-    for (_iter1499 = this->fieldList.begin(); _iter1499 != this->fieldList.end(); ++_iter1499)
-    {
-      xfer += oprot->writeString((*_iter1499));
-    }
-    xfer += oprot->writeListEnd();
-  }
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("includeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 2);
-  xfer += oprot->writeString(this->includeParamKeyPattern);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldBegin("excludeParamKeyPattern", ::apache::thrift::protocol::T_STRING, 3);
-  xfer += oprot->writeString(this->excludeParamKeyPattern);
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-void swap(GetProjectionsSpec &a, GetProjectionsSpec &b) {
-  using ::std::swap;
-  swap(a.fieldList, b.fieldList);
-  swap(a.includeParamKeyPattern, b.includeParamKeyPattern);
-  swap(a.excludeParamKeyPattern, b.excludeParamKeyPattern);
-  swap(a.__isset, b.__isset);
-}
-
-GetProjectionsSpec::GetProjectionsSpec(const GetProjectionsSpec& other1500) {
-  fieldList = other1500.fieldList;
-  includeParamKeyPattern = other1500.includeParamKeyPattern;
-  excludeParamKeyPattern = other1500.excludeParamKeyPattern;
-  __isset = other1500.__isset;
-}
-GetProjectionsSpec& GetProjectionsSpec::operator=(const GetProjectionsSpec& other1501) {
-  fieldList = other1501.fieldList;
-  includeParamKeyPattern = other1501.includeParamKeyPattern;
-  excludeParamKeyPattern = other1501.excludeParamKeyPattern;
-  __isset = other1501.__isset;
-  return *this;
-}
-void GetProjectionsSpec::printTo(std::ostream& out) const {
-  using ::apache::thrift::to_string;
-  out << "GetProjectionsSpec(";
-  out << "fieldList=" << to_string(fieldList);
-  out << ", " << "includeParamKeyPattern=" << to_string(includeParamKeyPattern);
-  out << ", " << "excludeParamKeyPattern=" << to_string(excludeParamKeyPattern);
-  out << ")";
-}
-
-
->>>>>>> External metastore: clean after rebase
 GetPartitionsFilterSpec::~GetPartitionsFilterSpec() noexcept {
 }
 
@@ -48026,23 +46687,23 @@ void swap(AddPackageRequest &a, AddPackageRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-AddPackageRequest::AddPackageRequest(const AddPackageRequest& other1611) {
-  catName = other1611.catName;
-  dbName = other1611.dbName;
-  packageName = other1611.packageName;
-  ownerName = other1611.ownerName;
-  header = other1611.header;
-  body = other1611.body;
-  __isset = other1611.__isset;
+AddPackageRequest::AddPackageRequest(const AddPackageRequest& other1638) {
+  catName = other1638.catName;
+  dbName = other1638.dbName;
+  packageName = other1638.packageName;
+  ownerName = other1638.ownerName;
+  header = other1638.header;
+  body = other1638.body;
+  __isset = other1638.__isset;
 }
-AddPackageRequest& AddPackageRequest::operator=(const AddPackageRequest& other1612) {
-  catName = other1612.catName;
-  dbName = other1612.dbName;
-  packageName = other1612.packageName;
-  ownerName = other1612.ownerName;
-  header = other1612.header;
-  body = other1612.body;
-  __isset = other1612.__isset;
+AddPackageRequest& AddPackageRequest::operator=(const AddPackageRequest& other1639) {
+  catName = other1639.catName;
+  dbName = other1639.dbName;
+  packageName = other1639.packageName;
+  ownerName = other1639.ownerName;
+  header = other1639.header;
+  body = other1639.body;
+  __isset = other1639.__isset;
   return *this;
 }
 void AddPackageRequest::printTo(std::ostream& out) const {
@@ -48175,15 +46836,15 @@ void swap(GetPackageRequest &a, GetPackageRequest &b) {
   swap(a.packageName, b.packageName);
 }
 
-GetPackageRequest::GetPackageRequest(const GetPackageRequest& other1613) {
-  catName = other1613.catName;
-  dbName = other1613.dbName;
-  packageName = other1613.packageName;
+GetPackageRequest::GetPackageRequest(const GetPackageRequest& other1640) {
+  catName = other1640.catName;
+  dbName = other1640.dbName;
+  packageName = other1640.packageName;
 }
-GetPackageRequest& GetPackageRequest::operator=(const GetPackageRequest& other1614) {
-  catName = other1614.catName;
-  dbName = other1614.dbName;
-  packageName = other1614.packageName;
+GetPackageRequest& GetPackageRequest::operator=(const GetPackageRequest& other1641) {
+  catName = other1641.catName;
+  dbName = other1641.dbName;
+  packageName = other1641.packageName;
   return *this;
 }
 void GetPackageRequest::printTo(std::ostream& out) const {
@@ -48313,15 +46974,15 @@ void swap(DropPackageRequest &a, DropPackageRequest &b) {
   swap(a.packageName, b.packageName);
 }
 
-DropPackageRequest::DropPackageRequest(const DropPackageRequest& other1615) {
-  catName = other1615.catName;
-  dbName = other1615.dbName;
-  packageName = other1615.packageName;
+DropPackageRequest::DropPackageRequest(const DropPackageRequest& other1642) {
+  catName = other1642.catName;
+  dbName = other1642.dbName;
+  packageName = other1642.packageName;
 }
-DropPackageRequest& DropPackageRequest::operator=(const DropPackageRequest& other1616) {
-  catName = other1616.catName;
-  dbName = other1616.dbName;
-  packageName = other1616.packageName;
+DropPackageRequest& DropPackageRequest::operator=(const DropPackageRequest& other1643) {
+  catName = other1643.catName;
+  dbName = other1643.dbName;
+  packageName = other1643.packageName;
   return *this;
 }
 void DropPackageRequest::printTo(std::ostream& out) const {
@@ -48431,15 +47092,15 @@ void swap(ListPackageRequest &a, ListPackageRequest &b) {
   swap(a.__isset, b.__isset);
 }
 
-ListPackageRequest::ListPackageRequest(const ListPackageRequest& other1617) {
-  catName = other1617.catName;
-  dbName = other1617.dbName;
-  __isset = other1617.__isset;
+ListPackageRequest::ListPackageRequest(const ListPackageRequest& other1644) {
+  catName = other1644.catName;
+  dbName = other1644.dbName;
+  __isset = other1644.__isset;
 }
-ListPackageRequest& ListPackageRequest::operator=(const ListPackageRequest& other1618) {
-  catName = other1618.catName;
-  dbName = other1618.dbName;
-  __isset = other1618.__isset;
+ListPackageRequest& ListPackageRequest::operator=(const ListPackageRequest& other1645) {
+  catName = other1645.catName;
+  dbName = other1645.dbName;
+  __isset = other1645.__isset;
   return *this;
 }
 void ListPackageRequest::printTo(std::ostream& out) const {
@@ -48611,23 +47272,23 @@ void swap(Package &a, Package &b) {
   swap(a.__isset, b.__isset);
 }
 
-Package::Package(const Package& other1619) {
-  catName = other1619.catName;
-  dbName = other1619.dbName;
-  packageName = other1619.packageName;
-  ownerName = other1619.ownerName;
-  header = other1619.header;
-  body = other1619.body;
-  __isset = other1619.__isset;
+Package::Package(const Package& other1646) {
+  catName = other1646.catName;
+  dbName = other1646.dbName;
+  packageName = other1646.packageName;
+  ownerName = other1646.ownerName;
+  header = other1646.header;
+  body = other1646.body;
+  __isset = other1646.__isset;
 }
-Package& Package::operator=(const Package& other1620) {
-  catName = other1620.catName;
-  dbName = other1620.dbName;
-  packageName = other1620.packageName;
-  ownerName = other1620.ownerName;
-  header = other1620.header;
-  body = other1620.body;
-  __isset = other1620.__isset;
+Package& Package::operator=(const Package& other1647) {
+  catName = other1647.catName;
+  dbName = other1647.dbName;
+  packageName = other1647.packageName;
+  ownerName = other1647.ownerName;
+  header = other1647.header;
+  body = other1647.body;
+  __isset = other1647.__isset;
   return *this;
 }
 void Package::printTo(std::ostream& out) const {
@@ -48718,23 +47379,13 @@ void swap(MetaException &a, MetaException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-MetaException::MetaException(const MetaException& other1621) : TException() {
-  message = other1621.message;
-  __isset = other1621.__isset;
+MetaException::MetaException(const MetaException& other1648) : TException() {
+  message = other1648.message;
+  __isset = other1648.__isset;
 }
-MetaException& MetaException::operator=(const MetaException& other1622) {
-  message = other1622.message;
-  __isset = other1622.__isset;
-=======
-MetaException::MetaException(const MetaException& other1638) : TException() {
-  message = other1638.message;
-  __isset = other1638.__isset;
-}
-MetaException& MetaException::operator=(const MetaException& other1639) {
-  message = other1639.message;
-  __isset = other1639.__isset;
->>>>>>> External metastore: clean after rebase
+MetaException& MetaException::operator=(const MetaException& other1649) {
+  message = other1649.message;
+  __isset = other1649.__isset;
   return *this;
 }
 void MetaException::printTo(std::ostream& out) const {
@@ -48831,23 +47482,13 @@ void swap(UnknownTableException &a, UnknownTableException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-UnknownTableException::UnknownTableException(const UnknownTableException& other1623) : TException() {
-  message = other1623.message;
-  __isset = other1623.__isset;
+UnknownTableException::UnknownTableException(const UnknownTableException& other1650) : TException() {
+  message = other1650.message;
+  __isset = other1650.__isset;
 }
-UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1624) {
-  message = other1624.message;
-  __isset = other1624.__isset;
-=======
-UnknownTableException::UnknownTableException(const UnknownTableException& other1640) : TException() {
-  message = other1640.message;
-  __isset = other1640.__isset;
-}
-UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1641) {
-  message = other1641.message;
-  __isset = other1641.__isset;
->>>>>>> External metastore: clean after rebase
+UnknownTableException& UnknownTableException::operator=(const UnknownTableException& other1651) {
+  message = other1651.message;
+  __isset = other1651.__isset;
   return *this;
 }
 void UnknownTableException::printTo(std::ostream& out) const {
@@ -48944,23 +47585,13 @@ void swap(UnknownDBException &a, UnknownDBException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-UnknownDBException::UnknownDBException(const UnknownDBException& other1625) : TException() {
-  message = other1625.message;
-  __isset = other1625.__isset;
+UnknownDBException::UnknownDBException(const UnknownDBException& other1652) : TException() {
+  message = other1652.message;
+  __isset = other1652.__isset;
 }
-UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1626) {
-  message = other1626.message;
-  __isset = other1626.__isset;
-=======
-UnknownDBException::UnknownDBException(const UnknownDBException& other1642) : TException() {
-  message = other1642.message;
-  __isset = other1642.__isset;
-}
-UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1643) {
-  message = other1643.message;
-  __isset = other1643.__isset;
->>>>>>> External metastore: clean after rebase
+UnknownDBException& UnknownDBException::operator=(const UnknownDBException& other1653) {
+  message = other1653.message;
+  __isset = other1653.__isset;
   return *this;
 }
 void UnknownDBException::printTo(std::ostream& out) const {
@@ -49057,23 +47688,13 @@ void swap(AlreadyExistsException &a, AlreadyExistsException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1627) : TException() {
-  message = other1627.message;
-  __isset = other1627.__isset;
+AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1654) : TException() {
+  message = other1654.message;
+  __isset = other1654.__isset;
 }
-AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1628) {
-  message = other1628.message;
-  __isset = other1628.__isset;
-=======
-AlreadyExistsException::AlreadyExistsException(const AlreadyExistsException& other1644) : TException() {
-  message = other1644.message;
-  __isset = other1644.__isset;
-}
-AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1645) {
-  message = other1645.message;
-  __isset = other1645.__isset;
->>>>>>> External metastore: clean after rebase
+AlreadyExistsException& AlreadyExistsException::operator=(const AlreadyExistsException& other1655) {
+  message = other1655.message;
+  __isset = other1655.__isset;
   return *this;
 }
 void AlreadyExistsException::printTo(std::ostream& out) const {
@@ -49170,23 +47791,13 @@ void swap(InvalidPartitionException &a, InvalidPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1629) : TException() {
-  message = other1629.message;
-  __isset = other1629.__isset;
+InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1656) : TException() {
+  message = other1656.message;
+  __isset = other1656.__isset;
 }
-InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1630) {
-  message = other1630.message;
-  __isset = other1630.__isset;
-=======
-InvalidPartitionException::InvalidPartitionException(const InvalidPartitionException& other1646) : TException() {
-  message = other1646.message;
-  __isset = other1646.__isset;
-}
-InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1647) {
-  message = other1647.message;
-  __isset = other1647.__isset;
->>>>>>> External metastore: clean after rebase
+InvalidPartitionException& InvalidPartitionException::operator=(const InvalidPartitionException& other1657) {
+  message = other1657.message;
+  __isset = other1657.__isset;
   return *this;
 }
 void InvalidPartitionException::printTo(std::ostream& out) const {
@@ -49283,23 +47894,13 @@ void swap(UnknownPartitionException &a, UnknownPartitionException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1631) : TException() {
-  message = other1631.message;
-  __isset = other1631.__isset;
+UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1658) : TException() {
+  message = other1658.message;
+  __isset = other1658.__isset;
 }
-UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1632) {
-  message = other1632.message;
-  __isset = other1632.__isset;
-=======
-UnknownPartitionException::UnknownPartitionException(const UnknownPartitionException& other1648) : TException() {
-  message = other1648.message;
-  __isset = other1648.__isset;
-}
-UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1649) {
-  message = other1649.message;
-  __isset = other1649.__isset;
->>>>>>> External metastore: clean after rebase
+UnknownPartitionException& UnknownPartitionException::operator=(const UnknownPartitionException& other1659) {
+  message = other1659.message;
+  __isset = other1659.__isset;
   return *this;
 }
 void UnknownPartitionException::printTo(std::ostream& out) const {
@@ -49396,23 +47997,13 @@ void swap(InvalidObjectException &a, InvalidObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1633) : TException() {
-  message = other1633.message;
-  __isset = other1633.__isset;
+InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1660) : TException() {
+  message = other1660.message;
+  __isset = other1660.__isset;
 }
-InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1634) {
-  message = other1634.message;
-  __isset = other1634.__isset;
-=======
-InvalidObjectException::InvalidObjectException(const InvalidObjectException& other1650) : TException() {
-  message = other1650.message;
-  __isset = other1650.__isset;
-}
-InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1651) {
-  message = other1651.message;
-  __isset = other1651.__isset;
->>>>>>> External metastore: clean after rebase
+InvalidObjectException& InvalidObjectException::operator=(const InvalidObjectException& other1661) {
+  message = other1661.message;
+  __isset = other1661.__isset;
   return *this;
 }
 void InvalidObjectException::printTo(std::ostream& out) const {
@@ -49509,23 +48100,13 @@ void swap(NoSuchObjectException &a, NoSuchObjectException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1635) : TException() {
-  message = other1635.message;
-  __isset = other1635.__isset;
+NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1662) : TException() {
+  message = other1662.message;
+  __isset = other1662.__isset;
 }
-NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1636) {
-  message = other1636.message;
-  __isset = other1636.__isset;
-=======
-NoSuchObjectException::NoSuchObjectException(const NoSuchObjectException& other1652) : TException() {
-  message = other1652.message;
-  __isset = other1652.__isset;
-}
-NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1653) {
-  message = other1653.message;
-  __isset = other1653.__isset;
->>>>>>> External metastore: clean after rebase
+NoSuchObjectException& NoSuchObjectException::operator=(const NoSuchObjectException& other1663) {
+  message = other1663.message;
+  __isset = other1663.__isset;
   return *this;
 }
 void NoSuchObjectException::printTo(std::ostream& out) const {
@@ -49622,23 +48203,13 @@ void swap(InvalidOperationException &a, InvalidOperationException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1637) : TException() {
-  message = other1637.message;
-  __isset = other1637.__isset;
+InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1664) : TException() {
+  message = other1664.message;
+  __isset = other1664.__isset;
 }
-InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1638) {
-  message = other1638.message;
-  __isset = other1638.__isset;
-=======
-InvalidOperationException::InvalidOperationException(const InvalidOperationException& other1654) : TException() {
-  message = other1654.message;
-  __isset = other1654.__isset;
-}
-InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1655) {
-  message = other1655.message;
-  __isset = other1655.__isset;
->>>>>>> External metastore: clean after rebase
+InvalidOperationException& InvalidOperationException::operator=(const InvalidOperationException& other1665) {
+  message = other1665.message;
+  __isset = other1665.__isset;
   return *this;
 }
 void InvalidOperationException::printTo(std::ostream& out) const {
@@ -49735,23 +48306,13 @@ void swap(ConfigValSecurityException &a, ConfigValSecurityException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1639) : TException() {
-  message = other1639.message;
-  __isset = other1639.__isset;
+ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1666) : TException() {
+  message = other1666.message;
+  __isset = other1666.__isset;
 }
-ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1640) {
-  message = other1640.message;
-  __isset = other1640.__isset;
-=======
-ConfigValSecurityException::ConfigValSecurityException(const ConfigValSecurityException& other1656) : TException() {
-  message = other1656.message;
-  __isset = other1656.__isset;
-}
-ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1657) {
-  message = other1657.message;
-  __isset = other1657.__isset;
->>>>>>> External metastore: clean after rebase
+ConfigValSecurityException& ConfigValSecurityException::operator=(const ConfigValSecurityException& other1667) {
+  message = other1667.message;
+  __isset = other1667.__isset;
   return *this;
 }
 void ConfigValSecurityException::printTo(std::ostream& out) const {
@@ -49848,23 +48409,13 @@ void swap(InvalidInputException &a, InvalidInputException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-InvalidInputException::InvalidInputException(const InvalidInputException& other1641) : TException() {
-  message = other1641.message;
-  __isset = other1641.__isset;
+InvalidInputException::InvalidInputException(const InvalidInputException& other1668) : TException() {
+  message = other1668.message;
+  __isset = other1668.__isset;
 }
-InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1642) {
-  message = other1642.message;
-  __isset = other1642.__isset;
-=======
-InvalidInputException::InvalidInputException(const InvalidInputException& other1658) : TException() {
-  message = other1658.message;
-  __isset = other1658.__isset;
-}
-InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1659) {
-  message = other1659.message;
-  __isset = other1659.__isset;
->>>>>>> External metastore: clean after rebase
+InvalidInputException& InvalidInputException::operator=(const InvalidInputException& other1669) {
+  message = other1669.message;
+  __isset = other1669.__isset;
   return *this;
 }
 void InvalidInputException::printTo(std::ostream& out) const {
@@ -49961,23 +48512,13 @@ void swap(NoSuchTxnException &a, NoSuchTxnException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1643) : TException() {
-  message = other1643.message;
-  __isset = other1643.__isset;
+NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1670) : TException() {
+  message = other1670.message;
+  __isset = other1670.__isset;
 }
-NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1644) {
-  message = other1644.message;
-  __isset = other1644.__isset;
-=======
-NoSuchTxnException::NoSuchTxnException(const NoSuchTxnException& other1660) : TException() {
-  message = other1660.message;
-  __isset = other1660.__isset;
-}
-NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1661) {
-  message = other1661.message;
-  __isset = other1661.__isset;
->>>>>>> External metastore: clean after rebase
+NoSuchTxnException& NoSuchTxnException::operator=(const NoSuchTxnException& other1671) {
+  message = other1671.message;
+  __isset = other1671.__isset;
   return *this;
 }
 void NoSuchTxnException::printTo(std::ostream& out) const {
@@ -50074,23 +48615,13 @@ void swap(TxnAbortedException &a, TxnAbortedException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1645) : TException() {
-  message = other1645.message;
-  __isset = other1645.__isset;
+TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1672) : TException() {
+  message = other1672.message;
+  __isset = other1672.__isset;
 }
-TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1646) {
-  message = other1646.message;
-  __isset = other1646.__isset;
-=======
-TxnAbortedException::TxnAbortedException(const TxnAbortedException& other1662) : TException() {
-  message = other1662.message;
-  __isset = other1662.__isset;
-}
-TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1663) {
-  message = other1663.message;
-  __isset = other1663.__isset;
->>>>>>> External metastore: clean after rebase
+TxnAbortedException& TxnAbortedException::operator=(const TxnAbortedException& other1673) {
+  message = other1673.message;
+  __isset = other1673.__isset;
   return *this;
 }
 void TxnAbortedException::printTo(std::ostream& out) const {
@@ -50187,23 +48718,13 @@ void swap(TxnOpenException &a, TxnOpenException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-TxnOpenException::TxnOpenException(const TxnOpenException& other1647) : TException() {
-  message = other1647.message;
-  __isset = other1647.__isset;
+TxnOpenException::TxnOpenException(const TxnOpenException& other1674) : TException() {
+  message = other1674.message;
+  __isset = other1674.__isset;
 }
-TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1648) {
-  message = other1648.message;
-  __isset = other1648.__isset;
-=======
-TxnOpenException::TxnOpenException(const TxnOpenException& other1664) : TException() {
-  message = other1664.message;
-  __isset = other1664.__isset;
-}
-TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1665) {
-  message = other1665.message;
-  __isset = other1665.__isset;
->>>>>>> External metastore: clean after rebase
+TxnOpenException& TxnOpenException::operator=(const TxnOpenException& other1675) {
+  message = other1675.message;
+  __isset = other1675.__isset;
   return *this;
 }
 void TxnOpenException::printTo(std::ostream& out) const {
@@ -50300,23 +48821,13 @@ void swap(NoSuchLockException &a, NoSuchLockException &b) {
   swap(a.__isset, b.__isset);
 }
 
-<<<<<<< HEAD
-NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1649) : TException() {
-  message = other1649.message;
-  __isset = other1649.__isset;
+NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1676) : TException() {
+  message = other1676.message;
+  __isset = other1676.__isset;
 }
-NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1650) {
-  message = other1650.message;
-  __isset = other1650.__isset;
-=======
-NoSuchLockException::NoSuchLockException(const NoSuchLockException& other1666) : TException() {
-  message = other1666.message;
-  __isset = other1666.__isset;
-}
-NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1667) {
-  message = other1667.message;
-  __isset = other1667.__isset;
->>>>>>> External metastore: clean after rebase
+NoSuchLockException& NoSuchLockException::operator=(const NoSuchLockException& other1677) {
+  message = other1677.message;
+  __isset = other1677.__isset;
   return *this;
 }
 void NoSuchLockException::printTo(std::ostream& out) const {

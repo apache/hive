@@ -92,23 +92,13 @@ class GetProjectionsSpec
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->fieldList = array();
-<<<<<<< HEAD
-                        $_size875 = 0;
-                        $_etype878 = 0;
-                        $xfer += $input->readListBegin($_etype878, $_size875);
-                        for ($_i879 = 0; $_i879 < $_size875; ++$_i879) {
-                            $elem880 = null;
-                            $xfer += $input->readString($elem880);
-                            $this->fieldList []= $elem880;
-=======
-                        $_size1089 = 0;
-                        $_etype1092 = 0;
-                        $xfer += $input->readListBegin($_etype1092, $_size1089);
-                        for ($_i1093 = 0; $_i1093 < $_size1089; ++$_i1093) {
-                            $elem1094 = null;
-                            $xfer += $input->readString($elem1094);
-                            $this->fieldList []= $elem1094;
->>>>>>> External metastore: clean after rebase
+                        $_size884 = 0;
+                        $_etype887 = 0;
+                        $xfer += $input->readListBegin($_etype887, $_size884);
+                        for ($_i888 = 0; $_i888 < $_size884; ++$_i888) {
+                            $elem889 = null;
+                            $xfer += $input->readString($elem889);
+                            $this->fieldList []= $elem889;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -149,13 +139,8 @@ class GetProjectionsSpec
             }
             $xfer += $output->writeFieldBegin('fieldList', TType::LST, 1);
             $output->writeListBegin(TType::STRING, count($this->fieldList));
-<<<<<<< HEAD
-            foreach ($this->fieldList as $iter881) {
-                $xfer += $output->writeString($iter881);
-=======
-            foreach ($this->fieldList as $iter1095) {
-                $xfer += $output->writeString($iter1095);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->fieldList as $iter890) {
+                $xfer += $output->writeString($iter890);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

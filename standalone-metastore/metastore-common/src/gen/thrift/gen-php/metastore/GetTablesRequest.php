@@ -153,23 +153,13 @@ class GetTablesRequest
                 case 2:
                     if ($ftype == TType::LST) {
                         $this->tblNames = array();
-<<<<<<< HEAD
-                        $_size889 = 0;
-                        $_etype892 = 0;
-                        $xfer += $input->readListBegin($_etype892, $_size889);
-                        for ($_i893 = 0; $_i893 < $_size889; ++$_i893) {
-                            $elem894 = null;
-                            $xfer += $input->readString($elem894);
-                            $this->tblNames []= $elem894;
-=======
-                        $_size891 = 0;
-                        $_etype894 = 0;
-                        $xfer += $input->readListBegin($_etype894, $_size891);
-                        for ($_i895 = 0; $_i895 < $_size891; ++$_i895) {
-                            $elem896 = null;
-                            $xfer += $input->readString($elem896);
-                            $this->tblNames []= $elem896;
->>>>>>> External metastore: clean after rebase
+                        $_size898 = 0;
+                        $_etype901 = 0;
+                        $xfer += $input->readListBegin($_etype901, $_size898);
+                        for ($_i902 = 0; $_i902 < $_size898; ++$_i902) {
+                            $elem903 = null;
+                            $xfer += $input->readString($elem903);
+                            $this->tblNames []= $elem903;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -194,23 +184,13 @@ class GetTablesRequest
                 case 5:
                     if ($ftype == TType::LST) {
                         $this->processorCapabilities = array();
-<<<<<<< HEAD
-                        $_size895 = 0;
-                        $_etype898 = 0;
-                        $xfer += $input->readListBegin($_etype898, $_size895);
-                        for ($_i899 = 0; $_i899 < $_size895; ++$_i899) {
-                            $elem900 = null;
-                            $xfer += $input->readString($elem900);
-                            $this->processorCapabilities []= $elem900;
-=======
-                        $_size897 = 0;
-                        $_etype900 = 0;
-                        $xfer += $input->readListBegin($_etype900, $_size897);
-                        for ($_i901 = 0; $_i901 < $_size897; ++$_i901) {
-                            $elem902 = null;
-                            $xfer += $input->readString($elem902);
-                            $this->processorCapabilities []= $elem902;
->>>>>>> External metastore: clean after rebase
+                        $_size904 = 0;
+                        $_etype907 = 0;
+                        $xfer += $input->readListBegin($_etype907, $_size904);
+                        for ($_i908 = 0; $_i908 < $_size904; ++$_i908) {
+                            $elem909 = null;
+                            $xfer += $input->readString($elem909);
+                            $this->processorCapabilities []= $elem909;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -257,13 +237,8 @@ class GetTablesRequest
             }
             $xfer += $output->writeFieldBegin('tblNames', TType::LST, 2);
             $output->writeListBegin(TType::STRING, count($this->tblNames));
-<<<<<<< HEAD
-            foreach ($this->tblNames as $iter901) {
-                $xfer += $output->writeString($iter901);
-=======
-            foreach ($this->tblNames as $iter903) {
-                $xfer += $output->writeString($iter903);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->tblNames as $iter910) {
+                $xfer += $output->writeString($iter910);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
@@ -287,13 +262,8 @@ class GetTablesRequest
             }
             $xfer += $output->writeFieldBegin('processorCapabilities', TType::LST, 5);
             $output->writeListBegin(TType::STRING, count($this->processorCapabilities));
-<<<<<<< HEAD
-            foreach ($this->processorCapabilities as $iter902) {
-                $xfer += $output->writeString($iter902);
-=======
-            foreach ($this->processorCapabilities as $iter904) {
-                $xfer += $output->writeString($iter904);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->processorCapabilities as $iter911) {
+                $xfer += $output->writeString($iter911);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();

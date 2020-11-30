@@ -1090,25 +1090,14 @@ package org.apache.hadoop.hive.metastore.api;
           case 4: // COLS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-<<<<<<< HEAD
-                org.apache.thrift.protocol.TList _list1128 = iprot.readListBegin();
-                struct.cols = new java.util.ArrayList<FieldSchema>(_list1128.size);
-                @org.apache.thrift.annotation.Nullable FieldSchema _elem1129;
-                for (int _i1130 = 0; _i1130 < _list1128.size; ++_i1130)
+                org.apache.thrift.protocol.TList _list1138 = iprot.readListBegin();
+                struct.cols = new java.util.ArrayList<FieldSchema>(_list1138.size);
+                @org.apache.thrift.annotation.Nullable FieldSchema _elem1139;
+                for (int _i1140 = 0; _i1140 < _list1138.size; ++_i1140)
                 {
-                  _elem1129 = new FieldSchema();
-                  _elem1129.read(iprot);
-                  struct.cols.add(_elem1129);
-=======
-                org.apache.thrift.protocol.TList _list1130 = iprot.readListBegin();
-                struct.cols = new java.util.ArrayList<FieldSchema>(_list1130.size);
-                @org.apache.thrift.annotation.Nullable FieldSchema _elem1131;
-                for (int _i1132 = 0; _i1132 < _list1130.size; ++_i1132)
-                {
-                  _elem1131 = new FieldSchema();
-                  _elem1131.read(iprot);
-                  struct.cols.add(_elem1131);
->>>>>>> External metastore: clean after rebase
+                  _elem1139 = new FieldSchema();
+                  _elem1139.read(iprot);
+                  struct.cols.add(_elem1139);
                 }
                 iprot.readListEnd();
               }
@@ -1194,15 +1183,9 @@ package org.apache.hadoop.hive.metastore.api;
         oprot.writeFieldBegin(COLS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.cols.size()));
-<<<<<<< HEAD
-          for (FieldSchema _iter1131 : struct.cols)
+          for (FieldSchema _iter1141 : struct.cols)
           {
-            _iter1131.write(oprot);
-=======
-          for (FieldSchema _iter1133 : struct.cols)
-          {
-            _iter1133.write(oprot);
->>>>>>> External metastore: clean after rebase
+            _iter1141.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -1311,15 +1294,9 @@ package org.apache.hadoop.hive.metastore.api;
       if (struct.isSetCols()) {
         {
           oprot.writeI32(struct.cols.size());
-<<<<<<< HEAD
-          for (FieldSchema _iter1132 : struct.cols)
+          for (FieldSchema _iter1142 : struct.cols)
           {
-            _iter1132.write(oprot);
-=======
-          for (FieldSchema _iter1134 : struct.cols)
-          {
-            _iter1134.write(oprot);
->>>>>>> External metastore: clean after rebase
+            _iter1142.write(oprot);
           }
         }
       }
@@ -1362,25 +1339,14 @@ package org.apache.hadoop.hive.metastore.api;
       }
       if (incoming.get(3)) {
         {
-<<<<<<< HEAD
-          org.apache.thrift.protocol.TList _list1133 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.cols = new java.util.ArrayList<FieldSchema>(_list1133.size);
-          @org.apache.thrift.annotation.Nullable FieldSchema _elem1134;
-          for (int _i1135 = 0; _i1135 < _list1133.size; ++_i1135)
+          org.apache.thrift.protocol.TList _list1143 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+          struct.cols = new java.util.ArrayList<FieldSchema>(_list1143.size);
+          @org.apache.thrift.annotation.Nullable FieldSchema _elem1144;
+          for (int _i1145 = 0; _i1145 < _list1143.size; ++_i1145)
           {
-            _elem1134 = new FieldSchema();
-            _elem1134.read(iprot);
-            struct.cols.add(_elem1134);
-=======
-          org.apache.thrift.protocol.TList _list1135 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-          struct.cols = new java.util.ArrayList<FieldSchema>(_list1135.size);
-          @org.apache.thrift.annotation.Nullable FieldSchema _elem1136;
-          for (int _i1137 = 0; _i1137 < _list1135.size; ++_i1137)
-          {
-            _elem1136 = new FieldSchema();
-            _elem1136.read(iprot);
-            struct.cols.add(_elem1136);
->>>>>>> External metastore: clean after rebase
+            _elem1144 = new FieldSchema();
+            _elem1144.read(iprot);
+            struct.cols.add(_elem1144);
           }
         }
         struct.setColsIsSet(true);

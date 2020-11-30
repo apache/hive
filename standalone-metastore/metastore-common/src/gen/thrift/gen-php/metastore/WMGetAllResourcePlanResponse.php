@@ -69,25 +69,14 @@ class WMGetAllResourcePlanResponse
                 case 1:
                     if ($ftype == TType::LST) {
                         $this->resourcePlans = array();
-<<<<<<< HEAD
-                        $_size966 = 0;
-                        $_etype969 = 0;
-                        $xfer += $input->readListBegin($_etype969, $_size966);
-                        for ($_i970 = 0; $_i970 < $_size966; ++$_i970) {
-                            $elem971 = null;
-                            $elem971 = new \metastore\WMResourcePlan();
-                            $xfer += $elem971->read($input);
-                            $this->resourcePlans []= $elem971;
-=======
-                        $_size968 = 0;
-                        $_etype971 = 0;
-                        $xfer += $input->readListBegin($_etype971, $_size968);
-                        for ($_i972 = 0; $_i972 < $_size968; ++$_i972) {
-                            $elem973 = null;
-                            $elem973 = new \metastore\WMResourcePlan();
-                            $xfer += $elem973->read($input);
-                            $this->resourcePlans []= $elem973;
->>>>>>> External metastore: clean after rebase
+                        $_size975 = 0;
+                        $_etype978 = 0;
+                        $xfer += $input->readListBegin($_etype978, $_size975);
+                        for ($_i979 = 0; $_i979 < $_size975; ++$_i979) {
+                            $elem980 = null;
+                            $elem980 = new \metastore\WMResourcePlan();
+                            $xfer += $elem980->read($input);
+                            $this->resourcePlans []= $elem980;
                         }
                         $xfer += $input->readListEnd();
                     } else {
@@ -114,13 +103,8 @@ class WMGetAllResourcePlanResponse
             }
             $xfer += $output->writeFieldBegin('resourcePlans', TType::LST, 1);
             $output->writeListBegin(TType::STRUCT, count($this->resourcePlans));
-<<<<<<< HEAD
-            foreach ($this->resourcePlans as $iter972) {
-                $xfer += $iter972->write($output);
-=======
-            foreach ($this->resourcePlans as $iter974) {
-                $xfer += $iter974->write($output);
->>>>>>> External metastore: clean after rebase
+            foreach ($this->resourcePlans as $iter981) {
+                $xfer += $iter981->write($output);
             }
             $output->writeListEnd();
             $xfer += $output->writeFieldEnd();
