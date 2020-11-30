@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.Validator.RangeValidator;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.QueryIdentifierProto;
 import org.apache.hadoop.hive.llap.protocol.LlapTaskUmbilicalProtocol;
 import org.apache.hadoop.ipc.RPC;
@@ -60,23 +61,32 @@ public class LlapTaskUmbilicalServer {
     String[] portRange =
         conf.get(HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT.varname)
             .split("-");
+    boolean isHadoopSecurityAuthorizationEnabled = conf.getBoolean(
+        CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION, false);
 
     int minPort = Integer.parseInt(portRange[0]);
     boolean portFound = false;
     IOException e = null;
     if (portRange.length == 1) {
       // Single port specified, not Range.
-      startServer(conf, umbilical, numHandlers, minPort);
+      startServer(conf, umbilical, numHandlers, minPort,
+          isHadoopSecurityAuthorizationEnabled);
       portFound = true;
     } else {
       int maxPort = Integer.parseInt(portRange[1]);
+      // Validate the range specified is valid. i.e the ports lie between
+      // 1024 and 65535.
+      validatePortRange(portRange[0], portRange[1]);
+
       for (int i = minPort; i < maxPort; i++) {
         try {
-          startServer(conf, umbilical, numHandlers, i);
+          startServer(conf, umbilical, numHandlers, i,
+              isHadoopSecurityAuthorizationEnabled);
           portFound = true;
           break;
         } catch (BindException be) {
           // Ignore and move ahead, in search of a free port.
+          LOG.warn("Unable to bind to port {}", i, be);
           e = be;
         }
       }
@@ -91,16 +101,37 @@ public class LlapTaskUmbilicalServer {
             " with numHandlers=" + numHandlers);
   }
 
-  private void startServer(Configuration conf,
-      LlapTaskUmbilicalProtocol umbilical, int numHandlers, int port)
+  private void validatePortRange(String minPort, String maxPort)
       throws IOException {
+    RangeValidator rangeValidator = new RangeValidator(1024L, 65535L);
+    String valMin = rangeValidator.validate(minPort);
+    String valMax = rangeValidator.validate(maxPort);
+    if (valMin == null & valMax == null) {
+      throw new IOException("Invalid minimum range value: " + minPort + " and "
+          + "maximum range value: " + maxPort + " for "
+          + HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT.varname
+          + ". The value should be between 1024 and 65535.");
+    }
+    if (valMin != null) {
+      throw new IOException("Invalid minimum range value :" + minPort + " for "
+          + HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT.varname
+          + ". The value should be between 1024 and 65535.");
+    }
+    if (valMax != null) {
+      throw new IOException("Invalid maximum range value:" + maxPort + " for "
+          + HiveConf.ConfVars.LLAP_TASK_UMBILICAL_SERVER_PORT.varname
+          + ". The value should be between 1024 and 65535.");
+    }
+  }
+
+  private void startServer(Configuration conf,
+      LlapTaskUmbilicalProtocol umbilical, int numHandlers, int port,
+      boolean isHadoopSecurityAuthorizationEnabled) throws IOException {
     server = new RPC.Builder(conf).setProtocol(LlapTaskUmbilicalProtocol.class)
         .setBindAddress("0.0.0.0").setPort(port).setInstance(umbilical)
         .setNumHandlers(numHandlers).setSecretManager(jobTokenSecretManager)
         .build();
-    if (conf
-        .getBoolean(CommonConfigurationKeysPublic.HADOOP_SECURITY_AUTHORIZATION,
-            false)) {
+    if (isHadoopSecurityAuthorizationEnabled) {
       server.refreshServiceAcl(conf, new LlapUmbilicalExternalPolicyProvider());
     }
     server.start();
