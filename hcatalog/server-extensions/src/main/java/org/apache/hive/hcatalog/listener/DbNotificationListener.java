@@ -24,13 +24,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Queue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
@@ -160,6 +164,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
   private Configuration conf;
   private MessageEncoder msgEncoder;
+
+  private final Queue<Long> notificationLogSequence = new ArrayDeque<>();
 
   //cleaner is a static object, use static synchronized to make sure its thread-safe
   private static synchronized void init(Configuration conf) throws MetaException {
@@ -986,32 +992,38 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
    * @throws MetaException if the sequence table is not properly initialized
    */
   private long getNextNLId(Connection con, SQLGenerator sqlGenerator, String sequence)
-          throws SQLException, MetaException {
+      throws SQLException, MetaException {
 
-    final String sfuSql = sqlGenerator.addForUpdateClause(NL_SEL_SQL);
-    Optional<Long> nextSequenceValue = Optional.empty();
+    synchronized (notificationLogSequence) {
+      if (notificationLogSequence.isEmpty()) {
+        final String sfuSql = sqlGenerator.addForUpdateClause(NL_SEL_SQL);
+        Optional<Long> nextSequenceValue = Optional.empty();
 
-    LOG.debug("Going to execute query [{}][1={}]", sfuSql, sequence);
-    try (PreparedStatement stmt = con.prepareStatement(sfuSql)) {
-      stmt.setString(1, sequence);
-      ResultSet rs = stmt.executeQuery();
-      if (rs.next()) {
-        nextSequenceValue = Optional.of(rs.getLong(1));
+        LOG.debug("Going to execute query [{}][1={}]", sfuSql, sequence);
+        try (PreparedStatement stmt = con.prepareStatement(sfuSql)) {
+          stmt.setString(1, sequence);
+          ResultSet rs = stmt.executeQuery();
+          if (rs.next()) {
+            nextSequenceValue = Optional.of(rs.getLong(1));
+          }
+        }
+
+        // Reserve sequence IDs in blocks of 10
+        final long updatedNLId = 10L + nextSequenceValue.orElseThrow(
+            () -> new MetaException("Transaction database not properly configured, failed to determine next NL ID"));
+
+        LOG.debug("Going to execute query [{}][1={}][2={}]", NL_UPD_SQL, updatedNLId, sequence);
+        try (PreparedStatement stmt = con.prepareStatement(NL_UPD_SQL)) {
+          stmt.setLong(1, updatedNLId);
+          stmt.setString(2, sequence);
+          final int rowCount = stmt.executeUpdate();
+          LOG.debug("Updated {} rows for sequnce {}", rowCount, sequence);
+        }
+        notificationLogSequence
+            .addAll(LongStream.range(nextSequenceValue.get(), updatedNLId).boxed().collect(Collectors.toList()));
       }
+      return notificationLogSequence.remove();
     }
-
-    final long updatedNLId = 1L + nextSequenceValue.orElseThrow(
-        () -> new MetaException("Transaction database not properly configured, failed to determine next NL ID"));
-
-    LOG.debug("Going to execute query [{}][1={}][2={}]", NL_UPD_SQL, updatedNLId, sequence);
-    try (PreparedStatement stmt = con.prepareStatement(NL_UPD_SQL)) {
-      stmt.setLong(1, updatedNLId);
-      stmt.setString(2, sequence);
-      final int rowCount = stmt.executeUpdate();
-      LOG.debug("Updated {} rows for sequnce {}", rowCount, sequence);
-    }
-
-    return nextSequenceValue.get();
   }
 
   private void addWriteNotificationLog(NotificationEvent event, AcidWriteEvent acidWriteEvent, Connection dbConn,
