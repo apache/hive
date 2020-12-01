@@ -4917,8 +4917,9 @@ public class HiveConf extends Configuration {
       "Sleep duration (in milliseconds) to wait before retrying on error when obtaining a\n" +
       "connection to LLAP daemon from Tez AM.",
       "llap.task.communicator.connection.sleep-between-retries-millis"),
-    LLAP_TASK_UMBILICAL_SERVER_PORT("hive.llap.daemon.umbilical.port", 0,
-      "LLAP task umbilical server RPC port"),
+    LLAP_TASK_UMBILICAL_SERVER_PORT("hive.llap.daemon.umbilical.port", "0",
+      "LLAP task umbilical server RPC port or range of ports to try in case "
+          + "the first port is occupied"),
     LLAP_DAEMON_WEB_PORT("hive.llap.daemon.web.port", 15002, "LLAP daemon web UI port.",
       "llap.daemon.service.port"),
     LLAP_DAEMON_WEB_SSL("hive.llap.daemon.web.ssl", false,
