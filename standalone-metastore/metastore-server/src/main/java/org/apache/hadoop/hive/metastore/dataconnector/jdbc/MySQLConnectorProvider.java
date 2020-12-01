@@ -80,6 +80,7 @@ public class MySQLConnectorProvider extends AbstractJDBCConnectorProvider {
     {
     default:
       mappedType = ColumnType.VOID_TYPE_NAME;
+      break;
     }
     return mappedType;
   }
