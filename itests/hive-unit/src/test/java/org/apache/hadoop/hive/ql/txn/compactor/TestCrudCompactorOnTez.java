@@ -1778,7 +1778,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     QueryCompactor qc = new QueryCompactor() {
       @Override
       void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-                         ValidWriteIdList writeIds, CompactionInfo compactionInfo) throws IOException {
+                         ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidUtils.Directory dir) throws IOException {
       }
 
       @Override

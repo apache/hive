@@ -1756,7 +1756,7 @@ public class CachedStore implements RawStore, Configurable {
   /**
    * getPartitionSpecsByFilterAndProjection interface is currently non-cacheable.
    */ public List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
-      GetPartitionsProjectionSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
+      GetProjectionsSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
       throws MetaException, NoSuchObjectException {
     return rawStore.getPartitionSpecsByFilterAndProjection(table, projectionSpec, filterSpec);
   }

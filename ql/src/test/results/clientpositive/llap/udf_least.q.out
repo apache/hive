@@ -153,7 +153,7 @@ FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-11.4	1	-13.1	-13.3	NULL	NULL	NULL	NULL
+11.4	1.0	-13.1	-13.3	NULL	NULL	NULL	NULL
 PREHOOK: query: SELECT LEAST(101Y, -101S, 100, -100L, null),
        LEAST(-101Y, 101S, 100, -100L, 0),
        LEAST(100Y, -100S, 101, -101L, null),

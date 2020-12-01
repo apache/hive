@@ -596,7 +596,7 @@ public interface RawStore extends Configurable {
    * @throws NoSuchObjectException when table isn't found
    */
   List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
-      GetPartitionsProjectionSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
+      GetProjectionsSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
       throws MetaException, NoSuchObjectException;
   /**
    * Get partitions using an already parsed expression.

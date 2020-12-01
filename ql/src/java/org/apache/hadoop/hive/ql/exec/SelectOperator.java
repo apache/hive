@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 
@@ -201,4 +202,11 @@ public class SelectOperator extends Operator<SelectDesc> implements Serializable
 
     return true;
   }
+
+  @Override
+  public void replaceTabAlias(String oldAlias, String newAlias) {
+    super.replaceTabAlias(oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getColumnExprMap(), oldAlias, newAlias);
+  }
+
 }

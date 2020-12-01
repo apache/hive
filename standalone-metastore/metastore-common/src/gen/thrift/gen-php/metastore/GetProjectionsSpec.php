@@ -16,7 +16,7 @@ use Thrift\Protocol\TProtocol;
 use Thrift\Protocol\TBinaryProtocolAccelerated;
 use Thrift\Exception\TApplicationException;
 
-class GetPartitionsProjectionSpec
+class GetProjectionsSpec
 {
     static public $isValidate = false;
 
@@ -72,7 +72,7 @@ class GetPartitionsProjectionSpec
 
     public function getName()
     {
-        return 'GetPartitionsProjectionSpec';
+        return 'GetProjectionsSpec';
     }
 
 
@@ -132,7 +132,7 @@ class GetPartitionsProjectionSpec
     public function write($output)
     {
         $xfer = 0;
-        $xfer += $output->writeStructBegin('GetPartitionsProjectionSpec');
+        $xfer += $output->writeStructBegin('GetProjectionsSpec');
         if ($this->fieldList !== null) {
             if (!is_array($this->fieldList)) {
                 throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
