@@ -458,7 +458,7 @@ public class TestHiveAuthorizationTaskFactory {
   }
 
   private DDLWork analyze(String command) throws Exception {
-    return AuthorizationTestUtil.analyze(command, queryState, db,new Context(queryState.getConf()));
+    return AuthorizationTestUtil.analyze(command, queryState, db, new Context(queryState.getConf()));
   }
 
 

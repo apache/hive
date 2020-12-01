@@ -76,7 +76,7 @@ public class TestLineageInfo {
     try {
       lep.getLineageInfo("INSERT OVERWRITE TABLE dest1 partition (ds = '111')  " 
           + "SELECT s.* FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1) s " 
-          + "WHERE s.ds='2008-04-08' and s.hr='11'",ctx);
+          + "WHERE s.ds='2008-04-08' and s.hr='11'", ctx);
       TreeSet<String> i = new TreeSet<String>();
       TreeSet<String> o = new TreeSet<String>();
       i.add("srcpart");
@@ -94,7 +94,7 @@ public class TestLineageInfo {
     lep.getLineageInfo("FROM (FROM src select src.key, src.value "
         + "WHERE src.key < 10 UNION ALL FROM src SELECT src.* WHERE src.key > 10 ) unioninput "
         + "INSERT OVERWRITE DIRECTORY '../../../../build/contrib/hive/ql/test/data/warehouse/union.out' "
-        + "SELECT unioninput.*",ctx);
+        + "SELECT unioninput.*", ctx);
     TreeSet<String> i = new TreeSet<String>();
     TreeSet<String> o = new TreeSet<String>();
     i.add("src");
@@ -107,7 +107,7 @@ public class TestLineageInfo {
     lep.getLineageInfo("FROM (FROM src select src.key, src.value "
         + "WHERE src.key < 10 UNION ALL FROM src1 SELECT src1.* WHERE src1.key > 10 ) unioninput "
         + "INSERT OVERWRITE DIRECTORY '../../../../build/contrib/hive/ql/test/data/warehouse/union.out' "
-        + "SELECT unioninput.*",ctx);
+        + "SELECT unioninput.*", ctx);
     TreeSet<String> i = new TreeSet<String>();
     TreeSet<String> o = new TreeSet<String>();
     i.add("src");
@@ -119,7 +119,7 @@ public class TestLineageInfo {
   public void testSimpleQuery4() {
     LineageInfo lep = new LineageInfo();
     try {
-      lep.getLineageInfo("FROM ( FROM ( FROM src1 src1 SELECT src1.key AS c1, src1.value AS c2 WHERE src1.key > 10 and src1.key < 20) a RIGHT OUTER JOIN ( FROM src2 src2 SELECT src2.key AS c3, src2.value AS c4 WHERE src2.key > 15 and src2.key < 25) b ON (a.c1 = b.c3) SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3, b.c4 AS c4) c SELECT c.c1, c.c2, c.c3, c.c4",ctx);
+      lep.getLineageInfo("FROM ( FROM ( FROM src1 src1 SELECT src1.key AS c1, src1.value AS c2 WHERE src1.key > 10 and src1.key < 20) a RIGHT OUTER JOIN ( FROM src2 src2 SELECT src2.key AS c3, src2.value AS c4 WHERE src2.key > 15 and src2.key < 25) b ON (a.c1 = b.c3) SELECT a.c1 AS c1, a.c2 AS c2, b.c3 AS c3, b.c4 AS c4) c SELECT c.c1, c.c2, c.c3, c.c4", ctx);
       TreeSet<String> i = new TreeSet<String>();
       TreeSet<String> o = new TreeSet<String>();
       i.add("src1");
@@ -136,7 +136,7 @@ public class TestLineageInfo {
     LineageInfo lep = new LineageInfo();
     try {
       lep.getLineageInfo("insert overwrite table x select a.y, b.y " 
-          + "from a a full outer join b b on (a.x = b.y)",ctx);
+          + "from a a full outer join b b on (a.x = b.y)", ctx);
       TreeSet<String> i = new TreeSet<String>();
       TreeSet<String> o = new TreeSet<String>();
       i.add("a");

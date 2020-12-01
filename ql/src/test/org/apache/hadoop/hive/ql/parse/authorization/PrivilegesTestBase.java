@@ -39,7 +39,7 @@ public class PrivilegesTestBase {
       throws Exception {
     Context ctx=new Context(new HiveConf());
     DDLWork work = AuthorizationTestUtil.analyze(
-        "GRANT " + privStr + " ON TABLE " + TABLE + " TO USER " + USER, queryState, db,ctx);
+        "GRANT " + privStr + " ON TABLE " + TABLE + " TO USER " + USER, queryState, db, ctx);
     GrantDesc grantDesc = (GrantDesc)work.getDDLDesc();
     Assert.assertNotNull("Grant should not be null", grantDesc);
 

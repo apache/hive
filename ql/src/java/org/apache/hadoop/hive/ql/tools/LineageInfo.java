@@ -146,7 +146,7 @@ public class LineageInfo implements SemanticNodeProcessor {
     LineageInfo lep = new LineageInfo();
 
     Context ctx=new Context(new HiveConf());
-    lep.getLineageInfo(query,ctx);
+    lep.getLineageInfo(query, ctx);
 
     for (String tab : lep.getInputTableList()) {
       System.out.println("InputTable=" + tab);
