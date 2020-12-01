@@ -156,6 +156,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   private static final String NL_SEL_SQL = "select \"NEXT_VAL\" from \"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = ?";
   private static final String NL_UPD_SQL = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = ? where \"SEQUENCE_NAME\" = ?";
 
+  private static final String EV_SEL_SQL = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
+  private static final String EV_UPD_SQL =  "update \"NOTIFICATION_SEQUENCE\" set \"NEXT_EVENT_ID\" = ?";
+
   private static CleanerThread cleaner = null;
 
   private Configuration conf;
@@ -1014,6 +1017,41 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
     return nextSequenceValue.get();
   }
 
+  /**
+   * Get the next event ID.
+   *
+   * @return The next ID to use for an event.
+   * @throws SQLException if a database access error occurs or this method is
+   *           called on a closed connection
+   * @throws MetaException if the sequence table is not properly initialized
+   */
+  private long getNextEventId(Connection con, SQLGenerator sqlGenerator)
+      throws SQLException, MetaException {
+
+    final String sfuSql = sqlGenerator.addForUpdateClause(EV_SEL_SQL);
+    Optional<Long> nextSequenceValue = Optional.empty();
+
+    LOG.debug("Going to execute query [{}]", sfuSql);
+    try (Statement stmt = con.createStatement()) {
+      ResultSet rs = stmt.executeQuery(sfuSql);
+      if (rs.next()) {
+        nextSequenceValue = Optional.of(rs.getLong(1));
+      }
+    }
+
+    final long updatedEventId = 1L + nextSequenceValue.orElseThrow(
+        () -> new MetaException("Transaction database not properly configured, failed to determine next event ID"));
+
+    LOG.debug("Going to execute query [{}][1={}]", EV_UPD_SQL, updatedEventId);
+    try (PreparedStatement stmt = con.prepareStatement(EV_UPD_SQL)) {
+      stmt.setLong(1, updatedEventId);
+      final int rowCount = stmt.executeUpdate();
+      LOG.debug("Updated {} rows for NOTIFICATION_SEQUENCE table", rowCount);
+    }
+
+    return nextSequenceValue.get();
+  }
+
   private void addWriteNotificationLog(NotificationEvent event, AcidWriteEvent acidWriteEvent, Connection dbConn,
                                  SQLGenerator sqlGenerator, AcidWriteMessage msg) throws MetaException, SQLException {
     LOG.debug("DbNotificationListener: adding write notification log for : {}", event.getMessage());
@@ -1139,19 +1177,8 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         LOG.info("Going to execute query <" + lockingQuery + ">");
         stmt.executeUpdate(lockingQuery);
       }
-      String s = sqlGenerator.addForUpdateClause("select \"NEXT_EVENT_ID\" " +
-              " from \"NOTIFICATION_SEQUENCE\"");
-      LOG.debug("Going to execute query <" + s + ">");
-      rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        throw new MetaException("Transaction database not properly " +
-                "configured, can't find next event id.");
-      }
-      long nextEventId = rs.getLong(1);
-      long updatedEventid = nextEventId + 1;
-      s = "update \"NOTIFICATION_SEQUENCE\" set \"NEXT_EVENT_ID\" = " + updatedEventid;
-      LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
+
+      long nextEventId = getNextEventId(dbConn, sqlGenerator); 
 
       long nextNLId = getNextNLId(dbConn, sqlGenerator,
               "org.apache.hadoop.hive.metastore.model.MNotificationLog");
@@ -1217,7 +1244,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         params.add(catName);
       }
 
-      s = "insert into \"NOTIFICATION_LOG\" (" + columns + ") VALUES (" + insertVal + ")";
+      String s = "insert into \"NOTIFICATION_LOG\" (" + columns + ") VALUES (" + insertVal + ")";
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
       LOG.debug("Going to execute insert <" + s + "> with parameters (" +
               String.join(", ", params) + ")");
