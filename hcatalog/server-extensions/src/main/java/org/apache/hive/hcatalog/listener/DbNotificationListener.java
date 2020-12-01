@@ -153,7 +153,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   private static final Logger LOG = LoggerFactory.getLogger(DbNotificationListener.class.getName());
 
   private static final String NL_SEL_SQL = "select \"NEXT_VAL\" from \"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\"= ?";
-  private static final String NL_UPD_SQL = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\"=(\"NEXT_VAL\"+1) where \"SEQUENCE_NAME\" = ?";
+  private static final String NL_UPD_SQL = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\"=(\"NEXT_VAL\"+1) where \"SEQUENCE_NAME\"=?";
   private static final String NL_UPD_MYSQL = "update `SEQUENCE_TABLE` set `NEXT_VAL`=LAST_INSERT_ID(`NEXT_VAL`+1) where `SEQUENCE_NAME`=?";
   private static final String NL_SEL_MYSQL = "select LAST_INSERT_ID()";
 
