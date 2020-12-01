@@ -19,6 +19,15 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.commons.collections.CollectionUtils;
+import java.io.Closeable;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -41,7 +50,9 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockMode;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
+import org.apache.hadoop.hive.ql.lockmgr.HiveLockObject;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -59,21 +70,14 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc.LoadFileType;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.spark.api.java.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
 
 /**
  * MoveTask implementation.
@@ -306,10 +310,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         + work.getLoadMultiFilesWork());
     }
 
-    try {
-      if (context.getExplainAnalyze() == AnalyzeState.RUNNING) {
-        return 0;
-      }
+    if (context.getExplainAnalyze() == AnalyzeState.RUNNING) {
+      return 0;
+    }
+
+    try (LocalTableLock lock = acquireLockForFileMove(work.getLoadTableWork())) {
       Hive db = getHive();
 
       // Do any hive related operations like moving tables and files
@@ -745,6 +750,82 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       default:
         return WriteEntity.WriteType.INSERT;
     }
+  }
+
+  class LocalTableLock  implements Closeable{
+
+    private Optional<HiveLockObject> lock;
+    private HiveLock lockObj;
+
+    public LocalTableLock(Optional<HiveLockObject> lock) throws LockException {
+
+      this.lock = lock;
+      if(!lock.isPresent()) {
+        return;
+      }
+      LOG.info("LocalTableLock; locking: " + lock);
+      HiveLockManager lockMgr = context.getHiveTxnManager().getLockManager();
+      lockObj = lockMgr.lock(lock.get(), HiveLockMode.SEMI_SHARED, true);
+      LOG.info("LocalTableLock; locked: " + lock);
+    }
+
+    @Override
+    public void close() throws IOException {
+      if(!lock.isPresent()) {
+        return;
+      }
+      LOG.info("LocalTableLock; unlocking: "+lock);
+      HiveLockManager lockMgr;
+      try {
+        lockMgr = context.getHiveTxnManager().getLockManager();
+        lockMgr.unlock(lockObj);
+      } catch (LockException e1) {
+        throw new IOException(e1);
+      }
+      LOG.info("LocalTableLock; unlocked");
+    }
+
+  }
+
+  private LocalTableLock acquireLockForFileMove(LoadTableDesc loadTableWork) throws HiveException {
+    // nothing needs to be done
+    if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY)) {
+      return new LocalTableLock(Optional.empty());
+    }
+    String lockFileMoveMode = conf.getVar(HiveConf.ConfVars.HIVE_LOCK_FILE_MOVE_MODE);
+
+    if ("none".equalsIgnoreCase(lockFileMoveMode)) {
+      return new LocalTableLock(Optional.empty());
+    }
+    if ("dpp".equalsIgnoreCase(lockFileMoveMode)) {
+      if (loadTableWork.getDPCtx() == null) {
+        return new LocalTableLock(Optional.empty());
+      }
+    }
+
+    WriteEntity output = context.getLoadTableOutputMap().get(loadTableWork);
+    List<HiveLockObj> lockObjects = context.getOutputLockObjects().get(output);
+    if (lockObjects == null) {
+      return new LocalTableLock(Optional.empty());
+    }
+    TableDesc table = loadTableWork.getTable();
+    if(table == null) {
+      return new LocalTableLock(Optional.empty());
+    }
+
+    Hive db = getHive();
+    Table baseTable = db.getTable(loadTableWork.getTable().getTableName());
+
+    HiveLockObject.HiveLockObjectData lockData =
+        new HiveLockObject.HiveLockObjectData(queryPlan.getQueryId(),
+                               String.valueOf(System.currentTimeMillis()),
+                               "IMPLICIT",
+                               queryPlan.getQueryStr(),
+                               conf);
+
+    HiveLockObject lock = new HiveLockObject(baseTable,lockData);
+
+    return new LocalTableLock(Optional.of(lock));
   }
 
   private boolean isSkewedStoredAsDirs(LoadTableDesc tbd) {

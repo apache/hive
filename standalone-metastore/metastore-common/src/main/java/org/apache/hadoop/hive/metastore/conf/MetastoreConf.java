@@ -1374,7 +1374,7 @@ public class MetastoreConf {
         "hive.metastore.custom.database.product.classname", "none",
           "Hook for external RDBMS. This class will be instantiated only when " +
           "metastore.use.custom.database.product is set to true."),
-        
+
     // Deprecated Hive values that we are keeping for backwards compatibility.
     @Deprecated
     HIVE_CODAHALE_METRICS_REPORTER_CLASSES("hive.service.metrics.codahale.reporter.classes",
@@ -1398,7 +1398,8 @@ public class MetastoreConf {
             + "e.g. javax.net.ssl.trustStore=/tmp/truststore,javax.net.ssl.trustStorePassword=pwd.\n " +
             "If both this and the metastore.dbaccess.ssl.* properties are set, then the latter properties \n" +
             "will overwrite what was set in the deprecated property."),
-
+    METASTORE_NUM_STRIPED_TABLE_LOCKS("metastore.num.striped.table.locks", "hive.metastore.num.striped.table.locks", 32,
+        "Number of striped locks available to provide exclusive operation support for critical table operations like add_partitions."),
     COLSTATS_RETAIN_ON_COLUMN_REMOVAL("metastore.colstats.retain.on.column.removal",
         "hive.metastore.colstats.retain.on.column.removal", true,
         "Whether to retain column statistics during column removals in partitioned tables - disabling this "

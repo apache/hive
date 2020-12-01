@@ -148,5 +148,29 @@ public class TestZookeeperLockManager {
     zMgr.close();
   }
 
+  @Test
+  public void testMetrics2() throws Exception{
+    conf.setVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM, "localhost");
+    conf.setVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT, String.valueOf(server.getPort()));
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
+    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER, MetricsReporting.JSON_FILE.name() + "," + MetricsReporting.JMX.name());
+    MetricsFactory.init(conf);
+    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
+
+    HiveLockManagerCtx ctx = new HiveLockManagerCtx(conf);
+    ZooKeeperHiveLockManager zMgr= new ZooKeeperHiveLockManager();
+    zMgr.setContext(ctx);
+    ZooKeeperHiveLock curLock = zMgr.lock(hiveLock, HiveLockMode.SEMI_SHARED, false);
+    ZooKeeperHiveLock curLock2 = zMgr.lock(hiveLock, HiveLockMode.SEMI_SHARED, false);
+    String json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.ZOOKEEPER_HIVE_SHAREDLOCKS, 1);
+
+    zMgr.unlock(curLock);
+    json = metrics.dumpJson();
+    MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.ZOOKEEPER_HIVE_SHAREDLOCKS, 0);
+    zMgr.close();
+  }
+
 }
 
