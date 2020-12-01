@@ -144,6 +144,17 @@ public final class SQLGenerator {
   }
 
   /**
+   * Returns the SQL query to lock the given table name in either shared/exclusive mode
+   * @param txnLockTable
+   * @param shared
+   * @return
+   * @throws MetaException
+   */
+  public String lockTable(String txnLockTable, boolean shared) throws MetaException {
+    return dbProduct.lockTable(txnLockTable, shared);
+  }
+
+  /**
    * Make PreparedStatement object with list of String type parameters to be set.
    * It is assumed the input sql string have the number of "?" equal to number of parameters
    * passed as input.

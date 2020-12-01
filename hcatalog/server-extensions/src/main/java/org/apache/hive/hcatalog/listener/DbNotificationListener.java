@@ -1028,6 +1028,22 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   private long getNextEventId(Connection con, SQLGenerator sqlGenerator)
       throws SQLException, MetaException {
 
+    /*
+     * FOR UPDATE means something different in Derby than in most other vendor
+     * implementations therefore it is required to lock the entire table. Since
+     * there is only one row in the table, this should not cause any performance
+     * degradation.
+     *
+     * see: https://db.apache.org/derby/docs/10.1/ref/rrefsqlj31783.html
+     */
+    if (sqlGenerator.getDbProduct().isDERBY()) {
+      final String lockingQuery = sqlGenerator.lockTable("NOTIFICATION_SEQUENCE", false);
+      LOG.debug("Locking Derby table [{}]", lockingQuery);
+      try (Statement stmt = con.createStatement()) {
+        stmt.execute(lockingQuery);
+      }
+    }
+
     final String sfuSql = sqlGenerator.addForUpdateClause(EV_SEL_SQL);
     Optional<Long> nextSequenceValue = Optional.empty();
 
@@ -1167,15 +1183,6 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
       if (sqlGenerator.getDbProduct().isMYSQL()) {
         stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
-      }
-
-      // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
-      // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
-      // only one row in the table, this shouldn't cause any performance degradation.
-      if (sqlGenerator.getDbProduct().isDERBY()) {
-        String lockingQuery = "lock table \"NOTIFICATION_SEQUENCE\" in exclusive mode";
-        LOG.info("Going to execute query <" + lockingQuery + ">");
-        stmt.executeUpdate(lockingQuery);
       }
 
       long nextEventId = getNextEventId(dbConn, sqlGenerator); 
