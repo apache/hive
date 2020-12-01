@@ -186,9 +186,7 @@ public class TestZookeeperLockManager {
         throw new RuntimeException(e);
       }
     }
-
   }
-
 
   private void testLockModeTiming(ZooKeeperHiveLockManager zMgr, HiveLockMode lock1mode, HiveLockMode lock2mode,
       int minT, int maxT)
@@ -206,18 +204,6 @@ public class TestZookeeperLockManager {
     long dt = t1 - t0;
     assertTrue(String.format("%d>%d", dt, minT), dt > minT);
     assertTrue(String.format("%d<%d", dt, maxT), dt < maxT);
-  }
-
-  private ZooKeeperHiveLockManager setupLockManager() throws Exception, LockException {
-    conf.setVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM, "localhost");
-    conf.setVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT, String.valueOf(server.getPort()));
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-
-    HiveLockManagerCtx ctx = new HiveLockManagerCtx(conf);
-    ZooKeeperHiveLockManager zMgr = new ZooKeeperHiveLockManager();
-
-    zMgr.setContext(ctx);
-    return zMgr;
   }
 
 }
