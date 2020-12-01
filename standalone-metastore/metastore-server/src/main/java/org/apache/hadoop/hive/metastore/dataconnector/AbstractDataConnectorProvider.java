@@ -114,7 +114,6 @@ public abstract class AbstractDataConnectorProvider implements IDataConnectorPro
     Table table = new Table();
     table.setTableName(tableName);
     table.setTableType(TableType.EXTERNAL_TABLE.toString());
-    table.setDbName(scoped_db);
     table.setSd(sd);
     // set table properties that subclasses can fill-in
     table.setParameters(new HashMap<String, String>());
