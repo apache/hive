@@ -2366,15 +2366,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<String> processorCapabilities = req.getProcessorCapabilities();
       String processorId = req.getProcessorIdentifier();
 
-      Database db = null;
-      try {
-        db = ms.getDatabase(tbl.getCatName(), tbl.getDbName());
-      } catch (Exception e) {
-        LOG.info("Database {} does exist, exception: {}", tbl.getDbName(), e.getMessage());
-        return;
-      }
+      Database db = get_database_core(tbl.getCatName(), tbl.getDbName());
       if (db != null && db.getType().equals(DatabaseType.REMOTE)) {
-        boolean success = DataConnectorProviderFactory.getDataConnectorProvider(db).createTable(tbl);
+        DataConnectorProviderFactory.getDataConnectorProvider(db).createTable(tbl);
         return;
       }
 
@@ -4533,7 +4527,12 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Database db = null;
       try {
         ms.openTransaction();
-        db = ms.getDatabase(catName, dbName);
+        try {
+          db = ms.getDatabase(catName, dbName);
+        } catch (NoSuchObjectException notExists) {
+          throw new InvalidObjectException("Unable to add partitions because "
+              + "database or table " + dbName + "." + tblName + " does not exist");
+        }
         if (db.getType() == DatabaseType.REMOTE)
           throw new MetaException("Operation add_partitions_pspec not supported on tables in REMOTE database");
         tbl = ms.getTable(catName, dbName, tblName, null);

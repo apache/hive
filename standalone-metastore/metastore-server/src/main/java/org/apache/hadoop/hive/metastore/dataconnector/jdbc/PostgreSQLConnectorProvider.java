@@ -57,10 +57,13 @@ public class PostgreSQLConnectorProvider extends AbstractJDBCConnectorProvider {
     {
     case "bpchar":
       mappedType = ColumnType.CHAR_TYPE_NAME + wrapSize(size);
+      break;
     case "int8":
       mappedType = ColumnType.BIGINT_TYPE_NAME;
+      break;
     default:
       mappedType = ColumnType.VOID_TYPE_NAME;
+      break;
     }
     return mappedType;
   }

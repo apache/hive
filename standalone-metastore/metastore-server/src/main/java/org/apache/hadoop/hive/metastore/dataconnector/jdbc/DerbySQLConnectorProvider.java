@@ -1,5 +1,6 @@
 package org.apache.hadoop.hive.metastore.dataconnector.jdbc;
 
+import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.api.DataConnector;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -63,7 +64,23 @@ public class DerbySQLConnectorProvider extends AbstractJDBCConnectorProvider {
 
   protected String getDataType(String dbDataType, int size) {
     String mappedType = super.getDataType(dbDataType, size);
-    // map any db specific types here. or return
+    if (!mappedType.equalsIgnoreCase(ColumnType.VOID_TYPE_NAME)) {
+      return mappedType;
+    }
+
+    // map any db specific types here.
+    switch (dbDataType.toLowerCase())
+    {
+    case "integer":
+      mappedType = ColumnType.INT_TYPE_NAME;
+      break;
+    case "long varchar":
+      mappedType = ColumnType.STRING_TYPE_NAME;
+      break;
+    default:
+      mappedType = ColumnType.VOID_TYPE_NAME;
+      break;
+    }
     return mappedType;
   }
 }
