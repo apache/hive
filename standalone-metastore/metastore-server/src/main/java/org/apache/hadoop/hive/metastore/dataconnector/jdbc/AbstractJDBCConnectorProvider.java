@@ -173,13 +173,17 @@ public abstract class AbstractJDBCConnectorProvider extends AbstractDataConnecto
       // rs = fetchTableMetadata(tableName);
       rs = fetchTableViaDBMetaData(tableName);
       List<FieldSchema> cols = new ArrayList<>();
-      // TODO throw exception is RS is empty
       while (rs.next()) {
         FieldSchema fs = new FieldSchema();
         fs.setName(rs.getString("COLUMN_NAME"));
         fs.setType(getDataType(rs.getString("TYPE_NAME"), rs.getInt("COLUMN_SIZE")));
         fs.setComment("inferred column type");
         cols.add(fs);
+      }
+
+      if (cols.size() == 0) {
+        // table does not exists or could not be fetched
+        return null;
       }
 
       table = buildTableFromColsList(tableName, cols);
