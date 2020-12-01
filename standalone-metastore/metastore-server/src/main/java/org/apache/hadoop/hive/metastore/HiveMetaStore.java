@@ -3739,12 +3739,19 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Table t = null;
       try {
         db = get_database_core(catName, dbname);
-        if (db != null) {
-          if (db.getType().equals(DatabaseType.REMOTE)) {
-            return DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(name);
-          }
-        }
       } catch (Exception e) { /* appears exception is not thrown currently if db doesnt exist */ }
+
+      if (db != null) {
+        if (db.getType().equals(DatabaseType.REMOTE)) {
+          t = DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(name);
+          if (t == null) {
+            throw new NoSuchObjectException(TableName.getQualified(catName, dbname, name) +
+              " table not found");
+          }
+          t.setDbName(dbname);
+          return t;
+        }
+      }
 
       try {
         t = getMS().getTable(catName, dbname, name, writeIdList);
