@@ -316,7 +316,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
     // Check if there will be more obsolete directories to clean when possible. We will only mark cleaned when this
     // number reaches 0.
-    return getNumEventuallyObsoleteDirs(location, dirSnapshots) == 0;
+    return getNumEventuallyObsoleteDirs(location, dirSnapshots, fs) == 0;
   }
 
   /**
@@ -324,8 +324,10 @@ public class Cleaner extends MetaStoreCompactorThread {
    * we can see if the Cleaner has further work to do in this table/partition directory that it hasn't been able to
    * finish, e.g. because of an open transaction at the time of compaction.
    * We do this by assuming that there are no open transactions anywhere and then calling getAcidState. If there are
-   * obsolete directories, then the Cleaner has more work to do.
+   * obsolete/aborted directories, then the Cleaner has more work to do. Eventually.
    * @param location location of table
+   * @param dirSnapshots snapshot of table/partition directory
+   * @param fileSystem
    * @return number of dirs left for the cleaner to clean – eventually
    * @throws IOException
    */
@@ -339,6 +341,6 @@ public class Cleaner extends MetaStoreCompactorThread {
     Path locPath = new Path(location);
     AcidUtils.Directory dir = AcidUtils.getAcidState(fileSystem, locPath, conf, validWriteIdList,
         Ref.from(false), false, dirSnapshots);
-    return dir.getObsolete().size();
+    return dir.getObsolete().size() + dir.getAbortedDirectories().size();
   }
 }
