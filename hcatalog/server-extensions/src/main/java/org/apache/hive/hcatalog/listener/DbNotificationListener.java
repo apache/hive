@@ -29,7 +29,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -153,8 +152,13 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
   private static final Logger LOG = LoggerFactory.getLogger(DbNotificationListener.class.getName());
 
-  private static final String NL_SEL_SQL = "select \"NEXT_VAL\" from \"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\" = ?";
-  private static final String NL_UPD_SQL = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\" = ? where \"SEQUENCE_NAME\" = ?";
+  private static final String NL_SEL_SQL = "select \"NEXT_VAL\" from \"SEQUENCE_TABLE\" where \"SEQUENCE_NAME\"= ?";
+  private static final String NL_UPD_SQL = "update \"SEQUENCE_TABLE\" set \"NEXT_VAL\"=(\"NEXT_VAL\"+1) where \"SEQUENCE_NAME\" = ?";
+  private static final String NL_UPD_MYSQL = "update `SEQUENCE_TABLE` set `NEXT_VAL`=LAST_INSERT_ID(`NEXT_VAL`+1) where `SEQUENCE_NAME`=?";
+  private static final String NL_SEL_MYSQL = "select LAST_INSERT_ID()";
+
+  private static final String EV_SEL_SQL = "select \"NEXT_EVENT_ID\" from \"NOTIFICATION_SEQUENCE\"";
+  private static final String EV_UPD_SQL =  "update \"NOTIFICATION_SEQUENCE\" set \"NEXT_EVENT_ID\" = ?";
 
   private static CleanerThread cleaner = null;
 
@@ -980,35 +984,113 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
   /**
    * Get the next notification log ID.
    *
+   * The default behavior is to update a sequence number stored in a table using
+   * {@code SELECT FOR UPDATE} to lock individual row.
+   *
+   * <ul>
+   * <li>For Apache Derby, the entire table must be locked</li>
+   * <li>For MySQL, {@code LAST_INSERT_ID} is used as an optimization
+   * </ul>
+   *
    * @return The next ID to use for a notification log message
    * @throws SQLException if a database access error occurs or this method is
    *           called on a closed connection
    * @throws MetaException if the sequence table is not properly initialized
    */
   private long getNextNLId(Connection con, SQLGenerator sqlGenerator, String sequence)
-          throws SQLException, MetaException {
+      throws SQLException, MetaException {
 
-    final String sfuSql = sqlGenerator.addForUpdateClause(NL_SEL_SQL);
+    final long nextSequenceValue;
+
+    if (sqlGenerator.getDbProduct().isMYSQL()) {
+      LOG.debug("Going to execute query [{}][1={}]", NL_UPD_MYSQL, sequence);
+      try (PreparedStatement stmt = con.prepareStatement(NL_UPD_MYSQL)) {
+        stmt.setString(1, sequence);
+        final int rowCount = stmt.executeUpdate();
+        LOG.debug("Updated {} rows for sequnce {}", rowCount, sequence);
+        if (rowCount != 1) {
+          throw new MetaException("Transaction database not properly configured, failed to determine next NL ID");
+        }
+      }
+
+      LOG.debug("Going to execute query [{}]", NL_SEL_MYSQL);
+      try (Statement stmt = con.createStatement()) {
+        ResultSet rs = stmt.executeQuery(NL_SEL_MYSQL);
+        if (!rs.next()) {
+          throw new MetaException("Could not fetch last ID");
+        }
+        nextSequenceValue = rs.getLong(1);
+      }
+    } else {
+      final String sfuSql = sqlGenerator.addForUpdateClause(NL_SEL_SQL);
+
+      LOG.debug("Going to execute query [{}][1={}]", sfuSql, sequence);
+      try (PreparedStatement stmt = con.prepareStatement(sfuSql)) {
+        stmt.setString(1, sequence);
+        ResultSet rs = stmt.executeQuery();
+        if (!rs.next()) {
+          throw new MetaException("Transaction database not properly configured, failed to determine next NL ID");
+        }
+        nextSequenceValue = rs.getLong(1);
+      }
+
+      LOG.debug("Going to execute query [{}][1={}]", NL_UPD_SQL, sequence);
+      try (PreparedStatement stmt = con.prepareStatement(NL_UPD_SQL)) {
+        stmt.setString(1, sequence);
+        final int rowCount = stmt.executeUpdate();
+        LOG.debug("Updated {} rows for sequnce {}", rowCount, sequence);
+      }
+    }
+
+    return nextSequenceValue;
+  }
+
+  /**
+   * Get the next event ID.
+   *
+   * @return The next ID to use for an event.
+   * @throws SQLException if a database access error occurs or this method is
+   *           called on a closed connection
+   * @throws MetaException if the sequence table is not properly initialized
+   */
+  private long getNextEventId(Connection con, SQLGenerator sqlGenerator)
+      throws SQLException, MetaException {
+
+    /*
+     * FOR UPDATE means something different in Derby than in most other vendor
+     * implementations therefore it is required to lock the entire table. Since
+     * there is only one row in the table, this should not cause any performance
+     * degradation.
+     *
+     * see: https://db.apache.org/derby/docs/10.1/ref/rrefsqlj31783.html
+     */
+    if (sqlGenerator.getDbProduct().isDERBY()) {
+      final String lockingQuery = sqlGenerator.lockTable("NOTIFICATION_SEQUENCE", false);
+      LOG.debug("Locking Derby table [{}]", lockingQuery);
+      try (Statement stmt = con.createStatement()) {
+        stmt.execute(lockingQuery);
+      }
+    }
+
+    final String sfuSql = sqlGenerator.addForUpdateClause(EV_SEL_SQL);
     Optional<Long> nextSequenceValue = Optional.empty();
 
-    LOG.debug("Going to execute query [{}][1={}]", sfuSql, sequence);
-    try (PreparedStatement stmt = con.prepareStatement(sfuSql)) {
-      stmt.setString(1, sequence);
-      ResultSet rs = stmt.executeQuery();
+    LOG.debug("Going to execute query [{}]", sfuSql);
+    try (Statement stmt = con.createStatement()) {
+      ResultSet rs = stmt.executeQuery(sfuSql);
       if (rs.next()) {
         nextSequenceValue = Optional.of(rs.getLong(1));
       }
     }
 
-    final long updatedNLId = 1L + nextSequenceValue.orElseThrow(
-        () -> new MetaException("Transaction database not properly configured, failed to determine next NL ID"));
+    final long updatedEventId = 1L + nextSequenceValue.orElseThrow(
+        () -> new MetaException("Transaction database not properly configured, failed to determine next event ID"));
 
-    LOG.debug("Going to execute query [{}][1={}][2={}]", NL_UPD_SQL, updatedNLId, sequence);
-    try (PreparedStatement stmt = con.prepareStatement(NL_UPD_SQL)) {
-      stmt.setLong(1, updatedNLId);
-      stmt.setString(2, sequence);
+    LOG.debug("Going to execute query [{}][1={}]", EV_UPD_SQL, updatedEventId);
+    try (PreparedStatement stmt = con.prepareStatement(EV_UPD_SQL)) {
+      stmt.setLong(1, updatedEventId);
       final int rowCount = stmt.executeUpdate();
-      LOG.debug("Updated {} rows for sequnce {}", rowCount, sequence);
+      LOG.debug("Updated {} rows for NOTIFICATION_SEQUENCE table", rowCount);
     }
 
     return nextSequenceValue.get();
@@ -1131,27 +1213,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         stmt.execute("SET @@session.sql_mode=ANSI_QUOTES");
       }
 
-      // Derby doesn't allow FOR UPDATE to lock the row being selected (See https://db.apache
-      // .org/derby/docs/10.1/ref/rrefsqlj31783.html) . So lock the whole table. Since there's
-      // only one row in the table, this shouldn't cause any performance degradation.
-      if (sqlGenerator.getDbProduct().isDERBY()) {
-        String lockingQuery = "lock table \"NOTIFICATION_SEQUENCE\" in exclusive mode";
-        LOG.info("Going to execute query <" + lockingQuery + ">");
-        stmt.executeUpdate(lockingQuery);
-      }
-      String s = sqlGenerator.addForUpdateClause("select \"NEXT_EVENT_ID\" " +
-              " from \"NOTIFICATION_SEQUENCE\"");
-      LOG.debug("Going to execute query <" + s + ">");
-      rs = stmt.executeQuery(s);
-      if (!rs.next()) {
-        throw new MetaException("Transaction database not properly " +
-                "configured, can't find next event id.");
-      }
-      long nextEventId = rs.getLong(1);
-      long updatedEventid = nextEventId + 1;
-      s = "update \"NOTIFICATION_SEQUENCE\" set \"NEXT_EVENT_ID\" = " + updatedEventid;
-      LOG.debug("Going to execute update <" + s + ">");
-      stmt.executeUpdate(s);
+      long nextEventId = getNextEventId(dbConn, sqlGenerator); 
 
       long nextNLId = getNextNLId(dbConn, sqlGenerator,
               "org.apache.hadoop.hive.metastore.model.MNotificationLog");
@@ -1217,7 +1279,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         params.add(catName);
       }
 
-      s = "insert into \"NOTIFICATION_LOG\" (" + columns + ") VALUES (" + insertVal + ")";
+      String s = "insert into \"NOTIFICATION_LOG\" (" + columns + ") VALUES (" + insertVal + ")";
       pst = sqlGenerator.prepareStmtWithParameters(dbConn, s, params);
       LOG.debug("Going to execute insert <" + s + "> with parameters (" +
               String.join(", ", params) + ")");
