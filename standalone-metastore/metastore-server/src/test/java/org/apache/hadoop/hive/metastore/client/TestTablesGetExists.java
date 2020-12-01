@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.metastore.client;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
@@ -47,7 +47,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
  * querying like getting one, or multiple tables, and table name lists.
  */
 @RunWith(Parameterized.class)
-@Category(MetastoreUnitTest.class)
+@Category(MetastoreCheckinTest.class)
 public class TestTablesGetExists extends MetaStoreClientTest {
   private static final String DEFAULT_DATABASE = "default";
   private static final String OTHER_DATABASE = "dummy";
@@ -567,6 +567,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
       Assert.assertFalse(sd.isSetCols());
       Assert.assertTrue(sd.isSetSerdeInfo());
       SerDeInfo serDeInfo = sd.getSerdeInfo();
+      Assert.assertTrue(serDeInfo.isSetSerializationLib());
     }
   }
 

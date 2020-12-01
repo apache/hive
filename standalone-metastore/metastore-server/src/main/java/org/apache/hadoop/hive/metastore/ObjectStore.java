@@ -1890,8 +1890,7 @@ public class ObjectStore implements RawStore, Configurable {
 
       if (projectionFields == null) {
         mtables = (List<MTable>) query.execute(db, catName, lowered_tbl_names);
-      }
-      else {
+      } else {
         if (projectionFields.size() > 1) {
           // Execute the query to fetch the partial results.
           List<Object[]> results = (List<Object[]>) query.execute(db, catName, lowered_tbl_names);
