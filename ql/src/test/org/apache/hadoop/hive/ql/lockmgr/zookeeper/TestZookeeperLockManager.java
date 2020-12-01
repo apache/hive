@@ -62,7 +62,7 @@ public class TestZookeeperLockManager {
   @Before
   public void setup() {
     conf = new HiveConf();
-    conf.setVar(ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES, "1s");
+    conf.setVar(ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES, "100ms");
     lockObjData = new HiveLockObjectData("1", "10", "SHARED", "show tables", conf);
     hiveLock = new HiveLockObject(TABLE, lockObjData);
     zLock = new ZooKeeperHiveLock(TABLE_LOCK_PATH, hiveLock, HiveLockMode.SHARED);
@@ -147,6 +147,12 @@ public class TestZookeeperLockManager {
     zMgr.unlock(curLock);
     json = metrics.dumpJson();
     MetricsTestUtils.verifyMetricsJson(json, MetricsTestUtils.COUNTER, MetricsConstant.ZOOKEEPER_HIVE_SHAREDLOCKS, 0);
+
+    testLockModeTiming(zMgr, HiveLockMode.SHARED, HiveLockMode.SHARED, 1000, 2000);
+    testLockModeTiming(zMgr, HiveLockMode.SEMI_SHARED, HiveLockMode.SEMI_SHARED, 2000, 3000);
+    testLockModeTiming(zMgr, HiveLockMode.EXCLUSIVE, HiveLockMode.SHARED, 2000, 3000);
+    testLockModeTiming(zMgr, HiveLockMode.EXCLUSIVE, HiveLockMode.SEMI_SHARED, 2000, 3000);
+
     zMgr.close();
   }
 
@@ -183,29 +189,10 @@ public class TestZookeeperLockManager {
 
   }
 
-  @Test
-  public void testSharedShared() throws Exception {
-    testLockModeTiming(HiveLockMode.SHARED, HiveLockMode.SHARED, 1000, 2000);
-  }
 
-  @Test
-  public void testSemiSharedSemiShared() throws Exception {
-    testLockModeTiming(HiveLockMode.SEMI_SHARED, HiveLockMode.SEMI_SHARED, 2000, 3000);
-  }
-
-  @Test
-  public void testExclusiveShared() throws Exception {
-    testLockModeTiming(HiveLockMode.EXCLUSIVE, HiveLockMode.SHARED, 2000, 3000);
-  }
-
-  @Test
-  public void testExclusiveSemiShared() throws Exception {
-    testLockModeTiming(HiveLockMode.EXCLUSIVE, HiveLockMode.SEMI_SHARED, 2000, 3000);
-  }
-
-  private void testLockModeTiming(HiveLockMode lock1mode, HiveLockMode lock2mode, int minT, int maxT)
+  private void testLockModeTiming(ZooKeeperHiveLockManager zMgr, HiveLockMode lock1mode, HiveLockMode lock2mode,
+      int minT, int maxT)
       throws Exception, LockException, InterruptedException, BrokenBarrierException {
-    ZooKeeperHiveLockManager zMgr = setupLockManager();
 
     CyclicBarrier barrier = new CyclicBarrier(3);
     Semaphore semaphore = new Semaphore(0);
@@ -217,20 +204,14 @@ public class TestZookeeperLockManager {
     semaphore.acquire(2);
     long t1 = System.currentTimeMillis();
     long dt = t1 - t0;
-    assertTrue(dt > minT);
-    assertTrue(dt < maxT);
-    zMgr.close();
+    assertTrue(String.format("%d>%d", dt, minT), dt > minT);
+    assertTrue(String.format("%d<%d", dt, maxT), dt < maxT);
   }
 
   private ZooKeeperHiveLockManager setupLockManager() throws Exception, LockException {
     conf.setVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_QUORUM, "localhost");
     conf.setVar(HiveConf.ConfVars.HIVE_ZOOKEEPER_CLIENT_PORT, String.valueOf(server.getPort()));
-    conf.setBoolVar(HiveConf.ConfVars.HIVE_SERVER2_METRICS_ENABLED, true);
     conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-    conf.setVar(HiveConf.ConfVars.HIVE_METRICS_REPORTER,
-        MetricsReporting.JSON_FILE.name() + "," + MetricsReporting.JMX.name());
-    MetricsFactory.init(conf);
-    CodahaleMetrics metrics = (CodahaleMetrics) MetricsFactory.getInstance();
 
     HiveLockManagerCtx ctx = new HiveLockManagerCtx(conf);
     ZooKeeperHiveLockManager zMgr = new ZooKeeperHiveLockManager();
