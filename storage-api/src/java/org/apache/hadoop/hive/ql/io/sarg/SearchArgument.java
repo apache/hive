@@ -163,6 +163,11 @@ public interface SearchArgument {
   public ExpressionTree getExpression();
 
   /**
+   * Get the expression tree without the
+   */
+  public ExpressionTree getUnexpandedExpression();
+
+  /**
    * Evaluate the entire predicate based on the values for the leaf predicates.
    * @param leaves the value of each leaf predicate
    * @return the value of hte entire predicate
