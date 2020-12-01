@@ -1102,6 +1102,9 @@ public class CachedStore implements RawStore, Configurable {
   }
 
   @Override public void createDatabase(Database db) throws InvalidObjectException, MetaException {
+    if (db.getType() == null) {
+      db.setType(DatabaseType.NATIVE);
+    }
     rawStore.createDatabase(db);
     // in case of event based cache update, cache will be updated during commit.
     if (!canUseEvents) {

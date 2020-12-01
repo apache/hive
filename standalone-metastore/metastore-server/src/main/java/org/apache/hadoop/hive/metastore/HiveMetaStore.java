@@ -2366,6 +2366,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<String> processorCapabilities = req.getProcessorCapabilities();
       String processorId = req.getProcessorIdentifier();
 
+      // To preserve backward compatibility throw MetaException in case of null database
+      if (tbl.getDbName() == null) {
+        throw new MetaException("Null database name is not allowed");
+      }
+
+      if (!MetaStoreUtils.validateName(tbl.getTableName(), conf)) {
+        throw new InvalidObjectException(tbl.getTableName()
+            + " is not a valid object name");
+      }
+
       Database db = get_database_core(tbl.getCatName(), tbl.getDbName());
       if (db != null && db.getType().equals(DatabaseType.REMOTE)) {
         DataConnectorProviderFactory.getDataConnectorProvider(db).createTable(tbl);
@@ -2384,15 +2394,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         tbl.unsetColStats();
       }
 
-      // To preserve backward compatibility throw MetaException in case of null database
-      if (tbl.getDbName() == null) {
-        throw new MetaException("Null database name is not allowed");
-      }
-
-      if (!MetaStoreUtils.validateName(tbl.getTableName(), conf)) {
-        throw new InvalidObjectException(tbl.getTableName()
-            + " is not a valid object name");
-      }
       String validate = MetaStoreServerUtils.validateTblColumns(tbl.getSd().getCols());
       if (validate != null) {
         throw new InvalidObjectException("Invalid column " + validate);
