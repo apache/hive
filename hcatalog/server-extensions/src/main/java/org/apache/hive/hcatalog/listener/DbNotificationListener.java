@@ -982,7 +982,9 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
    * Get the next notification log ID.
    *
    * The default behavior is to update a sequence number stored in a table using
-   * {@code SELECT FOR UPDATE} to lock individual row.
+   * {@code SELECT FOR UPDATE} to lock individual rows.
+   *
+   * The notification log ID is an monotonic (1-up) number.
    *
    * <ul>
    * <li>For Apache Derby, the entire table must be locked</li>
@@ -998,14 +1000,6 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
       throws SQLException, MetaException {
 
     final long nextSequenceValue;
-
-    if (sqlGenerator.getDbProduct().isDERBY()) {
-      final String lockingQuery = sqlGenerator.lockTable("SEQUENCE_TABLE", false);
-      LOG.debug("Locking Derby table [{}]", lockingQuery);
-      try (Statement stmt = con.createStatement()) {
-        stmt.execute(lockingQuery);
-      }
-    }
 
     if (sqlGenerator.getDbProduct().isMYSQL()) {
       LOG.debug("Going to execute query [{}][1={}]", NL_UPD_MYSQL, sequence);
@@ -1027,6 +1021,14 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
         nextSequenceValue = rs.getLong(1);
       }
     } else {
+      if (sqlGenerator.getDbProduct().isDERBY()) {
+        final String lockingQuery = sqlGenerator.lockTable("SEQUENCE_TABLE", false);
+        LOG.debug("Locking Derby table [{}]", lockingQuery);
+        try (Statement stmt = con.createStatement()) {
+          stmt.execute(lockingQuery);
+        }
+      }
+
       final String sfuSql = sqlGenerator.addForUpdateClause(NL_SEL_SQL);
 
       LOG.debug("Going to execute query [{}][1={}]", sfuSql, sequence);
