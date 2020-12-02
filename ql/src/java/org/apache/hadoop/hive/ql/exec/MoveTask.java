@@ -826,6 +826,16 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
     HiveLockObject lock = new HiveLockObject(baseTable,lockData);
 
+    for (HiveLockObj hiveLockObj : lockObjects) {
+      if (Arrays.equals(hiveLockObj.getObj().getPaths(), lock.getPaths())) {
+        HiveLockMode l = hiveLockObj.getMode();
+        if (l == HiveLockMode.EXCLUSIVE || l == HiveLockMode.SEMI_SHARED) {
+          // no need to lock ; already owns a more powerful one
+          return new LocalTableLock(Optional.empty());
+        }
+      }
+    }
+
     return new LocalTableLock(Optional.of(lock));
   }
 
