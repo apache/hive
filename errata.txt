@@ -102,3 +102,4 @@ f33db1f68c68b552b9888988f818c03879749461 master     HIVE-18617 https://issues.ap
 4853a44b2fcfa702d23965ab0d3835b6b57954c4 master     HIVE-21823 https://issues.apache.org/jira/browse/HIVE-21823
 bd432c9203584c531f51559d8c97c398202f0794 master     HIVE-22267 https://issues.apache.org/jira/browse/HIVE-22267
 a0ccbff838afb440461a4d6df335f824c1dccbcc master     HIVE-21327 https://issues.apache.org/jira/browse/HIVE-21327
+23bc5469daad53b6839a86cd2c9db3d1d1c86d2e master     HIVE-24423 https://issues.apache.org/jira/browse/HIVE-24423

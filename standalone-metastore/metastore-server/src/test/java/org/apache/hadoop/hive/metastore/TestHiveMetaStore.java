@@ -45,7 +45,7 @@ import static org.mockito.Mockito.mock;
 
 import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsProjectionSpec;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
 import org.apache.hadoop.hive.metastore.api.PartitionSpec;
@@ -692,7 +692,7 @@ public abstract class TestHiveMetaStore {
     List<Partition> createdPartitions = setupProjectionTestTable();
     Table tbl = client.getTable("compdb", "comptbl");
     GetPartitionsRequest request = new GetPartitionsRequest();
-    GetPartitionsProjectionSpec projectSpec = new GetPartitionsProjectionSpec();
+    GetProjectionsSpec projectSpec = new GetProjectionsSpec();
     projectSpec.setFieldList(Arrays
         .asList("dbName", "tableName", "catName", "parameters", "lastAccessTime", "sd.location",
             "values", "createTime", "sd.serdeInfo.serializationLib", "sd.cols"));
