@@ -341,6 +341,6 @@ public class Cleaner extends MetaStoreCompactorThread {
     Path locPath = new Path(location);
     AcidUtils.Directory dir = AcidUtils.getAcidState(fileSystem, locPath, conf, validWriteIdList,
         Ref.from(false), false, dirSnapshots);
-    return dir.getObsolete().size() + dir.getAbortedDirectories().size();
+    return dir.getObsolete().size();
   }
 }
