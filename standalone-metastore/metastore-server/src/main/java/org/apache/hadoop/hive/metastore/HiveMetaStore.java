@@ -3933,7 +3933,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<ColumnStatistics> partsColStats = new ArrayList<>(parts.size());
       List<Long> partsWriteIds = new ArrayList<>(parts.size());
 
-      Lock tableLock = tablelocks.get(dbName + tblName);
+      Lock tableLock = tablelocks.get(dbName + "." + tblName);
       tableLock.lock();
       try {
         ms.openTransaction();
