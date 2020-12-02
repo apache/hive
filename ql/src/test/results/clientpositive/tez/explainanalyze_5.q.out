@@ -339,8 +339,8 @@ POSTHOOK: query: select * from acid_uami_n2 order by de
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_uami_n2
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-1	3.14	mary had a little lamb
-10	3.14	and everywhere that mary went
+1	109.23	mary had a little lamb
+10	119.23	and everywhere that mary went
 6553	923.19	its fleece was white as snow
 65530	823.19	the lamb was sure to go
 PREHOOK: query: update acid_uami_n2 set de = 3.14 where de = 109.23 or de = 119.23
@@ -456,7 +456,7 @@ POSTHOOK: query: select count(*) from acid_dot_n0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acid_dot_n0
 POSTHOOK: Output: hdfs://### HDFS PATH ###
-12280
+12288
 PREHOOK: query: delete from acid_dot_n0 where cint < -1070551679
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acid_dot_n0
