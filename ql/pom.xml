@@ -821,12 +821,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>it.unimi.dsi</groupId>
-      <artifactId>fastutil</artifactId>
-      <version>6.5.6</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.google.re2j</groupId>
       <artifactId>re2j</artifactId>
     </dependency>
