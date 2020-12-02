@@ -241,7 +241,7 @@ public final class TxnDbUtil {
           stmt.executeUpdate("INSERT INTO \"NEXT_LOCK_ID\" VALUES(1)");
           stmt.executeUpdate("INSERT INTO \"NEXT_COMPACTION_QUEUE_ID\" VALUES(1)");
         } catch (SQLException e) {
-          if (!databaseProduct.isTableNotExists(e)) {
+          if (!databaseProduct.isTableNotExistsError(e)) {
             LOG.error("Error initializing sequence values", e);
             success = false;
           }
@@ -298,7 +298,7 @@ public final class TxnDbUtil {
         LOG.debug("Successfully truncated table " + name);
         return true;
       } catch (SQLException e) {
-        if (databaseProduct.isTableNotExists(e)) {
+        if (databaseProduct.isTableNotExistsError(e)) {
           LOG.debug("Not truncating " + name + " because it doesn't exist");
           return true;
         }

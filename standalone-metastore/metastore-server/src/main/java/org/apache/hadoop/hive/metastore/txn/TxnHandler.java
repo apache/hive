@@ -421,7 +421,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
       try (Statement stmt = dbConn.createStatement()) {
         // Dummy query to see if table exists
-        try (ResultSet rs = stmt.executeQuery("SELECT MIN(\"MHL_MIN_OPEN_TXNID\") FROM \"MIN_HISTORY_LEVEL\"")) {
+        try (ResultSet rs = stmt.executeQuery("SELECT 1 FROM \"MIN_HISTORY_LEVEL\"")) {
           rs.next();
         }
       }
@@ -429,7 +429,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     } catch (SQLException e) {
       rollbackDBConn(dbConn);
       LOG.debug("Catching sql exception in min history level check", e);
-      if (dbProduct.isTableNotExists(e)) {
+      if (dbProduct.isTableNotExistsError(e)) {
         tableExists = false;
       } else {
         throw new MetaException(
@@ -5192,7 +5192,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
       LOG.info("Added entries to MIN_HISTORY_LEVEL for current txns: (" + txnIds + ") with min_open_txn: " + minOpenTxnId);
     } catch (SQLException e) {
-      if (dbProduct.isTableNotExists(e)) {
+      if (dbProduct.isTableNotExistsError(e)) {
         // If the table does not exists anymore, we disable the flag and start to work the new way
         // This enables to switch to the new functionality without a restart
         useMinHistoryLevel = false;
@@ -5219,7 +5219,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       pStmt.executeUpdate();
       LOG.debug("Removed committed transaction txnId: (" + txnid + ") from MIN_HISTORY_LEVEL");
     } catch (SQLException e) {
-      if (dbProduct.isTableNotExists(e)) {
+      if (dbProduct.isTableNotExistsError(e)) {
         // If the table does not exists anymore, we disable the flag and start to work the new way
         // This enables to switch to the new funcionality without a restart
         useMinHistoryLevel = false;
@@ -5249,7 +5249,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       executeQueriesInBatch(stmt, queries, maxBatchSize);
       LOG.info("Removed aborted transactions: (" + abortedTxnids + ") from MIN_HISTORY_LEVEL");
     } catch (SQLException e) {
-      if (dbProduct.isTableNotExists(e)) {
+      if (dbProduct.isTableNotExistsError(e)) {
         // If the table does not exists anymore, we disable the flag and start to work the new way
         // This enables to switch to the new funcionality without a restart
         useMinHistoryLevel = false;

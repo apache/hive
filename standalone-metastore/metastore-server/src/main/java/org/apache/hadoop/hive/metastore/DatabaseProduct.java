@@ -191,7 +191,7 @@ public class DatabaseProduct implements Configurable {
    * @param e Exception
    * @return
    */
-  public boolean isTableNotExists(SQLException e) {
+  public boolean isTableNotExistsError(SQLException e) {
     return (isPOSTGRES() && "42P01".equalsIgnoreCase(e.getSQLState()))
         || (isMYSQL() && "42S02".equalsIgnoreCase(e.getSQLState()))
         || (isORACLE() && "42000".equalsIgnoreCase(e.getSQLState()) && e.getMessage().contains("ORA-00942"))
