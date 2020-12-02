@@ -797,7 +797,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     if ("none".equalsIgnoreCase(lockFileMoveMode)) {
       return new LocalTableLock(Optional.empty());
     }
-    if ("dpp".equalsIgnoreCase(lockFileMoveMode)) {
+    if ("dp".equalsIgnoreCase(lockFileMoveMode)) {
       if (loadTableWork.getDPCtx() == null) {
         return new LocalTableLock(Optional.empty());
       }
