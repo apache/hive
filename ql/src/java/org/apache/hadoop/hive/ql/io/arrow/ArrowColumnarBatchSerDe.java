@@ -95,7 +95,6 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
   BufferAllocator rootAllocator;
   StructTypeInfo rowTypeInfo;
   StructObjectInspector rowObjectInspector;
-  Configuration conf;
 
   @VisibleForTesting
   Serializer serializer;
@@ -257,7 +256,7 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
   public ArrowWrapperWritable serialize(Object obj, ObjectInspector objInspector) {
     if(serializer == null) {
       try {
-        rootAllocator = RootAllocatorFactory.INSTANCE.getRootAllocator(conf);
+        rootAllocator = RootAllocatorFactory.INSTANCE.getRootAllocator(configuration.get());
         serializer = new Serializer(this);
       } catch(Exception e) {
         LOG.error("Unable to initialize serializer for ArrowColumnarBatchSerDe");
@@ -271,7 +270,7 @@ public class ArrowColumnarBatchSerDe extends AbstractSerDe {
   public Object deserialize(Writable writable) {
     if(deserializer == null) {
       try {
-        rootAllocator = RootAllocatorFactory.INSTANCE.getRootAllocator(conf);
+        rootAllocator = RootAllocatorFactory.INSTANCE.getRootAllocator(configuration.get());
         deserializer = new Deserializer(this);
       } catch(Exception e) {
         throw new RuntimeException(e);
