@@ -733,11 +733,13 @@ public interface IMetaStoreClient {
   List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
       throws MetaException, InvalidOperationException, UnknownDBException, TException;
 
-
   /**
    * Get tables as objects (rather than just fetching their names).  This is more expensive and
    * should only be used if you actually need all the information about the tables.
-   * @param request GetTablesRequest Object.
+   * @param catName catalog name
+   * @param dbName The database the tables are located in.
+   * @param tableNames The names of the tables to fetch.
+   * @param projectionsSpec The subset of columns that need to be fetched as part of the table object.
    * @return A list of objects representing the tables.
    *          Only the tables that can be retrieved from the database are returned.  For example,
    *          if none of the requested tables could be retrieved, an empty list is returned.
@@ -751,7 +753,7 @@ public interface IMetaStoreClient {
    * @throws MetaException
    *          Any other errors
    */
-  GetTablesResult getTables(GetTablesRequest request)
+  List<Table> getTables(String catName, String dbName, List<String> tableNames, GetProjectionsSpec projectionsSpec)
           throws MetaException, InvalidOperationException, UnknownDBException, TException;
 
   /**

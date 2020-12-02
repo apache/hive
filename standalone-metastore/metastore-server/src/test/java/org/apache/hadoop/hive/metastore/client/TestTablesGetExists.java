@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.metastore.client;
 import org.apache.hadoop.hive.metastore.ColumnType;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreTestUtils;
-import org.apache.hadoop.hive.metastore.annotation.MetastoreCheckinTest;
+import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
@@ -47,7 +47,7 @@ import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_DATABASE_NAME;
  * querying like getting one, or multiple tables, and table name lists.
  */
 @RunWith(Parameterized.class)
-@Category(MetastoreCheckinTest.class)
+@Category(MetastoreUnitTest.class)
 public class TestTablesGetExists extends MetaStoreClientTest {
   private static final String DEFAULT_DATABASE = "default";
   private static final String OTHER_DATABASE = "dummy";
@@ -399,17 +399,11 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     tableNames.add(testTables[0].getTableName());
     tableNames.add(testTables[1].getTableName());
 
-    GetTablesRequest request = new GetTablesRequest();
-    request.setProjectionSpec(new GetProjectionsSpec());
-    request.setTblNames(tableNames);
-    request.setDbName(DEFAULT_DATABASE);
-
-    GetProjectionsSpec projectSpec = request.getProjectionSpec();
     List<String> projectedFields = Collections.singletonList("sd.location");
+    GetProjectionsSpec projectSpec = new GetProjectionsSpec();
     projectSpec.setFieldList(projectedFields);
 
-    GetTablesResult result = client.getTables(request);
-    List<Table> tables = result.getTables();
+    List<Table> tables = client.getTables(null, DEFAULT_DATABASE, tableNames, projectSpec);
     Assert.assertEquals("Found tables", 2, tables.size());
 
     for(Table table : tables) {
@@ -426,13 +420,7 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     tableNames.add(testTables[0].getTableName());
     tableNames.add(testTables[1].getTableName());
 
-    GetTablesRequest request = new GetTablesRequest();
-    request.setProjectionSpec(null);
-    request.setTblNames(tableNames);
-    request.setDbName(DEFAULT_DATABASE);
-
-    GetTablesResult result = client.getTables(request);
-    List<Table> tables = result.getTables();
+    List<Table> tables = client.getTables(null, DEFAULT_DATABASE, tableNames, null);
 
     Assert.assertEquals("Found tables", 2, tables.size());
   }
@@ -443,15 +431,10 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     tableNames.add(testTables[0].getTableName());
     tableNames.add(testTables[1].getTableName());
 
-    GetTablesRequest request = new GetTablesRequest();
-    request.setProjectionSpec(new GetProjectionsSpec());
-    request.setTblNames(tableNames);
-    request.setDbName(DEFAULT_DATABASE);
-
-    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    GetProjectionsSpec projectSpec = new GetProjectionsSpec();
     projectSpec.setExcludeParamKeyPattern("foo");
 
-    Assert.assertThrows(Exception.class, ()->client.getTables(request));
+    Assert.assertThrows(Exception.class, ()->client.getTables(null, DEFAULT_DATABASE, tableNames, projectSpec));
   }
 
   @Test
@@ -460,16 +443,11 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     tableNames.add(testTables[0].getTableName());
     tableNames.add(testTables[1].getTableName());
 
-    GetTablesRequest request = new GetTablesRequest();
-    request.setProjectionSpec(new GetProjectionsSpec());
-    request.setTblNames(tableNames);
-    request.setDbName(DEFAULT_DATABASE);
-
-    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    GetProjectionsSpec projectSpec = new GetProjectionsSpec();
     List<String> projectedFields = Arrays.asList("Invalid1");
     projectSpec.setFieldList(projectedFields);
 
-    Assert.assertThrows(Exception.class, ()->client.getTables(request));
+    Assert.assertThrows(Exception.class, ()->client.getTables(null, DEFAULT_DATABASE, tableNames, projectSpec));
   }
 
 
@@ -479,16 +457,11 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     tableNames.add(testTables[0].getTableName());
     tableNames.add(testTables[1].getTableName());
 
-    GetTablesRequest request = new GetTablesRequest();
-    request.setProjectionSpec(new GetProjectionsSpec());
-    request.setTblNames(tableNames);
-    request.setDbName(DEFAULT_DATABASE);
-
-    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    GetProjectionsSpec projectSpec = new GetProjectionsSpec();
     List<String> projectedFields = Arrays.asList("Invalid1", "Invalid2");
     projectSpec.setFieldList(projectedFields);
 
-    Assert.assertThrows(Exception.class, ()->client.getTables(request));
+    Assert.assertThrows(Exception.class, ()->client.getTables(null, DEFAULT_DATABASE, tableNames, projectSpec));
   }
 
   @Test
@@ -497,17 +470,11 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     tableNames.add(testTables[0].getTableName());
     tableNames.add(testTables[1].getTableName());
 
-    GetTablesRequest request = new GetTablesRequest();
-    request.setProjectionSpec(new GetProjectionsSpec());
-    request.setTblNames(tableNames);
-    request.setDbName(DEFAULT_DATABASE);
-
-    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    GetProjectionsSpec projectSpec = new GetProjectionsSpec();
     List<String> projectedFields = Arrays.asList();
     projectSpec.setFieldList(projectedFields);
 
-    GetTablesResult result = client.getTables(request);
-    List<Table> tables = result.getTables();
+    List<Table> tables = client.getTables(null, DEFAULT_DATABASE, tableNames, projectSpec);
 
     Assert.assertEquals("Found tables", 2, tables.size());
   }
@@ -518,17 +485,11 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     tableNames.add(testTables[0].getTableName());
     tableNames.add(testTables[1].getTableName());
 
-    GetTablesRequest request = new GetTablesRequest();
-    request.setProjectionSpec(new GetProjectionsSpec());
-    request.setTblNames(tableNames);
-    request.setDbName(DEFAULT_DATABASE);
-
-    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    GetProjectionsSpec projectSpec = new GetProjectionsSpec();
     List<String> projectedFields = Arrays.asList("dbName", "tableName", "createTime", "lastAccessTime");
     projectSpec.setFieldList(projectedFields);
 
-    GetTablesResult result = client.getTables(request);
-    List<Table> tables = result.getTables();
+    List<Table> tables = client.getTables(null, DEFAULT_DATABASE, tableNames, projectSpec);
 
     Assert.assertEquals("Found tables", 2, tables.size());
 
@@ -546,17 +507,11 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     tableNames.add(testTables[0].getTableName());
     tableNames.add(testTables[1].getTableName());
 
-    GetTablesRequest request = new GetTablesRequest();
-    request.setProjectionSpec(new GetProjectionsSpec());
-    request.setTblNames(tableNames);
-    request.setDbName(DEFAULT_DATABASE);
-
-    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    GetProjectionsSpec projectSpec = new GetProjectionsSpec();
     List<String> projectedFields = Arrays.asList("sd.serdeInfo.name", "sd.serdeInfo.serializationLib", "sd.serdeInfo.description");
     projectSpec.setFieldList(projectedFields);
 
-    GetTablesResult result = client.getTables(request);
-    List<Table> tables = result.getTables();
+    List<Table> tables = client.getTables(null, DEFAULT_DATABASE, tableNames, projectSpec);
 
     Assert.assertEquals("Found tables", 2, tables.size());
 
@@ -577,17 +532,11 @@ public class TestTablesGetExists extends MetaStoreClientTest {
     tableNames.add(testTables[0].getTableName());
     tableNames.add(testTables[1].getTableName());
 
-    GetTablesRequest request = new GetTablesRequest();
-    request.setProjectionSpec(new GetProjectionsSpec());
-    request.setTblNames(tableNames);
-    request.setDbName(DEFAULT_DATABASE);
-
-    GetProjectionsSpec projectSpec = request.getProjectionSpec();
+    GetProjectionsSpec projectSpec = new GetProjectionsSpec();
     List<String> projectedFields = Arrays.asList("sd.cols.name", "sd.serdeInfo.name", "sd.serdeInfo.serializationLib", "sd.serdeInfo.parameters");
     projectSpec.setFieldList(projectedFields);
 
-    GetTablesResult result = client.getTables(request);
-    List<Table> tables = result.getTables();
+    List<Table> tables = client.getTables(null, DEFAULT_DATABASE, tableNames, projectSpec);
 
     Assert.assertEquals("Found tables", 2, tables.size());
 

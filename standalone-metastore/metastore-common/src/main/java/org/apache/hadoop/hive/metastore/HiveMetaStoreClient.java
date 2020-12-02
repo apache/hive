@@ -2349,34 +2349,27 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
       throws TException {
-    return getTableObjectsByName(getDefaultCatalog(conf), dbName, tableNames);
+    return getTables(getDefaultCatalog(conf), dbName, tableNames, null);
   }
 
   @Override
   public List<Table> getTableObjectsByName(String catName, String dbName,
                                            List<String> tableNames) throws TException {
+    return getTables(catName, dbName, tableNames, null);
+  }
+
+  @Override
+  public List<Table> getTables(String catName, String dbName, List<String> tableNames,
+      GetProjectionsSpec projectionsSpec) throws TException {
     GetTablesRequest req = new GetTablesRequest(dbName);
     req.setCatName(catName);
     req.setTblNames(tableNames);
     req.setCapabilities(version);
     if (processorCapabilities != null)
       req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+    req.setProjectionSpec(projectionsSpec);
     List<Table> tabs = client.get_table_objects_by_name_req(req).getTables();
     return deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
-  }
-
-  @Override
-  public GetTablesResult getTables(GetTablesRequest req) throws TException {
-    if (processorCapabilities != null)
-      req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
-    if (processorIdentifier != null)
-      req.setProcessorIdentifier(processorIdentifier);
-    if (req.getCapabilities() == null)
-      req.setCapabilities(version);
-
-    List<Table> tabs = client.get_table_objects_by_name_req(req).getTables();
-    return new GetTablesResult(deepCopyTables(
-            FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs)));
   }
 
   @Override
