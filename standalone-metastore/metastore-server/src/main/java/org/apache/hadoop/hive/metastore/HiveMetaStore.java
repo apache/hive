@@ -2376,6 +2376,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             + " is not a valid object name");
       }
 
+      if (!tbl.isSetCatName()) {
+        tbl.setCatName(getDefaultCatalog(conf));
+      }
+
       Database db = get_database_core(tbl.getCatName(), tbl.getDbName());
       if (db != null && db.getType().equals(DatabaseType.REMOTE)) {
         DataConnectorProviderFactory.getDataConnectorProvider(db).createTable(tbl);
@@ -2427,9 +2431,6 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       boolean success = false, madeDir = false;
       boolean isReplicated = false;
       try {
-        if (!tbl.isSetCatName()) {
-          tbl.setCatName(getDefaultCatalog(conf));
-        }
         firePreEvent(new PreCreateTableEvent(tbl, this));
 
         ms.openTransaction();
