@@ -1839,21 +1839,8 @@ public class ObjectStore implements RawStore, Configurable {
     return nmtbl.mtbl;
   }
 
-  private void verifyDBExists(String catName, String db) throws UnknownDBException {
-    // Need to differentiate between an unmatched pattern and a non-existent database
-    Query dbExistsQuery = pm.newQuery(MDatabase.class, "name == db && catalogName == cat");
-    dbExistsQuery.declareParameters("java.lang.String db, java.lang.String cat");
-    dbExistsQuery.setUnique(true);
-    dbExistsQuery.setResult("name");
-    String dbNameIfExists = (String) dbExistsQuery.execute(db, catName);
-    if (org.apache.commons.lang3.StringUtils.isEmpty(dbNameIfExists)) {
-      throw new UnknownDBException("Could not find database " +
-              DatabaseName.getQualified(catName, db));
-    }
-    dbExistsQuery.closeAll();
-  }
-
-  private List<Table> getTableObjectsByNameUtil(String catName, String db, List<String> tbl_names,
+  @Override
+  public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names,
       GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException {
     List<Table> tables = new ArrayList<>();
     boolean committed = false;
@@ -1920,7 +1907,19 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       if (mtables == null || mtables.isEmpty()) {
-        verifyDBExists(catName, db);
+        Database tempDB = null;
+        NoSuchObjectException ex = null;
+        try {
+          tempDB = getDatabase(catName, db);
+        } catch(NoSuchObjectException nsoe) {
+          ex = nsoe;
+        }
+
+        if (tempDB == null) {
+          final String errorMessage = (ex == null ? "" : (": " + ex.getMessage()));
+          throw new UnknownDBException("Could not find database " + DatabaseName.getQualified(catName, db) +
+                  errorMessage);
+        }
       } else {
         for (Iterator iter = mtables.iterator(); iter.hasNext(); ) {
           Table tbl = convertToTable((MTable) iter.next());
@@ -1943,13 +1942,7 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names)
           throws MetaException, UnknownDBException {
-    return getTableObjectsByNameUtil(catName, db, tbl_names, null);
-  }
-
-  @Override
-  public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names,
-          GetProjectionsSpec projectionsSpec) throws MetaException, UnknownDBException {
-    return getTableObjectsByNameUtil(catName, db, tbl_names, projectionsSpec);
+    return getTableObjectsByName(catName, db, tbl_names, null);
   }
 
   /** Makes shallow copy of a list to avoid DataNucleus mucking with our objects. */
@@ -1981,10 +1974,10 @@ public class ObjectStore implements RawStore, Configurable {
     Map<String, String> parameters = convertMap(mtbl.getParameters());
     boolean isAcidTable = TxnUtils.isAcidTable(parameters);
     final Table t = new Table(mtbl.getTableName(), mtbl.getDatabase() != null ? mtbl.getDatabase().getName() : null,
-            mtbl.getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl.getRetention(),
-            convertToStorageDescriptor(mtbl.getSd(), false, isAcidTable),
-            convertToFieldSchemas(mtbl.getPartitionKeys()), parameters, mtbl.getViewOriginalText(),
-              mtbl.getViewExpandedText(), tableType);
+        mtbl.getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl.getRetention(),
+        convertToStorageDescriptor(mtbl.getSd(), false, isAcidTable),
+        convertToFieldSchemas(mtbl.getPartitionKeys()), parameters, mtbl.getViewOriginalText(),
+        mtbl.getViewExpandedText(), tableType);
 
     if (Strings.isNullOrEmpty(mtbl.getOwnerType())) {
       // Before the ownerType exists in an old Hive schema, USER was the default type for owner.
