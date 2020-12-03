@@ -81,7 +81,11 @@ public class SetHashGroupByMinReduction implements SemanticNodeProcessor {
 
     // change the min reduction for hash group by
     float defaultMinReductionHashAggrFactor = desc.getMinReductionHashAggr();
+    float defaultMinReductionHashAggrFactorLowerBound = desc.getMinReductionHashAggrLowerBound();
     float minReductionHashAggrFactor = 1f - ((float) ndvProduct / numRows);
+    if (minReductionHashAggrFactor < defaultMinReductionHashAggrFactorLowerBound) {
+      minReductionHashAggrFactor = defaultMinReductionHashAggrFactorLowerBound;
+    }
     if (minReductionHashAggrFactor < defaultMinReductionHashAggrFactor) {
       desc.setMinReductionHashAggr(minReductionHashAggrFactor);
       if (LOG.isDebugEnabled()) {
