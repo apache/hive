@@ -41,7 +41,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.events.EventCleanerTask;
 import org.apache.hadoop.hive.metastore.security.HadoopThriftAuthBridge;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -192,8 +192,8 @@ public class MetaStoreTestUtils {
           // Some tests may have dummy txn manager. There is no harm in creating the transactional tables but
           // we should not change the test config in case they purposefully do not use transactions
           Configuration txnInitConf = new Configuration(conf);
-          TxnDbUtil.setConfValues(txnInitConf);
-          TxnDbUtil.prepDb(txnInitConf);
+          TestTxnDbUtil.setConfValues(txnInitConf);
+          TestTxnDbUtil.prepDb(txnInitConf);
         }
 
         MetaStoreTestUtils.startMetaStore(metaStorePort, bridge, conf, withHouseKeepingThreads, waitForHouseKeepers);

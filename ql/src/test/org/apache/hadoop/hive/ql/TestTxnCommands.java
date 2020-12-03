@@ -60,7 +60,7 @@ import org.apache.hadoop.hive.metastore.api.TxnInfo;
 import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
@@ -784,7 +784,8 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     Assert.assertNotNull(txnInfo);
     Assert.assertEquals(14, txnInfo.getId());
     Assert.assertEquals(TxnState.OPEN, txnInfo.getState());
-    String s =TxnDbUtil.queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
+    String s = TestTxnDbUtil
+        .queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
     String[] vals = s.split("\\s+");
     Assert.assertEquals("Didn't get expected timestamps", 2, vals.length);
     long lastHeartbeat = Long.parseLong(vals[1]);
@@ -808,7 +809,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     TestDbTxnManager2.checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", Table.ACIDTBL.name, null, slr.getLocks());
 
     //should've done several heartbeats
-    s =TxnDbUtil.queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
+    s = TestTxnDbUtil.queryToString(hiveConf, "select TXN_STARTED, TXN_LAST_HEARTBEAT from TXNS where TXN_ID = " + txnInfo.getId(), false);
     vals = s.split("\\s+");
     Assert.assertEquals("Didn't get expected timestamps", 2, vals.length);
     Assert.assertTrue("Heartbeat didn't progress: (old,new) (" + lastHeartbeat + "," + vals[1]+ ")",
