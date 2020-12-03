@@ -248,6 +248,11 @@ class DriverTxnHandler {
   void setWriteIdForAcidFileSinks() throws SemanticException, LockException {
     if (!driverContext.getPlan().getAcidSinks().isEmpty()) {
       List<FileSinkDesc> acidSinks = new ArrayList<>(driverContext.getPlan().getAcidSinks());
+      //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
+      //so this makes (file name -> data) mapping stable
+      acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getDirName().compareTo(fsd2.getDirName()));
+
+      // If the direct insert is on, sort the FSOs by moveTaskId as well because the dir is the same for all except the union use cases.
       boolean isDirectInsertOn = false;
       for (FileSinkDesc acidSink : acidSinks) {
         if (acidSink.isDirectInsert()) {
@@ -255,14 +260,8 @@ class DriverTxnHandler {
           break;
         }
       }
-
       if (isDirectInsertOn) {
-        // If the direct insert is on, sort the FSOs by moveTaskId as the dir is the same for all.
         acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getMoveTaskId().compareTo(fsd2.getMoveTaskId()));
-      } else {
-        //sorting makes tests easier to write since file names and ROW__IDs depend on statementId
-        //so this makes (file name -> data) mapping stable
-        acidSinks.sort((FileSinkDesc fsd1, FileSinkDesc fsd2) -> fsd1.getDirName().compareTo(fsd2.getDirName()));
       }
 
       for (FileSinkDesc acidSink : acidSinks) {

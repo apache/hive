@@ -68,12 +68,12 @@ POSTHOOK: Input: default@dummy_n7
 POSTHOOK: Output: default@partunion1_n0
 POSTHOOK: Output: default@partunion1_n0@part1=2014
 POSTHOOK: Lineage: partunion1_n0 PARTITION(part1=2014).id1 EXPRESSION []
-PREHOOK: query: select * from partunion1_n0
+PREHOOK: query: select * from partunion1_n0 order by id1, part1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partunion1_n0
 PREHOOK: Input: default@partunion1_n0@part1=2014
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from partunion1_n0
+POSTHOOK: query: select * from partunion1_n0 order by id1, part1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partunion1_n0
 POSTHOOK: Input: default@partunion1_n0@part1=2014
@@ -105,13 +105,13 @@ POSTHOOK: Output: default@partunion1_n1@part1=2014
 POSTHOOK: Output: default@partunion1_n1@part1=2015
 POSTHOOK: Lineage: partunion1_n1 PARTITION(part1=2014).id1 EXPRESSION []
 POSTHOOK: Lineage: partunion1_n1 PARTITION(part1=2015).id1 EXPRESSION []
-PREHOOK: query: select * from partunion1_n1
+PREHOOK: query: select * from partunion1_n1 order by id1, part1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partunion1_n1
 PREHOOK: Input: default@partunion1_n1@part1=2014
 PREHOOK: Input: default@partunion1_n1@part1=2015
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from partunion1_n1
+POSTHOOK: query: select * from partunion1_n1 order by id1, part1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partunion1_n1
 POSTHOOK: Input: default@partunion1_n1@part1=2014

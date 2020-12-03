@@ -21,7 +21,7 @@ select 1 as id1, '2014' as part1 from dummy_n7
 union all 
 select 2 as id1, '2014' as part1 from dummy_n7;
 
-select * from partunion1_n0;
+select * from partunion1_n0 order by id1, part1;
 
 show partitions partunion1_n0;
 
@@ -30,7 +30,7 @@ select 1 as id1, '2014' as part1 from dummy_n7
 union all 
 select 2 as id1, '2015' as part1 from dummy_n7;
 
-select * from partunion1_n1;
+select * from partunion1_n1 order by id1, part1;
 
 show partitions partunion1_n1;
 
