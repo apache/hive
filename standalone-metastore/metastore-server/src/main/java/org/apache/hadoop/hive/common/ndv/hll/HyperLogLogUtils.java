@@ -201,11 +201,13 @@ public class HyperLogLogUtils {
 
   /**
    * This function deserializes the serialized hyperloglogs from a byte array.
-   * @param buf - to deserialize
-   * @return HyperLogLog
+   * @param buf
+   * @param start
+   * @param len
+   * @return
    */
-  public static HyperLogLog deserializeHLL(final byte[] buf) {
-    InputStream is = new ByteArrayInputStream(buf); // TODO: use faster non-sync inputstream
+  public static HyperLogLog deserializeHLL(final byte[] buf, final int start, final int len) {
+    InputStream is = new ByteArrayInputStream(buf, start, len); // TODO: use faster non-sync inputstream
     try {
       HyperLogLog result = deserializeHLL(is);
       is.close();
@@ -213,6 +215,15 @@ public class HyperLogLogUtils {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * This function deserializes the serialized hyperloglogs from a byte array.
+   * @param buf - to deserialize
+   * @return HyperLogLog
+   */
+  public static HyperLogLog deserializeHLL(final byte[] buf) {
+    return deserializeHLL(buf, 0, buf.length);
   }
 
   private static void bitpackHLLRegister(OutputStream out, byte[] register, int bitWidth)
