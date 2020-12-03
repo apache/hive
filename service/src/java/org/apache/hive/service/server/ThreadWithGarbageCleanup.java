@@ -21,7 +21,7 @@ package org.apache.hive.service.server;
 
 import java.util.Map;
 
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.RawStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +67,7 @@ public class ThreadWithGarbageCleanup extends Thread {
    */
   public void cacheThreadLocalRawStore() {
     Long threadId = this.getId();
-    RawStore threadLocalRawStore = HiveMetaStore.HMSHandler.getRawStore();
+    RawStore threadLocalRawStore = HMSHandler.getRawStore();
     if (threadLocalRawStore == null) {
       LOG.debug("Thread Local RawStore is null, for the thread: " +
               this.getName() + " and so removing entry from threadRawStoreMap.");

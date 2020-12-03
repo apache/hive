@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -29,11 +28,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -48,7 +45,6 @@ import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsResponse;
-import org.apache.hadoop.hive.metastore.api.PartitionSpec;
 import org.apache.hadoop.hive.metastore.api.PartitionSpecWithSharedSD;
 import org.apache.hadoop.hive.metastore.api.PartitionWithoutSD;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
@@ -3408,7 +3404,7 @@ public abstract class TestHiveMetaStore {
     part.getSd().setLocation(tbl.getSd().getLocation() + "/partCol=1");
     Warehouse wh = mock(Warehouse.class);
     //Execute initializeAddedPartition() and it should not trigger updatePartitionStatsFast() as DO_NOT_UPDATE_STATS is true
-    HiveMetaStore.HMSHandler hms = new HiveMetaStore.HMSHandler("", conf, false);
+    HMSHandler hms = new HMSHandler("", conf, false);
     Method m = hms.getClass().getDeclaredMethod("initializeAddedPartition", Table.class, Partition.class,
             boolean.class, EnvironmentContext.class);
     m.setAccessible(true);

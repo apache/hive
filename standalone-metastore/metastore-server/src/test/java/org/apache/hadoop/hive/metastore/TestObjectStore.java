@@ -88,7 +88,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -148,7 +147,7 @@ public class TestObjectStore {
     objectStore = new ObjectStore();
     objectStore.setConf(conf);
 
-    HiveMetaStore.HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
   }
 
   private void setupRandomObjectStoreUrl(){
