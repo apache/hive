@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.hive.ql.session.SessionStateUtil;
+import org.apache.hadoop.hive.ql.exec.GroupByCombiner;
 import org.apache.hive.common.util.Ref;
 import org.apache.hadoop.hive.ql.exec.tez.UserPoolMapping.MappingInput;
 import java.io.IOException;
@@ -586,6 +587,10 @@ public class TezTask extends Task<TezWork> {
           Edge e = null;
 
           TezEdgeProperty edgeProp = tezWork.getEdgeProperty(workUnit, v);
+
+          //Add the reducer plan to config to create the combiner object in case of group by.
+          wxConf = GroupByCombiner.setCombinerInConf(v, wxConf, workToConf.get(v));
+
           e = utils.createEdge(wxConf, wx, workToVertex.get(v), edgeProp, v, tezWork);
           dag.addEdge(e);
         }
