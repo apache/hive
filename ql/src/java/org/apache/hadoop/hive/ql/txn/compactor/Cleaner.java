@@ -53,7 +53,6 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -273,9 +272,8 @@ public class Cleaner extends MetaStoreCompactorThread {
       throws IOException, NoSuchObjectException, MetaException {
     Path locPath = new Path(location);
     FileSystem fs = locPath.getFileSystem(conf);
-    Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots = AcidUtils.getHdfsDirSnapshots(fs, locPath);
-    AcidUtils.Directory dir = AcidUtils.getAcidState(locPath.getFileSystem(conf), locPath, conf, writeIdList, Ref.from(
-        false), false, dirSnapshots);
+    AcidUtils.Directory dir = AcidUtils.getAcidState(fs, locPath, conf, writeIdList, Ref.from(
+        false), false);
     List<Path> obsoleteDirs = dir.getObsolete();
     /**
      * add anything in 'dir'  that only has data from aborted transactions - no one should be
@@ -316,7 +314,7 @@ public class Cleaner extends MetaStoreCompactorThread {
     }
     // Check if there will be more obsolete directories to clean when possible. We will only mark cleaned when this
     // number reaches 0.
-    return getNumEventuallyObsoleteDirs(location, dirSnapshots, fs) == 0;
+    return getNumEventuallyObsoleteDirs(location, fs) == 0;
   }
 
   /**
@@ -326,21 +324,18 @@ public class Cleaner extends MetaStoreCompactorThread {
    * We do this by assuming that there are no open transactions anywhere and then calling getAcidState. If there are
    * obsolete/aborted directories, then the Cleaner has more work to do. Eventually.
    * @param location location of table
-   * @param dirSnapshots snapshot of table/partition directory
    * @param fileSystem
    * @return number of dirs left for the cleaner to clean – eventually
    * @throws IOException
    */
-  private int getNumEventuallyObsoleteDirs(String location, Map<Path, AcidUtils.HdfsDirSnapshot> dirSnapshots,
-      FileSystem fileSystem)
-      throws IOException {
+  private int getNumEventuallyObsoleteDirs(String location, FileSystem fileSystem) throws IOException {
     ValidTxnList validTxnList = new ValidReadTxnList();
     //save it so that getAcidState() sees it
     conf.set(ValidTxnList.VALID_TXNS_KEY, validTxnList.writeToString());
     ValidReaderWriteIdList validWriteIdList = new ValidReaderWriteIdList();
     Path locPath = new Path(location);
     AcidUtils.Directory dir = AcidUtils.getAcidState(fileSystem, locPath, conf, validWriteIdList,
-        Ref.from(false), false, dirSnapshots);
+        Ref.from(false), false);
     return dir.getObsolete().size();
   }
 }
