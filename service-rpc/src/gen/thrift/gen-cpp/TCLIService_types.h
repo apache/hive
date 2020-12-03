@@ -123,7 +123,8 @@ struct TOperationType {
     GET_TABLE_TYPES = 5,
     GET_COLUMNS = 6,
     GET_FUNCTIONS = 7,
-    UNKNOWN = 8
+    UNKNOWN = 8,
+    PROCEDURAL_SQL = 9
   };
 };
 

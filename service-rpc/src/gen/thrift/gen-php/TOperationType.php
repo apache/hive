@@ -34,6 +34,8 @@ final class TOperationType
 
     const UNKNOWN = 8;
 
+    const PROCEDURAL_SQL = 9;
+
     static public $__names = array(
         0 => 'EXECUTE_STATEMENT',
         1 => 'GET_TYPE_INFO',
@@ -44,6 +46,7 @@ final class TOperationType
         6 => 'GET_COLUMNS',
         7 => 'GET_FUNCTIONS',
         8 => 'UNKNOWN',
+        9 => 'PROCEDURAL_SQL',
     );
 }
 

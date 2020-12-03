@@ -1,20 +1,20 @@
 /*
  *
- *  * Licensed to the Apache Software Foundation (ASF) under one
- *  * or more contributor license agreements.  See the NOTICE file
- *  * distributed with this work for additional information
- *  * regarding copyright ownership.  The ASF licenses this file
- *  * to you under the Apache License, Version 2.0 (the
- *  * "License"); you may not use this file except in compliance
- *  * with the License.  You may obtain a copy of the License at
- *  *
- *  *     http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  * Unless required by applicable law or agreed to in writing, software
- *  * distributed under the License is distributed on an "AS IS" BASIS,
- *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  * See the License for the specific language governing permissions and
- *  * limitations under the License.
+ *  Licensed to the Apache Software Foundation (ASF) under one
+ *  or more contributor license agreements.  See the NOTICE file
+ *  distributed with this work for additional information
+ *  regarding copyright ownership.  The ASF licenses this file
+ *  to you under the Apache License, Version 2.0 (the
+ *  "License"); you may not use this file except in compliance
+ *  with the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  *
  */
 
@@ -31,11 +31,11 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.StoredProcedureRequest;
 import org.apache.hive.hplsql.Exec;
+import org.apache.hive.hplsql.HplSqlSessionState;
 import org.apache.hive.hplsql.HplsqlBaseVisitor;
 import org.apache.hive.hplsql.HplsqlLexer;
 import org.apache.hive.hplsql.HplsqlParser;
@@ -48,28 +48,36 @@ public class HmsFunction implements Function {
   private boolean trace;
   private IMetaStoreClient msc;
   private BuiltinFunctions builtinFunctions;
+  private HplSqlSessionState hplSqlSession;
   private Map<String, ParserRuleContext> cache = new HashMap<>();
 
-  public HmsFunction(Exec e, IMetaStoreClient msc, BuiltinFunctions builtinFunctions) {
+  public HmsFunction(Exec e, IMetaStoreClient msc, BuiltinFunctions builtinFunctions, HplSqlSessionState hplSqlSession) {
     this.exec = e;
     this.msc = msc;
     this.builtinFunctions = builtinFunctions;
+    this.hplSqlSession = hplSqlSession;
     this.trace = exec.getTrace();
   }
 
   @Override
   public boolean exists(String name) {
-    return cache.containsKey(name) || getProcFromHMS(name).isPresent();
+    name = name.toUpperCase();
+    return isCached(name) || getProcFromHMS(name).isPresent();
+  }
+
+  protected boolean isCached(String name) {
+    return cache.containsKey(qualified(name));
   }
 
   @Override
   public boolean exec(String name, HplsqlParser.Expr_func_paramsContext ctx) {
+    name = name.toUpperCase();
     if (builtinFunctions.exec(name, ctx)) {
       return true;
     }
-    if (cache.containsKey(name)) {
+    if (isCached(name)) {
       trace(ctx, "EXEC CACHED FUNCTION " + name);
-      execProcOrFunc(ctx, cache.get(name), name);
+      execProcOrFunc(ctx, cache.get(qualified(name)), name);
       return true;
     }
     Optional<StoredProcedure> proc = getProcFromHMS(name);
@@ -77,10 +85,18 @@ public class HmsFunction implements Function {
       trace(ctx, "EXEC HMS FUNCTION " + name);
       ParserRuleContext procCtx = parse(proc.get());
       execProcOrFunc(ctx, procCtx, name);
-      cache.put(name, procCtx);
+      saveInCache(name, procCtx);
       return true;
     }
     return false;
+  }
+
+  protected void saveInCache(String name, ParserRuleContext procCtx) {
+    cache.put(qualified(name), procCtx);
+  }
+
+  private String qualified(String name) {
+    return (hplSqlSession.currentDatabase() + "." + name).toUpperCase();
   }
 
   /**
@@ -113,7 +129,7 @@ public class HmsFunction implements Function {
     }
   }
 
-  public ParserRuleContext parse(StoredProcedure proc) {
+  private ParserRuleContext parse(StoredProcedure proc) {
     HplsqlLexer lexer = new HplsqlLexer(new ANTLRInputStream(proc.getSource()));
     CommonTokenStream tokens = new CommonTokenStream(lexer);
     HplsqlParser parser = new HplsqlParser(tokens);
@@ -124,8 +140,9 @@ public class HmsFunction implements Function {
 
   private Optional<StoredProcedure> getProcFromHMS(String name) {
     try {
-      Database db = currentDatabase();
-      return Optional.of(msc.getStoredProcedure(new StoredProcedureRequest(db.getCatalogName(), db.getName(), name)));
+      StoredProcedureRequest request = new StoredProcedureRequest(
+              hplSqlSession.currentCatalog(), hplSqlSession.currentDatabase(), name);
+      return Optional.of(msc.getStoredProcedure(request));
     } catch (NoSuchObjectException e) {
       return Optional.empty();
     } catch (TException e) {
@@ -147,38 +164,28 @@ public class HmsFunction implements Function {
 
   @Override
   public void addUserFunction(HplsqlParser.Create_function_stmtContext ctx) {
-    String name = ctx.ident().getText();
+    String name = ctx.ident().getText().toUpperCase();
     if (builtinFunctions.exists(name)) {
       exec.info(ctx, name + " is a built-in function which cannot be redefined.");
       return;
     }
     trace(ctx, "CREATE FUNCTION " + name);
-    Database db = currentDatabase();
-    StoredProcedure proc = newStoredProc(name, Exec.getFormattedText(ctx), db);
-    cache.put(name, ctx);
+    StoredProcedure proc = newStoredProc(name, Exec.getFormattedText(ctx));
+    saveInCache(name, ctx);
     saveStoredProcInHMS(proc);
   }
 
   @Override
   public void addUserProcedure(HplsqlParser.Create_procedure_stmtContext ctx) {
-    String name = ctx.ident(0).getText();
+    String name = ctx.ident(0).getText().toUpperCase();
     if (builtinFunctions.exists(name)) {
       exec.info(ctx, name + " is a built-in function which cannot be redefined.");
       return;
     }
     trace(ctx, "CREATE PROCEDURE " + name);
-    Database db = currentDatabase();
-    StoredProcedure proc = newStoredProc(name, Exec.getFormattedText(ctx), db);
-    cache.put(name, ctx);
+    StoredProcedure proc = newStoredProc(name, Exec.getFormattedText(ctx));
+    saveInCache(name, ctx);
     saveStoredProcInHMS(proc);
-  }
-
-  private Database currentDatabase() {
-    try {
-      return msc.getDatabase(exec.getSchema());
-    } catch (TException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   private void saveStoredProcInHMS(StoredProcedure proc) {
@@ -189,12 +196,12 @@ public class HmsFunction implements Function {
     }
   }
 
-  private StoredProcedure newStoredProc(String name, String source, Database db) {
+  private StoredProcedure newStoredProc(String name, String source) {
     StoredProcedure storedProcedure = new StoredProcedure();
-    storedProcedure.setCatName(db.getCatalogName());
+    storedProcedure.setCatName(hplSqlSession.currentCatalog());
     storedProcedure.setName(name);
-    storedProcedure.setOwnerName(db.getOwnerName()); // TODO
-    storedProcedure.setDbName(db.getName());
+    storedProcedure.setOwnerName(hplSqlSession.currentUser());
+    storedProcedure.setDbName(hplSqlSession.currentDatabase());
     storedProcedure.setSource(source);
     return storedProcedure;
   }
