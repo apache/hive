@@ -60,7 +60,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.apache.hadoop.hive.conf.Constants.COMPACTOR_CLEANER_THREAD_NAME_FORMAT;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_CLEANER_RETENTION_TIME;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED;
-import static org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler.getMSForConf;
+import static org.apache.hadoop.hive.metastore.HMSHandler.getMSForConf;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 
 /**

@@ -22,7 +22,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.hadoop.hive.metastore.RawStore;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -52,7 +52,7 @@ public class RuntimeStatsCleanerTask implements MetastoreTaskThread {
   public void run() {
 
     try {
-      RawStore ms = HiveMetaStore.HMSHandler.getMSForConf(conf);
+      RawStore ms = HMSHandler.getMSForConf(conf);
       int maxRetainSecs=(int) MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.RUNTIME_STATS_MAX_AGE, TimeUnit.SECONDS);
       int deleteCnt = ms.deleteRuntimeStats(maxRetainSecs);
 

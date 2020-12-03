@@ -26,7 +26,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ndv.hll.HyperLogLog;
 import org.apache.hadoop.hive.metastore.annotation.MetastoreUnitTest;
 import org.apache.hadoop.hive.metastore.api.AggrStats;
-import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsData;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsDesc;
@@ -106,7 +105,7 @@ public class TestOldSchema {
     store = new ObjectStore();
     store.setConf(conf);
     dropAllStoreObjects(store);
-    HiveMetaStore.HMSHandler.createDefaultCatalog(store, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(store, new Warehouse(conf));
 
     HyperLogLog hll = HyperLogLog.builder().build();
     hll.addLong(1);
