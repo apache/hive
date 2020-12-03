@@ -19,10 +19,11 @@
 package org.apache.hive.hplsql.functions;
 
 import org.apache.hive.hplsql.*;
+import org.apache.hive.hplsql.executor.QueryExecutor;
 
 public class FunctionString extends BuiltinFunctions {
-  public FunctionString(Exec e) {
-    super(e);
+  public FunctionString(Exec e, QueryExecutor queryExecutor) {
+    super(e, queryExecutor);
   }
 
   /** 
