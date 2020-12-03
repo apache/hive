@@ -1371,6 +1371,10 @@ public class VectorGroupByOperator extends Operator<GroupByDesc>
     return aggregators;
   }
 
+  public VectorAggregationBufferBatch getAggregationBufferBatch() {
+    return aggregationBatchInfo;
+  }
+
   public void setAggregators(VectorAggregateExpression[] aggregators) {
     this.aggregators = aggregators;
   }

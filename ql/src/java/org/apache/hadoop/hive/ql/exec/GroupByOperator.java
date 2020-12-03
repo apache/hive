@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.LlapDaemonInfo;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
@@ -563,6 +564,44 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     for (int i = 0; i < aggs.length; i++) {
       aggregationEvaluators[i].reset(aggs[i]);
     }
+  }
+
+  protected void updateAggregation(Object row) throws HiveException {
+    for (int ai = 0; ai < aggregations.length; ai++) {
+      Object[] o = new Object[aggregationParameterFields[ai].length];
+      for (int pi = 0; pi < aggregationParameterFields[ai].length; pi++) {
+        o[pi] = aggregationParameterFields[ai][pi].evaluate(row);
+      }
+      aggregationEvaluators[ai].aggregate(aggregations[ai], o);
+    }
+  }
+
+  protected AggregationBuffer[] getAggregationBuffers() {
+    return aggregations;
+  }
+
+  protected GenericUDAFEvaluator[] getAggregationEvaluator() {
+    return aggregationEvaluators;
+  }
+
+  protected ObjectInspector getAggrObjInspector() throws HiveException {
+    List<String> fieldNames = new ArrayList<String>();
+    int count = 0;
+    for (String name : conf.getOutputColumnNames()) {
+      if (count < outputKeyLength) {
+        count++;
+        continue;
+      }
+      fieldNames.add(name);
+    }
+    ObjectInspector[] objectInspectors =
+            new ObjectInspector[aggregationEvaluators.length];
+    for (int i = 0; i < aggregationEvaluators.length; i++) {
+      objectInspectors[i] = aggregationEvaluators[i].init(conf.getAggregators()
+              .get(i).getMode(), aggregationParameterObjectInspectors[i]);
+    }
+    return ObjectInspectorFactory
+            .getStandardStructObjectInspector(fieldNames, Arrays.asList(objectInspectors));
   }
 
   /*
