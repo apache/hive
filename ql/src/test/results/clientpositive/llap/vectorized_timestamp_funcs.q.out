@@ -944,7 +944,7 @@ STAGE PLANS:
         ListSink
 
 PREHOOK: query: SELECT
-  to_unix_timestamp(stimestamp1) AS c1,
+  stimestamp1, to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
   month(stimestamp1),
   day(stimestamp1),
@@ -959,7 +959,7 @@ PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc_wrong
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT
-  to_unix_timestamp(stimestamp1) AS c1,
+  stimestamp1, to_unix_timestamp(stimestamp1) AS c1,
   year(stimestamp1),
   month(stimestamp1),
   day(stimestamp1),
@@ -973,9 +973,9 @@ ORDER BY c1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc_wrong
 #### A masked pattern was here ####
-NULL	2	11	30	NULL	48	4	40	39
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
-NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+0000-00-00 99:99:99	-62169765561	2	11	30	NULL	48	4	40	39
+2000:01:01 00-00-00	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+abcd	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
 PREHOOK: query: EXPLAIN VECTORIZATION EXPRESSION  SELECT
   min(ctimestamp1),
   max(ctimestamp1),
