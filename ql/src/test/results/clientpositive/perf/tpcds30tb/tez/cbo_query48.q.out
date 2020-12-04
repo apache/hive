@@ -1,0 +1,18 @@
+CBO PLAN:
+HiveAggregate(group=[{}], agg#0=[sum($7)])
+  HiveJoin(condition=[AND(=($6, $0), OR(AND($1, $9), AND($2, $10), AND($3, $11)))], joinType=[inner], algorithm=[none], cost=[not available])
+    HiveProject(ca_address_sk=[$0], IN=[IN($8, _UTF-16LE'KY', _UTF-16LE'GA', _UTF-16LE'NM')], IN2=[IN($8, _UTF-16LE'MT', _UTF-16LE'OR', _UTF-16LE'IN')], IN3=[IN($8, _UTF-16LE'WI', _UTF-16LE'MO', _UTF-16LE'WV')])
+      HiveFilter(condition=[AND(IN($8, _UTF-16LE'KY', _UTF-16LE'GA', _UTF-16LE'NM', _UTF-16LE'MT', _UTF-16LE'OR', _UTF-16LE'IN', _UTF-16LE'WI', _UTF-16LE'MO', _UTF-16LE'WV'), =($10, _UTF-16LE'United States'))])
+        HiveTableScan(table=[[default, customer_address]], table:alias=[customer_address])
+    HiveJoin(condition=[=($0, $1)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(cd_demo_sk=[$0])
+        HiveFilter(condition=[AND(=($2, _UTF-16LE'M'), =($3, _UTF-16LE'4 yr Degree         '))])
+          HiveTableScan(table=[[default, customer_demographics]], table:alias=[customer_demographics])
+      HiveJoin(condition=[=($3, $7)], joinType=[inner], algorithm=[none], cost=[not available])
+        HiveProject(ss_cdemo_sk=[$3], ss_addr_sk=[$5], ss_quantity=[$9], ss_sold_date_sk=[$22], BETWEEN=[BETWEEN(false, $21, 0:DECIMAL(12, 2), 2000:DECIMAL(12, 2))], BETWEEN6=[BETWEEN(false, $21, 150:DECIMAL(12, 2), 3000:DECIMAL(12, 2))], BETWEEN7=[BETWEEN(false, $21, 50:DECIMAL(12, 2), 25000:DECIMAL(12, 2))])
+          HiveFilter(condition=[AND(OR(BETWEEN(false, $12, 100:DECIMAL(3, 0), 150:DECIMAL(3, 0)), BETWEEN(false, $12, 50:DECIMAL(2, 0), 100:DECIMAL(3, 0)), BETWEEN(false, $12, 150:DECIMAL(3, 0), 200:DECIMAL(3, 0))), IS NOT NULL($3), IS NOT NULL($5), IS NOT NULL($6), OR(<=(100:DECIMAL(3, 0), $12), <=($12, 150:DECIMAL(3, 0)), <=(50:DECIMAL(2, 0), $12), <=($12, 100:DECIMAL(3, 0)), <=(150:DECIMAL(3, 0), $12), <=($12, 200:DECIMAL(3, 0))), OR(<=(0:DECIMAL(12, 2), $21), <=($21, 2000:DECIMAL(12, 2)), <=(150:DECIMAL(12, 2), $21), <=($21, 3000:DECIMAL(12, 2)), <=(50:DECIMAL(12, 2), $21), <=($21, 25000:DECIMAL(12, 2))), IS NOT NULL($22))])
+            HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+        HiveProject(d_date_sk=[$0])
+          HiveFilter(condition=[=($6, 1998)])
+            HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+
