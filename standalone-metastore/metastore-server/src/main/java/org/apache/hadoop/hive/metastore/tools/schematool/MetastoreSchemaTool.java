@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore.tools.schematool;
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -41,6 +42,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.URI;
@@ -423,6 +425,21 @@ public class MetastoreSchemaTool {
     return run(findHomeDir(), args, null, MetastoreConf.newMetastoreConf());
   }
 
+  @VisibleForTesting
+  public final int runScript(String[] args, InputStream scriptStream) {
+    try {
+      init(findHomeDir(), args, null, MetastoreConf.newMetastoreConf());
+      // Cannot run script directly from input stream thus copy is necessary.
+      File scriptFile = File.createTempFile("schemaToolTmpScript", "sql");
+      scriptFile.deleteOnExit();
+      FileUtils.copyToFile(scriptStream, scriptFile);
+      execSql(scriptFile.getAbsolutePath());
+      return 0;
+    } catch (HiveMetaException | IOException e) {
+      throw new RuntimeException("Failed to run script " + scriptStream, e);
+    }
+  }
+  
   public int run(String metastoreHome, String[] args, OptionGroup additionalOptions,
                  Configuration conf) {
     try {
