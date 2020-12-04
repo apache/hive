@@ -67,7 +67,12 @@ public class TestDanglingQOuts {
       if (clz == CliConfigs.DummyConfig.class) {
         continue;
       }
-      handleCliConfig((AbstractCliConfig) clz.newInstance());
+      if (clz == CliConfigs.TezPerfCliConfig.class) {
+        handleCliConfig(new CliConfigs.TezPerfCliConfig(true));
+        handleCliConfig(new CliConfigs.TezPerfCliConfig(false));
+      } else {
+        handleCliConfig((AbstractCliConfig) clz.newInstance());
+      }
     }
   }
 

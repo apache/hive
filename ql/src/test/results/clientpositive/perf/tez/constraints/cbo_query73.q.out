@@ -1,0 +1,92 @@
+PREHOOK: query: explain cbo
+select c_last_name
+       ,c_first_name
+       ,c_salutation
+       ,c_preferred_cust_flag 
+       ,ss_ticket_number
+       ,cnt from
+   (select ss_ticket_number
+          ,ss_customer_sk
+          ,count(*) cnt
+    from store_sales,date_dim,store,household_demographics
+    where store_sales.ss_sold_date_sk = date_dim.d_date_sk
+    and store_sales.ss_store_sk = store.s_store_sk  
+    and store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+    and date_dim.d_dom between 1 and 2 
+    and (household_demographics.hd_buy_potential = '>10000' or
+         household_demographics.hd_buy_potential = 'unknown')
+    and household_demographics.hd_vehicle_count > 0
+    and case when household_demographics.hd_vehicle_count > 0 then 
+             household_demographics.hd_dep_count/ household_demographics.hd_vehicle_count else null end > 1
+    and date_dim.d_year in (2000,2000+1,2000+2)
+    and store.s_county in ('Mobile County','Maverick County','Huron County','Kittitas County')
+    group by ss_ticket_number,ss_customer_sk) dj,customer
+    where ss_customer_sk = c_customer_sk
+      and cnt between 1 and 5
+    order by cnt desc
+PREHOOK: type: QUERY
+PREHOOK: Input: default@customer
+PREHOOK: Input: default@date_dim
+PREHOOK: Input: default@household_demographics
+PREHOOK: Input: default@store
+PREHOOK: Input: default@store_sales
+PREHOOK: Output: hdfs://### HDFS PATH ###
+POSTHOOK: query: explain cbo
+select c_last_name
+       ,c_first_name
+       ,c_salutation
+       ,c_preferred_cust_flag 
+       ,ss_ticket_number
+       ,cnt from
+   (select ss_ticket_number
+          ,ss_customer_sk
+          ,count(*) cnt
+    from store_sales,date_dim,store,household_demographics
+    where store_sales.ss_sold_date_sk = date_dim.d_date_sk
+    and store_sales.ss_store_sk = store.s_store_sk  
+    and store_sales.ss_hdemo_sk = household_demographics.hd_demo_sk
+    and date_dim.d_dom between 1 and 2 
+    and (household_demographics.hd_buy_potential = '>10000' or
+         household_demographics.hd_buy_potential = 'unknown')
+    and household_demographics.hd_vehicle_count > 0
+    and case when household_demographics.hd_vehicle_count > 0 then 
+             household_demographics.hd_dep_count/ household_demographics.hd_vehicle_count else null end > 1
+    and date_dim.d_year in (2000,2000+1,2000+2)
+    and store.s_county in ('Mobile County','Maverick County','Huron County','Kittitas County')
+    group by ss_ticket_number,ss_customer_sk) dj,customer
+    where ss_customer_sk = c_customer_sk
+      and cnt between 1 and 5
+    order by cnt desc
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@customer
+POSTHOOK: Input: default@date_dim
+POSTHOOK: Input: default@household_demographics
+POSTHOOK: Input: default@store
+POSTHOOK: Input: default@store_sales
+POSTHOOK: Output: hdfs://### HDFS PATH ###
+CBO PLAN:
+HiveSortLimit(sort0=[$5], dir0=[DESC])
+  HiveProject(c_last_name=[$3], c_first_name=[$2], c_salutation=[$1], c_preferred_cust_flag=[$4], ss_ticket_number=[$5], cnt=[$7])
+    HiveJoin(condition=[=($6, $0)], joinType=[inner], algorithm=[none], cost=[not available])
+      HiveProject(c_customer_sk=[$0], c_salutation=[$7], c_first_name=[$8], c_last_name=[$9], c_preferred_cust_flag=[$10])
+        HiveTableScan(table=[[default, customer]], table:alias=[customer])
+      HiveProject($f0=[$0], $f1=[$1], $f2=[$2])
+        HiveFilter(condition=[BETWEEN(false, $2, 1:BIGINT, 5:BIGINT)])
+          HiveProject(ss_ticket_number=[$1], ss_customer_sk=[$0], $f2=[$2])
+            HiveAggregate(group=[{1, 4}], agg#0=[count()])
+              HiveJoin(condition=[=($3, $7)], joinType=[inner], algorithm=[none], cost=[not available])
+                HiveJoin(condition=[=($2, $6)], joinType=[inner], algorithm=[none], cost=[not available])
+                  HiveJoin(condition=[=($0, $5)], joinType=[inner], algorithm=[none], cost=[not available])
+                    HiveProject(ss_sold_date_sk=[$0], ss_customer_sk=[$3], ss_hdemo_sk=[$5], ss_store_sk=[$7], ss_ticket_number=[$9])
+                      HiveFilter(condition=[AND(IS NOT NULL($0), IS NOT NULL($3), IS NOT NULL($5), IS NOT NULL($7))])
+                        HiveTableScan(table=[[default, store_sales]], table:alias=[store_sales])
+                    HiveProject(d_date_sk=[$0])
+                      HiveFilter(condition=[AND(BETWEEN(false, $9, 1, 2), IN($6, 2000, 2001, 2002))])
+                        HiveTableScan(table=[[default, date_dim]], table:alias=[date_dim])
+                  HiveProject(hd_demo_sk=[$0])
+                    HiveFilter(condition=[AND(>($4, 0), CASE(>($4, 0), >(/(CAST($3):DOUBLE, CAST($4):DOUBLE), 1), false), IN($2, _UTF-16LE'>10000':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'unknown':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))])
+                      HiveTableScan(table=[[default, household_demographics]], table:alias=[household_demographics])
+                HiveProject(s_store_sk=[$0])
+                  HiveFilter(condition=[IN($23, _UTF-16LE'Mobile County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Maverick County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Huron County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Kittitas County':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
+                    HiveTableScan(table=[[default, store]], table:alias=[store])
+
