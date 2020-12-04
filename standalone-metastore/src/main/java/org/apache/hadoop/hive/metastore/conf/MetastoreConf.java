@@ -1154,6 +1154,9 @@ public class MetastoreConf {
             "class is used to store and retrieve transactions and locks"),
     TXN_TIMEOUT("metastore.txn.timeout", "hive.txn.timeout", 300, TimeUnit.SECONDS,
         "time after which transactions are declared aborted if the client has not sent a heartbeat."),
+    TXN_USE_MIN_HISTORY_LEVEL("metastore.txn.use.minhistorylevel", "hive.txn.use.minhistorylevel", true,
+        "Set this to false, for the TxnHandler and Cleaner to not use MinHistoryLevel table and take advantage of openTxn optimisation.\n"
+            + "If the table is dropped HMS will switch this flag to false."),
     URI_RESOLVER("metastore.uri.resolver", "hive.metastore.uri.resolver", "",
             "If set, fully qualified class name of resolver for hive metastore uri's"),
     USERS_IN_ADMIN_ROLE("metastore.users.in.admin.role", "hive.users.in.admin.role", "", false,

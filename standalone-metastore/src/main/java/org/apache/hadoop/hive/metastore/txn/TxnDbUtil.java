@@ -598,6 +598,25 @@ public final class TxnDbUtil {
     }
     return sb.toString();
   }
+  /**
+   * This is only for testing, it does not use the connectionPool from TxnHandler!
+   * @param conf
+   * @param query
+   * @throws Exception
+   */
+  @VisibleForTesting
+  public static void executeUpdate(Configuration conf, String query)
+      throws Exception {
+    Connection conn = null;
+    Statement stmt = null;
+    try {
+      conn = getConnection(conf);
+      stmt = conn.createStatement();
+      stmt.executeUpdate(query);
+    } finally {
+      closeResources(conn, stmt, null);
+    }
+  }
 
   static Connection getConnection(Configuration conf) throws Exception {
     String jdbcDriver = MetastoreConf.getVar(conf, ConfVars.CONNECTION_DRIVER);

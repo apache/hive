@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore.txn;
 
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
+import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.TxnType;
@@ -295,7 +296,7 @@ class CompactionTxnHandler extends TxnHandler {
             + "\"CQ_TYPE\", \"CQ_RUN_AS\", \"CQ_HIGHEST_WRITE_ID\" FROM \"COMPACTION_QUEUE\" WHERE \"CQ_STATE\" = '"
             + READY_FOR_CLEANING + "'";
         if (minOpenTxnWaterMark > 0) {
-          s = s + " AND (\"CQ_NEXT_TXN_ID\" <= " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
+          s = s + " AND (\"CQ_NEXT_TXN_ID\" < " + minOpenTxnWaterMark + " OR \"CQ_NEXT_TXN_ID\" IS NULL)";
         }
         if (retentionTime > 0) {
           s = s + " AND \"CQ_COMMIT_TIME\" < (" + TxnDbUtil.getEpochFn(dbProduct) + " - " + retentionTime + ")";
@@ -1185,6 +1186,55 @@ class CompactionTxnHandler extends TxnHandler {
       }
     } catch (RetryException e) {
       return findMinOpenTxnIdForCleaner();
+    }
+  }
+
+  /**
+   * Returns the min txnid seen open by any active transaction
+   * @deprecated remove when min_history_level is dropped
+   * @return txnId
+   * @throws MetaException ex
+   */
+  @Override
+  @RetrySemantics.Idempotent
+  @Deprecated
+  public long findMinTxnIdSeenOpen() throws MetaException {
+    if (!useMinHistoryLevel) {
+      return -1L;
+    }
+    Connection dbConn = null;
+    try {
+      try {
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        long minOpenTxn;
+        try (Statement stmt = dbConn.createStatement()) {
+          try (ResultSet rs = stmt.executeQuery("SELECT MIN(\"MHL_MIN_OPEN_TXNID\") FROM \"MIN_HISTORY_LEVEL\"")) {
+            if (!rs.next()) {
+              throw new IllegalStateException("Scalar query returned no rows?!");
+            }
+            minOpenTxn = rs.getLong(1);
+            if (rs.wasNull()) {
+              minOpenTxn = -1L;
+            }
+          }
+        }
+        dbConn.rollback();
+        return minOpenTxn;
+      } catch (SQLException e) {
+        if (DatabaseProduct.isTableNotExistsError(dbProduct, e)) {
+          useMinHistoryLevel = false;
+          return -1L;
+        } else {
+          LOG.error("Unable to execute findMinTxnIdSeenOpen", e);
+          rollbackDBConn(dbConn);
+          checkRetryable(dbConn, e, "findMinTxnIdSeenOpen");
+          throw new MetaException("Unable to execute findMinTxnIdSeenOpen() " + StringUtils.stringifyException(e));
+        }
+      } finally {
+        closeDbConn(dbConn);
+      }
+    } catch (RetryException e) {
+      return findMinTxnIdSeenOpen();
     }
   }
 

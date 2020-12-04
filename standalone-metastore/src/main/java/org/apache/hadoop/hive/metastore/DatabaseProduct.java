@@ -58,6 +58,18 @@ public enum DatabaseProduct {
         || (dbProduct == ORACLE && (e.getMessage() != null && (e.getMessage().contains("deadlock detected")
             || e.getMessage().contains("can't serialize access for this transaction"))));
   }
+  /**
+   * Is the given exception a table not found exception
+   * @param e Exception
+   * @return
+   */
+  public static boolean isTableNotExistsError(DatabaseProduct dbProduct, SQLException e) {
+    return (dbProduct == POSTGRES && "42P01".equalsIgnoreCase(e.getSQLState()))
+        || (dbProduct == MYSQL && "42S02".equalsIgnoreCase(e.getSQLState()))
+        || (dbProduct == ORACLE && "42000".equalsIgnoreCase(e.getSQLState()) && e.getMessage().contains("ORA-00942"))
+        || (dbProduct == SQLSERVER && "S0002".equalsIgnoreCase(e.getSQLState()) && e.getMessage().contains("Invalid object"))
+        || (dbProduct == DERBY && "42X05".equalsIgnoreCase(e.getSQLState()));
+  }
 
   /**
    * Whether the RDBMS has restrictions on IN list size (explicit, or poor perf-based).
