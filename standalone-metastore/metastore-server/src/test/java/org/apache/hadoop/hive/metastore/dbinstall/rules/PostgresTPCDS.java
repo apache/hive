@@ -29,7 +29,7 @@ import java.io.UncheckedIOException;
 public class PostgresTPCDS extends Postgres {
   @Override
   public String getDockerImageName() {
-    return "zabetak/postgres-tpcds-metastore:1.2";
+    return "zabetak/postgres-tpcds-metastore:1.3";
   }
 
   @Override
