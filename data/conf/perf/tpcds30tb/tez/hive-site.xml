@@ -1,0 +1,214 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<configuration>
+    <property>
+        <name>hive.in.test</name>
+        <value>true</value>
+        <description>Internal marker for test. Used for masking env-dependent values</description>
+    </property>
+    <property>
+        <name>hive.rpc.query.plan</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.llap.execution.mode</name>
+        <value>only</value>
+    </property>
+    <property>
+        <name>hive.exec.post.hooks</name>
+        <value>
+            org.apache.hadoop.hive.ql.hooks.HiveProtoLoggingHook
+        </value>
+    </property>
+    <property>
+        <name>hive.zookeeper.kerberos.enabled</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>hive.privilege.synchronizer</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>javax.jdo.option.ConnectionDriverName</name>
+        <value>org.postgresql.Driver</value>
+    </property>
+    <property>
+        <name>hive.exec.scratchdir</name>
+        <value>${test.tmp.dir}/scratchdir</value>
+        <description>Scratch space for Hive jobs</description>
+    </property>
+    <property>
+        <name>hive.server2.tez.sessions.init.threads</name>
+        <value>1</value>
+    </property>
+    <property>
+        <name>hive.optimize.dynamic.partition.hashjoin</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.exec.orc.split.strategy</name>
+        <value>BI</value>
+    </property>
+    <property>
+        <name>hive.mapjoin.bucket.cache.size</name>
+        <value>10000</value>
+    </property>
+    <property>
+        <name>hive.optimize.metadataonly</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.vectorized.execution.mapjoin.native.fast.hashtable.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.execution.mode</name>
+        <value>llap</value>
+    </property>
+    <property>
+        <name>hive.prewarm.numcontainers</name>
+        <value>3</value>
+    </property>
+    <property>
+        <name>hive.tez.dynamic.partition.pruning</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.support.concurrency</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.txn.manager</name>
+        <value>org.apache.hadoop.hive.ql.lockmgr.DbTxnManager</value>
+    </property>
+    <property>
+        <name>hive.llap.kerberos.enabled</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>hive.load.data.owner</name>
+        <value>hive</value>
+    </property>
+    <property>
+        <name>hive.enforce.sortmergebucketmapjoin</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.limit.optimize.enable</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.auto.convert.sortmerge.join.to.mapjoin</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.txn.acid.dir.cache.duration</name>
+        <value>0</value>
+    </property>
+    <property>
+        <name>hive.optimize.bucketmapjoin</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.tez.container.size</name>
+        <value>4096</value>
+    </property>
+    <property>
+        <name>hive.stats.fetch.bitvector</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.convert.join.bucket.mapjoin.tez</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>hive.execution.engine</name>
+        <value>tez</value>
+    </property>
+    <property>
+        <name>hive.vectorized.execution.mapjoin.minmax.enabled</name>
+        <value>true</value>
+    </property>
+
+    <property>
+        <name>hive.llap.auto.enforce.stats</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>hive.exec.max.dynamic.partitions.pernode</name>
+        <value>2000</value>
+    </property>
+    <property>
+        <name>hive.llap.daemon.num.executors</name>
+        <value>12</value>
+    </property>
+    <property>
+        <name>hive.tez.dynamic.partition.pruning.max.event.size</name>
+        <value>1048576</value>
+    </property>
+    <property>
+        <name>hive.exec.max.dynamic.partitions</name>
+        <value>5000</value>
+    </property>
+    <property>
+        <name>hive.default.fileformat.managed</name>
+        <value>ORC</value>
+    </property>
+    <property>
+        <name>hive.llap.io.enabled</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>hive.auto.convert.join.noconditionaltask.size</name>
+        <value>1431655765</value>
+    </property>
+    <property>
+        <name>hive.tez.auto.reducer.parallelism</name>
+        <value>true</value>
+    </property>
+    <!-- Metastore properties -->
+    <property>
+        <name>hive.metastore.db.type</name>
+        <value>POSTGRES</value>
+    </property>
+    <property>
+        <name>hive.metastore.rawstore.impl</name>
+        <value>org.apache.hadoop.hive.metastore.cache.CachedStore</value>
+    </property>
+    <property>
+        <name>hive.metastore.cache.pinobjtypes</name>
+        <value>Table,Database,Type,FieldSchema,Order</value>
+    </property>
+    <property>
+        <name>hive.metastore.warehouse.dir</name>
+        <value>${test.warehouse.dir}</value>
+    </property>
+    <property>
+        <name>hive.metastore.failure.retries</name>
+        <value>2</value>
+    </property>
+    <property>
+        <name>hive.metastore.transactional.event.listeners</name>
+        <value>org.apache.hive.hcatalog.listener.DbNotificationListener</value>
+    </property>
+    <property>
+        <name>hive.explain.user</name>
+        <value>false</value>
+    </property>
+</configuration>

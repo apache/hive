@@ -26,10 +26,11 @@ import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hive.hplsql.*;
+import org.apache.hive.hplsql.executor.QueryExecutor;
 
 public class FunctionDatetime extends BuiltinFunctions {
-  public FunctionDatetime(Exec e) {
-    super(e);
+  public FunctionDatetime(Exec e, QueryExecutor queryExecutor) {
+    super(e, queryExecutor);
   }
 
   /** 

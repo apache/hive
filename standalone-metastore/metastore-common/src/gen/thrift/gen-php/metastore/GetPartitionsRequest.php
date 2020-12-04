@@ -59,7 +59,7 @@ class GetPartitionsRequest
             'var' => 'projectionSpec',
             'isRequired' => false,
             'type' => TType::STRUCT,
-            'class' => '\metastore\GetPartitionsProjectionSpec',
+            'class' => '\metastore\GetProjectionsSpec',
         ),
         8 => array(
             'var' => 'filterSpec',
@@ -113,7 +113,7 @@ class GetPartitionsRequest
      */
     public $groupNames = null;
     /**
-     * @var \metastore\GetPartitionsProjectionSpec
+     * @var \metastore\GetProjectionsSpec
      */
     public $projectionSpec = null;
     /**
@@ -244,7 +244,7 @@ class GetPartitionsRequest
                     break;
                 case 7:
                     if ($ftype == TType::STRUCT) {
-                        $this->projectionSpec = new \metastore\GetPartitionsProjectionSpec();
+                        $this->projectionSpec = new \metastore\GetProjectionsSpec();
                         $xfer += $this->projectionSpec->read($input);
                     } else {
                         $xfer += $input->skip($ftype);

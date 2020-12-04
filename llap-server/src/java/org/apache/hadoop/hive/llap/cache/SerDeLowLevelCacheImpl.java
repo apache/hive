@@ -518,7 +518,7 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
     return rc > 0;
   }
 
-  public long markBuffersForProactiveEviction(Predicate<CacheTag> predicate) {
+  public long markBuffersForProactiveEviction(Predicate<CacheTag> predicate, boolean isInstantDeallocation) {
     long markedBytes = 0;
     // Proactive eviction does not need to be perfectly accurate - the iterator returned here might be missing some
     // concurrent inserts / removals but it's fine for us here.
@@ -537,6 +537,9 @@ public class SerDeLowLevelCacheImpl implements BufferUsageManager, LlapIoDebugDu
                 if (streamData == null) continue;
                 for (int k = 0; k < streamData.length; ++k) {
                   markedBytes += streamData[k].markForEviction();
+                  if (isInstantDeallocation) {
+                    allocator.deallocate(streamData[k]);
+                  }
                 }
               }
             }

@@ -71,10 +71,17 @@ public class TestLowLevelCacheImpl {
 
     @Override
     public void deallocate(MemoryBuffer buffer) {
+      if (buffer instanceof LlapCacheableBuffer) {
+        ((LlapCacheableBuffer)buffer).invalidate();
+      }
     }
 
     @Override
     public void deallocateEvicted(MemoryBuffer buffer) {
+    }
+
+    @Override
+    public void deallocateProactivelyEvicted(MemoryBuffer buffer) {
     }
 
     @Override
@@ -269,6 +276,15 @@ Example code to test specific scenarios:
 
   @Test
   public void testProactiveEvictionMark() {
+    _testProactiveEvictionMark(false);
+  }
+
+  @Test
+  public void testProactiveEvictionMarkInstantDeallocation() {
+    _testProactiveEvictionMark(true);
+  }
+
+  private void _testProactiveEvictionMark(boolean isInstantDeallocation) {
     LowLevelCacheImpl cache = new LowLevelCacheImpl(
         LlapDaemonCacheMetrics.create("test", "1"), new DummyCachePolicy(),
         new DummyAllocator(), true, -1); // no cleanup thread
@@ -287,14 +303,13 @@ Example code to test specific scenarios:
 
     cache.putFileData(fn1, drs1, buffs1, 0, Priority.NORMAL, null, tag1);
     cache.putFileData(fn2, drs2, buffs2, 0, Priority.NORMAL, null, tag2);
+    Arrays.stream(buffs1).forEach(b -> {b.decRef(); b.decRef();});
 
-    // Simulating eviction on some buffers
-    buffs1[2].decRef();
-    buffs1[2].decRef();
+    // Simulating eviction on a buffer
     assertEquals(INVALIDATE_OK, buffs1[2].invalidate());
 
     //buffs1[0,1,3] should be marked, as 2 is already invalidated
-    assertEquals(3, cache.markBuffersForProactiveEviction(predicate));
+    assertEquals(3, cache.markBuffersForProactiveEviction(predicate, isInstantDeallocation));
 
     for (int i = 0; i < buffs1.length; ++i) {
       LlapDataBuffer buffer = buffs1[i];
@@ -302,6 +317,7 @@ Example code to test specific scenarios:
         assertFalse(buffer.isMarkedForEviction());
       } else {
         assertTrue(buffer.isMarkedForEviction());
+        assertEquals(isInstantDeallocation, buffer.isInvalid());
       }
     }
 

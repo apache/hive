@@ -18,29 +18,35 @@
 
 package org.apache.hive.hplsql;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Stack;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
+import org.apache.hive.hplsql.executor.QueryException;
+import org.apache.hive.hplsql.executor.QueryExecutor;
+import org.apache.hive.hplsql.executor.QueryResult;
 
 public class Select {
 
   Exec exec = null;
   Stack<Var> stack = null;
   Conf conf;
-  
+  Console console;
+  ResultListener resultListener;
+  QueryExecutor queryExecutor;
+
   boolean trace = false; 
   
-  Select(Exec e) {
-    exec = e;  
-    stack = exec.getStack();
-    conf = exec.getConf();
-    trace = exec.getTrace();
+  Select(Exec e, ResultListener resultListener, QueryExecutor queryExecutor) {
+    this.exec = e;
+    this.resultListener = resultListener;
+    this.stack = exec.getStack();
+    this.conf = exec.getConf();
+    this.trace = exec.getTrace();
+    this.console = exec.console;
+    this.queryExecutor = queryExecutor;
   }
    
   /**
@@ -71,36 +77,31 @@ public class Select {
       trace(ctx, "Not executed - offline mode set");
       return 0;
     }
-    String conn = exec.getStatementConnection();
-    Query query = exec.executeQuery(ctx, sql.toString(), conn);
-    if (query.error()) { 
+
+    QueryResult query = queryExecutor.executeQuery(sql.toString(), ctx);
+
+    if (query.error()) {
       exec.signal(query);
       return 1;
     }
     trace(ctx, "SELECT completed successfully");
     exec.setSqlSuccess();
     try {
-      ResultSet rs = query.getResultSet();
-      ResultSetMetaData rm = null;
-      if (rs != null) {
-        rm = rs.getMetaData();
-      }
       int into_cnt = getIntoCount(ctx);
       if (into_cnt > 0) {
         trace(ctx, "SELECT INTO statement executed");
-        if (rs.next()) {
-          for (int i = 1; i <= into_cnt; i++) {
-            String into_name = getIntoVariable(ctx, i - 1);
+        if (query.next()) {
+          for (int i = 0; i < into_cnt; i++) {
+            String into_name = getIntoVariable(ctx, i);
             Var var = exec.findVariable(into_name);
             if (var != null) {
               if (var.type != Var.Type.ROW) {
-                var.setValue(rs, rm, i);
-              }
-              else {
-                var.setValues(rs, rm);
+                var.setValue(query, i);
+              } else {
+                var.setValues(query);
               }
               if (trace) {
-                trace(ctx, var, rm, i);
+                exec.trace(ctx, var, query.metadata(), i);
               }
             } 
             else {
@@ -117,40 +118,42 @@ public class Select {
       }
       // Print all results for standalone SELECT statement
       else if (ctx.parent instanceof HplsqlParser.StmtContext) {
-        int cols = rm.getColumnCount();
+        resultListener.onMetadata(query.metadata());
+        int cols = query.columnCount();
         if (trace) {
           trace(ctx, "Standalone SELECT executed: " + cols + " columns in the result set");
         }
-        while (rs.next()) {
-          for (int i = 1; i <= cols; i++) {
-            if (i > 1) {
-              System.out.print("\t");
+        while (query.next()) {
+          Object[] row = new Object[cols];
+          for (int i = 0; i < cols; i++) {
+            row[i] = query.column(i, Object.class);
+            if (i > 0) {
+              console.print("\t");
             }
-            System.out.print(rs.getString(i));
+            console.print(String.valueOf(row[i]));
           }
-          System.out.println("");
+          console.printLine("");
           exec.incRowCount();
+
+          resultListener.onRow(row);
         }
-      }
-      // Scalar subquery
-      else {
+      } else { // Scalar subquery
         trace(ctx, "Scalar subquery executed, first row and first column fetched only");
-        if(rs.next()) {
-          exec.stackPush(new Var().setValue(rs, rm, 1));
-          exec.setSqlSuccess();          
+        if(query.next()) {
+          exec.stackPush(new Var().setValue(query, 1));
+          exec.setSqlSuccess();
         }
         else {
           evalNull();
           exec.setSqlCode(100);
         }
       }
-    }
-    catch (SQLException e) {
+    } catch (QueryException e) {
       exec.signal(query);
-      exec.closeQuery(query, conn);
+      query.close();
       return 1;
     }
-    exec.closeQuery(query, conn);
+    query.close();
     return 0; 
   }  
 
@@ -288,7 +291,7 @@ public class Select {
   /**
    * Single table name in FROM
    */
-  public Integer fromTable(HplsqlParser.From_table_name_clauseContext ctx) {     
+  public Integer fromTable(HplsqlParser.From_table_name_clauseContext ctx) {
     StringBuilder sql = new StringBuilder();
     sql.append(evalPop(ctx.table_name()));
     if (ctx.from_alias_clause() != null) {
@@ -479,8 +482,4 @@ public class Select {
   void trace(ParserRuleContext ctx, String message) {
     exec.trace(ctx, message);
   }
-  
-  void trace(ParserRuleContext ctx, Var var, ResultSetMetaData rm, int idx) throws SQLException {
-    exec.trace(ctx, var, rm, idx);
-  }    
 }

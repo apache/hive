@@ -1939,7 +1939,7 @@ struct AlterTableResponse {
  * Partitions can be filtered by names, by values or by partition expressions.
  */
 
-struct GetPartitionsProjectionSpec {
+struct GetProjectionsSpec {
    // fieldList is a list of dot separated strings which represent the fields which must be returned.
    // Any other field which is not in the fieldList may be unset in the returned partitions (it
    //   is up to the implementation to decide whether it chooses to include or exclude such fields).
@@ -1979,8 +1979,8 @@ struct GetPartitionsRequest {
    4: optional bool withAuth,
    5: optional string user,
    6: optional list<string> groupNames,
-   7: GetPartitionsProjectionSpec projectionSpec
-   8: GetPartitionsFilterSpec filterSpec, // TODO not yet implemented. Must be present but ignored
+   7: GetProjectionsSpec projectionSpec
+   8: GetPartitionsFilterSpec filterSpec,
    9: optional list<string> processorCapabilities,
    10: optional string processorIdentifier,
    11: optional string validWriteIdList

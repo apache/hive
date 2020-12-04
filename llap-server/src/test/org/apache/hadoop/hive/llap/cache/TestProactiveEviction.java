@@ -17,12 +17,13 @@
  */
 package org.apache.hadoop.hive.llap.cache;
 
-import java.lang.management.ManagementFactory;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
@@ -107,6 +108,8 @@ public class TestProactiveEviction {
 
   @Test
   public void testProactiveSweep() throws Exception {
+    closeSweeperExecutorForTest();
+
     // Test that proactive sweeper thread does not get created if we turn the feature off
     HiveConf conf = new HiveConf();
     conf.setBoolVar(HiveConf.ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED, false);
@@ -165,10 +168,26 @@ public class TestProactiveEviction {
     assertEquals(2, policy.proactiveEvictionSweepCount);
   }
 
-  private static boolean isProactiveEvictionSweeperThreadStarted() {
-    return Arrays.stream(ManagementFactory.getThreadMXBean().getAllThreadIds())
-        .mapToObj(id -> ManagementFactory.getThreadMXBean().getThreadInfo(id).getThreadName())
-        .filter(name -> "Proactive-Eviction-Sweeper".equals(name)).count() != 0;
+  public static void closeSweeperExecutorForTest() throws Exception {
+    ScheduledExecutorService service = retrieveSweeperExecutor();
+    if (service != null) {
+      service.shutdownNow();
+    }
+  }
+
+  private static boolean isProactiveEvictionSweeperThreadStarted() throws Exception {
+    ScheduledExecutorService service = retrieveSweeperExecutor();
+    if (service == null) {
+      return false;
+    }
+    return !service.isShutdown();
+  }
+
+  private static ScheduledExecutorService retrieveSweeperExecutor() throws Exception {
+    Field sweeperExecutorField = ProactiveEvictingCachePolicy.Impl.class
+        .getDeclaredField("PROACTIVE_EVICTION_SWEEPER_EXECUTOR");
+    sweeperExecutorField.setAccessible(true);
+    return (ScheduledExecutorService) sweeperExecutorField.get(null);
   }
 
   private static void assertBufferEvicted(boolean expectingEvicted, boolean wasProactive, LlapDataBuffer buffer,
