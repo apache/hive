@@ -307,18 +307,18 @@ public class Expression {
   public void execCursorAttribute(HplsqlParser.Expr_cursor_attributeContext ctx) {
     String name = ctx.ident().getText();
     Var val = new Var(Var.Type.BOOL);
-    Var cursor = exec.findCursor(name);
-    if (cursor != null) {
-      Query query = (Query)cursor.value;
-      if (query != null) {
+    Var cursorVar = exec.findCursor(name);
+    if (cursorVar != null) {
+      Cursor cursor = (Cursor)cursorVar.value;
+      if (cursor != null) {
         if (ctx.T_ISOPEN() != null) {
-          val.setValue(query.isOpen());
+          val.setValue(cursor.isOpen());
         }
         else if (ctx.T_FOUND() != null) {
-          val.setValue(query.isFound());
+          val.setValue(cursor.isFound());
         }
         else if (ctx.T_NOTFOUND() != null) {
-          val.setValue(query.isNotFound());
+          val.setValue(cursor.isNotFound());
         }
       }
       exec.stackPush(val);

@@ -21,8 +21,6 @@
 package org.apache.hive.hplsql.functions;
 
 import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -30,22 +28,29 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.hive.hplsql.Console;
 import org.apache.hive.hplsql.Exec;
 import org.apache.hive.hplsql.HplsqlParser;
-import org.apache.hive.hplsql.Query;
 import org.apache.hive.hplsql.Utils;
 import org.apache.hive.hplsql.Var;
+import org.apache.hive.hplsql.executor.QueryException;
+import org.apache.hive.hplsql.executor.QueryExecutor;
+import org.apache.hive.hplsql.executor.QueryResult;
 
 public class BuiltinFunctions {
   protected final Exec exec;
+  protected final Console console;
   protected boolean trace;
+  protected final QueryExecutor queryExecutor;
   protected HashMap<String, FuncCommand> map = new HashMap<>();
   protected HashMap<String, FuncSpecCommand> specMap = new HashMap<>();
   protected HashMap<String, FuncSpecCommand> specSqlMap = new HashMap<>();
 
-  public BuiltinFunctions(Exec exec) {
+  public BuiltinFunctions(Exec exec, QueryExecutor queryExecutor) {
     this.exec = exec;
-    trace = exec.getTrace();
+    this.trace = exec.getTrace();
+    this.console = exec.getConsole();
+    this.queryExecutor = queryExecutor;
   }
 
   public void register(BuiltinFunctions f) {
@@ -240,18 +245,17 @@ public class BuiltinFunctions {
       evalNull();
       return;
     }
-    Query query = exec.executeQuery(ctx, sql.toString(), exec.conf.defaultConnection);
+    QueryResult query = queryExecutor.executeQuery(sql.toString(), ctx);
     if (query.error()) {
-      evalNullClose(query, exec.conf.defaultConnection);
+      evalNullClose(query);
       return;
     }
-    ResultSet rs = query.getResultSet();
     try {
       String resultString = null;
       Long resultInt = null;
       Date resultDate = null;
-      while (rs.next()) {
-        String[] parts = rs.getString(1).split("/");
+      while (query.next()) {
+        String[] parts = query.column(0, String.class).split("/");
         // Find partition column by name
         if (colnum == -1) {
           for (int i = 0; i < parts.length; i++) {
@@ -263,7 +267,7 @@ public class BuiltinFunctions {
           }
           // No partition column with the specified name exists
           if (colnum == -1) {
-            evalNullClose(query, exec.conf.defaultConnection);
+            evalNullClose(query);
             return;
           }
         }
@@ -285,9 +289,9 @@ public class BuiltinFunctions {
       } else {
         evalNull();
       }
-    } catch (SQLException e) {
+    } catch (QueryException e) {
     }
-    exec.closeQuery(query, exec.conf.defaultConnection);
+    query.close();
   }
 
   /**
@@ -324,23 +328,22 @@ public class BuiltinFunctions {
       evalNull();
       return;
     }
-    Query query = exec.executeQuery(ctx, sql.toString(), exec.conf.defaultConnection);
+    QueryResult query = queryExecutor.executeQuery(sql.toString(), ctx);
     if (query.error()) {
-      evalNullClose(query, exec.conf.defaultConnection);
+      evalNullClose(query);
       return;
     }
     String result = null;
-    ResultSet rs = query.getResultSet();
     try {
-      while (rs.next()) {
-        if (rs.getString(1).startsWith("Detailed Partition Information")) {
-          Matcher m = Pattern.compile(".*, location:(.*?),.*").matcher(rs.getString(2));
+      while (query.next()) {
+        if (query.column(0, String.class).startsWith("Detailed Partition Information")) {
+          Matcher m = Pattern.compile(".*, location:(.*?),.*").matcher(query.column(1, String.class));
           if (m.find()) {
             result = m.group(1);
           }
         }
       }
-    } catch (SQLException e) {
+    } catch (QueryException e) {
     }
     if (result != null) {
       // Remove the host name
@@ -354,7 +357,7 @@ public class BuiltinFunctions {
     } else {
       evalNull();
     }
-    exec.closeQuery(query, exec.conf.defaultConnection);
+    query.close();
   }
 
   public void trace(ParserRuleContext ctx, String message) {
@@ -384,9 +387,9 @@ public class BuiltinFunctions {
     exec.stackPush(new Var(Var.Type.DATE, date));
   }
 
-  protected void evalNullClose(Query query, String conn) {
+  protected void evalNullClose(QueryResult query) {
     exec.stackPush(Var.Null);
-    exec.closeQuery(query, conn);
+    query.close();
     if(trace) {
       query.printStackTrace();
     }

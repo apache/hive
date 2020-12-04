@@ -639,8 +639,8 @@ public abstract class AbstractRecordWriter implements RecordWriter {
     }
     LOG.debug("{} [record-updaters: {}, partitions: {}, buffered-records: {} total-records: {} " +
         "buffered-ingest-size: {}, total-ingest-size: {} tenured-memory-usage: {}]", prefix, openRecordUpdaters,
-      partitionPaths.size(), bufferedRecords, conn.getConnectionStats().getRecordsWritten(),
+      partitionPaths.size(), bufferedRecords, conn == null ? 0 : conn.getConnectionStats().getRecordsWritten(),
       LlapUtil.humanReadableByteCount(ingestSizeBytes),
-      LlapUtil.humanReadableByteCount(conn.getConnectionStats().getRecordsSize()), oldGenUsage);
+      LlapUtil.humanReadableByteCount(conn == null ? 0 : conn.getConnectionStats().getRecordsSize()), oldGenUsage);
   }
 }

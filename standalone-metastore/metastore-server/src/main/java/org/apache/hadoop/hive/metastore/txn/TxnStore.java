@@ -565,4 +565,14 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.ReadOnly
   Optional<CompactionInfo> getCompactionByTxnId(long txnId) throws MetaException;
+
+  /**
+   * Returns the smallest txnid that could be seen in open state across all active transactions in
+   * the system or -1 if there are no active transactions.
+   * @return transaction ID
+   * @deprecated remove when min_history_level table is dropped
+   */
+  @RetrySemantics.ReadOnly
+  @Deprecated
+  long findMinTxnIdSeenOpen() throws MetaException;
 }
