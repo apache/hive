@@ -297,7 +297,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   }
 
   public void removeFromChildrenTasks() {
-
     List<Task<?>> childrenTasks = this.getChildTasks();
     if (childrenTasks == null) {
       return;
@@ -305,7 +304,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
     for (Task<?> childTsk : childrenTasks) {
       // remove this task from its children tasks
-      childTsk.getParentTasks().remove(this);
+      childTsk.removeParentTask(this);
 
       // recursively remove non-parent task from its children
       List<Task<?>> siblingTasks = childTsk.getParentTasks();
@@ -315,6 +314,9 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
     }
   }
 
+  private synchronized void removeParentTask(Task<?> parentTask) {
+    getParentTasks().remove(parentTask);
+  }
 
   /**
    * The default dependent tasks are just child tasks, but different types could implement their own
