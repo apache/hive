@@ -595,7 +595,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12288 Data size: 110096 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: ctinyint (type: tinyint), cdouble (type: double)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 6144 Data size: 36368 Basic stats: COMPLETE Column stats: COMPLETE
@@ -719,7 +719,7 @@ STAGE PLANS:
                       Statistics: Num rows: 12288 Data size: 110096 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: ctinyint (type: tinyint), cdouble (type: double)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 6144 Data size: 36368 Basic stats: COMPLETE Column stats: COMPLETE
@@ -844,7 +844,7 @@ STAGE PLANS:
                       Group By Operator
                         keys: _col0 (type: tinyint), _col1 (type: string), _col2 (type: string), 0L (type: bigint)
                         grouping sets: 1, 2
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 24576 Data size: 2547682 Basic stats: COMPLETE Column stats: COMPLETE

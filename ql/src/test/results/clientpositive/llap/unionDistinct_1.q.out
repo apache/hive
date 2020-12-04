@@ -182,7 +182,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), min(value), max(value), count(value), compute_bit_vector(value, 'hll')
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
@@ -493,7 +493,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(length(key)), avg(COALESCE(length(key),0)), count(1), count(key), compute_bit_vector(key, 'hll'), min(value), max(value), count(value), compute_bit_vector(value, 'hll')
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                       Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
@@ -643,7 +643,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -665,7 +665,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1106,7 +1106,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 69000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1131,7 +1131,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col0 (type: string), _col1 (type: string)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 250 Data size: 69000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1152,7 +1152,7 @@ STAGE PLANS:
                 Group By Operator
                   aggregations: count(DISTINCT substr(_col1, 5))
                   keys: _col0 (type: string), substr(_col1, 5) (type: string)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 125 Data size: 34875 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2056,7 +2056,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 69000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2081,7 +2081,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col0 (type: string), _col1 (type: string)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 250 Data size: 69000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2974,7 +2974,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 250 Data size: 69000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2999,7 +2999,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 276 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col0 (type: string), _col1 (type: string)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 250 Data size: 69000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3945,7 +3945,7 @@ STAGE PLANS:
                       Statistics: Num rows: 166 Data size: 59096 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3
                         Statistics: Num rows: 387 Data size: 108402 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4041,7 +4041,7 @@ STAGE PLANS:
                           Statistics: Num rows: 221 Data size: 49306 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             keys: _col0 (type: string), _col1 (type: string), _col2 (type: string), _col3 (type: string)
-                            minReductionHashAggr: 0.0
+                            minReductionHashAggr: 0.4
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2, _col3
                             Statistics: Num rows: 387 Data size: 108402 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4733,7 +4733,7 @@ STAGE PLANS:
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: string)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4754,7 +4754,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5253,7 +5253,7 @@ STAGE PLANS:
                       Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: bigint)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5393,7 +5393,7 @@ STAGE PLANS:
                       Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: bigint)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5464,7 +5464,7 @@ STAGE PLANS:
                       Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: bigint)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5530,7 +5530,7 @@ STAGE PLANS:
                 Statistics: Num rows: 51 Data size: 4845 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: bigint)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 77 Data size: 7315 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5555,7 +5555,7 @@ STAGE PLANS:
                 Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: bigint)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5580,7 +5580,7 @@ STAGE PLANS:
                 Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: bigint)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 77 Data size: 7315 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5758,7 +5758,7 @@ STAGE PLANS:
                       Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: bigint)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5829,7 +5829,7 @@ STAGE PLANS:
                       Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: bigint)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -5981,7 +5981,7 @@ STAGE PLANS:
                           Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             keys: _col0 (type: string), _col1 (type: bigint)
-                            minReductionHashAggr: 0.0
+                            minReductionHashAggr: 0.4
                             mode: hash
                             outputColumnNames: _col0, _col1
                             Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6046,7 +6046,7 @@ STAGE PLANS:
                 Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: bigint)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6218,7 +6218,7 @@ STAGE PLANS:
                       Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: bigint)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6289,7 +6289,7 @@ STAGE PLANS:
                       Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: bigint)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6504,7 +6504,7 @@ STAGE PLANS:
                 Statistics: Num rows: 103 Data size: 9785 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: bigint)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 77 Data size: 7315 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6563,7 +6563,7 @@ STAGE PLANS:
                 Statistics: Num rows: 51 Data size: 4845 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: bigint)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 77 Data size: 7315 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6724,7 +6724,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 375 Data size: 66750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6747,7 +6747,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6770,7 +6770,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -6864,7 +6864,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: string)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 375 Data size: 66750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8283,7 +8283,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: string)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8309,7 +8309,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: string)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8440,7 +8440,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8463,7 +8463,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count()
                       keys: key (type: string), value (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8487,7 +8487,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count()
                       keys: key (type: string), value (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8510,7 +8510,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8585,7 +8585,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8609,7 +8609,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col0 (type: string), _col1 (type: string)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8771,7 +8771,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8793,7 +8793,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8815,7 +8815,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -8890,7 +8890,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -9384,7 +9384,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -9407,7 +9407,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count()
                       keys: key (type: string), value (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -9430,7 +9430,7 @@ STAGE PLANS:
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -9453,7 +9453,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count()
                       keys: key (type: string), value (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
@@ -9479,7 +9479,7 @@ STAGE PLANS:
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col0 (type: string), _col1 (type: string)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -9500,7 +9500,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -9520,7 +9520,7 @@ STAGE PLANS:
                 Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -9595,7 +9595,7 @@ STAGE PLANS:
                 Statistics: Num rows: 250 Data size: 46500 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
                   Statistics: Num rows: 500 Data size: 93000 Basic stats: COMPLETE Column stats: COMPLETE
@@ -9633,6 +9633,94 @@ STAGE PLANS:
           Column Types: int, string
           Table: default.union_subq_union30
 
+PREHOOK: query: insert overwrite table union_subq_union30 
+select * from (
+
+select * from (
+  select key, value from src 
+  UNION DISTINCT 
+  select key, value from 
+  (
+    select key, value, count(1) from src group by key, value
+    UNION DISTINCT
+    select key, value, count(1) from src group by key, value
+  ) subq
+) a
+
+UNION DISTINCT
+
+select key, value from src
+) aa
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@union_subq_union30
+Status: Failed
+Vertex failed, vertexName=Map 7, vertexId=vertex_#ID#, diagnostics=[Vertex vertex_#ID# [Map 7] killed/failed due to:INIT_FAILURE, Fail to create InputInitializerManager, java.util.concurrent.ExecutionException: org.apache.tez.dag.api.TezReflectionException: Unable to instantiate class with 1 arguments: org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator
+	at com.google.common.util.concurrent.AbstractFuture.getDoneValue(AbstractFuture.java:476)
+	at com.google.common.util.concurrent.AbstractFuture.get(AbstractFuture.java:455)
+	at com.google.common.util.concurrent.AbstractFuture$TrustedFuture.get(AbstractFuture.java:79)
+#### A masked pattern was here ####
+	at com.google.common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleTask.runInterruptibly(TrustedListenableFutureTask.java:108)
+	at com.google.common.util.concurrent.InterruptibleTask.run(InterruptibleTask.java:41)
+	at com.google.common.util.concurrent.TrustedListenableFutureTask.run(TrustedListenableFutureTask.java:77)
+#### A masked pattern was here ####
+]
+Vertex failed, vertexName=Map 7, vertexId=vertex_#ID#, diagnostics=[Vertex vertex_#ID# [Map 7] killed/failed due to:INIT_FAILURE, Fail to create InputInitializerManager, java.util.concurrent.ExecutionException: org.apache.tez.dag.api.TezReflectionException: Unable to instantiate class with 1 arguments: org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator
+	at com.google.common.util.concurrent.AbstractFuture.getDoneValue(AbstractFuture.java:476)
+	at com.google.common.util.concurrent.AbstractFuture.get(AbstractFuture.java:455)
+	at com.google.common.util.concurrent.AbstractFuture$TrustedFuture.get(AbstractFuture.java:79)
+#### A masked pattern was here ####
+	at com.google.common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleTask.runInterruptibly(TrustedListenableFutureTask.java:108)
+	at com.google.common.util.concurrent.InterruptibleTask.run(InterruptibleTask.java:41)
+	at com.google.common.util.concurrent.TrustedListenableFutureTask.run(TrustedListenableFutureTask.java:77)
+#### A masked pattern was here ####
+, Vertex vertex_#ID# [Map 7] killed/failed due to:INIT_FAILURE, Vertex Input: src initializer failed, vertex=vertex_#ID# [Map 7], java.util.concurrent.ExecutionException: org.apache.tez.dag.api.TezReflectionException: Unable to instantiate class with 1 arguments: org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator
+	at com.google.common.util.concurrent.AbstractFuture.getDoneValue(AbstractFuture.java:476)
+	at com.google.common.util.concurrent.AbstractFuture.get(AbstractFuture.java:455)
+	at com.google.common.util.concurrent.AbstractFuture$TrustedFuture.get(AbstractFuture.java:79)
+#### A masked pattern was here ####
+	at com.google.common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleTask.runInterruptibly(TrustedListenableFutureTask.java:108)
+	at com.google.common.util.concurrent.InterruptibleTask.run(InterruptibleTask.java:41)
+	at com.google.common.util.concurrent.TrustedListenableFutureTask.run(TrustedListenableFutureTask.java:77)
+#### A masked pattern was here ####
+]
+Vertex killed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in INITED state., Vertex vertex_#ID# [Map 1] killed/failed due to:OTHER_VERTEX_FAILURE]
+Vertex killed, vertexName=Map 13, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in INITED state., Vertex vertex_#ID# [Map 13] killed/failed due to:OTHER_VERTEX_FAILURE]
+Vertex killed, vertexName=Reducer 10, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in NEW state., Vertex vertex_#ID# [Reducer 10] killed/failed due to:OTHER_VERTEX_FAILURE]
+Vertex killed, vertexName=Reducer 12, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in INITED state., Vertex vertex_#ID# [Reducer 12] killed/failed due to:OTHER_VERTEX_FAILURE]
+Vertex killed, vertexName=Map 11, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in INITED state., Vertex vertex_#ID# [Map 11] killed/failed due to:OTHER_VERTEX_FAILURE]
+Vertex killed, vertexName=Reducer 8, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in INITED state., Vertex vertex_#ID# [Reducer 8] killed/failed due to:OTHER_VERTEX_FAILURE]
+Vertex killed, vertexName=Reducer 5, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in NEW state., Vertex vertex_#ID# [Reducer 5] killed/failed due to:OTHER_VERTEX_FAILURE]
+Vertex killed, vertexName=Reducer 3, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in NEW state., Vertex vertex_#ID# [Reducer 3] killed/failed due to:OTHER_VERTEX_FAILURE]
+DAG did not succeed due to VERTEX_FAILURE. failedVertices:2 killedVertices:8
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.tez.TezTask. Vertex failed, vertexName=Map 7, vertexId=vertex_#ID#, diagnostics=[Vertex vertex_#ID# [Map 7] killed/failed due to:INIT_FAILURE, Fail to create InputInitializerManager, java.util.concurrent.ExecutionException: org.apache.tez.dag.api.TezReflectionException: Unable to instantiate class with 1 arguments: org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator
+	at com.google.common.util.concurrent.AbstractFuture.getDoneValue(AbstractFuture.java:476)
+	at com.google.common.util.concurrent.AbstractFuture.get(AbstractFuture.java:455)
+	at com.google.common.util.concurrent.AbstractFuture$TrustedFuture.get(AbstractFuture.java:79)
+#### A masked pattern was here ####
+	at com.google.common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleTask.runInterruptibly(TrustedListenableFutureTask.java:108)
+	at com.google.common.util.concurrent.InterruptibleTask.run(InterruptibleTask.java:41)
+	at com.google.common.util.concurrent.TrustedListenableFutureTask.run(TrustedListenableFutureTask.java:77)
+#### A masked pattern was here ####
+]Vertex failed, vertexName=Map 7, vertexId=vertex_#ID#, diagnostics=[Vertex vertex_#ID# [Map 7] killed/failed due to:INIT_FAILURE, Fail to create InputInitializerManager, java.util.concurrent.ExecutionException: org.apache.tez.dag.api.TezReflectionException: Unable to instantiate class with 1 arguments: org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator
+	at com.google.common.util.concurrent.AbstractFuture.getDoneValue(AbstractFuture.java:476)
+	at com.google.common.util.concurrent.AbstractFuture.get(AbstractFuture.java:455)
+	at com.google.common.util.concurrent.AbstractFuture$TrustedFuture.get(AbstractFuture.java:79)
+#### A masked pattern was here ####
+	at com.google.common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleTask.runInterruptibly(TrustedListenableFutureTask.java:108)
+	at com.google.common.util.concurrent.InterruptibleTask.run(InterruptibleTask.java:41)
+	at com.google.common.util.concurrent.TrustedListenableFutureTask.run(TrustedListenableFutureTask.java:77)
+#### A masked pattern was here ####
+, Vertex vertex_#ID# [Map 7] killed/failed due to:INIT_FAILURE, Vertex Input: src initializer failed, vertex=vertex_#ID# [Map 7], java.util.concurrent.ExecutionException: org.apache.tez.dag.api.TezReflectionException: Unable to instantiate class with 1 arguments: org.apache.hadoop.hive.ql.exec.tez.HiveSplitGenerator
+	at com.google.common.util.concurrent.AbstractFuture.getDoneValue(AbstractFuture.java:476)
+	at com.google.common.util.concurrent.AbstractFuture.get(AbstractFuture.java:455)
+	at com.google.common.util.concurrent.AbstractFuture$TrustedFuture.get(AbstractFuture.java:79)
+#### A masked pattern was here ####
+	at com.google.common.util.concurrent.TrustedListenableFutureTask$TrustedFutureInterruptibleTask.runInterruptibly(TrustedListenableFutureTask.java:108)
+	at com.google.common.util.concurrent.InterruptibleTask.run(InterruptibleTask.java:41)
+	at com.google.common.util.concurrent.TrustedListenableFutureTask.run(TrustedListenableFutureTask.java:77)
+#### A masked pattern was here ####
+]Vertex killed, vertexName=Map 1, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in INITED state., Vertex vertex_#ID# [Map 1] killed/failed due to:OTHER_VERTEX_FAILURE]Vertex killed, vertexName=Map 13, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in INITED state., Vertex vertex_#ID# [Map 13] killed/failed due to:OTHER_VERTEX_FAILURE]Vertex killed, vertexName=Reducer 10, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in NEW state., Vertex vertex_#ID# [Reducer 10] killed/failed due to:OTHER_VERTEX_FAILURE]Vertex killed, vertexName=Reducer 12, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in INITED state., Vertex vertex_#ID# [Reducer 12] killed/failed due to:OTHER_VERTEX_FAILURE]Vertex killed, vertexName=Map 11, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in INITED state., Vertex vertex_#ID# [Map 11] killed/failed due to:OTHER_VERTEX_FAILURE]Vertex killed, vertexName=Reducer 8, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in INITED state., Vertex vertex_#ID# [Reducer 8] killed/failed due to:OTHER_VERTEX_FAILURE]Vertex killed, vertexName=Reducer 5, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in NEW state., Vertex vertex_#ID# [Reducer 5] killed/failed due to:OTHER_VERTEX_FAILURE]Vertex killed, vertexName=Reducer 3, vertexId=vertex_#ID#, diagnostics=[Vertex received Kill in NEW state., Vertex vertex_#ID# [Reducer 3] killed/failed due to:OTHER_VERTEX_FAILURE]DAG did not succeed due to VERTEX_FAILURE. failedVertices:2 killedVertices:8
 PREHOOK: query: insert overwrite table union_subq_union30 
 select * from (
 
@@ -9815,7 +9903,7 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.3
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 10 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
@@ -9837,7 +9925,7 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.3
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 10 Data size: 1740 Basic stats: COMPLETE Column stats: COMPLETE
@@ -10215,7 +10303,7 @@ STAGE PLANS:
                 Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: bigint)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
@@ -10360,7 +10448,7 @@ STAGE PLANS:
                 Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: bigint)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
@@ -10590,7 +10678,7 @@ STAGE PLANS:
                     Statistics: Num rows: 6 Data size: 558 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: bigint)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
@@ -10612,7 +10700,7 @@ STAGE PLANS:
                 Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: bigint)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
@@ -11682,7 +11770,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: string)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 67750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -11782,7 +11870,7 @@ STAGE PLANS:
                   Statistics: Num rows: 250 Data size: 67750 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col0 (type: string), _col1 (type: string)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 250 Data size: 67750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -11927,7 +12015,7 @@ STAGE PLANS:
                       Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: string)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 250 Data size: 67750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -11953,7 +12041,7 @@ STAGE PLANS:
                   Statistics: Num rows: 250 Data size: 67750 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col0 (type: string), _col1 (type: string)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 250 Data size: 67750 Basic stats: COMPLETE Column stats: COMPLETE
@@ -12233,7 +12321,7 @@ STAGE PLANS:
                         Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col0 (type: string), _col1 (type: string)
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
@@ -12275,7 +12363,7 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
@@ -12297,7 +12385,7 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
@@ -12333,7 +12421,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
@@ -12478,7 +12566,7 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
@@ -12500,7 +12588,7 @@ STAGE PLANS:
                     Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
@@ -12523,7 +12611,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
@@ -12558,7 +12646,7 @@ STAGE PLANS:
                 Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col0 (type: string), _col1 (type: string)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 10 Data size: 1780 Basic stats: COMPLETE Column stats: COMPLETE

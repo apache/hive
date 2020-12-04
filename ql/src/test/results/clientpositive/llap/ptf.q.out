@@ -961,7 +961,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col2 (type: string), _col1 (type: string), _col5 (type: int)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 13 Data size: 2899 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2699,7 +2699,7 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 12766 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col2 (type: string), _col1 (type: string), _col5 (type: int)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 13 Data size: 2899 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2838,7 +2838,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(p_retailprice)
                       keys: p_mfgr (type: string), p_brand (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 13 Data size: 2574 Basic stats: COMPLETE Column stats: COMPLETE
