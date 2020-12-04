@@ -232,15 +232,23 @@ public final class TxnDbUtil {
       success &= truncateTable(conn, conf, stmt, "WRITE_SET");
       success &= truncateTable(conn, conf, stmt, "REPL_TXN_MAP");
       success &= truncateTable(conn, conf, stmt, "MATERIALIZATION_REBUILD_LOCKS");
+      success &= truncateTable(conn, conf, stmt, "MIN_HISTORY_LEVEL");
       try {
-        resetTxnSequence(conn, conf, stmt);
-        stmt.executeUpdate("INSERT INTO \"NEXT_LOCK_ID\" VALUES(1)");
-        stmt.executeUpdate("INSERT INTO \"NEXT_COMPACTION_QUEUE_ID\" VALUES(1)");
-      } catch (SQLException e) {
-        if (!getTableNotExistsErrorCodes().contains(e.getSQLState())) {
-          LOG.error("Error initializing sequence values", e);
-          success = false;
+        String dbProduct = conn.getMetaData().getDatabaseProductName();
+        DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);
+        try {
+          resetTxnSequence(databaseProduct, stmt);
+          stmt.executeUpdate("INSERT INTO \"NEXT_LOCK_ID\" VALUES(1)");
+          stmt.executeUpdate("INSERT INTO \"NEXT_COMPACTION_QUEUE_ID\" VALUES(1)");
+        } catch (SQLException e) {
+          if (!databaseProduct.isTableNotExistsError(e)) {
+            LOG.error("Error initializing sequence values", e);
+            success = false;
+          }
         }
+      } catch (SQLException e) {
+        LOG.error("Unable determine database product ", e);
+        success = false;
       }
       /*
        * Don't drop NOTIFICATION_LOG, SEQUENCE_TABLE and NOTIFICATION_SEQUENCE as its used by other
@@ -257,13 +265,8 @@ public final class TxnDbUtil {
     throw new RuntimeException("Failed to clean up txn tables");
   }
 
-  private static void resetTxnSequence(Connection conn, Configuration conf,
-      Statement stmt) throws SQLException, MetaException {
-    String dbProduct = conn.getMetaData().getDatabaseProductName();
-    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);
-    List<String> stmts = databaseProduct.getResetTxnSequenceStmts();
-    
-    for (String s : stmts ) {
+  private static void resetTxnSequence(DatabaseProduct databaseProduct, Statement stmt) throws SQLException {
+    for (String s : databaseProduct.getResetTxnSequenceStmts()) {
       stmt.execute(s);
     }
   }
@@ -284,22 +287,25 @@ public final class TxnDbUtil {
 
   private static boolean truncateTable(Connection conn, Configuration conf, Statement stmt, String name) {
     try {
-      // We can not use actual truncate due to some foreign keys, but we don't expect much data during tests
       String dbProduct = conn.getMetaData().getDatabaseProductName();
       DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);
-      String s = databaseProduct.getTruncateStatement(name);
-      stmt.execute(s);
+      try {
+        // We can not use actual truncate due to some foreign keys, but we don't expect much data during tests
 
-      LOG.debug("Successfully truncated table " + name);
-      return true;
-    } catch (SQLException e) {
-      if (getTableNotExistsErrorCodes().contains(e.getSQLState())) {
-        LOG.debug("Not truncating " + name + " because it doesn't exist");
-        //failed because object doesn't exist
+        String s = databaseProduct.getTruncateStatement(name);
+        stmt.execute(s);
+
+        LOG.debug("Successfully truncated table " + name);
         return true;
+      } catch (SQLException e) {
+        if (databaseProduct.isTableNotExistsError(e)) {
+          LOG.debug("Not truncating " + name + " because it doesn't exist");
+          return true;
+        }
+        LOG.error("Unable to truncate table " + name, e);
       }
-      LOG.error("Unable to truncate table " + name + ": " + e.getMessage() + " State=" + e.getSQLState() + " code=" + e
-          .getErrorCode());
+    } catch (SQLException e) {
+      LOG.error("Unable determine database product ", e);
     }
     return false;
   }
@@ -383,6 +389,26 @@ public final class TxnDbUtil {
       closeResources(conn, stmt, rs);
     }
     return sb.toString();
+  }
+
+  /**
+   * This is only for testing, it does not use the connectionPool from TxnHandler!
+   * @param conf
+   * @param query
+   * @throws Exception
+   */
+  @VisibleForTesting
+  public static void executeUpdate(Configuration conf, String query)
+      throws Exception {
+    Connection conn = null;
+    Statement stmt = null;
+    try {
+      conn = getConnection(conf);
+      stmt = conn.createStatement();
+      stmt.executeUpdate(query);
+    } finally {
+      closeResources(conn, stmt, null);
+    }
   }
 
   static Connection getConnection(Configuration conf) throws Exception {
