@@ -1930,7 +1930,7 @@ public class HiveConf extends Configuration {
     HIVEMAPAGGRHASHMINREDUCTION("hive.map.aggr.hash.min.reduction", (float) 0.99,
         "Hash aggregation will be turned off if the ratio between hash  table size and input rows is bigger than this number. \n" +
         "Set to 1 to make sure hash aggregation is never turned off."),
-    HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND("hive.map.aggr.hash.min.reduction.lower.bound", (float) 0.5,
+    HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND("hive.map.aggr.hash.min.reduction.lower.bound", (float) 0.4,
         "Lower bound of Hash aggregate reduction filter. See also: hive.map.aggr.hash.min.reduction"),
     HIVEMAPAGGRHASHMINREDUCTIONSTATSADJUST("hive.map.aggr.hash.min.reduction.stats", true,
         "Whether the value for hive.map.aggr.hash.min.reduction should be set statically using stats estimates. \n" +
