@@ -1,3 +1,13 @@
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_warehouse
+HMS CALL get_table_req FOR impala_tpcds_ship_mode
+HMS CALL get_table_req FOR impala_tpcds_web_site
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_warehouse
+HMS CALL get_foreign_keys FOR impala_tpcds_ship_mode
+HMS CALL get_foreign_keys FOR impala_tpcds_web_site
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
 PREHOOK: query: explain cbo physical select  
    substr(w_warehouse_name,1,20)
   ,sm_type
@@ -95,6 +105,16 @@ ImpalaProjectPassthroughRel(_o__c0=[$0], sm_type=[$1], web_name=[$2], 30 days=[$
           ImpalaProjectPassthroughRel(web_site_sk=[$0], web_name=[$4])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_site]], condition=[IS NOT NULL($0)])
 
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_warehouse
+HMS CALL get_table_req FOR impala_tpcds_ship_mode
+HMS CALL get_table_req FOR impala_tpcds_web_site
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_warehouse
+HMS CALL get_foreign_keys FOR impala_tpcds_ship_mode
+HMS CALL get_foreign_keys FOR impala_tpcds_web_site
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
 PREHOOK: query: explain select  
    substr(w_warehouse_name,1,20)
   ,sm_type

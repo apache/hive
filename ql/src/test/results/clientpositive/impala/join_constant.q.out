@@ -1,3 +1,8 @@
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: explain cbo physical
 select 5 + 3
 PREHOOK: type: QUERY
@@ -9,6 +14,13 @@ CBO PLAN:
 ImpalaProjectPassthroughRel(_o__c0=[+(5:SMALLINT, 3:SMALLINT)])
   ImpalaUnionRel
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain cbo physical
 select * from (select t.* from impala_tpch_lineitem t
 inner join (select 10 bigint_col) d where
@@ -34,6 +46,11 @@ ImpalaProjectPassthroughRel(l_orderkey=[$0], l_partkey=[$1], l_suppkey=[$2], l_l
       ImpalaSortRel(fetch=[0])
         ImpalaUnionRel
 
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: explain
 select 5 + 3
 PREHOOK: type: QUERY
@@ -68,6 +85,13 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select * from (select t.* from impala_tpch_lineitem t
 inner join (select 10 bigint_col) d where

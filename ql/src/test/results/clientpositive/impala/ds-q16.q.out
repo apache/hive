@@ -1,3 +1,13 @@
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_call_center
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_call_center
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
 PREHOOK: query: explain cbo physical select  
    count(distinct cs_order_number) as `order count`
   ,sum(cs_ext_ship_cost) as `total shipping cost`
@@ -91,6 +101,16 @@ ImpalaProjectPassthroughRel(order count=[$0], total shipping cost=[$1], total ne
             ImpalaAggregateRel(group=[{16}])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_returns]], condition=[IS NOT NULL($16)])
 
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_call_center
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_call_center
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
 PREHOOK: query: explain select  
    count(distinct cs_order_number) as `order count`
   ,sum(cs_ext_ship_cost) as `total shipping cost`

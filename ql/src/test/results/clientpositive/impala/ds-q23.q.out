@@ -1,3 +1,21 @@
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR frequent_ss_items
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_table_req FOR best_ss_customer
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_table_req FOR max_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR frequent_ss_items
+HMS CALL get_table_req FOR best_ss_customer
+HMS CALL get_table_req FOR max_store_sales
 PREHOOK: query: explain cbo physical with frequent_ss_items as 
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
   from impala_tpcds_store_sales
@@ -196,6 +214,24 @@ ImpalaSortRel(fetch=[100])
                       ImpalaProjectPassthroughRel(d_date_sk=[$0])
                         ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IN($6, 2000, +(2000, 1), +(2000, 2), +(2000, 3)), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR frequent_ss_items
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_table_req FOR best_ss_customer
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_table_req FOR max_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR frequent_ss_items
+HMS CALL get_table_req FOR best_ss_customer
+HMS CALL get_table_req FOR max_store_sales
 PREHOOK: query: explain with frequent_ss_items as 
  (select substr(i_item_desc,1,30) itemdesc,i_item_sk item_sk,d_date solddate,count(*) cnt
   from impala_tpcds_store_sales

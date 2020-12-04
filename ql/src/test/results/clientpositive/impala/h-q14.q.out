@@ -1,3 +1,7 @@
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_part
 PREHOOK: query: explain cbo physical select
   100.00 * sum(case
     when p_type like 'PROMO%'
@@ -41,6 +45,10 @@ ImpalaProjectPassthroughRel(promo_revenue=[/(*(100:DECIMAL(3, 0), $0), $1)])
         ImpalaProjectPassthroughRel(p_partkey=[$0], LIKE=[LIKE($4, _UTF-16LE'PROMO%':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")])
           ImpalaHdfsScanRel(table=[[default, impala_tpch_part]], condition=[IS NOT NULL($0)])
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_part
 PREHOOK: query: explain select
   100.00 * sum(case
     when p_type like 'PROMO%'

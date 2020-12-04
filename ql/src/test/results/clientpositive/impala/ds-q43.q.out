@@ -1,3 +1,9 @@
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store
 PREHOOK: query: explain cbo physical select  s_store_name, s_store_id,
         sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
         sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,
@@ -52,6 +58,12 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=
         ImpalaProjectPassthroughRel(d_date_sk=[$0], ==[=($14, _UTF-16LE'Sunday')], =2=[=($14, _UTF-16LE'Monday')], =3=[=($14, _UTF-16LE'Tuesday')], =4=[=($14, _UTF-16LE'Wednesday')], =5=[=($14, _UTF-16LE'Thursday')], =6=[=($14, _UTF-16LE'Friday')], =7=[=($14, _UTF-16LE'Saturday')])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2001), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store
 PREHOOK: query: explain select  s_store_name, s_store_id,
         sum(case when (d_day_name='Sunday') then ss_sales_price else null end) sun_sales,
         sum(case when (d_day_name='Monday') then ss_sales_price else null end) mon_sales,

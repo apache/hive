@@ -1,3 +1,17 @@
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_web_returns
+HMS CALL get_table_req FOR impala_tpcds_web_page
+HMS CALL get_table_req FOR impala_tpcds_customer_demographics
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_reason
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_web_page
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_reason
 PREHOOK: query: explain cbo physical select  substr(r_reason_desc,1,20)
        ,avg(ws_quantity)
        ,avg(wr_refunded_cash)
@@ -206,6 +220,20 @@ ImpalaProjectPassthroughRel(_o__c0=[$0], _o__c1=[$1], _o__c2=[$2], _o__c3=[$3])
             ImpalaProjectPassthroughRel(d_date_sk=[$0])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2001), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_web_returns
+HMS CALL get_table_req FOR impala_tpcds_web_page
+HMS CALL get_table_req FOR impala_tpcds_customer_demographics
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_reason
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_web_page
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_reason
 PREHOOK: query: explain select  substr(r_reason_desc,1,20)
        ,avg(ws_quantity)
        ,avg(wr_refunded_cash)

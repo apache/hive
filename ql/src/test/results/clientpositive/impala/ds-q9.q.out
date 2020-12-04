@@ -1,3 +1,7 @@
+HMS CALL get_table_req FOR impala_tpcds_reason
+HMS CALL get_foreign_keys FOR impala_tpcds_reason
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
 PREHOOK: query: explain cbo physical select case when (select count(*) 
                   from impala_tpcds_store_sales 
                   where ss_quantity between 1 and 20) > 98972190
@@ -164,6 +168,10 @@ ImpalaProjectPassthroughRel(bucket1=[CASE($1, $2, $3)], bucket2=[CASE($4, $5, $6
       ImpalaAggregateRel(group=[{}], agg#0=[sum($21)], agg#1=[count($21)])
         ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[BETWEEN(false, $9, 81, 100)])
 
+HMS CALL get_table_req FOR impala_tpcds_reason
+HMS CALL get_foreign_keys FOR impala_tpcds_reason
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
 PREHOOK: query: explain select case when (select count(*) 
                   from impala_tpcds_store_sales 
                   where ss_quantity between 1 and 20) > 98972190

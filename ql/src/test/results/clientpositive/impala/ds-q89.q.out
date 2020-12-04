@@ -1,3 +1,11 @@
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
 PREHOOK: query: explain cbo physical select  *
 from(
 select i_category, i_class, i_brand,
@@ -77,6 +85,14 @@ ImpalaProjectPassthroughRel(i_category=[$0], i_class=[$1], i_brand=[$2], s_store
             ImpalaProjectPassthroughRel(i_item_sk=[$0], i_brand=[$8], i_class=[$10], i_category=[$12])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(OR(IN($12, _UTF-16LE'Home':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Music':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Books':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($12, _UTF-16LE'Jewelry':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Sports':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Women':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), OR(IN($10, _UTF-16LE'glassware':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'classical':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'fiction':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($10, _UTF-16LE'semi-precious':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'baseball':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'dresses':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), OR(AND(IN($12, _UTF-16LE'Home':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Music':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Books':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($10, _UTF-16LE'glassware':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'classical':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'fiction':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")), AND(IN($12, _UTF-16LE'Jewelry':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Sports':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Women':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($10, _UTF-16LE'semi-precious':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'baseball':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'dresses':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"))), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
 PREHOOK: query: explain select  *
 from(
 select i_category, i_class, i_brand,

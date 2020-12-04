@@ -1,3 +1,13 @@
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_table_req FOR impala_tpch_supplier
+HMS CALL get_table_req FOR impala_tpch_partsupp
+HMS CALL get_table_req FOR impala_tpch_nation
+HMS CALL get_table_req FOR impala_tpch_region
+HMS CALL get_foreign_keys FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_supplier
+HMS CALL get_foreign_keys FOR impala_tpch_partsupp
+HMS CALL get_foreign_keys FOR impala_tpch_nation
+HMS CALL get_foreign_keys FOR impala_tpch_region
 PREHOOK: query: explain cbo physical select
   s_acctbal,
   s_name,
@@ -129,6 +139,16 @@ ImpalaSortRel(sort0=[$0], sort1=[$2], sort2=[$1], sort3=[$3], dir0=[DESC], dir1=
               ImpalaProjectPassthroughRel(r_regionkey=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpch_region]], condition=[AND(=($1, _UTF-16LE'EUROPE'), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_table_req FOR impala_tpch_supplier
+HMS CALL get_table_req FOR impala_tpch_partsupp
+HMS CALL get_table_req FOR impala_tpch_nation
+HMS CALL get_table_req FOR impala_tpch_region
+HMS CALL get_foreign_keys FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_supplier
+HMS CALL get_foreign_keys FOR impala_tpch_partsupp
+HMS CALL get_foreign_keys FOR impala_tpch_nation
+HMS CALL get_foreign_keys FOR impala_tpch_region
 PREHOOK: query: explain select
   s_acctbal,
   s_name,

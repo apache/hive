@@ -1,3 +1,13 @@
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
 PREHOOK: query: explain cbo physical select 
   c_last_name,c_first_name,substr(s_city,1,30),ss_ticket_number,amt,profit
   from
@@ -72,6 +82,16 @@ ImpalaProjectPassthroughRel(c_last_name=[$0], c_first_name=[$1], _o__c2=[$2], ss
         ImpalaProjectPassthroughRel(c_customer_sk=[$0], c_first_name=[$8], c_last_name=[$9])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer]], condition=[IS NOT NULL($0)])
 
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
 PREHOOK: query: explain select 
   c_last_name,c_first_name,substr(s_city,1,30),ss_ticket_number,amt,profit
   from

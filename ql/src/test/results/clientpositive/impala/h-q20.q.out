@@ -1,3 +1,13 @@
+HMS CALL get_table_req FOR impala_tpch_supplier
+HMS CALL get_table_req FOR impala_tpch_nation
+HMS CALL get_foreign_keys FOR impala_tpch_supplier
+HMS CALL get_foreign_keys FOR impala_tpch_nation
+HMS CALL get_table_req FOR impala_tpch_partsupp
+HMS CALL get_foreign_keys FOR impala_tpch_partsupp
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_part
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain cbo physical select
   s_name,
   s_address
@@ -104,6 +114,16 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC])
             ImpalaAggregateRel(group=[{1, 2}], agg#0=[sum($4)], condition=[IS NOT NULL($2)])
               ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>=($10, _UTF-16LE'1994-01-01'), <($10, _UTF-16LE'1995-01-01'), IS NOT NULL($1), IS NOT NULL($2))])
 
+HMS CALL get_table_req FOR impala_tpch_supplier
+HMS CALL get_table_req FOR impala_tpch_nation
+HMS CALL get_foreign_keys FOR impala_tpch_supplier
+HMS CALL get_foreign_keys FOR impala_tpch_nation
+HMS CALL get_table_req FOR impala_tpch_partsupp
+HMS CALL get_foreign_keys FOR impala_tpch_partsupp
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_part
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain select
   s_name,
   s_address

@@ -1,3 +1,11 @@
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_household_demographics
+HMS CALL get_table_req FOR impala_tpcds_time_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_time_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
 PREHOOK: query: explain cbo physical select  count(*) 
 from impala_tpcds_store_sales
     ,impala_tpcds_household_demographics 
@@ -52,6 +60,14 @@ ImpalaProjectPassthroughRel(_o__c0=[$0])
           ImpalaProjectPassthroughRel(s_store_sk=[$0])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[AND(=($5, _UTF-16LE'ese'), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_household_demographics
+HMS CALL get_table_req FOR impala_tpcds_time_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_time_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
 PREHOOK: query: explain select  count(*) 
 from impala_tpcds_store_sales
     ,impala_tpcds_household_demographics 

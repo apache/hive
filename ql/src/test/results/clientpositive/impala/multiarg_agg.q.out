@@ -1,3 +1,5 @@
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select l_orderkey, group_concat(cast(l_suppkey as string), ':')
   from impala_tpch_lineitem

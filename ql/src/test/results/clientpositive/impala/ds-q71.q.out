@@ -1,3 +1,15 @@
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_time_dim
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_time_dim
 PREHOOK: query: explain cbo physical select i_brand_id brand_id, i_brand brand,t_hour,t_minute,
       sum(ext_price) ext_price
  from impala_tpcds_item, (select ws_ext_sales_price as ext_price, 
@@ -116,6 +128,18 @@ ImpalaProjectPassthroughRel(brand_id=[$0], brand=[$1], t_hour=[$2], t_minute=[$3
           ImpalaProjectPassthroughRel(t_time_sk=[$0], t_hour=[$3], t_minute=[$4])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_time_dim]], condition=[AND(IN($9, _UTF-16LE'breakfast':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'dinner':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_time_dim
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_time_dim
 PREHOOK: query: explain select i_brand_id brand_id, i_brand brand,t_hour,t_minute,
       sum(ext_price) ext_price
  from impala_tpcds_item, (select ws_ext_sales_price as ext_price, 

@@ -1,3 +1,19 @@
+HMS CALL get_table_req FOR year_total
+HMS CALL get_table_req FOR year_total
+HMS CALL get_table_req FOR year_total
+HMS CALL get_table_req FOR year_total
+HMS CALL get_table_req FOR year_total
+HMS CALL get_table_req FOR year_total
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
 PREHOOK: query: explain cbo physical with year_total as (
  select c_customer_id customer_id
        ,c_first_name customer_first_name
@@ -306,6 +322,22 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], dir0=[ASC], dir1=[
               ImpalaProjectPassthroughRel(d_date_sk=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, +(1999, 1)), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR year_total
+HMS CALL get_table_req FOR year_total
+HMS CALL get_table_req FOR year_total
+HMS CALL get_table_req FOR year_total
+HMS CALL get_table_req FOR year_total
+HMS CALL get_table_req FOR year_total
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
 PREHOOK: query: explain with year_total as (
  select c_customer_id customer_id
        ,c_first_name customer_first_name

@@ -1,3 +1,30 @@
+HMS CALL get_table_req FOR ssr
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_promotion
+HMS CALL get_table_req FOR csr
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_table_req FOR impala_tpcds_catalog_page
+HMS CALL get_table_req FOR wsr
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_web_returns
+HMS CALL get_table_req FOR impala_tpcds_web_site
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_promotion
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_page
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_web_site
 PREHOOK: query: explain cbo physical with ssr as
  (select  s_store_id as store_id,
           sum(ss_ext_sales_price) as sales,
@@ -276,6 +303,33 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
               ImpalaProjectPassthroughRel(web_site_sk=[$0], web_site_id=[$1])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_site]], condition=[IS NOT NULL($0)])
 
+HMS CALL get_table_req FOR ssr
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_promotion
+HMS CALL get_table_req FOR csr
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_table_req FOR impala_tpcds_catalog_page
+HMS CALL get_table_req FOR wsr
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_web_returns
+HMS CALL get_table_req FOR impala_tpcds_web_site
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_promotion
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_page
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_web_site
 PREHOOK: query: explain with ssr as
  (select  s_store_id as store_id,
           sum(ss_ext_sales_price) as sales,

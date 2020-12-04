@@ -1,3 +1,5 @@
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select count(distinct l_quantity), count(distinct l_suppkey)
 from impala_tpch_lineitem
@@ -95,6 +97,8 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select l_orderkey, count(distinct l_quantity), count(distinct l_suppkey)
 from impala_tpch_lineitem
@@ -205,6 +209,8 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select l_orderkey, l_partkey, count(distinct l_quantity), count(distinct l_suppkey)
 from impala_tpch_lineitem
@@ -315,6 +321,8 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select l_partkey, l_orderkey, count(distinct l_quantity), count(distinct l_suppkey)
 from impala_tpch_lineitem
@@ -425,6 +433,8 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select l_partkey, l_suppkey, l_linenumber, count(distinct l_quantity)
 from impala_tpch_lineitem
@@ -522,6 +532,8 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select l_partkey, count(distinct l_quantity), l_orderkey, count(distinct l_suppkey)
 from impala_tpch_lineitem
@@ -632,6 +644,8 @@ Per-Host Resources: mem-estimate=256.00MB mem-reservation=68.00MB thread-reserva
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select count(l_quantity), count(distinct l_suppkey), count(distinct l_quantity), count(l_orderkey)
 from impala_tpch_lineitem
@@ -742,6 +756,8 @@ Per-Host Resources: mem-estimate=266.00MB mem-reservation=68.00MB thread-reserva
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select count(l_quantity), count(distinct l_suppkey), count(distinct l_quantity), count(distinct l_orderkey)
 from impala_tpch_lineitem
@@ -860,6 +876,8 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=102.00MB thread-reserv
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select l_orderkey, count(distinct l_quantity), count(l_suppkey)
 from impala_tpch_lineitem
@@ -959,6 +977,8 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select l_orderkey, count(distinct l_quantity), count(l_suppkey), count(distinct l_suppkey), count(distinct l_quantity)
 from impala_tpch_lineitem
@@ -1089,6 +1109,8 @@ Per-Host Resources: mem-estimate=384.00MB mem-reservation=102.00MB thread-reserv
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select count(l_quantity), sum(distinct l_suppkey), avg(distinct l_quantity), count(distinct l_orderkey)
 from impala_tpch_lineitem
@@ -1207,6 +1229,8 @@ Per-Host Resources: mem-estimate=394.00MB mem-reservation=102.00MB thread-reserv
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select l_orderkey, avg(distinct l_quantity), count(l_suppkey), sum(distinct l_suppkey), count(distinct l_quantity)
 from impala_tpch_lineitem

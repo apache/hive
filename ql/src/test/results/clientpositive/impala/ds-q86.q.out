@@ -1,3 +1,9 @@
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_item
 PREHOOK: query: explain cbo physical select   
     sum(ws_net_paid) as total_sum
    ,i_category
@@ -69,6 +75,12 @@ ImpalaProjectPassthroughRel(total_sum=[$0], i_category=[$1], i_class=[$2], lochi
               ImpalaProjectPassthroughRel(i_item_sk=[$0], i_class=[$10], i_category=[$12])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[IS NOT NULL($0)])
 
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_item
 PREHOOK: query: explain select   
     sum(ws_net_paid) as total_sum
    ,i_category

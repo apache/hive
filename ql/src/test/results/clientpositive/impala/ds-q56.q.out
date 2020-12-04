@@ -1,3 +1,18 @@
+HMS CALL get_table_req FOR ss
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR cs
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR ws
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
 PREHOOK: query: explain cbo physical with ss as (
  select i_item_id,sum(ss_ext_sales_price) total_sales
  from
@@ -195,6 +210,21 @@ ImpalaSortRel(sort0=[$1], sort1=[$0], dir0=[ASC], dir1=[ASC], fetch=[100])
             ImpalaAggregateRel(group=[{1}])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IN($17, _UTF-16LE'chiffon':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'smoke':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'lace':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($1))])
 
+HMS CALL get_table_req FOR ss
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR cs
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR ws
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
 PREHOOK: query: explain with ss as (
  select i_item_id,sum(ss_ext_sales_price) total_sales
  from

@@ -1,3 +1,9 @@
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_item
 PREHOOK: query: explain cbo physical select  ca_zip, ca_county, sum(ws_sales_price)
  from impala_tpcds_web_sales, impala_tpcds_customer_address, impala_tpcds_item
  where ws_item_sk <> i_item_sk
@@ -49,6 +55,12 @@ ImpalaProjectPassthroughRel(ca_zip=[$1], ca_county=[$0], $f2=[$2])
           ImpalaAggregateRel(group=[{}], c=[COUNT()])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[IN($0, 2:BIGINT, 3:BIGINT, 5:BIGINT, 7:BIGINT, 11:BIGINT, 13:BIGINT, 17:BIGINT, 19:BIGINT, 23:BIGINT, 29:BIGINT)])
 
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_item
 PREHOOK: query: explain select  ca_zip, ca_county, sum(ws_sales_price)
  from impala_tpcds_web_sales, impala_tpcds_customer_address, impala_tpcds_item
  where ws_item_sk <> i_item_sk

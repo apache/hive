@@ -1,3 +1,9 @@
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_table_req FOR impala_tpcds_reason
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_reason
 PREHOOK: query: explain cbo physical select  ss_customer_sk
             ,sum(act_sales) sumsales
       from (select ss_item_sk
@@ -50,6 +56,12 @@ ImpalaSortRel(sort0=[$1], sort1=[$0], dir0=[ASC], dir1=[ASC], fetch=[100])
         ImpalaProjectPassthroughRel(ss_item_sk=[$1], ss_customer_sk=[$2], ss_ticket_number=[$8], ss_sales_price=[$12], CAST=[CAST($9):BIGINT], *=[*(CAST($9):DECIMAL(10, 0) NOT NULL, $12)])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_sales]], condition=[AND(IS NOT NULL($1), IS NOT NULL($8))])
 
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_table_req FOR impala_tpcds_reason
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_reason
 PREHOOK: query: explain select  ss_customer_sk
             ,sum(act_sales) sumsales
       from (select ss_item_sk

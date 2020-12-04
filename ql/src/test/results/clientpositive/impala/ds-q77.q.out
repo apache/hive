@@ -1,3 +1,27 @@
+HMS CALL get_table_req FOR ss
+HMS CALL get_table_req FOR sr
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_table_req FOR cs
+HMS CALL get_table_req FOR cr
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_table_req FOR ws
+HMS CALL get_table_req FOR wr
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_web_page
+HMS CALL get_table_req FOR impala_tpcds_web_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_page
+HMS CALL get_foreign_keys FOR impala_tpcds_web_returns
 PREHOOK: query: explain cbo physical with ss as
  (select s_store_sk,
          sum(ss_ext_sales_price) as sales,
@@ -289,6 +313,30 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
               ImpalaProjectPassthroughRel(wp_web_page_sk=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_web_page]], condition=[IS NOT NULL($0)])
 
+HMS CALL get_table_req FOR ss
+HMS CALL get_table_req FOR sr
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_table_req FOR cs
+HMS CALL get_table_req FOR cr
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_table_req FOR ws
+HMS CALL get_table_req FOR wr
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_web_page
+HMS CALL get_table_req FOR impala_tpcds_web_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_page
+HMS CALL get_foreign_keys FOR impala_tpcds_web_returns
 PREHOOK: query: explain with ss as
  (select s_store_sk,
          sum(ss_ext_sales_price) as sales,

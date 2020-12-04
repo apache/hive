@@ -1,3 +1,17 @@
+HMS CALL get_table_req FOR ss
+HMS CALL get_table_req FOR ss
+HMS CALL get_table_req FOR ss
+HMS CALL get_table_req FOR ws
+HMS CALL get_table_req FOR ws
+HMS CALL get_table_req FOR ws
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
 PREHOOK: query: explain cbo physical with ss as
  (select ca_county,d_qoy, d_year,sum(ss_ext_sales_price) as store_sales
  from impala_tpcds_store_sales,impala_tpcds_date_dim,impala_tpcds_customer_address
@@ -169,6 +183,20 @@ ImpalaProjectPassthroughRel(ca_county=[$4], d_year=[CAST(1999):INTEGER], web_q1_
         ImpalaProjectPassthroughRel(ca_address_sk=[$0], ca_county=[$7])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_address]], condition=[AND(IS NOT NULL($0), IS NOT NULL($7))])
 
+HMS CALL get_table_req FOR ss
+HMS CALL get_table_req FOR ss
+HMS CALL get_table_req FOR ss
+HMS CALL get_table_req FOR ws
+HMS CALL get_table_req FOR ws
+HMS CALL get_table_req FOR ws
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
 PREHOOK: query: explain with ss as
  (select ca_county,d_qoy, d_year,sum(ss_ext_sales_price) as store_sales
  from impala_tpcds_store_sales,impala_tpcds_date_dim,impala_tpcds_customer_address

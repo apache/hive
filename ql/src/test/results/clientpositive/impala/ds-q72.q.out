@@ -1,3 +1,21 @@
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_inventory
+HMS CALL get_table_req FOR impala_tpcds_warehouse
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_customer_demographics
+HMS CALL get_table_req FOR impala_tpcds_household_demographics
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_promotion
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_inventory
+HMS CALL get_foreign_keys FOR impala_tpcds_warehouse
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_promotion
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
 PREHOOK: query: explain cbo physical select  i_item_desc
       ,w_warehouse_name
       ,d1.d_week_seq
@@ -108,6 +126,24 @@ ImpalaSortRel(sort0=[$5], sort1=[$0], sort2=[$1], sort3=[$2], dir0=[DESC], dir1=
         ImpalaProjectPassthroughRel(cr_item_sk=[$2], cr_order_number=[$16])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_catalog_returns]], condition=[AND(IS NOT NULL($2), IS NOT NULL($16))])
 
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_inventory
+HMS CALL get_table_req FOR impala_tpcds_warehouse
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_customer_demographics
+HMS CALL get_table_req FOR impala_tpcds_household_demographics
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_promotion
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_inventory
+HMS CALL get_foreign_keys FOR impala_tpcds_warehouse
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_promotion
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
 PREHOOK: query: explain select  i_item_desc
       ,w_warehouse_name
       ,d1.d_week_seq

@@ -1,3 +1,11 @@
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
 PREHOOK: query: explain cbo physical select  * 
 from (select i_manager_id
              ,sum(ss_sales_price) sum_sales
@@ -77,6 +85,14 @@ ImpalaSortRel(sort0=[$0], sort1=[$2], sort2=[$1], dir0=[ASC], dir1=[ASC], dir2=[
         ImpalaProjectPassthroughRel(d_date_sk=[$0], d_moy=[$8])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IN($3, 1211, +(1211, 1), +(1211, 2), +(1211, 3), +(1211, 4), +(1211, 5), +(1211, 6), +(1211, 7), +(1211, 8), +(1211, 9), +(1211, 10), +(1211, 11)), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
 PREHOOK: query: explain select  * 
 from (select i_manager_id
              ,sum(ss_sales_price) sum_sales

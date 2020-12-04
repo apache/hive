@@ -1,3 +1,8 @@
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: explain cbo physical
 select now()
 PREHOOK: type: QUERY

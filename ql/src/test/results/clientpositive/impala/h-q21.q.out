@@ -1,3 +1,11 @@
+HMS CALL get_table_req FOR impala_tpch_supplier
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_table_req FOR impala_tpch_orders
+HMS CALL get_table_req FOR impala_tpch_nation
+HMS CALL get_foreign_keys FOR impala_tpch_supplier
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_orders
+HMS CALL get_foreign_keys FOR impala_tpch_nation
 PREHOOK: query: explain cbo physical select
   s_name,
   count(*) as numwait
@@ -112,6 +120,14 @@ ImpalaSortRel(sort0=[$1], sort1=[$0], dir0=[DESC], dir1=[ASC], fetch=[100])
         ImpalaAggregateRel(group=[{0, 2}])
           ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[AND(>($12, $11), IS NOT NULL($0), IS NOT NULL($2))])
 
+HMS CALL get_table_req FOR impala_tpch_supplier
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_table_req FOR impala_tpch_orders
+HMS CALL get_table_req FOR impala_tpch_nation
+HMS CALL get_foreign_keys FOR impala_tpch_supplier
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_orders
+HMS CALL get_foreign_keys FOR impala_tpch_nation
 PREHOOK: query: explain select
   s_name,
   count(*) as numwait

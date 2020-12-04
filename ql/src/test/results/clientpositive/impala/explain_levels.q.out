@@ -1,5 +1,7 @@
 explain_level=MINIMAL
 impala.explain_level=VERBOSE
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain select
   l_returnflag,
   l_linestatus,
@@ -74,6 +76,8 @@ PLAN-ROOT SINK
 impala.explain_level=MINIMAL
 explain_level=STANDARD
 impala.explain_level=MINIMAL
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain select
   l_returnflag,
   l_linestatus,
@@ -168,6 +172,8 @@ PLAN-ROOT SINK
 impala.explain_level=STANDARD
 explain_level=EXTENDED
 impala.explain_level=STANDARD
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain select
   l_returnflag,
   l_linestatus,
@@ -291,6 +297,8 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
 impala.explain_level=EXTENDED
 explain_level=VERBOSE
 impala.explain_level=EXTENDED
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain select
   l_returnflag,
   l_linestatus,
@@ -418,6 +426,8 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
 impala.explain_level=VERBOSE
 impala.explain_level=MINIMAL
 explain_level=MINIMAL
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain select
   l_returnflag,
   l_linestatus,
@@ -491,6 +501,8 @@ PLAN-ROOT SINK
 
 impala.explain_level=STANDARD
 explain_level=STANDARD
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain select
   l_returnflag,
   l_linestatus,
@@ -584,6 +596,8 @@ PLAN-ROOT SINK
 
 impala.explain_level=EXTENDED
 explain_level=EXTENDED
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain select
   l_returnflag,
   l_linestatus,
@@ -706,6 +720,8 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
 
 impala.explain_level=VERBOSE
 explain_level=VERBOSE
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain select
   l_returnflag,
   l_linestatus,

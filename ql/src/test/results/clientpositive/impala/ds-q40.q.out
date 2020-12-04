@@ -1,3 +1,13 @@
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_table_req FOR impala_tpcds_warehouse
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_warehouse
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
 PREHOOK: query: explain cbo physical select  
    w_state
   ,i_item_id
@@ -80,6 +90,16 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
         ImpalaProjectPassthroughRel(d_date_sk=[$0], <=[<(CAST($2):DATE, CAST(_UTF-16LE'2000-03-18':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE)], >==[>=(CAST($2):DATE, CAST(_UTF-16LE'2000-03-18':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE)])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), -(CAST(CAST(_UTF-16LE'2000-03-18':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE):TIMESTAMP(9), 2592000000.000000:INTERVAL MILLISECOND), +(CAST(CAST(_UTF-16LE'2000-03-18':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE):TIMESTAMP(9), 2592000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_table_req FOR impala_tpcds_warehouse
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_warehouse
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
 PREHOOK: query: explain select  
    w_state
   ,i_item_id
@@ -323,6 +343,16 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_table_req FOR impala_tpcds_warehouse
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_warehouse
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
 PREHOOK: query: explain cbo physical select
    w_state
   ,i_item_id

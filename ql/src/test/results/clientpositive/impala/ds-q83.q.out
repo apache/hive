@@ -1,3 +1,16 @@
+HMS CALL get_table_req FOR sr_items
+HMS CALL get_table_req FOR cr_items
+HMS CALL get_table_req FOR wr_items
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_table_req FOR impala_tpcds_web_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_web_returns
 PREHOOK: query: explain cbo physical with sr_items as
  (select i_item_id item_id,
         sum(sr_return_quantity) sr_item_qty
@@ -199,6 +212,19 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
                     ImpalaProjectPassthroughRel(d_week_seq=[$4])
                       ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IN($2, _UTF-16LE'2000-06-17':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'2000-08-22':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'2000-11-17':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($4))])
 
+HMS CALL get_table_req FOR sr_items
+HMS CALL get_table_req FOR cr_items
+HMS CALL get_table_req FOR wr_items
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_table_req FOR impala_tpcds_web_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_web_returns
 PREHOOK: query: explain with sr_items as
  (select i_item_id item_id,
         sum(sr_return_quantity) sr_item_qty

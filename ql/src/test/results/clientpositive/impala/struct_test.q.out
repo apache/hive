@@ -1,3 +1,8 @@
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: explain
 select inline(array(struct('abc')))
 PREHOOK: type: QUERY
@@ -32,6 +37,13 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR simple_char_tbl
+HMS CALL get_foreign_keys FOR simple_char_tbl
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: explain
 select 'abc' from simple_char_tbl union all select 'def'
 PREHOOK: type: QUERY
@@ -101,8 +113,10 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR cdpd_18053
 PREHOOK: query: drop table if exists cdpd_18053
 PREHOOK: type: DROPTABLE
+HMS CALL get_table_req FOR cdpd_18053
 POSTHOOK: query: drop table if exists cdpd_18053
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table cdpd_18053 (i1 int, i2 int)
@@ -113,6 +127,13 @@ POSTHOOK: query: create table cdpd_18053 (i1 int, i2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cdpd_18053
+HMS CALL get_table_req FOR cdpd_18053
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_foreign_keys FOR cdpd_18053
 PREHOOK: query: explain
 select * from (select * from cdpd_18053 t
 inner join (select 10 int_col) d where
@@ -189,10 +210,13 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR cdpd_18053
 PREHOOK: query: drop table cdpd_18053
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@cdpd_18053
 PREHOOK: Output: default@cdpd_18053
+HMS CALL get_table_req FOR cdpd_18053
+HMS CALL get_table_req FOR cdpd_18053
 POSTHOOK: query: drop table cdpd_18053
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@cdpd_18053

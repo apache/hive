@@ -1,3 +1,13 @@
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_item
 PREHOOK: query: explain cbo physical select  ca_zip, ca_county, sum(ws_sales_price)
  from impala_tpcds_web_sales, impala_tpcds_customer, impala_tpcds_customer_address, impala_tpcds_date_dim, impala_tpcds_item
  where ws_bill_customer_sk = c_customer_sk
@@ -72,6 +82,16 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
               ImpalaAggregateRel(group=[{1}])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(IN($0, 2:BIGINT, 3:BIGINT, 5:BIGINT, 7:BIGINT, 11:BIGINT, 13:BIGINT, 17:BIGINT, 19:BIGINT, 23:BIGINT, 29:BIGINT), IS NOT NULL($1))])
 
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_item
 PREHOOK: query: explain select  ca_zip, ca_county, sum(ws_sales_price)
  from impala_tpcds_web_sales, impala_tpcds_customer, impala_tpcds_customer_address, impala_tpcds_date_dim, impala_tpcds_item
  where ws_bill_customer_sk = c_customer_sk

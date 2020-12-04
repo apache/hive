@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.AnalyzeState;
 import org.apache.hadoop.hive.ql.parse.ExplainConfiguration.VectorizationDetailLevel;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsCollectionContext;
 import org.apache.hadoop.hive.ql.stats.fs.FSStatsAggregator;
@@ -58,6 +60,7 @@ import org.apache.hadoop.hive.ql.stats.fs.FSStatsAggregator;
 public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
   List<FieldSchema> fieldList;
   ExplainConfiguration config;
+  String currentQueryId;
 
   public ExplainSemanticAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
@@ -286,4 +289,29 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     return task instanceof ExplainTask && ((ExplainTask)task).getWork().isAuthorize();
   }
 
+  @Override
+  public void startAnalysis() {
+    currentQueryId = conf.getVar(HiveConf.ConfVars.HIVEQUERYID);
+    SessionState ss = SessionState.get();
+    if (ss == null) {
+      LOG.info("No current SessionState, skipping metadata query-level caching for: {}", currentQueryId);
+      return;
+    }
+    if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
+      LOG.info("Starting caching scope for: {}", currentQueryId);
+      ss.startScope(currentQueryId);
+    }
+  }
+
+  @Override
+  public void endAnalysis() {
+    SessionState ss = SessionState.get();
+    if (ss == null) {
+      return;
+    }
+    if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_HMS_QUERY_CACHE_ENABLED)) {
+      LOG.info("Ending caching scope for: {}", currentQueryId);
+      ss.endScope(currentQueryId);
+    }
+  }
 }

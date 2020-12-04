@@ -6,6 +6,8 @@ hive.execution.engine=impala
 execution.engine=impala
 num_nodes=1
 impala.num_nodes=2
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain select count(*) from impala_tpch_lineitem
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
@@ -55,6 +57,8 @@ impala.num_nodes=3
 num_nodes=3
 impala.num_nodes=1
 num_nodes=3
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain select count(*) from impala_tpch_lineitem
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem
@@ -118,6 +122,8 @@ impala.num_nodes=3
 num_nodes=3
 impala.dummy_option=aaa
 dummy_option=aaa
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain select count(*) from impala_tpch_lineitem
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_lineitem

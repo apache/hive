@@ -711,6 +711,8 @@ public class HiveConf extends Configuration {
         "Comma-separated list of post-execution hooks to be invoked for each statement. \n" +
         "A post-execution hook is specified as the name of a Java class which implements the \n" +
         "org.apache.hadoop.hive.ql.hooks.ExecuteWithHookContext interface."),
+    HANDLERCLASSNAME("hive.metastore.handler.class.name", "",
+        "Class name to use for HMSHandler. Main use is to inject a Handler for testing framework."),
     ONFAILUREHOOKS("hive.exec.failure.hooks", "",
         "Comma-separated list of on-failure hooks to be invoked for each statement. \n" +
         "An on-failure hook is specified as the name of Java class which implements the \n" +

@@ -1,3 +1,5 @@
+HMS CALL get_table_req FOR impala_hive_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_hive_tpcds_store_sales
 PREHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT
   ss_sold_time_sk

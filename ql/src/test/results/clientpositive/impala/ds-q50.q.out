@@ -1,3 +1,11 @@
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
 PREHOOK: query: explain cbo physical select  
    s_store_name
   ,s_company_id
@@ -140,6 +148,14 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$3], sort4=[$4], sort5=
         ImpalaProjectPassthroughRel(s_store_sk=[$0], s_store_name=[$5], s_company_id=[$16], s_street_number=[$18], s_street_name=[$19], s_street_type=[$20], s_suite_number=[$21], s_city=[$22], s_county=[$23], s_state=[$24], s_zip=[$25])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_store]], condition=[IS NOT NULL($0)])
 
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
 PREHOOK: query: explain select  
    s_store_name
   ,s_company_id

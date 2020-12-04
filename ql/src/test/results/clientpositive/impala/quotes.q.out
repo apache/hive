@@ -1,3 +1,13 @@
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_call_center
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_call_center
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
 PREHOOK: query: explain
 select count(distinct cs_order_number) as 'order count'
    ,sum(cs_ext_ship_cost) as "total shipping cost"
@@ -309,6 +319,11 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: explain
 select "What\'s happening?" as single_within_double,
        'I\'m not sure.' as single_within_single,
@@ -349,6 +364,8 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_customer
+HMS CALL get_foreign_keys FOR impala_tpch_customer
 PREHOOK: query: explain
 select * from impala_tpch_customer "c" limit 10
 PREHOOK: type: QUERY
@@ -390,6 +407,8 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_customer
+HMS CALL get_foreign_keys FOR impala_tpch_customer
 PREHOOK: query: explain
 select * from impala_tpch_customer AS 'c' limit 10
 PREHOOK: type: QUERY
@@ -431,6 +450,8 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_customer
+HMS CALL get_foreign_keys FOR impala_tpch_customer
 PREHOOK: query: explain
 select * from (select * from impala_tpch_customer) "c" limit 10
 PREHOOK: type: QUERY
@@ -472,6 +493,8 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_customer
+HMS CALL get_foreign_keys FOR impala_tpch_customer
 PREHOOK: query: explain
 select * from (select * from impala_tpch_customer) AS "c" limit 10
 PREHOOK: type: QUERY
@@ -513,6 +536,8 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_customer
+HMS CALL get_foreign_keys FOR impala_tpch_customer
 PREHOOK: query: explain
 select 'c' from impala_tpch_customer AS 'c' limit 10
 PREHOOK: type: QUERY
@@ -569,6 +594,8 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_customer
+HMS CALL get_foreign_keys FOR impala_tpch_customer
 PREHOOK: query: explain
 select *, 'c' from impala_tpch_customer AS 'c' limit 10
 PREHOOK: type: QUERY
@@ -625,6 +652,10 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
 PREHOOK: query: explain
 select *
 from impala_tpcds_catalog_sales "cs1"
@@ -716,6 +747,11 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: explain
 select 'value''alias'
 PREHOOK: type: QUERY
@@ -750,6 +786,11 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: explain
 select "value"'alias'
 PREHOOK: type: QUERY
@@ -784,6 +825,11 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: explain
 select 'value'"alias"
 PREHOOK: type: QUERY
@@ -818,6 +864,11 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: explain
 select 'value'alias
 PREHOOK: type: QUERY
@@ -852,6 +903,11 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: explain
 select "value"alias
 PREHOOK: type: QUERY

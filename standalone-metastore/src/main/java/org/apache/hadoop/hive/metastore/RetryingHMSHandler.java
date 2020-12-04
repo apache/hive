@@ -31,6 +31,7 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.metrics.PerfLogger;
+import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -85,6 +86,18 @@ public class RetryingHMSHandler implements InvocationHandler {
       me.initCause(e);
       throw me;
     }
+  }
+
+  public static IHMSHandler getProxy(String baseHandlerClassName, String name, Configuration conf,
+      boolean init, boolean local) throws MetaException {
+    Class<? extends IHMSHandler> handlerClass =
+        JavaUtils.getClass(baseHandlerClassName, IHMSHandler.class);
+    Class<?>[] constructorArgTypes = new Class[] {String.class, Configuration.class, Boolean.class};
+    Object[] constructorArgs = new Object[] {name, conf, init};
+    IHMSHandler handler =
+        JavaUtils.newInstance(handlerClass, constructorArgTypes, constructorArgs);
+
+    return getProxy(conf, handler, local);
   }
 
   public static IHMSHandler getProxy(Configuration conf, IHMSHandler baseHandler, boolean local)

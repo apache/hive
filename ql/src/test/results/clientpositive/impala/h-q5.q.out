@@ -1,3 +1,15 @@
+HMS CALL get_table_req FOR impala_tpch_customer
+HMS CALL get_table_req FOR impala_tpch_orders
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_table_req FOR impala_tpch_supplier
+HMS CALL get_table_req FOR impala_tpch_nation
+HMS CALL get_table_req FOR impala_tpch_region
+HMS CALL get_foreign_keys FOR impala_tpch_customer
+HMS CALL get_foreign_keys FOR impala_tpch_orders
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_supplier
+HMS CALL get_foreign_keys FOR impala_tpch_nation
+HMS CALL get_foreign_keys FOR impala_tpch_region
 PREHOOK: query: explain cbo physical select
   n_name,
   sum(l_extendedprice * (1 - l_discount)) as revenue
@@ -82,6 +94,18 @@ ImpalaSortRel(sort0=[$1], dir0=[DESC])
         ImpalaProjectPassthroughRel(s_suppkey=[$0], s_nationkey=[$3])
           ImpalaHdfsScanRel(table=[[default, impala_tpch_supplier]], condition=[AND(IS NOT NULL($0), IS NOT NULL($3))])
 
+HMS CALL get_table_req FOR impala_tpch_customer
+HMS CALL get_table_req FOR impala_tpch_orders
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_table_req FOR impala_tpch_supplier
+HMS CALL get_table_req FOR impala_tpch_nation
+HMS CALL get_table_req FOR impala_tpch_region
+HMS CALL get_foreign_keys FOR impala_tpch_customer
+HMS CALL get_foreign_keys FOR impala_tpch_orders
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_supplier
+HMS CALL get_foreign_keys FOR impala_tpch_nation
+HMS CALL get_foreign_keys FOR impala_tpch_region
 PREHOOK: query: explain select
   n_name,
   sum(l_extendedprice * (1 - l_discount)) as revenue

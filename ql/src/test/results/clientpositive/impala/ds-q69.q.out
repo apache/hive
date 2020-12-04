@@ -1,3 +1,17 @@
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_customer_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_demographics
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
 PREHOOK: query: explain cbo physical select  
   cd_gender,
   cd_marital_status,
@@ -139,6 +153,20 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], sort3=[$4], sort4=[$6], dir0=[
               ImpalaProjectPassthroughRel(d_date_sk=[$0])
                 ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, $8, 2, CAST(+(2:SMALLINT, 2:SMALLINT)):INTEGER), =($6, 2003), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_customer_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_demographics
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
 PREHOOK: query: explain select  
   cd_gender,
   cd_marital_status,

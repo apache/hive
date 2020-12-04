@@ -1,3 +1,17 @@
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_web_returns
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
 PREHOOK: query: explain cbo physical select  
  'web' as channel
  ,web.item
@@ -306,6 +320,20 @@ ImpalaSortRel(sort0=[$0], sort1=[$3], sort2=[$4], dir0=[ASC], dir1=[ASC], dir2=[
                 ImpalaProjectPassthroughRel(sr_item_sk=[$2], sr_ticket_number=[$9], CAST=[CAST(COALESCE($10, 0)):BIGINT], COALESCE=[COALESCE($11, 0:DECIMAL(3, 0))])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_store_returns]], condition=[AND(>($11, 10000), IS NOT NULL($9), IS NOT NULL($2))])
 
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_web_returns
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
 PREHOOK: query: explain select  
  'web' as channel
  ,web.item

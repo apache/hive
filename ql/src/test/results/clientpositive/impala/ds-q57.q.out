@@ -1,3 +1,15 @@
+HMS CALL get_table_req FOR v2
+HMS CALL get_table_req FOR v1
+HMS CALL get_table_req FOR v1
+HMS CALL get_table_req FOR v1
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_call_center
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_call_center
 PREHOOK: query: explain cbo physical with v1 as(
  select i_category, i_brand,
         cc_name,
@@ -148,6 +160,18 @@ ImpalaProjectPassthroughRel(i_category=[$0], i_brand=[$1], d_year=[CAST(1999):IN
                 ImpalaProjectPassthroughRel(d_date_sk=[$0], d_year=[$6], d_moy=[$8])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(OR(=($6, 1999), AND(=($6, -(1999, 1)), =($8, 12)), AND(=($6, +(1999, 1)), =($8, 1))), IN($6, 1999, -(1999, 1), +(1999, 1)), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR v2
+HMS CALL get_table_req FOR v1
+HMS CALL get_table_req FOR v1
+HMS CALL get_table_req FOR v1
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_call_center
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_call_center
 PREHOOK: query: explain with v1 as(
  select i_category, i_brand,
         cc_name,

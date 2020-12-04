@@ -1,5 +1,7 @@
+HMS CALL get_table_req FOR table_single_ts_n0
 PREHOOK: query: drop table if exists table_single_ts_n0
 PREHOOK: type: DROPTABLE
+HMS CALL get_table_req FOR table_single_ts_n0
 POSTHOOK: query: drop table if exists table_single_ts_n0
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table table_single_ts_n0(
@@ -14,6 +16,8 @@ POSTHOOK: query: create table table_single_ts_n0(
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@table_single_ts_n0
+HMS CALL get_table_req FOR table_single_ts_n0
+HMS CALL get_foreign_keys FOR table_single_ts_n0
 PREHOOK: query: explain
 select extract(year from tt_timestamp) as year_from_ts, count(*)
 from table_single_ts_n0
@@ -49,6 +53,8 @@ PLAN-ROOT SINK
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR table_single_ts_n0
+HMS CALL get_foreign_keys FOR table_single_ts_n0
 PREHOOK: query: explain
 select extract(month from tt_timestamp) as year_from_ts, count(*)
 from table_single_ts_n0
@@ -84,6 +90,8 @@ PLAN-ROOT SINK
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR table_single_ts_n0
+HMS CALL get_foreign_keys FOR table_single_ts_n0
 PREHOOK: query: explain
 select extract(day from tt_timestamp) as year_from_ts, count(*)
 from table_single_ts_n0
@@ -119,6 +127,8 @@ PLAN-ROOT SINK
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR table_single_ts_n0
+HMS CALL get_foreign_keys FOR table_single_ts_n0
 PREHOOK: query: explain
 select extract(hour from tt_timestamp) as year_from_ts, count(*)
 from table_single_ts_n0
@@ -154,6 +164,8 @@ PLAN-ROOT SINK
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR table_single_ts_n0
+HMS CALL get_foreign_keys FOR table_single_ts_n0
 PREHOOK: query: explain
 select extract(minute from tt_timestamp) as year_from_ts, count(*)
 from table_single_ts_n0
@@ -189,6 +201,8 @@ PLAN-ROOT SINK
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR table_single_ts_n0
+HMS CALL get_foreign_keys FOR table_single_ts_n0
 PREHOOK: query: explain
 select extract(second from tt_timestamp) as year_from_ts, count(*)
 from table_single_ts_n0
@@ -224,6 +238,8 @@ PLAN-ROOT SINK
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR table_single_ts_n0
+HMS CALL get_foreign_keys FOR table_single_ts_n0
 PREHOOK: query: explain
 select extract(tt_timestamp, 'year') as year_from_ts, count(*)
 from table_single_ts_n0
@@ -259,6 +275,8 @@ PLAN-ROOT SINK
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR table_single_ts_n0
+HMS CALL get_foreign_keys FOR table_single_ts_n0
 PREHOOK: query: explain
 select extract(tt_timestamp, 'month') as year_from_ts, count(*)
 from table_single_ts_n0
@@ -294,6 +312,8 @@ PLAN-ROOT SINK
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR table_single_ts_n0
+HMS CALL get_foreign_keys FOR table_single_ts_n0
 PREHOOK: query: explain
 select extract(tt_timestamp, 'day') as year_from_ts, count(*)
 from table_single_ts_n0
@@ -329,6 +349,8 @@ PLAN-ROOT SINK
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR table_single_ts_n0
+HMS CALL get_foreign_keys FOR table_single_ts_n0
 PREHOOK: query: explain
 select extract(tt_timestamp, 'hour') as year_from_ts, count(*)
 from table_single_ts_n0
@@ -364,6 +386,8 @@ PLAN-ROOT SINK
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR table_single_ts_n0
+HMS CALL get_foreign_keys FOR table_single_ts_n0
 PREHOOK: query: explain
 select extract(tt_timestamp, 'minute') as year_from_ts, count(*)
 from table_single_ts_n0
@@ -399,6 +423,8 @@ PLAN-ROOT SINK
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR table_single_ts_n0
+HMS CALL get_foreign_keys FOR table_single_ts_n0
 PREHOOK: query: explain
 select extract(tt_timestamp, 'second') as year_from_ts, count(*)
 from table_single_ts_n0
@@ -434,10 +460,13 @@ PLAN-ROOT SINK
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR table_single_ts_n0
 PREHOOK: query: drop table table_single_ts_n0
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@table_single_ts_n0
 PREHOOK: Output: default@table_single_ts_n0
+HMS CALL get_table_req FOR table_single_ts_n0
+HMS CALL get_table_req FOR table_single_ts_n0
 POSTHOOK: query: drop table table_single_ts_n0
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@table_single_ts_n0

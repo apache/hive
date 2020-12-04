@@ -1,3 +1,13 @@
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
 PREHOOK: query: explain cbo physical select  s_store_name
       ,sum(ss_net_profit)
  from impala_tpcds_store_sales
@@ -248,6 +258,16 @@ ImpalaSortRel(sort0=[$0], dir0=[ASC], fetch=[100])
                       ImpalaProjectPassthroughRel(c_current_addr_sk=[$4])
                         ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer]], condition=[AND(=($10, _UTF-16LE'Y'), IS NOT NULL($4))])
 
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
 PREHOOK: query: explain select  s_store_name
       ,sum(ss_net_profit)
  from impala_tpcds_store_sales

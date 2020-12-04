@@ -1,3 +1,15 @@
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_customer_demographics
+HMS CALL get_table_req FOR impala_tpcds_household_demographics
+HMS CALL get_table_req FOR impala_tpcds_income_band
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_income_band
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
 PREHOOK: query: explain cbo physical select  c_customer_id as customer_id
        , coalesce(c_last_name,'') || ', ' || coalesce(c_first_name,'') as customername
  from impala_tpcds_customer
@@ -71,6 +83,18 @@ ImpalaProjectPassthroughRel(customer_id=[$0], customername=[$1])
           ImpalaProjectPassthroughRel(ib_income_band_sk=[$0])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_income_band]], condition=[AND(>=($1, 37855), <=(CAST($2):BIGINT, +(37855:BIGINT, 50000:BIGINT)), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_customer_demographics
+HMS CALL get_table_req FOR impala_tpcds_household_demographics
+HMS CALL get_table_req FOR impala_tpcds_income_band
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_income_band
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
 PREHOOK: query: explain select  c_customer_id as customer_id
        , coalesce(c_last_name,'') || ', ' || coalesce(c_first_name,'') as customername
  from impala_tpcds_customer

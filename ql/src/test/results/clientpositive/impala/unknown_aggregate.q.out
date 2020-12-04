@@ -1,3 +1,5 @@
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain cbo physical
 select ndv(l_returnflag) from `impala_tpch_lineitem`
 PREHOOK: type: QUERY
@@ -11,6 +13,8 @@ CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[ndv($8)])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]])
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select ndv(l_returnflag) from `impala_tpch_lineitem`
 PREHOOK: type: QUERY

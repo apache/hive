@@ -1,3 +1,7 @@
+HMS CALL get_table_req FOR impala_tpch_customer
+HMS CALL get_table_req FOR impala_tpch_orders
+HMS CALL get_foreign_keys FOR impala_tpch_customer
+HMS CALL get_foreign_keys FOR impala_tpch_orders
 PREHOOK: query: explain cbo physical select
   c_count,
   count(*) as custdist
@@ -55,6 +59,10 @@ ImpalaSortRel(sort0=[$1], sort1=[$0], dir0=[DESC], dir1=[DESC])
         ImpalaProjectPassthroughRel(o_orderkey=[$0], o_custkey=[$1])
           ImpalaHdfsScanRel(table=[[default, impala_tpch_orders]], condition=[AND(IS NOT NULL($1), NOT(LIKE($8, _UTF-16LE'%special%requests%':VARCHAR(2147483647) CHARACTER SET "UTF-16LE")))])
 
+HMS CALL get_table_req FOR impala_tpch_customer
+HMS CALL get_table_req FOR impala_tpch_orders
+HMS CALL get_foreign_keys FOR impala_tpch_customer
+HMS CALL get_foreign_keys FOR impala_tpch_orders
 PREHOOK: query: explain select
   c_count,
   count(*) as custdist

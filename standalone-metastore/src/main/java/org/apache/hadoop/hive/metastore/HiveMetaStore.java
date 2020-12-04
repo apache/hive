@@ -7149,7 +7149,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 	  String parsedDbName = dbNameParts[DB_NAME];
 	  List<Partition> ret = null;
       Exception ex = null;
-      
+
       startTableFunction("get_partitions_by_names", parsedCatName, parsedDbName,
               tblName);
       boolean success = false;
@@ -10262,6 +10262,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
   static Iface newRetryingHMSHandler(String name, Configuration conf, boolean local)
       throws MetaException {
+    // The normal runtime case is to use the HiveMetaStore.HMSHandler.  This is overridden
+    // in test mode so we can add logging for whenever calls are made and we can mock
+    // exceptions.
+    String className = MetastoreConf.getVar(conf, ConfVars.HANDLER_CLASS_NAME, "");
+    if (!className.equals("")) {
+      return RetryingHMSHandler.getProxy(className, name, conf, local, false);
+    }
     HMSHandler baseHandler = new HiveMetaStore.HMSHandler(name, conf, false);
     return RetryingHMSHandler.getProxy(conf, baseHandler, local);
   }

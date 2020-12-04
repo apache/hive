@@ -1,3 +1,15 @@
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_item
 PREHOOK: query: explain cbo physical select  i_item_id
        ,i_item_desc
        ,s_state
@@ -125,6 +137,18 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[
             ImpalaProjectPassthroughRel(d_date_sk=[$0])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(IN($15, _UTF-16LE'2000Q1':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'2000Q2':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'2000Q3':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store_returns
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_item
 PREHOOK: query: explain select  i_item_id
        ,i_item_desc
        ,s_state

@@ -1,7 +1,12 @@
+HMS CALL get_table_req FOR impala_complex_view
 PREHOOK: query: drop view impala_complex_view
 PREHOOK: type: DROPVIEW
+HMS CALL get_table_req FOR impala_complex_view
 POSTHOOK: query: drop view impala_complex_view
 POSTHOOK: type: DROPVIEW
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+HMS CALL get_table_req FOR impala_complex_view
 PREHOOK: query: create view impala_complex_view AS
 select
   l_returnflag,
@@ -26,6 +31,7 @@ PREHOOK: Input: default@impala_tpch_lineitem
 PREHOOK: Output: database:default
 PREHOOK: Output: default@impala_complex_view
 PREHOOK: Output: streaming
+HMS CALL get_table_req FOR impala_complex_view
 POSTHOOK: query: create view impala_complex_view AS
 select
   l_returnflag,
@@ -49,6 +55,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@impala_tpch_lineitem
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@impala_complex_view
+HMS CALL get_table_req FOR impala_complex_view
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain
 select
   l_returnflag,
@@ -167,10 +176,13 @@ Per-Host Resources: mem-estimate=128.00MB mem-reservation=34.00MB thread-reserva
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_complex_view
 PREHOOK: query: drop view impala_complex_view
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@impala_complex_view
 PREHOOK: Output: default@impala_complex_view
+HMS CALL get_table_req FOR impala_complex_view
+HMS CALL get_table_req FOR impala_complex_view
 POSTHOOK: query: drop view impala_complex_view
 POSTHOOK: type: DROPVIEW
 POSTHOOK: Input: default@impala_complex_view

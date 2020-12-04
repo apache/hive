@@ -1,3 +1,7 @@
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_part
 PREHOOK: query: explain cbo physical select
   sum(l_extendedprice) / 7.0 as avg_yearly
 from
@@ -52,6 +56,10 @@ ImpalaProjectPassthroughRel(avg_yearly=[/($0, 7:DECIMAL(1, 0))])
         ImpalaAggregateRel(group=[{1}], agg#0=[sum($4)], agg#1=[count($4)], condition=[IS NOT NULL(CAST(/($1, CAST($2):DECIMAL(19, 0))):DECIMAL(16, 6))])
           ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[IS NOT NULL($1)])
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_part
 PREHOOK: query: explain select
   sum(l_extendedprice) / 7.0 as avg_yearly
 from

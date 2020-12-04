@@ -1,3 +1,11 @@
+HMS CALL get_table_req FOR wss
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR wss
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
 PREHOOK: query: explain cbo physical with wss as 
  (select d_week_seq,
         ss_store_sk,
@@ -120,6 +128,14 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], sort2=[$2], dir0=[ASC], dir1=[ASC], dir2=[
         ImpalaProjectPassthroughRel(d_week_seq=[$4])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, $3, +(1205, 12), +(1205, 23)), IS NOT NULL($4), IS NOT NULL(CAST($4):BIGINT))])
 
+HMS CALL get_table_req FOR wss
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR wss
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store
 PREHOOK: query: explain with wss as 
  (select d_week_seq,
         ss_store_sk,

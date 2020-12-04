@@ -1,3 +1,11 @@
+HMS CALL get_table_req FOR ssci
+HMS CALL get_table_req FOR csci
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
 PREHOOK: query: explain cbo physical with ssci as (
 select ss_customer_sk customer_sk
       ,ss_item_sk item_sk
@@ -70,6 +78,14 @@ ImpalaSortRel(fetch=[100])
             ImpalaProjectPassthroughRel(d_date_sk=[$0])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, $3, 1190, +(1190, 11)), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR ssci
+HMS CALL get_table_req FOR csci
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
 PREHOOK: query: explain with ssci as (
 select ss_customer_sk customer_sk
       ,ss_item_sk item_sk

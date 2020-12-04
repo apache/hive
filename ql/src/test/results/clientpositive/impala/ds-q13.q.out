@@ -1,3 +1,15 @@
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_customer_demographics
+HMS CALL get_table_req FOR impala_tpcds_household_demographics
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
 PREHOOK: query: explain cbo physical select avg(ss_quantity)
        ,avg(ss_ext_sales_price)
        ,avg(ss_ext_wholesale_cost)
@@ -130,6 +142,18 @@ ImpalaProjectPassthroughRel($f0=[/(CAST($0):DOUBLE, CAST($1):DOUBLE)], $f1=[CAST
       ImpalaProjectPassthroughRel(cd_demo_sk=[$0], ==[=($2, _UTF-16LE'U')], =2=[=($3, _UTF-16LE'Secondary')], =3=[=($2, _UTF-16LE'W')], =4=[=($3, _UTF-16LE'College')], =5=[=($2, _UTF-16LE'D')], =6=[=($3, _UTF-16LE'Primary')])
         ImpalaHdfsScanRel(table=[[default, impala_tpcds_customer_demographics]], condition=[AND(IN($2, _UTF-16LE'U':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'W':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'D':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IN($3, _UTF-16LE'Secondary':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'College':VARCHAR(2147483647) CHARACTER SET "UTF-16LE", _UTF-16LE'Primary':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_store
+HMS CALL get_table_req FOR impala_tpcds_customer_demographics
+HMS CALL get_table_req FOR impala_tpcds_household_demographics
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_store
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
 PREHOOK: query: explain select avg(ss_quantity)
        ,avg(ss_ext_sales_price)
        ,avg(ss_ext_wholesale_cost)

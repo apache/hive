@@ -1,3 +1,5 @@
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_part
 PREHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT stddev(p_size) FROM impala_tpch_part
 PREHOOK: type: QUERY
@@ -11,6 +13,8 @@ CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[stddev_samp($5)])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_part]])
 
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_part
 PREHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT stddev_pop(p_size) FROM impala_tpch_part
 PREHOOK: type: QUERY
@@ -24,6 +28,8 @@ CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[stddev_pop($5)])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_part]])
 
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_part
 PREHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT stddev_samp(p_size) FROM impala_tpch_part
 PREHOOK: type: QUERY
@@ -37,6 +43,8 @@ CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[stddev_samp($5)])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_part]])
 
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_part
 PREHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT variance(p_size) FROM impala_tpch_part
 PREHOOK: type: QUERY
@@ -50,6 +58,8 @@ CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[var_samp($5)])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_part]])
 
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_part
 PREHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT var_pop(p_size) FROM impala_tpch_part
 PREHOOK: type: QUERY
@@ -63,6 +73,8 @@ CBO PLAN:
 ImpalaAggregateRel(group=[{}], agg#0=[var_pop($5)])
   ImpalaHdfsScanRel(table=[[default, impala_tpch_part]])
 
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_part
 PREHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT var_samp(p_size) FROM impala_tpch_part
 PREHOOK: type: QUERY

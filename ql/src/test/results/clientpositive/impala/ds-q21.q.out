@@ -1,3 +1,11 @@
+HMS CALL get_table_req FOR impala_tpcds_inventory
+HMS CALL get_table_req FOR impala_tpcds_warehouse
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_inventory
+HMS CALL get_foreign_keys FOR impala_tpcds_warehouse
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
 PREHOOK: query: explain cbo physical select  *
  from(select w_warehouse_name
             ,i_item_id
@@ -78,6 +86,14 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC], fetch=[100])
         ImpalaProjectPassthroughRel(d_date_sk=[$0], <=[<(CAST($2):DATE, CAST(_UTF-16LE'1999-03-20':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE)], >==[>=(CAST($2):DATE, CAST(_UTF-16LE'1999-03-20':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE)])
           ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), -(CAST(CAST(_UTF-16LE'1999-03-20':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE):TIMESTAMP(9), 2592000000.000000:INTERVAL MILLISECOND), +(CAST(CAST(_UTF-16LE'1999-03-20':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"):DATE):TIMESTAMP(9), 2592000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_inventory
+HMS CALL get_table_req FOR impala_tpcds_warehouse
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_inventory
+HMS CALL get_foreign_keys FOR impala_tpcds_warehouse
+HMS CALL get_foreign_keys FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
 PREHOOK: query: explain select  *
  from(select w_warehouse_name
             ,i_item_id

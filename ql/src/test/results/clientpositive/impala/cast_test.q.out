@@ -1,3 +1,8 @@
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: explain select cast (3 as string)
 PREHOOK: type: QUERY
 PREHOOK: Output: streaming
@@ -30,6 +35,11 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
+HMS CALL get_table_req FOR _dummy_table
 PREHOOK: query: explain select cast ('3' as double)
 PREHOOK: type: QUERY
 PREHOOK: Output: streaming
@@ -62,6 +72,8 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_airports
+HMS CALL get_foreign_keys FOR impala_airports
 PREHOOK: query: explain SELECT 0.10000000000000001 * lat FROM impala_airports
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_airports
@@ -109,6 +121,8 @@ Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
       Processor Tree:
         ListSink
 
+HMS CALL get_table_req FOR impala_tpch_customer
+HMS CALL get_foreign_keys FOR impala_tpch_customer
 PREHOOK: query: explain SELECT 0.10000000000000001 * c_acctbal FROM impala_tpch_customer
 PREHOOK: type: QUERY
 PREHOOK: Input: default@impala_tpch_customer

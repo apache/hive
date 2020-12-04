@@ -1,3 +1,15 @@
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_web_site
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_web_site
+HMS CALL get_table_req FOR ws_wh
+HMS CALL get_table_req FOR impala_tpcds_web_returns
+HMS CALL get_table_req FOR ws_wh
+HMS CALL get_foreign_keys FOR impala_tpcds_web_returns
 PREHOOK: query: explain cbo physical with ws_wh as
 (select ws1.ws_order_number,ws1.ws_warehouse_sk wh1,ws2.ws_warehouse_sk wh2
  from impala_tpcds_web_sales ws1,impala_tpcds_web_sales ws2
@@ -103,6 +115,18 @@ ImpalaProjectPassthroughRel(order count=[$0], total shipping cost=[$1], total ne
           ImpalaProjectPassthroughRel(d_date_sk=[$0], d_date=[$2])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(BETWEEN(false, CAST($2):TIMESTAMP(9), 2002-04-01 00:00:00:TIMESTAMP(9), +(2002-04-01 00:00:00:TIMESTAMP(9), 5184000000.000000:INTERVAL MILLISECOND)), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_web_site
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_web_site
+HMS CALL get_table_req FOR ws_wh
+HMS CALL get_table_req FOR impala_tpcds_web_returns
+HMS CALL get_table_req FOR ws_wh
+HMS CALL get_foreign_keys FOR impala_tpcds_web_returns
 PREHOOK: query: explain with ws_wh as
 (select ws1.ws_order_number,ws1.ws_warehouse_sk wh1,ws2.ws_warehouse_sk wh2
  from impala_tpcds_web_sales ws1,impala_tpcds_web_sales ws2

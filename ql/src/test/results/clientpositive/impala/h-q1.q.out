@@ -1,3 +1,5 @@
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain cbo physical select
   l_returnflag,
   l_linestatus,
@@ -52,6 +54,8 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[ASC])
       ImpalaProjectPassthroughRel($f0=[$8], $f1=[$9], $f2=[$4], $f3=[$5], $f4=[*($5, -(1:DECIMAL(3, 0), $6))], $f5=[*(*($5, -(1:DECIMAL(3, 0), $6)), +(1:DECIMAL(3, 0), $7))], $f6=[$6])
         ImpalaHdfsScanRel(table=[[default, impala_tpch_lineitem]], condition=[<=($10, _UTF-16LE'1998-09-02')])
 
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
 PREHOOK: query: explain select
   l_returnflag,
   l_linestatus,

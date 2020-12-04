@@ -1,5 +1,7 @@
+HMS CALL get_table_req FOR tab_sales_n1
 PREHOOK: query: drop table if exists tab_sales_n1
 PREHOOK: type: DROPTABLE
+HMS CALL get_table_req FOR tab_sales_n1
 POSTHOOK: query: drop table if exists tab_sales_n1
 POSTHOOK: type: DROPTABLE
 PREHOOK: query: create table tab_sales_n1
@@ -62,6 +64,8 @@ STORED AS PARQUET
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@tab_sales_n1
+HMS CALL get_table_req FOR tab_sales_n1
+HMS CALL get_foreign_keys FOR tab_sales_n1
 PREHOOK: query: explain cbo physical
 select sum(ss_quantity) over(order by ss_quantity) from tab_sales_n1
 PREHOOK: type: QUERY
@@ -76,6 +80,8 @@ ImpalaProjectPassthroughRel(sum_window_0=[sum($1) OVER (PARTITION BY 0:TINYINT O
   ImpalaProjectRel(ss_quantity=[$10], $func_0=[CAST($10):BIGINT])
     ImpalaHdfsScanRel(table=[[default, tab_sales_n1]])
 
+HMS CALL get_table_req FOR tab_sales_n1
+HMS CALL get_foreign_keys FOR tab_sales_n1
 PREHOOK: query: explain cbo physical
 select sum(ss_net_profit) over(order by ss_net_profit) from tab_sales_n1
 PREHOOK: type: QUERY
@@ -89,10 +95,13 @@ CBO PLAN:
 ImpalaProjectPassthroughRel(sum_window_0=[sum($22) OVER (PARTITION BY 0:TINYINT ORDER BY $22 NULLS LAST RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)])
   ImpalaHdfsScanRel(table=[[default, tab_sales_n1]])
 
+HMS CALL get_table_req FOR tab_sales_n1
 PREHOOK: query: drop table if exists tab_sales_n1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tab_sales_n1
 PREHOOK: Output: default@tab_sales_n1
+HMS CALL get_table_req FOR tab_sales_n1
+HMS CALL get_table_req FOR tab_sales_n1
 POSTHOOK: query: drop table if exists tab_sales_n1
 POSTHOOK: type: DROPTABLE
 POSTHOOK: Input: default@tab_sales_n1

@@ -1,3 +1,10 @@
+HMS CALL get_table_req FOR impala_flights
+HMS CALL get_table_req FOR impala_airports
+HMS CALL get_table_req FOR impala_airlines
+HMS CALL get_foreign_keys FOR impala_flights
+HMS CALL get_table_req FOR impala_planes
+HMS CALL get_foreign_keys FOR impala_airports
+HMS CALL get_foreign_keys FOR impala_airlines
 PREHOOK: query: EXPLAIN CBO PHYSICAL
 SELECT
   a.description,

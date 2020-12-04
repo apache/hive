@@ -1,3 +1,17 @@
+HMS CALL get_table_req FOR impala_tpcds_call_center
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_customer_demographics
+HMS CALL get_table_req FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_call_center
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_household_demographics
 PREHOOK: query: explain cbo physical select  
         cc_call_center_id Call_Center,
         cc_name Call_Center_Name,
@@ -97,6 +111,20 @@ ImpalaProjectPassthroughRel(call_center=[$0], call_center_name=[$1], manager=[$2
             ImpalaProjectPassthroughRel(cc_call_center_sk=[$0], cc_call_center_id=[$1], cc_name=[$6], cc_manager=[$11])
               ImpalaHdfsScanRel(table=[[default, impala_tpcds_call_center]], condition=[IS NOT NULL($0)])
 
+HMS CALL get_table_req FOR impala_tpcds_call_center
+HMS CALL get_table_req FOR impala_tpcds_catalog_returns
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_customer
+HMS CALL get_table_req FOR impala_tpcds_customer_address
+HMS CALL get_table_req FOR impala_tpcds_customer_demographics
+HMS CALL get_table_req FOR impala_tpcds_household_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_call_center
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_returns
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_customer
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_address
+HMS CALL get_foreign_keys FOR impala_tpcds_customer_demographics
+HMS CALL get_foreign_keys FOR impala_tpcds_household_demographics
 PREHOOK: query: explain select  
         cc_call_center_id Call_Center,
         cc_name Call_Center_Name,

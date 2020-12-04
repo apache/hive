@@ -1,3 +1,9 @@
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_item
 PREHOOK: query: explain cbo physical select  dt.d_year
       ,impala_tpcds_item.i_category_id
       ,impala_tpcds_item.i_category
@@ -59,6 +65,12 @@ ImpalaProjectPassthroughRel(d_year=[CAST(1998):INTEGER], i_category_id=[$0], i_c
           ImpalaProjectPassthroughRel(i_item_sk=[$0], i_category_id=[$11], i_category=[$12])
             ImpalaHdfsScanRel(table=[[default, impala_tpcds_item]], condition=[AND(=($20, 1), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_store_sales
+HMS CALL get_table_req FOR impala_tpcds_item
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_store_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_item
 PREHOOK: query: explain select  dt.d_year
       ,impala_tpcds_item.i_category_id
       ,impala_tpcds_item.i_category

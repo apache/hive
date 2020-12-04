@@ -1,3 +1,15 @@
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_warehouse
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_time_dim
+HMS CALL get_table_req FOR impala_tpcds_ship_mode
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_warehouse
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_time_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_ship_mode
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
 PREHOOK: query: explain cbo physical select   
          w_warehouse_name
       ,w_warehouse_sq_ft
@@ -486,6 +498,18 @@ ImpalaProjectPassthroughRel(w_warehouse_name=[$0], w_warehouse_sq_ft=[$1], w_cit
                 ImpalaProjectPassthroughRel(d_date_sk=[$0], ==[=($8, 1)], =2=[=($8, 2)], =3=[=($8, 3)], =4=[=($8, 4)], =5=[=($8, 5)], =6=[=($8, 6)], =7=[=($8, 7)], =8=[=($8, 8)], =9=[=($8, 9)], =10=[=($8, 10)], =11=[=($8, 11)], =12=[=($8, 12)])
                   ImpalaHdfsScanRel(table=[[default, impala_tpcds_date_dim]], condition=[AND(=($6, 2001), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpcds_web_sales
+HMS CALL get_table_req FOR impala_tpcds_warehouse
+HMS CALL get_table_req FOR impala_tpcds_date_dim
+HMS CALL get_table_req FOR impala_tpcds_time_dim
+HMS CALL get_table_req FOR impala_tpcds_ship_mode
+HMS CALL get_table_req FOR impala_tpcds_catalog_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_web_sales
+HMS CALL get_foreign_keys FOR impala_tpcds_warehouse
+HMS CALL get_foreign_keys FOR impala_tpcds_date_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_time_dim
+HMS CALL get_foreign_keys FOR impala_tpcds_ship_mode
+HMS CALL get_foreign_keys FOR impala_tpcds_catalog_sales
 PREHOOK: query: explain select   
          w_warehouse_name
       ,w_warehouse_sq_ft

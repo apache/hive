@@ -168,6 +168,12 @@
 </property>
 
 <property>
+  <name>hive.metastore.handler.class.name</name>
+  <value>org.apache.hadoop.hive.metastore.TestHMSHandler</value>
+  <description>Special MetaStore Handler for Tests</description>
+</property>
+
+<property>
   <name>hive.support.concurrency</name>
   <value>false</value>
   <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>

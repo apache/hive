@@ -1,3 +1,9 @@
+HMS CALL get_table_req FOR impala_tpch_partsupp
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_partsupp
+HMS CALL get_foreign_keys FOR impala_tpch_part
+HMS CALL get_table_req FOR impala_tpch_supplier
+HMS CALL get_foreign_keys FOR impala_tpch_supplier
 PREHOOK: query: explain cbo physical select
   p_brand,
   p_type,
@@ -85,6 +91,12 @@ ImpalaSortRel(sort0=[$3], sort1=[$0], sort2=[$1], sort3=[$2], dir0=[DESC], dir1=
               ImpalaAggregateRel(group=[{0}])
                 ImpalaHdfsScanRel(table=[[default, impala_tpch_supplier]], condition=[AND(LIKE($6, _UTF-16LE'%Customer%Complaints%':VARCHAR(2147483647) CHARACTER SET "UTF-16LE"), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpch_partsupp
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_partsupp
+HMS CALL get_foreign_keys FOR impala_tpch_part
+HMS CALL get_table_req FOR impala_tpch_supplier
+HMS CALL get_foreign_keys FOR impala_tpch_supplier
 PREHOOK: query: explain select
   p_brand,
   p_type,

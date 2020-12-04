@@ -200,7 +200,8 @@ public class MetastoreConf {
       ConfVars.DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES,
       ConfVars.FILE_METADATA_THREADS,
       ConfVars.METASTORE_CLIENT_FILTER_ENABLED,
-      ConfVars.METASTORE_SERVER_FILTER_ENABLED
+      ConfVars.METASTORE_SERVER_FILTER_ENABLED,
+      ConfVars.HANDLER_CLASS_NAME
   };
 
   /**
@@ -775,6 +776,8 @@ public class MetastoreConf {
         "Enable filtering the metadata read results at HMS client. Default is true."),
     METASTORE_SERVER_FILTER_ENABLED("metastore.server.filter.enabled", "hive.metastore.server.filter.enabled", false,
         "Enable filtering the metadata read results at HMS server. Default is false."),
+    HANDLER_CLASS_NAME("metastore.handler.class.name", "hive.metastore.handler.class.name", "",
+        "Class name to use for HMSHandler. Main use is to inject a Handler for testing framework."),
     MOVE_EXPORTED_METADATA_TO_TRASH("metastore.metadata.move.exported.metadata.to.trash",
         "hive.metadata.move.exported.metadata.to.trash", true,
         "When used in conjunction with the org.apache.hadoop.hive.ql.parse.MetaDataExportListener pre event listener, \n" +

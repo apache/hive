@@ -1,3 +1,15 @@
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_table_req FOR impala_tpch_supplier
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_table_req FOR impala_tpch_partsupp
+HMS CALL get_table_req FOR impala_tpch_orders
+HMS CALL get_table_req FOR impala_tpch_nation
+HMS CALL get_foreign_keys FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_supplier
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_partsupp
+HMS CALL get_foreign_keys FOR impala_tpch_orders
+HMS CALL get_foreign_keys FOR impala_tpch_nation
 PREHOOK: query: explain cbo physical select
   nation,
   o_year,
@@ -97,6 +109,18 @@ ImpalaSortRel(sort0=[$0], sort1=[$1], dir0=[ASC], dir1=[DESC])
         ImpalaProjectPassthroughRel(ps_partkey=[$0], ps_suppkey=[$1], ps_supplycost=[$3])
           ImpalaHdfsScanRel(table=[[default, impala_tpch_partsupp]], condition=[AND(IS NOT NULL($1), IS NOT NULL($0))])
 
+HMS CALL get_table_req FOR impala_tpch_part
+HMS CALL get_table_req FOR impala_tpch_supplier
+HMS CALL get_table_req FOR impala_tpch_lineitem
+HMS CALL get_table_req FOR impala_tpch_partsupp
+HMS CALL get_table_req FOR impala_tpch_orders
+HMS CALL get_table_req FOR impala_tpch_nation
+HMS CALL get_foreign_keys FOR impala_tpch_part
+HMS CALL get_foreign_keys FOR impala_tpch_supplier
+HMS CALL get_foreign_keys FOR impala_tpch_lineitem
+HMS CALL get_foreign_keys FOR impala_tpch_partsupp
+HMS CALL get_foreign_keys FOR impala_tpch_orders
+HMS CALL get_foreign_keys FOR impala_tpch_nation
 PREHOOK: query: explain select
   nation,
   o_year,
