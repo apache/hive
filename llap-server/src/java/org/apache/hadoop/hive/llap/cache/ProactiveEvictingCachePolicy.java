@@ -47,6 +47,7 @@ public interface ProactiveEvictingCachePolicy {
 
   abstract class Impl implements ProactiveEvictingCachePolicy {
     protected final boolean proactiveEvictionEnabled;
+    protected final boolean instantProactiveEviction;
     private final long proactiveEvictionSweepIntervalInMs;
     private static ScheduledExecutorService PROACTIVE_EVICTION_SWEEPER_EXECUTOR = null;
 
@@ -67,6 +68,8 @@ public interface ProactiveEvictingCachePolicy {
 
     protected Impl(Configuration conf) {
       proactiveEvictionEnabled = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED);
+      instantProactiveEviction = proactiveEvictionEnabled &&
+          HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_IO_PROACTIVE_EVICTION_INSTANT_DEALLOC);
       proactiveEvictionSweepIntervalInMs = HiveConf.getTimeVar(conf,
           HiveConf.ConfVars.LLAP_IO_PROACTIVE_EVICTION_SWEEP_INTERVAL, TimeUnit.MILLISECONDS);
 

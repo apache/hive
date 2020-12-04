@@ -22,10 +22,11 @@ import java.io.IOException;
 import java.io.EOFException;
 
 import org.apache.hive.hplsql.*;
+import org.apache.hive.hplsql.executor.QueryExecutor;
 
 public class FunctionOra extends BuiltinFunctions {
-  public FunctionOra(Exec e) {
-    super(e);
+  public FunctionOra(Exec e, QueryExecutor queryExecutor) {
+    super(e, queryExecutor);
   }
 
   /** 
@@ -46,7 +47,7 @@ public class FunctionOra extends BuiltinFunctions {
    */
   void dbmsOutputPutLine(HplsqlParser.Expr_func_paramsContext ctx) {
     if (ctx.func_param().size() > 0) {
-      System.out.println(evalPop(ctx.func_param(0).expr()));
+      console.printLine(evalPop(ctx.func_param(0).expr()).toString());
     }
   }
   

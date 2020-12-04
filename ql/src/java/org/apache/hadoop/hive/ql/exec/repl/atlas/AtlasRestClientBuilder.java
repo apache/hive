@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Builder for AtlasRestClient.
@@ -42,6 +43,8 @@ public class AtlasRestClientBuilder {
   private static final String ATLAS_PROPERTY_REST_ADDRESS = "atlas.rest.address";
   private static final String ATLAS_PROPERTY_AUTH_KERBEROS = "atlas.authentication.method.kerberos";
   private static final String URL_SEPERATOR = ",";
+  public static final String ATLAS_PROPERTY_CONNECT_TIMEOUT_IN_MS = "atlas.client.connectTimeoutMSecs";
+  public static final String ATLAS_PROPERTY_READ_TIMEOUT_IN_MS = "atlas.client.readTimeoutMSecs";
 
   private UserGroupInformation userGroupInformation;
   protected String incomingUrl;
@@ -69,7 +72,7 @@ public class AtlasRestClientBuilder {
         ReplUtils.REPL_ATLAS_SERVICE));
     }
     setUGInfo();
-    initializeAtlasApplicationProperties();
+    initializeAtlasApplicationProperties(conf);
     AtlasClientV2 clientV2 = new AtlasClientV2(this.userGroupInformation,
             this.userGroupInformation.getShortUserName(), baseUrls);
     return new AtlasRestClientImpl(clientV2, conf);
@@ -85,9 +88,13 @@ public class AtlasRestClientBuilder {
     return this;
   }
 
-  private void initializeAtlasApplicationProperties() throws SemanticException {
+  private void initializeAtlasApplicationProperties(HiveConf conf) throws SemanticException {
     try {
       Properties props = new Properties();
+      props.setProperty(ATLAS_PROPERTY_CONNECT_TIMEOUT_IN_MS, String.valueOf(
+              conf.getTimeVar(HiveConf.ConfVars.REPL_EXTERNAL_CLIENT_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS)));
+      props.setProperty(ATLAS_PROPERTY_READ_TIMEOUT_IN_MS, String.valueOf(
+              conf.getTimeVar(HiveConf.ConfVars.REPL_ATLAS_CLIENT_READ_TIMEOUT, TimeUnit.MILLISECONDS)));
       props.setProperty(ATLAS_PROPERTY_CLIENT_HA_RETRIES_KEY, "1");
       props.setProperty(ATLAS_PROPERTY_CLIENT_HA_SLEEP_INTERVAL_MS_KEY, "0");
       props.setProperty(ATLAS_PROPERTY_REST_ADDRESS, incomingUrl);

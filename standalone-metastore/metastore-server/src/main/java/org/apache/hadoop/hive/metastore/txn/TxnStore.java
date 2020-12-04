@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -555,4 +556,23 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.Idempotent
   long findMinOpenTxnIdForCleaner() throws MetaException;
+
+  /**
+   * Returns the compaction running in the transaction txnId
+   * @param txnId transaction Id
+   * @return compaction info
+   * @throws MetaException ex
+   */
+  @RetrySemantics.ReadOnly
+  Optional<CompactionInfo> getCompactionByTxnId(long txnId) throws MetaException;
+
+  /**
+   * Returns the smallest txnid that could be seen in open state across all active transactions in
+   * the system or -1 if there are no active transactions.
+   * @return transaction ID
+   * @deprecated remove when min_history_level table is dropped
+   */
+  @RetrySemantics.ReadOnly
+  @Deprecated
+  long findMinTxnIdSeenOpen() throws MetaException;
 }

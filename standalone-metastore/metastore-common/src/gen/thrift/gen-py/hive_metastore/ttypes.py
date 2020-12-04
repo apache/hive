@@ -23770,7 +23770,7 @@ class AlterTableResponse(object):
         return not (self == other)
 
 
-class GetPartitionsProjectionSpec(object):
+class GetProjectionsSpec(object):
     """
     Attributes:
      - fieldList
@@ -23823,7 +23823,7 @@ class GetPartitionsProjectionSpec(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('GetPartitionsProjectionSpec')
+        oprot.writeStructBegin('GetProjectionsSpec')
         if self.fieldList is not None:
             oprot.writeFieldBegin('fieldList', TType.LIST, 1)
             oprot.writeListBegin(TType.STRING, len(self.fieldList))
@@ -24076,7 +24076,7 @@ class GetPartitionsRequest(object):
                     iprot.skip(ftype)
             elif fid == 7:
                 if ftype == TType.STRUCT:
-                    self.projectionSpec = GetPartitionsProjectionSpec()
+                    self.projectionSpec = GetProjectionsSpec()
                     self.projectionSpec.read(iprot)
                 else:
                     iprot.skip(ftype)
@@ -28719,8 +28719,8 @@ AlterTableRequest.thrift_spec = (
 all_structs.append(AlterTableResponse)
 AlterTableResponse.thrift_spec = (
 )
-all_structs.append(GetPartitionsProjectionSpec)
-GetPartitionsProjectionSpec.thrift_spec = (
+all_structs.append(GetProjectionsSpec)
+GetProjectionsSpec.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'fieldList', (TType.STRING, 'UTF8', False), None, ),  # 1
     (2, TType.STRING, 'includeParamKeyPattern', 'UTF8', None, ),  # 2
@@ -28752,7 +28752,7 @@ GetPartitionsRequest.thrift_spec = (
     (4, TType.BOOL, 'withAuth', None, None, ),  # 4
     (5, TType.STRING, 'user', 'UTF8', None, ),  # 5
     (6, TType.LIST, 'groupNames', (TType.STRING, 'UTF8', False), None, ),  # 6
-    (7, TType.STRUCT, 'projectionSpec', [GetPartitionsProjectionSpec, None], None, ),  # 7
+    (7, TType.STRUCT, 'projectionSpec', [GetProjectionsSpec, None], None, ),  # 7
     (8, TType.STRUCT, 'filterSpec', [GetPartitionsFilterSpec, None], None, ),  # 8
     (9, TType.LIST, 'processorCapabilities', (TType.STRING, 'UTF8', False), None, ),  # 9
     (10, TType.STRING, 'processorIdentifier', 'UTF8', None, ),  # 10
