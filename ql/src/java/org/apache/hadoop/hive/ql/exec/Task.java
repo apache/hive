@@ -254,7 +254,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   }
 
   public void setParentTasks(List<Task<?>> parentTasks) {
-    this.parentTasks = parentTasks;
+    this.parentTasks = Collections.synchronizedList(parentTasks);
   }
 
   public List<Task<?>> getParentTasks() {
