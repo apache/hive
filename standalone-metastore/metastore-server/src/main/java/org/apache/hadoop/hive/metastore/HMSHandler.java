@@ -9188,7 +9188,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
       LOG.error("Cannot obtain username", ex);
       throw new TException(ex);
     }
-    if (!MetaStoreServerUtils.checkUserHasHostProxyPrivileges(user, conf, getIPAddress())) {
+    if (!MetaStoreServerUtils.checkUserHasHostProxyPrivileges(user, getIPAddress())) {
       LOG.error("Not authorized to make the get_notification_events_count call. You can try to disable " +
           ConfVars.EVENT_DB_NOTIFICATION_API_AUTH.toString());
       throw new TException("User " + user + " is not allowed to perform this API call");

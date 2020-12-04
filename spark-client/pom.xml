@@ -161,43 +161,8 @@
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <!--
-              Spark depends on Guava 14, while Hive depends on Guava 11. The APIs used by
-              spark-client do not depend on Guava 14, but when running unit tests that
-              trigger Spark jobs, that will trigger the dependency. So, when running tests,
-              make sure Guava 14, and not Guava 11, is on the classpath.
-            -->
-            <id>copy-guava-14</id>
-            <phase>test-compile</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>com.google.guava</groupId>
-                  <artifactId>guava</artifactId>
-                  <version>14.0.1</version>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <additionalClasspathElements>
-            <!-- Note: wildcards don't work. Thankfully there's just one jar we care about. -->
-            <additionalClasspathElement>${project.build.directory}/dependency/guava-14.0.1.jar</additionalClasspathElement>
-          </additionalClasspathElements>
-          <classpathDependencyExcludes>
-            <classpathDependencyExclude>com.google.guava:guava</classpathDependencyExclude>
-          </classpathDependencyExcludes>
           <systemPropertyVariables>
             <java.awt.headless>true</java.awt.headless>
             <spark.home>${spark.home}</spark.home>

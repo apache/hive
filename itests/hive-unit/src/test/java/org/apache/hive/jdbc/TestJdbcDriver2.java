@@ -70,6 +70,7 @@ import java.sql.Types;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -2775,11 +2776,12 @@ public class TestJdbcDriver2 {
     String sql = "select count(*) from " + tableName;
 
     // Verify the fetched log (from the beginning of log file)
-    HiveStatement stmt = (HiveStatement)con.createStatement();
-    assertNotNull("Statement is null", stmt);
-    stmt.executeQuery(sql);
-    List<String> logs = stmt.getQueryLog(false, 10000);
-    stmt.close();
+    List<String> logs = Collections.emptyList();
+    try (HiveStatement stmt = (HiveStatement) con.createStatement()) {
+      assertNotNull("Statement is null", stmt);
+      stmt.executeQuery(sql);
+      logs = stmt.getQueryLog(false, 200000);
+    }
     verifyFetchedLog(logs, expectedLogs);
 
     // Verify the fetched log (incrementally)
@@ -2969,8 +2971,7 @@ public class TestJdbcDriver2 {
     }
     String accumulatedLogs = stringBuilder.toString();
     for (String expectedLog : expectedLogs) {
-      LOG.info("Checking match for " + expectedLog);
-      assertTrue(accumulatedLogs.contains(expectedLog));
+      assertTrue("Failed to find match for " + expectedLog, accumulatedLogs.contains(expectedLog));
     }
   }
 

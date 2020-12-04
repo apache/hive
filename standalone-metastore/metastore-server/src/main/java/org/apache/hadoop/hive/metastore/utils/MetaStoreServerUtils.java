@@ -754,16 +754,11 @@ public class MetaStoreServerUtils {
    * Only the superusers defined in the Hadoop proxy user settings have the permission.
    *
    * @param user the short user name
-   * @param conf that contains the proxy user settings
    * @return if the user has the permission
+   * @see ProxyUsers#refreshSuperUserGroupsConfiguration(Configuration)
    */
-  public static boolean checkUserHasHostProxyPrivileges(String user, Configuration conf, String ipAddress) {
+  public static boolean checkUserHasHostProxyPrivileges(String user, String ipAddress) {
     DefaultImpersonationProvider sip = ProxyUsers.getDefaultImpersonationProvider();
-    // Just need to initialize the ProxyUsers for the first time, given that the conf will not change on the fly
-    if (sip == null) {
-      ProxyUsers.refreshSuperUserGroupsConfiguration(conf);
-      sip = ProxyUsers.getDefaultImpersonationProvider();
-    }
     Map<String, Collection<String>> proxyHosts = sip.getProxyHosts();
     Collection<String> hostEntries = proxyHosts.get(sip.getProxySuperuserIpConfKey(user));
     MachineList machineList = new MachineList(hostEntries);

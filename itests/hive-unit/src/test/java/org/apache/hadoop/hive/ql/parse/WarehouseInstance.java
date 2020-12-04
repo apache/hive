@@ -75,7 +75,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -394,16 +393,13 @@ public class WarehouseInstance implements Closeable {
   }
 
   WarehouseInstance verifyFailure(String[] data) throws IOException {
-    List<String> results = getOutput();
-    logger.info("Expecting {}", StringUtils.join(data, ","));
-    logger.info("Got {}", results);
-    boolean dataMatched = (data.length == results.size());
-    if (dataMatched) {
-      for (int i = 0; i < data.length; i++) {
-        dataMatched &= data[i].toLowerCase().equals(results.get(i).toLowerCase());
-      }
-    }
-    assertFalse(dataMatched);
+    final List<String> expectedResults =
+        Arrays.asList(data).stream().map(r -> r.toLowerCase()).collect(Collectors.toList());
+    final List<String> actualResults = getOutput().stream().map(r -> r.toLowerCase()).collect(Collectors.toList());
+
+    assertTrue("Data " + expectedResults + " should not be present in " + actualResults,
+        Collections.disjoint(expectedResults, actualResults));
+
     return this;
   }
 
