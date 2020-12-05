@@ -29,9 +29,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
+import java.util.Map;
 import java.util.Properties;
-
-import static org.apache.hadoop.hive.metastore.DatabaseProduct.determineDatabaseProduct;
 
 /**
  * DataSourceProvider for the HikariCP connection pool.
@@ -72,17 +71,19 @@ public class HikariCPDataSourceProvider implements DataSourceProvider {
     //https://github.com/brettwooldridge/HikariCP
     config.setConnectionTimeout(connectionTimeout);
 
-    DatabaseProduct dbProduct =  determineDatabaseProduct(driverUrl);
-    switch (dbProduct){
-      case MYSQL:
-        config.setConnectionInitSql("SET @@session.sql_mode=ANSI_QUOTES");
-        config.addDataSourceProperty("allowMultiQueries", true);
-        config.addDataSourceProperty("rewriteBatchedStatements", true);
-        break;
-      case POSTGRES:
-        config.addDataSourceProperty("reWriteBatchedInserts", true);
-        break;
+    DatabaseProduct dbProduct =  DatabaseProduct.determineDatabaseProduct(driverUrl, hdpConfig);
+    
+    String s = dbProduct.getPrepareTxnStmt();
+    if (s!= null) {
+      config.setConnectionInitSql(s);
     }
+    
+    Map<String, String> props = dbProduct.getDataSourceProperties();
+    
+    for ( Map.Entry<String, String> kv : props.entrySet()) {
+      config.addDataSourceProperty(kv.getKey(), kv.getValue());
+    }
+
     return new HikariDataSource(initMetrics(config));
   }
 

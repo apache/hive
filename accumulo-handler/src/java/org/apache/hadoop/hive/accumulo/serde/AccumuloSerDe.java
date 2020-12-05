@@ -30,7 +30,6 @@ import org.apache.hadoop.hive.accumulo.columns.ColumnMapping;
 import org.apache.hadoop.hive.accumulo.columns.HiveAccumuloRowIdColumnMapping;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazySerDeParameters;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyObjectInspectorFactory;
@@ -140,11 +139,6 @@ public class AccumuloSerDe extends AbstractSerDe {
   @Override
   public ObjectInspector getObjectInspector() throws SerDeException {
     return cachedObjectInspector;
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
   }
 
   public AccumuloSerDeParameters getParams() {

@@ -42,15 +42,11 @@ final class MmMinorQueryCompactor extends QueryCompactor {
   private static final Logger LOG = LoggerFactory.getLogger(MmMinorQueryCompactor.class.getName());
 
   @Override void runCompaction(HiveConf hiveConf, Table table, Partition partition,
-      StorageDescriptor storageDescriptor, ValidWriteIdList writeIds, CompactionInfo compactionInfo)
-      throws IOException {
+      StorageDescriptor storageDescriptor, ValidWriteIdList writeIds, CompactionInfo compactionInfo,
+      AcidUtils.Directory dir) throws IOException {
     LOG.debug(
         "Going to delete directories for aborted transactions for MM table " + table.getDbName()
             + "." + table.getTableName());
-
-    AcidUtils.Directory dir = AcidUtils
-        .getAcidState(null, new Path(storageDescriptor.getLocation()), hiveConf, writeIds,
-            Ref.from(false), false);
     QueryCompactor.Util.removeFilesForMmTable(hiveConf, dir);
 
     HiveConf driverConf = setUpDriverSession(hiveConf);

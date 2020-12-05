@@ -32,7 +32,7 @@ import javax.management.ObjectName;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.llap.ProactiveEviction;
-import org.apache.hadoop.hive.llap.cache.LlapCacheableBuffer;
+import org.apache.hadoop.hive.llap.cache.ProactiveEvictingCachePolicy;
 import org.apache.hadoop.hive.llap.daemon.impl.StatsRecordingThreadPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,6 +103,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
   private final Allocator allocator;
   private final FileMetadataCache fileMetadataCache;
   private final LowLevelCache dataCache;
+  private final SerDeLowLevelCacheImpl serdeCache;
   private final BufferUsageManager bufferManager;
   private final Configuration daemonConf;
   private final LowLevelCacheMemoryManager memoryManager;
@@ -150,6 +151,10 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
       LowLevelCachePolicy
           realCachePolicy =
           useLrfu ? new LowLevelLrfuCachePolicy(minAllocSize, totalMemorySize, conf) : new LowLevelFifoCachePolicy();
+      if (!(realCachePolicy instanceof ProactiveEvictingCachePolicy.Impl)) {
+        HiveConf.setBoolVar(this.daemonConf, ConfVars.LLAP_IO_PROACTIVE_EVICTION_ENABLED, false);
+        LOG.info("Turning off proactive cache eviction, as selected cache policy does not support it.");
+      }
       boolean trackUsage = HiveConf.getBoolVar(conf, HiveConf.ConfVars.LLAP_TRACK_CACHE_USAGE);
       LowLevelCachePolicy cachePolicyWrapper;
       if (trackUsage) {
@@ -212,6 +217,7 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
         }
       });
     }
+    this.serdeCache = serdeCache;
     // IO thread pool. Listening is used for unhandled errors for now (TODO: remove?)
     int numThreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.LLAP_IO_THREADPOOL_SIZE);
     executor = new StatsRecordingThreadPool(numThreads, numThreads, 0L, TimeUnit.MILLISECONDS,
@@ -253,18 +259,33 @@ public class LlapIoImpl implements LlapIo<VectorizedRowBatch>, LlapIoDebugDump {
     }
     final ProactiveEviction.Request request = ProactiveEviction.Request.Builder.create()
         .fromProtoRequest(protoRequest).build();
-    Predicate<LlapCacheableBuffer> predicate = buffer -> request.isTagMatch(buffer.getTag());
+    Predicate<CacheTag> predicate = tag -> request.isTagMatch(tag);
+    boolean isInstantDeallocation = HiveConf.getBoolVar(daemonConf,
+        HiveConf.ConfVars.LLAP_IO_PROACTIVE_EVICTION_INSTANT_DEALLOC);
     LOG.debug("Starting proactive eviction.");
-    long evictedBytes = memoryManager.evictEntity(predicate);
+    long time = System.currentTimeMillis();
+
+    long markedBytes = dataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    markedBytes += fileMetadataCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+    markedBytes += serdeCache.markBuffersForProactiveEviction(predicate, isInstantDeallocation);
+
+    // Signal mark phase of proactive eviction was done
+    if (markedBytes > 0) {
+      memoryManager.notifyProactiveEvictionMark();
+    }
+
+    time = System.currentTimeMillis() - time;
+
     if (LOG.isDebugEnabled()) {
       StringBuilder sb = new StringBuilder();
-      sb.append("Evicted ").append(evictedBytes).append(" bytes from LLAP cache buffers that belong to table(s): ");
+      sb.append(markedBytes).append(" bytes marked for eviction from LLAP cache buffers that belong to table(s): ");
       for (String table : request.getEntities().get(request.getSingleDbName()).keySet()) {
         sb.append(table).append(" ");
       }
+      sb.append(" Duration: ").append(time).append(" ms");
       LOG.debug(sb.toString());
     }
-    return evictedBytes;
+    return markedBytes;
   }
 
   @Override

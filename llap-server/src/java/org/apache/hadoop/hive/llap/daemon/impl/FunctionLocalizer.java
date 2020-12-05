@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.util.ResourceDownloader;
+import org.apache.tez.common.TezClassLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +74,7 @@ public class FunctionLocalizer implements GenericUDFBridge.UdfWhitelistChecker {
     this.conf = conf;
     this.localDir = new File(localDir, DIR_NAME);
     AddToClassPathAction addAction = new AddToClassPathAction(
-        Thread.currentThread().getContextClassLoader(), Collections.emptyList(), true);
+        TezClassLoader.getInstance(), Collections.emptyList(), true);
     this.executorClassloader = AccessController.doPrivileged(addAction);
     this.workThread = new Thread(new Runnable() {
       @Override

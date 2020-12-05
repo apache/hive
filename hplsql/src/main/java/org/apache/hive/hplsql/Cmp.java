@@ -19,22 +19,24 @@
 package org.apache.hive.hplsql;
 
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.apache.hive.hplsql.executor.Metadata;
+import org.apache.hive.hplsql.executor.QueryExecutor;
+import org.apache.hive.hplsql.executor.QueryResult;
 
 public class Cmp implements Runnable {
   
   Exec exec;
+  private QueryExecutor queryExecutor;
   Timer timer = new Timer();  
   boolean trace = false;
   boolean info = false;
   
-  Query query;
+  String query;
   String conn;
   HplsqlParser.Cmp_stmtContext ctx;
   
@@ -42,20 +44,23 @@ public class Cmp implements Runnable {
   int failedTests = 0;
   int failedTestsHighDiff = 0;
   int failedTestsHighDiff10 = 0;
-  
-  Cmp(Exec e) {
-    exec = e;  
+  private QueryResult result;
+
+  Cmp(Exec e, QueryExecutor queryExecutor) {
+    exec = e;
     trace = exec.getTrace();
     info = exec.getInfo();
+    this.queryExecutor = queryExecutor;
   }
   
-  Cmp(Exec e, HplsqlParser.Cmp_stmtContext c, Query q, String cn) {
-    exec = e;  
+  Cmp(Exec e, HplsqlParser.Cmp_stmtContext c, String q, String cn, QueryExecutor queryExecutor) {
+    exec = e;
     trace = exec.getTrace();
     info = exec.getInfo();
     ctx = c;
     query = q;
     conn = cn;
+    this.queryExecutor = queryExecutor;
   }
   
   /**
@@ -67,9 +72,9 @@ public class Cmp implements Runnable {
     timer.start();
     StringBuilder conn1 = new StringBuilder();
     StringBuilder conn2 = new StringBuilder();
-    Query query1 = new Query();
-    Query query2 = new Query();
     Boolean equal = null;
+    Cmp cmp1 = null;
+    Cmp cmp2 = null;
     try {
       String sql1 = getSql(ctx, conn1, 0);
       String sql2 = getSql(ctx, conn2, 1);
@@ -77,17 +82,11 @@ public class Cmp implements Runnable {
         trace(ctx, "Query 1: " + sql1);
         trace(ctx, "Query 2: " + sql2);
       }
-      query1.setSql(sql1);
-      query2.setSql(sql2);
-      Cmp cmp1 = new Cmp(exec, ctx, query1, conn1.toString());
-      Cmp cmp2 = new Cmp(exec, ctx, query2, conn2.toString());
-      Thread t1 = new Thread(cmp1);
-      Thread t2 = new Thread(cmp2);
-      t1.start();
-      t2.start();
-      t1.join();
-      t2.join();
-      equal = compare(query1, query2);      
+      cmp1 = new Cmp(exec, ctx, sql1, conn1.toString(), queryExecutor);
+      cmp2 = new Cmp(exec, ctx, sql2, conn2.toString(), queryExecutor);
+      cmp1.run();
+      cmp2.run();
+      equal = compare(cmp1.result, cmp2.result);
     }
     catch(Exception e) {
       exec.signal(e);
@@ -112,24 +111,30 @@ public class Cmp implements Runnable {
         }
         info(ctx, message + ", " + timer.format());
       }
-      exec.closeQuery(query1, conn1.toString());
-      exec.closeQuery(query2, conn2.toString());
+      cmp1.closeQuery();
+      cmp2.closeQuery();
     }
     return 0;
   }
-  
+
+  private void closeQuery() {
+    if (result != null) {
+      result.close();
+    }
+  }
+
   /**
    * Get data for comparison from the source
    */
   @Override
   public void run() {
-    exec.executeQuery(ctx, query, conn);
+    result = queryExecutor.executeQuery(query, ctx);
   }
   
   /**
    * Compare the results
    */
-  Boolean compare(Query query1, Query query2) {
+  Boolean compare(QueryResult query1, QueryResult query2) {
     if (query1.error()) { 
       exec.signal(query1);
       return null;
@@ -138,9 +143,7 @@ public class Cmp implements Runnable {
       exec.signal(query2);
       return null;
     }
-    ResultSet rs1 = query1.getResultSet();
-    ResultSet rs2 = query2.getResultSet();
-    if (rs1 == null || rs2 == null) {
+    if (query1 == null || query2 == null) {
       exec.setSqlCode(-1);
       return null;
     }
@@ -148,18 +151,18 @@ public class Cmp implements Runnable {
     tests = 0;
     failedTests = 0;
     try {
-      ResultSetMetaData rm1 = rs1.getMetaData();
-      ResultSetMetaData rm2 = rs2.getMetaData();
-      int cnt1 = rm1.getColumnCount();
-      int cnt2 = rm2.getColumnCount();
+      Metadata rm1 = query1.metadata();
+      Metadata rm2 = query2.metadata();
+      int cnt1 = rm1.columnCount();
+      int cnt2 = rm2.columnCount();
       tests = cnt1;
-      while (rs1.next() && rs2.next()) {
-        for (int i = 1; i <= tests; i++) {
+      while (query1.next() && query2.next()) {
+        for (int i = 0; i < tests; i++) {
           Var v1 = new Var(Var.Type.DERIVED_TYPE);
           Var v2 = new Var(Var.Type.DERIVED_TYPE);
-          v1.setValue(rs1, rm1, i);
-          if (i <= cnt2) {
-            v2.setValue(rs2, rm2, i);
+          v1.setValue(query1, i);
+          if (i < cnt2) {
+            v2.setValue(query2, i);
           }
           boolean e = true;
           if (!(v1.isNull() && v2.isNull()) && !v1.equals(v2)) {
@@ -168,7 +171,7 @@ public class Cmp implements Runnable {
             failedTests++;
           }
           if (trace || info) {
-            String m = rm1.getColumnName(i) + "\t" + v1.toString() + "\t" + v2.toString();
+            String m = rm1.columnName(i) + "\t" + v1.toString() + "\t" + v2.toString();
             if (!e) {
               m += "\tNot equal";
               BigDecimal diff = v1.percentDiff(v2);
@@ -215,7 +218,7 @@ public class Cmp implements Runnable {
   /**
    * Define the SQL query to access data
    */
-  String getSql(HplsqlParser.Cmp_stmtContext ctx, StringBuilder conn, int idx) throws Exception {
+  private String getSql(HplsqlParser.Cmp_stmtContext ctx, StringBuilder conn, int idx) throws Exception {
     StringBuilder sql = new StringBuilder();
     String table = null;
     String query = null;
@@ -254,7 +257,7 @@ public class Cmp implements Runnable {
   /**
    * Define SELECT listto access data
    */
-  String getSelectList(HplsqlParser.Cmp_stmtContext ctx, String conn, String table, String query) throws Exception {
+  private String getSelectList(HplsqlParser.Cmp_stmtContext ctx, String conn, String table, String query) throws Exception {
     StringBuilder sql = new StringBuilder();
     sql.append("COUNT(1) AS row_count");
     if (ctx.T_SUM() != null && table != null) {
@@ -300,7 +303,7 @@ public class Cmp implements Runnable {
   /**
    * Evaluate the expression and pop value from the stack
    */
-  Var evalPop(ParserRuleContext ctx) {
+  private Var evalPop(ParserRuleContext ctx) {
     exec.visit(ctx);
     if (!exec.stack.isEmpty()) { 
       return exec.stackPop();
@@ -311,11 +314,11 @@ public class Cmp implements Runnable {
   /**
    * Trace and information
    */
-  public void trace(ParserRuleContext ctx, String message) {
+  private void trace(ParserRuleContext ctx, String message) {
     exec.trace(ctx, message);
   }
   
-  public void info(ParserRuleContext ctx, String message) {
+  private void info(ParserRuleContext ctx, String message) {
     exec.info(ctx, message);
   }
 }

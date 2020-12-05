@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 
 import java.util.Arrays;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.optimizer.ConstantPropagateProcFactory;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -42,12 +44,12 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFStruct;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -1058,6 +1060,185 @@ public class ExprNodeDescUtils {
       return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFStruct);
     }
     return false;
+  }
+
+  public static ExprNodeDesc conjunction(List<ExprNodeDesc> inputExpr) throws UDFArgumentException {
+    List<ExprNodeDesc> operands=new ArrayList<ExprNodeDesc>();
+    for (ExprNodeDesc e : inputExpr) {
+      conjunctiveDecomposition(e, operands);
+    }
+    for (int i = 0; i < operands.size(); i++) {
+      ExprNodeDesc curr = operands.get(i);
+      if (isOr(curr)) {
+        if (deterministicIntersection(curr.getChildren(), operands)) {
+          operands.remove(i);
+          i--;
+        }
+      }
+    }
+
+    if (operands.isEmpty()) {
+      return null;
+    }
+    if (operands.size() > 1) {
+      return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPAnd(), operands);
+    } else {
+      return operands.get(0);
+    }
+  }
+
+  /**
+   * Checks wether the two expression sets have a common deterministic intersection.
+   */
+  private static boolean deterministicIntersection(List<ExprNodeDesc> li1, List<ExprNodeDesc> li2) {
+    for (ExprNodeDesc e1 : li1) {
+      if (!isDeterministic(e1)) {
+        continue;
+      }
+      for (ExprNodeDesc e2 : li2) {
+        if (e1.isSame(e2)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private static void conjunctiveDecomposition(ExprNodeDesc expr, List<ExprNodeDesc> operands) {
+    if (isAnd(expr)) {
+      for (ExprNodeDesc c : expr.getChildren()) {
+        conjunctiveDecomposition(c, operands);
+      }
+    } else {
+      if (isTrue(expr)) {
+        return;
+      }
+      for (ExprNodeDesc o : operands) {
+        if (o.isSame(expr)) {
+          return;
+        }
+      }
+      operands.add(expr);
+    }
+
+  }
+
+  private static boolean isTrue(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeConstantDesc) {
+      ExprNodeConstantDesc c = (ExprNodeConstantDesc) expr;
+      if (Boolean.TRUE.equals(c.getValue())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  public static ExprNodeDesc conjunction(ExprNodeDesc node1, ExprNodeDesc node2) throws UDFArgumentException {
+    List<ExprNodeDesc> operands = Lists.newArrayList(node1, node2);
+    return conjunction(operands);
+  }
+
+  public static ExprNodeDesc conjunction(List<ExprNodeDesc> nodes, ExprNodeDesc exprNode)
+      throws UDFArgumentException {
+    if (nodes == null) {
+      return exprNode;
+    }
+    List<ExprNodeDesc> operands = new ArrayList<ExprNodeDesc>();
+    if (exprNode != null) {
+      operands.add(exprNode);
+    }
+    operands.addAll(nodes);
+    return conjunction(operands);
+  }
+
+  public static ExprNodeDesc disjunction(ExprNodeDesc e1, ExprNodeDesc e2) throws UDFArgumentException {
+    if (e1 == null) {
+      return e2;
+    }
+    if (e2 == null) {
+      return e1;
+    }
+    if (e1.isSame(e2)) {
+      return e1;
+    }
+    List<ExprNodeDesc> operands = new ArrayList<ExprNodeDesc>();
+    disjunctiveDecomposition(e1, operands);
+    disjunctiveDecomposition(e2, operands);
+    return disjunction(operands);
+  }
+
+  public static ExprNodeDesc disjunction(List<ExprNodeDesc> operands) throws UDFArgumentException {
+    if (operands.size() == 0) {
+      return null;
+    }
+    if (operands.size() == 1) {
+      return operands.get(0);
+    }
+    return ExprNodeGenericFuncDesc.newInstance(new GenericUDFOPOr(), operands);
+  }
+
+  public static void disjunctiveDecomposition(ExprNodeDesc expr, List<ExprNodeDesc> operands) {
+    if (isOr(expr)) {
+      for (ExprNodeDesc c : expr.getChildren()) {
+        disjunctiveDecomposition(c, operands);
+      }
+    } else {
+      for (ExprNodeDesc o : operands) {
+        if (o.isSame(expr)) {
+          return;
+        }
+      }
+      operands.add(expr);
+    }
+  }
+
+  public static boolean isOr(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) expr;
+      return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFOPOr);
+    }
+    return false;
+  }
+
+  public static boolean isAnd(ExprNodeDesc expr) {
+    if (expr instanceof ExprNodeGenericFuncDesc) {
+      ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) expr;
+      return (exprNodeGenericFuncDesc.getGenericUDF() instanceof GenericUDFOPAnd);
+    }
+    return false;
+  }
+
+  public static ExprNodeDesc replaceTabAlias(ExprNodeDesc expr, String oldAlias, String newAlias) {
+    if (expr == null) {
+      return null;
+    }
+    if (expr.getChildren() != null) {
+      for (ExprNodeDesc c : expr.getChildren()) {
+        replaceTabAlias(c, oldAlias, newAlias);
+      }
+    }
+    if (expr instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc exprNodeColumnDesc = (ExprNodeColumnDesc) expr;
+      if (exprNodeColumnDesc.getTabAlias() != null && exprNodeColumnDesc.getTabAlias().equals(oldAlias)) {
+        exprNodeColumnDesc.setTabAlias(newAlias);
+      }
+    }
+    return expr;
+  }
+
+  public static void replaceTabAlias(Map<String, ExprNodeDesc> exprMap, String oldAlias, String newAlias) {
+    if (exprMap != null) {
+      ExprNodeDescUtils.replaceTabAlias(exprMap.values(), oldAlias, newAlias);
+    }
+  }
+
+  public static void replaceTabAlias(Collection<ExprNodeDesc> exprs, String oldAlias, String newAlias) {
+    if (exprs != null) {
+      for (ExprNodeDesc expr : exprs) {
+        replaceTabAlias(expr, oldAlias, newAlias);
+      }
+    }
+
   }
 
 }

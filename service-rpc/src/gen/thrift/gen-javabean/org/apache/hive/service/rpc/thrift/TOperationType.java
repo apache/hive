@@ -17,7 +17,8 @@ public enum TOperationType implements org.apache.thrift.TEnum {
   GET_TABLE_TYPES(5),
   GET_COLUMNS(6),
   GET_FUNCTIONS(7),
-  UNKNOWN(8);
+  UNKNOWN(8),
+  PROCEDURAL_SQL(9);
 
   private final int value;
 
@@ -57,6 +58,8 @@ public enum TOperationType implements org.apache.thrift.TEnum {
         return GET_FUNCTIONS;
       case 8:
         return UNKNOWN;
+      case 9:
+        return PROCEDURAL_SQL;
       default:
         return null;
     }

@@ -168,7 +168,7 @@ public class Utils {
     }
   }
 
-  public static void writeStackTrace(Exception e, Path outputFile, HiveConf conf) throws SemanticException {
+  public static void writeStackTrace(Throwable e, Path outputFile, HiveConf conf) throws SemanticException {
     Retryable retryable = Retryable.builder()
       .withHiveConf(conf)
       .withRetryOnException(IOException.class).withFailOnException(FileNotFoundException.class).build();

@@ -22,6 +22,7 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -140,7 +141,10 @@ public class DirCopyTask extends Task<DirCopyWork> implements Serializable {
         }
       });
     } catch (Exception e) {
-      throw new SecurityException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
+      LOG.error("Replication failed ", e);
+      Exception ex = new SecurityException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
+      setException(ex);
+      return ReplUtils.handleException(true, ex, work.getDumpDirectory(), work.getMetricCollector(), getName(), conf);
     }
   }
 

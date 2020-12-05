@@ -1488,7 +1488,7 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
-    def get_latest_txn_in_conflict(self, txnId):
+    def get_latest_txnid_in_conflict(self, txnId):
         """
         Parameters:
          - txnId
@@ -2115,6 +2115,38 @@ class Iface(fb303.FacebookService.Iface):
         """
         Parameters:
          - getOpenTxnsRequest
+
+        """
+        pass
+
+    def create_stored_procedure(self, proc):
+        """
+        Parameters:
+         - proc
+
+        """
+        pass
+
+    def get_stored_procedure(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        pass
+
+    def drop_stored_procedure(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        pass
+
+    def get_all_stored_procedures(self, request):
+        """
+        Parameters:
+         - request
 
         """
         pass
@@ -8358,24 +8390,24 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o2
         return
 
-    def get_latest_txn_in_conflict(self, txnId):
+    def get_latest_txnid_in_conflict(self, txnId):
         """
         Parameters:
          - txnId
 
         """
-        self.send_get_latest_txn_in_conflict(txnId)
-        return self.recv_get_latest_txn_in_conflict()
+        self.send_get_latest_txnid_in_conflict(txnId)
+        return self.recv_get_latest_txnid_in_conflict()
 
-    def send_get_latest_txn_in_conflict(self, txnId):
-        self._oprot.writeMessageBegin('get_latest_txn_in_conflict', TMessageType.CALL, self._seqid)
-        args = get_latest_txn_in_conflict_args()
+    def send_get_latest_txnid_in_conflict(self, txnId):
+        self._oprot.writeMessageBegin('get_latest_txnid_in_conflict', TMessageType.CALL, self._seqid)
+        args = get_latest_txnid_in_conflict_args()
         args.txnId = txnId
         args.write(self._oprot)
         self._oprot.writeMessageEnd()
         self._oprot.trans.flush()
 
-    def recv_get_latest_txn_in_conflict(self):
+    def recv_get_latest_txnid_in_conflict(self):
         iprot = self._iprot
         (fname, mtype, rseqid) = iprot.readMessageBegin()
         if mtype == TMessageType.EXCEPTION:
@@ -8383,14 +8415,14 @@ class Client(fb303.FacebookService.Client, Iface):
             x.read(iprot)
             iprot.readMessageEnd()
             raise x
-        result = get_latest_txn_in_conflict_result()
+        result = get_latest_txnid_in_conflict_result()
         result.read(iprot)
         iprot.readMessageEnd()
         if result.success is not None:
             return result.success
         if result.o1 is not None:
             raise result.o1
-        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_latest_txn_in_conflict failed: unknown result")
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_latest_txnid_in_conflict failed: unknown result")
 
     def repl_tbl_writeid_state(self, rqst):
         """
@@ -11104,6 +11136,144 @@ class Client(fb303.FacebookService.Client, Iface):
             return result.success
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_open_txns_req failed: unknown result")
 
+    def create_stored_procedure(self, proc):
+        """
+        Parameters:
+         - proc
+
+        """
+        self.send_create_stored_procedure(proc)
+        self.recv_create_stored_procedure()
+
+    def send_create_stored_procedure(self, proc):
+        self._oprot.writeMessageBegin('create_stored_procedure', TMessageType.CALL, self._seqid)
+        args = create_stored_procedure_args()
+        args.proc = proc
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_create_stored_procedure(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = create_stored_procedure_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        return
+
+    def get_stored_procedure(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        self.send_get_stored_procedure(request)
+        return self.recv_get_stored_procedure()
+
+    def send_get_stored_procedure(self, request):
+        self._oprot.writeMessageBegin('get_stored_procedure', TMessageType.CALL, self._seqid)
+        args = get_stored_procedure_args()
+        args.request = request
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_stored_procedure(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_stored_procedure_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_stored_procedure failed: unknown result")
+
+    def drop_stored_procedure(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        self.send_drop_stored_procedure(request)
+        self.recv_drop_stored_procedure()
+
+    def send_drop_stored_procedure(self, request):
+        self._oprot.writeMessageBegin('drop_stored_procedure', TMessageType.CALL, self._seqid)
+        args = drop_stored_procedure_args()
+        args.request = request
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_drop_stored_procedure(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = drop_stored_procedure_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        if result.o2 is not None:
+            raise result.o2
+        return
+
+    def get_all_stored_procedures(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        self.send_get_all_stored_procedures(request)
+        return self.recv_get_all_stored_procedures()
+
+    def send_get_all_stored_procedures(self, request):
+        self._oprot.writeMessageBegin('get_all_stored_procedures', TMessageType.CALL, self._seqid)
+        args = get_all_stored_procedures_args()
+        args.request = request
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_all_stored_procedures(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_all_stored_procedures_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_all_stored_procedures failed: unknown result")
+
 
 class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     def __init__(self, handler):
@@ -11275,7 +11445,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["abort_txn"] = Processor.process_abort_txn
         self._processMap["abort_txns"] = Processor.process_abort_txns
         self._processMap["commit_txn"] = Processor.process_commit_txn
-        self._processMap["get_latest_txn_in_conflict"] = Processor.process_get_latest_txn_in_conflict
+        self._processMap["get_latest_txnid_in_conflict"] = Processor.process_get_latest_txnid_in_conflict
         self._processMap["repl_tbl_writeid_state"] = Processor.process_repl_tbl_writeid_state
         self._processMap["get_valid_write_ids"] = Processor.process_get_valid_write_ids
         self._processMap["allocate_table_write_ids"] = Processor.process_allocate_table_write_ids
@@ -11355,6 +11525,10 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["add_replication_metrics"] = Processor.process_add_replication_metrics
         self._processMap["get_replication_metrics"] = Processor.process_get_replication_metrics
         self._processMap["get_open_txns_req"] = Processor.process_get_open_txns_req
+        self._processMap["create_stored_procedure"] = Processor.process_create_stored_procedure
+        self._processMap["get_stored_procedure"] = Processor.process_get_stored_procedure
+        self._processMap["drop_stored_procedure"] = Processor.process_drop_stored_procedure
+        self._processMap["get_all_stored_procedures"] = Processor.process_get_all_stored_procedures
         self._on_message_begin = None
 
     def on_message_begin(self, func):
@@ -16226,13 +16400,13 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         oprot.writeMessageEnd()
         oprot.trans.flush()
 
-    def process_get_latest_txn_in_conflict(self, seqid, iprot, oprot):
-        args = get_latest_txn_in_conflict_args()
+    def process_get_latest_txnid_in_conflict(self, seqid, iprot, oprot):
+        args = get_latest_txnid_in_conflict_args()
         args.read(iprot)
         iprot.readMessageEnd()
-        result = get_latest_txn_in_conflict_result()
+        result = get_latest_txnid_in_conflict_result()
         try:
-            result.success = self._handler.get_latest_txn_in_conflict(args.txnId)
+            result.success = self._handler.get_latest_txnid_in_conflict(args.txnId)
             msg_type = TMessageType.REPLY
         except TTransport.TTransportException:
             raise
@@ -16247,7 +16421,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             logging.exception('Unexpected exception in handler')
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
-        oprot.writeMessageBegin("get_latest_txn_in_conflict", msg_type, seqid)
+        oprot.writeMessageBegin("get_latest_txnid_in_conflict", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -18425,6 +18599,119 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("get_open_txns_req", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_create_stored_procedure(self, seqid, iprot, oprot):
+        args = create_stored_procedure_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = create_stored_procedure_result()
+        try:
+            self._handler.create_stored_procedure(args.proc)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except NoSuchObjectException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except MetaException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("create_stored_procedure", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_stored_procedure(self, seqid, iprot, oprot):
+        args = get_stored_procedure_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_stored_procedure_result()
+        try:
+            result.success = self._handler.get_stored_procedure(args.request)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except NoSuchObjectException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_stored_procedure", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_drop_stored_procedure(self, seqid, iprot, oprot):
+        args = drop_stored_procedure_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = drop_stored_procedure_result()
+        try:
+            self._handler.drop_stored_procedure(args.request)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except NoSuchObjectException as o2:
+            msg_type = TMessageType.REPLY
+            result.o2 = o2
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("drop_stored_procedure", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_all_stored_procedures(self, seqid, iprot, oprot):
+        args = get_all_stored_procedures_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_all_stored_procedures_result()
+        try:
+            result.success = self._handler.get_all_stored_procedures(args.request)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_all_stored_procedures", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -45580,7 +45867,7 @@ commit_txn_result.thrift_spec = (
 )
 
 
-class get_latest_txn_in_conflict_args(object):
+class get_latest_txnid_in_conflict_args(object):
     """
     Attributes:
      - txnId
@@ -45614,7 +45901,7 @@ class get_latest_txn_in_conflict_args(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('get_latest_txn_in_conflict_args')
+        oprot.writeStructBegin('get_latest_txnid_in_conflict_args')
         if self.txnId is not None:
             oprot.writeFieldBegin('txnId', TType.I64, 1)
             oprot.writeI64(self.txnId)
@@ -45635,14 +45922,14 @@ class get_latest_txn_in_conflict_args(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(get_latest_txn_in_conflict_args)
-get_latest_txn_in_conflict_args.thrift_spec = (
+all_structs.append(get_latest_txnid_in_conflict_args)
+get_latest_txnid_in_conflict_args.thrift_spec = (
     None,  # 0
     (1, TType.I64, 'txnId', None, None, ),  # 1
 )
 
 
-class get_latest_txn_in_conflict_result(object):
+class get_latest_txnid_in_conflict_result(object):
     """
     Attributes:
      - success
@@ -45684,7 +45971,7 @@ class get_latest_txn_in_conflict_result(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('get_latest_txn_in_conflict_result')
+        oprot.writeStructBegin('get_latest_txnid_in_conflict_result')
         if self.success is not None:
             oprot.writeFieldBegin('success', TType.I64, 0)
             oprot.writeI64(self.success)
@@ -45709,8 +45996,8 @@ class get_latest_txn_in_conflict_result(object):
 
     def __ne__(self, other):
         return not (self == other)
-all_structs.append(get_latest_txn_in_conflict_result)
-get_latest_txn_in_conflict_result.thrift_spec = (
+all_structs.append(get_latest_txnid_in_conflict_result)
+get_latest_txnid_in_conflict_result.thrift_spec = (
     (0, TType.I64, 'success', None, None, ),  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )
@@ -56842,6 +57129,580 @@ class get_open_txns_req_result(object):
 all_structs.append(get_open_txns_req_result)
 get_open_txns_req_result.thrift_spec = (
     (0, TType.STRUCT, 'success', [GetOpenTxnsResponse, None], None, ),  # 0
+)
+
+
+class create_stored_procedure_args(object):
+    """
+    Attributes:
+     - proc
+
+    """
+
+
+    def __init__(self, proc=None,):
+        self.proc = proc
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.proc = StoredProcedure()
+                    self.proc.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('create_stored_procedure_args')
+        if self.proc is not None:
+            oprot.writeFieldBegin('proc', TType.STRUCT, 1)
+            self.proc.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(create_stored_procedure_args)
+create_stored_procedure_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'proc', [StoredProcedure, None], None, ),  # 1
+)
+
+
+class create_stored_procedure_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, o1=None, o2=None,):
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = NoSuchObjectException()
+                    self.o1.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = MetaException()
+                    self.o2.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('create_stored_procedure_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(create_stored_procedure_result)
+create_stored_procedure_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [NoSuchObjectException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [MetaException, None], None, ),  # 2
+)
+
+
+class get_stored_procedure_args(object):
+    """
+    Attributes:
+     - request
+
+    """
+
+
+    def __init__(self, request=None,):
+        self.request = request
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.request = StoredProcedureRequest()
+                    self.request.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_stored_procedure_args')
+        if self.request is not None:
+            oprot.writeFieldBegin('request', TType.STRUCT, 1)
+            self.request.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_stored_procedure_args)
+get_stored_procedure_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'request', [StoredProcedureRequest, None], None, ),  # 1
+)
+
+
+class get_stored_procedure_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, success=None, o1=None, o2=None,):
+        self.success = success
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = StoredProcedure()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException()
+                    self.o1.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = NoSuchObjectException()
+                    self.o2.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_stored_procedure_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_stored_procedure_result)
+get_stored_procedure_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [StoredProcedure, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [NoSuchObjectException, None], None, ),  # 2
+)
+
+
+class drop_stored_procedure_args(object):
+    """
+    Attributes:
+     - request
+
+    """
+
+
+    def __init__(self, request=None,):
+        self.request = request
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.request = StoredProcedureRequest()
+                    self.request.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('drop_stored_procedure_args')
+        if self.request is not None:
+            oprot.writeFieldBegin('request', TType.STRUCT, 1)
+            self.request.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(drop_stored_procedure_args)
+drop_stored_procedure_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'request', [StoredProcedureRequest, None], None, ),  # 1
+)
+
+
+class drop_stored_procedure_result(object):
+    """
+    Attributes:
+     - o1
+     - o2
+
+    """
+
+
+    def __init__(self, o1=None, o2=None,):
+        self.o1 = o1
+        self.o2 = o2
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException()
+                    self.o1.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRUCT:
+                    self.o2 = NoSuchObjectException()
+                    self.o2.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('drop_stored_procedure_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o2 is not None:
+            oprot.writeFieldBegin('o2', TType.STRUCT, 2)
+            self.o2.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(drop_stored_procedure_result)
+drop_stored_procedure_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+    (2, TType.STRUCT, 'o2', [NoSuchObjectException, None], None, ),  # 2
+)
+
+
+class get_all_stored_procedures_args(object):
+    """
+    Attributes:
+     - request
+
+    """
+
+
+    def __init__(self, request=None,):
+        self.request = request
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.request = ListStoredProcedureRequest()
+                    self.request.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_all_stored_procedures_args')
+        if self.request is not None:
+            oprot.writeFieldBegin('request', TType.STRUCT, 1)
+            self.request.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_all_stored_procedures_args)
+get_all_stored_procedures_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'request', [ListStoredProcedureRequest, None], None, ),  # 1
+)
+
+
+class get_all_stored_procedures_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+
+    """
+
+
+    def __init__(self, success=None, o1=None,):
+        self.success = success
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype1713, _size1710) = iprot.readListBegin()
+                    for _i1714 in range(_size1710):
+                        _elem1715 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        self.success.append(_elem1715)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException()
+                    self.o1.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_all_stored_procedures_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRING, len(self.success))
+            for iter1716 in self.success:
+                oprot.writeString(iter1716.encode('utf-8') if sys.version_info[0] == 2 else iter1716)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_all_stored_procedures_result)
+get_all_stored_procedures_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRING, 'UTF8', False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )
 fix_spec(all_structs)
 del all_structs

@@ -855,9 +855,9 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("commit_txn\n");
   }
 
-  int64_t get_latest_txn_in_conflict(const int64_t txnId) {
+  int64_t get_latest_txnid_in_conflict(const int64_t txnId) {
     // Your implementation goes here
-    printf("get_latest_txn_in_conflict\n");
+    printf("get_latest_txnid_in_conflict\n");
   }
 
   void repl_tbl_writeid_state(const ReplTblWriteIdStateRequest& rqst) {
@@ -1253,6 +1253,26 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
   void get_open_txns_req(GetOpenTxnsResponse& _return, const GetOpenTxnsRequest& getOpenTxnsRequest) {
     // Your implementation goes here
     printf("get_open_txns_req\n");
+  }
+
+  void create_stored_procedure(const StoredProcedure& proc) {
+    // Your implementation goes here
+    printf("create_stored_procedure\n");
+  }
+
+  void get_stored_procedure(StoredProcedure& _return, const StoredProcedureRequest& request) {
+    // Your implementation goes here
+    printf("get_stored_procedure\n");
+  }
+
+  void drop_stored_procedure(const StoredProcedureRequest& request) {
+    // Your implementation goes here
+    printf("drop_stored_procedure\n");
+  }
+
+  void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request) {
+    // Your implementation goes here
+    printf("get_all_stored_procedures\n");
   }
 
 };

@@ -42,7 +42,7 @@ public abstract class CliAdapter {
 
   public CliAdapter(AbstractCliConfig cliConfig) {
     this.cliConfig = cliConfig;
-    metaStoreHandler = new QTestMetaStoreHandler();
+    metaStoreHandler = new QTestMetaStoreHandler(cliConfig.getMetastoreType());
   }
 
   public final List<Object[]> getParameters() throws Exception {

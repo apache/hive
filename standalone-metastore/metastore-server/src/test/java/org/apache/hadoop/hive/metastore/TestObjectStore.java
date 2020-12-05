@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -51,6 +52,7 @@ import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
 import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.client.builder.CatalogBuilder;
 import org.apache.hadoop.hive.metastore.client.builder.DatabaseBuilder;
@@ -86,6 +88,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -102,11 +105,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static java.util.concurrent.Executors.newFixedThreadPool;
 import static org.apache.hadoop.hive.metastore.Warehouse.DEFAULT_CATALOG_NAME;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @Category(MetastoreUnitTest.class)
 public class TestObjectStore {
@@ -1142,6 +1145,109 @@ public class TestObjectStore {
     checkSSLProperty(useSSL, ObjectStore.TRUSTSTORE_PATH_KEY, trustStorePath);
     checkSSLProperty(useSSL, ObjectStore.TRUSTSTORE_PASSWORD_KEY, trustStorePassword);
     checkSSLProperty(useSSL, ObjectStore.TRUSTSTORE_TYPE_KEY, trustStoreType);
+  }
+
+  @Test
+  public void testUpdateStoredProc() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+
+    StoredProcedure input = new StoredProcedure();
+    input.setCatName("hive");
+    input.setSource("print 'Hello world'");
+    input.setOwnerName("user1");
+    input.setName("toBeUpdated");
+    input.setDbName(DB1);
+    objectStore.createOrUpdateStoredProcedure(input);
+    input.setSource("print 'Hello world2'");
+    objectStore.createOrUpdateStoredProcedure(input);
+
+    StoredProcedure retrieved = objectStore.getStoredProcedure("hive", DB1, "toBeUpdated");
+    Assert.assertEquals(input, retrieved);
+  }
+
+  @Test
+  public void testStoredProcSaveAndRetrieve() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+
+    StoredProcedure input = new StoredProcedure();
+    input.setSource("print 'Hello world'");
+    input.setCatName("hive");
+    input.setOwnerName("user1");
+    input.setName("greetings");
+    input.setDbName(DB1);
+
+    objectStore.createOrUpdateStoredProcedure(input);
+    StoredProcedure retrieved = objectStore.getStoredProcedure("hive", DB1, "greetings");
+
+    Assert.assertEquals(input, retrieved);
+  }
+
+  @Test
+  public void testDropStoredProc() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+
+    StoredProcedure toBeDeleted = new StoredProcedure();
+    toBeDeleted.setSource("print 'Hello world'");
+    toBeDeleted.setCatName("hive");
+    toBeDeleted.setOwnerName("user1");
+    toBeDeleted.setName("greetings");
+    toBeDeleted.setDbName(DB1);
+    objectStore.createOrUpdateStoredProcedure(toBeDeleted);
+    Assert.assertNotNull(objectStore.getStoredProcedure("hive", DB1, "greetings"));
+    objectStore.dropStoredProcedure("hive", DB1, "greetings");
+    Assert.assertNull(objectStore.getStoredProcedure("hive", DB1, "greetings"));
+  }
+
+  @Test
+  public void testListStoredProc() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB2)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+
+    StoredProcedure proc1 = new StoredProcedure();
+    proc1.setSource("print 'Hello world'");
+    proc1.setCatName("hive");
+    proc1.setOwnerName("user1");
+    proc1.setName("proc1");
+    proc1.setDbName(DB1);
+    objectStore.createOrUpdateStoredProcedure(proc1);
+
+    StoredProcedure proc2 = new StoredProcedure();
+    proc2.setSource("print 'Hello world'");
+    proc2.setCatName("hive");
+    proc2.setOwnerName("user2");
+    proc2.setName("proc2");
+    proc2.setDbName(DB2);
+    objectStore.createOrUpdateStoredProcedure(proc2);
+
+    List<String> result = objectStore.getAllStoredProcedures(new ListStoredProcedureRequest("hive"));
+    Assert.assertEquals(2, result.size());
+    assertThat(result, hasItems("proc1", "proc2"));
+
+    ListStoredProcedureRequest req = new ListStoredProcedureRequest("hive");
+    req.setDbName(DB1);
+    result = objectStore.getAllStoredProcedures(req);
+    Assert.assertEquals(1, result.size());
+    assertThat(result, hasItems("proc1"));
   }
 
   /**

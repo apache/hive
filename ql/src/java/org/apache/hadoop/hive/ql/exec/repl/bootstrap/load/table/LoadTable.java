@@ -60,7 +60,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.TreeMap;
 
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_ENABLE_MOVE_OPTIMIZATION;
 import static org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer.isPartitioned;
 
 public class LoadTable {
@@ -147,11 +146,13 @@ public class LoadTable {
             tableDesc,
             null,
             context.dumpDirectory,
+            this.metricCollector,
             context.hiveConf
     );
     if (!isPartitioned(tableDesc)) {
       Task<?> replLogTask
-              = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf, metricCollector);
+              = ReplUtils.getTableReplLogTask(tableDesc, replLogger, context.hiveConf, metricCollector,
+                                              (new Path(context.dumpDirectory)).getParent().toString());
       ckptTask.addDependentTask(replLogTask);
     }
     tracker.addDependentTask(ckptTask);
@@ -187,7 +188,8 @@ public class LoadTable {
       tblDesc.setLocation(null);
     }
     Task<?> createTableTask =
-        tblDesc.getCreateTableTask(new HashSet<>(), new HashSet<>(), context.hiveConf);
+        tblDesc.getCreateTableTask(new HashSet<>(), new HashSet<>(), context.hiveConf, true,
+                (new Path(context.dumpDirectory)).getParent().toString(), metricCollector);
     if (tblRootTask == null) {
       tblRootTask = createTableTask;
     } else {
@@ -202,7 +204,8 @@ public class LoadTable {
     if (replicationSpec.isTransactionalTableDump()) {
       List<String> partNames = isPartitioned(tblDesc) ? event.partitions(tblDesc) : null;
       ReplTxnWork replTxnWork = new ReplTxnWork(tblDesc.getDatabaseName(), tblDesc.getTableName(), partNames,
-              replicationSpec.getValidWriteIdList(), ReplTxnWork.OperationType.REPL_WRITEID_STATE);
+              replicationSpec.getValidWriteIdList(), ReplTxnWork.OperationType.REPL_WRITEID_STATE,
+              (new Path(context.dumpDirectory)).getParent().toString(), metricCollector);
       Task<?> replTxnTask = TaskFactory.get(replTxnWork, context.hiveConf);
       parentTask.addDependentTask(replTxnTask);
       parentTask = replTxnTask;
@@ -266,10 +269,9 @@ public class LoadTable {
     Path dataPath = fromURI;
     Path tmpPath = tgtPath;
 
-    // if move optimization is enabled, copy the files directly to the target path. No need to create the staging dir.
+    // if acid tables, copy the files directly to the target path. No need to create the staging dir.
     LoadFileType loadFileType;
-    if (replicationSpec.isInReplicationScope() &&
-            context.hiveConf.getBoolVar(REPL_ENABLE_MOVE_OPTIMIZATION)) {
+    if (replicationSpec.isInReplicationScope() && AcidUtils.isTransactionalTable(table)) {
       loadFileType = LoadFileType.IGNORE;
     } else {
       loadFileType = (replicationSpec.isReplace())
@@ -283,9 +285,11 @@ public class LoadTable {
 
     boolean copyAtLoad = context.hiveConf.getBoolVar(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET);
     Task<?> copyTask = ReplCopyTask.getLoadCopyTask(replicationSpec, dataPath, tmpPath, context.hiveConf,
-            copyAtLoad, false);
+            copyAtLoad, false, (new Path(context.dumpDirectory)).getParent().toString(), metricCollector);
 
-    MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false);
+    MoveWork moveWork = new MoveWork(new HashSet<>(), new HashSet<>(), null, null, false,
+                                     (new Path(context.dumpDirectory)).getParent().toString(), metricCollector,
+                                      true);
     if (AcidUtils.isTransactionalTable(table)) {
       LoadMultiFilesDesc loadFilesWork = new LoadMultiFilesDesc(
         Collections.singletonList(tmpPath),
@@ -308,6 +312,8 @@ public class LoadTable {
   private Task<?> dropTableTask(Table table) {
     assert(table != null);
     DropTableDesc dropTblDesc = new DropTableDesc(table.getFullyQualifiedName(), true, false, event.replicationSpec());
-    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc), context.hiveConf);
+    return TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc,
+                                      true, (new Path(context.dumpDirectory)).getParent().toString(),
+                                      this.metricCollector), context.hiveConf);
   }
 }

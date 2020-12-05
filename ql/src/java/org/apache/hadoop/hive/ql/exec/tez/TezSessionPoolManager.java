@@ -495,12 +495,11 @@ public class TezSessionPoolManager extends TezSessionPoolSession.AbstractTrigger
 
   static void reopenInternal(
       TezSessionState sessionState) throws Exception {
-    HiveResources resources = sessionState.extractHiveResources();
     // TODO: close basically resets the object to a bunch of nulls.
     //       We should ideally not reuse the object because it's pointless and error-prone.
-    sessionState.close(false);
+    sessionState.close(true);
     // Note: scratchdir is reused implicitly because the sessionId is the same.
-    sessionState.open(resources);
+    sessionState.open(sessionState.extractHiveResources());
   }
 
 

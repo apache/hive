@@ -173,6 +173,10 @@ public class DumpMetaData {
     return dumpFile;
   }
 
+  public static String getDmdFileName() {
+    return DUMP_METADATA;
+  }
+
   public boolean isIncrementalDump() throws SemanticException {
     initializeIfNot();
     return (this.dumpType == DumpType.INCREMENTAL);

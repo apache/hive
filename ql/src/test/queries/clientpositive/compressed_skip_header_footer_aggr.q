@@ -82,3 +82,19 @@ select count(*) from testcase5;
 
 select * from testcase6;
 select count(*) from testcase6;
+
+dfs ${system:test.dfs.mkdir} ${system:test.tmp.dir}/testcase_gz;
+dfs -copyFromLocal ../../data/files/test.csv.gz  ${system:test.tmp.dir}/testcase_gz/;
+
+create table testcase_gz(age int, name string)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n'
+stored as textfile LOCATION '${system:test.tmp.dir}/testcase_gz'
+TBLPROPERTIES ("skip.header.line.count"="1", "skip.footer.line.count"="1");
+
+SET hive.fetch.task.conversion = more;
+select * from testcase_gz;
+select count(*) from testcase_gz;
+
+set hive.fetch.task.conversion=none;
+select * from testcase_gz;
+select count(*) from testcase_gz;
