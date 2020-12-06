@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -66,8 +65,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.ColumnType;
-import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
+import org.apache.hadoop.hive.metastore.ThriftMetastoreLauncher;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
 import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
@@ -801,7 +800,7 @@ public class MetaStoreServerUtils {
       @Override
       public void run() {
         try {
-          HiveMetaStore.startMetaStore(port, bridge, finalHiveConf);
+          ThriftMetastoreLauncher.startMetaStore(port, bridge, finalHiveConf);
         } catch (Throwable e) {
           LOG.error("Metastore Thrift Server threw an exception...",e);
         }

@@ -78,7 +78,7 @@ public class MetaStoreTestUtils {
         (withHouseKeepingThreads && waitForHouseKeepers) ? new AtomicBoolean() : null;
     Thread thread = new Thread(() -> {
       try {
-        HiveMetaStore.startMetaStore(port, bridge, finalConf, withHouseKeepingThreads, startedBackgroundThreads);
+        ThriftMetastoreLauncher.startMetaStore(port, bridge, finalConf, withHouseKeepingThreads, startedBackgroundThreads);
       } catch (Throwable e) {
         LOG.error("Metastore Thrift Server threw an exception...", e);
       }
