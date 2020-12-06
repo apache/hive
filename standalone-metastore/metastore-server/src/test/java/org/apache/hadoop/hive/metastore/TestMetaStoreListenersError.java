@@ -43,7 +43,7 @@ public class TestMetaStoreListenersError {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     int port = MetaStoreTestUtils.findFreePort();
     try {
-      HiveMetaStore.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), conf);
+      ThriftMetastoreLauncher.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), conf);
       Assert.fail();
     } catch (Throwable throwable) {
       Assert.assertEquals(MetaException.class, throwable.getClass());
@@ -64,7 +64,7 @@ public class TestMetaStoreListenersError {
     MetaStoreTestUtils.setConfForStandloneMode(conf);
     int port = MetaStoreTestUtils.findFreePort();
     try {
-      HiveMetaStore.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), conf);
+      ThriftMetastoreLauncher.startMetaStore(port, HadoopThriftAuthBridge.getBridge(), conf);
       Assert.fail();
     } catch (Throwable throwable) {
       Assert.assertEquals(MetaException.class, throwable.getClass());
