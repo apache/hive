@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.HiveMetaStoreClient.GetTablesRequestBuilder;
+import org.apache.hadoop.hive.metastore.client.builder.GetTablesRequestBuilder;
 import org.apache.hadoop.hive.metastore.api.Catalog;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.ExtendedTableInfo;
