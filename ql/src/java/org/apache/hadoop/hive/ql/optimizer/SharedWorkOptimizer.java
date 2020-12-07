@@ -58,7 +58,6 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.SemiJoinBranchInfo;
-import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.DynamicPruningEventDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -1779,12 +1778,12 @@ public class SharedWorkOptimizer extends Transform {
     final Set<Operator<?>> excludeOps1 = sr.retainableOps.get(0).getNumParent() > 0 ?
         ImmutableSet.copyOf(sr.retainableOps.get(0).getParentOperators()) : ImmutableSet.of();
     final Set<Operator<?>> inputWorksOps1 =
-        findParentWorkOperators(pctx, optimizerCache, op1, excludeOps1, false);
+        findParentWorkOperators(pctx, optimizerCache, op1, excludeOps1);
     final Set<Operator<?>> excludeOps2 = sr.discardableOps.get(0).getNumParent() > 0 ?
         Sets.union(ImmutableSet.copyOf(sr.discardableOps.get(0).getParentOperators()), sr.discardableInputOps) :
             sr.discardableInputOps;
     final Set<Operator<?>> inputWorksOps2 =
-        findParentWorkOperators(pctx, optimizerCache, op2, excludeOps2, false);
+        findParentWorkOperators(pctx, optimizerCache, op2, excludeOps2);
     if (!Collections.disjoint(inputWorksOps1, inputWorksOps2)) {
       // We cannot merge
       return false;
@@ -1800,9 +1799,9 @@ public class SharedWorkOptimizer extends Transform {
     //
     // If we do, we cannot merge, as we would end up with a cycle in the DAG.
     final Set<Operator<?>> descendantWorksOps1 =
-        findDescendantWorkOperators(pctx, optimizerCache, op1, sr.discardableInputOps, false);
+            findDescendantWorkOperators(pctx, optimizerCache, op1, sr.discardableInputOps);
     final Set<Operator<?>> descendantWorksOps2 =
-        findDescendantWorkOperators(pctx, optimizerCache, op2, sr.discardableInputOps, false);
+            findDescendantWorkOperators(pctx, optimizerCache, op2, sr.discardableInputOps);
     if (!Collections.disjoint(descendantWorksOps1, workOps2)
             || !Collections.disjoint(workOps1, descendantWorksOps2)) {
       return false;
@@ -1818,8 +1817,13 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   private static Set<Operator<?>> findParentWorkOperators(ParseContext pctx,
+          SharedWorkOptimizerCache optimizerCache, Operator<?> start) {
+    return findParentWorkOperators(pctx, optimizerCache, start, ImmutableSet.of());
+  }
+
+  private static Set<Operator<?>> findParentWorkOperators(ParseContext pctx,
           SharedWorkOptimizerCache optimizerCache, Operator<?> start,
-      Set<Operator<?>> excludeOps, boolean traverseEventOperators) {
+          Set<Operator<?>> excludeOps) {
     // Find operators in work
     Set<Operator<?>> workOps = findWorkOperators(optimizerCache, start);
     // Gather input works operators
@@ -1834,9 +1838,6 @@ public class SharedWorkOptimizer extends Transform {
       } else if (op instanceof TableScanOperator) {
         // Check for DPP and semijoin DPP
         for (Operator<?> parent : optimizerCache.tableScanToDPPSource.get((TableScanOperator) op)) {
-          if (parent.getConf() instanceof AppMasterEventDesc && !traverseEventOperators) {
-            continue;
-          }
           if (!excludeOps.contains(parent)) {
             set.addAll(findWorkOperators(optimizerCache, parent));
           }
@@ -1909,7 +1910,7 @@ public class SharedWorkOptimizer extends Transform {
 
   private static Set<Operator<?>> findDescendantWorkOperators(ParseContext pctx,
           SharedWorkOptimizerCache optimizerCache, Operator<?> start,
-          Set<Operator<?>> excludeOps, boolean traverseEventOperators) {
+          Set<Operator<?>> excludeOps) {
     // Find operators in work
     Set<Operator<?>> workOps = findWorkOperators(optimizerCache, start);
     // Gather output works operators
@@ -1937,10 +1938,8 @@ public class SharedWorkOptimizer extends Transform {
         } else if(op.getConf() instanceof DynamicPruningEventDesc) {
           // DPP work is considered a descendant because work needs
           // to finish for it to execute
-          if(traverseEventOperators) {
-            set.addAll(findWorkOperators(
-                optimizerCache, ((DynamicPruningEventDesc) op.getConf()).getTableScan()));
-          }
+          set.addAll(findWorkOperators(
+                  optimizerCache, ((DynamicPruningEventDesc) op.getConf()).getTableScan()));
         }
       }
       workOps = set;
