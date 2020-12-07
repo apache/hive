@@ -432,15 +432,14 @@ public class ImpalaSession {
         Preconditions.checkNotNull(sessionHandle);
 
         TGetExecutorMembershipReq req = new TGetExecutorMembershipReq();
-        req.setSessionHandle(sessionHandle);
-        TGetExecutorMembershipResp resp;
-        try {
-            resp = client.GetExecutorMembership(req);
-        } catch (Exception e) {
-            throw new HiveException(e);
-        }
+        TGetExecutorMembershipResp resp = retryRPC("GetExecutorMembership", true,
+            (c, retryCount) -> {
+                req.setSessionHandle(sessionHandle); // Set the latest handle, since retry may reopen
+                TGetExecutorMembershipResp respInternal = client.GetExecutorMembership(req);
+                checkThriftStatus(respInternal.getStatus());
+                return respInternal;
+            });
 
-        checkThriftStatus(resp.getStatus());
         return resp.getExecutor_membership();
     }
 

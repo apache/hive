@@ -185,10 +185,17 @@ public class ImpalaSessionManager {
   }
 
   /**
-   * If the <i>existingSession</i> can be reused return it.
+   * Returns an ImpalaSession associated with the Hive SessionState.
+   * This method attempts to reuse an existing session if available and
+   * when the Impala configuration has not been updated.
    * Otherwise
-   *   - close it and remove it from the list.
+   *   - close it and remove it from the list (if applicable).
    *   - create a new session and add it to the list.
+   *
+   * This method does not attempt to validate the disposition of
+   * the transport/socket associated with the returned ImpalaSession.
+   * It is expected that ImpalaSession RPC methods try to re-establish
+   * a valid session when applicable.
    */
   public ImpalaSession getSession(HiveConf conf)
       throws HiveException {
