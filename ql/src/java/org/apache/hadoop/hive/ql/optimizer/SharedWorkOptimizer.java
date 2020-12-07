@@ -1758,8 +1758,8 @@ public class SharedWorkOptimizer extends Transform {
     // If we do, we cannot merge. The reason is that Tez currently does
     // not support parallel edges, i.e., multiple edges from same work x
     // into same work y.
-    final Set<Operator<?>> outputWorksOps1 = findChildWorkOperators(pctx, optimizerCache, op1);
-    final Set<Operator<?>> outputWorksOps2 = findChildWorkOperators(pctx, optimizerCache, op2);
+    final Set<Operator<?>> outputWorksOps1 = findChildWorkOperators(pctx, optimizerCache, op1, false);
+    final Set<Operator<?>> outputWorksOps2 = findChildWorkOperators(pctx, optimizerCache, op2, false);
     if (!Collections.disjoint(outputWorksOps1, outputWorksOps2)) {
       // We cannot merge
       return false;
@@ -1877,7 +1877,7 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   private static Set<Operator<?>> findChildWorkOperators(ParseContext pctx,
-          SharedWorkOptimizerCache optimizerCache, Operator<?> start) {
+      SharedWorkOptimizerCache optimizerCache, Operator<?> start, boolean traverseEventOperators) {
     // Find operators in work
     Set<Operator<?>> workOps = findWorkOperators(optimizerCache, start);
     // Gather output works operators
@@ -1899,8 +1899,10 @@ public class SharedWorkOptimizer extends Transform {
       } else if(op.getConf() instanceof DynamicPruningEventDesc) {
         // DPP work is considered a child because work needs
         // to finish for it to execute
-        set.addAll(findWorkOperators(
-                optimizerCache, ((DynamicPruningEventDesc) op.getConf()).getTableScan()));
+        if (traverseEventOperators) {
+          set.addAll(findWorkOperators(
+                  optimizerCache, ((DynamicPruningEventDesc) op.getConf()).getTableScan()));
+        }
       }
     }
     return set;
