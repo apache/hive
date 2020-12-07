@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -148,6 +149,13 @@ public class SharedWorkOptimizer extends Transform {
       LOG.debug("Before SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
     }
 
+    try {
+      new OperatorGraph(pctx).toDot(new File("/tmp/0.full.dot"));
+      new OperatorGraph(pctx).implode().toDot(new File("/tmp/0.joins.dot"));
+    } catch (Exception e1) {
+      throw new RuntimeException(e1);
+    }
+
     // We enforce a certain order when we do the reutilization.
     // In particular, we use size of table x number of reads to
     // rank the tables.
@@ -217,6 +225,13 @@ public class SharedWorkOptimizer extends Transform {
         }
       }
 
+    }
+
+    try {
+      new OperatorGraph(pctx).toDot(new File("/tmp/1.full.dot"));
+      new OperatorGraph(pctx).implode().toDot(new File("/tmp/1.joins.dot"));
+    } catch (Exception e1) {
+      throw new RuntimeException(e1);
     }
 
     if(pctx.getConf().getBoolVar(ConfVars.HIVE_SHARED_WORK_REUSE_MAPJOIN_CACHE)) {
@@ -411,7 +426,8 @@ public class SharedWorkOptimizer extends Transform {
             // If tests pass, we create the shared work optimizer additional information
             // about the part of the tree that can be merged. We need to regenerate the
             // cache because semijoin operators have been removed
-            sr = extractSharedOptimizationInfoForRoot(pctx, optimizerCache, retainableTsOp, discardableTsOp, true);
+            sr = extractSharedOptimizationInfoForRoot(pctx, optimizerCache, retainableTsOp, discardableTsOp, true,
+                true);
           } else if (mode == Mode.DPPUnion) {
             boolean mergeable = areMergeable(pctx, retainableTsOp, discardableTsOp);
             if (!mergeable) {
@@ -428,7 +444,8 @@ public class SharedWorkOptimizer extends Transform {
             // If tests pass, we create the shared work optimizer additional information
             // about the part of the tree that can be merged. We need to regenerate the
             // cache because semijoin operators have been removed
-            sr = extractSharedOptimizationInfoForRoot(pctx, optimizerCache, retainableTsOp, discardableTsOp, false);
+            sr = extractSharedOptimizationInfoForRoot(pctx, optimizerCache, retainableTsOp, discardableTsOp, false,
+                false);
             if (!validPreConditions(pctx, optimizerCache, sr)) {
               continue;
             }
@@ -444,7 +461,8 @@ public class SharedWorkOptimizer extends Transform {
             // Secondly, we extract information about the part of the tree that can be merged
             // as well as some structural information (memory consumption) that needs to be
             // used to determined whether the merge can happen
-            sr = extractSharedOptimizationInfoForRoot(pctx, optimizerCache, retainableTsOp, discardableTsOp, true);
+            sr = extractSharedOptimizationInfoForRoot(pctx, optimizerCache, retainableTsOp, discardableTsOp, true,
+                true);
 
             // It seems these two operators can be merged.
             // Check that plan meets some preconditions before doing it.
@@ -1303,7 +1321,7 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     boolean validMerge = validPreConditions(pctx, optimizerCache,
-        extractSharedOptimizationInfoForRoot(pctx, optimizerCache, tsOp1, tsOp2, true));
+        extractSharedOptimizationInfoForRoot(pctx, optimizerCache, tsOp1, tsOp2, true, true));
 
     if (validMerge) {
       // We are going to merge, hence we remove the semijoins completely
@@ -1353,7 +1371,7 @@ public class SharedWorkOptimizer extends Transform {
           return false;
         }
       } else if (op.getConf() instanceof DynamicPruningEventDesc) {
-        return false;
+        // accept
       } else {
         return false;
       }
@@ -1364,7 +1382,8 @@ public class SharedWorkOptimizer extends Transform {
   private static SharedResult extractSharedOptimizationInfoForRoot(ParseContext pctx,
           SharedWorkOptimizerCache optimizerCache,
           TableScanOperator retainableTsOp,
-      TableScanOperator discardableTsOp, boolean mayRemoveDownStreamOperators) throws SemanticException {
+      TableScanOperator discardableTsOp, boolean mayRemoveDownStreamOperators, boolean mayRemoveInputOps)
+      throws SemanticException {
     LinkedHashSet<Operator<?>> retainableOps = new LinkedHashSet<>();
     LinkedHashSet<Operator<?>> discardableOps = new LinkedHashSet<>();
     Set<Operator<?>> discardableInputOps = new HashSet<>();
@@ -1431,7 +1450,8 @@ public class SharedWorkOptimizer extends Transform {
     }
 
     return extractSharedOptimizationInfo(pctx, optimizerCache, equalOp1, equalOp2,
-        currentOp1, currentOp2, retainableOps, discardableOps, discardableInputOps, mayRemoveDownStreamOperators);
+        currentOp1, currentOp2, retainableOps, discardableOps, discardableInputOps, mayRemoveDownStreamOperators,
+        mayRemoveInputOps);
   }
 
   private static SharedResult extractSharedOptimizationInfo(ParseContext pctx,
@@ -1442,7 +1462,7 @@ public class SharedWorkOptimizer extends Transform {
       Operator<?> discardableOp) throws SemanticException {
     return extractSharedOptimizationInfo(pctx, optimizerCache,
         retainableOpEqualParent, discardableOpEqualParent, retainableOp, discardableOp,
-        new LinkedHashSet<>(), new LinkedHashSet<>(), new HashSet<>(), true);
+        new LinkedHashSet<>(), new LinkedHashSet<>(), new HashSet<>(), true, true);
   }
 
   private static SharedResult extractSharedOptimizationInfo(ParseContext pctx,
@@ -1453,7 +1473,8 @@ public class SharedWorkOptimizer extends Transform {
       Operator<?> discardableOp,
       LinkedHashSet<Operator<?>> retainableOps,
       LinkedHashSet<Operator<?>> discardableOps,
-      Set<Operator<?>> discardableInputOps, boolean mayRemoveDownStreamOperators) throws SemanticException {
+      Set<Operator<?>> discardableInputOps, boolean mayRemoveDownStreamOperators, boolean mayRemoveInputOps)
+      throws SemanticException {
     Operator<?> equalOp1 = retainableOpEqualParent;
     Operator<?> equalOp2 = discardableOpEqualParent;
     Operator<?> currentOp1 = retainableOp;
@@ -1540,10 +1561,11 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
-    discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache,
-        Sets.union(discardableInputOps, discardableOps)));
-    discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, retainableOps,
-        discardableInputOps));
+    if (mayRemoveInputOps) {
+      discardableInputOps
+          .addAll(gatherDPPBranchOps(pctx, optimizerCache, Sets.union(discardableInputOps, discardableOps)));
+      discardableInputOps.addAll(gatherDPPBranchOps(pctx, optimizerCache, retainableOps, discardableInputOps));
+    }
     return new SharedResult(retainableOps, discardableOps, discardableInputOps,
         dataSize, maxDataSize);
   }
@@ -1785,8 +1807,8 @@ public class SharedWorkOptimizer extends Transform {
     // If we do, we cannot merge. The reason is that Tez currently does
     // not support parallel edges, i.e., multiple edges from same work x
     // into same work y.
-    final Set<Operator<?>> outputWorksOps1 = findChildWorkOperators(pctx, optimizerCache, op1);
-    final Set<Operator<?>> outputWorksOps2 = findChildWorkOperators(pctx, optimizerCache, op2);
+    final Set<Operator<?>> outputWorksOps1 = findChildWorkOperators(pctx, optimizerCache, op1, false);
+    final Set<Operator<?>> outputWorksOps2 = findChildWorkOperators(pctx, optimizerCache, op2, false);
     if (!Collections.disjoint(outputWorksOps1, outputWorksOps2)) {
       // We cannot merge
       return false;
@@ -1862,7 +1884,8 @@ public class SharedWorkOptimizer extends Transform {
             set.addAll(findWorkOperators(optimizerCache, parent));
           }
         }
-      } else if (op instanceof TableScanOperator) {
+      }
+      if (op instanceof TableScanOperator) {
         // Check for DPP and semijoin DPP
         for (Operator<?> parent : optimizerCache.tableScanToDPPSource.get((TableScanOperator) op)) {
           if (!excludeOps.contains(parent)) {
@@ -1904,7 +1927,7 @@ public class SharedWorkOptimizer extends Transform {
   }
 
   private static Set<Operator<?>> findChildWorkOperators(ParseContext pctx,
-          SharedWorkOptimizerCache optimizerCache, Operator<?> start) {
+      SharedWorkOptimizerCache optimizerCache, Operator<?> start, boolean traverseEventOperators) {
     // Find operators in work
     Set<Operator<?>> workOps = findWorkOperators(optimizerCache, start);
     // Gather output works operators
@@ -1926,8 +1949,10 @@ public class SharedWorkOptimizer extends Transform {
       } else if(op.getConf() instanceof DynamicPruningEventDesc) {
         // DPP work is considered a child because work needs
         // to finish for it to execute
-        set.addAll(findWorkOperators(
-                optimizerCache, ((DynamicPruningEventDesc) op.getConf()).getTableScan()));
+        if (traverseEventOperators) {
+          set.addAll(findWorkOperators(
+                  optimizerCache, ((DynamicPruningEventDesc) op.getConf()).getTableScan()));
+        }
       }
     }
     return set;
