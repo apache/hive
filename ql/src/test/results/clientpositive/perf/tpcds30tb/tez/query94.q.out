@@ -150,7 +150,7 @@ STAGE PLANS:
                       Statistics: Num rows: 2160007345 Data size: 17280058760 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: bigint)
-                        minReductionHashAggr: 0.390226
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 2160007345 Data size: 17280058760 Basic stats: COMPLETE Column stats: COMPLETE

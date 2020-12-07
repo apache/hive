@@ -2568,7 +2568,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(k1), max(k1), count(1), count(k1), compute_bit_vector(k1, 'hll'), max(length(v1)), avg(COALESCE(length(v1),0)), count(v1), compute_bit_vector(v1, 'hll'), min(k2), max(k2), count(k2), compute_bit_vector(k2, 'hll'), max(length(v2)), avg(COALESCE(length(v2),0)), count(v2), compute_bit_vector(v2, 'hll')
-                            minReductionHashAggr: 0.0
+                            minReductionHashAggr: 0.4
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
                             Statistics: Num rows: 1 Data size: 792 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2711,7 +2711,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
                           Group By Operator
                             aggregations: min(k1), max(k1), count(1), count(k1), compute_bit_vector(k1, 'hll'), max(length(v1)), avg(COALESCE(length(v1),0)), count(v1), compute_bit_vector(v1, 'hll'), min(k2), max(k2), count(k2), compute_bit_vector(k2, 'hll'), max(length(v2)), avg(COALESCE(length(v2),0)), count(v2), compute_bit_vector(v2, 'hll')
-                            minReductionHashAggr: 0.0
+                            minReductionHashAggr: 0.4
                             mode: hash
                             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
                             Statistics: Num rows: 1 Data size: 792 Basic stats: COMPLETE Column stats: COMPLETE
