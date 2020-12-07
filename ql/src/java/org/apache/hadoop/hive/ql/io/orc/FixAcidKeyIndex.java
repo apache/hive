@@ -158,26 +158,24 @@ public class FixAcidKeyIndex {
     RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(reader);
     StructObjectInspector soi = (StructObjectInspector) reader.getObjectInspector();
     // struct<operation:int,originalTransaction:bigint,bucket:int,rowId:bigint,currentTransaction:bigint
+    List<? extends StructField> structFields = soi.getAllStructFieldRefs();
+    StructField transactionField = structFields.get(1);
+    LongObjectInspector transactionOI = (LongObjectInspector) transactionField.getFieldObjectInspector();
+    StructField bucketField = structFields.get(2);
+    IntObjectInspector bucketOI = (IntObjectInspector) bucketField.getFieldObjectInspector();
+    StructField rowIdField = structFields.get(3);
+    LongObjectInspector rowIdOI = (LongObjectInspector) rowIdField.getFieldObjectInspector();
 
     long rowsProcessed = 0;
     try (RecordReader rr = reader.rows()) {
-      for(int i=0; i<stripes.size(); i++) {
+      for (int i = 0; i < stripes.size(); i++) {
         rowsProcessed += stripes.get(i).getNumberOfRows();
-        rr.seekToRow(rowsProcessed-1);
+        rr.seekToRow(rowsProcessed - 1);
         OrcStruct row = (OrcStruct) rr.next(null);
 
-        List<? extends StructField> structFields = soi.getAllStructFieldRefs();
-
-        StructField transactionField = structFields.get(1);
-        StructField bucketField = structFields.get(2);
-        StructField rowIdField = structFields.get(3);
-
-        long lastTransaction = ((LongObjectInspector) transactionField.getFieldObjectInspector()).get(
-                soi.getStructFieldData(row, transactionField));
-        int lastBucket = ((IntObjectInspector) bucketField.getFieldObjectInspector()).get(
-                soi.getStructFieldData(row, bucketField));
-        long lastRowId = ((LongObjectInspector) rowIdField.getFieldObjectInspector()).get(
-                soi.getStructFieldData(row, rowIdField));
+        long lastTransaction = transactionOI.get(soi.getStructFieldData(row, transactionField));
+        int lastBucket = bucketOI.get(soi.getStructFieldData(row, bucketField));
+        long lastRowId = rowIdOI.get(soi.getStructFieldData(row, rowIdField));
 
         RecordIdentifier recordIdentifier = new RecordIdentifier(lastTransaction, lastBucket, lastRowId);
         result.recordIdentifiers.add(recordIdentifier);
