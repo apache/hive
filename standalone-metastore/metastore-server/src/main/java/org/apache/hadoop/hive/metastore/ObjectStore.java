@@ -1840,12 +1840,13 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   @Override
-  public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names)
-      throws MetaException, UnknownDBException {
+  public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names,
+      GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException {
     List<Table> tables = new ArrayList<>();
     boolean committed = false;
-    Query dbExistsQuery = null;
     Query query = null;
+    List<MTable> mtables = null;
+
     try {
       openTransaction();
       db = normalizeIdentifier(db);
@@ -1855,20 +1856,69 @@ public class ObjectStore implements RawStore, Configurable {
       for (String t : tbl_names) {
         lowered_tbl_names.add(normalizeIdentifier(t));
       }
+
       query = pm.newQuery(MTable.class);
       query.setFilter("database.name == db && database.catalogName == cat && tbl_names.contains(tableName)");
       query.declareParameters("java.lang.String db, java.lang.String cat, java.util.Collection tbl_names");
-      Collection mtables = (Collection) query.execute(db, catName, lowered_tbl_names);
+
+      List<String> projectionFields = null;
+
+      // If a projection specification has been set, validate it and translate it to JDO columns.
+      if (projectionSpec != null) {
+        //Validate the projection fields for multi-valued fields.
+        projectionFields = TableFields.getMFieldNames(projectionSpec.getFieldList());
+      }
+
+      // If the JDO translation resulted in valid JDO columns names, use it to create a projection for the JDO query.
+      if (projectionFields != null) {
+        // fetch partially filled tables using result clause
+        query.setResult(Joiner.on(',').join(projectionFields));
+      }
+
+      if (projectionFields == null) {
+        mtables = (List<MTable>) query.execute(db, catName, lowered_tbl_names);
+      } else {
+        if (projectionFields.size() > 1) {
+          // Execute the query to fetch the partial results.
+          List<Object[]> results = (List<Object[]>) query.execute(db, catName, lowered_tbl_names);
+          // Declare the tables array to return the list of tables
+          mtables = new ArrayList<>(results.size());
+          // Iterate through each row of the result and create the MTable object.
+          for (Object[] row : results) {
+            MTable mtable = new MTable();
+            int i = 0;
+            for (Object val : row) {
+              MetaStoreServerUtils.setNestedProperty(mtable, projectionFields.get(i), val, true);
+              i++;
+            }
+            mtables.add(mtable);
+          }
+        } else if (projectionFields.size() == 1) {
+          // Execute the query to fetch the partial results.
+          List<Object> results = (List<Object>) query.execute(db, catName, lowered_tbl_names);
+          // Iterate through each row of the result and create the MTable object.
+          mtables = new ArrayList<>(results.size());
+          for (Object row : results) {
+            MTable mtable = new MTable();
+            MetaStoreServerUtils.setNestedProperty(mtable, projectionFields.get(0), row, true);
+            mtables.add(mtable);
+          }
+        }
+      }
+
       if (mtables == null || mtables.isEmpty()) {
-        // Need to differentiate between an unmatched pattern and a non-existent database
-        dbExistsQuery = pm.newQuery(MDatabase.class, "name == db && catalogName == cat");
-        dbExistsQuery.declareParameters("java.lang.String db, java.lang.String cat");
-        dbExistsQuery.setUnique(true);
-        dbExistsQuery.setResult("name");
-        String dbNameIfExists = (String) dbExistsQuery.execute(db, catName);
-        if (org.apache.commons.lang3.StringUtils.isEmpty(dbNameIfExists)) {
-          throw new UnknownDBException("Could not find database " +
-              DatabaseName.getQualified(catName, db));
+        Database tempDB = null;
+        NoSuchObjectException ex = null;
+        try {
+          tempDB = getDatabase(catName, db);
+        } catch(NoSuchObjectException nsoe) {
+          ex = nsoe;
+        }
+
+        if (tempDB == null) {
+          final String errorMessage = (ex == null ? "" : (": " + ex.getMessage()));
+          throw new UnknownDBException("Could not find database " + DatabaseName.getQualified(catName, db) +
+                  errorMessage);
         }
       } else {
         for (Iterator iter = mtables.iterator(); iter.hasNext(); ) {
@@ -1876,8 +1926,8 @@ public class ObjectStore implements RawStore, Configurable {
           // Retrieve creation metadata if needed
           if (TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType())) {
             tbl.setCreationMetadata(
-                convertToCreationMetadata(
-                    getCreationMetadata(tbl.getCatName(), tbl.getDbName(), tbl.getTableName())));
+                    convertToCreationMetadata(
+                            getCreationMetadata(tbl.getCatName(), tbl.getDbName(), tbl.getTableName())));
           }
           tables.add(tbl);
         }
@@ -1885,11 +1935,14 @@ public class ObjectStore implements RawStore, Configurable {
       committed = commitTransaction();
     } finally {
       rollbackAndCleanup(committed, query);
-      if (dbExistsQuery != null) {
-        dbExistsQuery.closeAll();
-      }
     }
     return tables;
+  }
+
+  @Override
+  public List<Table> getTableObjectsByName(String catName, String db, List<String> tbl_names)
+          throws MetaException, UnknownDBException {
+    return getTableObjectsByName(catName, db, tbl_names, null);
   }
 
   /** Makes shallow copy of a list to avoid DataNucleus mucking with our objects. */
@@ -1912,7 +1965,7 @@ public class ObjectStore implements RawStore, Configurable {
       // for backwards compatibility with old metastore persistence
       if (mtbl.getViewOriginalText() != null) {
         tableType = TableType.VIRTUAL_VIEW.toString();
-      } else if (Boolean.parseBoolean(mtbl.getParameters().get("EXTERNAL"))) {
+      } else if (mtbl.getParameters() != null && Boolean.parseBoolean(mtbl.getParameters().get("EXTERNAL"))) {
         tableType = TableType.EXTERNAL_TABLE.toString();
       } else {
         tableType = TableType.MANAGED_TABLE.toString();
@@ -1920,11 +1973,11 @@ public class ObjectStore implements RawStore, Configurable {
     }
     Map<String, String> parameters = convertMap(mtbl.getParameters());
     boolean isAcidTable = TxnUtils.isAcidTable(parameters);
-    final Table t = new Table(mtbl.getTableName(), mtbl.getDatabase().getName(), mtbl
-        .getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl
-        .getRetention(), convertToStorageDescriptor(mtbl.getSd(), false, isAcidTable),
-        convertToFieldSchemas(mtbl.getPartitionKeys()), parameters,
-        mtbl.getViewOriginalText(), mtbl.getViewExpandedText(), tableType);
+    final Table t = new Table(mtbl.getTableName(), mtbl.getDatabase() != null ? mtbl.getDatabase().getName() : null,
+        mtbl.getOwner(), mtbl.getCreateTime(), mtbl.getLastAccessTime(), mtbl.getRetention(),
+        convertToStorageDescriptor(mtbl.getSd(), false, isAcidTable),
+        convertToFieldSchemas(mtbl.getPartitionKeys()), parameters, mtbl.getViewOriginalText(),
+        mtbl.getViewExpandedText(), tableType);
 
     if (Strings.isNullOrEmpty(mtbl.getOwnerType())) {
       // Before the ownerType exists in an old Hive schema, USER was the default type for owner.
@@ -1936,7 +1989,7 @@ public class ObjectStore implements RawStore, Configurable {
 
     t.setId(mtbl.getId());
     t.setRewriteEnabled(mtbl.isRewriteEnabled());
-    t.setCatName(mtbl.getDatabase().getCatalogName());
+    t.setCatName(mtbl.getDatabase() != null ? mtbl.getDatabase().getCatalogName() : null);
     t.setWriteId(mtbl.getWriteId());
     return t;
   }

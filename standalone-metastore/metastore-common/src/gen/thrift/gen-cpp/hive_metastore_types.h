@@ -11415,12 +11415,13 @@ void swap(GetTableResult &a, GetTableResult &b);
 std::ostream& operator<<(std::ostream& out, const GetTableResult& obj);
 
 typedef struct _GetTablesRequest__isset {
-  _GetTablesRequest__isset() : tblNames(false), capabilities(false), catName(false), processorCapabilities(false), processorIdentifier(false) {}
+  _GetTablesRequest__isset() : tblNames(false), capabilities(false), catName(false), processorCapabilities(false), processorIdentifier(false), projectionSpec(false) {}
   bool tblNames :1;
   bool capabilities :1;
   bool catName :1;
   bool processorCapabilities :1;
   bool processorIdentifier :1;
+  bool projectionSpec :1;
 } _GetTablesRequest__isset;
 
 class GetTablesRequest : public virtual ::apache::thrift::TBase {
@@ -11438,6 +11439,7 @@ class GetTablesRequest : public virtual ::apache::thrift::TBase {
   std::string catName;
   std::vector<std::string>  processorCapabilities;
   std::string processorIdentifier;
+  GetProjectionsSpec projectionSpec;
 
   _GetTablesRequest__isset __isset;
 
@@ -11452,6 +11454,8 @@ class GetTablesRequest : public virtual ::apache::thrift::TBase {
   void __set_processorCapabilities(const std::vector<std::string> & val);
 
   void __set_processorIdentifier(const std::string& val);
+
+  void __set_projectionSpec(const GetProjectionsSpec& val);
 
   bool operator == (const GetTablesRequest & rhs) const
   {
@@ -11476,6 +11480,10 @@ class GetTablesRequest : public virtual ::apache::thrift::TBase {
     if (__isset.processorIdentifier != rhs.__isset.processorIdentifier)
       return false;
     else if (__isset.processorIdentifier && !(processorIdentifier == rhs.processorIdentifier))
+      return false;
+    if (__isset.projectionSpec != rhs.__isset.projectionSpec)
+      return false;
+    else if (__isset.projectionSpec && !(projectionSpec == rhs.projectionSpec))
       return false;
     return true;
   }

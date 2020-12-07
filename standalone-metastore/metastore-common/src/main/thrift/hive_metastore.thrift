@@ -1454,7 +1454,8 @@ struct GetTablesRequest {
   3: optional ClientCapabilities capabilities,
   4: optional string catName,
   5: optional list<string> processorCapabilities,
-  6: optional string processorIdentifier
+  6: optional string processorIdentifier,
+  7: optional GetProjectionsSpec projectionSpec
 }
 
 struct GetTablesResult {
@@ -1951,9 +1952,11 @@ struct GetProjectionsSpec {
    1: list<string> fieldList;
    // SQL-92 compliant regex pattern for param keys to be included
    // _ or % wildcards are supported. '_' represent one character and '%' represents 0 or more characters
+   // Currently this is unsupported when fetching tables.
    2: string includeParamKeyPattern;
    // SQL-92 compliant regex pattern for param keys to be excluded
    // _ or % wildcards are supported. '_' represent one character and '%' represents 0 or more characters
+   // Current this is unsupported  when fetching tables.
    3: string excludeParamKeyPattern;
 }
 
