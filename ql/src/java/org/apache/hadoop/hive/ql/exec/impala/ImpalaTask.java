@@ -21,7 +21,6 @@ import java.io.Serializable;
 
 import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ImpalaExecutionMode;
 import org.apache.hadoop.hive.conf.HiveConf.ImpalaResultMethod;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -63,25 +62,21 @@ public class ImpalaTask extends Task<ImpalaWork> implements Serializable {
         // zero is success, non-zero is failure
         int rc = 0;
         HiveConf conf = getQueryState().getConf();
-        boolean isPlannedMode = conf.getImpalaExecutionMode() == ImpalaExecutionMode.PLAN;
         boolean isStreaming;
         try {
             session = ImpalaSessionManager.getInstance().getSession(conf);
             TOperationHandle opHandle;
             switch (work.getType()) {
             case COMPILED_PLAN:
-                Preconditions.checkState(isPlannedMode);
                 isStreaming = conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING;
                 opHandle = session.executePlan(work.getQuery(), work.getCompiledPlan());
                 break;
             case COMPILED_QUERY:
-                Preconditions.checkState(isPlannedMode);
                 Preconditions.checkState(queryPlan.getOperation() == HiveOperation.ANALYZE_TABLE);
                 isStreaming = true;
                 opHandle = session.execute(work.getQuery());
                 break;
             case QUERY:
-                Preconditions.checkState(isPlannedMode == false, "Tried to pass-through query unexpectedly");
                 isStreaming = conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING;
                 opHandle = session.execute(work.getQuery());
                 break;

@@ -64,13 +64,10 @@ import static org.apache.hadoop.hive.ql.metadata.HiveUtils.unparseIdentifier;
 public class ImpalaCompiler extends TaskCompiler {
     protected static final Logger LOG = LoggerFactory.getLogger(ImpalaCompiler.class);
 
-    /* When isPlanned is true, a fully planned ExecRequest is expected, otherwise we expect only a query string */
-    private boolean isPlanned;
     /* Number of rows fetch from Impala per fetch when streaming */
     private long requestedFetchSize;
 
-    ImpalaCompiler(boolean isPlanned, long requestedFetchSize) {
-        this.isPlanned = isPlanned;
+    ImpalaCompiler(long requestedFetchSize) {
         this.requestedFetchSize = requestedFetchSize;
     }
 
@@ -81,30 +78,25 @@ public class ImpalaCompiler extends TaskCompiler {
         ImpalaWork work;
         Preconditions.checkArgument(mvTask.size() <= 1, "ImpalaCompiler expects at most 1 MoveTask");
         MoveTask moveTask = mvTask.size() == 0 ? null : (MoveTask) mvTask.get(0);
-        if (isPlanned) {
-            boolean computeStats = pCtx.getQueryProperties().isAnalyzeCommand() ||
-                pCtx.getQueryProperties().isAnalyzeRewrite();
-            if (computeStats) {
-                // Compute statistics statements are sent to the Impala engine
-                // as a SQL statement.
-                // We need to create a fetch operator since only Impala returns
-                // results for this statement
-                createFetchTask(pCtx);
-                work = ImpalaWork.createPlannedWork(generateComputeStatsStatement(pCtx, inputs),
-                    pCtx.getFetchTask(), requestedFetchSize);
-            } else {
-                MoveWork moveWork = moveTask == null ? null : (MoveWork) moveTask.getWork();
-                // This is the common path for a planned query
-                work = ImpalaWork.createPlannedWork(getFinalizedCompiledPlan(pCtx, moveWork), pCtx.getQueryState().getQueryString(),
-                    pCtx.getFetchTask(), requestedFetchSize);
-            }
+        boolean computeStats = pCtx.getQueryProperties().isAnalyzeCommand() ||
+            pCtx.getQueryProperties().isAnalyzeRewrite();
+        if (computeStats) {
+            // Compute statistics statements are sent to the Impala engine
+            // as a SQL statement.
+            // We need to create a fetch operator since only Impala returns
+            // results for this statement
+            createFetchTask(pCtx);
+            work = ImpalaWork.createPlannedWork(generateComputeStatsStatement(pCtx, inputs),
+                pCtx.getFetchTask(), requestedFetchSize);
         } else {
-            // CDPD-7172: Investigate security implications of Impala query execution mode
-            work = ImpalaWork.createQuery(pCtx.getQueryState().getQueryString(), pCtx.getFetchTask(), requestedFetchSize);
+            MoveWork moveWork = moveTask == null ? null : (MoveWork) moveTask.getWork();
+            // This is the common path for a planned query
+            work = ImpalaWork.createPlannedWork(getFinalizedCompiledPlan(pCtx, moveWork), pCtx.getQueryState().getQueryString(),
+                pCtx.getFetchTask(), requestedFetchSize);
         }
 
         Task task = TaskFactory.get(work);
-        if (isPlanned && moveTask != null && !work.getCompiledPlan().getIsExplain()) {
+        if (moveTask != null && !work.getCompiledPlan().getIsExplain()) {
             task.addDependentTask(moveTask);
         }
         rootTasks.add(task);

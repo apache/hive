@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ImpalaExecutionMode;
 import org.apache.hadoop.hive.ql.parse.spark.SparkCompiler;
 
 /**
@@ -45,9 +44,7 @@ public class TaskCompilerFactory {
       case SPARK:
         return new SparkCompiler();
       case IMPALA:
-        boolean isPlannedMode = conf.getImpalaExecutionMode() == ImpalaExecutionMode.PLAN;
-        return new ImpalaCompiler(isPlannedMode,
-                conf.getLongVar(HiveConf.ConfVars.HIVE_IMPALA_FETCH_SIZE));
+        return new ImpalaCompiler(conf.getLongVar(HiveConf.ConfVars.HIVE_IMPALA_FETCH_SIZE));
       case INVALID_RUNTIME:
         throw new UnsupportedOperationException("Invalid execution engine specified.");
     }
