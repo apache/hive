@@ -576,6 +576,8 @@ class GetAllFunctionsResponse; end
 
 class ClientCapabilities; end
 
+class GetProjectionsSpec; end
+
 class GetTableRequest; end
 
 class GetTableResult; end
@@ -731,8 +733,6 @@ class RenamePartitionResponse; end
 class AlterTableRequest; end
 
 class AlterTableResponse; end
-
-class GetProjectionsSpec; end
 
 class GetPartitionsFilterSpec; end
 
@@ -4977,6 +4977,26 @@ class ClientCapabilities
   ::Thrift::Struct.generate_accessors self
 end
 
+class GetProjectionsSpec
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  FIELDLIST = 1
+  INCLUDEPARAMKEYPATTERN = 2
+  EXCLUDEPARAMKEYPATTERN = 3
+
+  FIELDS = {
+    FIELDLIST => {:type => ::Thrift::Types::LIST, :name => 'fieldList', :element => {:type => ::Thrift::Types::STRING}},
+    INCLUDEPARAMKEYPATTERN => {:type => ::Thrift::Types::STRING, :name => 'includeParamKeyPattern'},
+    EXCLUDEPARAMKEYPATTERN => {:type => ::Thrift::Types::STRING, :name => 'excludeParamKeyPattern'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class GetTableRequest
   include ::Thrift::Struct, ::Thrift::Struct_Union
   DBNAME = 1
@@ -6601,26 +6621,6 @@ class AlterTableResponse
 
   FIELDS = {
 
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
-class GetProjectionsSpec
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  FIELDLIST = 1
-  INCLUDEPARAMKEYPATTERN = 2
-  EXCLUDEPARAMKEYPATTERN = 3
-
-  FIELDS = {
-    FIELDLIST => {:type => ::Thrift::Types::LIST, :name => 'fieldList', :element => {:type => ::Thrift::Types::STRING}},
-    INCLUDEPARAMKEYPATTERN => {:type => ::Thrift::Types::STRING, :name => 'includeParamKeyPattern'},
-    EXCLUDEPARAMKEYPATTERN => {:type => ::Thrift::Types::STRING, :name => 'excludeParamKeyPattern'}
   }
 
   def struct_fields; FIELDS; end
