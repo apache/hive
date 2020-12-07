@@ -1,13 +1,15 @@
-Release Notes - Hive - Version 2.3.7
+Release Notes - Hive - Version 2.3.8
 
 
 
 ** Bug
-    * [HIVE-21508] - ClassCastException when initializing HiveMetaStoreClient on JDK10 or newer
-    * [HIVE-23086] - Two tests fail on branch-2.3
-
-** New Feature
-    * [HIVE-22249] - Support Parquet through HCatalog
+    * [HIVE-23980] - Shade guava from existing Hive versions
 
 ** Improvement
-    * [HIVE-21980] - Parsing time can be high in case of deeply nested subqueries
+    * [HIVE-24324] - Remove deprecated API usage from Avro
+    * [HIVE-24379] - Backport HIVE-19662 to branch-2.3
+    * [HIVE-24436] - Fix Avro NULL_DEFAULT_VALUE compatibility issue
+
+** Test
+    * [HIVE-23323] - Add qsplits profile
+    * [HIVE-24035] - Add Jenkinsfile for branch-2.3
