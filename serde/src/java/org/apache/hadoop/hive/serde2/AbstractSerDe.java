@@ -107,4 +107,9 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
         + ", tableProperties=" + tableProperties + ", partitionProperties=" + partitionProperties + ", getClass()="
         + getClass() + "]";
   }
+
+  public Optional<Configuration> getConfiguration() {
+    return configuration;
+  }
+
 }
