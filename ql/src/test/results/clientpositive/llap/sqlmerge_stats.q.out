@@ -1886,11 +1886,11 @@ POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(t2)t.FieldSchema(name:ROW__I
 POSTHOOK: Lineage: t2.a SIMPLE [(upd_t2_4)u.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: t2.b SIMPLE [(upd_t2_4)u.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: t2.c SIMPLE []
-PREHOOK: query: select * from t2 order by a
+PREHOOK: query: select * from t2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t2 order by a
+POSTHOOK: query: select * from t2
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t2
 #### A masked pattern was here ####
@@ -2244,11 +2244,11 @@ POSTHOOK: Output: default@t3
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(t3)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
 POSTHOOK: Lineage: t3.a SIMPLE [(upd_t3)u.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: t3.b SIMPLE []
-PREHOOK: query: select * from t3 order by a
+PREHOOK: query: select * from t3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t3
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t3 order by a
+POSTHOOK: query: select * from t3
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t3
 #### A masked pattern was here ####
@@ -2597,11 +2597,11 @@ POSTHOOK: Output: default@t4
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(t4)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
 POSTHOOK: Lineage: t4.a SIMPLE [(upd_t4)u.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: t4.b SIMPLE []
-PREHOOK: query: select * from t4 order by a
+PREHOOK: query: select * from t4
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t4
 #### A masked pattern was here ####
-POSTHOOK: query: select * from t4 order by a
+POSTHOOK: query: select * from t4
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t4
 #### A masked pattern was here ####

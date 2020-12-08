@@ -51,8 +51,6 @@ public class TestAcidInputFormat {
 
   @Mock
   private DataInput mockDataInput;
-
-  // IRJUNK IDE TESZTET!!!
   
   @Test
   public void testDeltaMetaDataReadFieldsNoStatementIds() throws Exception {

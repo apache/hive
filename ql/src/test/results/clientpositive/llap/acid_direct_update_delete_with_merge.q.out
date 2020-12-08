@@ -120,14 +120,14 @@ POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(transactions)t.FieldSchema(n
 POSTHOOK: Lineage: transactions PARTITION(tran_date=20170415).id SIMPLE [(merge_source)s.FieldSchema(name:id, type:int, comment:null), ]
 POSTHOOK: Lineage: transactions PARTITION(tran_date=20170415).last_update_user SIMPLE []
 POSTHOOK: Lineage: transactions PARTITION(tran_date=20170415).value SIMPLE [(merge_source)s.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: SELECT * FROM transactions ORDER BY ID
+PREHOOK: query: SELECT * FROM transactions
 PREHOOK: type: QUERY
 PREHOOK: Input: default@transactions
 PREHOOK: Input: default@transactions@tran_date=20170410
 PREHOOK: Input: default@transactions@tran_date=20170413
 PREHOOK: Input: default@transactions@tran_date=20170415
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT * FROM transactions ORDER BY ID
+POSTHOOK: query: SELECT * FROM transactions
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@transactions
 POSTHOOK: Input: default@transactions@tran_date=20170410
@@ -135,6 +135,8 @@ POSTHOOK: Input: default@transactions@tran_date=20170413
 POSTHOOK: Input: default@transactions@tran_date=20170415
 POSTHOOK: Output: hdfs://### HDFS PATH ###
 1	value_01	creation	20170410
+10	value_10	creation	20170413
+11	value_11	merge_insert	20170415
 2	value_02	creation	20170410
 3	value_03	creation	20170410
 5	value_05	creation	20170413
@@ -142,8 +144,6 @@ POSTHOOK: Output: hdfs://### HDFS PATH ###
 7	value_77777	merge_update	20170413
 8	value_08	merge_insert	20170415
 9	value_09	creation	20170413
-10	value_10	creation	20170413
-11	value_11	merge_insert	20170415
 PREHOOK: query: DROP TABLE IF EXISTS transactions
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@transactions

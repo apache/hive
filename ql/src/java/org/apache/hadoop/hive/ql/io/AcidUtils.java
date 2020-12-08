@@ -564,6 +564,16 @@ public class AcidUtils {
     return result;
   }
 
+  /**
+   * If the direct insert is on for ACID tables, the files will contain an "_attempID" postfix.
+   * In order to be able to read the files from the delete deltas, we need to know which
+   * attemptId belongs to which delta. To make this lookup easy, this method created a map
+   * to link the deltas to the attemptId.
+   * @param pathToDeltaMetaData
+   * @param deleteDeltaDirs
+   * @param bucket
+   * @return
+   */
   public static Map<String, Integer> getDeltaToAttemptIdMap(
       Map<String, AcidInputFormat.DeltaMetaData> pathToDeltaMetaData, Path[] deleteDeltaDirs, int bucket) {
     Map<String, Integer> deltaToAttemptId = new HashMap<>();

@@ -51,27 +51,27 @@ POSTHOOK: Lineage: source.a1 SCRIPT []
 POSTHOOK: Lineage: source.b1 SCRIPT []
 POSTHOOK: Lineage: source.p1 SCRIPT []
 POSTHOOK: Lineage: source.q1 SCRIPT []
-PREHOOK: query: select * from source order by a1
+PREHOOK: query: select * from source
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
 #### A masked pattern was here ####
-POSTHOOK: query: select * from source order by a1
+POSTHOOK: query: select * from source
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source
 #### A masked pattern was here ####
 1	2	1	2
+111	111	111	111
 3	4	1	2
 5	6	1	3
 7	8	2	2
-111	111	111	111
-PREHOOK: query: select * from target order by a
+PREHOOK: query: select * from target
 PREHOOK: type: QUERY
 PREHOOK: Input: default@target
 PREHOOK: Input: default@target@p=1/q=2
 PREHOOK: Input: default@target@p=1/q=3
 PREHOOK: Input: default@target@p=2/q=2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from target order by a
+POSTHOOK: query: select * from target
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=1/q=2
@@ -102,14 +102,14 @@ POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@target@p=1/q=2
 POSTHOOK: Output: default@target@p=1/q=3
 POSTHOOK: Output: default@target@p=2/q=2
-PREHOOK: query: select * from target order by a
+PREHOOK: query: select * from target
 PREHOOK: type: QUERY
 PREHOOK: Input: default@target
 PREHOOK: Input: default@target@p=1/q=2
 PREHOOK: Input: default@target@p=1/q=3
 PREHOOK: Input: default@target@p=2/q=2
 #### A masked pattern was here ####
-POSTHOOK: query: select * from target order by a
+POSTHOOK: query: select * from target
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=1/q=2
@@ -132,19 +132,19 @@ POSTHOOK: Input: default@source
 POSTHOOK: Input: default@target
 POSTHOOK: Input: default@target@p=2/q=2
 POSTHOOK: Output: default@source
-PREHOOK: query: select * from source order by a1
+PREHOOK: query: select * from source
 PREHOOK: type: QUERY
 PREHOOK: Input: default@source
 #### A masked pattern was here ####
-POSTHOOK: query: select * from source order by a1
+POSTHOOK: query: select * from source
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@source
 #### A masked pattern was here ####
 1	2	1	2
+111	111	111	111
 3	4	1	2
 5	6	1	3
 7	1	2	2
-111	111	111	111
 PREHOOK: query: drop table if exists target
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@target

@@ -2697,9 +2697,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @return Set of valid partitions
    * @throws HiveException
    */
-  private Set<Path> getValidPartitionsInPath(
-      int numDP, int numLB, Path loadPath, Long writeId, int stmtId,
-      boolean isMmTable, boolean isInsertOverwrite, boolean isDirectInsert, AcidUtils.Operation operation, Set<String> dynamiPartitionSpecs) throws HiveException {
+  private Set<Path> getValidPartitionsInPath(int numDP, int numLB, Path loadPath, Long writeId, int stmtId,
+      boolean isMmTable, boolean isInsertOverwrite, boolean isDirectInsert, AcidUtils.Operation operation,
+      Set<String> dynamiPartitionSpecs) throws HiveException {
     Set<Path> validPartitions = new HashSet<Path>();
     try {
       FileSystem fs = loadPath.getFileSystem(conf);

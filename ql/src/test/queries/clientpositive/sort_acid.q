@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 
@@ -16,7 +18,7 @@ explain cbo
 update acidtlb set b=777;
 update acidtlb set b=777;
 
-select * from acidtlb order by a;
+select * from acidtlb;
 
 
 explain cbo
@@ -25,7 +27,7 @@ where a in (select a from acidtlb where a = 30);
 update acidtlb set b=350
 where a in (select a from acidtlb where a = 30);
 
-select * from acidtlb order by a;
+select * from acidtlb;
 
 explain cbo
 update acidtlb set b=450
@@ -33,7 +35,7 @@ where a in (select c from othertlb where c < 65);
 update acidtlb set b=450
 where a in (select c from othertlb where c < 65);
 
-select * from acidtlb order by a;
+select * from acidtlb;
 
 explain cbo
 delete from acidtlb
@@ -60,4 +62,4 @@ when matched and s.c < 30 then delete
 when matched and s.c = 30 then update set b = 1000
 when not matched then insert values (s.c, 2000 + s.d);
 
-select * from acidtlb order by a;
+select * from acidtlb;

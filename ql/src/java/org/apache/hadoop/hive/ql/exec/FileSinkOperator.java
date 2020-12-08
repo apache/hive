@@ -240,21 +240,33 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           if (isDirectInsert
               && (stats.getRowCount() > 0 || isInsertOverwrite || AcidUtils.Operation.DELETE.equals(acidOperation)
                   || AcidUtils.Operation.UPDATE.equals(acidOperation))) {
-            // In case of delete operation, the deleteFilePath has to be used, not the updatedFilePath
-            // In case of update operation, we need both paths. The updateFilePath will be added
-            // to the outPathsCommitted array and the deleteFilePath will be collected in a separate list.
+
             OrcRecordUpdater recordUpdater = (OrcRecordUpdater) updaters[i];
-            outPathsCommitted[i] = recordUpdater.getUpdatedFilePath();
-            if (AcidUtils.Operation.DELETE.equals(conf.getAcidOperation())) {
+            switch (acidOperation) {
+            case INSERT:
+              outPathsCommitted[i] = recordUpdater.getUpdatedFilePath();
+              break;
+            case UPDATE:
+              // In case of update operation, we need both the deleteFilePath and the updatedFilePath.
+              // The updateFilePath will be added to the outPathsCommitted array and the deleteFilePath
+              // will be collected in a separate list.
+              outPathsCommitted[i] = recordUpdater.getUpdatedFilePath();
+              if (deleteDeltas != null) {
+                deleteDeltas.add(recordUpdater.getDeleteFilePath());
+                LOG.debug("The following path has been added to the deleteDeltas list: "
+                    + recordUpdater.getDeleteFilePath().toString());
+              }
+              break;
+            case DELETE:
+              // In case of delete operation, the deleteFilePath has to be used, not the updatedFilePath
               outPathsCommitted[i] = recordUpdater.getDeleteFilePath();
+              break;
+            default:
+              break;
             }
+
             LOG.debug(
                 "The following path has been added to the outPathsCommitted array: " + outPathsCommitted[i].toString());
-            if (AcidUtils.Operation.UPDATE.equals(conf.getAcidOperation()) && deleteDeltas != null) {
-              deleteDeltas.add(recordUpdater.getDeleteFilePath());
-              LOG.debug("The following path has been added to the deleteDeltas list: "
-                  + recordUpdater.getDeleteFilePath().toString());
-            }
           }
           try {
             updaters[i].close(abort);

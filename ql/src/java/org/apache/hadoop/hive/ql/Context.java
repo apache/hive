@@ -105,7 +105,7 @@ public class Context {
 
   private Configuration conf;
   protected int pathid = 10000;
-  private int moveTaskId = 100;
+  private int moveTaskId = 0;
   protected ExplainConfiguration explainConfig = null;
   protected String cboInfo;
   protected boolean cboSucceeded;

@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 SET hive.vectorized.execution.enabled=false;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.support.concurrency=true;

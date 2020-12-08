@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -81,7 +83,7 @@ merge into t2 as t using upd_t2_4 as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = 96
 WHEN NOT MATCHED THEN INSERT (b, c, a) VALUES(u.b, default, u.a);
 
-select * from t2 order by a;
+select * from t2;
 
 create table t3(a int, b int default 1) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 create table upd_t3(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
@@ -97,7 +99,7 @@ merge into t3 as t using upd_t3 as u ON t.a = u.a
 WHEN MATCHED THEN DELETE
 WHEN NOT MATCHED THEN INSERT (b, a) VALUES(default, u.b);
 
-select * from t3 order by a;
+select * from t3;
 
 create table t4(a int, b int default 1) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
 create table upd_t4(a int, b int) clustered by (a) into 2 buckets stored as orc TBLPROPERTIES ('transactional'='true');
@@ -113,5 +115,5 @@ merge into t4 as t using upd_t4 as u ON t.a = u.a
 WHEN MATCHED THEN UPDATE SET b = default
 WHEN NOT MATCHED THEN INSERT (b, a) VALUES(default, u.b);
 
-select * from t4 order by a;
+select * from t4;
 

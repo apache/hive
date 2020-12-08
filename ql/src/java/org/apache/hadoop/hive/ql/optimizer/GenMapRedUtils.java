@@ -1902,14 +1902,10 @@ public final class GenMapRedUtils {
 
       if ((srcDir != null) && srcDir.equals(fsopFinalDir)) {
         if (isDirectInsert || isMmFsop) {
-          if (moveTaskId != null && fsoMoveTaskId != null && moveTaskId.equals(fsoMoveTaskId)) {
+          if (moveTaskId.equals(fsoMoveTaskId)) {
             // If the ACID direct insert is on, the MoveTasks cannot be identified by the srcDir as
             // in this case the srcDir is always the root directory of the table.
             // We need to consider the ACID write type to identify the MoveTasks.
-            return mvTsk;
-          }
-          if ((moveTaskId == null || fsoMoveTaskId == null) && moveTaskWriteType != null
-              && moveTaskWriteType.equals(acidOperation)) {
             return mvTsk;
           }
         } else {

@@ -191,17 +191,32 @@ public class QueryPlan implements Serializable {
     return acidSinks;
   }
 
+  /**
+   * This method is to get the proper statementId for the FileSinkOperator, a particular MoveTask belongs to.
+   * This is needed for ACID operations with direct insert on. In this case for listing the newly added or modified
+   * data the MoveTask has to know the statementId in order to list the files from the proper folder.
+   * Without knowing the statementId the files could be listed by multiple MoveTasks which could cause issues.
+   * To get the statementId, first the FSO has to be found in the acidSinks list. To do that, use
+   * the ACID operation, the path, the writeId and the moveTaskId.
+   *
+   * For queries with union all optimisation, there will be multiple FSOs with the same operation, writeId and moveTaskId.
+   * But one of these FSOs doesn't write data and its statementId is not valid, so if this FSO is selected and its statementId
+   * is returned, the file listing will find nothing. So check the acidSinks and if two of them have the same writeId, path
+   * and moveTaskId, then return -1 as statementId. With doing this, the file listing will find all partitions and files correctly.
+   *
+   * @param writeId
+   * @param moveTaskId
+   * @param acidOperation
+   * @param path
+   * @return The statementId from the FileSinkOperator with the given writeId, moveTaskId, operation and path.
+   * -1 if there are multiple FileSinkOperators with the same value of these parameters.
+   */
   public Integer getStatementIdForAcidWriteType(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
     FileSinkDesc result = null;
     for (FileSinkDesc acidSink : acidSinks) {
       if (acidOperation.equals(acidSink.getAcidOperation()) && path.equals(acidSink.getDestPath())
           && acidSink.getTableWriteId() == writeId
           && (moveTaskId == null || acidSink.getMoveTaskId() == null || moveTaskId.equals(acidSink.getMoveTaskId()))) {
-        // There is a problem with the union all optimisation. In this case, there will be multiple FileSinkOperators
-        // with the same operation, writeId and moveTaskId. But one of these FSOs doesn't write data and its statementId
-        // is not valid, so if this FSO is selected and its statementId is returned, the file listing will find nothing.
-        // So check the acidSinks and if two of them have the same writeId, path and moveTaskId, then return -1 as statementId.
-        // Like this, the file listing will find all partitions and files correctly.
         if (result != null) {
           return -1;
         }
@@ -215,6 +230,25 @@ public class QueryPlan implements Serializable {
     }
   }
 
+  /**
+   * This method is to get the dynamic partition specifications inserted by the FileSinkOperator, a particular MoveTask belongs to.
+   * This is needed for insert overwrite queries for ACID tables with direct insert on, so each MoveTask could list only the
+   * files inserted by the FSO the MoveTask belongs to. In case of an insert query, the writeId and statementId is enough to
+   * identify which delta directory was written by which FSO. But in case of insert overwrite, base directories will be created
+   * without statementIds, so we need the partition information to identify which folders to list.
+   *
+   * For queries with union all optimisation, there will be multiple FSOs with the same operation, writeId and moveTaskId.
+   * But one of these FSOs doesn't contain the partition specifications, so if this FSO is selected, the file listing will not be correct.
+   * So check the acidSinks and if two of them have the same writeId, path and moveTaskId, then return null.
+   * With doing this, the file listing will find all partitions and files correctly.
+   *
+   * @param writeId
+   * @param moveTaskId
+   * @param acidOperation
+   * @param path
+   * @return The dynamic partition specifications from the FileSinkOperator with the given writeId, moveTaskId, operation and path.
+   * null if there are multiple FileSinkOperators with the same value of these parameters.
+   */
   public Set<String> getDynamicPartitionSpecs(long writeId, String moveTaskId, AcidUtils.Operation acidOperation, Path path) {
     FileSinkDesc result = null;
     for (FileSinkDesc acidSink : acidSinks) {

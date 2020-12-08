@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 SET hive.vectorized.execution.enabled=false;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.support.concurrency=true;
@@ -21,7 +23,7 @@ select 1 as id1, '2014' as part1 from dummy_n7
 union all 
 select 2 as id1, '2014' as part1 from dummy_n7;
 
-select * from partunion1_n0 order by id1, part1;
+select * from partunion1_n0;
 
 show partitions partunion1_n0;
 
@@ -30,7 +32,7 @@ select 1 as id1, '2014' as part1 from dummy_n7
 union all 
 select 2 as id1, '2015' as part1 from dummy_n7;
 
-select * from partunion1_n1 order by id1, part1;
+select * from partunion1_n1;
 
 show partitions partunion1_n1;
 

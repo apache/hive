@@ -20,11 +20,11 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@test_update_bucketed
 POSTHOOK: Lineage: test_update_bucketed.id SCRIPT []
 POSTHOOK: Lineage: test_update_bucketed.value SCRIPT []
-PREHOOK: query: SELECT * FROM test_update_bucketed ORDER BY id
+PREHOOK: query: SELECT * FROM test_update_bucketed
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_bucketed
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT * FROM test_update_bucketed ORDER BY id
+POSTHOOK: query: SELECT * FROM test_update_bucketed
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -64,11 +64,11 @@ POSTHOOK: query: UPDATE test_update_bucketed SET value='New value' WHERE id IN (
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: default@test_update_bucketed
-PREHOOK: query: SELECT * FROM test_update_bucketed ORDER BY ID
+PREHOOK: query: SELECT * FROM test_update_bucketed
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_bucketed
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT * FROM test_update_bucketed ORDER BY ID
+POSTHOOK: query: SELECT * FROM test_update_bucketed
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: hdfs://### HDFS PATH ###
@@ -104,11 +104,11 @@ POSTHOOK: query: UPDATE test_update_bucketed SET value='New value2' WHERE id IN 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: default@test_update_bucketed
-PREHOOK: query: SELECT * FROM test_update_bucketed ORDER BY ID
+PREHOOK: query: SELECT * FROM test_update_bucketed
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_update_bucketed
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: SELECT * FROM test_update_bucketed ORDER BY ID
+POSTHOOK: query: SELECT * FROM test_update_bucketed
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test_update_bucketed
 POSTHOOK: Output: hdfs://### HDFS PATH ###

@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 set hive.acid.direct.insert.enabled=true;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
@@ -39,7 +41,7 @@ where a.c is null
 sort by a.c
 ;
 
-select * from multiinsert_test_acid order by a;
+select * from multiinsert_test_acid;
 
 from multiinsert_test_text a
 insert overwrite table multiinsert_test_mm partition (c)
@@ -57,7 +59,7 @@ where a.c is null
 sort by a.c
 ;
 
-select * from multiinsert_test_mm order by a;
+select * from multiinsert_test_mm;
 
 set hive.acid.direct.insert.enabled=false;
 
@@ -77,7 +79,7 @@ where a.c is null
 sort by a.c
 ;
 
-select * from multiinsert_test_acid_nondi order by a;
+select * from multiinsert_test_acid_nondi;
 
 set hive.acid.direct.insert.enabled=true;
 
@@ -107,7 +109,7 @@ where a.c is null
 sort by a.c
 ;
 
-select * from multiinsert_test_acid order by a;
+select * from multiinsert_test_acid;
 
 from multiinsert_test_text_2 a
 insert overwrite table multiinsert_test_mm partition (c)
@@ -125,7 +127,7 @@ where a.c is null
 sort by a.c
 ;
 
-select * from multiinsert_test_mm order by a;
+select * from multiinsert_test_mm;
 
 set hive.acid.direct.insert.enabled=false;
 
@@ -145,7 +147,7 @@ where a.c is null
 sort by a.c
 ;
 
-select * from multiinsert_test_acid_nondi order by a;
+select * from multiinsert_test_acid_nondi;
 
 set hive.acid.direct.insert.enabled=true;
 
@@ -175,7 +177,7 @@ where a.c is null
 sort by a.c
 ;
 
-select * from multiinsert_test_acid order by a;
+select * from multiinsert_test_acid;
 
 from multiinsert_test_text a
 insert into multiinsert_test_mm partition (c)
@@ -193,7 +195,7 @@ where a.c is null
 sort by a.c
 ;
 
-select * from multiinsert_test_mm order by a;
+select * from multiinsert_test_mm;
 
 set hive.acid.direct.insert.enabled=false;
 
@@ -213,7 +215,7 @@ where a.c is null
 sort by a.c
 ;
 
-select * from multiinsert_test_acid_nondi order by a;
+select * from multiinsert_test_acid_nondi;
 
 drop table if exists multiinsert_test_text;
 drop table if exists multiinsert_test_text_2;

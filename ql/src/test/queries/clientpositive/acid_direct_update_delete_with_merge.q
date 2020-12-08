@@ -1,3 +1,5 @@
+-- SORT_QUERY_RESULTS
+
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.acid.direct.insert.enabled=true;
@@ -35,7 +37,7 @@ WHEN MATCHED AND (T.value != S.value AND S.value IS NOT NULL) THEN UPDATE SET va
 WHEN MATCHED AND S.value IS NULL THEN DELETE
 WHEN NOT MATCHED THEN INSERT VALUES (S.ID, S.value, 'merge_insert', S.tran_date);
 
-SELECT * FROM transactions ORDER BY ID;
+SELECT * FROM transactions;
 
 DROP TABLE IF EXISTS transactions;
 DROP TABLE IF EXISTS merge_source;

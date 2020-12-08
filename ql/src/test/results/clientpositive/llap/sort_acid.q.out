@@ -82,11 +82,11 @@ POSTHOOK: query: update acidtlb set b=777
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 POSTHOOK: Output: default@acidtlb
-PREHOOK: query: select * from acidtlb order by a
+PREHOOK: query: select * from acidtlb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
-POSTHOOK: query: select * from acidtlb order by a
+POSTHOOK: query: select * from acidtlb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
@@ -129,11 +129,11 @@ where a in (select a from acidtlb where a = 30)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 POSTHOOK: Output: default@acidtlb
-PREHOOK: query: select * from acidtlb order by a
+PREHOOK: query: select * from acidtlb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
-POSTHOOK: query: select * from acidtlb order by a
+POSTHOOK: query: select * from acidtlb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
@@ -176,11 +176,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 POSTHOOK: Input: default@othertlb
 POSTHOOK: Output: default@acidtlb
-PREHOOK: query: select * from acidtlb order by a
+PREHOOK: query: select * from acidtlb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
-POSTHOOK: query: select * from acidtlb order by a
+POSTHOOK: query: select * from acidtlb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
@@ -307,11 +307,11 @@ POSTHOOK: Output: default@merge_tmp_table
 POSTHOOK: Lineage: acidtlb.a SIMPLE [(othertlb)s.FieldSchema(name:c, type:int, comment:null), ]
 POSTHOOK: Lineage: acidtlb.b EXPRESSION [(othertlb)s.FieldSchema(name:d, type:int, comment:null), ]
 POSTHOOK: Lineage: merge_tmp_table.val EXPRESSION [(acidtlb)t.FieldSchema(name:ROW__ID, type:struct<writeId:bigint,bucketId:int,rowId:bigint>, comment:), ]
-PREHOOK: query: select * from acidtlb order by a
+PREHOOK: query: select * from acidtlb
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
-POSTHOOK: query: select * from acidtlb order by a
+POSTHOOK: query: select * from acidtlb
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####

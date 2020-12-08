@@ -123,14 +123,14 @@ POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=2222).a SIMPLE [(multiinser
 POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=2222).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
-PREHOOK: query: select * from multiinsert_test_acid order by a
+PREHOOK: query: select * from multiinsert_test_acid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multiinsert_test_acid
 PREHOOK: Input: default@multiinsert_test_acid@c=1111
 PREHOOK: Input: default@multiinsert_test_acid@c=2222
 PREHOOK: Input: default@multiinsert_test_acid@c=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from multiinsert_test_acid order by a
+POSTHOOK: query: select * from multiinsert_test_acid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_acid
 POSTHOOK: Input: default@multiinsert_test_acid@c=1111
@@ -185,14 +185,14 @@ POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).a SIMPLE [(multiinsert_
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
-PREHOOK: query: select * from multiinsert_test_mm order by a
+PREHOOK: query: select * from multiinsert_test_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multiinsert_test_mm
 PREHOOK: Input: default@multiinsert_test_mm@c=1111
 PREHOOK: Input: default@multiinsert_test_mm@c=2222
 PREHOOK: Input: default@multiinsert_test_mm@c=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from multiinsert_test_mm order by a
+POSTHOOK: query: select * from multiinsert_test_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_mm
 POSTHOOK: Input: default@multiinsert_test_mm@c=1111
@@ -247,14 +247,14 @@ POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=2222).a SIMPLE [(mult
 POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=2222).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
-PREHOOK: query: select * from multiinsert_test_acid_nondi order by a
+PREHOOK: query: select * from multiinsert_test_acid_nondi
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multiinsert_test_acid_nondi
 PREHOOK: Input: default@multiinsert_test_acid_nondi@c=1111
 PREHOOK: Input: default@multiinsert_test_acid_nondi@c=2222
 PREHOOK: Input: default@multiinsert_test_acid_nondi@c=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from multiinsert_test_acid_nondi order by a
+POSTHOOK: query: select * from multiinsert_test_acid_nondi
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_acid_nondi
 POSTHOOK: Input: default@multiinsert_test_acid_nondi@c=1111
@@ -357,14 +357,14 @@ POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=2222).a SIMPLE [(multiinser
 POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=2222).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=4444).a SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=4444).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
-PREHOOK: query: select * from multiinsert_test_acid order by a
+PREHOOK: query: select * from multiinsert_test_acid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multiinsert_test_acid
 PREHOOK: Input: default@multiinsert_test_acid@c=1111
 PREHOOK: Input: default@multiinsert_test_acid@c=2222
 PREHOOK: Input: default@multiinsert_test_acid@c=4444
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from multiinsert_test_acid order by a
+POSTHOOK: query: select * from multiinsert_test_acid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_acid
 POSTHOOK: Input: default@multiinsert_test_acid@c=1111
@@ -419,14 +419,14 @@ POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).a SIMPLE [(multiinsert_
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=2222).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=4444).a SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=4444).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
-PREHOOK: query: select * from multiinsert_test_mm order by a
+PREHOOK: query: select * from multiinsert_test_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multiinsert_test_mm
 PREHOOK: Input: default@multiinsert_test_mm@c=1111
 PREHOOK: Input: default@multiinsert_test_mm@c=2222
 PREHOOK: Input: default@multiinsert_test_mm@c=4444
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from multiinsert_test_mm order by a
+POSTHOOK: query: select * from multiinsert_test_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_mm
 POSTHOOK: Input: default@multiinsert_test_mm@c=1111
@@ -481,14 +481,14 @@ POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=2222).a SIMPLE [(mult
 POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=2222).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=4444).a SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=4444).b SIMPLE [(multiinsert_test_text_2)a.FieldSchema(name:b, type:int, comment:null), ]
-PREHOOK: query: select * from multiinsert_test_acid_nondi order by a
+PREHOOK: query: select * from multiinsert_test_acid_nondi
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multiinsert_test_acid_nondi
 PREHOOK: Input: default@multiinsert_test_acid_nondi@c=1111
 PREHOOK: Input: default@multiinsert_test_acid_nondi@c=2222
 PREHOOK: Input: default@multiinsert_test_acid_nondi@c=4444
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from multiinsert_test_acid_nondi order by a
+POSTHOOK: query: select * from multiinsert_test_acid_nondi
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_acid_nondi
 POSTHOOK: Input: default@multiinsert_test_acid_nondi@c=1111
@@ -591,14 +591,14 @@ POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=2222).a SIMPLE [(multiinser
 POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=2222).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_acid PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
-PREHOOK: query: select * from multiinsert_test_acid order by a
+PREHOOK: query: select * from multiinsert_test_acid
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multiinsert_test_acid
 PREHOOK: Input: default@multiinsert_test_acid@c=1111
 PREHOOK: Input: default@multiinsert_test_acid@c=2222
 PREHOOK: Input: default@multiinsert_test_acid@c=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from multiinsert_test_acid order by a
+POSTHOOK: query: select * from multiinsert_test_acid
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_acid
 POSTHOOK: Input: default@multiinsert_test_acid@c=1111
@@ -659,14 +659,14 @@ POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).a
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_mm PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
-PREHOOK: query: select * from multiinsert_test_mm order by a
+PREHOOK: query: select * from multiinsert_test_mm
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multiinsert_test_mm
 PREHOOK: Input: default@multiinsert_test_mm@c=1111
 PREHOOK: Input: default@multiinsert_test_mm@c=2222
 PREHOOK: Input: default@multiinsert_test_mm@c=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from multiinsert_test_mm order by a
+POSTHOOK: query: select * from multiinsert_test_mm
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_mm
 POSTHOOK: Input: default@multiinsert_test_mm@c=1111
@@ -721,14 +721,14 @@ POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=2222).a SIMPLE [(mult
 POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=2222).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=__HIVE_DEFAULT_PARTITION__).a SIMPLE [(multiinsert_test_text)a.FieldSchema(name:a, type:int, comment:null), ]
 POSTHOOK: Lineage: multiinsert_test_acid_nondi PARTITION(c=__HIVE_DEFAULT_PARTITION__).b SIMPLE [(multiinsert_test_text)a.FieldSchema(name:b, type:int, comment:null), ]
-PREHOOK: query: select * from multiinsert_test_acid_nondi order by a
+PREHOOK: query: select * from multiinsert_test_acid_nondi
 PREHOOK: type: QUERY
 PREHOOK: Input: default@multiinsert_test_acid_nondi
 PREHOOK: Input: default@multiinsert_test_acid_nondi@c=1111
 PREHOOK: Input: default@multiinsert_test_acid_nondi@c=2222
 PREHOOK: Input: default@multiinsert_test_acid_nondi@c=__HIVE_DEFAULT_PARTITION__
 PREHOOK: Output: hdfs://### HDFS PATH ###
-POSTHOOK: query: select * from multiinsert_test_acid_nondi order by a
+POSTHOOK: query: select * from multiinsert_test_acid_nondi
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@multiinsert_test_acid_nondi
 POSTHOOK: Input: default@multiinsert_test_acid_nondi@c=1111
