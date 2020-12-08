@@ -561,12 +561,12 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
             ".  Marking failed to avoid repeated failures", e);
-        compactorTxnId = abortCompactionAndMarkFailed(ci, compactorTxnId, e);
+        abortCompactionAndMarkFailed(ci, compactorTxnId, e);
       }
     } catch (TException | IOException t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
       try {
-        compactorTxnId = abortCompactionAndMarkFailed(ci, compactorTxnId, t);
+        abortCompactionAndMarkFailed(ci, compactorTxnId, t);
       } catch (TException e) {
         LOG.error("Caught an exception while trying to mark compaction {} as failed: {}" +
                 (compactorTxnId != TXN_ID_NOT_SET ? " or abort txnId " + compactorTxnId : "") , ci, e);
@@ -614,7 +614,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
   }
 
-  private int abortCompactionAndMarkFailed(CompactionInfo ci, long compactorTxnId, Throwable e) throws TException {
+  private void abortCompactionAndMarkFailed(CompactionInfo ci, long compactorTxnId, Throwable e) throws TException {
     if (ci != null) {
       ci.errorMessage = e.getMessage();
     }
@@ -624,7 +624,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         msc.abortTxns(Collections.singletonList(compactorTxnId));
       }
     }
-    return TXN_ID_NOT_SET;
   }
 
   private void checkInterrupt() throws InterruptedException {
