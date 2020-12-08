@@ -80,7 +80,11 @@ public class AvroSerDe extends AbstractSerDe {
    @Override
   public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
-    // Avro should always use the table properties for initialization (see HIVE-6835)
+    /*
+     * Avro should always use the table properties for initialization (see
+     * HIVE-6835). The tableProperties is modified directly by this SerDe when
+     * the user supplies a schema file so do not make a copy.
+     */
     super.initialize(configuration, tableProperties, null);
 
     // Reset member variables so we don't get in a half-constructed state

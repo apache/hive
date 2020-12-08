@@ -37,6 +37,7 @@ public class CustomSerDe5 extends CustomSerDe4 {
   @Override
   public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
     // Read the configuration parameters
     String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);

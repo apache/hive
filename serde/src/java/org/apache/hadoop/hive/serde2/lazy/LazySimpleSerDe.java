@@ -116,7 +116,7 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
       throws SerDeException {
     super.initialize(configuration, tableProperties, partitionProperties);
 
-    serdeParams = new LazySerDeParameters(configuration, tableProperties, getClass().getName());
+    serdeParams = new LazySerDeParameters(configuration, this.properties, getClass().getName());
 
     // Create the ObjectInspectors for the fields
     cachedObjectInspector = LazyFactory.createLazyStructInspector(serdeParams

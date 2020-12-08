@@ -37,11 +37,13 @@ public class CustomSerDe4 extends CustomSerDe2 {
   @Override
   public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
+
     // Read the configuration parameters
-    String columnNameProperty = tableProperties.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnTypeProperty = tableProperties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = tableProperties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
-        ? tableProperties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
+    String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
+        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
         : String.valueOf(SerDeUtils.COMMA);
     // The input column can either be a string or a list of integer values.
     List<String> columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
