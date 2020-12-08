@@ -283,9 +283,9 @@ reinit_metastore $dbType
         }
       }
     }
-    parallel branches
-  }
-
+    try {
+      parallel branches
+    } finally {
   stage('Archive') {
     executorNode {
       for (int i = 0; i < splits.size(); i++) {
@@ -303,4 +303,8 @@ reinit_metastore $dbType
       archiveArtifacts artifacts: "**/test-results.tgz"
     }
   }
+
+    }
+  }
+
 }
