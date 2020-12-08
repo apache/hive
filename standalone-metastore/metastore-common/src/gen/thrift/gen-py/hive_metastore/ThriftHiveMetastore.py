@@ -2151,6 +2151,38 @@ class Iface(fb303.FacebookService.Iface):
         """
         pass
 
+    def find_package(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        pass
+
+    def add_package(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        pass
+
+    def get_all_packages(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        pass
+
+    def drop_package(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        pass
+
 
 class Client(fb303.FacebookService.Client, Iface):
     """
@@ -11274,6 +11306,138 @@ class Client(fb303.FacebookService.Client, Iface):
             raise result.o1
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_all_stored_procedures failed: unknown result")
 
+    def find_package(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        self.send_find_package(request)
+        return self.recv_find_package()
+
+    def send_find_package(self, request):
+        self._oprot.writeMessageBegin('find_package', TMessageType.CALL, self._seqid)
+        args = find_package_args()
+        args.request = request
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_find_package(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = find_package_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "find_package failed: unknown result")
+
+    def add_package(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        self.send_add_package(request)
+        self.recv_add_package()
+
+    def send_add_package(self, request):
+        self._oprot.writeMessageBegin('add_package', TMessageType.CALL, self._seqid)
+        args = add_package_args()
+        args.request = request
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_add_package(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = add_package_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        return
+
+    def get_all_packages(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        self.send_get_all_packages(request)
+        return self.recv_get_all_packages()
+
+    def send_get_all_packages(self, request):
+        self._oprot.writeMessageBegin('get_all_packages', TMessageType.CALL, self._seqid)
+        args = get_all_packages_args()
+        args.request = request
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_get_all_packages(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = get_all_packages_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        if result.o1 is not None:
+            raise result.o1
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "get_all_packages failed: unknown result")
+
+    def drop_package(self, request):
+        """
+        Parameters:
+         - request
+
+        """
+        self.send_drop_package(request)
+        self.recv_drop_package()
+
+    def send_drop_package(self, request):
+        self._oprot.writeMessageBegin('drop_package', TMessageType.CALL, self._seqid)
+        args = drop_package_args()
+        args.request = request
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_drop_package(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = drop_package_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.o1 is not None:
+            raise result.o1
+        return
+
 
 class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
     def __init__(self, handler):
@@ -11529,6 +11693,10 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["get_stored_procedure"] = Processor.process_get_stored_procedure
         self._processMap["drop_stored_procedure"] = Processor.process_drop_stored_procedure
         self._processMap["get_all_stored_procedures"] = Processor.process_get_all_stored_procedures
+        self._processMap["find_package"] = Processor.process_find_package
+        self._processMap["add_package"] = Processor.process_add_package
+        self._processMap["get_all_packages"] = Processor.process_get_all_packages
+        self._processMap["drop_package"] = Processor.process_drop_package
         self._on_message_begin = None
 
     def on_message_begin(self, func):
@@ -18712,6 +18880,110 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("get_all_stored_procedures", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_find_package(self, seqid, iprot, oprot):
+        args = find_package_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = find_package_result()
+        try:
+            result.success = self._handler.find_package(args.request)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("find_package", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_add_package(self, seqid, iprot, oprot):
+        args = add_package_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = add_package_result()
+        try:
+            self._handler.add_package(args.request)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("add_package", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_get_all_packages(self, seqid, iprot, oprot):
+        args = get_all_packages_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = get_all_packages_result()
+        try:
+            result.success = self._handler.get_all_packages(args.request)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("get_all_packages", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_drop_package(self, seqid, iprot, oprot):
+        args = drop_package_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = drop_package_result()
+        try:
+            self._handler.drop_package(args.request)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except MetaException as o1:
+            msg_type = TMessageType.REPLY
+            result.o1 = o1
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("drop_package", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -57702,6 +57974,541 @@ class get_all_stored_procedures_result(object):
 all_structs.append(get_all_stored_procedures_result)
 get_all_stored_procedures_result.thrift_spec = (
     (0, TType.LIST, 'success', (TType.STRING, 'UTF8', False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class find_package_args(object):
+    """
+    Attributes:
+     - request
+
+    """
+
+
+    def __init__(self, request=None,):
+        self.request = request
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.request = PackageRequest()
+                    self.request.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('find_package_args')
+        if self.request is not None:
+            oprot.writeFieldBegin('request', TType.STRUCT, 1)
+            self.request.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(find_package_args)
+find_package_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'request', [PackageRequest, None], None, ),  # 1
+)
+
+
+class find_package_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+
+    """
+
+
+    def __init__(self, success=None, o1=None,):
+        self.success = success
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = Package()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException()
+                    self.o1.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('find_package_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(find_package_result)
+find_package_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [Package, None], None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class add_package_args(object):
+    """
+    Attributes:
+     - request
+
+    """
+
+
+    def __init__(self, request=None,):
+        self.request = request
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.request = Package()
+                    self.request.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('add_package_args')
+        if self.request is not None:
+            oprot.writeFieldBegin('request', TType.STRUCT, 1)
+            self.request.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(add_package_args)
+add_package_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'request', [Package, None], None, ),  # 1
+)
+
+
+class add_package_result(object):
+    """
+    Attributes:
+     - o1
+
+    """
+
+
+    def __init__(self, o1=None,):
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException()
+                    self.o1.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('add_package_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(add_package_result)
+add_package_result.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class get_all_packages_args(object):
+    """
+    Attributes:
+     - request
+
+    """
+
+
+    def __init__(self, request=None,):
+        self.request = request
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.request = ListPackageRequest()
+                    self.request.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_all_packages_args')
+        if self.request is not None:
+            oprot.writeFieldBegin('request', TType.STRUCT, 1)
+            self.request.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_all_packages_args)
+get_all_packages_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'request', [ListPackageRequest, None], None, ),  # 1
+)
+
+
+class get_all_packages_result(object):
+    """
+    Attributes:
+     - success
+     - o1
+
+    """
+
+
+    def __init__(self, success=None, o1=None,):
+        self.success = success
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.LIST:
+                    self.success = []
+                    (_etype1720, _size1717) = iprot.readListBegin()
+                    for _i1721 in range(_size1717):
+                        _elem1722 = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                        self.success.append(_elem1722)
+                    iprot.readListEnd()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException()
+                    self.o1.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('get_all_packages_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.LIST, 0)
+            oprot.writeListBegin(TType.STRING, len(self.success))
+            for iter1723 in self.success:
+                oprot.writeString(iter1723.encode('utf-8') if sys.version_info[0] == 2 else iter1723)
+            oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(get_all_packages_result)
+get_all_packages_result.thrift_spec = (
+    (0, TType.LIST, 'success', (TType.STRING, 'UTF8', False), None, ),  # 0
+    (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
+)
+
+
+class drop_package_args(object):
+    """
+    Attributes:
+     - request
+
+    """
+
+
+    def __init__(self, request=None,):
+        self.request = request
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.request = PackageRequest()
+                    self.request.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('drop_package_args')
+        if self.request is not None:
+            oprot.writeFieldBegin('request', TType.STRUCT, 1)
+            self.request.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(drop_package_args)
+drop_package_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'request', [PackageRequest, None], None, ),  # 1
+)
+
+
+class drop_package_result(object):
+    """
+    Attributes:
+     - o1
+
+    """
+
+
+    def __init__(self, o1=None,):
+        self.o1 = o1
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.o1 = MetaException()
+                    self.o1.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('drop_package_result')
+        if self.o1 is not None:
+            oprot.writeFieldBegin('o1', TType.STRUCT, 1)
+            self.o1.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(drop_package_result)
+drop_package_result.thrift_spec = (
+    None,  # 0
     (1, TType.STRUCT, 'o1', [MetaException, None], None, ),  # 1
 )
 fix_spec(all_structs)

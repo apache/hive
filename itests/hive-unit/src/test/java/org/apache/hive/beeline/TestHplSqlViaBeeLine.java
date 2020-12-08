@@ -165,6 +165,27 @@ public class TestHplSqlViaBeeLine {
     testScriptFile(SCRIPT_TEXT, args(), "85");
   }
 
+  @Test
+  public void testPackage() throws Throwable {
+    String SCRIPT_TEXT =
+      "DROP TABLE IF EXISTS result;\n" +
+      "CREATE TABLE result (n int);\n" +
+      "CREATE PACKAGE Counter AS\n" +
+      "  count INT := 0;\n" +
+      "  FUNCTION current() RETURNS INT;\n" +
+      "  PROCEDURE inc(i INT);\n" +
+      "END;\n" +
+      "CREATE PACKAGE BODY Counter AS\n" +
+      "  FUNCTION current() RETURNS INT IS BEGIN RETURN count; END;\n" +
+      "  PROCEDURE inc(i INT) IS BEGIN count := count + i; END;\n" +
+      "END;\n" +
+      "Counter.inc(6172);\n" +
+      "Counter.inc(6173);\n" +
+      "INSERT INTO result VALUES(Counter.current());\n" +
+      "SELECT * FROM result;\n";
+    testScriptFile(SCRIPT_TEXT, args(), "12345");
+  }
+
   private static List<String> args() {
     return Arrays.asList("-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER,
             "-u", miniHS2.getBaseJdbcURL() + ";mode=hplsql", "-n", userName);

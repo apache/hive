@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Stack;
 
 import org.antlr.v4.runtime.ANTLRInputStream;
@@ -54,6 +55,9 @@ import org.apache.hive.hplsql.functions.FunctionOra;
 import org.apache.hive.hplsql.functions.FunctionString;
 import org.apache.hive.hplsql.functions.HmsFunction;
 import org.apache.hive.hplsql.functions.InMemoryFunction;
+import org.apache.hive.hplsql.packages.HmsPackageRegistry;
+import org.apache.hive.hplsql.packages.InMemoryPackageRegistry;
+import org.apache.hive.hplsql.packages.PackageRegistry;
 
 /**
  * HPL/SQL script executor
@@ -75,6 +79,8 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   private ResultListener resultListener = ResultListener.NONE;
   QueryExecutor queryExecutor;
   private HplSqlSessionState hplSqlSession;
+  private PackageRegistry packageRegistry = new InMemoryPackageRegistry();
+  private boolean packageLoading = false;
 
   public enum OnError {EXCEPTION, SETERROR, STOP}
 
@@ -404,6 +410,24 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    * Find the package by name
    */
   Package findPackage(String name) {
+    Package pkg = packages.get(name.toUpperCase());
+    if (pkg != null) {
+      return pkg;
+    }
+    Optional<String> source = exec.packageRegistry.findPackage(name);
+    if (source.isPresent()) {
+      HplsqlLexer lexer = new HplsqlLexer(new ANTLRInputStream(source.get()));
+      CommonTokenStream tokens = new CommonTokenStream(lexer);
+      HplsqlParser parser = new HplsqlParser(tokens);
+      exec.packageLoading = true;
+      try {
+        visit(parser.program());
+      } finally {
+        exec.packageLoading = false;
+      }
+    } else {
+      return null;
+    }
     return packages.get(name.toUpperCase());
   }
   
@@ -791,6 +815,7 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
     new FunctionOra(this, queryExecutor).register(builtinFunctions);
     if (msc != null) {
       function = new HmsFunction(this, msc, builtinFunctions, hplSqlSession);
+      packageRegistry = new HmsPackageRegistry(msc, hplSqlSession);
     } else {
       function = new InMemoryFunction(this, builtinFunctions);
     }
@@ -1425,11 +1450,16 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
   @Override 
   public Integer visitCreate_package_stmt(HplsqlParser.Create_package_stmtContext ctx) { 
     String name = ctx.ident(0).getText().toUpperCase();
-    exec.currentPackageDecl = new Package(name, exec, builtinFunctions);
-    exec.packages.put(name, exec.currentPackageDecl);
-    trace(ctx, "CREATE PACKAGE");
-    exec.currentPackageDecl.createSpecification(ctx);
-    exec.currentPackageDecl = null;
+    if (exec.packageLoading) {
+      exec.currentPackageDecl = new Package(name, exec, builtinFunctions);
+      exec.packages.put(name, exec.currentPackageDecl);
+      exec.currentPackageDecl.createSpecification(ctx);
+      exec.currentPackageDecl = null;
+    } else {
+      trace(ctx, "CREATE PACKAGE");
+      exec.packages.remove(name);
+      exec.packageRegistry.createPackage(name, getFormattedText(ctx));
+    }
     return 0; 
   }
 
@@ -1437,18 +1467,23 @@ public class Exec extends HplsqlBaseVisitor<Integer> {
    * CREATE PACKAGE body statement
    */
   @Override 
-  public Integer visitCreate_package_body_stmt(HplsqlParser.Create_package_body_stmtContext ctx) { 
+  public Integer visitCreate_package_body_stmt(HplsqlParser.Create_package_body_stmtContext ctx) {
     String name = ctx.ident(0).getText().toUpperCase();
-    exec.currentPackageDecl = exec.packages.get(name);
-    if (exec.currentPackageDecl == null) {
-      exec.currentPackageDecl = new Package(name, exec, builtinFunctions);
-      exec.currentPackageDecl.setAllMembersPublic(true);
-      exec.packages.put(name, exec.currentPackageDecl);
+    if (exec.packageLoading) {
+      exec.currentPackageDecl = exec.packages.get(name);
+      if (exec.currentPackageDecl == null) {
+        exec.currentPackageDecl = new Package(name, exec, builtinFunctions);
+        exec.currentPackageDecl.setAllMembersPublic(true);
+        exec.packages.put(name, exec.currentPackageDecl);
+      }
+      exec.currentPackageDecl.createBody(ctx);
+      exec.currentPackageDecl = null;
+    } else {
+      trace(ctx, "CREATE PACKAGE BODY");
+      exec.packages.remove(name);
+      exec.packageRegistry.createPackageBody(name,  getFormattedText(ctx));
     }
-    trace(ctx, "CREATE PACKAGE BODY");
-    exec.currentPackageDecl.createBody(ctx);
-    exec.currentPackageDecl = null;
-    return 0; 
+    return 0;
   }
 
   /**

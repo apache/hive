@@ -20,10 +20,13 @@ package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
+import org.apache.hadoop.hive.metastore.api.PackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.Catalog;
@@ -1377,4 +1380,22 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     return Collections.emptyList();
   }
 
+  @Override
+  public void addPackage(Package request) {
+    throw new RuntimeException("unimplemented");
+  }
+
+  @Override
+  public Package findPackage(PackageRequest request) {
+    return null;
+  }
+
+  @Override
+  public List<String> listPackages(ListPackageRequest request) {
+    return Collections.emptyList();
+  }
+
+  @Override
+  public void dropPackage(PackageRequest request) {
+  }
 }

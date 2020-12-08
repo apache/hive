@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.api.*;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.hooks.URIResolverHook;
@@ -4726,5 +4727,146 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException {
     return client.get_all_stored_procedures(request);
+  }
+
+  @Override
+  public void addPackage(Package request) throws NoSuchObjectException, MetaException, TException {
+    client.add_package(request);
+  }
+
+  @Override
+  public Package findPackage(PackageRequest request) throws TException {
+    return client.find_package(request);
+  }
+
+  @Override
+  public List<String> listPackages(ListPackageRequest request) throws TException {
+    return client.get_all_packages(request);
+  }
+
+  @Override
+  public void dropPackage(PackageRequest request) throws TException {
+    client.drop_package(request);
+  }
+
+  /**
+   * Builder for the GetProjectionsSpec. This is a projection specification for partitions returned from the HMS.
+   */
+  public static class GetPartitionProjectionsSpecBuilder {
+
+    private List<String> partitionList = null;
+    private String includePartitionPattern = null;
+    private String excludePartitionPattern = null;
+
+    public void setPartitionList(List<String> partitionList) {
+      this.partitionList = partitionList;
+    }
+
+    public void setIncludePartitionPattern(String includePartitionPattern) {
+      this.includePartitionPattern = includePartitionPattern;
+    }
+
+    public void setExcludePartitionPattern(String excludePartitionPattern) {
+      this.excludePartitionPattern = excludePartitionPattern;
+    }
+
+    public GetProjectionsSpec build() {
+      return new GetProjectionsSpec(partitionList, includePartitionPattern, excludePartitionPattern);
+    }
+  }
+
+  /**
+   * Builder for the GetProjectionsSpec. This is a projection specification for tables returned from the HMS.
+   */
+  public static class GetTableProjectionsSpecBuilder {
+
+    private List<String> columnList = null;
+    private String includeColumnPattern = null;
+    private String excludeColumnPattern = null;
+
+    public void setColumnList(List<String> columnList) {
+      this.columnList = columnList;
+    }
+
+    public void setIncludeColumnPattern(String includeColumnPattern) {
+      this.includeColumnPattern = includeColumnPattern;
+    }
+
+    public void setExcludeColumnPattern(String excludeColumnPattern) {
+      this.excludeColumnPattern = excludeColumnPattern;
+    }
+
+    public GetProjectionsSpec build() {
+      return new GetProjectionsSpec(columnList, includeColumnPattern, excludeColumnPattern);
+    }
+  }
+
+  /**
+  * Builder for requiredFields bitmask to be sent via GetTablesExtRequest
+  */
+   public static class GetTablesRequestBuilder {
+    private int requestedFields = 0x0;
+    final static GetTablesExtRequestFields defValue = GetTablesExtRequestFields.ALL;
+
+    public GetTablesRequestBuilder() {
+    }
+
+    public GetTablesRequestBuilder with(GetTablesExtRequestFields type) {
+      switch (type) {
+      case ALL :
+          this.requestedFields |= Integer.MAX_VALUE;
+          break;
+      case PROCESSOR_CAPABILITIES :
+          this.requestedFields |= 0x2;
+          break;
+      case ACCESS_TYPE :
+          this.requestedFields |= 0x1;
+          break;
+      default:
+          this.requestedFields |= Integer.MAX_VALUE;
+          break;
+      }
+      return this;
+    }
+
+    public int bitValue() {
+      return this.requestedFields;
+    }
+
+    public static int defaultValue() {
+      return new GetTablesRequestBuilder().with(defValue).bitValue();
+    }
+  }
+
+  /**
+   * Builder for building table capabilities to be includes in TBLPROPERTIES
+   * during createTable
+   */
+   public static class TableCapabilityBuilder {
+    private String capabilitiesString = null;
+    public static final String KEY_CAPABILITIES = "OBJCAPABILITIES";
+
+    public TableCapabilityBuilder() {
+      capabilitiesString = "";
+    }
+
+    public TableCapabilityBuilder add(String skill) {
+      if (skill != null) {
+        capabilitiesString += skill + ",";
+      }
+      return this;
+    }
+
+    public String build() {
+      return this.capabilitiesString.substring(0, capabilitiesString.length() - 1);
+    }
+
+    public String getDBValue() {
+      return KEY_CAPABILITIES + "=" + build();
+    }
+
+    public static String getKey() {
+      return KEY_CAPABILITIES;
+    }
   }
 }

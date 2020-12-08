@@ -274,6 +274,10 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_stored_procedure(StoredProcedure& _return, const StoredProcedureRequest& request) = 0;
   virtual void drop_stored_procedure(const StoredProcedureRequest& request) = 0;
   virtual void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request) = 0;
+  virtual void find_package(Package& _return, const PackageRequest& request) = 0;
+  virtual void add_package(const Package& request) = 0;
+  virtual void get_all_packages(std::vector<std::string> & _return, const ListPackageRequest& request) = 0;
+  virtual void drop_package(const PackageRequest& request) = 0;
 };
 
 class ThriftHiveMetastoreIfFactory : virtual public  ::facebook::fb303::FacebookServiceIfFactory {
@@ -1083,6 +1087,18 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_all_stored_procedures(std::vector<std::string> & /* _return */, const ListStoredProcedureRequest& /* request */) {
+    return;
+  }
+  void find_package(Package& /* _return */, const PackageRequest& /* request */) {
+    return;
+  }
+  void add_package(const Package& /* request */) {
+    return;
+  }
+  void get_all_packages(std::vector<std::string> & /* _return */, const ListPackageRequest& /* request */) {
+    return;
+  }
+  void drop_package(const PackageRequest& /* request */) {
     return;
   }
 };
@@ -31434,6 +31450,438 @@ class ThriftHiveMetastore_get_all_stored_procedures_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_find_package_args__isset {
+  _ThriftHiveMetastore_find_package_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_find_package_args__isset;
+
+class ThriftHiveMetastore_find_package_args {
+ public:
+
+  ThriftHiveMetastore_find_package_args(const ThriftHiveMetastore_find_package_args&);
+  ThriftHiveMetastore_find_package_args& operator=(const ThriftHiveMetastore_find_package_args&);
+  ThriftHiveMetastore_find_package_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_find_package_args() noexcept;
+  PackageRequest request;
+
+  _ThriftHiveMetastore_find_package_args__isset __isset;
+
+  void __set_request(const PackageRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_find_package_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_find_package_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_find_package_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_find_package_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_find_package_pargs() noexcept;
+  const PackageRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_find_package_result__isset {
+  _ThriftHiveMetastore_find_package_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_find_package_result__isset;
+
+class ThriftHiveMetastore_find_package_result {
+ public:
+
+  ThriftHiveMetastore_find_package_result(const ThriftHiveMetastore_find_package_result&);
+  ThriftHiveMetastore_find_package_result& operator=(const ThriftHiveMetastore_find_package_result&);
+  ThriftHiveMetastore_find_package_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_find_package_result() noexcept;
+  Package success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_find_package_result__isset __isset;
+
+  void __set_success(const Package& val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_find_package_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_find_package_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_find_package_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_find_package_presult__isset {
+  _ThriftHiveMetastore_find_package_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_find_package_presult__isset;
+
+class ThriftHiveMetastore_find_package_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_find_package_presult() noexcept;
+  Package* success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_find_package_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_add_package_args__isset {
+  _ThriftHiveMetastore_add_package_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_add_package_args__isset;
+
+class ThriftHiveMetastore_add_package_args {
+ public:
+
+  ThriftHiveMetastore_add_package_args(const ThriftHiveMetastore_add_package_args&);
+  ThriftHiveMetastore_add_package_args& operator=(const ThriftHiveMetastore_add_package_args&);
+  ThriftHiveMetastore_add_package_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_package_args() noexcept;
+  Package request;
+
+  _ThriftHiveMetastore_add_package_args__isset __isset;
+
+  void __set_request(const Package& val);
+
+  bool operator == (const ThriftHiveMetastore_add_package_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_package_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_package_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_add_package_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_package_pargs() noexcept;
+  const Package* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_package_result__isset {
+  _ThriftHiveMetastore_add_package_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_add_package_result__isset;
+
+class ThriftHiveMetastore_add_package_result {
+ public:
+
+  ThriftHiveMetastore_add_package_result(const ThriftHiveMetastore_add_package_result&);
+  ThriftHiveMetastore_add_package_result& operator=(const ThriftHiveMetastore_add_package_result&);
+  ThriftHiveMetastore_add_package_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_add_package_result() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_add_package_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_add_package_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_add_package_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_add_package_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_add_package_presult__isset {
+  _ThriftHiveMetastore_add_package_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_add_package_presult__isset;
+
+class ThriftHiveMetastore_add_package_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_add_package_presult() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_add_package_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_packages_args__isset {
+  _ThriftHiveMetastore_get_all_packages_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_get_all_packages_args__isset;
+
+class ThriftHiveMetastore_get_all_packages_args {
+ public:
+
+  ThriftHiveMetastore_get_all_packages_args(const ThriftHiveMetastore_get_all_packages_args&);
+  ThriftHiveMetastore_get_all_packages_args& operator=(const ThriftHiveMetastore_get_all_packages_args&);
+  ThriftHiveMetastore_get_all_packages_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_all_packages_args() noexcept;
+  ListPackageRequest request;
+
+  _ThriftHiveMetastore_get_all_packages_args__isset __isset;
+
+  void __set_request(const ListPackageRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_get_all_packages_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_all_packages_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_all_packages_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_get_all_packages_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_all_packages_pargs() noexcept;
+  const ListPackageRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_packages_result__isset {
+  _ThriftHiveMetastore_get_all_packages_result__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_all_packages_result__isset;
+
+class ThriftHiveMetastore_get_all_packages_result {
+ public:
+
+  ThriftHiveMetastore_get_all_packages_result(const ThriftHiveMetastore_get_all_packages_result&);
+  ThriftHiveMetastore_get_all_packages_result& operator=(const ThriftHiveMetastore_get_all_packages_result&);
+  ThriftHiveMetastore_get_all_packages_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_get_all_packages_result() noexcept;
+  std::vector<std::string>  success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_all_packages_result__isset __isset;
+
+  void __set_success(const std::vector<std::string> & val);
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_get_all_packages_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_get_all_packages_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_get_all_packages_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_get_all_packages_presult__isset {
+  _ThriftHiveMetastore_get_all_packages_presult__isset() : success(false), o1(false) {}
+  bool success :1;
+  bool o1 :1;
+} _ThriftHiveMetastore_get_all_packages_presult__isset;
+
+class ThriftHiveMetastore_get_all_packages_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_get_all_packages_presult() noexcept;
+  std::vector<std::string> * success;
+  MetaException o1;
+
+  _ThriftHiveMetastore_get_all_packages_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_package_args__isset {
+  _ThriftHiveMetastore_drop_package_args__isset() : request(false) {}
+  bool request :1;
+} _ThriftHiveMetastore_drop_package_args__isset;
+
+class ThriftHiveMetastore_drop_package_args {
+ public:
+
+  ThriftHiveMetastore_drop_package_args(const ThriftHiveMetastore_drop_package_args&);
+  ThriftHiveMetastore_drop_package_args& operator=(const ThriftHiveMetastore_drop_package_args&);
+  ThriftHiveMetastore_drop_package_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_package_args() noexcept;
+  PackageRequest request;
+
+  _ThriftHiveMetastore_drop_package_args__isset __isset;
+
+  void __set_request(const PackageRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_drop_package_args & rhs) const
+  {
+    if (!(request == rhs.request))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_package_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_package_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_drop_package_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_package_pargs() noexcept;
+  const PackageRequest* request;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_package_result__isset {
+  _ThriftHiveMetastore_drop_package_result__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_drop_package_result__isset;
+
+class ThriftHiveMetastore_drop_package_result {
+ public:
+
+  ThriftHiveMetastore_drop_package_result(const ThriftHiveMetastore_drop_package_result&);
+  ThriftHiveMetastore_drop_package_result& operator=(const ThriftHiveMetastore_drop_package_result&);
+  ThriftHiveMetastore_drop_package_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_drop_package_result() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_drop_package_result__isset __isset;
+
+  void __set_o1(const MetaException& val);
+
+  bool operator == (const ThriftHiveMetastore_drop_package_result & rhs) const
+  {
+    if (!(o1 == rhs.o1))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_drop_package_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_drop_package_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_drop_package_presult__isset {
+  _ThriftHiveMetastore_drop_package_presult__isset() : o1(false) {}
+  bool o1 :1;
+} _ThriftHiveMetastore_drop_package_presult__isset;
+
+class ThriftHiveMetastore_drop_package_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_drop_package_presult() noexcept;
+  MetaException o1;
+
+  _ThriftHiveMetastore_drop_package_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  ::facebook::fb303::FacebookServiceClient {
  public:
   ThriftHiveMetastoreClient(std::shared_ptr< ::apache::thrift::protocol::TProtocol> prot) :
@@ -32198,6 +32646,18 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request);
   void send_get_all_stored_procedures(const ListStoredProcedureRequest& request);
   void recv_get_all_stored_procedures(std::vector<std::string> & _return);
+  void find_package(Package& _return, const PackageRequest& request);
+  void send_find_package(const PackageRequest& request);
+  void recv_find_package(Package& _return);
+  void add_package(const Package& request);
+  void send_add_package(const Package& request);
+  void recv_add_package();
+  void get_all_packages(std::vector<std::string> & _return, const ListPackageRequest& request);
+  void send_get_all_packages(const ListPackageRequest& request);
+  void recv_get_all_packages(std::vector<std::string> & _return);
+  void drop_package(const PackageRequest& request);
+  void send_drop_package(const PackageRequest& request);
+  void recv_drop_package();
 };
 
 class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceProcessor {
@@ -32459,6 +32919,10 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_stored_procedure(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_drop_stored_procedure(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_all_stored_procedures(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_find_package(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_add_package(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_get_all_packages(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_drop_package(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
  public:
   ThriftHiveMetastoreProcessor(::std::shared_ptr<ThriftHiveMetastoreIf> iface) :
      ::facebook::fb303::FacebookServiceProcessor(iface),
@@ -32714,6 +33178,10 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_stored_procedure"] = &ThriftHiveMetastoreProcessor::process_get_stored_procedure;
     processMap_["drop_stored_procedure"] = &ThriftHiveMetastoreProcessor::process_drop_stored_procedure;
     processMap_["get_all_stored_procedures"] = &ThriftHiveMetastoreProcessor::process_get_all_stored_procedures;
+    processMap_["find_package"] = &ThriftHiveMetastoreProcessor::process_find_package;
+    processMap_["add_package"] = &ThriftHiveMetastoreProcessor::process_add_package;
+    processMap_["get_all_packages"] = &ThriftHiveMetastoreProcessor::process_get_all_packages;
+    processMap_["drop_package"] = &ThriftHiveMetastoreProcessor::process_drop_package;
   }
 
   virtual ~ThriftHiveMetastoreProcessor() {}
@@ -35162,6 +35630,44 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void find_package(Package& _return, const PackageRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->find_package(_return, request);
+    }
+    ifaces_[i]->find_package(_return, request);
+    return;
+  }
+
+  void add_package(const Package& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->add_package(request);
+    }
+    ifaces_[i]->add_package(request);
+  }
+
+  void get_all_packages(std::vector<std::string> & _return, const ListPackageRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->get_all_packages(_return, request);
+    }
+    ifaces_[i]->get_all_packages(_return, request);
+    return;
+  }
+
+  void drop_package(const PackageRequest& request) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->drop_package(request);
+    }
+    ifaces_[i]->drop_package(request);
+  }
+
 };
 
 // The 'concurrent' client is a thread safe client that correctly handles
@@ -35931,6 +36437,18 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_all_stored_procedures(std::vector<std::string> & _return, const ListStoredProcedureRequest& request);
   int32_t send_get_all_stored_procedures(const ListStoredProcedureRequest& request);
   void recv_get_all_stored_procedures(std::vector<std::string> & _return, const int32_t seqid);
+  void find_package(Package& _return, const PackageRequest& request);
+  int32_t send_find_package(const PackageRequest& request);
+  void recv_find_package(Package& _return, const int32_t seqid);
+  void add_package(const Package& request);
+  int32_t send_add_package(const Package& request);
+  void recv_add_package(const int32_t seqid);
+  void get_all_packages(std::vector<std::string> & _return, const ListPackageRequest& request);
+  int32_t send_get_all_packages(const ListPackageRequest& request);
+  void recv_get_all_packages(std::vector<std::string> & _return, const int32_t seqid);
+  void drop_package(const PackageRequest& request);
+  int32_t send_drop_package(const PackageRequest& request);
+  void recv_drop_package(const int32_t seqid);
 };
 
 #ifdef _MSC_VER

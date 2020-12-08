@@ -19,10 +19,13 @@
 package org.apache.hive.hcatalog.listener;
 
 import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.metastore.api.PackageRequest;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.Catalog;
@@ -1443,6 +1446,26 @@ public class DummyRawStoreFailEvent implements RawStore, Configurable {
   @Override
   public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) {
     return objectStore.getAllStoredProcedures(request);
+  }
+
+  @Override
+  public void addPackage(Package request) throws MetaException, NoSuchObjectException {
+    objectStore.addPackage(request);
+  }
+
+  @Override
+  public Package findPackage(PackageRequest request) {
+    return objectStore.findPackage(request);
+  }
+
+  @Override
+  public List<String> listPackages(ListPackageRequest request) {
+    return objectStore.listPackages(request);
+  }
+
+  @Override
+  public void dropPackage(PackageRequest request) {
+    objectStore.dropPackage(request);
   }
 
 }

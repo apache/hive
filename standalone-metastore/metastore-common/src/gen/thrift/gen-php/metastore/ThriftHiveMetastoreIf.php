@@ -1841,4 +1841,26 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      * @throws \metastore\MetaException
      */
     public function get_all_stored_procedures(\metastore\ListStoredProcedureRequest $request);
+    /**
+     * @param \metastore\PackageRequest $request
+     * @return \metastore\Package
+     * @throws \metastore\MetaException
+     */
+    public function find_package(\metastore\PackageRequest $request);
+    /**
+     * @param \metastore\Package $request
+     * @throws \metastore\MetaException
+     */
+    public function add_package(\metastore\Package $request);
+    /**
+     * @param \metastore\ListPackageRequest $request
+     * @return string[]
+     * @throws \metastore\MetaException
+     */
+    public function get_all_packages(\metastore\ListPackageRequest $request);
+    /**
+     * @param \metastore\PackageRequest $request
+     * @throws \metastore\MetaException
+     */
+    public function drop_package(\metastore\PackageRequest $request);
 }
