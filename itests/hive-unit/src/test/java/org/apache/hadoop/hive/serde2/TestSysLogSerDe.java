@@ -27,6 +27,7 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Test suite for the SyslogSerDe class.
@@ -36,7 +37,7 @@ public class TestSysLogSerDe {
   @Test
   public void testAllValid() throws Exception {
     SyslogSerDe serde = new SyslogSerDe();
-    serde.initialize(null, null, null);
+    serde.initialize(null, new Properties(), null);
 
     Text rowText = new Text(
             "<14>1 2020-05-12T08:48:05.299Z hostname.cluster.local coordinator testProc" +
@@ -79,7 +80,7 @@ public class TestSysLogSerDe {
   @Test
   public void testWithMissingFields() throws Exception {
     SyslogSerDe serde = new SyslogSerDe();
-    serde.initialize(null, null, null);
+    serde.initialize(null, new Properties(), null);
 
     Text rowText = new Text(
             "<14>1 2020-05-12T08:48:05.299Z hostname.cluster.local - -" +

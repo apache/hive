@@ -89,25 +89,25 @@ public class AvroSerDe extends AbstractSerDe {
     }
 
     LOG.debug("AvroSerde::initialize(): Preset value of avro.schema.literal == "
-        + properties.get(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName()));
+        + tableProperties.get(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName()));
 
     schema = null;
     oi = null;
     columnNames = null;
     columnTypes = null;
 
-    final String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
-    final String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnCommentProperty = properties.getProperty(LIST_COLUMN_COMMENTS, "");
-    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
-        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
+    final String columnNameProperty = tableProperties.getProperty(serdeConstants.LIST_COLUMNS);
+    final String columnTypeProperty = tableProperties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnCommentProperty = tableProperties.getProperty(LIST_COLUMN_COMMENTS, "");
+    final String columnNameDelimiter = tableProperties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
+        ? tableProperties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
         : String.valueOf(SerDeUtils.COMMA);
 
     boolean gotColTypesFromColProps = true;
-    if (hasExternalSchema(properties)
+    if (hasExternalSchema(tableProperties)
         || columnNameProperty == null || columnNameProperty.isEmpty()
         || columnTypeProperty == null || columnTypeProperty.isEmpty()) {
-      schema = determineSchemaOrReturnErrorSchema(configuration, properties);
+      schema = determineSchemaOrReturnErrorSchema(configuration, tableProperties);
       gotColTypesFromColProps = false;
     } else {
       // Get column names and sort order
@@ -115,20 +115,20 @@ public class AvroSerDe extends AbstractSerDe {
           Arrays.asList(columnNameProperty.split(columnNameDelimiter)));
       columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
 
-      schema = getSchemaFromCols(properties, columnNames, columnTypes, columnCommentProperty);
+      schema = getSchemaFromCols(tableProperties, columnNames, columnTypes, columnCommentProperty);
     }
 
-    properties.setProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
+    tableProperties.setProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), schema.toString());
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Avro schema is " + schema);
     }
 
-    if (!this.configuration.isPresent()) {
-      LOG.debug("Configuration null, not inserting schema");
-    } else {
+    if (this.configuration.isPresent()) {
       this.configuration.get().set(AvroSerdeUtils.AvroTableProperties.AVRO_SERDE_SCHEMA.getPropName(),
           schema.toString(false));
+    } else {
+      LOG.debug("Configuration null, not inserting schema");
     }
 
     badSchema = (schema == SchemaResolutionProblem.SIGNAL_BAD_SCHEMA);
@@ -141,16 +141,16 @@ public class AvroSerDe extends AbstractSerDe {
     // these properties may be used
     if (!gotColTypesFromColProps) {
       LOG.info("Updating column name/type properties based on current schema");
-      properties.setProperty(serdeConstants.LIST_COLUMNS, String.join(",", columnNames));
-      properties.setProperty(serdeConstants.LIST_COLUMN_TYPES, String.join(",", TypeInfoUtils.getTypeStringsFromTypeInfo(columnTypes)));
+      tableProperties.setProperty(serdeConstants.LIST_COLUMNS, String.join(",", columnNames));
+      tableProperties.setProperty(serdeConstants.LIST_COLUMN_TYPES, String.join(",", TypeInfoUtils.getTypeStringsFromTypeInfo(columnTypes)));
     }
 
-    if (!badSchema) {
-      this.avroSerializer = new AvroSerializer(configuration);
-      this.avroDeserializer = new AvroDeserializer(configuration);
-    } else {
+    if (badSchema) {
       throw new SerDeException("Invalid schema reported");
     }
+
+    this.avroSerializer = new AvroSerializer(configuration);
+    this.avroDeserializer = new AvroDeserializer(configuration);
   }
 
   private boolean hasExternalSchema(Properties properties) {
@@ -204,12 +204,12 @@ public class AvroSerDe extends AbstractSerDe {
     try {
       return AvroSerdeUtils.determineSchemaOrThrowException(conf, props);
     } catch (AvroSerdeException he) {
-      LOG.warn("Encountered AvroSerdeException determining schema. Returning " + "signal schema to indicate problem",
+      LOG.warn("Encountered AvroSerdeException determining schema. Returning signal schema to indicate problem",
           he);
 
       return SchemaResolutionProblem.SIGNAL_BAD_SCHEMA;
     } catch (Exception e) {
-      LOG.warn("Encountered exception determining schema. Returning signal " + "schema to indicate problem", e);
+      LOG.warn("Encountered exception determining schema. Returning signal schema to indicate problem", e);
       return SchemaResolutionProblem.SIGNAL_BAD_SCHEMA;
     }
   }
