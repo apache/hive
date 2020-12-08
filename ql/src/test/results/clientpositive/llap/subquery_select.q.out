@@ -2165,7 +2165,7 @@ STAGE PLANS:
                   Statistics: Num rows: 166 Data size: 45650 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     keys: _col0 (type: string), _col1 (type: string)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 83 Data size: 22825 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2282,7 +2282,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: i (type: int)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0
                       Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2298,7 +2298,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count(), count(i)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3774,7 +3774,7 @@ STAGE PLANS:
                   Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
                     aggregations: count(), count(_col0)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3925,7 +3925,7 @@ STAGE PLANS:
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: sum(p_partkey), count(p_partkey)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 16 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3943,7 +3943,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         aggregations: max(p_size)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4298,6 +4298,21 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: int)
                         Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: int)
+<<<<<<< HEAD
+=======
+                    Group By Operator
+                      keys: p_partkey (type: int), p_type (type: string)
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1
+                      Statistics: Num rows: 13 Data size: 1404 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: int), _col1 (type: string)
+                        null sort order: zz
+                        sort order: ++
+                        Map-reduce partition columns: _col0 (type: int)
+                        Statistics: Num rows: 13 Data size: 1404 Basic stats: COMPLETE Column stats: COMPLETE
+>>>>>>> kgyrtkirk/HIVE-24388-event-merge
                   Filter Operator
                     predicate: UDFToDouble(p_size) is not null (type: boolean)
                     Statistics: Num rows: 26 Data size: 208 Basic stats: COMPLETE Column stats: COMPLETE

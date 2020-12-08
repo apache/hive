@@ -65,6 +65,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
@@ -145,6 +146,7 @@ import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.LockTypeUtil;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -153,6 +155,8 @@ import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Splitter;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatch;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatchNoCount;
@@ -2783,7 +2787,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           String dbName = normalizeCase(lc.getDbname());
           String tblName = normalizeCase(lc.getTablename());
-          String partName = normalizeCase(lc.getPartitionname());
+          String partName = normalizePartitionCase(lc.getPartitionname());
           OperationType opType = OperationType.fromDataOperationType(lc.getOperationType());
 
           if (isDynPart.test(lc)) {
@@ -2906,7 +2910,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         pstmt.setLong(3, txnid);
         pstmt.setString(4, normalizeCase(lc.getDbname()));
         pstmt.setString(5, normalizeCase(lc.getTablename()));
-        pstmt.setString(6, normalizeCase(lc.getPartitionname()));
+        pstmt.setString(6, normalizePartitionCase(lc.getPartitionname()));
         pstmt.setString(7, Character.toString(LOCK_WAITING));
         pstmt.setString(8, lockType);
         pstmt.setString(9, rqst.getUser());
@@ -2933,6 +2937,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   private static String normalizeCase(String s) {
     return s == null ? null : s.toLowerCase();
+  }
+
+  private static String normalizePartitionCase(String s) {
+    if (s == null) {
+      return null;
+    }
+    Map<String, String> map = Splitter.on(Path.SEPARATOR).withKeyValueSeparator('=').split(s);
+    return FileUtils.makePartName(new ArrayList<>(map.keySet()), new ArrayList<>(map.values()));
   }
 
   private LockResponse checkLockWithRetry(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled)

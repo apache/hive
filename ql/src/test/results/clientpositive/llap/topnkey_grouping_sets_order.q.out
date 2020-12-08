@@ -78,7 +78,7 @@ STAGE PLANS:
                     Group By Operator
                       keys: a (type: int), b (type: int), 0L (type: bigint)
                       grouping sets: 0, 1, 2, 3
-                      minReductionHashAggr: 0.15384614
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
@@ -199,7 +199,7 @@ STAGE PLANS:
                     Group By Operator
                       keys: a (type: int), b (type: int), 0L (type: bigint)
                       grouping sets: 0, 1, 2, 3
-                      minReductionHashAggr: 0.15384614
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 26 Data size: 360 Basic stats: COMPLETE Column stats: COMPLETE
@@ -326,7 +326,7 @@ STAGE PLANS:
                       Group By Operator
                         keys: a (type: int), b (type: int), 0L (type: bigint)
                         grouping sets: 0, 1, 2, 3
-                        minReductionHashAggr: 0.15384614
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 26 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE
@@ -447,7 +447,7 @@ STAGE PLANS:
                       Group By Operator
                         keys: a (type: int), b (type: int), 0L (type: bigint)
                         grouping sets: 0, 1, 2, 3
-                        minReductionHashAggr: 0.15384614
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 26 Data size: 296 Basic stats: COMPLETE Column stats: COMPLETE

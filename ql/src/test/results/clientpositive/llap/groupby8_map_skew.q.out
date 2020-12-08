@@ -63,7 +63,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT substr(value, 5))
                       keys: key (type: string), substr(value, 5) (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 250 Data size: 45250 Basic stats: COMPLETE Column stats: COMPLETE
@@ -80,7 +80,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT substr(value, 5))
                       keys: key (type: string), substr(value, 5) (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 250 Data size: 45250 Basic stats: COMPLETE Column stats: COMPLETE

@@ -61,7 +61,7 @@ STAGE PLANS:
                       aggregations: max(live), max(comments)
                       keys: category (type: int), 0L (type: bigint)
                       grouping sets: 1, 0
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 3 Data size: 60 Basic stats: COMPLETE Column stats: COMPLETE
