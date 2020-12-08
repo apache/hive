@@ -1,0 +1,60 @@
+HMS CALL get_table_req FOR t_one_col
+PREHOOK: query: drop table t_one_col
+PREHOOK: type: DROPTABLE
+HMS CALL get_table_req FOR t_one_col
+POSTHOOK: query: drop table t_one_col
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table t_one_col (c1 int)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t_one_col
+POSTHOOK: query: create table t_one_col (c1 int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t_one_col
+HMS CALL get_table_req FOR t_one_col
+HMS CALL get_foreign_keys FOR t_one_col
+PREHOOK: query: explain
+insert into t_one_col(c1) select c1 from t_one_col
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t_one_col
+PREHOOK: Output: default@t_one_col
+POSTHOOK: query: explain
+insert into t_one_col(c1) select c1 from t_one_col
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t_one_col
+POSTHOOK: Output: default@t_one_col
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Impala
+      Impala Plan: 
+F01:PLAN FRAGMENT [UNPARTITIONED] hosts=1 instances=1
+Per-Host Resources: mem-estimate=16.00KB mem-reservation=0B thread-reservation=1
+  WRITE TO HDFS [default.t_one_col, OVERWRITE=false]
+  |  partitions=1
+  |  output exprs: default.t_one_col.c1
+  |  mem-estimate=4B mem-reservation=0B thread-reservation=0
+  |
+  01:EXCHANGE [UNPARTITIONED]
+     mem-estimate=16.00KB mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+F00:PLAN FRAGMENT [RANDOM] hosts=1 instances=1
+Per-Host Resources: mem-estimate=0B mem-reservation=0B thread-reservation=1
+  DATASTREAM SINK [FRAGMENT=F01, EXCHANGE=01, UNPARTITIONED]
+  |  mem-estimate=0B mem-reservation=0B thread-reservation=0
+  00:SCAN HDFS [default.t_one_col, RANDOM]
+     HDFS partitions=1/1 files=0 size=0B
+     stored statistics:
+       table: rows=unavailable size=unavailable
+       columns: unavailable
+     extrapolated-rows=disabled max-scan-range-rows=0
+     mem-estimate=0B mem-reservation=0B thread-reservation=0
+     tuple-ids=0 row-size=4B cardinality=0
+     in pipelines: 00(GETNEXT)
+
+

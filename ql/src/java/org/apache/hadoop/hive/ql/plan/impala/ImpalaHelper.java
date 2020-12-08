@@ -151,8 +151,8 @@ public class ImpalaHelper {
       ImpalaPlanner impalaPlanner = new ImpalaPlanner(queryContext, fileSinkDesc, db, qb,
           getImpalaStmtType(stmtType, qb), timeline);
       ImpalaPlannerContext planCtx = impalaPlanner.getPlannerContext();
-      impalaPlanner.initTargetTable();
       planCtx.getTableLoader().loadTablesAndPartitions(db, txnWriteIdList);
+      impalaPlanner.initTargetTable();
 
       PlanNode rootImpalaNode = impalaRelNode.getRootPlanNode(planCtx);
       timeline.markEvent("Single node plan created");
