@@ -129,20 +129,30 @@ public class TestHplsqlLocal {
   }
 
   @Test
+  public void testDropPackage() throws Exception {
+    run("drop_package");
+  }
+
+  @Test
+  public void testDropProcedure() throws Exception {
+    run("drop_proc");
+  }
+
+  @Test
   public void testCreateProcedure() throws Exception {
     run("create_procedure");
   }
-  
+
   @Test
   public void testCreateProcedure2() throws Exception {
     run("create_procedure2");
   }
-  
+
   @Test
   public void testCreateProcedure3() throws Exception {
     run("create_procedure3");
   }
-  
+
   @Test
   public void testCreateProcedure4() throws Exception {
     run("create_procedure4");

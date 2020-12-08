@@ -33,18 +33,23 @@ import org.apache.hadoop.hive.metastore.api.ColumnStatisticsObj;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.CurrentNotificationEventId;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.metastore.api.AddPackageRequest;
+import org.apache.hadoop.hive.metastore.api.DropPackageRequest;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Function;
+import org.apache.hadoop.hive.metastore.api.GetPackageRequest;
 import org.apache.hadoop.hive.metastore.api.HiveObjectPrivilege;
 import org.apache.hadoop.hive.metastore.api.HiveObjectRef;
 import org.apache.hadoop.hive.metastore.api.InvalidInputException;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
+import org.apache.hadoop.hive.metastore.api.ListPackageRequest;
 import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
 import org.apache.hadoop.hive.metastore.api.NotificationEventRequest;
 import org.apache.hadoop.hive.metastore.api.NotificationEventResponse;
+import org.apache.hadoop.hive.metastore.api.Package;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -1292,6 +1297,64 @@ public class TestObjectStore {
     objectStore.updateCreationMetadata(matView1.getCatName(), matView1.getDbName(), matView1.getTableName(), newCreationMetadata);
 
     assertThat(creationMetadata.getMaterializationTime(), is(not(0)));
+  }
+
+  @Test
+  public void testCreateAndFindPackage() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+    AddPackageRequest pkg = new AddPackageRequest("hive", DB1, "pkg1", "user1", "src", "src");
+    objectStore.addPackage(pkg);
+    Package found = objectStore.findPackage(new GetPackageRequest("hive", DB1, "pkg1"));
+    Assert.assertEquals(pkg.getBody(), found.getBody());
+    Assert.assertEquals(pkg.getHeader(), found.getHeader());
+    Assert.assertEquals(pkg.getCatName(), found.getCatName());
+    Assert.assertEquals(pkg.getDbName(), found.getDbName());
+    Assert.assertEquals(pkg.getOwnerName(), found.getOwnerName());
+    Assert.assertEquals(pkg.getPackageName(), found.getPackageName());
+  }
+
+  @Test
+  public void testDropPackage() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+    AddPackageRequest pkg = new AddPackageRequest("hive", DB1, "pkg1", "user1", "header", "body");
+    objectStore.addPackage(pkg);
+    Assert.assertNotNull(objectStore.findPackage(new GetPackageRequest("hive", DB1, "pkg1")));
+    objectStore.dropPackage(new DropPackageRequest("hive", DB1, "pkg1"));
+    Assert.assertNull(objectStore.findPackage(new GetPackageRequest("hive", DB1, "pkg1")));
+  }
+
+  @Test
+  public void testListPackage() throws Exception {
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB1)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+    objectStore.createDatabase(new DatabaseBuilder()
+            .setName(DB2)
+            .setDescription("description")
+            .setLocation("locationurl")
+            .build(conf));
+    AddPackageRequest pkg1 = new AddPackageRequest("hive", DB1, "pkg1", "user1", "header1", "body1");
+    AddPackageRequest pkg2 = new AddPackageRequest("hive", DB2, "pkg2", "user1", "header2", "body2");
+    objectStore.addPackage(pkg1);
+    objectStore.addPackage(pkg2);
+    List<String> result = objectStore.listPackages(new ListPackageRequest("hive"));
+    assertThat(result, hasItems("pkg1", "pkg2"));
+    Assert.assertEquals(2, result.size());
+    ListPackageRequest req = new ListPackageRequest("hive");
+    req.setDbName(DB1);
+    result = objectStore.listPackages(req);
+    assertThat(result, hasItems("pkg1"));
+    Assert.assertEquals(1, result.size());
   }
 
   /**

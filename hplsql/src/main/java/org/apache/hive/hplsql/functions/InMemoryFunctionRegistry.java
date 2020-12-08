@@ -39,14 +39,14 @@ interface FuncSpecCommand {
 /**
  * HPL/SQL functions
  */
-public class InMemoryFunction implements Function {
+public class InMemoryFunctionRegistry implements FunctionRegistry {
   Exec exec;
   private BuiltinFunctions builtinFunctions;
   HashMap<String, HplsqlParser.Create_function_stmtContext> funcMap = new HashMap<>();
   HashMap<String, HplsqlParser.Create_procedure_stmtContext> procMap = new HashMap<>();
   boolean trace = false;
   
-  public InMemoryFunction(Exec e, BuiltinFunctions builtinFunctions) {
+  public InMemoryFunctionRegistry(Exec e, BuiltinFunctions builtinFunctions) {
     this.exec = e;
     this.trace = exec.getTrace();
     this.builtinFunctions = builtinFunctions;
@@ -54,13 +54,17 @@ public class InMemoryFunction implements Function {
 
   @Override
   public boolean exists(String name) {
-    name = name.toUpperCase();
     return funcMap.containsKey(name) || procMap.containsKey(name);
   }
 
   @Override
+  public void remove(String name) {
+    funcMap.remove(name);
+    procMap.remove(name);
+  }
+
+  @Override
   public boolean exec(String name, HplsqlParser.Expr_func_paramsContext ctx) {
-    name = name.toUpperCase();
     if (builtinFunctions.exec(name, ctx)) {
       return true;
     }
@@ -74,7 +78,7 @@ public class InMemoryFunction implements Function {
    * Execute a user-defined function
    */
   private boolean execFunction(String name, HplsqlParser.Expr_func_paramsContext ctx) {
-    HplsqlParser.Create_function_stmtContext userCtx = funcMap.get(name.toUpperCase());
+    HplsqlParser.Create_function_stmtContext userCtx = funcMap.get(name);
     if (userCtx == null) {
       return false;
     }
@@ -99,7 +103,7 @@ public class InMemoryFunction implements Function {
     if (trace) {
       trace(ctx == null ? null : ctx.getParent(), "EXEC PROCEDURE " + name);
     }
-    HplsqlParser.Create_procedure_stmtContext procCtx = procMap.get(name.toUpperCase());    
+    HplsqlParser.Create_procedure_stmtContext procCtx = procMap.get(name);
     if (procCtx == null) {
       trace(ctx.getParent(), "Procedure not found");
       return false;
