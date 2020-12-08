@@ -267,11 +267,9 @@ reinit_metastore $dbType
               try {
                 sh """#!/bin/bash -e
                   # removes all stdout and err for passed tests
-                  xmlstarlet ed -L -d 'testsuite/testcase/system-out[count(../failure)=0]' \
-                                   -d 'testsuite/testcase/system-err[count(../failure)=0]' \
-                                   `find . -name 'TEST*xml' -path '*/surefire-reports/*'`
+                  xmlstarlet ed -L -d 'testsuite/testcase/system-out[count(../failure)=0]' -d 'testsuite/testcase/system-err[count(../failure)=0]' `find . -name 'TEST*xml' -path '*/surefire-reports/*'`
                   # remove all output.txt files
-                  find . -name '*output.txt' -path '*/surefire-reports/*' -exec unlink "{}" \;
+                  find . -name '*output.txt' -path '*/surefire-reports/*' -exec unlink "{}" \\;
                 """
               } finally {
                 def fn="${splitName}.tgz"
