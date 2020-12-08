@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.ppd;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -30,6 +31,7 @@ import java.util.Stack;
 
 import javolution.util.FastBitSet;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -42,9 +44,15 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
+import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
+import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
+import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -81,6 +89,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+
+import static java.util.Collections.singleton;
 
 
 /**
@@ -719,13 +729,172 @@ public final class OpProcFactory {
             }
             ExprNodeDesc replaced = ExprNodeDescUtils.replace(backtrack, sourceKeys, targetKeys);
             if (replaced == null) {
-              continue;
+              List<ExprNodeColumnDesc> startNodes = new ArrayList<>();
+              extractColumnExprNodes(predicate, startNodes);
+              Map<ExprNodeDesc, String> equalities = walk(source, startNodes);
+              if (equalities.isEmpty()) {
+                continue;
+              }
+
+              Map<ExprNodeDesc, ExprNodeDesc> replaceMap = new HashMap<>(equalities.size());
+              for (Entry<ExprNodeDesc, String> eqEntry : equalities.entrySet()) {
+                for (Entry<String, ExprNodeDesc> joinColMapEntry : join.getColumnExprMap().entrySet()) {
+                  if (join.getConf().getReversedExprs().get(joinColMapEntry.getKey()) != sourcePos) {
+                    continue;
+                  }
+                  if (!(joinColMapEntry.getValue() instanceof ExprNodeColumnDesc)) {
+                    continue;
+                  }
+                  if (((ExprNodeColumnDesc) joinColMapEntry.getValue()).getColumn().equals(eqEntry.getValue())) {
+                    replaceMap.put(eqEntry.getKey(), joinColMapEntry.getValue());
+                    break;
+                  }
+                }
+              }
+
+              ExprNodeDesc newPredicate = replaceColumnExprNodes(predicate, replaceMap);
+              backtrack = ExprNodeDescUtils.backtrack(newPredicate, join, source);
+              if (backtrack == null) {
+                continue;
+              }
+              replaced = ExprNodeDescUtils.replace(backtrack, sourceKeys, targetKeys);
+              if (replaced == null) {
+                continue;
+              }
             }
             for (String targetAlias : target.getInputAliases()) {
               rsPreds.addFinalCandidate(targetAlias, replaced);
             }
           }
         }
+      }
+    }
+
+    private void extractColumnExprNodes(ExprNodeDesc exprNodeDesc, List<ExprNodeColumnDesc> result) {
+      if (exprNodeDesc instanceof ExprNodeColumnDesc) {
+        result.add((ExprNodeColumnDesc) exprNodeDesc);
+        return;
+      }
+      if (exprNodeDesc instanceof ExprNodeGenericFuncDesc) {
+        for (ExprNodeDesc child : exprNodeDesc.getChildren()) {
+          extractColumnExprNodes(child, result);
+        }
+      }
+    }
+
+    private ExprNodeDesc replaceColumnExprNodes(ExprNodeDesc exprNodeDesc, Map<ExprNodeDesc, ExprNodeDesc> replaceMap) {
+      if (exprNodeDesc instanceof ExprNodeColumnDesc) {
+        return replaceMap.getOrDefault(exprNodeDesc, exprNodeDesc);
+      }
+      if (exprNodeDesc instanceof ExprNodeGenericFuncDesc) {
+        ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) exprNodeDesc.clone();
+        List<ExprNodeDesc> replacedChildren = new ArrayList<>(exprNodeDesc.getChildren().size());
+        for (ExprNodeDesc child : exprNodeDesc.getChildren()) {
+          replacedChildren.add(replaceColumnExprNodes(child, replaceMap));
+        }
+        exprNodeGenericFuncDesc.setChildren(replacedChildren);
+        return exprNodeGenericFuncDesc;
+      }
+
+      return exprNodeDesc;
+    }
+
+    private Map<ExprNodeDesc, String> walk(Operator<?> operator, List<ExprNodeColumnDesc> exprNodeDescList) {
+      Map<ExprNodeDesc, String> equalities;
+      if (operator instanceof CommonJoinOperator) {
+        equalities = processJoinEq((CommonJoinOperator<?>)operator, exprNodeDescList);
+      } else {
+        equalities = processDefaultEq(operator, exprNodeDescList);
+      }
+      return equalities;
+    }
+
+    private Map<ExprNodeDesc, String> processJoinEq(
+            CommonJoinOperator<?> join, List<ExprNodeColumnDesc> exprNodeDescList) {
+      if (exprNodeDescList.isEmpty()) {
+        return Collections.emptyMap();
+      }
+      Map<ExprNodeDesc, String> equalities = new HashMap<>();
+      for (ExprNodeColumnDesc exprNodeDesc : exprNodeDescList) {
+        ExprNodeDesc mappedColExpr = join.getColumnExprMap().get(exprNodeDesc.getColumn());
+        if (!(mappedColExpr instanceof ExprNodeColumnDesc)) {
+          continue;
+        }
+        String mappedColName = ((ExprNodeColumnDesc)mappedColExpr).getColumn();
+        int sideIndex = join.getConf().getReversedExprs().get(exprNodeDesc.getColumn());
+        Operator<?> parentRSOperator = join.getParentOperators().get(sideIndex);
+        for (int i = 0; i < join.getConf().getJoinKeys()[sideIndex].length; ++i) {
+          ExprNodeDesc keyExpr = join.getConf().getJoinKeys()[sideIndex][i];
+          if (!keyExpr.isSame(parentRSOperator.getColumnExprMap().get(mappedColName))) {
+            continue;
+          }
+
+          // exprNodeDesc is join key
+          // find the other key in the join expression
+          Operator<?> otherParentRSOperator = join.getParentOperators().get(1 - sideIndex);
+          for (Entry<String, ExprNodeDesc> joinMapEntry : join.getColumnExprMap().entrySet()) {
+            if (join.getConf().getReversedExprs().get(joinMapEntry.getKey()) != 1 - sideIndex) {
+              continue;
+            }
+
+            String otherColumnName = ((ExprNodeColumnDesc) joinMapEntry.getValue()).getColumn();
+            ExprNodeDesc mappedOtherKeyExpr = otherParentRSOperator.getColumnExprMap().get(otherColumnName);
+            ExprNodeDesc otherKeyExpr = join.getConf().getJoinKeys()[1 - sideIndex][i];
+            if (mappedOtherKeyExpr != null && otherKeyExpr.isSame(mappedOtherKeyExpr)) {
+              equalities.put(exprNodeDesc, joinMapEntry.getKey());
+            }
+          }
+        }
+      }
+
+      for (Operator<?> parent : join.getParentOperators()) {
+        equalities.putAll(walk(parent, exprNodeDescList));
+      }
+
+      return equalities;
+    }
+
+    private Map<ExprNodeDesc, String> processDefaultEq(
+            Operator<?> operator, List<ExprNodeColumnDesc> exprNodeDescList) {
+      if (exprNodeDescList.isEmpty()) {
+        return Collections.emptyMap();
+      }
+
+      Map<String, ExprNodeDesc> columnExprMap = operator.getColumnExprMap();
+      if (columnExprMap == null) {
+        if (operator.getParentOperators().size() == 1) {
+          return walk(operator.getParentOperators().get(0), exprNodeDescList);
+        } else {
+          return Collections.emptyMap();
+        }
+      }
+
+      List<ExprNodeColumnDesc> mapped = new ArrayList<>(exprNodeDescList.size());
+      Map<ExprNodeDesc, ExprNodeDesc> newOldMap = new HashMap<>(exprNodeDescList.size());
+      for (ExprNodeColumnDesc exprNodeDesc : exprNodeDescList) {
+        ExprNodeDesc valueDesc = operator.getColumnExprMap().get(exprNodeDesc.getColumn());
+        if (valueDesc instanceof ExprNodeColumnDesc) {
+          mapped.add((ExprNodeColumnDesc) valueDesc);
+          newOldMap.put(valueDesc, exprNodeDesc);
+        }
+      }
+      if (operator.getParentOperators().size() == 1) {
+        Map<ExprNodeDesc, String> equalities = walk(operator.getParentOperators().get(0), mapped);
+        Map<ExprNodeDesc, String> mappedEqualities = new HashMap<>(equalities.size());
+        for (Entry<ExprNodeDesc, String> eqEntry : equalities.entrySet()) {
+          for (Entry<String, ExprNodeDesc> colMapEntry : operator.getColumnExprMap().entrySet()) {
+            if (!(colMapEntry.getValue() instanceof ExprNodeColumnDesc)) {
+              continue;
+            }
+            if (((ExprNodeColumnDesc) colMapEntry.getValue()).getColumn().equals(eqEntry.getValue())) {
+              mappedEqualities.put(newOldMap.get(eqEntry.getKey()), colMapEntry.getKey());
+              break;
+            }
+          }
+        }
+        return mappedEqualities;
+      } else {
+        return Collections.emptyMap();
       }
     }
   }
