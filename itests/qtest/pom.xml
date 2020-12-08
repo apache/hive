@@ -208,12 +208,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-all</artifactId>
-      <version>${netty.hadoop.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
       <classifier>tests</classifier>
@@ -420,7 +414,7 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>9.3-1102-jdbc41</version>
+      <version>${postgres.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>

@@ -17700,17 +17700,19 @@ class GetTablesRequest(object):
      - catName
      - processorCapabilities
      - processorIdentifier
+     - projectionSpec
 
     """
 
 
-    def __init__(self, dbName=None, tblNames=None, capabilities=None, catName=None, processorCapabilities=None, processorIdentifier=None,):
+    def __init__(self, dbName=None, tblNames=None, capabilities=None, catName=None, processorCapabilities=None, processorIdentifier=None, projectionSpec=None,):
         self.dbName = dbName
         self.tblNames = tblNames
         self.capabilities = capabilities
         self.catName = catName
         self.processorCapabilities = processorCapabilities
         self.processorIdentifier = processorIdentifier
+        self.projectionSpec = projectionSpec
 
     def read(self, iprot):
         if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
@@ -17762,6 +17764,12 @@ class GetTablesRequest(object):
                     self.processorIdentifier = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
                 else:
                     iprot.skip(ftype)
+            elif fid == 7:
+                if ftype == TType.STRUCT:
+                    self.projectionSpec = GetProjectionsSpec()
+                    self.projectionSpec.read(iprot)
+                else:
+                    iprot.skip(ftype)
             else:
                 iprot.skip(ftype)
             iprot.readFieldEnd()
@@ -17801,6 +17809,10 @@ class GetTablesRequest(object):
         if self.processorIdentifier is not None:
             oprot.writeFieldBegin('processorIdentifier', TType.STRING, 6)
             oprot.writeString(self.processorIdentifier.encode('utf-8') if sys.version_info[0] == 2 else self.processorIdentifier)
+            oprot.writeFieldEnd()
+        if self.projectionSpec is not None:
+            oprot.writeFieldBegin('projectionSpec', TType.STRUCT, 7)
+            self.projectionSpec.write(oprot)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -23770,7 +23782,7 @@ class AlterTableResponse(object):
         return not (self == other)
 
 
-class GetPartitionsProjectionSpec(object):
+class GetProjectionsSpec(object):
     """
     Attributes:
      - fieldList
@@ -23823,7 +23835,7 @@ class GetPartitionsProjectionSpec(object):
         if oprot._fast_encode is not None and self.thrift_spec is not None:
             oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
             return
-        oprot.writeStructBegin('GetPartitionsProjectionSpec')
+        oprot.writeStructBegin('GetProjectionsSpec')
         if self.fieldList is not None:
             oprot.writeFieldBegin('fieldList', TType.LIST, 1)
             oprot.writeListBegin(TType.STRING, len(self.fieldList))
@@ -24076,7 +24088,7 @@ class GetPartitionsRequest(object):
                     iprot.skip(ftype)
             elif fid == 7:
                 if ftype == TType.STRUCT:
-                    self.projectionSpec = GetPartitionsProjectionSpec()
+                    self.projectionSpec = GetProjectionsSpec()
                     self.projectionSpec.read(iprot)
                 else:
                     iprot.skip(ftype)
@@ -25659,6 +25671,262 @@ class GetOpenTxnsRequest(object):
             for iter1179 in self.excludeTxnTypes:
                 oprot.writeI32(iter1179)
             oprot.writeListEnd()
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class StoredProcedureRequest(object):
+    """
+    Attributes:
+     - catName
+     - dbName
+     - procName
+
+    """
+
+
+    def __init__(self, catName=None, dbName=None, procName=None,):
+        self.catName = catName
+        self.dbName = dbName
+        self.procName = procName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.procName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('StoredProcedureRequest')
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 1)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 2)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
+        if self.procName is not None:
+            oprot.writeFieldBegin('procName', TType.STRING, 3)
+            oprot.writeString(self.procName.encode('utf-8') if sys.version_info[0] == 2 else self.procName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.catName is None:
+            raise TProtocolException(message='Required field catName is unset!')
+        if self.dbName is None:
+            raise TProtocolException(message='Required field dbName is unset!')
+        if self.procName is None:
+            raise TProtocolException(message='Required field procName is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class ListStoredProcedureRequest(object):
+    """
+    Attributes:
+     - catName
+     - dbName
+
+    """
+
+
+    def __init__(self, catName=None, dbName=None,):
+        self.catName = catName
+        self.dbName = dbName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('ListStoredProcedureRequest')
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 1)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 2)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.catName is None:
+            raise TProtocolException(message='Required field catName is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class StoredProcedure(object):
+    """
+    Attributes:
+     - name
+     - dbName
+     - catName
+     - ownerName
+     - source
+
+    """
+
+
+    def __init__(self, name=None, dbName=None, catName=None, ownerName=None, source=None,):
+        self.name = name
+        self.dbName = dbName
+        self.catName = catName
+        self.ownerName = ownerName
+        self.source = source
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRING:
+                    self.name = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.catName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.ownerName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 5:
+                if ftype == TType.STRING:
+                    self.source = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('StoredProcedure')
+        if self.name is not None:
+            oprot.writeFieldBegin('name', TType.STRING, 1)
+            oprot.writeString(self.name.encode('utf-8') if sys.version_info[0] == 2 else self.name)
+            oprot.writeFieldEnd()
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 2)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
+        if self.catName is not None:
+            oprot.writeFieldBegin('catName', TType.STRING, 3)
+            oprot.writeString(self.catName.encode('utf-8') if sys.version_info[0] == 2 else self.catName)
+            oprot.writeFieldEnd()
+        if self.ownerName is not None:
+            oprot.writeFieldBegin('ownerName', TType.STRING, 4)
+            oprot.writeString(self.ownerName.encode('utf-8') if sys.version_info[0] == 2 else self.ownerName)
+            oprot.writeFieldEnd()
+        if self.source is not None:
+            oprot.writeFieldBegin('source', TType.STRING, 5)
+            oprot.writeString(self.source.encode('utf-8') if sys.version_info[0] == 2 else self.source)
             oprot.writeFieldEnd()
         oprot.writeFieldStop()
         oprot.writeStructEnd()
@@ -27970,6 +28238,7 @@ GetTablesRequest.thrift_spec = (
     (4, TType.STRING, 'catName', 'UTF8', None, ),  # 4
     (5, TType.LIST, 'processorCapabilities', (TType.STRING, 'UTF8', False), None, ),  # 5
     (6, TType.STRING, 'processorIdentifier', 'UTF8', None, ),  # 6
+    (7, TType.STRUCT, 'projectionSpec', [GetProjectionsSpec, None], None, ),  # 7
 )
 all_structs.append(GetTablesResult)
 GetTablesResult.thrift_spec = (
@@ -28463,8 +28732,8 @@ AlterTableRequest.thrift_spec = (
 all_structs.append(AlterTableResponse)
 AlterTableResponse.thrift_spec = (
 )
-all_structs.append(GetPartitionsProjectionSpec)
-GetPartitionsProjectionSpec.thrift_spec = (
+all_structs.append(GetProjectionsSpec)
+GetProjectionsSpec.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'fieldList', (TType.STRING, 'UTF8', False), None, ),  # 1
     (2, TType.STRING, 'includeParamKeyPattern', 'UTF8', None, ),  # 2
@@ -28496,7 +28765,7 @@ GetPartitionsRequest.thrift_spec = (
     (4, TType.BOOL, 'withAuth', None, None, ),  # 4
     (5, TType.STRING, 'user', 'UTF8', None, ),  # 5
     (6, TType.LIST, 'groupNames', (TType.STRING, 'UTF8', False), None, ),  # 6
-    (7, TType.STRUCT, 'projectionSpec', [GetPartitionsProjectionSpec, None], None, ),  # 7
+    (7, TType.STRUCT, 'projectionSpec', [GetProjectionsSpec, None], None, ),  # 7
     (8, TType.STRUCT, 'filterSpec', [GetPartitionsFilterSpec, None], None, ),  # 8
     (9, TType.LIST, 'processorCapabilities', (TType.STRING, 'UTF8', False), None, ),  # 9
     (10, TType.STRING, 'processorIdentifier', 'UTF8', None, ),  # 10
@@ -28621,6 +28890,28 @@ all_structs.append(GetOpenTxnsRequest)
 GetOpenTxnsRequest.thrift_spec = (
     None,  # 0
     (1, TType.LIST, 'excludeTxnTypes', (TType.I32, None, False), None, ),  # 1
+)
+all_structs.append(StoredProcedureRequest)
+StoredProcedureRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'procName', 'UTF8', None, ),  # 3
+)
+all_structs.append(ListStoredProcedureRequest)
+ListStoredProcedureRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'catName', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
+)
+all_structs.append(StoredProcedure)
+StoredProcedure.thrift_spec = (
+    None,  # 0
+    (1, TType.STRING, 'name', 'UTF8', None, ),  # 1
+    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'catName', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'ownerName', 'UTF8', None, ),  # 4
+    (5, TType.STRING, 'source', 'UTF8', None, ),  # 5
 )
 all_structs.append(MetaException)
 MetaException.thrift_spec = (

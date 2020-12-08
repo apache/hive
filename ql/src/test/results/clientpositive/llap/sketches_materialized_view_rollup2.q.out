@@ -127,7 +127,7 @@ STAGE PLANS:
                     Statistics: Num rows: 22 Data size: 1958 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: category (type: char(1)), id (type: int)
-                      minReductionHashAggr: 0.3181818
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 11 Data size: 979 Basic stats: COMPLETE Column stats: COMPLETE

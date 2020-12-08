@@ -82,7 +82,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.ResultFileFormat;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
-import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -4453,7 +4452,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Returns whether the pattern is a regex expression (instead of a normal
    * string). Normal string is a string with all alphabets/digits and "_".
    */
-  boolean isRegex(String pattern, HiveConf conf) {
+  static boolean isRegex(String pattern, HiveConf conf) {
     String qIdSupport = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT);
     if (!"none".equals(qIdSupport)) {
       return false;
@@ -5173,10 +5172,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     float minReductionHashAggr = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+    float minReductionHashAggrLowerBound = HiveConf
+        .getFloatVar(conf, ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
 
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, null, false, -1, numDistinctUDFs > 0),
+            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
+                null, false, -1, numDistinctUDFs > 0),
         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         input), groupByOutputRowResolver);
     op.setColumnExprMap(colExprMap);
@@ -5439,6 +5441,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     float minReductionHashAggr = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+    float minReductionHashAggrLowerBound = HiveConf
+            .getFloatVar(conf, ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
 
     // Nothing special needs to be done for grouping sets if
     // this is the final group by operator, and multiple rows corresponding to the
@@ -5447,7 +5451,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // additional rows corresponding to grouping sets need to be created here.
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-            groupByMemoryUsage, memoryThreshold, minReductionHashAggr,
+            groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
             groupingSets,
             groupingSetsPresent && groupingSetsNeedAdditionalMRJob,
             groupingSetsPosition, containsDistinctAggr),
@@ -5618,9 +5622,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     float minReductionHashAggr = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+    float minReductionHashAggrLowerBound = HiveConf
+            .getFloatVar(conf, ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(GroupByDesc.Mode.HASH, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr,
+            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
             groupingSetKeys, groupingSetsPresent, groupingSetsPosition, containsDistinctAggr),
         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         inputOperatorInfo), groupByOutputRowResolver);
@@ -6152,10 +6158,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     float minReductionHashAggr = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+    float minReductionHashAggrLowerBound = HiveConf
+            .getFloatVar(conf, ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
 
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(GroupByDesc.Mode.FINAL, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, null, false,
+            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
+                null, false,
             groupingSetsPosition, containsDistinctAggr),
         new RowSchema(groupByOutputRowResolver2.getColumnInfos()),
         reduceSinkOperatorInfo2), groupByOutputRowResolver2);
@@ -7256,6 +7265,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Path queryTmpdir = null; // the intermediate destination directory
     Path destinationPath = null; // the final destination directory
     TableDesc tableDescriptor = null;
+    StructObjectInspector specificRowObjectInspector = null;
     int currentTableId = 0;
     boolean isLocal = false;
     SortBucketRSCtx rsCtx = new SortBucketRSCtx();
@@ -7333,7 +7343,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       input = genConstraintsPlan(dest, qb, input);
 
       if (!qb.getIsQuery()) {
-        input = genConversionSelectOperator(dest, qb, input, tableDescriptor, dpCtx, parts);
+        input = genConversionSelectOperator(dest, qb, input, destinationTable.getDeserializer(), dpCtx, parts);
       }
 
       if (destinationTable.isMaterializedView() &&
@@ -7477,7 +7487,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       input = genConstraintsPlan(dest, qb, input);
 
       if (!qb.getIsQuery()) {
-        input = genConversionSelectOperator(dest, qb, input, tableDescriptor, dpCtx, null);
+        input = genConversionSelectOperator(dest, qb, input, destinationTable.getDeserializer(), dpCtx, null);
       }
 
       if (destinationTable.isMaterializedView() &&
@@ -7716,6 +7726,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         tableDescriptor = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
       }
+      // We need a specific rowObjectInspector in this case
+      try {
+        specificRowObjectInspector =
+            (StructObjectInspector) tableDescriptor.getDeserializer(conf).getObjectInspector();
+      } catch (Exception e) {
+        throw new SemanticException(e.getMessage(), e);
+      }
 
       boolean isDfsDir = (destType == QBMetaData.DEST_DFS_FILE);
 
@@ -7812,8 +7829,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           "", true));
     } else {
       try {
-        StructObjectInspector rowObjectInspector = (StructObjectInspector) tableDescriptor
-            .getDeserializer(conf).getObjectInspector();
+        // If we already have a specific inspector (view or directory as a target) use that
+        // Otherwise use the table deserializer to get the inspector
+        StructObjectInspector rowObjectInspector = specificRowObjectInspector != null ? specificRowObjectInspector :
+            (StructObjectInspector) destinationTable.getDeserializer().getObjectInspector();
         List<? extends StructField> fields = rowObjectInspector
             .getAllStructFieldRefs();
         for (StructField field : fields) {
@@ -7902,6 +7921,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private boolean isDirectInsert(boolean destTableIsFullAcid, AcidUtils.Operation acidOp) {
+    // In case of an EXPLAIN ANALYZE query, the direct insert has to be turned off. HIVE-24336
+    if (ctx.getExplainAnalyze() == AnalyzeState.RUNNING) {
+      return false;
+    }
     boolean directInsertEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_ACID_DIRECT_INSERT_ENABLED);
     boolean directInsert = directInsertEnabled && destTableIsFullAcid && (acidOp == AcidUtils.Operation.INSERT);
     if (LOG.isDebugEnabled() && directInsert) {
@@ -8367,13 +8390,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * types that are expected by the table_desc.
    */
   private Operator genConversionSelectOperator(String dest, QB qb, Operator input,
-      TableDesc table_desc, DynamicPartitionCtx dpCtx, List<FieldSchema> parts)
+      Deserializer deserializer, DynamicPartitionCtx dpCtx, List<FieldSchema> parts)
       throws SemanticException {
     StructObjectInspector oi = null;
     try {
-      Deserializer deserializer = table_desc.getDeserializerClass()
-          .newInstance();
-      SerDeUtils.initializeSerDe(deserializer, conf, table_desc.getProperties(), null);
       oi = (StructObjectInspector) deserializer.getObjectInspector();
     } catch (Exception e) {
       throw new SemanticException(e);
@@ -8405,9 +8425,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // MetadataTypedColumnsetSerDe does not need type conversions because it
     // does the conversion to String by itself.
-    boolean isMetaDataSerDe = table_desc.getDeserializerClass().equals(
-        MetadataTypedColumnsetSerDe.class);
-    if (!isMetaDataSerDe && !deleting(dest)) {
+    if (!(deserializer instanceof MetadataTypedColumnsetSerDe) && !deleting(dest)) {
 
       // If we're updating, add the ROW__ID expression, then make the following column accesses
       // offset by 1 so that we don't try to convert the ROW__ID
@@ -9533,9 +9551,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     float minReductionHashAggr = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+    float minReductionHashAggrLowerBound = HiveConf
+            .getFloatVar(conf, ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(GroupByDesc.Mode.HASH, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, null, false, -1, false),
+            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
+                null, false, -1, false),
         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         input), groupByOutputRowResolver);
 
@@ -11628,6 +11649,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Operator genPlan(QB parent, QBExpr qbexpr) throws SemanticException {
+    if (qbexpr.getOpcode() == QBExpr.Opcode.EXCEPT || qbexpr.getOpcode() == QBExpr.Opcode.EXCEPTALL
+        || qbexpr.getOpcode() == QBExpr.Opcode.INTERSECT || qbexpr.getOpcode() == QBExpr.Opcode.INTERSECTALL) {
+      throw new SemanticException(
+          "EXCEPT and INTERSECT operations are only supported with Cost Based Optimizations enabled. Please set 'hive.cbo.enable' to true!");
+    }
     if (qbexpr.getOpcode() == QBExpr.Opcode.NULLOP) {
       boolean skipAmbiguityCheck = viewSelect == null && parent.isTopLevelSelectStarQuery();
       return genPlan(qbexpr.getQB(), skipAmbiguityCheck);
@@ -13203,7 +13229,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       makeInsertOnly = false;
       makeAcid = false;
     }
-    if ((makeInsertOnly || makeAcid || isTransactional)
+    if ((makeInsertOnly || makeAcid || isTransactional || isManaged)
         && !isExt  && !isMaterialization && StringUtils.isBlank(storageFormat.getStorageHandler())
         //don't overwrite user choice if transactional attribute is explicitly set
         && !retValue.containsKey(hive_metastoreConstants.TABLE_IS_TRANSACTIONAL)) {
@@ -13212,7 +13238,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         retValue.put(hive_metastoreConstants.TABLE_TRANSACTIONAL_PROPERTIES,
             TransactionalValidationListener.INSERTONLY_TRANSACTIONAL_PROPERTY);
       }
-      if (makeAcid || isTransactional) {
+      if (makeAcid || isTransactional || (isManaged && !makeInsertOnly)) {
         retValue = convertToAcidByDefault(storageFormat, qualifiedTableName, sortCols, retValue);
       }
     }

@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.HiveTableName;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 
 /**
  * ImportTableDesc.
@@ -161,6 +162,13 @@ public class ImportTableDesc {
 
   public Task<?> getCreateTableTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs, HiveConf conf) {
     return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc), conf);
+  }
+
+  public Task<?> getCreateTableTask(Set<ReadEntity> inputs, Set<WriteEntity> outputs, HiveConf conf,
+                                    boolean isReplication,
+                                    String dumpRoot, ReplicationMetricCollector metricCollector) {
+    return TaskFactory.get(new DDLWork(inputs, outputs, createTblDesc, isReplication,
+            dumpRoot, metricCollector), conf);
   }
 
   public TableType tableType() {

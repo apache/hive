@@ -455,10 +455,15 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
               }
               String trustStorePassword =
                   MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
+              String trustStoreType =
+                      MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_TYPE).trim();
+              String trustStoreAlgorithm =
+                      MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
+
 
               // Create an SSL socket and connect
               transport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
-                  trustStorePath, trustStorePassword );
+                  trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm );
               LOG.info("Opened an SSL connection to metastore, current connections: " + connCount.incrementAndGet());
             } catch(IOException e) {
               throw new IllegalArgumentException(e);
@@ -594,6 +599,9 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
     try {
       if (null != client) {
         client.shutdown();
+        if ((transport == null) || !transport.isOpen()) {
+          LOG.info("Closed a connection to metastore, current connections: " + connCount.decrementAndGet());
+        }
       }
     } catch (TException e) {
       LOG.debug("Unable to shutdown metastore client. Will try closing transport directly.", e);
@@ -2630,7 +2638,7 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
-  public long getLatestTxnInConflict(long txnId) throws MetaException {
+  public long getLatestTxnIdInConflict(long txnId) throws MetaException {
     return 0;
   }
 
@@ -3265,6 +3273,13 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   }
 
   @Override
+  public List<Table> getTables(String catName, String dbName, List<String> tableNames,
+                                           GetProjectionsSpec projectionsSpec) throws MetaException,
+          InvalidOperationException, UnknownDBException, TException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public void updateCreationMetadata(String catName, String dbName, String tableName,
                                      CreationMetadata cm) throws MetaException, TException {
     throw new UnsupportedOperationException();
@@ -3812,6 +3827,26 @@ public class HiveMetaStoreClientPreCatalog implements IMetaStoreClient, AutoClos
   public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
                                                          replicationMetricsRequest) throws MetaException, TException {
     return client.get_replication_metrics(replicationMetricsRequest);
+  }
+
+  @Override
+  public void createStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException, TException {
+    client.create_stored_procedure(proc);
+  }
+
+  @Override
+  public StoredProcedure getStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {
+    return client.get_stored_procedure(request);
+  }
+
+  @Override
+  public void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {
+    client.drop_stored_procedure(request);
+  }
+
+  @Override
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException {
+    return client.get_all_stored_procedures(request);
   }
 
   @Override

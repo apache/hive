@@ -2780,16 +2780,21 @@ public final class Utilities {
   }
 
   public static boolean isEmptyPath(Configuration job, Path dirPath) throws IOException {
-    FileSystem inpFs = dirPath.getFileSystem(job);
-    try {
-      FileStatus[] fStats = inpFs.listStatus(dirPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
-      if (fStats.length > 0) {
-        return false;
-      }
-    } catch(FileNotFoundException fnf) {
-      return true;
+    FileStatus[] fStats = listNonHiddenFileStatus(job, dirPath);
+    if (fStats.length > 0) {
+      return false;
     }
     return true;
+  }
+
+  public static FileStatus[] listNonHiddenFileStatus(Configuration job, Path dirPath)
+      throws IOException {
+    FileSystem inpFs = dirPath.getFileSystem(job);
+    try {
+      return inpFs.listStatus(dirPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
+    } catch (FileNotFoundException e) {
+      return new FileStatus[] {};
+    }
   }
 
   public static List<TezTask> getTezTasks(List<Task<?>> tasks) {

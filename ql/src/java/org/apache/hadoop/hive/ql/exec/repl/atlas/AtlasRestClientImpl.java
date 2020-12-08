@@ -95,7 +95,7 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
         SecurityUtils.reloginExpiringKeytabUser();
         return clientV2.exportData(request);
       }
-    }, null);
+    });
   }
 
   public AtlasImportResult importData(AtlasImportRequest request, AtlasReplInfo atlasReplInfo) throws Exception {
@@ -103,6 +103,7 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
     Path exportFilePath = new Path(atlasReplInfo.getStagingDir(), ReplUtils.REPL_ATLAS_EXPORT_FILE_NAME);
     FileSystem fs = FileSystem.get(exportFilePath.toUri(), atlasReplInfo.getConf());
     if (!fs.exists(exportFilePath)) {
+      LOG.info("There is nothing to load, returning the default result.");
       return defaultResult;
     }
     LOG.debug("Atlas import data request: {}" + request);
@@ -120,7 +121,7 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
           }
         }
       }
-    }, defaultResult);
+    });
   }
 
   private AtlasImportResult getDefaultAtlasImportResult(AtlasImportRequest request) {
@@ -132,7 +133,19 @@ public class AtlasRestClientImpl extends RetryingClientTimeBased implements Atla
       .withHiveConf(conf)
       .withRetryOnException(AtlasServiceException.class).build();
     try {
-      return retryable.executeCallable(() -> clientV2.getServer(endpoint));
+      return retryable.executeCallable((Callable<AtlasServer>) () -> {
+        try {
+          return clientV2.getServer(endpoint);
+        } catch (AtlasServiceException e) {
+          int statusCode = e.getStatus() != null ? e.getStatus().getStatusCode() : -1;
+          if (NOT_FOUND.getStatusCode() == statusCode) {
+            // Atlas server entity is initialized on first import/export o/p.
+            LOG.info("Atlas server entity is not found");
+            return null;
+          }
+          throw e;
+        }
+      });
     } catch (Exception e) {
       throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
     }

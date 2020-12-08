@@ -732,7 +732,7 @@ class AlterTableRequest; end
 
 class AlterTableResponse; end
 
-class GetPartitionsProjectionSpec; end
+class GetProjectionsSpec; end
 
 class GetPartitionsFilterSpec; end
 
@@ -771,6 +771,12 @@ class ReplicationMetricList; end
 class GetReplicationMetricsRequest; end
 
 class GetOpenTxnsRequest; end
+
+class StoredProcedureRequest; end
+
+class ListStoredProcedureRequest; end
+
+class StoredProcedure; end
 
 class MetaException < ::Thrift::Exception; end
 
@@ -5034,6 +5040,7 @@ class GetTablesRequest
   CATNAME = 4
   PROCESSORCAPABILITIES = 5
   PROCESSORIDENTIFIER = 6
+  PROJECTIONSPEC = 7
 
   FIELDS = {
     DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
@@ -5041,7 +5048,8 @@ class GetTablesRequest
     CAPABILITIES => {:type => ::Thrift::Types::STRUCT, :name => 'capabilities', :class => ::ClientCapabilities, :optional => true},
     CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName', :optional => true},
     PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true}
+    PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true},
+    PROJECTIONSPEC => {:type => ::Thrift::Types::STRUCT, :name => 'projectionSpec', :class => ::GetProjectionsSpec, :optional => true}
   }
 
   def struct_fields; FIELDS; end
@@ -6603,7 +6611,7 @@ class AlterTableResponse
   ::Thrift::Struct.generate_accessors self
 end
 
-class GetPartitionsProjectionSpec
+class GetProjectionsSpec
   include ::Thrift::Struct, ::Thrift::Struct_Union
   FIELDLIST = 1
   INCLUDEPARAMKEYPATTERN = 2
@@ -6681,7 +6689,7 @@ class GetPartitionsRequest
     WITHAUTH => {:type => ::Thrift::Types::BOOL, :name => 'withAuth', :optional => true},
     USER => {:type => ::Thrift::Types::STRING, :name => 'user', :optional => true},
     GROUPNAMES => {:type => ::Thrift::Types::LIST, :name => 'groupNames', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
-    PROJECTIONSPEC => {:type => ::Thrift::Types::STRUCT, :name => 'projectionSpec', :class => ::GetPartitionsProjectionSpec},
+    PROJECTIONSPEC => {:type => ::Thrift::Types::STRUCT, :name => 'projectionSpec', :class => ::GetProjectionsSpec},
     FILTERSPEC => {:type => ::Thrift::Types::STRUCT, :name => 'filterSpec', :class => ::GetPartitionsFilterSpec},
     PROCESSORCAPABILITIES => {:type => ::Thrift::Types::LIST, :name => 'processorCapabilities', :element => {:type => ::Thrift::Types::STRING}, :optional => true},
     PROCESSORIDENTIFIER => {:type => ::Thrift::Types::STRING, :name => 'processorIdentifier', :optional => true},
@@ -7045,6 +7053,72 @@ class GetOpenTxnsRequest
 
   FIELDS = {
     EXCLUDETXNTYPES => {:type => ::Thrift::Types::LIST, :name => 'excludeTxnTypes', :element => {:type => ::Thrift::Types::I32, :enum_class => ::TxnType}, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class StoredProcedureRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+  PROCNAME = 3
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    PROCNAME => {:type => ::Thrift::Types::STRING, :name => 'procName'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field procName is unset!') unless @procName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class ListStoredProcedureRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  CATNAME = 1
+  DBNAME = 2
+
+  FIELDS = {
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field catName is unset!') unless @catName
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class StoredProcedure
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  NAME = 1
+  DBNAME = 2
+  CATNAME = 3
+  OWNERNAME = 4
+  SOURCE = 5
+
+  FIELDS = {
+    NAME => {:type => ::Thrift::Types::STRING, :name => 'name'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    CATNAME => {:type => ::Thrift::Types::STRING, :name => 'catName'},
+    OWNERNAME => {:type => ::Thrift::Types::STRING, :name => 'ownerName'},
+    SOURCE => {:type => ::Thrift::Types::STRING, :name => 'source'}
   }
 
   def struct_fields; FIELDS; end

@@ -61,7 +61,7 @@ public final class VectorUDFUnixTimeStampString extends VectorUDFTimestampFieldS
   }
 
   @Override
-  protected long doGetField(byte[] bytes, int start, int length) throws ParseException {
+  protected long getField(byte[] bytes, int start, int length) throws ParseException {
     Date date = null;
     try {
       date = format.parse(Text.decode(bytes, start, length));

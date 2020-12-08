@@ -600,10 +600,14 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
               }
               String trustStorePassword =
                   MetastoreConf.getPassword(conf, MetastoreConf.ConfVars.SSL_TRUSTSTORE_PASSWORD);
+              String trustStoreType =
+                      MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTSTORE_TYPE).trim();
+              String trustStoreAlgorithm =
+                      MetastoreConf.getVar(conf, ConfVars.SSL_TRUSTMANAGERFACTORY_ALGORITHM).trim();
 
               // Create an SSL socket and connect
               transport = SecurityUtils.getSSLSocket(store.getHost(), store.getPort(), clientSocketTimeout,
-                  trustStorePath, trustStorePassword);
+                  trustStorePath, trustStorePassword, trustStoreType, trustStoreAlgorithm);
               final int newCount = connCount.incrementAndGet();
               LOG.debug(
                   "Opened an SSL connection to metastore, current connections: {}",
@@ -786,6 +790,11 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
     try {
       if (null != client) {
         client.shutdown();
+        if ((transport == null) || !transport.isOpen()) {
+          final int newCount = connCount.decrementAndGet();
+          LOG.info("Closed a connection to metastore, current connections: {}",
+                  newCount);
+        }
       }
     } catch (TException e) {
       LOG.debug("Unable to shutdown metastore client. Will try closing transport directly.", e);
@@ -2340,18 +2349,25 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   @Override
   public List<Table> getTableObjectsByName(String dbName, List<String> tableNames)
       throws TException {
-    return getTableObjectsByName(getDefaultCatalog(conf), dbName, tableNames);
+    return getTables(getDefaultCatalog(conf), dbName, tableNames, null);
   }
 
   @Override
   public List<Table> getTableObjectsByName(String catName, String dbName,
                                            List<String> tableNames) throws TException {
+    return getTables(catName, dbName, tableNames, null);
+  }
+
+  @Override
+  public List<Table> getTables(String catName, String dbName, List<String> tableNames,
+      GetProjectionsSpec projectionsSpec) throws TException {
     GetTablesRequest req = new GetTablesRequest(dbName);
     req.setCatName(catName);
     req.setTblNames(tableNames);
     req.setCapabilities(version);
     if (processorCapabilities != null)
       req.setProcessorCapabilities(new ArrayList<String>(Arrays.asList(processorCapabilities)));
+    req.setProjectionSpec(projectionsSpec);
     List<Table> tabs = client.get_table_objects_by_name_req(req).getTables();
     return deepCopyTables(FilterUtils.filterTablesIfEnabled(isClientFilterEnabled, filterHook, tabs));
   }
@@ -3866,8 +3882,8 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
-  public long getLatestTxnInConflict(long txnId) throws TException {
-    return client.get_latest_txn_in_conflict(txnId);
+  public long getLatestTxnIdInConflict(long txnId) throws TException {
+    return client.get_latest_txnid_in_conflict(txnId);
   }
 
   @InterfaceAudience.LimitedPrivate({"HCatalog"})
@@ -4638,6 +4654,78 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest
                                                          replicationMetricsRequest) throws MetaException, TException {
     return client.get_replication_metrics(replicationMetricsRequest);
+  }
+
+  @Override
+  public void createStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException, TException {
+    client.create_stored_procedure(proc);
+  }
+
+  @Override
+  public StoredProcedure getStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {
+    return client.get_stored_procedure(request);
+  }
+
+  @Override
+  public void dropStoredProcedure(StoredProcedureRequest request) throws MetaException, NoSuchObjectException, TException {
+    client.drop_stored_procedure(request);
+  }
+
+  @Override
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) throws MetaException, TException {
+    return client.get_all_stored_procedures(request);
+  }
+
+  /**
+   * Builder for the GetProjectionsSpec. This is a projection specification for partitions returned from the HMS.
+   */
+  public static class GetPartitionProjectionsSpecBuilder {
+
+    private List<String> partitionList = null;
+    private String includePartitionPattern = null;
+    private String excludePartitionPattern = null;
+
+    public void setPartitionList(List<String> partitionList) {
+      this.partitionList = partitionList;
+    }
+
+    public void setIncludePartitionPattern(String includePartitionPattern) {
+      this.includePartitionPattern = includePartitionPattern;
+    }
+
+    public void setExcludePartitionPattern(String excludePartitionPattern) {
+      this.excludePartitionPattern = excludePartitionPattern;
+    }
+
+    public GetProjectionsSpec build() {
+      return new GetProjectionsSpec(partitionList, includePartitionPattern, excludePartitionPattern);
+    }
+  }
+
+  /**
+   * Builder for the GetProjectionsSpec. This is a projection specification for tables returned from the HMS.
+   */
+  public static class GetTableProjectionsSpecBuilder {
+
+    private List<String> columnList = null;
+    private String includeColumnPattern = null;
+    private String excludeColumnPattern = null;
+
+    public void setColumnList(List<String> columnList) {
+      this.columnList = columnList;
+    }
+
+    public void setIncludeColumnPattern(String includeColumnPattern) {
+      this.includeColumnPattern = includeColumnPattern;
+    }
+
+    public void setExcludeColumnPattern(String excludeColumnPattern) {
+      this.excludeColumnPattern = excludeColumnPattern;
+    }
+
+    public GetProjectionsSpec build() {
+      return new GetProjectionsSpec(columnList, includeColumnPattern, excludeColumnPattern);
+    }
   }
 
   /**

@@ -673,22 +673,21 @@ public class Context {
     if(this.fsResultCacheDirs != null) {
       resultCacheDir = this.fsResultCacheDirs.toUri().getPath();
     }
-    for (Map.Entry<String, Path> entry : fsScratchDirs.entrySet()) {
+    SessionState sessionState = SessionState.get();
+    for (Path p: fsScratchDirs.values()) {
       try {
-        Path p = entry.getValue();
         if (p.toUri().getPath().contains(stagingDir) && subDirOf(p, fsScratchDirs.values())  ) {
           LOG.debug("Skip deleting stagingDir: " + p);
           FileSystem fs = p.getFileSystem(conf);
           fs.cancelDeleteOnExit(p);
           continue; // staging dir is deleted when deleting the scratch dir
         }
-        if(resultCacheDir == null || !p.toUri().getPath().contains(resultCacheDir)) {
+        if (resultCacheDir == null || !p.toUri().getPath().contains(resultCacheDir)) {
           // delete only the paths which aren't result cache dir path
           // because that will be taken care by removeResultCacheDir
-        FileSystem fs = p.getFileSystem(conf);
-        LOG.debug("Deleting scratch dir: {}",  p);
-        fs.delete(p, true);
-        fs.cancelDeleteOnExit(p);
+          FileSystem fs = p.getFileSystem(conf);
+          LOG.info("Deleting scratch dir: {}", p);
+          sessionState.getCleanupService().deleteRecursive(p, fs);
         }
       } catch (Exception e) {
         LOG.warn("Error Removing Scratch: "

@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
@@ -348,6 +349,17 @@ public abstract class MetaStoreEventListener implements Configurable {
    */
   public void onDeletePartitionColumnStat(DeletePartitionColumnStatEvent deletePartColStatEvent)
           throws MetaException {
+  }
+
+  /**
+   * This will be called to commit a compaction transaction.
+   * @param commitCompactionEvent event to be processed
+   * @param dbConn jdbc connection to remote meta store db.
+   * @param sqlGenerator helper class to generate db specific sql string.
+   * @throws MetaException ex
+   */
+  public void onCommitCompaction(CommitCompactionEvent commitCompactionEvent, Connection dbConn,
+      SQLGenerator sqlGenerator) throws MetaException {
   }
 
   /**

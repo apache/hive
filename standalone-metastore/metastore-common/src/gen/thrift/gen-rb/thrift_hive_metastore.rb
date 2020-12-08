@@ -2814,20 +2814,20 @@ module ThriftHiveMetastore
       return
     end
 
-    def get_latest_txn_in_conflict(txnId)
-      send_get_latest_txn_in_conflict(txnId)
-      return recv_get_latest_txn_in_conflict()
+    def get_latest_txnid_in_conflict(txnId)
+      send_get_latest_txnid_in_conflict(txnId)
+      return recv_get_latest_txnid_in_conflict()
     end
 
-    def send_get_latest_txn_in_conflict(txnId)
-      send_message('get_latest_txn_in_conflict', Get_latest_txn_in_conflict_args, :txnId => txnId)
+    def send_get_latest_txnid_in_conflict(txnId)
+      send_message('get_latest_txnid_in_conflict', Get_latest_txnid_in_conflict_args, :txnId => txnId)
     end
 
-    def recv_get_latest_txn_in_conflict()
-      result = receive_message(Get_latest_txn_in_conflict_result)
+    def recv_get_latest_txnid_in_conflict()
+      result = receive_message(Get_latest_txnid_in_conflict_result)
       return result.success unless result.success.nil?
       raise result.o1 unless result.o1.nil?
-      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_latest_txn_in_conflict failed: unknown result')
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_latest_txnid_in_conflict failed: unknown result')
     end
 
     def repl_tbl_writeid_state(rqst)
@@ -4108,6 +4108,71 @@ module ThriftHiveMetastore
       result = receive_message(Get_open_txns_req_result)
       return result.success unless result.success.nil?
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_open_txns_req failed: unknown result')
+    end
+
+    def create_stored_procedure(proc)
+      send_create_stored_procedure(proc)
+      recv_create_stored_procedure()
+    end
+
+    def send_create_stored_procedure(proc)
+      send_message('create_stored_procedure', Create_stored_procedure_args, :proc => proc)
+    end
+
+    def recv_create_stored_procedure()
+      result = receive_message(Create_stored_procedure_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def get_stored_procedure(request)
+      send_get_stored_procedure(request)
+      return recv_get_stored_procedure()
+    end
+
+    def send_get_stored_procedure(request)
+      send_message('get_stored_procedure', Get_stored_procedure_args, :request => request)
+    end
+
+    def recv_get_stored_procedure()
+      result = receive_message(Get_stored_procedure_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_stored_procedure failed: unknown result')
+    end
+
+    def drop_stored_procedure(request)
+      send_drop_stored_procedure(request)
+      recv_drop_stored_procedure()
+    end
+
+    def send_drop_stored_procedure(request)
+      send_message('drop_stored_procedure', Drop_stored_procedure_args, :request => request)
+    end
+
+    def recv_drop_stored_procedure()
+      result = receive_message(Drop_stored_procedure_result)
+      raise result.o1 unless result.o1.nil?
+      raise result.o2 unless result.o2.nil?
+      return
+    end
+
+    def get_all_stored_procedures(request)
+      send_get_all_stored_procedures(request)
+      return recv_get_all_stored_procedures()
+    end
+
+    def send_get_all_stored_procedures(request)
+      send_message('get_all_stored_procedures', Get_all_stored_procedures_args, :request => request)
+    end
+
+    def recv_get_all_stored_procedures()
+      result = receive_message(Get_all_stored_procedures_result)
+      return result.success unless result.success.nil?
+      raise result.o1 unless result.o1.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_all_stored_procedures failed: unknown result')
     end
 
   end
@@ -6270,15 +6335,15 @@ module ThriftHiveMetastore
       write_result(result, oprot, 'commit_txn', seqid)
     end
 
-    def process_get_latest_txn_in_conflict(seqid, iprot, oprot)
-      args = read_args(iprot, Get_latest_txn_in_conflict_args)
-      result = Get_latest_txn_in_conflict_result.new()
+    def process_get_latest_txnid_in_conflict(seqid, iprot, oprot)
+      args = read_args(iprot, Get_latest_txnid_in_conflict_args)
+      result = Get_latest_txnid_in_conflict_result.new()
       begin
-        result.success = @handler.get_latest_txn_in_conflict(args.txnId)
+        result.success = @handler.get_latest_txnid_in_conflict(args.txnId)
       rescue ::MetaException => o1
         result.o1 = o1
       end
-      write_result(result, oprot, 'get_latest_txn_in_conflict', seqid)
+      write_result(result, oprot, 'get_latest_txnid_in_conflict', seqid)
     end
 
     def process_repl_tbl_writeid_state(seqid, iprot, oprot)
@@ -7184,6 +7249,56 @@ module ThriftHiveMetastore
       result = Get_open_txns_req_result.new()
       result.success = @handler.get_open_txns_req(args.getOpenTxnsRequest)
       write_result(result, oprot, 'get_open_txns_req', seqid)
+    end
+
+    def process_create_stored_procedure(seqid, iprot, oprot)
+      args = read_args(iprot, Create_stored_procedure_args)
+      result = Create_stored_procedure_result.new()
+      begin
+        @handler.create_stored_procedure(args.proc)
+      rescue ::NoSuchObjectException => o1
+        result.o1 = o1
+      rescue ::MetaException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'create_stored_procedure', seqid)
+    end
+
+    def process_get_stored_procedure(seqid, iprot, oprot)
+      args = read_args(iprot, Get_stored_procedure_args)
+      result = Get_stored_procedure_result.new()
+      begin
+        result.success = @handler.get_stored_procedure(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'get_stored_procedure', seqid)
+    end
+
+    def process_drop_stored_procedure(seqid, iprot, oprot)
+      args = read_args(iprot, Drop_stored_procedure_args)
+      result = Drop_stored_procedure_result.new()
+      begin
+        @handler.drop_stored_procedure(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      rescue ::NoSuchObjectException => o2
+        result.o2 = o2
+      end
+      write_result(result, oprot, 'drop_stored_procedure', seqid)
+    end
+
+    def process_get_all_stored_procedures(seqid, iprot, oprot)
+      args = read_args(iprot, Get_all_stored_procedures_args)
+      result = Get_all_stored_procedures_result.new()
+      begin
+        result.success = @handler.get_all_stored_procedures(args.request)
+      rescue ::MetaException => o1
+        result.o1 = o1
+      end
+      write_result(result, oprot, 'get_all_stored_procedures', seqid)
     end
 
   end
@@ -13486,7 +13601,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Get_latest_txn_in_conflict_args
+  class Get_latest_txnid_in_conflict_args
     include ::Thrift::Struct, ::Thrift::Struct_Union
     TXNID = 1
 
@@ -13502,7 +13617,7 @@ module ThriftHiveMetastore
     ::Thrift::Struct.generate_accessors self
   end
 
-  class Get_latest_txn_in_conflict_result
+  class Get_latest_txnid_in_conflict_result
     include ::Thrift::Struct, ::Thrift::Struct_Union
     SUCCESS = 0
     O1 = 1
@@ -16242,6 +16357,144 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetOpenTxnsResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_stored_procedure_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    PROC = 1
+
+    FIELDS = {
+      PROC => {:type => ::Thrift::Types::STRUCT, :name => 'proc', :class => ::StoredProcedure}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Create_stored_procedure_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::NoSuchObjectException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::MetaException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_stored_procedure_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::StoredProcedureRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_stored_procedure_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::StoredProcedure},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_stored_procedure_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::StoredProcedureRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Drop_stored_procedure_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    O1 = 1
+    O2 = 2
+
+    FIELDS = {
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException},
+      O2 => {:type => ::Thrift::Types::STRUCT, :name => 'o2', :class => ::NoSuchObjectException}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_stored_procedures_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    REQUEST = 1
+
+    FIELDS = {
+      REQUEST => {:type => ::Thrift::Types::STRUCT, :name => 'request', :class => ::ListStoredProcedureRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Get_all_stored_procedures_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+    O1 = 1
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::LIST, :name => 'success', :element => {:type => ::Thrift::Types::STRING}},
+      O1 => {:type => ::Thrift::Types::STRUCT, :name => 'o1', :class => ::MetaException}
     }
 
     def struct_fields; FIELDS; end

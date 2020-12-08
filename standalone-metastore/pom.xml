@@ -75,6 +75,7 @@
     <datanucleus-jdo.version>3.2.0-m13</datanucleus-jdo.version>
     <datanucleus-rdbms.version>5.2.2</datanucleus-rdbms.version>
     <derby.version>10.14.1.0</derby.version>
+    <postgres.version>42.2.14</postgres.version>
     <dropwizard-metrics-hadoop-metrics2-reporter.version>0.1.2
     </dropwizard-metrics-hadoop-metrics2-reporter.version>
     <dropwizard.version>3.1.0</dropwizard.version>
@@ -365,7 +366,7 @@
       <dependency>
         <groupId>org.postgresql</groupId>
         <artifactId>postgresql</artifactId>
-        <version>9.3-1102-jdbc41</version>
+        <version>${postgres.version}</version>
         <scope>test</scope>
       </dependency>
       <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-all -->

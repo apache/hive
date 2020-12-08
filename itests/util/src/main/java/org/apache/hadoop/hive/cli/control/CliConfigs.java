@@ -288,58 +288,40 @@ public class CliConfigs {
     }
   }
 
-  public static class TezPerfCliConfig extends AbstractCliConfig {
-    public TezPerfCliConfig(boolean useConstraints) {
+  public static class TezTPCDS30TBCliConfig extends AbstractCliConfig {
+    public TezTPCDS30TBCliConfig() {
       super(CorePerfCliDriver.class);
       try {
         setQueryDir("ql/src/test/queries/clientpositive/perf");
-
-        if (useConstraints) {
-          excludesFrom(testConfigProps, "tez.perf.constraints.disabled.query.files");
-        } else {
-          excludesFrom(testConfigProps, "tez.perf.disabled.query.files");
-        }
-
-        excludesFrom(testConfigProps, "minimr.query.files");
-        excludesFrom(testConfigProps, "minitez.query.files");
-        excludesFrom(testConfigProps, "encrypted.query.files");
-        excludesFrom(testConfigProps, "erasurecoding.only.query.files");
-
-        setLogDir("itests/qtest/target/qfile-results/clientpositive/tez");
-
-        if (useConstraints) {
-          setInitScript("q_perf_test_init_constraints.sql");
-          setResultsDir("ql/src/test/results/clientpositive/perf/tez/constraints");
-        } else {
-          setInitScript("q_perf_test_init.sql");
-          setResultsDir("ql/src/test/results/clientpositive/perf/tez");
-        }
-        setCleanupScript("q_perf_test_cleanup.sql");
-
-        setHiveConfDir("data/conf/perf-reg/tez");
-        setClusterType(MiniClusterType.TEZ);
+        setLogDir("itests/qtest/target/qfile-results/clientpositive/perf/tpcds30tb/tez");
+        setResultsDir("ql/src/test/results/clientpositive/perf/tpcds30tb/tez");
+        setHiveConfDir("data/conf/perf/tpcds30tb/tez");
+        setClusterType(MiniClusterType.LLAP_LOCAL);
+        setMetastoreType("postgres.tpcds");
+        // The metastore in this configuration can be used only for reading statistics.
+        // We cannot exploit the information for running queries so it is impossible to
+        // create views or perform other similar operations.
+        excludesFrom(testConfigProps, "tez.perf.disabled.query.files");
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }
     }
   }
 
-  public static class SparkPerfCliConfig extends AbstractCliConfig {
-    public SparkPerfCliConfig() {
+  public static class SparkTPCDS30TBCliConfig extends AbstractCliConfig {
+    public SparkTPCDS30TBCliConfig() {
       super(CorePerfCliDriver.class);
       try {
         setQueryDir("ql/src/test/queries/clientpositive/perf");
-
-        excludesFrom(testConfigProps, "spark.perf.disabled.query.files");
-
-        setResultsDir("ql/src/test/results/clientpositive/perf/spark");
-        setLogDir("itests/qtest/target/qfile-results/clientpositive/spark");
-
-        setInitScript("q_perf_test_init.sql");
-        setCleanupScript("q_perf_test_cleanup.sql");
-
-        setHiveConfDir("data/conf/perf-reg/spark");
+        setLogDir("itests/qtest/target/qfile-results/clientpositive/perf/tpcds30tb/spark");
+        setResultsDir("ql/src/test/results/clientpositive/perf/tpcds30tb/spark");
+        setHiveConfDir("data/conf/perf/tpcds30tb/spark");
         setClusterType(MiniClusterType.SPARK);
+        setMetastoreType("postgres.tpcds");
+        // The metastore in this configuration can be used only for reading statistics.
+        // We cannot exploit the information for running queries so it is impossible to
+        // create views or perform other similar operations.
+        excludesFrom(testConfigProps, "spark.perf.disabled.query.files");
       } catch (Exception e) {
         throw new RuntimeException("can't construct cliconfig", e);
       }

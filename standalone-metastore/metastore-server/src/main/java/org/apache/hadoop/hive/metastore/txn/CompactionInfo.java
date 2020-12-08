@@ -20,12 +20,14 @@ package org.apache.hadoop.hive.metastore.txn;
 import org.apache.hadoop.hive.common.ValidCompactorWriteIdList;
 import org.apache.hadoop.hive.metastore.api.CompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
+import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OptionalCompactionInfoStruct;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Set;
 
 /**
  * Information on a possible or running compaction.
@@ -59,6 +61,9 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
    * {@link ValidCompactorWriteIdList#highWatermark}.
    */
   public long highestWriteId;
+  public Set<Long> writeIds;
+  public boolean isSetWriteIds;
+
   byte[] metaInfo;
   String hadoopJobId;
   public String errorMessage;
@@ -151,7 +156,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
    * @param rs ResultSet after call to rs.next()
    * @throws SQLException
    */
-  static CompactionInfo loadFullFromCompactionQueue(ResultSet rs) throws SQLException {
+  static CompactionInfo loadFullFromCompactionQueue(ResultSet rs) throws SQLException, MetaException {
     CompactionInfo fullCi = new CompactionInfo();
     fullCi.id = rs.getLong(1);
     fullCi.dbname = rs.getString(2);
@@ -170,7 +175,7 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
     fullCi.enqueueTime = rs.getLong(15);
     return fullCi;
   }
-  static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException {
+  static void insertIntoCompletedCompactions(PreparedStatement pStmt, CompactionInfo ci, long endTime) throws SQLException, MetaException {
     pStmt.setLong(1, ci.id);
     pStmt.setString(2, ci.dbname);
     pStmt.setString(3, ci.tableName);
@@ -257,5 +262,10 @@ public class CompactionInfo implements Comparable<CompactionInfo> {
       return compactionStructToInfo(ocis.getCi());
     }
     return null;
+  }
+
+  public void setWriteIds(Set<Long> writeIds) {
+    this.writeIds = writeIds;
+    isSetWriteIds = true;
   }
 }

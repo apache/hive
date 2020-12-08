@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -158,11 +157,6 @@ public class ThriftJDBCBinarySerDe extends AbstractSerDe {
         count = 0;
         return serializeBatch();
     }
-    return null;
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
     return null;
   }
 

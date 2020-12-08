@@ -2566,7 +2566,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals(
         "TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnid1) + "): " +
         TxnDbUtil.queryToString(conf, "select * from \"TXN_COMPONENTS\""),
-        0,
+        1,
         TxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" where \"TC_TXNID\"=" + txnid1));
     //now actually write to table to generate some partitions
     driver.run("insert into target partition(p=1,q) values (1,2,2), (3,4,2), (5,6,3), (7,8,2)");

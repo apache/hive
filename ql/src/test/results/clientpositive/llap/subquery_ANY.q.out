@@ -903,7 +903,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: min(p_partkey), count(), count(p_partkey)
                       keys: p_type (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 124 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1336,7 +1336,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: min(p_partkey)
                       keys: p_type (type: string), p_partkey (type: int)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 13 Data size: 1456 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1567,7 +1567,7 @@ STAGE PLANS:
                     Statistics: Num rows: 7 Data size: 1575 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string)
-                      minReductionHashAggr: 0.28571427
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 3 Data size: 675 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1705,7 +1705,7 @@ STAGE PLANS:
                       Statistics: Num rows: 26 Data size: 5850 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: string), _col1 (type: string)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 13 Data size: 2925 Basic stats: COMPLETE Column stats: COMPLETE
