@@ -971,7 +971,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
                      Reader.Options options,
                      Path[] deltaDirectory,
                      Options mergerOptions,
-                     Map<String, String> deltasToAttemptId) throws IOException {
+                     Map<String, Integer> deltasToAttemptId) throws IOException {
     this.collapse = collapseEvents;
     this.offset = options.getOffset();
     this.length = options.getLength();
@@ -1083,9 +1083,9 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           assert mergerOptions.getBaseDir() != null : "no baseDir?: " + mergerOptions.getRootPath();
           //we are compacting and it's acid schema so create a reader for the 1st bucket file that is not empty
           FileSystem fs = mergerOptions.getBaseDir().getFileSystem(conf);
-          String attemptId = null;
+          Integer attemptId = null;
           if (deltasToAttemptId != null) {
-            attemptId = deltasToAttemptId.get(mergerOptions.getBaseDir().toString());
+            attemptId = deltasToAttemptId.get(mergerOptions.getBaseDir().getName());
           }
           Path bucketPath = AcidUtils.createBucketFile(mergerOptions.getBaseDir(), bucket, attemptId);
           if(fs.exists(bucketPath) && fs.getFileStatus(bucketPath).getLen() > 0) {
@@ -1150,9 +1150,9 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
           continue;
         }
 
-        String attemptId = null;
+        Integer attemptId = null;
         if (deltasToAttemptId != null) {
-          attemptId = deltasToAttemptId.get(delta.toString());
+          attemptId = deltasToAttemptId.get(delta.getName());
         }
 
         for (Path deltaFile : getDeltaFiles(delta, bucket, mergerOptions, attemptId)) {
@@ -1293,7 +1293,7 @@ public class OrcRawRecordMerger implements AcidInputFormat.RawReader<OrcStruct>{
    * This determines the set of {@link ReaderPairAcid} to create for a given delta/.
    * For unbucketed tables {@code bucket} can be thought of as a write tranche.
    */
-  static Path[] getDeltaFiles(Path deltaDirectory, int bucket, Options mergerOptions, String attemptId) {
+  static Path[] getDeltaFiles(Path deltaDirectory, int bucket, Options mergerOptions, Integer attemptId) {
     assert (!mergerOptions.isCompacting &&
         deltaDirectory.getName().startsWith(AcidUtils.DELETE_DELTA_PREFIX)
     ) || mergerOptions.isCompacting : "Unexpected delta: " + deltaDirectory +
