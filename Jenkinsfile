@@ -264,11 +264,22 @@ reinit_metastore $dbType
             }
           } finally {
             stage('Archive') {
-              def fn="${splitName}.tgz"
-              sh """#!/bin/bash -e
-tar -czf ${fn} --files-from  <(find . -path '*/surefire-reports/*')"""
-              saveFile(fn)
-              junit '**/TEST-*.xml'
+              try {
+                sh """#!/bin/bash -e
+                  # removes all stdout and err for passed tests
+                  xmlstarlet ed -L -d 'testsuite/testcase/system-out[count(../failure)=0]' \
+                                   -d 'testsuite/testcase/system-err[count(../failure)=0]' \
+                                   `find . -name 'TEST*xml' -path '*/surefire-reports/*'`
+                  # remove all output.txt files
+                  find . -name '*output.txt' -path '*/surefire-reports/*' -exec unlink "{}" \;
+                """
+              } finally {
+                def fn="${splitName}.tgz"
+                sh """#!/bin/bash -e
+                tar -czf ${fn} --files-from  <(find . -path '*/surefire-reports/*')"""
+                saveFile(fn)
+                junit '**/TEST-*.xml'
+              }
             }
           }
         }
