@@ -286,7 +286,7 @@ public class TestFileSinkOperator {
       DynamicPartitionCtx dpCtx = new DynamicPartitionCtx(partColMap, "Sunday", 100);
       //todo: does this need the finalDestination?
       desc = new FileSinkDesc(basePath, tableDesc, false, 1, false,
-          false, 1, 1, partCols, dpCtx, null, null, false, false, false, false, false);
+          false, 1, 1, partCols, dpCtx, null, null, false, false, false, false, false, writeType);
     } else {
       desc = new FileSinkDesc(basePath, tableDesc, false);
     }
@@ -706,7 +706,7 @@ public class TestFileSinkOperator {
                                               ValidWriteIdList validWriteIdList,
                                               Path baseDirectory,
                                               Path[] deltaDirectory,
-                                              Map<String,String> deltaToAttemptId) throws
+                                              Map<String,Integer> deltaToAttemptId) throws
         IOException {
       return null;
     }

@@ -51,7 +51,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
     private Reporter reporter;
     private long minimumWriteId;
     private long maximumWriteId;
-    private String attemptId;
+    private Integer attemptId;
     /**
      * actual bucketId (as opposed to bucket property via BucketCodec)
      */
@@ -231,7 +231,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
       return this;
     }
 
-    public Options attemptId(String attemptId) {
+    public Options attemptId(Integer attemptId) {
       this.attemptId = attemptId;
       return this;
     }
@@ -309,7 +309,7 @@ public interface AcidOutputFormat<K extends WritableComparable, V> extends HiveO
       return bucketId;
     }
 
-    public String getAttemptId() {
+    public Integer getAttemptId() {
       return attemptId;
     }
 

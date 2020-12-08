@@ -105,6 +105,7 @@ public class Context {
 
   private Configuration conf;
   protected int pathid = 10000;
+  private int moveTaskId = 0;
   protected ExplainConfiguration explainConfig = null;
   protected String cboInfo;
   protected boolean cboSucceeded;
@@ -731,6 +732,9 @@ public class Context {
     return Integer.toString(pathid++);
   }
 
+  private String nextMoveTaskId() {
+    return Integer.toString(moveTaskId++);
+  }
 
   private static final String MR_PREFIX = "-mr-";
   public static final String EXT_PREFIX = "-ext-";
@@ -813,6 +817,11 @@ public class Context {
    */
   public Path getExtTmpPathRelTo(Path path) {
     return new Path(getStagingDir(path, !isExplainSkipExecution()), EXT_PREFIX + nextPathId());
+  }
+
+  public String getMoveTaskId() {
+    String moveTaskId = this.executionId + "_" + nextMoveTaskId();
+    return moveTaskId;
   }
 
   /**

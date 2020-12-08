@@ -339,7 +339,7 @@ target/tmp/org.apache.hadoop.hive.ql.TestTxnCommands-1521148657811/
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":1}\t3\t4",
             "t/delta_0000001_0000001_0000/000000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t0\t6",
-            "t/delta_0000002_0000002_0000/bucket_00000"}};
+            "t/delta_0000002_0000002_0000/bucket_00000_0"}};
     checkResult(expected2, testQuery, isVectorized, "update imported table");
 
     runStatementOnDriver("alter table T compact 'minor'");

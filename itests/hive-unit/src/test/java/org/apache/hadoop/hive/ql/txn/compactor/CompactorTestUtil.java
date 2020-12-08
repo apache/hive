@@ -50,11 +50,16 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 
@@ -107,6 +112,24 @@ class CompactorTestUtil {
         new Path(table.getSd().getLocation()), new Path(partitionName, deltaName));
     return Arrays.stream(fs.listStatus(path, AcidUtils.hiddenFileFilter)).map(FileStatus::getPath).map(Path::getName).sorted()
         .collect(Collectors.toList());
+  }
+
+  static List<String> getBucketFileNamesWithoutAttemptId(FileSystem fs, Table table, String partitionName,
+      List<String> deltaDirs) throws IOException {
+    Set<String> bucketFiles = new HashSet<>();
+    for (String deltaDir : deltaDirs) {
+      bucketFiles.addAll(getBucketFileNames(fs, table, partitionName, deltaDir));
+    }
+    Pattern p = Pattern.compile("(bucket_[0-9]+)(_[0-9]+)?");
+    List<String> bucketFilesWithoutAttemptId = new ArrayList<>();
+    for (String bucketFile : bucketFiles) {
+      Matcher m = p.matcher(bucketFile);
+      if (m.matches()) {
+        bucketFilesWithoutAttemptId.add(m.group(1));
+      }
+    }
+    Collections.sort(bucketFilesWithoutAttemptId);
+    return bucketFilesWithoutAttemptId;
   }
 
   /**
@@ -288,7 +311,7 @@ class CompactorTestUtil {
     conf.setBoolean("orc.schema.evolution.case.sensitive", false);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, true);
     AcidInputFormat.RawReader<OrcStruct> reader =
-        aif.getRawReader(conf, true, bucket, writeIdList, base, deltas, new HashMap<String, String>());
+        aif.getRawReader(conf, true, bucket, writeIdList, base, deltas, new HashMap<String, Integer>());
     RecordIdentifier identifier = reader.createKey();
     OrcStruct value = reader.createValue();
     long currentTxn = min;

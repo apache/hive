@@ -1747,15 +1747,15 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     final String completedTxnComponentsContents =
         TxnDbUtil.queryToString(conf, "select * from \"COMPLETED_TXN_COMPONENTS\"");
     Assert.assertEquals(completedTxnComponentsContents,
-        2, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
+        4, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\""));
     Assert.assertEquals(completedTxnComponentsContents,
-        2, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" where \"CTC_TXNID\"=6"));
+        4, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" where \"CTC_TXNID\"=6"));
     Assert.assertEquals(completedTxnComponentsContents,
-        2, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" where \"CTC_TXNID\"=6 "
+        4, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" where \"CTC_TXNID\"=6 "
             + "and \"CTC_TABLE\"='tabmmdp'"));
     // ctc_update_delete value should be "N" for both partitions since these are inserts
     Assert.assertEquals(completedTxnComponentsContents,
-        2, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" where \"CTC_TXNID\"=6 "
+        4, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" where \"CTC_TXNID\"=6 "
             + "and \"CTC_TABLE\"='tabmmdp' and \"CTC_UPDATE_DELETE\"='N'"));
     dropTable(new String[] {"tabMmDp", "tab_not_acid"});
   }
