@@ -137,8 +137,10 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     private ObjectInspector objectInspector;
 
+    private VectorBatchDeserializer deserializer;
+
     public Field(PrimitiveCategory primitiveCategory, DataTypePhysicalVariation dataTypePhysicalVariation,
-        int maxLength) {
+        int maxLength, VectorBatchDeserializer deserializer) {
       isPrimitive = true;
       this.category = Category.PRIMITIVE;
       this.primitiveCategory = primitiveCategory;
@@ -149,9 +151,11 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       this.complexTypeHelper = null;
       this.objectInspector = PrimitiveObjectInspectorFactory.
           getPrimitiveWritableObjectInspector(primitiveCategory);
+      this.deserializer = deserializer;
     }
 
-    public Field(Category category, ComplexTypeHelper complexTypeHelper, TypeInfo typeInfo) {
+    public Field(Category category, ComplexTypeHelper complexTypeHelper, TypeInfo typeInfo,
+                 VectorBatchDeserializer deserializer) {
       isPrimitive = false;
       this.category = category;
       this.objectInspector = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(typeInfo);
@@ -161,6 +165,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       this.isConvert = false;
       this.conversionWritable = null;
       this.complexTypeHelper = complexTypeHelper;
+      this.deserializer = deserializer;
     }
 
     public boolean getIsPrimitive() {
@@ -210,6 +215,10 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     public ObjectInspector getObjectInspector() {
       return objectInspector;
     }
+
+    public VectorBatchDeserializer getDeserializer() {
+      return deserializer;
+    }
   }
 
   /*
@@ -248,20 +257,68 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       DataTypePhysicalVariation dataTypePhysicalVariation) {
     final PrimitiveTypeInfo sourcePrimitiveTypeInfo = (PrimitiveTypeInfo) sourceTypeInfo;
     final PrimitiveCategory sourcePrimitiveCategory = sourcePrimitiveTypeInfo.getPrimitiveCategory();
-    final int maxLength;
+    int maxLength = 0;
+    VectorBatchDeserializer deserializer;
+
     switch (sourcePrimitiveCategory) {
-    case CHAR:
-      maxLength = ((CharTypeInfo) sourcePrimitiveTypeInfo).getLength();
-      break;
-    case VARCHAR:
-      maxLength = ((VarcharTypeInfo) sourcePrimitiveTypeInfo).getLength();
-      break;
-    default:
-      // No additional data type specific setting.
-      maxLength = 0;
-      break;
+      case VOID:
+        deserializer = new VectorVoidDeserializer();
+        break;
+      case BOOLEAN:
+        deserializer = new VectorBooleanDeserializer();
+        break;
+      case BYTE:
+        deserializer = new VectorByteDeserializer();
+        break;
+      case SHORT:
+        deserializer = new VectorShortDeserializer();
+        break;
+      case INT:
+        deserializer = new VectorIntDeserializer();
+        break;
+      case LONG:
+        deserializer = new VectorLongDeserializer();
+        break;
+      case TIMESTAMP:
+        deserializer = new VectorTimestampDeserializer();
+        break;
+      case DATE:
+        deserializer = new VectorDateDeserializer();
+        break;
+      case FLOAT:
+        deserializer = new VectorFloatDeserializer();
+        break;
+      case DOUBLE:
+        deserializer = new VectorDoubleDeserializer();
+        break;
+      case BINARY:
+        deserializer = new VectorBinaryDeserializer();
+        break;
+      case STRING:
+        deserializer = new VectorStringDeserializer();
+        break;
+      case VARCHAR:
+        maxLength = ((VarcharTypeInfo) sourcePrimitiveTypeInfo).getLength();
+        deserializer = new VectorVarcharDeserializer();
+        break;
+      case CHAR:
+        maxLength = ((CharTypeInfo) sourcePrimitiveTypeInfo).getLength();
+        deserializer = new VectorCharDeserializer();
+        break;
+      case DECIMAL:
+        deserializer = new VectorDecimalDeserializer();
+        break;
+      case INTERVAL_YEAR_MONTH:
+        deserializer = new VectorIntervalYearMonthDeserializer();
+        break;
+      case INTERVAL_DAY_TIME:
+        deserializer = new VectorIntervalDayTimeDeserializer();
+        break;
+      default:
+        throw new RuntimeException("Primitive category " + sourcePrimitiveCategory +
+                " not supported");
     }
-    return new Field(sourcePrimitiveCategory, dataTypePhysicalVariation, maxLength);
+    return new Field(sourcePrimitiveCategory, dataTypePhysicalVariation, maxLength, deserializer);
   }
 
   private Field allocateComplexField(TypeInfo sourceTypeInfo) {
@@ -273,7 +330,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         final ListComplexTypeHelper listHelper =
             new ListComplexTypeHelper(
                 allocateField(listTypeInfo.getListElementTypeInfo(), DataTypePhysicalVariation.NONE));
-        return new Field(category, listHelper, sourceTypeInfo);
+        return new Field(category, listHelper, sourceTypeInfo, new VectorListDeserializer());
       }
     case MAP:
       {
@@ -282,7 +339,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
             new MapComplexTypeHelper(
                 allocateField(mapTypeInfo.getMapKeyTypeInfo(), DataTypePhysicalVariation.NONE),
                 allocateField(mapTypeInfo.getMapValueTypeInfo(), DataTypePhysicalVariation.NONE));
-        return new Field(category, mapHelper, sourceTypeInfo);
+        return new Field(category, mapHelper, sourceTypeInfo, new VectorMapDeserializer());
       }
     case STRUCT:
       {
@@ -295,7 +352,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         }
         final StructComplexTypeHelper structHelper =
             new StructComplexTypeHelper(fields);
-        return new Field(category, structHelper, sourceTypeInfo);
+        return new Field(category, structHelper, sourceTypeInfo, new VectorStructDeserializer());
       }
     case UNION:
       {
@@ -308,7 +365,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         }
         final UnionComplexTypeHelper unionHelper =
             new UnionComplexTypeHelper(fields);
-        return new Field(category, unionHelper, sourceTypeInfo);
+        return new Field(category, unionHelper, sourceTypeInfo, new VectorUnionDeserializer());
       }
     default:
       throw new RuntimeException("Category " + category + " not supported");
@@ -564,173 +621,354 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     init(0);
   }
 
-  private void storePrimitiveRowColumn(ColumnVector colVector, Field field,
-      int batchIndex, boolean canRetainByteRef) throws IOException {
-
-    switch (field.getPrimitiveCategory()) {
-    case VOID:
+  static class VectorVoidDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
       VectorizedBatchUtil.setNullColIsNullValue(colVector, batchIndex);
-      return;
-    case BOOLEAN:
-      ((LongColumnVector) colVector).vector[batchIndex] = (deserializeRead.currentBoolean ? 1 : 0);
-      break;
-    case BYTE:
-      ((LongColumnVector) colVector).vector[batchIndex] = deserializeRead.currentByte;
-      break;
-    case SHORT:
-      ((LongColumnVector) colVector).vector[batchIndex] = deserializeRead.currentShort;
-      break;
-    case INT:
-      ((LongColumnVector) colVector).vector[batchIndex] = deserializeRead.currentInt;
-      break;
-    case LONG:
-      ((LongColumnVector) colVector).vector[batchIndex] = deserializeRead.currentLong;
-      break;
-    case TIMESTAMP:
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertVoid();
+    }
+  }
+
+  static class VectorBooleanDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      ((LongColumnVector) colVector).vector[batchIndex] =
+              (deserializer.deserializeRead.currentBoolean ? 1 : 0);
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertBoolean(field.getConversionWritable(), deserializer);
+    }
+  }
+
+  static class VectorByteDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      ((LongColumnVector) colVector).vector[batchIndex] = deserializer.deserializeRead.currentByte;
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertByte(field.getConversionWritable(), deserializer);
+    }
+  }
+
+  static class VectorShortDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      ((LongColumnVector) colVector).vector[batchIndex] = deserializer.deserializeRead.currentShort;
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertShort(field.getConversionWritable(), deserializer);
+    }
+  }
+
+  static class VectorIntDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      ((LongColumnVector) colVector).vector[batchIndex] = deserializer.deserializeRead.currentInt;
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertInt(field.getConversionWritable(), deserializer);
+    }
+  }
+
+  static class VectorLongDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      ((LongColumnVector) colVector).vector[batchIndex] = deserializer.deserializeRead.currentLong;
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertLong(field.getConversionWritable(), deserializer);
+    }
+  }
+
+  static class VectorTimestampDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
       ((TimestampColumnVector) colVector).set(
-          batchIndex, deserializeRead.currentTimestampWritable.getTimestamp().toSqlTimestamp());
-      break;
-    case DATE:
-      ((LongColumnVector) colVector).vector[batchIndex] = deserializeRead.currentDateWritable.getDays();
-      break;
-    case FLOAT:
-      ((DoubleColumnVector) colVector).vector[batchIndex] = deserializeRead.currentFloat;
-      break;
-    case DOUBLE:
-      ((DoubleColumnVector) colVector).vector[batchIndex] = deserializeRead.currentDouble;
-      break;
-    case BINARY:
-    case STRING:
-      {
-        final BytesColumnVector bytesColVec = ((BytesColumnVector) colVector);
-        if (deserializeRead.currentExternalBufferNeeded) {
-          bytesColVec.ensureValPreallocated(deserializeRead.currentExternalBufferNeededLen);
-          deserializeRead.copyToExternalBuffer(
+              batchIndex, deserializer.deserializeRead.currentTimestampWritable.getTimestamp().toSqlTimestamp());
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertTimestamp(field.getConversionWritable(), deserializer);
+    }
+  }
+
+  static class VectorDateDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      ((LongColumnVector) colVector).vector[batchIndex] =
+              deserializer.deserializeRead.currentDateWritable.getDays();
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertDate(field.getConversionWritable(), deserializer);
+    }
+  }
+
+  static class VectorFloatDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      ((DoubleColumnVector) colVector).vector[batchIndex] = deserializer.deserializeRead.currentFloat;
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertFloat(field.getConversionWritable(), deserializer);
+    }
+  }
+
+  static class VectorDoubleDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      ((DoubleColumnVector) colVector).vector[batchIndex] = deserializer.deserializeRead.currentDouble;
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertDouble(field.getConversionWritable(), deserializer);
+    }
+  }
+
+  private static void storeString(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+                                  VectorDeserializeRow deserializer) throws IOException {
+    final BytesColumnVector bytesColVec = ((BytesColumnVector) colVector);
+    if (deserializer.deserializeRead.currentExternalBufferNeeded) {
+      bytesColVec.ensureValPreallocated(deserializer.deserializeRead.currentExternalBufferNeededLen);
+      deserializer.deserializeRead.copyToExternalBuffer(
               bytesColVec.getValPreallocatedBytes(), bytesColVec.getValPreallocatedStart());
-          bytesColVec.setValPreallocated(
+      bytesColVec.setValPreallocated(
               batchIndex,
-              deserializeRead.currentExternalBufferNeededLen);
-        } else if (canRetainByteRef && inputBytes == deserializeRead.currentBytes) {
-          bytesColVec.setRef(
+              deserializer.deserializeRead.currentExternalBufferNeededLen);
+    } else if (canRetainByteRef && deserializer.inputBytes == deserializer.deserializeRead.currentBytes) {
+      bytesColVec.setRef(
               batchIndex,
-              deserializeRead.currentBytes,
-              deserializeRead.currentBytesStart,
-              deserializeRead.currentBytesLength);
-        } else {
-          bytesColVec.setVal(
+              deserializer.deserializeRead.currentBytes,
+              deserializer.deserializeRead.currentBytesStart,
+              deserializer.deserializeRead.currentBytesLength);
+    } else {
+      bytesColVec.setVal(
               batchIndex,
-              deserializeRead.currentBytes,
-              deserializeRead.currentBytesStart,
-              deserializeRead.currentBytesLength);
-        }
+              deserializer.deserializeRead.currentBytes,
+              deserializer.deserializeRead.currentBytesStart,
+              deserializer.deserializeRead.currentBytesLength);
+    }
+  }
+
+  static class VectorBinaryDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      storeString(colVector, field, batchIndex, canRetainByteRef, deserializer);
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertBinary(field.getConversionWritable(), deserializer, batchIndex);
+    }
+  }
+
+  static class VectorStringDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      storeString(colVector, field, batchIndex, canRetainByteRef, deserializer);
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertString(field.getConversionWritable(), deserializer, batchIndex);
+    }
+  }
+
+  static class VectorVarcharDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      // Use the basic STRING bytes read to get access, then use our optimal truncate/trim method
+      // that does not use Java String objects.
+      final BytesColumnVector bytesColVec = ((BytesColumnVector) colVector);
+      if (deserializer.deserializeRead.currentExternalBufferNeeded) {
+        // Write directly into our BytesColumnVector value buffer.
+        bytesColVec.ensureValPreallocated(deserializer.deserializeRead.currentExternalBufferNeededLen);
+        final byte[] convertBuffer = bytesColVec.getValPreallocatedBytes();
+        final int convertBufferStart = bytesColVec.getValPreallocatedStart();
+        deserializer.deserializeRead.copyToExternalBuffer(
+                convertBuffer,
+                convertBufferStart);
+        bytesColVec.setValPreallocated(
+                batchIndex,
+                StringExpr.truncate(
+                        convertBuffer,
+                        convertBufferStart,
+                        deserializer.deserializeRead.currentExternalBufferNeededLen,
+                        field.getMaxLength()));
+      } else if (canRetainByteRef && deserializer.inputBytes == deserializer.deserializeRead.currentBytes) {
+        bytesColVec.setRef(
+                batchIndex,
+                deserializer.deserializeRead.currentBytes,
+                deserializer.deserializeRead.currentBytesStart,
+                StringExpr.truncate(
+                        deserializer.deserializeRead.currentBytes,
+                        deserializer.deserializeRead.currentBytesStart,
+                        deserializer.deserializeRead.currentBytesLength,
+                        field.getMaxLength()));
+      } else {
+        bytesColVec.setVal(
+                batchIndex,
+                deserializer.deserializeRead.currentBytes,
+                deserializer.deserializeRead.currentBytesStart,
+                StringExpr.truncate(
+                        deserializer.deserializeRead.currentBytes,
+                        deserializer.deserializeRead.currentBytesStart,
+                        deserializer.deserializeRead.currentBytesLength,
+                        field.getMaxLength()));
       }
-      break;
-    case VARCHAR:
-      {
-        // Use the basic STRING bytes read to get access, then use our optimal truncate/trim method
-        // that does not use Java String objects.
-        final BytesColumnVector bytesColVec = ((BytesColumnVector) colVector);
-        if (deserializeRead.currentExternalBufferNeeded) {
-          // Write directly into our BytesColumnVector value buffer.
-          bytesColVec.ensureValPreallocated(deserializeRead.currentExternalBufferNeededLen);
-          final byte[] convertBuffer = bytesColVec.getValPreallocatedBytes();
-          final int convertBufferStart = bytesColVec.getValPreallocatedStart();
-          deserializeRead.copyToExternalBuffer(
-              convertBuffer,
-              convertBufferStart);
-          bytesColVec.setValPreallocated(
-              batchIndex,
-              StringExpr.truncate(
-                  convertBuffer,
-                  convertBufferStart,
-                  deserializeRead.currentExternalBufferNeededLen,
-                  field.getMaxLength()));
-        } else if (canRetainByteRef && inputBytes == deserializeRead.currentBytes) {
-          bytesColVec.setRef(
-              batchIndex,
-              deserializeRead.currentBytes,
-              deserializeRead.currentBytesStart,
-              StringExpr.truncate(
-                  deserializeRead.currentBytes,
-                  deserializeRead.currentBytesStart,
-                  deserializeRead.currentBytesLength,
-                  field.getMaxLength()));
-        } else {
-          bytesColVec.setVal(
-              batchIndex,
-              deserializeRead.currentBytes,
-              deserializeRead.currentBytesStart,
-              StringExpr.truncate(
-                  deserializeRead.currentBytes,
-                  deserializeRead.currentBytesStart,
-                  deserializeRead.currentBytesLength,
-                  field.getMaxLength()));
-        }
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertVarchar(field.getConversionWritable(), deserializer, batchIndex, field);
+    }
+  }
+
+  static class VectorCharDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      // Use the basic STRING bytes read to get access, then use our optimal truncate/trim method
+      // that does not use Java String objects.
+      final BytesColumnVector bytesColVec = ((BytesColumnVector) colVector);
+      if (deserializer.deserializeRead.currentExternalBufferNeeded) {
+        // Write directly into our BytesColumnVector value buffer.
+        bytesColVec.ensureValPreallocated(deserializer.deserializeRead.currentExternalBufferNeededLen);
+        final byte[] convertBuffer = bytesColVec.getValPreallocatedBytes();
+        final int convertBufferStart = bytesColVec.getValPreallocatedStart();
+        deserializer.deserializeRead.copyToExternalBuffer(
+                convertBuffer,
+                convertBufferStart);
+        bytesColVec.setValPreallocated(
+                batchIndex,
+                StringExpr.rightTrimAndTruncate(
+                        convertBuffer,
+                        convertBufferStart,
+                        deserializer.deserializeRead.currentExternalBufferNeededLen,
+                        field.getMaxLength()));
+      } else if (canRetainByteRef && deserializer.inputBytes == deserializer.deserializeRead.currentBytes) {
+        bytesColVec.setRef(
+                batchIndex,
+                deserializer.deserializeRead.currentBytes,
+                deserializer.deserializeRead.currentBytesStart,
+                StringExpr.rightTrimAndTruncate(
+                        deserializer.deserializeRead.currentBytes,
+                        deserializer.deserializeRead.currentBytesStart,
+                        deserializer.deserializeRead.currentBytesLength,
+                        field.getMaxLength()));
+      } else {
+        bytesColVec.setVal(
+                batchIndex,
+                deserializer.deserializeRead.currentBytes,
+                deserializer.deserializeRead.currentBytesStart,
+                StringExpr.rightTrimAndTruncate(
+                        deserializer.deserializeRead.currentBytes,
+                        deserializer.deserializeRead.currentBytesStart,
+                        deserializer.deserializeRead.currentBytesLength,
+                        field.getMaxLength()));
       }
-      break;
-    case CHAR:
-      {
-        // Use the basic STRING bytes read to get access, then use our optimal truncate/trim method
-        // that does not use Java String objects.
-        final BytesColumnVector bytesColVec = ((BytesColumnVector) colVector);
-        if (deserializeRead.currentExternalBufferNeeded) {
-          // Write directly into our BytesColumnVector value buffer.
-          bytesColVec.ensureValPreallocated(deserializeRead.currentExternalBufferNeededLen);
-          final byte[] convertBuffer = bytesColVec.getValPreallocatedBytes();
-          final int convertBufferStart = bytesColVec.getValPreallocatedStart();
-          deserializeRead.copyToExternalBuffer(
-              convertBuffer,
-              convertBufferStart);
-          bytesColVec.setValPreallocated(
-              batchIndex,
-              StringExpr.rightTrimAndTruncate(
-                  convertBuffer,
-                  convertBufferStart,
-                  deserializeRead.currentExternalBufferNeededLen,
-                  field.getMaxLength()));
-        } else if (canRetainByteRef && inputBytes == deserializeRead.currentBytes) {
-          bytesColVec.setRef(
-              batchIndex,
-              deserializeRead.currentBytes,
-              deserializeRead.currentBytesStart,
-              StringExpr.rightTrimAndTruncate(
-                  deserializeRead.currentBytes,
-                  deserializeRead.currentBytesStart,
-                  deserializeRead.currentBytesLength,
-                  field.getMaxLength()));
-        } else {
-          bytesColVec.setVal(
-              batchIndex,
-              deserializeRead.currentBytes,
-              deserializeRead.currentBytesStart,
-              StringExpr.rightTrimAndTruncate(
-                  deserializeRead.currentBytes,
-                  deserializeRead.currentBytesStart,
-                  deserializeRead.currentBytesLength,
-                  field.getMaxLength()));
-        }
-      }
-      break;
-    case DECIMAL:
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertChar(field.getConversionWritable(), deserializer, batchIndex, field);
+    }
+  }
+
+  static class VectorDecimalDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
       if (field.getDataTypePhysicalVariation() == DataTypePhysicalVariation.DECIMAL_64) {
-        ((Decimal64ColumnVector) colVector).vector[batchIndex] = deserializeRead.currentDecimal64;
+        ((Decimal64ColumnVector) colVector).vector[batchIndex] = deserializer.deserializeRead.currentDecimal64;
       } else {
         // The DecimalColumnVector set method will quickly copy the deserialized decimal writable fields.
         ((DecimalColumnVector) colVector).set(
-            batchIndex, deserializeRead.currentHiveDecimalWritable);
+                batchIndex, deserializer.deserializeRead.currentHiveDecimalWritable);
       }
-      break;
-    case INTERVAL_YEAR_MONTH:
-      ((LongColumnVector) colVector).vector[batchIndex] =
-          deserializeRead.currentHiveIntervalYearMonthWritable.getHiveIntervalYearMonth().getTotalMonths();
-      break;
-    case INTERVAL_DAY_TIME:
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertDecimal(field.getConversionWritable(), deserializer);
+    }
+  }
+
+  static class VectorIntervalYearMonthDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      ((LongColumnVector) colVector).vector[batchIndex] = deserializer.deserializeRead.
+              currentHiveIntervalYearMonthWritable.getHiveIntervalYearMonth().getTotalMonths();
+
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertIntervalYearMonth(field.getConversionWritable(), deserializer);
+    }
+  }
+
+  static class VectorIntervalDayTimeDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
       ((IntervalDayTimeColumnVector) colVector).set(
-          batchIndex, deserializeRead.currentHiveIntervalDayTimeWritable.getHiveIntervalDayTime());
-      break;
-    default:
-      throw new RuntimeException("Primitive category " + field.getPrimitiveCategory() +
-          " not supported");
+              batchIndex, deserializer.deserializeRead.currentHiveIntervalDayTimeWritable.getHiveIntervalDayTime());
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertIntervalDayTime(field.getConversionWritable(), deserializer);
     }
   }
 
@@ -806,32 +1044,26 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       return;
     }
 
-    if (field.getIsPrimitive()) {
-      storePrimitiveRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
-    } else {
-      switch (field.getCategory()) {
-      case LIST:
-        storeListRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
-        break;
-      case MAP:
-        storeMapRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
-        break;
-      case STRUCT:
-        storeStructRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
-        break;
-      case UNION:
-        storeUnionRowColumn(fieldColVector, field, batchIndex, canRetainByteRef);
-        break;
-      default:
-        throw new RuntimeException("Category " + field.getCategory() + " not supported");
-      }
-    }
-
+    field.deserializer.store(fieldColVector, field, batchIndex, canRetainByteRef, this);
     fieldColVector.isNull[batchIndex] = false;
   }
 
-  private void storeListRowColumn(ColumnVector colVector,
-      Field field, int batchIndex, boolean canRetainByteRef) throws IOException {
+  static class VectorListDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      storeListRowColumn(colVector, field, batchIndex, canRetainByteRef, deserializer);
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertListRowColumn(batch, batchIndex, field, deserializer);
+    }
+  }
+
+  private static void storeListRowColumn(ColumnVector colVector,
+      Field field, int batchIndex, boolean canRetainByteRef, VectorDeserializeRow deserializer) throws IOException {
 
     final ListColumnVector listColVector = (ListColumnVector) colVector;
     final ColumnVector elementColVector = listColVector.child;
@@ -842,7 +1074,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     final ListComplexTypeHelper listHelper = (ListComplexTypeHelper) field.getComplexHelper();
 
     int listLength = 0;
-    while (deserializeRead.isNextComplexMultiValue()) {
+    while (deserializer.deserializeRead.isNextComplexMultiValue()) {
 
       // Ensure child size.
       final int childCapacity = listColVector.child.isNull.length;
@@ -850,7 +1082,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
         listColVector.child.ensureSize(childCapacity * 2, true);
       }
 
-      storeComplexFieldRowColumn(
+      deserializer.storeComplexFieldRowColumn(
           elementColVector, listHelper.getElementField(), offset, canRetainByteRef);
       offset++;
       listLength++;
@@ -860,8 +1092,22 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     listColVector.lengths[batchIndex] = listLength;
   }
 
-  private void storeMapRowColumn(ColumnVector colVector,
-      Field field, int batchIndex, boolean canRetainByteRef) throws IOException {
+  static class VectorMapDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      storeMapRowColumn((ColumnVector)colVector, field, batchIndex, canRetainByteRef, deserializer);
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertMapRowColumn(batch, batchIndex, field, deserializer);
+    }
+  }
+
+  private static void storeMapRowColumn(ColumnVector colVector,
+      Field field, int batchIndex, boolean canRetainByteRef, VectorDeserializeRow deserializer) throws IOException {
 
     final MapColumnVector mapColVector = (MapColumnVector) colVector;
     final MapComplexTypeHelper mapHelper = (MapComplexTypeHelper) field.getComplexHelper();
@@ -872,7 +1118,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     mapColVector.isNull[batchIndex] = false;
 
     int keyValueCount = 0;
-    while (deserializeRead.isNextComplexMultiValue()) {
+    while (deserializer.deserializeRead.isNextComplexMultiValue()) {
 
       // Ensure child size.
       final int childCapacity = mapColVector.keys.isNull.length;
@@ -882,11 +1128,11 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
       }
 
       // Key.
-      storeComplexFieldRowColumn(
+      deserializer.storeComplexFieldRowColumn(
           keysColVector, mapHelper.getKeyField(), offset, canRetainByteRef);
 
       // Value.
-      storeComplexFieldRowColumn(
+      deserializer.storeComplexFieldRowColumn(
           valuesColVector, mapHelper.getValueField(), offset, canRetainByteRef);
 
       offset++;
@@ -897,8 +1143,22 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     mapColVector.lengths[batchIndex] = keyValueCount;
   }
 
-  private void storeStructRowColumn(ColumnVector colVector,
-      Field field, int batchIndex, boolean canRetainByteRef) throws IOException {
+  static class VectorStructDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      storeStructRowColumn((ColumnVector)colVector, field, batchIndex, canRetainByteRef, deserializer);
+    }
+
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertStructRowColumn(batch, batchIndex, field, deserializer);
+    }
+  }
+
+  private static void storeStructRowColumn(ColumnVector colVector,
+      Field field, int batchIndex, boolean canRetainByteRef, VectorDeserializeRow deserializer) throws IOException {
 
     final StructColumnVector structColVector = (StructColumnVector) colVector;
     final ColumnVector[] colVectorFields = structColVector.fields;
@@ -908,23 +1168,37 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     int i = 0;
     for (ColumnVector colVectorField : colVectorFields) {
-      storeComplexFieldRowColumn(
+      deserializer.storeComplexFieldRowColumn(
           colVectorField,
           fields[i],
           batchIndex,
           canRetainByteRef);
       i++;
     }
-    deserializeRead.finishComplexVariableFieldsType();
+    deserializer.deserializeRead.finishComplexVariableFieldsType();
   }
 
-  private void storeUnionRowColumn(ColumnVector colVector,
-      Field field, int batchIndex, boolean canRetainByteRef) throws IOException {
+  static class VectorUnionDeserializer extends VectorBatchDeserializer {
+    @Override
+    void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+               VectorDeserializeRow deserializer) throws IOException {
+      storeUnionRowColumn((ColumnVector)colVector, field, batchIndex, canRetainByteRef, deserializer);
+    }
 
-    deserializeRead.readComplexField();
+    @Override
+    Object convert(ColumnVector batch, int batchIndex,
+                   Field field, VectorDeserializeRow deserializer) throws IOException {
+      return convertUnionRowColumn(batch, batchIndex, field, deserializer);
+    }
+  }
+
+  private static void storeUnionRowColumn(ColumnVector colVector,
+      Field field, int batchIndex, boolean canRetainByteRef, VectorDeserializeRow deserializer) throws IOException {
+
+    deserializer.deserializeRead.readComplexField();
 
     // The read field of the Union gives us its tag.
-    final int tag = deserializeRead.currentInt;
+    final int tag = deserializer.deserializeRead.currentInt;
 
     final UnionColumnVector unionColVector = (UnionColumnVector) colVector;
     final ColumnVector[] colVectorFields = unionColVector.fields;
@@ -933,12 +1207,20 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     unionColVector.isNull[batchIndex] = false;
     unionColVector.tags[batchIndex] = tag;
 
-    storeComplexFieldRowColumn(
+    deserializer.storeComplexFieldRowColumn(
         colVectorFields[tag],
         unionHelper.getFields()[tag],
         batchIndex,
         canRetainByteRef);
-    deserializeRead.finishComplexVariableFieldsType();
+    deserializer.deserializeRead.finishComplexVariableFieldsType();
+  }
+
+  abstract static class VectorBatchDeserializer {
+    abstract void store(ColumnVector colVector, Field field, int batchIndex, boolean canRetainByteRef,
+                            VectorDeserializeRow deserializer) throws IOException;
+
+    abstract Object convert(ColumnVector batch, int batchIndex,
+                        Field field, VectorDeserializeRow deserializer) throws IOException;
   }
 
   /**
@@ -959,27 +1241,7 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     final int projectionColumnNum = projectionColumnNums[logicalColumnIndex];
     final ColumnVector colVector = batch.cols[projectionColumnNum];
-
-    if (field.getIsPrimitive()) {
-      storePrimitiveRowColumn(colVector, field, batchIndex, canRetainByteRef);
-    } else {
-      switch (field.getCategory()) {
-      case LIST:
-        storeListRowColumn(colVector, field, batchIndex, canRetainByteRef);
-        break;
-      case MAP:
-        storeMapRowColumn(colVector, field, batchIndex, canRetainByteRef);
-        break;
-      case STRUCT:
-        storeStructRowColumn(colVector, field, batchIndex, canRetainByteRef);
-        break;
-      case UNION:
-        storeUnionRowColumn(colVector, field, batchIndex, canRetainByteRef);
-        break;
-      default:
-        throw new RuntimeException("Category " + field.getCategory() + " not supported");
-      }
-    }
+    field.deserializer.store(colVector, field, batchIndex, canRetainByteRef, this);
 
     // We always set the null flag to false when there is a value.
     colVector.isNull[batchIndex] = false;
@@ -1001,28 +1263,8 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
 
     final int projectionColumnIndex = projectionColumnNums[logicalColumnIndex];
     final ColumnVector colVector = batch.cols[projectionColumnIndex];
-
-    final Object convertSourceWritable;
-    if (field.getIsPrimitive()) {
-      convertSourceWritable = convertPrimitiveRowColumn(batchIndex, field);
-    } else {
-      switch (field.getCategory()) {
-      case LIST:
-        convertSourceWritable = convertListRowColumn(colVector, batchIndex, field);
-        break;
-      case MAP:
-        convertSourceWritable = convertMapRowColumn(colVector, batchIndex, field);
-        break;
-      case STRUCT:
-        convertSourceWritable = convertStructRowColumn(colVector, batchIndex, field);
-        break;
-      case UNION:
-        convertSourceWritable = convertUnionRowColumn(colVector, batchIndex, field);
-        break;
-      default:
-        throw new RuntimeException();
-      }
-    }
+    Object convertSourceWritable =
+            field.deserializer.convert(colVector, batchIndex, field, this);
 
     /*
      * Convert our source object we just read into the target object and store that in the
@@ -1041,25 +1283,201 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     }
 
     colVector.isNull[batchIndex] = false;
-    if (field.getIsPrimitive()) {
-      return convertPrimitiveRowColumn(batchIndex, field);
-    }
-
-    switch (field.getCategory()) {
-    case LIST:
-      return convertListRowColumn(colVector, batchIndex, field);
-    case MAP:
-      return convertMapRowColumn(colVector, batchIndex, field);
-    case STRUCT:
-      return convertStructRowColumn(colVector, batchIndex, field);
-    case UNION:
-      return convertUnionRowColumn(colVector, batchIndex, field);
-    default:
-      throw new RuntimeException();
-    }
+    return field.deserializer.convert(colVector, batchIndex, field, this);
   }
 
-  private Object convertPrimitiveRowColumn(int batchIndex, Field field) throws IOException {
+  private static Object convertVoid() {
+    return null;
+  }
+
+  private static Object convertBoolean(Object writable, VectorDeserializeRow deserializer) {
+    if (writable == null) {
+      writable = new BooleanWritable();
+    }
+    ((BooleanWritable) writable).set(deserializer.deserializeRead.currentBoolean);
+    return writable;
+  }
+
+  private static Object convertByte(Object writable, VectorDeserializeRow deserializer) {
+    if (writable == null) {
+      writable = new ByteWritable();
+    }
+    ((ByteWritable) writable).set(deserializer.deserializeRead.currentByte);
+    return writable;
+  }
+
+  private static Object convertShort(Object writable, VectorDeserializeRow deserializer) {
+    if (writable == null) {
+      writable = new ShortWritable();
+    }
+    ((ShortWritable) writable).set(deserializer.deserializeRead.currentShort);
+    return writable;
+  }
+
+  private static Object convertInt(Object writable, VectorDeserializeRow deserializer) {
+    if (writable == null) {
+      writable = new IntWritable();
+    }
+    ((IntWritable) writable).set(deserializer.deserializeRead.currentInt);
+    return writable;
+  }
+
+  private static Object convertLong(Object writable, VectorDeserializeRow deserializer) {
+    if (writable == null) {
+      writable = new LongWritable();
+    }
+    ((LongWritable) writable).set(deserializer.deserializeRead.currentLong);
+    return writable;
+  }
+
+  private static Object convertTimestamp(Object writable, VectorDeserializeRow deserializer) {
+    if (writable == null) {
+      writable = new TimestampWritableV2();
+    }
+    ((TimestampWritableV2) writable).set(deserializer.deserializeRead.currentTimestampWritable);
+    return writable;
+  }
+
+  private static Object convertDate(Object writable, VectorDeserializeRow deserializer) {
+    if (writable == null) {
+      writable = new DateWritableV2();
+    }
+    ((DateWritableV2) writable).set(deserializer.deserializeRead.currentDateWritable);
+    return writable;
+  }
+
+  private static Object convertFloat(Object writable, VectorDeserializeRow deserializer) {
+    if (writable == null) {
+      writable = new FloatWritable();
+    }
+    ((FloatWritable) writable).set(deserializer.deserializeRead.currentFloat);
+    return writable;
+  }
+
+  private static Object convertDouble(Object writable, VectorDeserializeRow deserializer) {
+    if (writable == null) {
+      writable = new DoubleWritable();
+    }
+    ((DoubleWritable) writable).set(deserializer.deserializeRead.currentDouble);
+    return writable;
+  }
+
+  private static Object convertBinary(Object writable, VectorDeserializeRow deserializer,
+                                      int batchIndex) {
+    if (writable == null) {
+      writable = new BytesWritable();
+    }
+    if (deserializer.deserializeRead.currentBytes == null) {
+      LOG.info("null binary entry: batchIndex " + batchIndex);
+    }
+
+    ((BytesWritable) writable).set(
+            deserializer.deserializeRead.currentBytes,
+            deserializer.deserializeRead.currentBytesStart,
+            deserializer.deserializeRead.currentBytesLength);
+    return writable;
+  }
+
+  private static Object convertString(Object writable, VectorDeserializeRow deserializer,
+                                      int batchIndex) {
+    if (writable == null) {
+      writable = new Text();
+    }
+    if (deserializer.deserializeRead.currentBytes == null) {
+      throw new RuntimeException("null string entry: batchIndex " + batchIndex);
+    }
+
+    // Use org.apache.hadoop.io.Text as our helper to go from byte[] to String.
+    ((Text) writable).set(
+            deserializer.deserializeRead.currentBytes,
+            deserializer.deserializeRead.currentBytesStart,
+            deserializer.deserializeRead.currentBytesLength);
+    return writable;
+  }
+
+  private static Object convertVarchar(Object writable, VectorDeserializeRow deserializer,
+                                       int batchIndex, Field field) {
+    if (writable == null) {
+      writable = new HiveVarcharWritable();
+    }
+    // Use the basic STRING bytes read to get access, then use our optimal truncate/trim method
+    // that does not use Java String objects.
+    if (deserializer.deserializeRead.currentBytes == null) {
+      throw new RuntimeException(
+              "null varchar entry: batchIndex " + batchIndex);
+    }
+
+    int adjustedLength = StringExpr.truncate(
+            deserializer.deserializeRead.currentBytes,
+            deserializer.deserializeRead.currentBytesStart,
+            deserializer.deserializeRead.currentBytesLength,
+            field.getMaxLength());
+
+    ((HiveVarcharWritable) writable).set(
+            new String(
+                    deserializer.deserializeRead.currentBytes,
+                    deserializer.deserializeRead.currentBytesStart,
+                    adjustedLength,
+                    Charsets.UTF_8),
+            -1);
+    return writable;
+  }
+
+  private static Object convertChar(Object writable, VectorDeserializeRow deserializer,
+                                    int batchIndex, Field field) {
+    if (writable == null) {
+      writable = new HiveCharWritable();
+    }
+    // Use the basic STRING bytes read to get access, then use our optimal truncate/trim method
+    // that does not use Java String objects.
+    if (deserializer.deserializeRead.currentBytes == null) {
+      throw new RuntimeException(
+              "null char entry: batchIndex " + batchIndex);
+    }
+
+    int adjustedLength = StringExpr.rightTrimAndTruncate(
+            deserializer.deserializeRead.currentBytes,
+            deserializer.deserializeRead.currentBytesStart,
+            deserializer.deserializeRead.currentBytesLength,
+            field.getMaxLength());
+
+    ((HiveCharWritable) writable).set(
+            new String(
+                    deserializer.deserializeRead.currentBytes,
+                    deserializer.deserializeRead.currentBytesStart,
+                    adjustedLength, Charsets.UTF_8),
+            -1);
+    return writable;
+  }
+
+  private static Object convertDecimal(Object writable, VectorDeserializeRow deserializer) {
+    if (writable == null) {
+      writable = new HiveDecimalWritable();
+    }
+    ((HiveDecimalWritable) writable).set(
+            deserializer.deserializeRead.currentHiveDecimalWritable);
+    return writable;
+  }
+
+  private static Object convertIntervalYearMonth(Object writable, VectorDeserializeRow deserializer) {
+    if (writable == null) {
+      writable = new HiveIntervalYearMonthWritable();
+    }
+    ((HiveIntervalYearMonthWritable) writable).set(
+            deserializer.deserializeRead.currentHiveIntervalYearMonthWritable);
+    return writable;
+  }
+
+  private static Object convertIntervalDayTime(Object writable, VectorDeserializeRow deserializer) {
+    if (writable == null) {
+      writable = new HiveIntervalDayTimeWritable();
+    }
+    ((HiveIntervalDayTimeWritable) writable).set(
+            deserializer.deserializeRead.currentHiveIntervalDayTimeWritable);
+    return writable;
+  }
+
+  /*private Object convertPrimitiveRowColumn(int batchIndex, Field field) throws IOException {
 
     Object writable = field.getConversionWritable();
     switch (field.getPrimitiveCategory()) {
@@ -1256,10 +1674,10 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
           " not supported");
     }
     return writable;
-  }
+  }*/
 
-  private Object convertListRowColumn(
-      ColumnVector colVector, int batchIndex, Field field) throws IOException {
+  private static Object convertListRowColumn(
+      ColumnVector colVector, int batchIndex, Field field, VectorDeserializeRow deserializer) throws IOException {
 
     final SettableListObjectInspector listOI = (SettableListObjectInspector) field.objectInspector;
     final ListComplexTypeHelper listHelper = (ListComplexTypeHelper) field.getComplexHelper();
@@ -1267,9 +1685,9 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     final List<Object> tempList = new ArrayList<>();
     final ListColumnVector listColumnVector = (ListColumnVector) colVector;
 
-    while (deserializeRead.isNextComplexMultiValue()) {
-      tempList.add(
-          convertComplexFieldRowColumn(listColumnVector.child, batchIndex, elementField));
+    while (deserializer.deserializeRead.isNextComplexMultiValue()) {
+      tempList.add(deserializer.convertComplexFieldRowColumn(listColumnVector.child, batchIndex,
+              elementField));
     }
 
     final int size = tempList.size();
@@ -1280,8 +1698,8 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     return list;
   }
 
-  private Object convertMapRowColumn(
-      ColumnVector colVector, int batchIndex, Field field) throws IOException {
+  private static Object convertMapRowColumn(
+      ColumnVector colVector, int batchIndex, Field field, VectorDeserializeRow deserializer) throws IOException {
 
     final SettableMapObjectInspector mapOI = (SettableMapObjectInspector) field.objectInspector;
     final MapComplexTypeHelper mapHelper = (MapComplexTypeHelper) field.getComplexHelper();
@@ -1290,16 +1708,18 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     final MapColumnVector mapColumnVector = (MapColumnVector) colVector;
 
     final Object map = mapOI.create();
-    while (deserializeRead.isNextComplexMultiValue()) {
-      final Object key = convertComplexFieldRowColumn(mapColumnVector.keys, batchIndex, keyField);
-      final Object value = convertComplexFieldRowColumn(mapColumnVector.values, batchIndex, valueField);
+    while (deserializer.deserializeRead.isNextComplexMultiValue()) {
+      final Object key = deserializer.convertComplexFieldRowColumn(mapColumnVector.keys, batchIndex,
+              keyField);
+      final Object value = deserializer.convertComplexFieldRowColumn(mapColumnVector.values, batchIndex,
+              valueField);
       mapOI.put(map, key, value);
     }
     return map;
   }
 
-  private Object convertStructRowColumn(
-      ColumnVector colVector, int batchIndex, Field field) throws IOException {
+  private static Object convertStructRowColumn(
+      ColumnVector colVector, int batchIndex, Field field, VectorDeserializeRow deserializer) throws IOException {
 
     final SettableStructObjectInspector structOI = (SettableStructObjectInspector) field.objectInspector;
     final List<? extends StructField> structFields = structOI.getAllStructFieldRefs();
@@ -1310,15 +1730,16 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     final Object struct = structOI.create();
     for (int i = 0; i < fields.length; i++) {
       final Object fieldObject =
-          convertComplexFieldRowColumn(structColumnVector.fields[i], batchIndex, fields[i]);
+              deserializer.convertComplexFieldRowColumn(structColumnVector.fields[i],
+                      batchIndex, fields[i]);
       structOI.setStructFieldData(struct, structFields.get(i), fieldObject);
     }
-    deserializeRead.finishComplexVariableFieldsType();
+    deserializer.deserializeRead.finishComplexVariableFieldsType();
     return struct;
   }
 
-  private Object convertUnionRowColumn(
-      ColumnVector colVector, int batchIndex, Field field) throws IOException {
+  private static Object convertUnionRowColumn(
+      ColumnVector colVector, int batchIndex, Field field, VectorDeserializeRow deserializer) throws IOException {
 
     final SettableUnionObjectInspector unionOI = (SettableUnionObjectInspector) field.objectInspector;
     final UnionComplexTypeHelper unionHelper = (UnionComplexTypeHelper) field.getComplexHelper();
@@ -1326,10 +1747,11 @@ public final class VectorDeserializeRow<T extends DeserializeRead> {
     final UnionColumnVector unionColumnVector = (UnionColumnVector) colVector;
 
     final Object union = unionOI.create();
-    final int tag = deserializeRead.currentInt;
+    final int tag = deserializer.deserializeRead.currentInt;
     unionOI.setFieldAndTag(union, new StandardUnion((byte) tag,
-        convertComplexFieldRowColumn(unionColumnVector.fields[tag], batchIndex, fields[tag])), (byte) tag);
-    deserializeRead.finishComplexVariableFieldsType();
+            deserializer.convertComplexFieldRowColumn(unionColumnVector.fields[tag],
+                    batchIndex, fields[tag])), (byte) tag);
+    deserializer.deserializeRead.finishComplexVariableFieldsType();
     return union;
   }
 
