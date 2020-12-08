@@ -1,3 +1,21 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.metastore.client.builder;
 
 import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
@@ -56,8 +74,18 @@ public class GetTableProjectionsSpecBuilder {
         return this;
     }
 
-    public GetTableProjectionsSpecBuilder includeSdCdCols() {
-        initColumnListAndAddCol("sd.cd.cols");
+    public GetTableProjectionsSpecBuilder includeSdCdColsName() {
+        initColumnListAndAddCol("sd.cd.cols.name");
+        return this;
+    }
+
+    public GetTableProjectionsSpecBuilder includeSdCdColsType() {
+        initColumnListAndAddCol("sd.cd.cols.type");
+        return this;
+    }
+
+    public GetTableProjectionsSpecBuilder includeSdCdColsComment() {
+        initColumnListAndAddCol("sd.cd.cols.comment");
         return this;
     }
 
@@ -77,7 +105,7 @@ public class GetTableProjectionsSpecBuilder {
     }
 
     public GetTableProjectionsSpecBuilder includeSdIsCompressed() {
-        initColumnListAndAddCol("sd.isCompressed");
+        initColumnListAndAddCol("sd.compressed");
         return this;
     }
 
@@ -126,8 +154,13 @@ public class GetTableProjectionsSpecBuilder {
         return this;
     }
 
-    public GetTableProjectionsSpecBuilder includeSdSortCols() {
-        initColumnListAndAddCol("sd.sortCols");
+    public GetTableProjectionsSpecBuilder includeSdSortColsCol() {
+        initColumnListAndAddCol("sd.sortCols.col");
+        return this;
+    }
+
+    public GetTableProjectionsSpecBuilder includeSdSortColsOrder() {
+        initColumnListAndAddCol("sd.sortCols.order");
         return this;
     }
 
@@ -137,22 +170,22 @@ public class GetTableProjectionsSpecBuilder {
     }
 
     public GetTableProjectionsSpecBuilder includeSdSkewedColNames() {
-        initColumnListAndAddCol("sd.skewedColNames");
+        initColumnListAndAddCol("sd.skewedInfo.skewedColNames");
         return this;
     }
 
     public GetTableProjectionsSpecBuilder includeSdSkewedColValues() {
-        initColumnListAndAddCol("sd.skewedColValues");
+        initColumnListAndAddCol("sd.skewedInfo.skewedColValues");
         return this;
     }
 
     public GetTableProjectionsSpecBuilder includeSdSkewedColValueLocationMaps() {
-        initColumnListAndAddCol("sd.skewedColValueLocationMaps");
+        initColumnListAndAddCol("sd.skewedInfo.skewedColValueLocationMaps");
         return this;
     }
 
     public GetTableProjectionsSpecBuilder includeSdIsStoredAsSubDirectories() {
-        initColumnListAndAddCol("sd.isStoredAsSubDirectories");
+        initColumnListAndAddCol("sd.storedAsSubDirectories");
         return this;
     }
 
@@ -181,8 +214,18 @@ public class GetTableProjectionsSpecBuilder {
         return this;
     }
 
-    public GetTableProjectionsSpecBuilder includePartitionKeys() {
-        initColumnListAndAddCol("partitionKeys");
+    public GetTableProjectionsSpecBuilder includePartitionKeysName() {
+        initColumnListAndAddCol("partitionKeys.name");
+        return this;
+    }
+
+    public GetTableProjectionsSpecBuilder includePartitionKeysType() {
+        initColumnListAndAddCol("partitionKeys.type");
+        return this;
+    }
+
+    public GetTableProjectionsSpecBuilder includePartitionKeysComment() {
+        initColumnListAndAddCol("partitionKeys.comment");
         return this;
     }
 

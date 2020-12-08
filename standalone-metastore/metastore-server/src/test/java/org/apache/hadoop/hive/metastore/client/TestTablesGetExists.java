@@ -547,6 +547,74 @@ public class TestTablesGetExists extends MetaStoreClientTest {
   }
 
   @Test
+  public void testGetTableProjectionSpecification() throws Exception {
+    List<String> tableNames = new ArrayList<>();
+    tableNames.add(testTables[0].getTableName());
+    tableNames.add(testTables[1].getTableName());
+
+    GetProjectionsSpec projectSpec = (new GetTableProjectionsSpecBuilder())
+            .includeTableName()
+            .includeDatabase()
+            .includeSdCdColsName()
+            .includeSdCdColsType()
+            .includeSdCdColsComment()
+            .includeSdLocation()
+            .includeSdInputFormat()
+            .includeSdOutputFormat()
+            .includeSdIsCompressed()
+            .includeSdNumBuckets()
+            .includeSdSerDeInfoName()
+            .includeSdSerDeInfoSerializationLib()
+            .includeSdSerDeInfoParameters()
+            .includeSdSerDeInfoDescription()
+            .includeSdSerDeInfoSerializerClass()
+            .includeSdSerDeInfoDeserializerClass()
+            .includeSdSerDeInfoSerdeType()
+            .includeSdBucketCols()
+            .includeSdSortColsCol()
+            .includeSdSortColsOrder()
+            .includeSdparameters()
+            .includeSdSkewedColNames()
+            .includeSdSkewedColValues()
+            .includeSdSkewedColValueLocationMaps()
+            .includeSdIsStoredAsSubDirectories()
+            .includeOwner()
+            .includeOwnerType()
+            .includeCreateTime()
+            .includeLastAccessTime()
+            .includeRetention()
+            .includePartitionKeysName()
+            .includePartitionKeysType()
+            .includePartitionKeysComment()
+            .includeParameters()
+            .includeViewOriginalText()
+            .includeRewriteEnabled()
+            .includeTableType()
+            .build();
+
+    List<Table> tables = client.getTables(null, DEFAULT_DATABASE, tableNames, projectSpec);
+
+    Assert.assertEquals("Found tables", 2, tables.size());
+
+    for(Table table : tables) {
+      Assert.assertTrue(table.isSetDbName());
+      Assert.assertTrue(table.isSetCatName());
+      Assert.assertTrue(table.isSetTableName());
+      Assert.assertTrue(table.isSetLastAccessTime());
+      Assert.assertTrue(table.isSetSd());
+      StorageDescriptor sd = table.getSd();
+      Assert.assertTrue(sd.isSetCols());
+      Assert.assertTrue(sd.isSetSerdeInfo());
+      Assert.assertTrue(sd.isSetBucketCols());
+      Assert.assertTrue(sd.isSetCompressed());
+      Assert.assertTrue(sd.isSetInputFormat());
+      Assert.assertTrue(sd.isSetSerdeInfo());
+      SerDeInfo serDeInfo = sd.getSerdeInfo();
+      Assert.assertTrue(serDeInfo.isSetSerializationLib());
+    }
+  }
+
+  @Test
   public void testGetTableObjectsByNameCaseInsensitive() throws Exception {
     Table table = testTables[0];
 
