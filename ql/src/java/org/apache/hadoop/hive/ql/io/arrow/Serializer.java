@@ -177,17 +177,7 @@ public class Serializer {
 
   //Construct an emptyBatch which contains schema-only info
   public ArrowWrapperWritable emptyBatch() {
-    rootVector.setValueCount(0);
-    for (int fieldIndex = 0; fieldIndex < fieldTypeInfos.size(); fieldIndex++) {
-      final TypeInfo fieldTypeInfo = fieldTypeInfos.get(fieldIndex);
-      final String fieldName = fieldNames.get(fieldIndex);
-      final FieldType fieldType = toFieldType(fieldTypeInfo);
-      final FieldVector arrowVector = rootVector.addOrGet(fieldName, fieldType, FieldVector.class);
-      arrowVector.setInitialCapacity(0);
-      arrowVector.allocateNew();
-    }
-    VectorSchemaRoot vectorSchemaRoot = new VectorSchemaRoot(rootVector);
-    return new ArrowWrapperWritable(vectorSchemaRoot, allocator, rootVector);
+    return serializeBatch(new VectorizedRowBatch(fieldTypeInfos.size()), false);
   }
 
   //Used for both:
@@ -314,7 +304,7 @@ public class Serializer {
   private void writeMap(ListVector arrowVector, MapColumnVector hiveVector, MapTypeInfo typeInfo,
       int size, VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
     final ListTypeInfo structListTypeInfo = toStructListTypeInfo(typeInfo);
-    final ListColumnVector structListVector = toStructListVector(hiveVector);
+    final ListColumnVector structListVector = hiveVector == null ? null : toStructListVector(hiveVector);
 
     write(arrowVector, structListVector, structListTypeInfo, size, vectorizedRowBatch, isNative);
 
@@ -349,12 +339,12 @@ public class Serializer {
       StructTypeInfo typeInfo, int size, VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
     final List<String> fieldNames = typeInfo.getAllStructFieldNames();
     final List<TypeInfo> fieldTypeInfos = typeInfo.getAllStructFieldTypeInfos();
-    final ColumnVector[] hiveFieldVectors = hiveVector.fields;
+    final ColumnVector[] hiveFieldVectors = hiveVector == null ? null : hiveVector.fields;
     final int fieldSize = fieldTypeInfos.size();
 
     for (int fieldIndex = 0; fieldIndex < fieldSize; fieldIndex++) {
       final TypeInfo fieldTypeInfo = fieldTypeInfos.get(fieldIndex);
-      final ColumnVector hiveFieldVector = hiveFieldVectors[fieldIndex];
+      final ColumnVector hiveFieldVector = hiveVector == null ? null : hiveFieldVectors[fieldIndex];
       final String fieldName = fieldNames.get(fieldIndex);
       final FieldVector arrowFieldVector =
           arrowVector.addOrGet(fieldName,
@@ -365,7 +355,7 @@ public class Serializer {
     }
 
     for (int rowIndex = 0; rowIndex < size; rowIndex++) {
-      if (hiveVector.isNull[rowIndex]) {
+      if (hiveVector == null || hiveVector.isNull[rowIndex]) {
         BitVectorHelper.setValidityBit(arrowVector.getValidityBuffer(), rowIndex, 0);
       } else {
         BitVectorHelper.setValidityBitToOne(arrowVector.getValidityBuffer(), rowIndex);
@@ -414,12 +404,12 @@ public class Serializer {
                          VectorizedRowBatch vectorizedRowBatch, boolean isNative) {
     final int OFFSET_WIDTH = 4;
     final TypeInfo elementTypeInfo = typeInfo.getListElementTypeInfo();
-    final ColumnVector hiveElementVector = hiveVector.child;
+    final ColumnVector hiveElementVector = hiveVector == null ? null : hiveVector.child;
     final FieldVector arrowElementVector =
             (FieldVector) arrowVector.addOrGetVector(toFieldType(elementTypeInfo)).getVector();
 
     VectorizedRowBatch correctedVrb = vectorizedRowBatch;
-    int correctedSize = hiveVector.childCount;
+    int correctedSize = hiveVector == null ? 0 : hiveVector.childCount;
     if (vectorizedRowBatch.selectedInUse) {
       correctedVrb = correctSelectedAndSize(vectorizedRowBatch, hiveVector);
       correctedSize = correctedVrb.size;
@@ -436,7 +426,7 @@ public class Serializer {
       if (vectorizedRowBatch.selectedInUse) {
         selectedIndex = vectorizedRowBatch.selected[rowIndex];
       }
-      if (hiveVector.isNull[selectedIndex]) {
+      if (hiveVector == null || hiveVector.isNull[selectedIndex]) {
         arrowVector.getOffsetBuffer().setInt(rowIndex * OFFSET_WIDTH, nextOffset);
       } else {
         arrowVector.getOffsetBuffer().setInt(rowIndex * OFFSET_WIDTH, nextOffset);
