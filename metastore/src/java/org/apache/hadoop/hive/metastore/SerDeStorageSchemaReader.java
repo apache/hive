@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.metastore.api.EnvironmentContext;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -47,10 +48,10 @@ public class SerDeStorageSchemaReader implements StorageSchemaReader {
       Deserializer s = HiveMetaStoreUtils.getDeserializer(conf, tbl, false);
       return HiveMetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(), s);
     } catch (Exception e) {
-      StringUtils.stringifyException(e);
-      throw new MetaException(e.getMessage());
+      throw new MetaException(StringUtils.stringifyException(e));
     } finally {
       if (orgHiveLoader != null) {
+        JavaUtils.closeClassLoadersTo(conf.getClassLoader(), orgHiveLoader);
         conf.setClassLoader(orgHiveLoader);
       }
     }
