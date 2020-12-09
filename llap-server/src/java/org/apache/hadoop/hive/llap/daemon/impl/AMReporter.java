@@ -215,7 +215,7 @@ public class AMReporter extends AbstractService {
       if (amNodeInfo == null) {
         amNodeInfo = new AMNodeInfo(amNodeId, umbilicalUser, jobToken, queryIdentifier, retryPolicy,
           retryTimeout, socketFactory, conf);
-        amNodeInfo.setIsExtCliRequest(externalClientRequest);
+        amNodeInfo.setIsExternalClientRequest(externalClientRequest);
         amNodeInfoPerQuery.put(amNodeId, amNodeInfo);
         // Add to the queue only the first time this is registered, and on
         // subsequent instances when it's taken off the queue.
@@ -412,7 +412,7 @@ public class AMReporter extends AbstractService {
         BooleanArray guaranteed = new BooleanArray();
         guaranteed.set(tasks.guaranteed.toArray(new BooleanWritable[tasks.guaranteed.size()]));
 
-        if (LlapUtil.isCloudDeployment(conf) && amNodeInfo.isExtCliRequest()) {
+        if (LlapUtil.isCloudDeployment(conf) && amNodeInfo.isExternalClientRequest()) {
           String hostname = amNodeInfo.amNodeId.getHostname();
           int externalClientCloudRpcPort = amNodeInfo.amNodeId.getPort();
           amNodeInfo.getUmbilical().nodeHeartbeat(new Text(hostname),
@@ -479,7 +479,7 @@ public class AMReporter extends AbstractService {
     private LlapTaskUmbilicalProtocol umbilical;
     private long nextHeartbeatTime;
     private final AtomicBoolean isDone = new AtomicBoolean(false);
-    private final AtomicBoolean isExtCliRequest = new AtomicBoolean(false);
+    private final AtomicBoolean isExternalClientRequest = new AtomicBoolean(false);
 
 
     public AMNodeInfo(LlapNodeId amNodeId, String umbilicalUser,
@@ -551,12 +551,12 @@ public class AMReporter extends AbstractService {
       return isDone.get();
     }
 
-    void setIsExtCliRequest(boolean val) {
-      isExtCliRequest.set(val);
+    void setIsExternalClientRequest(boolean val) {
+      isExternalClientRequest.set(val);
     }
 
-    boolean isExtCliRequest() {
-      return isExtCliRequest.get();
+    boolean isExternalClientRequest() {
+      return isExternalClientRequest.get();
     }
 
     /**
