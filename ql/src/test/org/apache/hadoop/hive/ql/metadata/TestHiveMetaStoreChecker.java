@@ -90,6 +90,7 @@ public class TestHiveMetaStoreChecker {
     SessionState.start(hive.getConf());
 
     partCols.add(new FieldSchema(partDateName, serdeConstants.STRING_TYPE_NAME, ""));
+    partCols.add(new FieldSchema(partCityName, serdeConstants.STRING_TYPE_NAME, ""));
 
     parts = new ArrayList<>();
     Map<String, String> part1 = new HashMap<>();
