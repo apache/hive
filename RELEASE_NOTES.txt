@@ -4,6 +4,7 @@ Release Notes - Hive - Version 2.3.8
 
 ** Bug
     * [HIVE-23980] - Shade guava from existing Hive versions
+    * [HIVE-24512] - Exclude calcite in packaging Hive
 
 ** Improvement
     * [HIVE-24324] - Remove deprecated API usage from Avro
