@@ -241,42 +241,73 @@ num_falses
 bit_vector          	HL                  
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
-PREHOOK: query: select distinct(val1) from table_onestring limit 10
+PREHOOK: query: explain
+select distinct(val1) from table_onestring
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_onestring
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct(val1) from table_onestring limit 10
+POSTHOOK: query: explain
+select distinct(val1) from table_onestring
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_onestring
 #### A masked pattern was here ####
-0042l0d5rPD6sMlJ7Ue0q
-00LnqxnThlCib
-00MmJs1fiJp37y60mj4Ej8
-00PafC7v
-00k3yt70n476d6UQA
-014ILGhXxNY7g02hl0Xw
-01JwN1NVt1HU3sW3
-01L3ajd5YosmyM330V3s
-03R4fW3q25Kl
-04Yu8RntCU7amJtj
-PREHOOK: query: select distinct(cstring1) from alltypesorc limit 10
-PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct(cstring1) from alltypesorc limit 10
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
-0042l0d5rPD6sMlJ7Ue0q
-00LnqxnThlCib
-00MmJs1fiJp37y60mj4Ej8
-00PafC7v
-00k3yt70n476d6UQA
-014ILGhXxNY7g02hl0Xw
-01JwN1NVt1HU3sW3
-01L3ajd5YosmyM330V3s
-03R4fW3q25Kl
-04Yu8RntCU7amJtj
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_onestring
+                  Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: val1 (type: string)
+                    outputColumnNames: val1
+                    Statistics: Num rows: 12288 Data size: 862450 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: val1 (type: string)
+                      minReductionHashAggr: 0.5133463
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 5980 Data size: 419804 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: string)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: string)
+                        Statistics: Num rows: 5980 Data size: 419804 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: string)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 5980 Data size: 419804 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 5980 Data size: 419804 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: explain vectorization detail
 create table table_onebigint as select cbigint as val1 from alltypesorc
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -520,42 +551,73 @@ num_falses
 bit_vector          	HL                  
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
-PREHOOK: query: select distinct(val1) from table_onebigint limit 10
+PREHOOK: query: explain
+select distinct(val1) from table_onebigint
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_onebigint
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct(val1) from table_onebigint limit 10
+POSTHOOK: query: explain
+select distinct(val1) from table_onebigint
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_onebigint
 #### A masked pattern was here ####
--2146475363
--2145481991
--2144987529
--2144909805
--2144905793
--2144862075
--2142615863
--2141336536
--2132232110
--2122540529
-PREHOOK: query: select distinct(cbigint) from alltypesorc limit 10
-PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct(cbigint) from alltypesorc limit 10
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
--2146475363
--2145481991
--2144987529
--2144909805
--2144905793
--2144862075
--2142615863
--2141336536
--2132232110
--2122540529
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_onebigint
+                  Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: val1 (type: bigint)
+                    outputColumnNames: val1
+                    Statistics: Num rows: 12288 Data size: 73392 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: val1 (type: bigint)
+                      minReductionHashAggr: 0.51839197
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 5918 Data size: 35352 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: bigint)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: bigint)
+                        Statistics: Num rows: 5918 Data size: 35352 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 5918 Data size: 35352 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 5918 Data size: 35352 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: explain vectorization detail
 create table table_onedouble as select cdouble as val1 from alltypesorc
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -799,42 +861,73 @@ num_falses
 bit_vector          	HL                  
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
-PREHOOK: query: select distinct(val1) from table_onedouble limit 10
+PREHOOK: query: explain
+select distinct(val1) from table_onedouble
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_onedouble
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct(val1) from table_onedouble limit 10
+POSTHOOK: query: explain
+select distinct(val1) from table_onedouble
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_onedouble
 #### A masked pattern was here ####
--16373.0
--16311.0
--16310.0
--16307.0
--16280.0
--16277.0
--16218.0
--16207.0
--16168.0
--16032.0
-PREHOOK: query: select distinct(cdouble) from alltypesorc limit 10
-PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct(cdouble) from alltypesorc limit 10
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
--16373.0
--16311.0
--16310.0
--16307.0
--16280.0
--16277.0
--16218.0
--16207.0
--16168.0
--16032.0
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_onedouble
+                  Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: val1 (type: double)
+                    outputColumnNames: val1
+                    Statistics: Num rows: 12288 Data size: 73400 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: val1 (type: double)
+                      minReductionHashAggr: 0.55013025
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 5528 Data size: 33024 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: double)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: double)
+                        Statistics: Num rows: 5528 Data size: 33024 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: double)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 5528 Data size: 33024 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 5528 Data size: 33024 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: explain vectorization detail
 create table table_onetimestamp as select ctimestamp1 as val1 from alltypesorc
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -1078,42 +1171,73 @@ num_falses
 bit_vector          	HL                  
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
-PREHOOK: query: select distinct(val1) from table_onetimestamp limit 10
+PREHOOK: query: explain
+select distinct(val1) from table_onetimestamp
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_onetimestamp
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct(val1) from table_onetimestamp limit 10
+POSTHOOK: query: explain
+select distinct(val1) from table_onetimestamp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_onetimestamp
 #### A masked pattern was here ####
-1969-12-31 15:59:43.619
-1969-12-31 15:59:43.628
-1969-12-31 15:59:43.637
-1969-12-31 15:59:43.645
-1969-12-31 15:59:43.661
-1969-12-31 15:59:43.709
-1969-12-31 15:59:43.764
-1969-12-31 15:59:43.773
-1969-12-31 15:59:43.783
-1969-12-31 15:59:43.793
-PREHOOK: query: select distinct(ctimestamp1) from alltypesorc limit 10
-PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct(ctimestamp1) from alltypesorc limit 10
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
-1969-12-31 15:59:43.619
-1969-12-31 15:59:43.628
-1969-12-31 15:59:43.637
-1969-12-31 15:59:43.645
-1969-12-31 15:59:43.661
-1969-12-31 15:59:43.709
-1969-12-31 15:59:43.764
-1969-12-31 15:59:43.773
-1969-12-31 15:59:43.783
-1969-12-31 15:59:43.793
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_onetimestamp
+                  Statistics: Num rows: 12288 Data size: 366960 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: val1 (type: timestamp)
+                    outputColumnNames: val1
+                    Statistics: Num rows: 12288 Data size: 366960 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: val1 (type: timestamp)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: timestamp)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: timestamp)
+                        Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: timestamp)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 1 Data size: 40 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: explain vectorization detail
 create table table_onedecimal as select cast(cbigint as decimal(10,2)) as val1 from alltypesorc
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -1358,42 +1482,73 @@ num_falses
 bit_vector          	HL                  
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
-PREHOOK: query: select distinct(val1) from table_onedecimal limit 10
+PREHOOK: query: explain
+select distinct(val1) from table_onedecimal
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_onedecimal
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct(val1) from table_onedecimal limit 10
+POSTHOOK: query: explain
+select distinct(val1) from table_onedecimal
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_onedecimal
 #### A masked pattern was here ####
--99245274.00
--98989966.00
--96329887.00
--96197452.00
--95814999.00
--95344418.00
--95128715.00
--94624654.00
--93297338.00
--92514745.00
-PREHOOK: query: select distinct(cast(cbigint as decimal(10,2))) from alltypesorc limit 10
-PREHOOK: type: QUERY
-PREHOOK: Input: default@alltypesorc
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct(cast(cbigint as decimal(10,2))) from alltypesorc limit 10
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@alltypesorc
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
--99245274.00
--98989966.00
--96329887.00
--96197452.00
--95814999.00
--95344418.00
--95128715.00
--94624654.00
--93297338.00
--92514745.00
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_onedecimal
+                  Statistics: Num rows: 12288 Data size: 35952 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: val1 (type: decimal(10,2))
+                    outputColumnNames: val1
+                    Statistics: Num rows: 12288 Data size: 35952 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: val1 (type: decimal(10,2))
+                      minReductionHashAggr: 0.97509766
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 306 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: decimal(10,2))
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: decimal(10,2))
+                        Statistics: Num rows: 306 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: decimal(10,2))
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 306 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 306 Data size: 1008 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
 PREHOOK: query: explain vectorization detail
 create table table_onedate as select cast(L_COMMITDATE as date) as val1 from lineitem
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -1638,39 +1793,70 @@ num_falses
 bit_vector          	HL                  
 comment             	from deserializer   
 COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\",\"COLUMN_STATS\":{\"val1\":\"true\"}}
-PREHOOK: query: select distinct(val1) from table_onedate limit 10
+PREHOOK: query: explain
+select distinct(val1) from table_onedate
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_onedate
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct(val1) from table_onedate limit 10
+POSTHOOK: query: explain
+select distinct(val1) from table_onedate
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@table_onedate
 #### A masked pattern was here ####
-1992-07-06
-1992-08-01
-1993-03-05
-1993-03-30
-1993-12-19
-1993-12-20
-1994-01-07
-1994-01-10
-1994-01-24
-1994-08-31
-PREHOOK: query: select distinct(cast(L_COMMITDATE as date)) from lineitem limit 10
-PREHOOK: type: QUERY
-PREHOOK: Input: default@lineitem
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
 #### A masked pattern was here ####
-POSTHOOK: query: select distinct(cast(L_COMMITDATE as date)) from lineitem limit 10
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@lineitem
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
 #### A masked pattern was here ####
-1992-07-06
-1992-08-01
-1993-03-05
-1993-03-30
-1993-12-19
-1993-12-20
-1994-01-07
-1994-01-10
-1994-01-24
-1994-08-31
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: table_onedate
+                  Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: val1 (type: date)
+                    outputColumnNames: val1
+                    Statistics: Num rows: 100 Data size: 5600 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      keys: val1 (type: date)
+                      minReductionHashAggr: 0.99
+                      mode: hash
+                      outputColumnNames: _col0
+                      Statistics: Num rows: 50 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        key expressions: _col0 (type: date)
+                        null sort order: z
+                        sort order: +
+                        Map-reduce partition columns: _col0 (type: date)
+                        Statistics: Num rows: 50 Data size: 2800 Basic stats: COMPLETE Column stats: COMPLETE
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Reduce Operator Tree:
+              Group By Operator
+                keys: KEY._col0 (type: date)
+                mode: mergepartial
+                outputColumnNames: _col0
+                Statistics: Num rows: 25 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
+                File Output Operator
+                  compressed: false
+                  Statistics: Num rows: 25 Data size: 1400 Basic stats: COMPLETE Column stats: COMPLETE
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
