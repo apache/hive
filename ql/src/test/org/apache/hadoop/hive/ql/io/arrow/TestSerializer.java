@@ -28,7 +28,7 @@ import java.util.List;
 
 public class TestSerializer {
   @Test
-  public void testEmptyArray() {
+  public void testEmptyList() {
     List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString("array<tinyint>");
     List<String> fieldNames = Arrays.asList(new String[]{"a"});
     Serializer converter = new Serializer(new HiveConf(), "attemptId", typeInfos, fieldNames);
@@ -67,6 +67,33 @@ public class TestSerializer {
     Assert.assertEquals(
         "Schema<a: Struct<b: List<$data$: Int(8, true)>, c: List<$data$: Struct<keys: Utf8, values: Utf8>>, " +
             "d: Struct<e: List<$data$: Int(8, true)>, f: List<$data$: Struct<keys: Utf8, values: Utf8>>>>>",
+        writable.getVectorSchemaRoot().getSchema().toString());
+  }
+
+  @Test
+  public void testEmptyComplexMap() {
+    List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString(
+        "map<array<tinyint>,struct<b:array<tinyint>,c:map<string,string>>>");
+    List<String> fieldNames = Arrays.asList(new String[] { "a" });
+    Serializer converter = new Serializer(new HiveConf(), "attemptId", typeInfos, fieldNames);
+    ArrowWrapperWritable writable = converter.emptyBatch();
+    Assert.assertEquals(
+        "Schema<a: List<$data$: Struct<keys: List<$data$: Int(8, true)>, values: " +
+            "Struct<b: List<$data$: Int(8, true)>, c: List<$data$: Struct<keys: Utf8, values: Utf8>>>>>>",
+        writable.getVectorSchemaRoot().getSchema().toString());
+  }
+
+  @Test
+  public void testEmptyComplexList() {
+    List<TypeInfo> typeInfos = TypeInfoUtils.getTypeInfosFromTypeString("struct<b:array<array<tinyint>>," +
+        "c:array<map<string,string>>,d:array<struct<e:array<tinyint>,f:map<string,string>>>>");
+    List<String> fieldNames = Arrays.asList(new String[] { "a" });
+    Serializer converter = new Serializer(new HiveConf(), "attemptId", typeInfos, fieldNames);
+    ArrowWrapperWritable writable = converter.emptyBatch();
+    Assert.assertEquals(
+        "Schema<a: Struct<b: List<$data$: List<$data$: Int(8, true)>>, c: List<$data$: List<$data$: " +
+            "Struct<keys: Utf8, values: Utf8>>>, d: List<$data$: Struct<e: List<$data$: Int(8, true)>, " +
+            "f: List<$data$: Struct<keys: Utf8, values: Utf8>>>>>>",
         writable.getVectorSchemaRoot().getSchema().toString());
   }
 }
