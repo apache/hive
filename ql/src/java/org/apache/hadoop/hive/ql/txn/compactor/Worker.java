@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
+import org.apache.hadoop.hive.metastore.txn.TxnStatus;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.common.util.Ref;
@@ -149,19 +150,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           + " id (" + currentTable.getId() + ") is not equal to its id when compaction started ("
           + originalTable.getId() + "). The table might have been dropped and recreated while compaction was running."
           + " Marking compaction as failed.");
-    }
-  }
-
-  private void commitTxnIfSet(long compactorTxnId) {
-    if (compactorTxnId != TXN_ID_NOT_SET) {
-      try {
-        if (msc != null) {
-          msc.commitTxn(compactorTxnId);
-        }
-      } catch (TException e) {
-        LOG.error(
-            "Caught an exception while committing compaction in worker " + workerName, e);
-      }
     }
   }
 
@@ -403,7 +391,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     // so wrap it in a big catch Throwable statement.
     CompactionHeartbeater heartbeater = null;
     CompactionInfo ci = null;
-    long compactorTxnId = TXN_ID_NOT_SET;
+    CompactionTxn compactionTxn = new CompactionTxn();
     try {
       if (msc == null) {
         try {
@@ -483,12 +471,12 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
        * multiple statements in it (for query based compactor) which is not supported (and since
        * this case some of the statements are DDL, even in the future will not be allowed in a
        * multi-stmt txn. {@link Driver#setCompactionWriteIds(ValidWriteIdList, long)} */
-      compactorTxnId = msc.openTxn(ci.runAs, TxnType.COMPACTION);
+      compactionTxn.open(ci);
 
-      heartbeater = new CompactionHeartbeater(compactorTxnId, fullTableName, conf);
+      heartbeater = new CompactionHeartbeater(compactionTxn.getTxnId(), fullTableName, conf);
       heartbeater.start();
 
-      ValidTxnList validTxnList = msc.getValidTxns(compactorTxnId);
+      ValidTxnList validTxnList = msc.getValidTxns(compactionTxn.getTxnId());
       //with this ValidWriteIdList is capped at whatever HWM validTxnList has
       final ValidCompactorWriteIdList tblValidWriteIds =
           TxnUtils.createValidCompactWriteIdList(msc.getValidWriteIds(
@@ -499,7 +487,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       ci.highestWriteId = tblValidWriteIds.getHighWatermark();
       //this writes TXN_COMPONENTS to ensure that if compactorTxnId fails, we keep metadata about
       //it until after any data written by it are physically removed
-      msc.updateCompactorState(CompactionInfo.compactionInfoToStruct(ci), compactorTxnId);
+      msc.updateCompactorState(CompactionInfo.compactionInfoToStruct(ci), compactionTxn.getTxnId());
 
       checkInterrupt();
 
@@ -527,7 +515,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       checkInterrupt();
 
       LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in txnId " +
-                   JavaUtils.txnIdToString(compactorTxnId) + " with compute stats set to " + computeStats);
+                   JavaUtils.txnIdToString(compactionTxn.getTxnId()) + " with compute stats set to " + computeStats);
       final StatsUpdater su = computeStats ? StatsUpdater.init(ci, msc.findColumnsWithStats(
           CompactionInfo.compactionInfoToStruct(ci)), conf,
           runJobAsSelf(ci.runAs) ? ci.runAs : t.getOwner()) : null;
@@ -556,20 +544,20 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         verifyTableIdHasNotChanged(ci, t1);
 
         LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in txn "
-            + JavaUtils.txnIdToString(compactorTxnId) + ", marking as compacted.");
+            + JavaUtils.txnIdToString(compactionTxn.getTxnId()) + ", marking as compacted.");
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
             ".  Marking failed to avoid repeated failures", e);
-        abortCompactionAndMarkFailed(ci, compactorTxnId, e);
+        abortCompactionAndMarkFailed(ci, compactionTxn, e);
       }
     } catch (TException | IOException t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
       try {
-        abortCompactionAndMarkFailed(ci, compactorTxnId, t);
+        abortCompactionAndMarkFailed(ci, compactionTxn, t);
       } catch (TException e) {
-        LOG.error("Caught an exception while trying to mark compaction {} as failed: {}" +
-                (compactorTxnId != TXN_ID_NOT_SET ? " or abort txnId " + compactorTxnId : "") , ci, e);
+        LOG.error("Caught an exception while trying to mark compaction {} as failed or abort txnId {}: {}" +
+                ci, compactionTxn, e);
       } finally {
         if (msc != null) {
           msc.close();
@@ -579,7 +567,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
     } finally {
-      commitTxnIfSet(compactorTxnId);
+      compactionTxn.commit();
       if (heartbeater != null) {
         heartbeater.cancel();
       }
@@ -614,15 +602,13 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
   }
 
-  private void abortCompactionAndMarkFailed(CompactionInfo ci, long compactorTxnId, Throwable e) throws TException {
+  private void abortCompactionAndMarkFailed(CompactionInfo ci, CompactionTxn compactionTxn, Throwable e) throws TException {
     if (ci != null) {
       ci.errorMessage = e.getMessage();
     }
     if (msc != null) {
       msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
-      if (compactorTxnId != TXN_ID_NOT_SET) {
-        msc.abortTxns(Collections.singletonList(compactorTxnId));
-      }
+      compactionTxn.abort();
     }
   }
 
@@ -635,5 +621,66 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   private static boolean isDynPartAbort(Table t, CompactionInfo ci) {
     return t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0
         && ci.partName == null;
+  }
+
+  /**
+   * Keep track of the compaction's transaction and its operations.
+   */
+  private class CompactionTxn {
+    private long txnId = 0;
+    private TxnStatus status = TxnStatus.UNKNOWN;
+
+    /**
+     * Try to open a new txn.
+     * @throws TException
+     */
+    void open(CompactionInfo ci) throws TException {
+      if (msc == null) {
+        LOG.error("Metastore client was null. Could not open a new transaction.");
+        return;
+      }
+      this.txnId = msc.openTxn(ci.runAs, TxnType.COMPACTION);
+    }
+
+    /**
+     * Abort the txn if open.
+     * @throws TException
+     */
+    void abort() throws TException {
+      if (msc == null) {
+        LOG.error("Metastore client was null. Could not abort txn " + this);
+        return;
+      }
+      if (status == TxnStatus.OPEN) {
+        msc.abortTxns(Collections.singletonList(txnId));
+        status = TxnStatus.ABORTED;
+      }
+    }
+
+    /**
+     * Commit the txn if open.
+     */
+    void commit() {
+      if (msc == null) {
+        LOG.error("Metastore client was null. Could not commit txn " + this);
+        return;
+      }
+      if (status == TxnStatus.OPEN) {
+        try {
+          msc.commitTxn(txnId);
+          status = TxnStatus.COMMITTED;
+        } catch (TException e) {
+          LOG.error("Caught an exception while committing compaction in worker " + workerName, e);
+        }
+      }
+    }
+
+    long getTxnId() {
+      return txnId;
+    }
+
+    @Override public String toString() {
+      return "txnId=" + txnId + " (TxnStatus: " + status + ")";
+    }
   }
 }
