@@ -54,7 +54,6 @@ import org.apache.hadoop.hive.ql.exec.repl.util.TaskTracker;
 import org.apache.hadoop.hive.ql.exec.util.DAGTraversal;
 import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
-import org.apache.hadoop.hive.ql.io.orc.ExternalCache;
 import org.apache.hadoop.hive.ql.lockmgr.DbLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
@@ -607,9 +606,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     dmd.setDump(DumpType.INCREMENTAL, work.eventFrom, lastReplId, cmRoot, executionId);
     // If repl policy is changed (oldReplScope is set), then pass the current replication policy,
     // so that REPL LOAD would drop the tables which are not included in current policy.
-    if (work.oldReplScope != null) {
-      dmd.setReplScope(work.replScope);
-    }
+    dmd.setReplScope(work.replScope);
     dmd.write(true);
     int cacheSize = conf.getIntVar(HiveConf.ConfVars.REPL_FILE_LIST_CACHE_SIZE);
     try (FileList managedTblList = createTableFileList(dumpRoot, EximUtil.FILE_LIST, cacheSize);
@@ -941,6 +938,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
               dumpRoot.toUri(), bootDumpBeginReplId, bootDumpEndReplId);
       long executorId = conf.getLong(Constants.SCHEDULED_QUERY_EXECUTIONID, 0L);
       dmd.setDump(DumpType.BOOTSTRAP, bootDumpBeginReplId, bootDumpEndReplId, cmRoot, executorId);
+      dmd.setReplScope(work.replScope);
       dmd.write(true);
       work.setFunctionCopyPathIterator(functionsBinaryCopyPaths.iterator());
       setDataCopyIterators(extTableFileList, managedTblList);

@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.repl.load.DumpMetaData;
 import org.apache.hadoop.security.UserGroupInformation;
 
 import org.junit.Assert;
@@ -46,6 +47,7 @@ import java.io.InputStreamReader;
 
 import static org.apache.hadoop.hive.ql.exec.repl.ReplExternalTables.FILE_NAME;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.INC_BOOTSTRAP_ROOT_DIR_NAME;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Tests Table level replication scenarios.
@@ -163,6 +165,8 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     // If the policy contains '.'' means its table level replication.
     verifyTableListForPolicy(tuple.dumpLocation, replPolicy.contains(".'") ? expectedTables : null);
 
+    verifyDumpMetadata(replPolicy, new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR));
+
     replica.load(replicatedDbName, replPolicy, loadWithClause)
             .run("use " + replicatedDbName)
             .run("show tables")
@@ -178,6 +182,21 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
               .verifyResults(records);
     }
     return tuple.lastReplicationId;
+  }
+
+  private void verifyDumpMetadata(String replPolicy, Path dumpPath) throws SemanticException {
+    String[] parseReplPolicy = replPolicy.split("\\.'");
+    assertEquals(parseReplPolicy[0], new DumpMetaData(dumpPath, conf).getReplScope().getDbName());
+    if (parseReplPolicy.length > 1) {
+      parseReplPolicy[1] = parseReplPolicy[1].replaceAll("'", "");
+      assertEquals(parseReplPolicy[1],
+        new DumpMetaData(dumpPath, conf).getReplScope().getIncludedTableNames());
+    }
+    if (parseReplPolicy.length > 2) {
+      parseReplPolicy[2] = parseReplPolicy[2].replaceAll("'", "");
+      assertEquals(parseReplPolicy[2],
+        new DumpMetaData(dumpPath, conf).getReplScope().getExcludedTableNames());
+    }
   }
 
   private String replicateAndVerifyClearDump(String replPolicy, String oldReplPolicy, String lastReplId,

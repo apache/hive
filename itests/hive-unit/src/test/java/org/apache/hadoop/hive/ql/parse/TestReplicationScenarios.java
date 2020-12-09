@@ -331,7 +331,7 @@ public class TestReplicationScenarios {
    * appropriately. This tests bootstrap behaviour primarily.
    */
   @Test
-  public void testBasic() throws IOException {
+  public void testBasic() throws IOException, SemanticException {
     String name = testName.getMethodName();
     String dbName = createDB(name, driver);
     run("CREATE TABLE " + dbName + ".unptned(a string) STORED AS TEXTFILE", driver);
