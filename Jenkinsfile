@@ -263,7 +263,7 @@ reinit_metastore $dbType
               buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
             }
           } finally {
-            stage('Archive') {
+            stage('PostProcess') {
               try {
                 sh """#!/bin/bash -e
                   # removes all stdout and err for passed tests
