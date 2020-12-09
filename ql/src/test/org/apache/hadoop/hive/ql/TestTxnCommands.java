@@ -403,7 +403,15 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
     LOG.info("ValidWriteIds after add constraint not null::"+ validWriteIds);
     Assert.assertEquals("default.constraints_table:3:9223372036854775807::", validWriteIds);
-
+    runStatementOnDriver(String.format("alter table %s ADD CONSTRAINT check1 CHECK (a <= 25)", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    LOG.info("ValidWriteIds after add constraint check::"+ validWriteIds);
+    Assert.assertEquals("default.constraints_table:4:9223372036854775807::", validWriteIds);
+    runStatementOnDriver(String.format("alter table %s ADD CONSTRAINT unique1 UNIQUE (a, b) DISABLE", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    LOG.info("ValidWriteIds after add constraint unique::"+ validWriteIds);
+    Assert.assertEquals("default.constraints_table:5:9223372036854775807::", validWriteIds); 
+  
   }
 
   @Test
