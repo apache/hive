@@ -16,9 +16,8 @@ describe formatted table_onestring;
 
 describe formatted table_onestring val1;
 
-select distinct(val1) from table_onestring limit 10;
-
-select distinct(cstring1) from alltypesorc limit 10;
+explain
+select distinct(val1) from table_onestring;
 
 -- long
 
@@ -31,9 +30,8 @@ describe formatted table_onebigint;
 
 describe formatted table_onebigint val1;
 
-select distinct(val1) from table_onebigint limit 10;
-
-select distinct(cbigint) from alltypesorc limit 10;
+explain
+select distinct(val1) from table_onebigint;
 
 -- double
 
@@ -46,9 +44,8 @@ describe formatted table_onedouble;
 
 describe formatted table_onedouble val1;
 
-select distinct(val1) from table_onedouble limit 10;
-
-select distinct(cdouble) from alltypesorc limit 10;
+explain
+select distinct(val1) from table_onedouble;
 
 -- timestamp
 
@@ -61,9 +58,8 @@ describe formatted table_onetimestamp;
 
 describe formatted table_onetimestamp val1;
 
-select distinct(val1) from table_onetimestamp limit 10;
-
-select distinct(ctimestamp1) from alltypesorc limit 10;
+explain
+select distinct(val1) from table_onetimestamp;
 
 --decimal
 
@@ -76,9 +72,8 @@ describe formatted table_onedecimal;
 
 describe formatted table_onedecimal val1;
 
-select distinct(val1) from table_onedecimal limit 10;
-
-select distinct(cast(cbigint as decimal(10,2))) from alltypesorc limit 10;
+explain
+select distinct(val1) from table_onedecimal;
 
 
 --decimal
@@ -92,7 +87,6 @@ describe formatted table_onedate;
 
 describe formatted table_onedate val1;
 
-select distinct(val1) from table_onedate limit 10;
-
-select distinct(cast(L_COMMITDATE as date)) from lineitem limit 10;
+explain
+select distinct(val1) from table_onedate;
 

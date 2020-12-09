@@ -1,20 +1,20 @@
 --! qt:dataset:src
 --! qt:dataset:alltypesorc
 
-select hex(compute_bit_vector(ctinyint, 'hll')) from alltypesorc;
-select hex(compute_bit_vector(csmallint, 'hll')) from alltypesorc;
-select hex(compute_bit_vector(cint, 'hll')) from alltypesorc;
-select hex(compute_bit_vector(cast (cbigint as decimal), 'hll')) from alltypesorc;
-select hex(compute_bit_vector(cfloat, 'hll')) from alltypesorc;
-select hex(compute_bit_vector(cdouble, 'hll')) from alltypesorc;
-select hex(compute_bit_vector(cstring1, 'hll')) from alltypesorc;
-select hex(compute_bit_vector(cstring2, 'hll')) from alltypesorc;
-select hex(compute_bit_vector(ctimestamp1, 'hll')) from alltypesorc;
-select hex(compute_bit_vector(cast (ctimestamp2 as date), 'hll')) from alltypesorc;
+select hex(compute_bit_vector_hll(ctinyint)) from alltypesorc;
+select hex(compute_bit_vector_hll(csmallint)) from alltypesorc;
+select hex(compute_bit_vector_hll(cint)) from alltypesorc;
+select hex(compute_bit_vector_hll(cast (cbigint as decimal))) from alltypesorc;
+select hex(compute_bit_vector_hll(cfloat)) from alltypesorc;
+select hex(compute_bit_vector_hll(cdouble)) from alltypesorc;
+select hex(compute_bit_vector_hll(cstring1)) from alltypesorc;
+select hex(compute_bit_vector_hll(cstring2)) from alltypesorc;
+select hex(compute_bit_vector_hll(ctimestamp1)) from alltypesorc;
+select hex(compute_bit_vector_hll(cast (ctimestamp2 as date))) from alltypesorc;
 
 create table test_compute_bit_vector (val1 string, val2 string);
 insert overwrite table test_compute_bit_vector select a.value, b.value from src as a, src as b;
 
 -- hll of two columns must be equal to each other
-select hex(compute_bit_vector(val1, 'hll')) from test_compute_bit_vector;
-select hex(compute_bit_vector(val2, 'hll')) from test_compute_bit_vector;
+select hex(compute_bit_vector_hll(val1)) from test_compute_bit_vector;
+select hex(compute_bit_vector_hll(val2)) from test_compute_bit_vector;
