@@ -66,7 +66,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY._col1 (type: string)
@@ -85,7 +85,7 @@ STAGE PLANS:
                   outputColumnNames: col1, col2
                   Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: max(length(col1)), avg(COALESCE(length(col1),0)), count(1), count(col1), compute_bit_vector(col1, 'hll'), max(length(col2)), avg(COALESCE(length(col2),0)), count(col2), compute_bit_vector(col2, 'hll')
+                    aggregations: max(length(col1)), avg(COALESCE(length(col1),0)), count(1), count(col1), compute_bit_vector_hll(col1), max(length(col2)), avg(COALESCE(length(col2),0)), count(col2), compute_bit_vector_hll(col2)
                     minReductionHashAggr: 0.9818182
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -96,10 +96,10 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 472 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
@@ -504,7 +504,7 @@ STAGE PLANS:
                         outputColumnNames: value, key
                         Statistics: Num rows: 18 Data size: 3240 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
-                          aggregations: max(length(value)), avg(COALESCE(length(value),0)), count(1), count(value), compute_bit_vector(value, 'hll'), max(length(key)), avg(COALESCE(length(key),0)), count(key), compute_bit_vector(key, 'hll')
+                          aggregations: max(length(value)), avg(COALESCE(length(value),0)), count(1), count(value), compute_bit_vector_hll(value), max(length(key)), avg(COALESCE(length(key),0)), count(key), compute_bit_vector_hll(key)
                           minReductionHashAggr: 0.9444444
                           mode: hash
                           outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -514,13 +514,13 @@ STAGE PLANS:
                             sort order: 
                             Statistics: Num rows: 1 Data size: 472 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
-            Execution mode: llap
+            Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
@@ -853,7 +853,7 @@ STAGE PLANS:
                     outputColumnNames: value, key
                     Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
-                      aggregations: max(length(value)), avg(COALESCE(length(value),0)), count(1), count(value), compute_bit_vector(value, 'hll'), max(length(key)), avg(COALESCE(length(key),0)), count(key), compute_bit_vector(key, 'hll')
+                      aggregations: max(length(value)), avg(COALESCE(length(value),0)), count(1), count(value), compute_bit_vector_hll(value), max(length(key)), avg(COALESCE(length(key),0)), count(key), compute_bit_vector_hll(key)
                       minReductionHashAggr: 0.9444444
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -864,10 +864,10 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 472 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1098,7 +1098,7 @@ STAGE PLANS:
                     Statistics: Num rows: 55 Data size: 9955 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col0 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY._col1 (type: string)
@@ -1117,7 +1117,7 @@ STAGE PLANS:
                   outputColumnNames: value, key
                   Statistics: Num rows: 55 Data size: 9955 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: max(length(value)), avg(COALESCE(length(value),0)), count(1), count(value), compute_bit_vector(value, 'hll'), max(length(key)), avg(COALESCE(length(key),0)), count(key), compute_bit_vector(key, 'hll')
+                    aggregations: max(length(value)), avg(COALESCE(length(value),0)), count(1), count(value), compute_bit_vector_hll(value), max(length(key)), avg(COALESCE(length(key),0)), count(key), compute_bit_vector_hll(key)
                     minReductionHashAggr: 0.9818182
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
@@ -1128,10 +1128,10 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 472 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8)
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 336 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1252,7 +1252,7 @@ STAGE PLANS:
             Execution mode: vectorized, llap
             LLAP IO: may be used (ACID table)
         Reducer 2 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Select Operator
                 expressions: VALUE._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: double), KEY._col3 (type: double)
@@ -1271,7 +1271,7 @@ STAGE PLANS:
                   outputColumnNames: value, key, tes"t, te*#"s"t
                   Statistics: Num rows: 55 Data size: 10835 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
-                    aggregations: max(length(value)), avg(COALESCE(length(value),0)), count(1), count(value), compute_bit_vector(value, 'hll'), max(length(key)), avg(COALESCE(length(key),0)), count(key), compute_bit_vector(key, 'hll'), min(tes"t), max(tes"t), count(tes"t), compute_bit_vector(tes"t, 'hll'), min(te*#"s"t), max(te*#"s"t), count(te*#"s"t), compute_bit_vector(te*#"s"t, 'hll')
+                    aggregations: max(length(value)), avg(COALESCE(length(value),0)), count(1), count(value), compute_bit_vector_hll(value), max(length(key)), avg(COALESCE(length(key),0)), count(key), compute_bit_vector_hll(key), min(tes"t), max(tes"t), count(tes"t), compute_bit_vector_hll(tes"t), min(te*#"s"t), max(te*#"s"t), count(te*#"s"t), compute_bit_vector_hll(te*#"s"t)
                     minReductionHashAggr: 0.9818182
                     mode: hash
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
@@ -1282,10 +1282,10 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 808 Basic stats: COMPLETE Column stats: COMPLETE
                       value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: double), _col10 (type: double), _col11 (type: bigint), _col12 (type: binary), _col13 (type: double), _col14 (type: double), _col15 (type: bigint), _col16 (type: binary)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Operator Tree:
               Group By Operator
-                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16)
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16)
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
                 Statistics: Num rows: 1 Data size: 672 Basic stats: COMPLETE Column stats: COMPLETE

@@ -67,7 +67,7 @@ Stage-3
                 Select Operator [SEL_9] (rows=1 width=727)
                   Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
                   Group By Operator [GBY_8] (rows=1 width=529)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector(VALUE._col8)"],keys:KEY._col0, KEY._col1
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"],keys:KEY._col0, KEY._col1
                   <-Map 1 [SIMPLE_EDGE] llap
                     File Output Operator [FS_3]
                       table:{"name:":"default.src_orc_merge_test_part_n1"}
@@ -78,7 +78,7 @@ Stage-3
                     SHUFFLE [RS_7]
                       PartitionCols:_col0, _col1
                       Group By Operator [GBY_6] (rows=1 width=597)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"],aggregations:["min(key)","max(key)","count(1)","count(key)","compute_bit_vector(key, 'hll')","max(length(value))","avg(COALESCE(length(value),0))","count(value)","compute_bit_vector(value, 'hll')"],keys:ds, ts
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"],aggregations:["min(key)","max(key)","count(1)","count(key)","compute_bit_vector_hll(key)","max(length(value))","avg(COALESCE(length(value),0))","count(value)","compute_bit_vector_hll(value)"],keys:ds, ts
                         Select Operator [SEL_5] (rows=500 width=292)
                           Output:["key","value","ds","ts"]
                            Please refer to the previous Select Operator [SEL_1]
@@ -120,7 +120,7 @@ Stage-3
                 Select Operator [SEL_13] (rows=1 width=727)
                   Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13"]
                   Group By Operator [GBY_12] (rows=1 width=529)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector(VALUE._col8)"],keys:KEY._col0, KEY._col1
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"],keys:KEY._col0, KEY._col1
                   <-Reducer 2 [SIMPLE_EDGE] llap
                     File Output Operator [FS_7]
                       table:{"name:":"default.src_orc_merge_test_part_n1"}
@@ -141,7 +141,7 @@ Stage-3
                     SHUFFLE [RS_11]
                       PartitionCols:_col0, _col1
                       Group By Operator [GBY_10] (rows=1 width=597)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"],aggregations:["min(key)","max(key)","count(1)","count(key)","compute_bit_vector(key, 'hll')","max(length(value))","avg(COALESCE(length(value),0))","count(value)","compute_bit_vector(value, 'hll')"],keys:ds, ts
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10"],aggregations:["min(key)","max(key)","count(1)","count(key)","compute_bit_vector_hll(key)","max(length(value))","avg(COALESCE(length(value),0))","count(value)","compute_bit_vector_hll(value)"],keys:ds, ts
                         Select Operator [SEL_9] (rows=100 width=292)
                           Output:["key","value","ds","ts"]
                            Please refer to the previous Select Operator [SEL_6]
@@ -3740,7 +3740,7 @@ Stage-3
                 Select Operator [SEL_16] (rows=1 width=532)
                   Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
                   Group By Operator [GBY_15] (rows=1 width=336)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(1)","count(VALUE._col3)","compute_bit_vector(VALUE._col3, 'hll')","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector(VALUE._col7, 'hll')"]
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(1)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col3)","max(VALUE._col4)","avg(VALUE._col5)","count(VALUE._col6)","compute_bit_vector_hll(VALUE._col6)"]
                   <-Reducer 3 [CUSTOM_SIMPLE_EDGE] llap
                     File Output Operator [FS_8]
                       table:{"name:":"default.nzhang_CTAS1_n1"}
@@ -3813,7 +3813,7 @@ Stage-3
                 Select Operator [SEL_16] (rows=1 width=532)
                   Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
                   Group By Operator [GBY_15] (rows=1 width=340)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col0)","count(1)","count(VALUE._col0)","compute_bit_vector(VALUE._col0, 'hll')","max(VALUE._col3)","avg(VALUE._col4)","count(VALUE._col5)","compute_bit_vector(VALUE._col5, 'hll')"]
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col0)","count(1)","count(VALUE._col0)","compute_bit_vector_hll(VALUE._col0)","max(VALUE._col2)","avg(VALUE._col3)","count(VALUE._col4)","compute_bit_vector_hll(VALUE._col4)"]
                   <-Reducer 3 [CUSTOM_SIMPLE_EDGE] llap
                     File Output Operator [FS_8]
                       table:{"name:":"default.nzhang_ctas3_n1"}
@@ -5574,11 +5574,11 @@ Stage-4
                 Select Operator [SEL_16] (rows=1 width=1590)
                   Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35"]
                   Group By Operator [GBY_15] (rows=1 width=984)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector(VALUE._col12)","min(VALUE._col13)","max(VALUE._col14)","count(VALUE._col15)","compute_bit_vector(VALUE._col16)","min(VALUE._col17)","max(VALUE._col18)","count(VALUE._col19)","compute_bit_vector(VALUE._col20)","min(VALUE._col21)","max(VALUE._col22)","count(VALUE._col23)","compute_bit_vector(VALUE._col24)"]
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)","min(VALUE._col13)","max(VALUE._col14)","count(VALUE._col15)","compute_bit_vector_hll(VALUE._col16)","min(VALUE._col17)","max(VALUE._col18)","count(VALUE._col19)","compute_bit_vector_hll(VALUE._col20)","min(VALUE._col21)","max(VALUE._col22)","count(VALUE._col23)","compute_bit_vector_hll(VALUE._col24)"]
                   <-Reducer 4 [CUSTOM_SIMPLE_EDGE] llap
                     PARTITION_ONLY_SHUFFLE [RS_14]
                       Group By Operator [GBY_13] (rows=1 width=1120)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(1)","count(VALUE._col3)","compute_bit_vector(VALUE._col3, 'hll')","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector(VALUE._col7, 'hll')","min(VALUE._col8)","max(VALUE._col8)","count(VALUE._col8)","compute_bit_vector(VALUE._col8, 'hll')","min(VALUE._col9)","max(VALUE._col9)","count(VALUE._col9)","compute_bit_vector(VALUE._col9, 'hll')","min(VALUE._col10)","max(VALUE._col10)","count(VALUE._col10)","compute_bit_vector(VALUE._col10, 'hll')","min(VALUE._col11)","max(VALUE._col11)","count(VALUE._col11)","compute_bit_vector(VALUE._col11, 'hll')"]
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(1)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col3)","max(VALUE._col4)","avg(VALUE._col5)","count(VALUE._col6)","compute_bit_vector_hll(VALUE._col6)","min(VALUE._col7)","max(VALUE._col7)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col7)","min(VALUE._col8)","max(VALUE._col8)","count(VALUE._col8)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col9)","count(VALUE._col9)","compute_bit_vector_hll(VALUE._col9)","min(VALUE._col10)","max(VALUE._col10)","count(VALUE._col10)","compute_bit_vector_hll(VALUE._col10)"]
                       <-Reducer 3 [CUSTOM_SIMPLE_EDGE] llap
                         File Output Operator [FS_9]
                           table:{"name:":"default.part_4_n1"}
@@ -5610,11 +5610,11 @@ Stage-4
                 Select Operator [SEL_35] (rows=1 width=2118)
                   Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32","_col33","_col34","_col35","_col36","_col37","_col38","_col39","_col40","_col41","_col42","_col43","_col44","_col45","_col46","_col47"]
                   Group By Operator [GBY_34] (rows=1 width=1304)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector(VALUE._col12)","min(VALUE._col13)","max(VALUE._col14)","count(VALUE._col15)","compute_bit_vector(VALUE._col16)","min(VALUE._col17)","max(VALUE._col18)","count(VALUE._col19)","compute_bit_vector(VALUE._col20)","min(VALUE._col21)","max(VALUE._col22)","count(VALUE._col23)","compute_bit_vector(VALUE._col24)","min(VALUE._col25)","max(VALUE._col26)","count(VALUE._col27)","compute_bit_vector(VALUE._col28)","min(VALUE._col29)","max(VALUE._col30)","count(VALUE._col31)","compute_bit_vector(VALUE._col32)"]
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col10)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col12)","min(VALUE._col13)","max(VALUE._col14)","count(VALUE._col15)","compute_bit_vector_hll(VALUE._col16)","min(VALUE._col17)","max(VALUE._col18)","count(VALUE._col19)","compute_bit_vector_hll(VALUE._col20)","min(VALUE._col21)","max(VALUE._col22)","count(VALUE._col23)","compute_bit_vector_hll(VALUE._col24)","min(VALUE._col25)","max(VALUE._col26)","count(VALUE._col27)","compute_bit_vector_hll(VALUE._col28)","min(VALUE._col29)","max(VALUE._col30)","count(VALUE._col31)","compute_bit_vector_hll(VALUE._col32)"]
                   <-Reducer 8 [CUSTOM_SIMPLE_EDGE] llap
                     PARTITION_ONLY_SHUFFLE [RS_33]
                       Group By Operator [GBY_32] (rows=1 width=1440)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(1)","count(VALUE._col3)","compute_bit_vector(VALUE._col3, 'hll')","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector(VALUE._col7, 'hll')","min(VALUE._col8)","max(VALUE._col8)","count(VALUE._col8)","compute_bit_vector(VALUE._col8, 'hll')","min(VALUE._col9)","max(VALUE._col9)","count(VALUE._col9)","compute_bit_vector(VALUE._col9, 'hll')","min(VALUE._col10)","max(VALUE._col10)","count(VALUE._col10)","compute_bit_vector(VALUE._col10, 'hll')","min(VALUE._col11)","max(VALUE._col11)","count(VALUE._col11)","compute_bit_vector(VALUE._col11, 'hll')","min(VALUE._col12)","max(VALUE._col12)","count(VALUE._col12)","compute_bit_vector(VALUE._col12, 'hll')","min(VALUE._col13)","max(VALUE._col13)","count(VALUE._col13)","compute_bit_vector(VALUE._col13, 'hll')"]
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11","_col12","_col13","_col14","_col15","_col16","_col17","_col18","_col19","_col20","_col21","_col22","_col23","_col24","_col25","_col26","_col27","_col28","_col29","_col30","_col31","_col32"],aggregations:["max(VALUE._col0)","avg(VALUE._col1)","count(1)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col3)","max(VALUE._col4)","avg(VALUE._col5)","count(VALUE._col6)","compute_bit_vector_hll(VALUE._col6)","min(VALUE._col7)","max(VALUE._col7)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col7)","min(VALUE._col8)","max(VALUE._col8)","count(VALUE._col8)","compute_bit_vector_hll(VALUE._col8)","min(VALUE._col9)","max(VALUE._col9)","count(VALUE._col9)","compute_bit_vector_hll(VALUE._col9)","min(VALUE._col10)","max(VALUE._col10)","count(VALUE._col10)","compute_bit_vector_hll(VALUE._col10)","min(VALUE._col11)","max(VALUE._col11)","count(VALUE._col11)","compute_bit_vector_hll(VALUE._col11)","min(VALUE._col12)","max(VALUE._col12)","count(VALUE._col12)","compute_bit_vector_hll(VALUE._col12)"]
                       <-Reducer 7 [CUSTOM_SIMPLE_EDGE] llap
                         File Output Operator [FS_28]
                           table:{"name:":"default.part_5_n1"}
@@ -6046,11 +6046,11 @@ Stage-3
                 Select Operator [SEL_18] (rows=1 width=530)
                   Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8","_col9","_col10","_col11"]
                   Group By Operator [GBY_17] (rows=1 width=332)
-                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector(VALUE._col8)"]
+                    Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col1)","count(VALUE._col2)","count(VALUE._col3)","compute_bit_vector_hll(VALUE._col4)","max(VALUE._col5)","avg(VALUE._col6)","count(VALUE._col7)","compute_bit_vector_hll(VALUE._col8)"]
                   <-Reducer 3 [CUSTOM_SIMPLE_EDGE] llap
                     PARTITION_ONLY_SHUFFLE [RS_16]
                       Group By Operator [GBY_15] (rows=1 width=400)
-                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col0)","count(1)","count(VALUE._col0)","compute_bit_vector(VALUE._col0, 'hll')","max(VALUE._col3)","avg(VALUE._col4)","count(VALUE._col5)","compute_bit_vector(VALUE._col5, 'hll')"]
+                        Output:["_col0","_col1","_col2","_col3","_col4","_col5","_col6","_col7","_col8"],aggregations:["min(VALUE._col0)","max(VALUE._col0)","count(1)","count(VALUE._col0)","compute_bit_vector_hll(VALUE._col0)","max(VALUE._col2)","avg(VALUE._col3)","count(VALUE._col4)","compute_bit_vector_hll(VALUE._col4)"]
                       <-Reducer 2 [CUSTOM_SIMPLE_EDGE] llap
                         File Output Operator [FS_11]
                           table:{"name:":"default.dest_j1_n16"}

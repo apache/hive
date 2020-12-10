@@ -138,9 +138,17 @@ select ROW__ID, * from over10k_orc_bucketed where ROW__ID is null;
 
 -- select ROW__ID, * from over10k_orc_bucketed where ROW__ID is null;
 
+-- TODO: Remove this line after fixing HIVE-24351
+set hive.vectorized.execution.enabled=false;
+
 CREATE TABLE over10k_orc STORED AS ORC as select * from over10k_n2 where t between 3 and 4;
+
 -- Make sure there are multiple original files
 INSERT INTO over10k_orc select * from over10k_n2 where t between 3 and 4;
+
+-- TODO: Remove this line after fixing HIVE-24351
+set hive.vectorized.execution.enabled=true;
+
 alter table over10k_orc set TBLPROPERTIES ('transactional'='true');
 
 -- row id is projected but there are no delete deltas

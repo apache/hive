@@ -527,6 +527,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedAggregationUdfs.add("stddev_pop");
     supportedAggregationUdfs.add("stddev_samp");
     supportedAggregationUdfs.add("bloom_filter");
+    supportedAggregationUdfs.add("compute_bit_vector_hll");
   }
 
   private class VectorTaskColumnInfo {

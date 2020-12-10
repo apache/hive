@@ -4128,16 +4128,28 @@ STAGE PLANS:
                     Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: string)
         Reducer 3 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_bit_vector not supported
-                vectorized: false
+                reduceColumnNullOrder: az
+                reduceColumnSortOrder: ++
+                allNative: false
+                usesVectorUDFAdaptor: false
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 4
+                    dataColumns: KEY.reducesinkkey0:string, KEY.reducesinkkey1:string, VALUE._col3:int, VALUE._col5:double
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: [bigint, bigint, double, double, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint]
             Reduce Operator Tree:
               Select Operator
                 expressions: KEY.reducesinkkey1 (type: string), KEY.reducesinkkey0 (type: string), VALUE._col3 (type: int), VALUE._col5 (type: double)
                 outputColumnNames: _col1, _col2, _col5, _col7
+                Select Vectorization:
+                    className: VectorSelectOperator
+                    native: true
+                    projectedOutputColumnNums: [1, 0, 2, 3]
                 Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                 PTF Operator
                   Function definitions:
@@ -4172,13 +4184,34 @@ STAGE PLANS:
                               name: sum
                               window function: GenericUDAFSumDouble
                               window frame: ROWS PRECEDING(MAX)~CURRENT
+                  PTF Vectorization:
+                      className: VectorPTFOperator
+                      evaluatorClasses: [VectorPTFEvaluatorRank, VectorPTFEvaluatorDenseRank, VectorPTFEvaluatorStreamingDoubleSum]
+                      functionInputExpressions: [col 1:string, col 1:string, col 3:double]
+                      functionNames: [rank, dense_rank, sum]
+                      keyInputColumns: [1, 0]
+                      native: true
+                      nonKeyInputColumns: [2, 3]
+                      orderExpressions: [col 1:string]
+                      outputColumns: [4, 5, 6, 1, 0, 2, 3]
+                      outputTypes: [int, int, double, string, string, int, double]
+                      partitionExpressions: [col 0:string]
+                      streamingColumns: [4, 5, 6]
                   Statistics: Num rows: 26 Data size: 13078 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: _col2 (type: string), _col1 (type: string), _col5 (type: int), rank_window_0 (type: int), dense_rank_window_1 (type: int), round(sum_window_2, 2) (type: double)
                     outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0, 1, 2, 4, 5, 7]
+                        selectExpressions: RoundWithNumDigitsDoubleToDouble(col 6, decimalPlaces 2) -> 7:double
                     Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
                       compressed: false
+                      File Sink Vectorization:
+                          className: VectorFileSinkOperator
+                          native: false
                       Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4188,9 +4221,20 @@ STAGE PLANS:
                     Select Operator
                       expressions: _col0 (type: string), _col1 (type: string), _col2 (type: int), _col3 (type: int), _col4 (type: int), _col5 (type: double)
                       outputColumnNames: p_mfgr, p_name, p_size, r, dr, s
+                      Select Vectorization:
+                          className: VectorSelectOperator
+                          native: true
+                          projectedOutputColumnNums: [0, 1, 2, 4, 5, 7]
                       Statistics: Num rows: 26 Data size: 6214 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: max(length(p_mfgr)), avg(COALESCE(length(p_mfgr),0)), count(1), count(p_mfgr), compute_bit_vector(p_mfgr, 'hll'), max(length(p_name)), avg(COALESCE(length(p_name),0)), count(p_name), compute_bit_vector(p_name, 'hll'), min(p_size), max(p_size), count(p_size), compute_bit_vector(p_size, 'hll'), min(r), max(r), count(r), compute_bit_vector(r, 'hll'), min(dr), max(dr), count(dr), compute_bit_vector(dr, 'hll'), min(s), max(s), count(s), compute_bit_vector(s, 'hll')
+                        aggregations: max(length(p_mfgr)), avg(COALESCE(length(p_mfgr),0)), count(1), count(p_mfgr), compute_bit_vector_hll(p_mfgr), max(length(p_name)), avg(COALESCE(length(p_name),0)), count(p_name), compute_bit_vector_hll(p_name), min(p_size), max(p_size), count(p_size), compute_bit_vector_hll(p_size), min(r), max(r), count(r), compute_bit_vector_hll(r), min(dr), max(dr), count(dr), compute_bit_vector_hll(dr), min(s), max(s), count(s), compute_bit_vector_hll(s)
+                        Group By Vectorization:
+                            aggregators: VectorUDAFMaxLong(StringLength(col 0:string) -> 8:int) -> int, VectorUDAFAvgLong(VectorCoalesce(columns [9, 10])(children: StringLength(col 0:string) -> 9:int, ConstantVectorExpression(val 0) -> 10:int) -> 11:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFCount(ConstantVectorExpression(val 1) -> 12:int) -> bigint, VectorUDAFCount(col 0:string) -> bigint, VectorUDAFComputeBitVectorString(col 0:string) -> binary, VectorUDAFMaxLong(StringLength(col 1:string) -> 13:int) -> int, VectorUDAFAvgLong(VectorCoalesce(columns [14, 15])(children: StringLength(col 1:string) -> 14:int, ConstantVectorExpression(val 0) -> 15:int) -> 16:int) -> struct<count:bigint,sum:double,input:int>, VectorUDAFCount(col 1:string) -> bigint, VectorUDAFComputeBitVectorString(col 1:string) -> binary, VectorUDAFMinLong(col 2:int) -> int, VectorUDAFMaxLong(col 2:int) -> int, VectorUDAFCount(col 2:int) -> bigint, VectorUDAFComputeBitVectorLong(col 2:int) -> binary, VectorUDAFMinLong(col 4:int) -> int, VectorUDAFMaxLong(col 4:int) -> int, VectorUDAFCount(col 4:int) -> bigint, VectorUDAFComputeBitVectorLong(col 4:int) -> binary, VectorUDAFMinLong(col 5:int) -> int, VectorUDAFMaxLong(col 5:int) -> int, VectorUDAFCount(col 5:int) -> bigint, VectorUDAFComputeBitVectorLong(col 5:int) -> binary, VectorUDAFMinDouble(col 7:double) -> double, VectorUDAFMaxDouble(col 7:double) -> double, VectorUDAFCount(col 7:double) -> bigint, VectorUDAFComputeBitVectorDouble(col 7:double) -> binary
+                            className: VectorGroupByOperator
+                            groupByMode: HASH
+                            native: false
+                            vectorProcessingMode: HASH
+                            projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
                         minReductionHashAggr: 0.96153843
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
@@ -4198,27 +4242,55 @@ STAGE PLANS:
                         Reduce Output Operator
                           null sort order: 
                           sort order: 
+                          Reduce Sink Vectorization:
+                              className: VectorReduceSinkEmptyKeyOperator
+                              native: true
+                              nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
+                              valueColumns: 0:int, 1:struct<count:bigint,sum:double,input:int>, 2:bigint, 3:bigint, 4:binary, 5:int, 6:struct<count:bigint,sum:double,input:int>, 7:bigint, 8:binary, 9:int, 10:int, 11:bigint, 12:binary, 13:int, 14:int, 15:bigint, 16:binary, 17:int, 18:int, 19:bigint, 20:binary, 21:double, 22:double, 23:bigint, 24:binary
                           Statistics: Num rows: 1 Data size: 1120 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: int), _col11 (type: bigint), _col12 (type: binary), _col13 (type: int), _col14 (type: int), _col15 (type: bigint), _col16 (type: binary), _col17 (type: int), _col18 (type: int), _col19 (type: bigint), _col20 (type: binary), _col21 (type: double), _col22 (type: double), _col23 (type: bigint), _col24 (type: binary)
         Reducer 4 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_bit_vector not supported
-                vectorized: false
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 25
+                    dataColumns: VALUE._col0:int, VALUE._col1:struct<count:bigint,sum:double,input:int>, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary, VALUE._col5:int, VALUE._col6:struct<count:bigint,sum:double,input:int>, VALUE._col7:bigint, VALUE._col8:binary, VALUE._col9:int, VALUE._col10:int, VALUE._col11:bigint, VALUE._col12:binary, VALUE._col13:int, VALUE._col14:int, VALUE._col15:bigint, VALUE._col16:binary, VALUE._col17:int, VALUE._col18:int, VALUE._col19:bigint, VALUE._col20:binary, VALUE._col21:double, VALUE._col22:double, VALUE._col23:bigint, VALUE._col24:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
-                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16), min(VALUE._col17), max(VALUE._col18), count(VALUE._col19), compute_bit_vector(VALUE._col20), min(VALUE._col21), max(VALUE._col22), count(VALUE._col23), compute_bit_vector(VALUE._col24)
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16), min(VALUE._col17), max(VALUE._col18), count(VALUE._col19), compute_bit_vector_hll(VALUE._col20), min(VALUE._col21), max(VALUE._col22), count(VALUE._col23), compute_bit_vector_hll(VALUE._col24)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFAvgFinal(col 1:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 2:bigint) -> bigint, VectorUDAFCountMerge(col 3:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 4:binary) -> binary, VectorUDAFMaxLong(col 5:int) -> int, VectorUDAFAvgFinal(col 6:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 7:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 8:binary) -> binary, VectorUDAFMinLong(col 9:int) -> int, VectorUDAFMaxLong(col 10:int) -> int, VectorUDAFCountMerge(col 11:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 12:binary) -> binary, VectorUDAFMinLong(col 13:int) -> int, VectorUDAFMaxLong(col 14:int) -> int, VectorUDAFCountMerge(col 15:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 16:binary) -> binary, VectorUDAFMinLong(col 17:int) -> int, VectorUDAFMaxLong(col 18:int) -> int, VectorUDAFCountMerge(col 19:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 20:binary) -> binary, VectorUDAFMinDouble(col 21:double) -> double, VectorUDAFMaxDouble(col 22:double) -> double, VectorUDAFCountMerge(col 23:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 24:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24
                 Statistics: Num rows: 1 Data size: 984 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'LONG' (type: string), UDFToLong(_col9) (type: bigint), UDFToLong(_col10) (type: bigint), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary), 'LONG' (type: string), UDFToLong(_col13) (type: bigint), UDFToLong(_col14) (type: bigint), (_col2 - _col15) (type: bigint), COALESCE(ndv_compute_bit_vector(_col16),0) (type: bigint), _col16 (type: binary), 'LONG' (type: string), UDFToLong(_col17) (type: bigint), UDFToLong(_col18) (type: bigint), (_col2 - _col19) (type: bigint), COALESCE(ndv_compute_bit_vector(_col20),0) (type: bigint), _col20 (type: binary), 'DOUBLE' (type: string), _col21 (type: double), _col22 (type: double), (_col2 - _col23) (type: bigint), COALESCE(ndv_compute_bit_vector(_col24),0) (type: bigint), _col24 (type: binary)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [25, 27, 29, 30, 33, 4, 34, 36, 38, 39, 42, 8, 43, 9, 10, 44, 47, 12, 48, 13, 14, 49, 52, 16, 53, 17, 18, 54, 57, 20, 58, 21, 22, 59, 62, 24]
+                      selectExpressions: ConstantVectorExpression(val STRING) -> 25:string, VectorCoalesce(columns [0, 26])(children: col 0:int, ConstantVectorExpression(val 0) -> 26:int) -> 27:int, VectorCoalesce(columns [1, 28])(children: col 1:double, ConstantVectorExpression(val 0.0) -> 28:double) -> 29:double, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 30:bigint, VectorCoalesce(columns [31, 32])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 31:bigint, ConstantVectorExpression(val 0) -> 32:bigint) -> 33:bigint, ConstantVectorExpression(val STRING) -> 34:string, VectorCoalesce(columns [5, 35])(children: col 5:int, ConstantVectorExpression(val 0) -> 35:int) -> 36:int, VectorCoalesce(columns [6, 37])(children: col 6:double, ConstantVectorExpression(val 0.0) -> 37:double) -> 38:double, LongColSubtractLongColumn(col 2:bigint, col 7:bigint) -> 39:bigint, VectorCoalesce(columns [40, 41])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col8)) -> 40:bigint, ConstantVectorExpression(val 0) -> 41:bigint) -> 42:bigint, ConstantVectorExpression(val LONG) -> 43:string, LongColSubtractLongColumn(col 2:bigint, col 11:bigint) -> 44:bigint, VectorCoalesce(columns [45, 46])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col12)) -> 45:bigint, ConstantVectorExpression(val 0) -> 46:bigint) -> 47:bigint, ConstantVectorExpression(val LONG) -> 48:string, LongColSubtractLongColumn(col 2:bigint, col 15:bigint) -> 49:bigint, VectorCoalesce(columns [50, 51])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col16)) -> 50:bigint, ConstantVectorExpression(val 0) -> 51:bigint) -> 52:bigint, ConstantVectorExpression(val LONG) -> 53:string, LongColSubtractLongColumn(col 2:bigint, col 19:bigint) -> 54:bigint, VectorCoalesce(columns [55, 56])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col20)) -> 55:bigint, ConstantVectorExpression(val 0) -> 56:bigint) -> 57:bigint, ConstantVectorExpression(val DOUBLE) -> 58:string, LongColSubtractLongColumn(col 2:bigint, col 23:bigint) -> 59:bigint, VectorCoalesce(columns [60, 61])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col24)) -> 60:bigint, ConstantVectorExpression(val 0) -> 61:bigint) -> 62:bigint
                   Statistics: Num rows: 1 Data size: 1590 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
                     Statistics: Num rows: 1 Data size: 1590 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -4337,7 +4409,7 @@ STAGE PLANS:
                       outputColumnNames: p_mfgr, p_name, p_size, s2, r, dr, cud, fv1
                       Statistics: Num rows: 26 Data size: 6422 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
-                        aggregations: max(length(p_mfgr)), avg(COALESCE(length(p_mfgr),0)), count(1), count(p_mfgr), compute_bit_vector(p_mfgr, 'hll'), max(length(p_name)), avg(COALESCE(length(p_name),0)), count(p_name), compute_bit_vector(p_name, 'hll'), min(p_size), max(p_size), count(p_size), compute_bit_vector(p_size, 'hll'), min(s2), max(s2), count(s2), compute_bit_vector(s2, 'hll'), min(r), max(r), count(r), compute_bit_vector(r, 'hll'), min(dr), max(dr), count(dr), compute_bit_vector(dr, 'hll'), min(cud), max(cud), count(cud), compute_bit_vector(cud, 'hll'), min(fv1), max(fv1), count(fv1), compute_bit_vector(fv1, 'hll')
+                        aggregations: max(length(p_mfgr)), avg(COALESCE(length(p_mfgr),0)), count(1), count(p_mfgr), compute_bit_vector_hll(p_mfgr), max(length(p_name)), avg(COALESCE(length(p_name),0)), count(p_name), compute_bit_vector_hll(p_name), min(p_size), max(p_size), count(p_size), compute_bit_vector_hll(p_size), min(s2), max(s2), count(s2), compute_bit_vector_hll(s2), min(r), max(r), count(r), compute_bit_vector_hll(r), min(dr), max(dr), count(dr), compute_bit_vector_hll(dr), min(cud), max(cud), count(cud), compute_bit_vector_hll(cud), min(fv1), max(fv1), count(fv1), compute_bit_vector_hll(fv1)
                         minReductionHashAggr: 0.96153843
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32
@@ -4348,24 +4420,47 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 1440 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: int), _col11 (type: bigint), _col12 (type: binary), _col13 (type: int), _col14 (type: int), _col15 (type: bigint), _col16 (type: binary), _col17 (type: int), _col18 (type: int), _col19 (type: bigint), _col20 (type: binary), _col21 (type: int), _col22 (type: int), _col23 (type: bigint), _col24 (type: binary), _col25 (type: double), _col26 (type: double), _col27 (type: bigint), _col28 (type: binary), _col29 (type: int), _col30 (type: int), _col31 (type: bigint), _col32 (type: binary)
         Reducer 7 
-            Execution mode: llap
+            Execution mode: vectorized, llap
             Reduce Vectorization:
                 enabled: true
                 enableConditionsMet: hive.vectorized.execution.reduce.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true
-                notVectorizedReason: Aggregation Function expression for GROUPBY operator: UDF compute_bit_vector not supported
-                vectorized: false
+                reduceColumnNullOrder: 
+                reduceColumnSortOrder: 
+                allNative: false
+                usesVectorUDFAdaptor: true
+                vectorized: true
+                rowBatchContext:
+                    dataColumnCount: 33
+                    dataColumns: VALUE._col0:int, VALUE._col1:struct<count:bigint,sum:double,input:int>, VALUE._col2:bigint, VALUE._col3:bigint, VALUE._col4:binary, VALUE._col5:int, VALUE._col6:struct<count:bigint,sum:double,input:int>, VALUE._col7:bigint, VALUE._col8:binary, VALUE._col9:int, VALUE._col10:int, VALUE._col11:bigint, VALUE._col12:binary, VALUE._col13:int, VALUE._col14:int, VALUE._col15:bigint, VALUE._col16:binary, VALUE._col17:int, VALUE._col18:int, VALUE._col19:bigint, VALUE._col20:binary, VALUE._col21:int, VALUE._col22:int, VALUE._col23:bigint, VALUE._col24:binary, VALUE._col25:double, VALUE._col26:double, VALUE._col27:bigint, VALUE._col28:binary, VALUE._col29:int, VALUE._col30:int, VALUE._col31:bigint, VALUE._col32:binary
+                    partitionColumnCount: 0
+                    scratchColumnTypeNames: []
             Reduce Operator Tree:
               Group By Operator
-                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector(VALUE._col16), min(VALUE._col17), max(VALUE._col18), count(VALUE._col19), compute_bit_vector(VALUE._col20), min(VALUE._col21), max(VALUE._col22), count(VALUE._col23), compute_bit_vector(VALUE._col24), min(VALUE._col25), max(VALUE._col26), count(VALUE._col27), compute_bit_vector(VALUE._col28), min(VALUE._col29), max(VALUE._col30), count(VALUE._col31), compute_bit_vector(VALUE._col32)
+                aggregations: max(VALUE._col0), avg(VALUE._col1), count(VALUE._col2), count(VALUE._col3), compute_bit_vector_hll(VALUE._col4), max(VALUE._col5), avg(VALUE._col6), count(VALUE._col7), compute_bit_vector_hll(VALUE._col8), min(VALUE._col9), max(VALUE._col10), count(VALUE._col11), compute_bit_vector_hll(VALUE._col12), min(VALUE._col13), max(VALUE._col14), count(VALUE._col15), compute_bit_vector_hll(VALUE._col16), min(VALUE._col17), max(VALUE._col18), count(VALUE._col19), compute_bit_vector_hll(VALUE._col20), min(VALUE._col21), max(VALUE._col22), count(VALUE._col23), compute_bit_vector_hll(VALUE._col24), min(VALUE._col25), max(VALUE._col26), count(VALUE._col27), compute_bit_vector_hll(VALUE._col28), min(VALUE._col29), max(VALUE._col30), count(VALUE._col31), compute_bit_vector_hll(VALUE._col32)
+                Group By Vectorization:
+                    aggregators: VectorUDAFMaxLong(col 0:int) -> int, VectorUDAFAvgFinal(col 1:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 2:bigint) -> bigint, VectorUDAFCountMerge(col 3:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 4:binary) -> binary, VectorUDAFMaxLong(col 5:int) -> int, VectorUDAFAvgFinal(col 6:struct<count:bigint,sum:double,input:int>) -> double, VectorUDAFCountMerge(col 7:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 8:binary) -> binary, VectorUDAFMinLong(col 9:int) -> int, VectorUDAFMaxLong(col 10:int) -> int, VectorUDAFCountMerge(col 11:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 12:binary) -> binary, VectorUDAFMinLong(col 13:int) -> int, VectorUDAFMaxLong(col 14:int) -> int, VectorUDAFCountMerge(col 15:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 16:binary) -> binary, VectorUDAFMinLong(col 17:int) -> int, VectorUDAFMaxLong(col 18:int) -> int, VectorUDAFCountMerge(col 19:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 20:binary) -> binary, VectorUDAFMinLong(col 21:int) -> int, VectorUDAFMaxLong(col 22:int) -> int, VectorUDAFCountMerge(col 23:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 24:binary) -> binary, VectorUDAFMinDouble(col 25:double) -> double, VectorUDAFMaxDouble(col 26:double) -> double, VectorUDAFCountMerge(col 27:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 28:binary) -> binary, VectorUDAFMinLong(col 29:int) -> int, VectorUDAFMaxLong(col 30:int) -> int, VectorUDAFCountMerge(col 31:bigint) -> bigint, VectorUDAFComputeBitVectorFinal(col 32:binary) -> binary
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    native: false
+                    vectorProcessingMode: GLOBAL
+                    projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
                 mode: mergepartial
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32
                 Statistics: Num rows: 1 Data size: 1304 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
                   expressions: 'STRING' (type: string), UDFToLong(COALESCE(_col0,0)) (type: bigint), COALESCE(_col1,0) (type: double), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col5,0)) (type: bigint), COALESCE(_col6,0) (type: double), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'LONG' (type: string), UDFToLong(_col9) (type: bigint), UDFToLong(_col10) (type: bigint), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary), 'LONG' (type: string), UDFToLong(_col13) (type: bigint), UDFToLong(_col14) (type: bigint), (_col2 - _col15) (type: bigint), COALESCE(ndv_compute_bit_vector(_col16),0) (type: bigint), _col16 (type: binary), 'LONG' (type: string), UDFToLong(_col17) (type: bigint), UDFToLong(_col18) (type: bigint), (_col2 - _col19) (type: bigint), COALESCE(ndv_compute_bit_vector(_col20),0) (type: bigint), _col20 (type: binary), 'LONG' (type: string), UDFToLong(_col21) (type: bigint), UDFToLong(_col22) (type: bigint), (_col2 - _col23) (type: bigint), COALESCE(ndv_compute_bit_vector(_col24),0) (type: bigint), _col24 (type: binary), 'DOUBLE' (type: string), _col25 (type: double), _col26 (type: double), (_col2 - _col27) (type: bigint), COALESCE(ndv_compute_bit_vector(_col28),0) (type: bigint), _col28 (type: binary), 'LONG' (type: string), UDFToLong(_col29) (type: bigint), UDFToLong(_col30) (type: bigint), (_col2 - _col31) (type: bigint), COALESCE(ndv_compute_bit_vector(_col32),0) (type: bigint), _col32 (type: binary)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [33, 35, 37, 38, 41, 4, 42, 44, 46, 47, 50, 8, 51, 9, 10, 52, 55, 12, 56, 13, 14, 57, 60, 16, 61, 17, 18, 62, 65, 20, 66, 21, 22, 67, 70, 24, 71, 25, 26, 72, 75, 28, 76, 29, 30, 77, 80, 32]
+                      selectExpressions: ConstantVectorExpression(val STRING) -> 33:string, VectorCoalesce(columns [0, 34])(children: col 0:int, ConstantVectorExpression(val 0) -> 34:int) -> 35:int, VectorCoalesce(columns [1, 36])(children: col 1:double, ConstantVectorExpression(val 0.0) -> 36:double) -> 37:double, LongColSubtractLongColumn(col 2:bigint, col 3:bigint) -> 38:bigint, VectorCoalesce(columns [39, 40])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col4)) -> 39:bigint, ConstantVectorExpression(val 0) -> 40:bigint) -> 41:bigint, ConstantVectorExpression(val STRING) -> 42:string, VectorCoalesce(columns [5, 43])(children: col 5:int, ConstantVectorExpression(val 0) -> 43:int) -> 44:int, VectorCoalesce(columns [6, 45])(children: col 6:double, ConstantVectorExpression(val 0.0) -> 45:double) -> 46:double, LongColSubtractLongColumn(col 2:bigint, col 7:bigint) -> 47:bigint, VectorCoalesce(columns [48, 49])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col8)) -> 48:bigint, ConstantVectorExpression(val 0) -> 49:bigint) -> 50:bigint, ConstantVectorExpression(val LONG) -> 51:string, LongColSubtractLongColumn(col 2:bigint, col 11:bigint) -> 52:bigint, VectorCoalesce(columns [53, 54])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col12)) -> 53:bigint, ConstantVectorExpression(val 0) -> 54:bigint) -> 55:bigint, ConstantVectorExpression(val LONG) -> 56:string, LongColSubtractLongColumn(col 2:bigint, col 15:bigint) -> 57:bigint, VectorCoalesce(columns [58, 59])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col16)) -> 58:bigint, ConstantVectorExpression(val 0) -> 59:bigint) -> 60:bigint, ConstantVectorExpression(val LONG) -> 61:string, LongColSubtractLongColumn(col 2:bigint, col 19:bigint) -> 62:bigint, VectorCoalesce(columns [63, 64])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col20)) -> 63:bigint, ConstantVectorExpression(val 0) -> 64:bigint) -> 65:bigint, ConstantVectorExpression(val LONG) -> 66:string, LongColSubtractLongColumn(col 2:bigint, col 23:bigint) -> 67:bigint, VectorCoalesce(columns [68, 69])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col24)) -> 68:bigint, ConstantVectorExpression(val 0) -> 69:bigint) -> 70:bigint, ConstantVectorExpression(val DOUBLE) -> 71:string, LongColSubtractLongColumn(col 2:bigint, col 27:bigint) -> 72:bigint, VectorCoalesce(columns [73, 74])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col28)) -> 73:bigint, ConstantVectorExpression(val 0) -> 74:bigint) -> 75:bigint, ConstantVectorExpression(val LONG) -> 76:string, LongColSubtractLongColumn(col 2:bigint, col 31:bigint) -> 77:bigint, VectorCoalesce(columns [78, 79])(children: VectorUDFAdaptor(ndv_compute_bit_vector(_col32)) -> 78:bigint, ConstantVectorExpression(val 0) -> 79:bigint) -> 80:bigint
                   Statistics: Num rows: 1 Data size: 2118 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
                     Statistics: Num rows: 1 Data size: 2118 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat

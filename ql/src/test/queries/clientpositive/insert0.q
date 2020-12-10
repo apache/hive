@@ -8,7 +8,12 @@ DROP TABLE ctas_part;
 
 CREATE TABLE insert_into1_n1 (key int, value string);
 
+-- TODO: Remove this line after fixing HIVE-24532
+set hive.vectorized.execution.enabled=false;
 INSERT OVERWRITE TABLE insert_into1_n1 SELECT * from src ORDER BY key LIMIT 10;
+
+-- TODO: Remove this line after fixing HIVE-24532
+set hive.vectorized.execution.enabled=true;
 
 select * from insert_into1_n1 order by key;
 
@@ -28,8 +33,14 @@ SET hive.exec.dynamic.partition.mode=nonstrict;
 
 create table ctas_part (key int, value string) partitioned by (modkey bigint);
 
+-- TODO: Remove this line after fixing HIVE-24532
+set hive.vectorized.execution.enabled=false;
+
 insert overwrite table ctas_part partition (modkey) 
 select key, value, ceil(key / 100) from src where key is not null order by key limit 10;
+
+-- TODO: Remove this line after fixing HIVE-24532
+set hive.vectorized.execution.enabled=true;
 
 select * from ctas_part order by key;
 

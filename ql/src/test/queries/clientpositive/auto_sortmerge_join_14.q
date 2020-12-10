@@ -29,6 +29,9 @@ select count(*) FROM tbl1_n7 a LEFT OUTER JOIN tbl2_n6 b ON a.key = b.key;
 
 insert overwrite table tbl2_n6 select * from src where key < 200;
 
+describe formatted tbl2_n6 key;
+select count (distinct key) from tbl2_n6;
+
 -- Since tbl2_n6 is the bigger table, tbl1_n7 Right Outer Join tbl2_n6 can be performed
 explain
 select count(*) FROM tbl1_n7 a RIGHT OUTER JOIN tbl2_n6 b ON a.key = b.key;

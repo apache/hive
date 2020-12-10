@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -457,22 +458,26 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
   private static void appendBitVector(StringBuilder rewrittenQueryBuilder, HiveConf conf,
       String columnName) throws SemanticException {
     String func = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_NDV_ALGO).toLowerCase();
-    rewrittenQueryBuilder.append("compute_bit_vector(")
-        .append(columnName)
-        .append(", '")
-        .append(func)
-        .append("'");
-    if ("fm".equals(func)) {
+    if ("hll".equals(func)) {
+      rewrittenQueryBuilder
+          .append("compute_bit_vector_hll(")
+          .append(columnName)
+          .append(")");
+    } else if ("fm".equals(func)) {
       int numBitVectors;
       try {
         numBitVectors = HiveStatsUtils.getNumBitVectorsForNDVEstimation(conf);
       } catch (Exception e) {
         throw new SemanticException(e.getMessage());
       }
-      rewrittenQueryBuilder.append(", ")
-          .append(numBitVectors);
+      rewrittenQueryBuilder.append("compute_bit_vector_fm(")
+          .append(columnName)
+          .append(", ")
+          .append(numBitVectors)
+          .append(")");
+    } else {
+      throw new UDFArgumentException("available ndv computation options are hll and fm. Got: " + func);
     }
-    rewrittenQueryBuilder.append(")");
   }
 
   private static void appendCountTrues(StringBuilder rewrittenQueryBuilder, HiveConf conf,
