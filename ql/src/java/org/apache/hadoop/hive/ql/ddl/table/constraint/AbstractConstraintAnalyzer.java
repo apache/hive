@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.ddl.table.constraint.add;
+package org.apache.hadoop.hive.ql.ddl.table.constraint;
 
 import java.util.ArrayList;
 import java.util.List;

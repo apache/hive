@@ -32,11 +32,9 @@ import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
-import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
+import org.apache.hadoop.hive.ql.ddl.table.constraint.AbstractConstraintAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.Constraints;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
-import org.apache.hadoop.hive.ql.ddl.table.partition.add.AlterTableAddPartitionDesc;
-import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -53,7 +51,7 @@ public class AlterTableAddConstraintAnalyzer extends AbstractConstraintAnalyzer 
     super(queryState);
   }
 
-    @Override
+  @Override
   protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException {
     // TODO CAT - for now always use the default catalog.  Eventually will want to see if
