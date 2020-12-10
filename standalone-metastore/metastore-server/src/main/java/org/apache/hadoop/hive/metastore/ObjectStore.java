@@ -8557,6 +8557,9 @@ public class ObjectStore implements RawStore, Configurable {
             updateLocations.put(locationURI.toString(), dbLoc);
             if (!dryRun) {
               mDB.setLocationUri(dbLoc);
+              if (org.apache.commons.lang3.StringUtils.isNotBlank(mDB.getManagedLocationUri())) {
+                mDB.setManagedLocationUri(dbLoc);
+              }
             }
           }
         }
