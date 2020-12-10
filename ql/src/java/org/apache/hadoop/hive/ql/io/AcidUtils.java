@@ -931,9 +931,9 @@ public class AcidUtils {
     Set<Long> getAbortedWriteIds();
 
     /**
-     * Get the list of writeIds that belong to aborted transactions, but can not be cleaned,
-     * because are mixed together with committed writes.
-     * @return the list of aborted writeIds
+     * Does the directory contain writeIds that belong to aborted transactions,
+     * but are mixed together with committed writes. These aborted writes can not be cleaned.
+     * @return true if there are aborted writes that can can be cleaned
      */
     boolean hasUncompactedAborts();
   }

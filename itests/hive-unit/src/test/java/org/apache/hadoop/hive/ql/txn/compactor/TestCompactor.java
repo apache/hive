@@ -1266,7 +1266,7 @@ public class TestCompactor {
     runCleaner(conf);
     txnHandler.cleanEmptyAbortedAndCommittedTxns();
     count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
-    Assert.assertEquals("There should be 1 record for two aborted transaction", 1, count);
+    Assert.assertEquals("There should be 1 record for the second aborted transaction", 1, count);
 
     driver.run("select * from cws");
     res.clear();
