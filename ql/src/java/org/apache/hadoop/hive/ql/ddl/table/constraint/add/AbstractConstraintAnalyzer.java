@@ -46,8 +46,8 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 /**
  * Analyzer for add constraint commands.
  */
-public abstract class AbstractAddConstraintAnalyzer extends AbstractAlterTableAnalyzer {
-  public AbstractAddConstraintAnalyzer(QueryState queryState) throws SemanticException {
+public abstract class AbstractConstraintAnalyzer extends AbstractAlterTableAnalyzer {
+  public AbstractConstraintAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
 
@@ -66,44 +66,6 @@ public abstract class AbstractAddConstraintAnalyzer extends AbstractAlterTableAn
     return ddlDescWithWriteId;
   }
 
-  @Override
-  protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
-      throws SemanticException {
-    // TODO CAT - for now always use the default catalog.  Eventually will want to see if
-    // the user specified a catalog
-    List<SQLPrimaryKey> primaryKeys = new ArrayList<>();
-    List<SQLForeignKey> foreignKeys = new ArrayList<>();
-    List<SQLUniqueConstraint> uniqueConstraints = new ArrayList<>();
-    List<SQLCheckConstraint> checkConstraints = new ArrayList<>();
-
-    ASTNode constraintNode = (ASTNode)command.getChild(0);
-    switch (constraintNode.getToken().getType()) {
-    case HiveParser.TOK_UNIQUE:
-      ConstraintsUtils.processUniqueConstraints(tableName, constraintNode, uniqueConstraints);
-      break;
-    case HiveParser.TOK_PRIMARY_KEY:
-      ConstraintsUtils.processPrimaryKeys(tableName, constraintNode, primaryKeys);
-      break;
-    case HiveParser.TOK_FOREIGN_KEY:
-      ConstraintsUtils.processForeignKeys(tableName, constraintNode, foreignKeys);
-      break;
-    case HiveParser.TOK_CHECK_CONSTRAINT:
-      ConstraintsUtils.processCheckConstraints(tableName, constraintNode, null, checkConstraints, command,
-          ctx.getTokenRewriteStream());
-      break;
-    default:
-      throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(constraintNode.getToken().getText()));
-    }
-
-    Constraints constraints = new Constraints(primaryKeys, foreignKeys, null,
-        uniqueConstraints, null, checkConstraints);
-    AlterTableAddConstraintDesc desc = new AlterTableAddConstraintDesc(tableName, null, constraints);
-    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
-
-    Table table = getTable(tableName);
-    postProcess(table, desc);
-  }
-
-  protected abstract void postProcess(Table table, AlterTableAddConstraintDesc desc) throws SemanticException;
+  protected abstract void postProcess(Table table, DDLDescWithWriteId desc) throws SemanticException;
 
 }
