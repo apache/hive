@@ -31,6 +31,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.getFullTableName;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
@@ -1682,13 +1683,7 @@ public class Hive {
       List<RelOptMaterialization> result = new ArrayList<>();
       for (RelOptMaterialization materialization : materializedViews) {
         final RelNode viewScan = materialization.tableRel;
-        final Table materializedViewTable;
-        if (viewScan instanceof Project) {
-          // There is a Project on top (due to nullability)
-          materializedViewTable = ((RelOptHiveTable) viewScan.getInput(0).getTable()).getHiveTableMD();
-        } else {
-          materializedViewTable = ((RelOptHiveTable) viewScan.getTable()).getHiveTableMD();
-        }
+        final Table materializedViewTable = extractTable(materialization);
         final Boolean outdated = HiveMaterializedViewUtils.isOutdatedMaterializedView(
             materializedViewTable, currentTxnWriteIds, defaultTimeWindow, tablesUsed, false);
         if (outdated == null) {
@@ -1885,7 +1880,7 @@ public class Hive {
             HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(
                 materializedViewTable.getDbName(), materializedViewTable.getTableName());
         if (materialization != null) {
-          Table cachedMaterializedViewTable = HiveMaterializedViewUtils.extractTable(materialization);
+          Table cachedMaterializedViewTable = extractTable(materialization);
           if (cachedMaterializedViewTable.equals(materializedViewTable)) {
             // It is in the cache and up to date
             if (outdated) {
@@ -1965,7 +1960,36 @@ public class Hive {
       return Collections.emptyList();
     }
 
-    return filterAugmentMaterializedViews(materializedViews, tablesUsed, txnMgr);
+    final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
+    final ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsed, validTxnsList);
+    final long defaultTimeWindow =
+            HiveConf.getTimeVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW,
+                    TimeUnit.MILLISECONDS);
+    try {
+      // Final result
+      List<RelOptMaterialization> result = new ArrayList<>();
+      for (RelOptMaterialization materialization : materializedViews) {
+        Table materializedViewTable = extractTable(materialization);
+        final Boolean outdated = HiveMaterializedViewUtils.isOutdatedMaterializedView(
+                materializedViewTable, currentTxnWriteIds, defaultTimeWindow, tablesUsed, false);
+        if (outdated == null) {
+          LOG.debug("Unable to determine if Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                  " contents are outdated. It may uses external tables?");
+          continue;
+        }
+
+        if (outdated) {
+          LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
+                  " ignored for rewriting as its contents are outdated");
+          continue;
+        }
+
+        result.add(materialization);
+      }
+      return result;
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
   }
 
   /**
