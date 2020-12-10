@@ -16,7 +16,7 @@ union
 select * from t1 where col0 = 2;
 
 
-set hive.materializedview.rewriting.query.text=false;
+set hive.materializedview.rewriting.sql=false;
 
 explain cbo
 select * from t1 where col0 = 1

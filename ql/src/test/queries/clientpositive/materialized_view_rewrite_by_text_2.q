@@ -5,7 +5,7 @@ set hive.server2.materializedviews.registry.impl=DUMMY;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
-set hive.materializedview.rewriting.query.text=true;
+set hive.materializedview.rewriting.sql=true;
 
 create table cmv_basetable_n0 (a int, b varchar(256), c decimal(10,2), d int) stored as orc TBLPROPERTIES ('transactional'='true');
 

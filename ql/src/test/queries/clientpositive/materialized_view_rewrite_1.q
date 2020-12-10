@@ -5,7 +5,7 @@ set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.strict.checks.cartesian.product=false;
 set hive.stats.fetch.column.stats=true;
 set hive.materializedview.rewriting=true;
-set hive.materializedview.rewriting.query.text=false;
+set hive.materializedview.rewriting.sql=false;
 
 create table emps_n3 (
   empid int,

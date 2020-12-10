@@ -2371,7 +2371,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
     }
 
     private boolean isMaterializedViewRewritingByTextEnabled() {
-      return conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_QUERY_TEXT) &&
+      return conf.getBoolVar(ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL) &&
               mvRebuildMode == MaterializationRebuildMode.NONE &&
               !getQB().isMaterializedView() && !ctx.isLoadingMaterializedView() && !getQB().isCTAS() &&
               getQB().getIsQuery() &&
