@@ -640,6 +640,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         return;
       }
       this.txnId = msc.openTxn(ci.runAs, TxnType.COMPACTION);
+      status = TxnStatus.OPEN;
     }
 
     /**
