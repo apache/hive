@@ -72,7 +72,8 @@ chr
 coalesce
 collect_list
 collect_set
-compute_bit_vector
+compute_bit_vector_fm
+compute_bit_vector_hll
 compute_stats
 concat
 concat_ws
@@ -427,7 +428,8 @@ chr
 coalesce
 collect_list
 collect_set
-compute_bit_vector
+compute_bit_vector_fm
+compute_bit_vector_hll
 compute_stats
 concat
 concat_ws
@@ -584,7 +586,8 @@ chr
 coalesce
 collect_list
 collect_set
-compute_bit_vector
+compute_bit_vector_fm
+compute_bit_vector_hll
 compute_stats
 concat
 concat_ws
