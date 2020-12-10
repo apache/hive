@@ -346,6 +346,7 @@ import java.util.stream.IntStream;
 import javax.sql.DataSource;
 
 import static java.util.Collections.singletonList;
+import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.copyMaterializationToNewCluster;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
 
 
@@ -2360,14 +2361,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       }
 
       return basePlan;
-    }
-
-    private RelOptMaterialization copyMaterializationToNewCluster(RelOptCluster optCluster, RelOptMaterialization materialization) {
-      final RelNode viewScan = materialization.tableRel;
-      final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
-              optCluster, viewScan);
-      return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
-              materialization.qualifiedTableName);
     }
 
     private boolean isMaterializedViewRewritingByTextEnabled() {
