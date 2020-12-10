@@ -17,7 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
