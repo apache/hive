@@ -120,3 +120,68 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
+PREHOOK: query: create table t2 (a string)
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@t2
+POSTHOOK: query: create table t2 (a string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@t2
+PREHOOK: query: insert into t2 values ('1208925742523269458163819')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@t2
+POSTHOOK: query: insert into t2 values ('1208925742523269458163819')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@t2
+POSTHOOK: Lineage: t2.a SCRIPT []
+PREHOOK: query: select a from t2 where a=1208925742523269479013976
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: select a from t2 where a=1208925742523269479013976
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+1208925742523269458163819
+PREHOOK: query: explain cbo select a from t2 where a=1208925742523269479013976
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain cbo select a from t2 where a=1208925742523269479013976
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+CBO PLAN:
+HiveProject(a=[$0])
+  HiveFilter(condition=[=(CAST($0):DOUBLE, 1208925742523269479013976)])
+    HiveTableScan(table=[[default, t2]], table:alias=[t2])
+
+PREHOOK: query: explain select a from t2 where a=1208925742523269479013976
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t2
+#### A masked pattern was here ####
+POSTHOOK: query: explain select a from t2 where a=1208925742523269479013976
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t2
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: t2
+          filterExpr: (UDFToDouble(a) = 1.2089257425232694E24D) (type: boolean)
+          Filter Operator
+            predicate: (UDFToDouble(a) = 1.2089257425232694E24D) (type: boolean)
+            Select Operator
+              expressions: a (type: string)
+              outputColumnNames: _col0
+              ListSink
+
