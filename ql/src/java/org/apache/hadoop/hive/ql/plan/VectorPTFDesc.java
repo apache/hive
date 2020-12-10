@@ -28,8 +28,10 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector.Type;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorBase;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorCount;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorBytesCountDistinct;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorCountStar;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalAvg;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalCountDistinct;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalFirstValue;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalLastValue;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalMax;
@@ -37,12 +39,14 @@ import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalMin;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDecimalSum;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDenseRank;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleAvg;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleCountDistinct;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleFirstValue;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleLastValue;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleMax;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleMin;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorDoubleSum;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongAvg;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongCountDistinct;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongFirstValue;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongLastValue;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorLongMax;
@@ -62,6 +66,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingLong
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingLongMax;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingLongMin;
 import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorStreamingLongSum;
+import org.apache.hadoop.hive.ql.exec.vector.ptf.VectorPTFEvaluatorTimestampCountDistinct;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowType;
 import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -117,6 +122,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
   private boolean isPartitionOrderBy;
 
   private String[] evaluatorFunctionNames;
+  private boolean[] evaluatorsAreDistinct;
   private WindowFrameDef[] evaluatorWindowFrameDefs;
   private List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists;
 
@@ -134,6 +140,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     isPartitionOrderBy = false;
 
     evaluatorFunctionNames = null;
+    evaluatorsAreDistinct = null;
     evaluatorInputExprNodeDescLists = null;
 
     orderExprNodeDescs = null;
@@ -148,8 +155,8 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   // We provide this public method to help EXPLAIN VECTORIZATION show the evaluator classes.
   public static VectorPTFEvaluatorBase getEvaluator(SupportedFunctionType functionType,
-      WindowFrameDef windowFrameDef, Type columnVectorType, VectorExpression inputVectorExpression,
-      int outputColumnNum) {
+      boolean isDistinct, WindowFrameDef windowFrameDef, Type columnVectorType,
+      VectorExpression inputVectorExpression, int outputColumnNum) {
 
     final boolean isRowEndCurrent =
         (windowFrameDef.getWindowType() == WindowType.ROWS &&
@@ -309,7 +316,37 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       if (inputVectorExpression == null) {
         evaluator = new VectorPTFEvaluatorCountStar(windowFrameDef, inputVectorExpression, outputColumnNum);
       } else {
-        evaluator = new VectorPTFEvaluatorCount(windowFrameDef, inputVectorExpression, outputColumnNum);
+        if (isDistinct) {
+          switch (columnVectorType) {
+          case BYTES:
+            evaluator = new VectorPTFEvaluatorBytesCountDistinct(windowFrameDef,
+                inputVectorExpression, outputColumnNum);
+            break;
+          case DECIMAL_64: //Decimal64ColumnVector is a LongColumnVector
+          case LONG:
+            evaluator = new VectorPTFEvaluatorLongCountDistinct(windowFrameDef,
+                inputVectorExpression, outputColumnNum);
+            break;
+          case DOUBLE:
+            evaluator = new VectorPTFEvaluatorDoubleCountDistinct(windowFrameDef,
+                inputVectorExpression, outputColumnNum);
+            break;
+          case DECIMAL:
+            evaluator = new VectorPTFEvaluatorDecimalCountDistinct(windowFrameDef,
+                inputVectorExpression, outputColumnNum);
+            break;
+          case TIMESTAMP:
+            evaluator = new VectorPTFEvaluatorTimestampCountDistinct(windowFrameDef,
+                inputVectorExpression, outputColumnNum);
+            break;
+          default:
+            throw new RuntimeException(
+                "Unexpected column type for ptf count distinct: " + columnVectorType);
+          }
+        } else {
+          evaluator =
+              new VectorPTFEvaluatorCount(windowFrameDef, inputVectorExpression, outputColumnNum);
+        }
       }
       break;
     default:
@@ -320,6 +357,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   public static VectorPTFEvaluatorBase[] getEvaluators(VectorPTFDesc vectorPTFDesc, VectorPTFInfo vectorPTFInfo) {
     String[] evaluatorFunctionNames = vectorPTFDesc.getEvaluatorFunctionNames();
+    boolean[] evaluatorsAreDistinct = vectorPTFDesc.getEvaluatorsAreDistinct();
     int evaluatorCount = evaluatorFunctionNames.length;
     WindowFrameDef[] evaluatorWindowFrameDefs = vectorPTFDesc.getEvaluatorWindowFrameDefs();
     VectorExpression[] evaluatorInputExpressions = vectorPTFInfo.getEvaluatorInputExpressions();
@@ -330,6 +368,7 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
     VectorPTFEvaluatorBase[] evaluators = new VectorPTFEvaluatorBase[evaluatorCount];
     for (int i = 0; i < evaluatorCount; i++) {
       String functionName = evaluatorFunctionNames[i];
+      boolean isDistinct = evaluatorsAreDistinct[i];
       WindowFrameDef windowFrameDef = evaluatorWindowFrameDefs[i];
       SupportedFunctionType functionType = VectorPTFDesc.supportedFunctionsMap.get(functionName);
       VectorExpression inputVectorExpression = evaluatorInputExpressions[i];
@@ -338,9 +377,8 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
       // The output* arrays start at index 0 for output evaluator aggregations.
       final int outputColumnNum = outputColumnMap[i];
 
-      VectorPTFEvaluatorBase evaluator =
-          VectorPTFDesc.getEvaluator(
-              functionType, windowFrameDef, columnVectorType, inputVectorExpression, outputColumnNum);
+      VectorPTFEvaluatorBase evaluator = VectorPTFDesc.getEvaluator(functionType, isDistinct,
+          windowFrameDef, columnVectorType, inputVectorExpression, outputColumnNum);
 
       evaluators[i] = evaluator;
     }
@@ -381,6 +419,14 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
 
   public void setEvaluatorFunctionNames(String[] evaluatorFunctionNames) {
     this.evaluatorFunctionNames = evaluatorFunctionNames;
+  }
+
+  public void setEvaluatorsAreDistinct(boolean[] evaluatorsAreDistinct) {
+    this.evaluatorsAreDistinct = evaluatorsAreDistinct;
+  }
+
+  public boolean[] getEvaluatorsAreDistinct() {
+    return evaluatorsAreDistinct;
   }
 
   public WindowFrameDef[] getEvaluatorWindowFrameDefs() {
@@ -447,5 +493,4 @@ public class VectorPTFDesc extends AbstractVectorDesc  {
   public int getVectorizedPTFMaxMemoryBufferingBatchCount() {
     return vectorizedPTFMaxMemoryBufferingBatchCount;
   }
-
 }
