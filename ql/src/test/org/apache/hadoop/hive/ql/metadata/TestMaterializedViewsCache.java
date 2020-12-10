@@ -257,7 +257,7 @@ class TestMaterializedViewsCache {
     assertThat(materializedViewsCache.values(), hasItem(defaultRelOptMaterialization2));
   }
 
-//  @Disabled("Testing parallelism only")
+  @Disabled("Testing parallelism only")
   @Test
   void testParallelism() {
     int ITERATIONS = 1000000;
