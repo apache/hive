@@ -207,7 +207,7 @@ STAGE PLANS:
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: []
                         keys: true (type: boolean)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0
                         Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
@@ -322,7 +322,7 @@ STAGE PLANS:
                         vectorProcessingMode: HASH
                         projectedOutputColumnNums: []
                     keys: _col0 (type: int)
-                    minReductionHashAggr: 0.0
+                    minReductionHashAggr: 0.4
                     mode: hash
                     outputColumnNames: _col0
                     Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE

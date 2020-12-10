@@ -116,7 +116,7 @@ STAGE PLANS:
                             vectorProcessingMode: HASH
                             projectedOutputColumnNums: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
                         keys: _col0 (type: float), _col1 (type: boolean), _col2 (type: double), _col3 (type: string), _col4 (type: tinyint), _col5 (type: int), _col6 (type: timestamp)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16
                         Statistics: Num rows: 6144 Data size: 1216372 Basic stats: COMPLETE Column stats: COMPLETE

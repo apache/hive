@@ -5172,10 +5172,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     float minReductionHashAggr = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+    float minReductionHashAggrLowerBound = HiveConf
+        .getFloatVar(conf, ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
 
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, null, false, -1, numDistinctUDFs > 0),
+            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
+                null, false, -1, numDistinctUDFs > 0),
         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         input), groupByOutputRowResolver);
     op.setColumnExprMap(colExprMap);
@@ -5438,6 +5441,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     float minReductionHashAggr = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+    float minReductionHashAggrLowerBound = HiveConf
+            .getFloatVar(conf, ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
 
     // Nothing special needs to be done for grouping sets if
     // this is the final group by operator, and multiple rows corresponding to the
@@ -5446,7 +5451,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // additional rows corresponding to grouping sets need to be created here.
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(mode, outputColumnNames, groupByKeys, aggregations,
-            groupByMemoryUsage, memoryThreshold, minReductionHashAggr,
+            groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
             groupingSets,
             groupingSetsPresent && groupingSetsNeedAdditionalMRJob,
             groupingSetsPosition, containsDistinctAggr),
@@ -5617,9 +5622,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     float minReductionHashAggr = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+    float minReductionHashAggrLowerBound = HiveConf
+            .getFloatVar(conf, ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(GroupByDesc.Mode.HASH, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr,
+            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
             groupingSetKeys, groupingSetsPresent, groupingSetsPosition, containsDistinctAggr),
         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         inputOperatorInfo), groupByOutputRowResolver);
@@ -6151,10 +6158,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     float minReductionHashAggr = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+    float minReductionHashAggrLowerBound = HiveConf
+            .getFloatVar(conf, ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
 
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(GroupByDesc.Mode.FINAL, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, null, false,
+            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
+                null, false,
             groupingSetsPosition, containsDistinctAggr),
         new RowSchema(groupByOutputRowResolver2.getColumnInfos()),
         reduceSinkOperatorInfo2), groupByOutputRowResolver2);
@@ -7249,10 +7259,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     boolean destTableIsTransactional;     // true for full ACID table and MM table
     boolean destTableIsFullAcid; // should the destination table be written to using ACID
     boolean isDirectInsert = false; // should we add files directly to the final path
+    AcidUtils.Operation acidOperation = null;
     boolean destTableIsTemporary = false;
     boolean destTableIsMaterialization = false;
     Partition destinationPartition = null;// destination partition if any
     Path queryTmpdir = null; // the intermediate destination directory
+    String moveTaskId = null;
     Path destinationPath = null; // the final destination directory
     TableDesc tableDescriptor = null;
     StructObjectInspector specificRowObjectInspector = null;
@@ -7319,7 +7331,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
       isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOp);
+      acidOperation = acidOp;
       queryTmpdir = getTmpDir(isNonNativeTable, isMmTable, isDirectInsert, destinationPath);
+      moveTaskId = getMoveTaskId();
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("create filesink w/DEST_TABLE specifying " + queryTmpdir
             + " from " + destinationPath);
@@ -7384,6 +7398,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (writeId != null) {
           ltd.setStmtId(txnMgr.getCurrentStmtId());
         }
+        ltd.setMoveTaskId(moveTaskId);
         // For Acid table, Insert Overwrite shouldn't replace the table content. We keep the old
         // deltas and base and leave them up to the cleaner to clean up
         boolean isInsertInto = qb.getParseInfo().isInsertIntoTable(
@@ -7467,7 +7482,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
       }
       isDirectInsert = isDirectInsert(destTableIsFullAcid, acidOp);
+      acidOperation = acidOp;
       queryTmpdir = getTmpDir(isNonNativeTable, isMmTable, isDirectInsert, destinationPath);
+      moveTaskId = getMoveTaskId();
       if (Utilities.FILE_OP_LOGGER.isTraceEnabled()) {
         Utilities.FILE_OP_LOGGER.trace("create filesink w/DEST_PARTITION specifying "
             + queryTmpdir + " from " + destinationPath);
@@ -7542,6 +7559,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ltd.setInsertOverwrite(!isInsertInto);
       ltd.setIsDirectInsert(isDirectInsert);
       ltd.setLbCtx(lbCtx);
+      ltd.setMoveTaskId(moveTaskId);
 
       loadTableWork.add(ltd);
       if (!outputs.add(new WriteEntity(destinationPartition, determineWriteType(ltd, dest)))) {
@@ -7739,6 +7757,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         input = genMaterializedViewDataOrgPlan(sortColInfos, distributeColInfos, inputRR, input);
       }
 
+      moveTaskId = getMoveTaskId();
+
       if (isPartitioned) {
         // Create a SELECT that may reorder the columns if needed
         RowResolver rowResolver = new RowResolver();
@@ -7788,16 +7808,19 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ltd.setInsertOverwrite(false);
           ltd.setLoadFileType(LoadFileType.KEEP_EXISTING);
         }
+        ltd.setMoveTaskId(moveTaskId);
         ltd.setMdTable(destinationTable);
         WriteEntity output = generateTableWriteEntity(dest, destinationTable, dpCtx.getPartSpec(), ltd, dpCtx);
         ctx.getLoadTableOutputMap().put(ltd, output);
       } else {
         // Create LFD even for MM CTAS - it's a no-op move, but it still seems to be used for stats.
-        loadFileWork.add(new LoadFileDesc(tblDesc, viewDesc, queryTmpdir, destinationPath, isDfsDir, cols,
+        LoadFileDesc loadFileDesc = new LoadFileDesc(tblDesc, viewDesc, queryTmpdir, destinationPath, isDfsDir, cols,
             colTypes,
             destTableIsFullAcid ?//there is a change here - prev version had 'transactional', one before 'acid'
                 Operation.INSERT : Operation.NOT_ACID,
-            isMmCreate));
+            isMmCreate);
+        loadFileDesc.setMoveTaskId(moveTaskId);
+        loadFileWork.add(loadFileDesc);
         if (!outputs.add(new WriteEntity(destinationPath, !isDfsDir, isDestTempFile))) {
           throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
               .getMsg(destinationPath.toUri().toString()));
@@ -7854,7 +7877,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     FileSinkDesc fileSinkDesc = createFileSinkDesc(dest, tableDescriptor, destinationPartition,
         destinationPath, currentTableId, destTableIsFullAcid, destTableIsTemporary,//this was 1/4 acid
         destTableIsMaterialization, queryTmpdir, rsCtx, dpCtx, lbCtx, fsRS,
-        canBeMerged, destinationTable, writeId, isMmCreate, destType, qb, isDirectInsert);
+        canBeMerged, destinationTable, writeId, isMmCreate, destType, qb, isDirectInsert, acidOperation, moveTaskId);
     if (isMmCreate) {
       // Add FSD so that the LoadTask compilation could fix up its path to avoid the move.
       if (tableDesc != null) {
@@ -7878,7 +7901,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
         fileSinkDesc, fsRS, input), inputRR);
 
-    handleLineage(ltd, output);
+    // In the MoveTask the lineage information is not set in case of delete and update as the
+    // columns are not matching. So we only need the lineage information for insert.
+    // If directInsert=false, adding the lineage info here for the other operations is
+    // ok, as the paths are different. But if directInsert=true, the path for all
+    // operation is the same (the table location) and this can lead to invalid lineage information
+    // in case of a merge statement.
+    if (!isDirectInsert || acidOperation == AcidUtils.Operation.INSERT) {
+      handleLineage(ltd, output);
+    }
     setWriteIdForSurrogateKeys(ltd, input);
 
     LOG.debug("Created FileSink Plan for clause: {}dest_path: {} row schema: {}", dest, destinationPath, inputRR);
@@ -7916,7 +7947,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       return false;
     }
     boolean directInsertEnabled = conf.getBoolVar(HiveConf.ConfVars.HIVE_ACID_DIRECT_INSERT_ENABLED);
-    boolean directInsert = directInsertEnabled && destTableIsFullAcid && (acidOp == AcidUtils.Operation.INSERT);
+    boolean directInsert = directInsertEnabled && destTableIsFullAcid && acidOp != AcidUtils.Operation.NOT_ACID;
     if (LOG.isDebugEnabled() && directInsert) {
       LOG.debug("Direct insert for ACID tables is enabled.");
     }
@@ -7936,6 +7967,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     } else {
       return ctx.getTempDirForFinalJobPath(destinationPath);
     }
+  }
+
+  private String getMoveTaskId() {
+    return ctx.getMoveTaskId();
   }
 
   private boolean useBatchingSerializer(String serdeClassName) {
@@ -8092,7 +8127,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                                           boolean destTableIsMaterialization, Path queryTmpdir,
                                           SortBucketRSCtx rsCtx, DynamicPartitionCtx dpCtx, ListBucketingCtx lbCtx,
                                           RowSchema fsRS, boolean canBeMerged, Table dest_tab, Long mmWriteId, boolean isMmCtas,
-                                          Integer dest_type, QB qb, boolean isDirectInsert) throws SemanticException {
+                                          Integer dest_type, QB qb, boolean isDirectInsert, AcidUtils.Operation acidOperation, String moveTaskId) throws SemanticException {
     boolean isInsertOverwrite = false;
     switch (dest_type) {
     case QBMetaData.DEST_PARTITION:
@@ -8117,8 +8152,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         conf.getBoolVar(HiveConf.ConfVars.COMPRESSRESULT), currentTableId, rsCtx.isMultiFileSpray(),
         canBeMerged, rsCtx.getNumFiles(), rsCtx.getTotalFiles(), rsCtx.getPartnCols(), dpCtx,
         dest_path, mmWriteId, isMmCtas, isInsertOverwrite, qb.getIsQuery(),
-        qb.isCTAS() || qb.isMaterializedView(), isDirectInsert);
+        qb.isCTAS() || qb.isMaterializedView(), isDirectInsert, acidOperation);
 
+    fileSinkDesc.setMoveTaskId(moveTaskId);
     boolean isHiveServerQuery = SessionState.get().isHiveServerQuery();
     fileSinkDesc.setHiveServerQuery(isHiveServerQuery);
     // If this is an insert, update, or delete on an ACID table then mark that so the
@@ -8177,8 +8213,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void handleLineage(LoadTableDesc ltd, Operator output)
       throws SemanticException {
     if (ltd != null) {
-      queryState.getLineageState()
-          .mapDirToOp(ltd.getSourcePath(), output);
+      queryState.getLineageState().mapDirToOp(ltd.getSourcePath(), output);
     } else if ( queryState.getCommandType().equals(HiveOperation.CREATETABLE_AS_SELECT.getOperationName())) {
 
       Path tlocation = null;
@@ -9541,9 +9576,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRMEMORYTHRESHOLD);
     float minReductionHashAggr = HiveConf
         .getFloatVar(conf, HiveConf.ConfVars.HIVEMAPAGGRHASHMINREDUCTION);
+    float minReductionHashAggrLowerBound = HiveConf
+            .getFloatVar(conf, ConfVars.HIVEMAPAGGRHASHMINREDUCTIONLOWERBOUND);
     Operator op = putOpInsertMap(OperatorFactory.getAndMakeChild(
         new GroupByDesc(GroupByDesc.Mode.HASH, outputColumnNames, groupByKeys, aggregations,
-            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, null, false, -1, false),
+            false, groupByMemoryUsage, memoryThreshold, minReductionHashAggr, minReductionHashAggrLowerBound,
+                null, false, -1, false),
         new RowSchema(groupByOutputRowResolver.getColumnInfos()),
         input), groupByOutputRowResolver);
 

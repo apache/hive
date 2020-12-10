@@ -475,7 +475,7 @@ STAGE PLANS:
                 Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   keys: _col1 (type: string), _col2 (type: string)
-                  minReductionHashAggr: 0.0
+                  minReductionHashAggr: 0.4
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 395 Data size: 70310 Basic stats: COMPLETE Column stats: COMPLETE
@@ -910,7 +910,7 @@ STAGE PLANS:
                         Statistics: Num rows: 791 Data size: 140798 Basic stats: COMPLETE Column stats: COMPLETE
                         Group By Operator
                           keys: _col1 (type: string), _col2 (type: string)
-                          minReductionHashAggr: 0.0
+                          minReductionHashAggr: 0.4
                           mode: hash
                           outputColumnNames: _col0, _col1
                           Statistics: Num rows: 395 Data size: 70310 Basic stats: COMPLETE Column stats: COMPLETE
