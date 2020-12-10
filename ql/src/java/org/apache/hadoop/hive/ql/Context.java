@@ -345,6 +345,9 @@ public class Context {
     opContext = new CompilationOpContext();
 
     viewsTokenRewriteStreams = new HashMap<>();
+    // Sql text based materialized view auto rewriting compares the extended query text (contains fully qualified
+    // identifiers) to the stored Materialized view query definitions. We have to enable unparsing for generating
+    // the extended query text when auto rewriting is enabled.
     enableUnparse =
         HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_MATERIALIZED_VIEW_ENABLE_AUTO_REWRITING_SQL);
     scheduledQuery = false;
