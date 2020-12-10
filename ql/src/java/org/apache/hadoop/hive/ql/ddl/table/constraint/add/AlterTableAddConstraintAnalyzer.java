@@ -29,10 +29,9 @@ import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
 import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryState;
-import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
 import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
-import org.apache.hadoop.hive.ql.ddl.table.constraint.AbstractConstraintAnalyzer;
+import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.Constraints;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -46,7 +45,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  * Analyzer for add constraint commands.
  */
 @DDLType(types = HiveParser.TOK_ALTERTABLE_ADDCONSTRAINT)
-public class AlterTableAddConstraintAnalyzer extends AbstractConstraintAnalyzer {
+public class AlterTableAddConstraintAnalyzer extends AbstractAlterTableAnalyzer {
   public AlterTableAddConstraintAnalyzer(QueryState queryState) throws SemanticException {
     super(queryState);
   }
@@ -61,7 +60,7 @@ public class AlterTableAddConstraintAnalyzer extends AbstractConstraintAnalyzer 
     List<SQLUniqueConstraint> uniqueConstraints = new ArrayList<>();
     List<SQLCheckConstraint> checkConstraints = new ArrayList<>();
 
-    ASTNode constraintNode = (ASTNode)command.getChild(0);
+    ASTNode constraintNode = (ASTNode) command.getChild(0);
     switch (constraintNode.getToken().getType()) {
     case HiveParser.TOK_UNIQUE:
       ConstraintsUtils.processUniqueConstraints(tableName, constraintNode, uniqueConstraints);
@@ -80,23 +79,13 @@ public class AlterTableAddConstraintAnalyzer extends AbstractConstraintAnalyzer 
       throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(constraintNode.getToken().getText()));
     }
 
-    Constraints constraints = new Constraints(primaryKeys, foreignKeys, null,
-        uniqueConstraints, null, checkConstraints);
+    Constraints constraints = new Constraints(primaryKeys, foreignKeys, null, uniqueConstraints, null, checkConstraints);
     AlterTableAddConstraintDesc desc = new AlterTableAddConstraintDesc(tableName, null, constraints);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
 
     Table table = getTable(tableName);
-    postProcess(table, desc);
-  }
-
-  @Override
-  protected void postProcess(Table table, DDLDescWithWriteId desc)
-      throws SemanticException {
-    if (!AcidUtils.isTransactionalTable(table)) {
-      return;
+    if (AcidUtils.isTransactionalTable(table)) {
+      setAcidDdlDesc(desc);
     }
-
-    setAcidDdlDesc(desc);
   }
-
 }
