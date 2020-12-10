@@ -1950,17 +1950,17 @@ public class Hive {
    * specified sql query text. It is guaranteed that it will always return an up-to-date version wrt metastore.
    * This method filters out outdated Materialized views. It compares the transaction ids of the passed usedTables and
    * the materialized view using the txnMgr.
-   * @param queryString extended query text (has fully qualified identifiers)
+   * @param querySql extended query text (has fully qualified identifiers)
    * @param tablesUsed List of tables to verify whether materialized view is outdated
    * @param txnMgr Transaction manager to get open transactions affects used tables.
-   * @return List of materialized views has matching query definition with queryString
+   * @return List of materialized views has matching query definition with querySql
    * @throws HiveException - an exception is thrown during validation or unable to pull transaction ids
    */
-  public List<RelOptMaterialization> getMaterialization(
-          String queryString, List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
+  public List<RelOptMaterialization> getMaterializedViewsBySql(
+          String querySql, List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
 
     List<RelOptMaterialization> materializedViews =
-            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(queryString);
+            HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(querySql);
     if (materializedViews.isEmpty()) {
       return Collections.emptyList();
     }

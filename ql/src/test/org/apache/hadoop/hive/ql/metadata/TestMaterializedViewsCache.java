@@ -113,9 +113,9 @@ class TestMaterializedViewsCache {
   void testLookupIsCaseInsensitive() {
     materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
 
-    String queryText = "SELECT Col0 From T1";
-    assertThat(materializedViewsCache.get(queryText).size(), is(1));
-    assertThat(materializedViewsCache.get(queryText).get(0), is(defaultRelOptMaterialization1));
+    String querySql = "SELECT Col0 From T1";
+    assertThat(materializedViewsCache.get(querySql).size(), is(1));
+    assertThat(materializedViewsCache.get(querySql).get(0), is(defaultRelOptMaterialization1));
   }
 
   @Test

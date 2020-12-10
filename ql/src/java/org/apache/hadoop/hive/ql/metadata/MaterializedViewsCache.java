@@ -160,14 +160,14 @@ public class MaterializedViewsCache {
     return null;
   }
 
-  public List<RelOptMaterialization> get(String queryText) {
-    List<RelOptMaterialization> relOptMaterializationList = sqlToMaterializedView.get(queryText.toLowerCase());
+  public List<RelOptMaterialization> get(String querySql) {
+    List<RelOptMaterialization> relOptMaterializationList = sqlToMaterializedView.get(querySql.toLowerCase());
     if (relOptMaterializationList == null) {
-      LOG.debug("No materialized view with query text '{}' found in registry", queryText);
+      LOG.debug("No materialized view with query text '{}' found in registry", querySql);
       return emptyList();
     }
     LOG.debug("Found {} materialized views with query text '{}' in registry",
-            relOptMaterializationList.size(), queryText);
+            relOptMaterializationList.size(), querySql);
     return unmodifiableList(relOptMaterializationList);
   }
 }

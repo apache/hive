@@ -320,8 +320,8 @@ public final class HiveMaterializedViewsRegistry {
     return materializedViewsCache.get(dbName, viewName);
   }
 
-  public List<RelOptMaterialization> getRewritingMaterializedViews(String queryText) {
-    return materializedViewsCache.get(queryText);
+  public List<RelOptMaterialization> getRewritingMaterializedViews(String querySql) {
+    return materializedViewsCache.get(querySql);
   }
 
   private static RelNode createMaterializedViewScan(HiveConf conf, Table viewTable) {

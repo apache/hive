@@ -2383,7 +2383,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
       String expandedQueryText = ctx.getTokenRewriteStream()
               .toString(EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
       try {
-        List<RelOptMaterialization> relOptMaterializationList = db.getMaterialization(
+        List<RelOptMaterialization> relOptMaterializationList = db.getMaterializedViewsBySql(
                 expandedQueryText, getTablesUsed(calciteGenPlan), getTxnMgr());
         for (RelOptMaterialization relOptMaterialization : relOptMaterializationList) {
           try {
