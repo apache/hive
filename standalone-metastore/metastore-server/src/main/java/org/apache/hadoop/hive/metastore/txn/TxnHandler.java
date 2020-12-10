@@ -3879,11 +3879,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "cleanupRecords");
-        if (e.getMessage().contains("does not exist")) {
-          LOG.warn("Cannot perform cleanup since metastore table does not exist");
-        } else {
-          throw new MetaException("Unable to clean up " + StringUtils.stringifyException(e));
-        }
+        throw new MetaException("Unable to clean up " + StringUtils.stringifyException(e));
+
       } finally {
         closeStmt(stmt);
         closeDbConn(dbConn);
@@ -4053,11 +4050,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to rollback: " + callSig);
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, callSig);
-        if (e.getMessage().contains("does not exist")) {
-          LOG.warn("Cannot perform " + callSig + " since metastore table does not exist");
-        } else {
-          throw new MetaException("Unable to " + callSig + ":" + StringUtils.stringifyException(e));
-        }
+        throw new MetaException("Unable to " + callSig + ":" + StringUtils.stringifyException(e));
       } finally {
         closeStmt(stmt);
         closeDbConn(dbConn);
