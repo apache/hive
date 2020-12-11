@@ -2381,11 +2381,16 @@ public class CalcitePlanner extends SemanticAnalyzer {
         for (RelOptMaterialization relOptMaterialization : relOptMaterializationList) {
           try {
             Table hiveTableMD = extractTable(relOptMaterialization);
-            if (db.validateMaterializedViewsFromRegistry(
-                    singletonList(hiveTableMD),
-                    singletonList(hiveTableMD.getFullyQualifiedName()),
-                    getTxnMgr())) {
-              return copyMaterializationToNewCluster(optCluster, relOptMaterialization).tableRel;
+            if (HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(singletonList(hiveTableMD))) {
+              if (db.validateMaterializedViewsFromRegistry(
+                      singletonList(hiveTableMD),
+                      singletonList(hiveTableMD.getFullyQualifiedName()),
+                      getTxnMgr())) {
+                return copyMaterializationToNewCluster(optCluster, relOptMaterialization).tableRel;
+              }
+            } else {
+              LOG.debug("User does not have privilege to use materialized view {}",
+                      relOptMaterialization.qualifiedTableName);
             }
           } catch (HiveException e) {
             LOG.warn("Skipping materialized view due to validation failure: " +
