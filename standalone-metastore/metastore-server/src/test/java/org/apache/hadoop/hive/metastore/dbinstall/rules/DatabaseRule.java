@@ -64,8 +64,6 @@ public abstract class DatabaseRule extends ExternalResource {
   }
 
   public final String getContainerHostAddress() {
-    //xport HIVE_TEST_DOCKER_HOST=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.Gateway}}{{end}}' `hostname`)
-
     String hostAddress = System.getenv("HIVE_TEST_DOCKER_HOST");
     LOG.info("addr:{}", hostAddress);
     if (hostAddress != null) {
