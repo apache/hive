@@ -1,5 +1,3 @@
---! qt:disabled:HIVE-
-
 set hive.mapred.mode=nonstrict;
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
