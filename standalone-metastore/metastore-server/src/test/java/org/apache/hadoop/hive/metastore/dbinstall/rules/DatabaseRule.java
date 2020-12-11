@@ -107,6 +107,9 @@ public abstract class DatabaseRule extends ExternalResource {
 
   @Override
   public void before() throws Exception { //runDockerContainer
+    if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
+      throw new RuntimeException("Unable to remove docker container");
+    }
     if (runCmdAndPrintStreams(buildRunCmd(), 600) != 0) {
       throw new RuntimeException("Unable to start docker container");
     }
@@ -134,9 +137,6 @@ public abstract class DatabaseRule extends ExternalResource {
       return;
     }
     try {
-      if (runCmdAndPrintStreams(buildStopCmd(), 600) != 0) {
-        throw new RuntimeException("Unable to stop docker container");
-      }
       if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
         throw new RuntimeException("Unable to remove docker container");
       }
@@ -179,6 +179,7 @@ public abstract class DatabaseRule extends ExternalResource {
     List<String> cmd = new ArrayList<>(4 + getDockerAdditionalArgs().length);
     cmd.add("docker");
     cmd.add("run");
+    cmd.add("--rm");
     cmd.add("--name");
     cmd.add(getDockerContainerName());
     cmd.addAll(Arrays.asList(getDockerAdditionalArgs()));
@@ -186,18 +187,12 @@ public abstract class DatabaseRule extends ExternalResource {
     return cmd.toArray(new String[cmd.size()]);
   }
 
-  private String[] buildStopCmd() {
-    return buildArray(
-        "docker",
-        "stop",
-        getDockerContainerName()
-    );
-  }
-
   private String[] buildRmCmd() {
     return buildArray(
         "docker",
         "rm",
+        "-f",
+        "-v",
         getDockerContainerName()
     );
   }

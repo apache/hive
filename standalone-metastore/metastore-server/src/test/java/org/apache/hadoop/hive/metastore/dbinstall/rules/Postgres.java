@@ -21,10 +21,15 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * JUnit TestRule for Postgres.
  */
 public class Postgres extends DatabaseRule {
+  private static final Logger LOG = LoggerFactory.getLogger(Postgres.class);
+
   @Override
   public String getDockerImageName() {
     return "postgres:9.3";
@@ -72,6 +77,7 @@ public class Postgres extends DatabaseRule {
         socket.connect(new InetSocketAddress("localhost", 5432), 1000);
         return true;
       } catch (IOException e) {
+        LOG.info("cant connect to postgres; {}", e.getMessage());
         return false;
       }
     }
