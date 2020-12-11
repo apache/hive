@@ -19,5 +19,3 @@
 # Build system
 'Jenkinsfile':
   - kgyrtkirk
-'pom.xml':
-  - kgyrtkirk
