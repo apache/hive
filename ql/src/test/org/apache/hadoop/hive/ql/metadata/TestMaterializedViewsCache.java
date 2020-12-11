@@ -76,11 +76,11 @@ class TestMaterializedViewsCache {
 
   @BeforeEach
   void setUp() {
-    defaultMV1 = getTable("default", "mat1", "select col0 from t1");
+    defaultMV1 = getTable("default", "mat1", "select col0 from t1 where col0 = 'foo'");
     defaultRelOptMaterialization1 = createRelOptMaterialization(defaultMV1);
-    defaultMV2 = getTable("default", "mat2", "SELECT Col0 fRom T1");
+    defaultMV2 = getTable("default", "mat2", "select col0 from t1 where col0 = 'FOO'");
     defaultRelOptMaterialization2 = createRelOptMaterialization(defaultMV2);
-    db1MV1 = getTable("db1", "mat1", "select col0 from t1");
+    db1MV1 = getTable("db1", "mat1", "select col0 from t1 where col0 = 'foo'");
     db1RelOptMaterialization1 = createRelOptMaterialization(db1MV1);
 
     materializedViewsCache = new MaterializedViewsCache();
@@ -107,15 +107,6 @@ class TestMaterializedViewsCache {
 
     assertThat(materializedViewsCache.get("select 'not found'").isEmpty(), is(true));
     assertThat(materializedViewsCache.values().size(), is(1));
-  }
-
-  @Test
-  void testLookupIsCaseInsensitive() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
-
-    String querySql = "SELECT Col0 From T1";
-    assertThat(materializedViewsCache.get(querySql).size(), is(1));
-    assertThat(materializedViewsCache.get(querySql).get(0), is(defaultRelOptMaterialization1));
   }
 
   @Test
@@ -149,9 +140,8 @@ class TestMaterializedViewsCache {
 
     assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(defaultRelOptMaterialization1));
     assertThat(materializedViewsCache.get(defaultMV2.getDbName(), defaultMV2.getTableName()), is(defaultRelOptMaterialization2));
-    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(2));
+    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization1));
-    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization2));
     assertThat(materializedViewsCache.values().size(), is(2));
   }
 
@@ -217,21 +207,6 @@ class TestMaterializedViewsCache {
   }
 
   @Test
-  void testRemoveByTableRemovesOnlyOneMaterializationInstance() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
-    materializedViewsCache.putIfAbsent(defaultMV2, defaultRelOptMaterialization2);
-
-    materializedViewsCache.remove(defaultMV1);
-
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
-    assertThat(materializedViewsCache.get(defaultMV2.getDbName(), defaultMV2.getTableName()), is(defaultRelOptMaterialization2));
-    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
-    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization2));
-    assertThat(materializedViewsCache.values().size(), is(1));
-    assertThat(materializedViewsCache.values(), hasItem(defaultRelOptMaterialization2));
-  }
-
-  @Test
   void testRemoveByTableName() {
     materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
 
@@ -240,21 +215,6 @@ class TestMaterializedViewsCache {
     assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
     assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).isEmpty(), is(true));
     assertThat(materializedViewsCache.values().isEmpty(), is(true));
-  }
-
-  @Test
-  void testRemoveByTableNameRemovesOnlyOneMaterializationInstance() {
-    materializedViewsCache.putIfAbsent(defaultMV1, defaultRelOptMaterialization1);
-    materializedViewsCache.putIfAbsent(defaultMV2, defaultRelOptMaterialization2);
-
-    materializedViewsCache.remove(defaultMV1.getDbName(), defaultMV1.getTableName());
-
-    assertThat(materializedViewsCache.get(defaultMV1.getDbName(), defaultMV1.getTableName()), is(nullValue()));
-    assertThat(materializedViewsCache.get(defaultMV2.getDbName(), defaultMV2.getTableName()), is(defaultRelOptMaterialization2));
-    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()).size(), is(1));
-    assertThat(materializedViewsCache.get(defaultMV1.getViewExpandedText()), hasItem(defaultRelOptMaterialization2));
-    assertThat(materializedViewsCache.values().size(), is(1));
-    assertThat(materializedViewsCache.values(), hasItem(defaultRelOptMaterialization2));
   }
 
   @Disabled("Testing parallelism only")
