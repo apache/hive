@@ -65,7 +65,7 @@ public class LazyBinaryColumnarSerDe extends ColumnarSerDeBase {
       throws SerDeException {
     super.initialize(configuration, tableProperties, partitionProperties);
 
-    LazySerDeParameters serdeParams = new LazySerDeParameters(configuration, tableProperties, getClass().getName());
+    LazySerDeParameters serdeParams = new LazySerDeParameters(configuration, properties, getClass().getName());
 
     columnNames = serdeParams.getColumnNames();
     columnTypes = serdeParams.getColumnTypes();
