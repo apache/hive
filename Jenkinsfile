@@ -66,7 +66,6 @@ def setPrLabel(String prLabel) {
 setPrLabel("PENDING");
 
 def executorNode(run) {
-  if(false)
   hdbPodTemplate {
     timeout(time: 6, unit: 'HOURS') {
       node(POD_LABEL) {
@@ -188,7 +187,7 @@ def loadFile(name) {
 
 jobWrappers {
 
-  def splits = []
+  def splits
   executorNode {
     container('hdb') {
       stage('Checkout') {
@@ -219,18 +218,18 @@ jobWrappers {
     }
   }
 
-    def branches = [:]
-    for (def d in ['derby','postgres']) {
-      def dbType=d
-      def splitName = "init@$dbType"
-      branches[splitName] = {
-        executorNode {
-          stage('Prepare') {
-              loadWS();
-          }
-          stage('init-metastore') {
-             withEnv(["dbType=$dbType"]) {
-               sh '''#!/bin/bash -e
+  def branches = [:]
+  for (def d in ['derby','postgres']) {
+    def dbType=d
+    def splitName = "init@$dbType"
+    branches[splitName] = {
+      executorNode {
+        stage('Prepare') {
+            loadWS();
+        }
+        stage('init-metastore') {
+           withEnv(["dbType=$dbType"]) {
+             sh '''#!/bin/bash -e
 set -x
 echo 127.0.0.1 dev_$dbType | sudo tee -a /etc/hosts
 . /etc/profile.d/confs.sh
@@ -239,48 +238,48 @@ ping -c2 dev_$dbType
 export DOCKER_NETWORK=host
 reinit_metastore $dbType
 '''
+          }
+        }
+      }
+    }
+  }
+  for (int i = 0; i < splits.size(); i++) {
+    def num = i
+    def split = splits[num]
+    def splitName=String.format("split-%02d",num+1)
+    branches[splitName] = {
+      executorNode {
+        stage('Prepare') {
+            loadWS();
+            writeFile file: (split.includes ? "inclusions.txt" : "exclusions.txt"), text: split.list.join("\n")
+            writeFile file: (split.includes ? "exclusions.txt" : "inclusions.txt"), text: ''
+            sh '''echo "@INC";cat inclusions.txt;echo "@EXC";cat exclusions.txt;echo "@END"'''
+        }
+        try {
+          stage('Test') {
+            buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
+          }
+        } finally {
+          stage('PostProcess') {
+            try {
+              sh """#!/bin/bash -e
+                # removes all stdout and err for passed tests
+                xmlstarlet ed -L -d 'testsuite/testcase/system-out[count(../failure)=0]' -d 'testsuite/testcase/system-err[count(../failure)=0]' `find . -name 'TEST*xml' -path '*/surefire-reports/*'`
+                # remove all output.txt files
+                find . -name '*output.txt' -path '*/surefire-reports/*' -exec unlink "{}" \\;
+              """
+            } finally {
+              def fn="${splitName}.tgz"
+              sh """#!/bin/bash -e
+              tar -czf ${fn} --files-from  <(find . -path '*/surefire-reports/*')"""
+              saveFile(fn)
+              junit '**/TEST-*.xml'
             }
           }
         }
       }
     }
-    for (int i = 0; i < splits.size(); i++) {
-      def num = i
-      def split = splits[num]
-      def splitName=String.format("split-%02d",num+1)
-      branches[splitName] = {
-        executorNode {
-          stage('Prepare') {
-              loadWS();
-              writeFile file: (split.includes ? "inclusions.txt" : "exclusions.txt"), text: split.list.join("\n")
-              writeFile file: (split.includes ? "exclusions.txt" : "inclusions.txt"), text: ''
-              sh '''echo "@INC";cat inclusions.txt;echo "@EXC";cat exclusions.txt;echo "@END"'''
-          }
-          try {
-            stage('Test') {
-              buildHive("org.apache.maven.plugins:maven-antrun-plugin:run@{define-classpath,setup-test-dirs,setup-metastore-scripts} org.apache.maven.plugins:maven-surefire-plugin:test -q")
-            }
-          } finally {
-            stage('PostProcess') {
-              try {
-                sh """#!/bin/bash -e
-                  # removes all stdout and err for passed tests
-                  xmlstarlet ed -L -d 'testsuite/testcase/system-out[count(../failure)=0]' -d 'testsuite/testcase/system-err[count(../failure)=0]' `find . -name 'TEST*xml' -path '*/surefire-reports/*'`
-                  # remove all output.txt files
-                  find . -name '*output.txt' -path '*/surefire-reports/*' -exec unlink "{}" \\;
-                """
-              } finally {
-                def fn="${splitName}.tgz"
-                sh """#!/bin/bash -e
-                tar -czf ${fn} --files-from  <(find . -path '*/surefire-reports/*')"""
-                saveFile(fn)
-                junit '**/TEST-*.xml'
-              }
-            }
-          }
-        }
-      }
-    }
+  }
   try {
     stage('Testing') {
       parallel branches
