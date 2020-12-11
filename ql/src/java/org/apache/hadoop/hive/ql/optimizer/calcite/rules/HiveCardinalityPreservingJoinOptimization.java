@@ -183,7 +183,7 @@ public class HiveCardinalityPreservingJoinOptimization extends HiveRelFieldTrimm
         RelOptCluster cluster = root.getCluster();
         RelDataType rowType = tableToJoinBack.joinedBackFields.relOptHiveTable.getRowType();
         // There is an expectation that when a plan is translated into the engine specific plan,
-        // e.g., Impala, partition pruning for all the TS operators that are part of the plan
+        // partition pruning for all the TS operators that are part of the plan
         // should have already been performed. Since we are creating a new copy of the table
         // and the scan, we execute partition pruning for the new operator. Note that there
         // will be no filter on top of the scan copy, while there could be a filter operator

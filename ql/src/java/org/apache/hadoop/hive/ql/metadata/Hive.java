@@ -1889,6 +1889,7 @@ public class Hive {
         if (outdated) {
           // The MV is outdated, see whether we should consider it for rewriting or not
           boolean ignore;
+          //XXX: CDPD-20696 Remove reference to Impala
           if (conf.getEngine() == Engine.IMPALA) {
             // IMPALA currently does not support incremental rebuilds or rewriting
             ignore = true;
@@ -3856,7 +3857,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       request.setTbl_name(tbl.getTableName());
       request.setGet_col_stats(getColStats);
       request.setEngine(Constants.HIVE_ENGINE);
-      //TODO if the request is for Impala execution set the file-metadata flag to true
+      //TODO if the request is for external engine execution set the file-metadata flag to true
       // in the request
       for (int i = 0; i < nBatches; ++i) {
         List<String> partNamesBatch = partNames.subList(i*batchSize, (i+1)*batchSize);
@@ -5315,6 +5316,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         return getMSC().getAggrColStatsFor(dbName, tblName, colNames, partNames,
             conf.getEngine().getStatsField(), writeIdList);
       }
+      //XXX: CDPD-20696 Remove reference to Impala
       if (conf.getEngine() == Engine.IMPALA) {
         // TODO: This code needs to be removed when the fallback mechanism is in
         //       catalogd / HMS (CDPD-10678) so we do not need any special handling

@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql;
 
-import com.google.common.base.Preconditions;
-
 import java.io.DataInput;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -50,6 +48,8 @@ import org.apache.hadoop.hive.conf.HiveConf.Runtime;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.engine.EngineEventSequence;
+import org.apache.hadoop.hive.ql.engine.internal.DummyEventSequence;
 import org.apache.hadoop.hive.ql.lockmgr.DbTxnManager.Heartbeater;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLockObj;
@@ -69,7 +69,6 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.impala.util.EventSequence;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -177,13 +176,13 @@ public class Context {
    */
   private boolean enableUnparse;
 
-  private EventSequence timeline;
+  private EngineEventSequence timeline = new DummyEventSequence();
 
-  public void setTimeline(EventSequence timeline) {
+  public void setTimeline(EngineEventSequence timeline) {
     this.timeline = timeline;
   }
 
-  public EventSequence getTimeline() {
+  public EngineEventSequence getTimeline() {
     return this.timeline;
   }
 

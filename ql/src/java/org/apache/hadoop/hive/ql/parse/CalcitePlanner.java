@@ -138,7 +138,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.conf.HiveConf.Engine;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -157,6 +156,8 @@ import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.engine.EngineEventSequence;
+import org.apache.hadoop.hive.ql.engine.EngineCompileHelper;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -183,7 +184,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable;
 import org.apache.hadoop.hive.ql.optimizer.calcite.RelOptHiveTable.TableType;
 import org.apache.hadoop.hive.ql.optimizer.calcite.TraitsUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException.UnsupportedFeature;
-import org.apache.hadoop.hive.ql.optimizer.calcite.ImpalaTypeSystemImpl;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveVolcanoPlanner;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
@@ -306,13 +306,11 @@ import org.apache.hadoop.hive.ql.parse.type.RexNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
-import org.apache.hadoop.hive.ql.plan.ImpalaQueryDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
-import org.apache.hadoop.hive.ql.plan.impala.ImpalaCompiledPlan;
-import org.apache.hadoop.hive.ql.plan.impala.funcmapper.ImpalaFunctionHelper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFArray;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDTF;
@@ -325,7 +323,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.impala.util.EventSequence;
 import org.joda.time.Interval;
 
 import java.io.IOException;
@@ -498,7 +495,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
   }
 
   private static RelOptPlanner createPlanner(
-      HiveConf conf, EventSequence timeline, FunctionHelper functionHelper,
+      HiveConf conf, EngineEventSequence timeline, FunctionHelper functionHelper,
       Set<RelNode> corrScalarRexSQWithAgg) {
     final Double maxSplitSize = (double) HiveConf.getLongVar(
             conf, HiveConf.ConfVars.MAPREDMAXSPLITSIZE);
@@ -1590,8 +1587,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
         this.columnAccessInfo);
 
     try {
+      RelDataTypeSystem rdts = EngineCompileHelper.getInstance(conf).getRelDataTypeSystem();
       return Frameworks.withPlanner(calcitePlannerAction,
-          Frameworks.newConfigBuilder().typeSystem(createTypeSystem(conf)).build());
+          Frameworks.newConfigBuilder().typeSystem(rdts).build());
     } catch (Exception e) {
       rethrowCalciteException(e);
       throw new AssertionError("rethrowCalciteException didn't throw for " + e.getMessage());
@@ -1606,12 +1604,13 @@ public class CalcitePlanner extends SemanticAnalyzer {
   public String getOptimizedSql(RelNode optimizedOptiqPlan) {
     boolean nullsLast = HiveConf.getBoolVar(conf, ConfVars.HIVE_DEFAULT_NULLS_LAST);
     NullCollation nullCollation = nullsLast ? NullCollation.LAST : NullCollation.LOW;
+    RelDataTypeSystem rdts = EngineCompileHelper.getInstance(conf).getRelDataTypeSystem();
     SqlDialect dialect = new HiveSqlDialect(SqlDialect.EMPTY_CONTEXT
         .withDatabaseProduct(SqlDialect.DatabaseProduct.HIVE)
         .withDatabaseMajorVersion(4) // TODO: should not be hardcoded
         .withDatabaseMinorVersion(0)
         .withIdentifierQuoteString("`")
-        .withDataTypeSystem(createTypeSystem(conf))
+        .withDataTypeSystem(rdts)
         .withNullCollation(nullCollation)) {
       @Override
       protected boolean allowsAs() {
@@ -1731,11 +1730,11 @@ public class CalcitePlanner extends SemanticAnalyzer {
       // tables). This is typically done for most HMS calls automatically once compilation and
       // lock acquistion is done, but since we are in the middle of compilation we can not
       // rely on that behavior)
-      ImpalaCompiledPlan compiledPlan = this.impalaHelper.compilePlan(
+      FileSinkDesc impalaQueryDesc = this.impalaHelper.compilePlan(
           getDb(), impalaRel, fso.getConf(), ctx.isExplainPlan(), getQB(), cboCtx.type,
           getQueryValidTxnWriteIdList());
       markEvent("Impala plan generated");
-      return OperatorFactory.getAndMakeChild(new ImpalaQueryDesc(compiledPlan), fso);
+      return OperatorFactory.getAndMakeChild(impalaQueryDesc, fso);
     } catch (HiveException e) {
       throw new RuntimeException(e);
     }
@@ -1788,20 +1787,12 @@ public class CalcitePlanner extends SemanticAnalyzer {
   @Override
   protected boolean validateFunction(ASTNode expressionTree, String functionName, boolean windowSpec)
       throws SemanticException {
-    if (conf.getEngine() == Engine.IMPALA) {
-      // Validate the function name
-      boolean scalarFunction = ImpalaFunctionHelper.isScalarFunction(functionName);
-      boolean aggFunction = !scalarFunction && ImpalaFunctionHelper.isAggregateFunction(functionName);
-      boolean analyticFunction = !scalarFunction && ImpalaFunctionHelper.isAnalyticFunction(functionName);
-      if (!scalarFunction && !aggFunction && !analyticFunction) {
-        throw new SemanticException(ErrorMsg.INVALID_FUNCTION.getMsg(functionName));
-      }
-      if (!aggFunction && analyticFunction && !windowSpec) {
-        throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
-      }
-      return aggFunction;
+    if (isImpalaPlan(conf)) {
+      impalaHelper.createFunctionHelper(null).validateFunction(functionName, windowSpec);
     }
-    return super.validateFunction(expressionTree, functionName, windowSpec);
+    return isImpalaPlan(conf)
+        ? impalaHelper.createFunctionHelper(null).isAggregateFunction(functionName)
+        : super.validateFunction(expressionTree, functionName, windowSpec);
   }
 
   /***
@@ -1980,7 +1971,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
        */
       final RexBuilder rexBuilder = cluster.getRexBuilder();
       this.functionHelper = createFunctionHelper(rexBuilder);
-      RelOptPlanner planner = createPlanner(conf, impalaHelper != null ? impalaHelper.getTimeline() : null,
+      RelOptPlanner planner = createPlanner(conf, ctx.getTimeline(),
           functionHelper, corrScalarRexSQWithAgg);
       final RelOptCluster optCluster = RelOptCluster.create(planner, rexBuilder);
       this.cluster = optCluster;
@@ -5695,12 +5686,6 @@ public class CalcitePlanner extends SemanticAnalyzer {
       return allExprs.get(expr);
     }
     return cached;
-  }
-
-  public static RelDataTypeSystem createTypeSystem(HiveConf conf) {
-    return (isImpalaPlan(conf))
-      ? new ImpalaTypeSystemImpl()
-      : new HiveTypeSystemImpl();
   }
 
   private FunctionHelper createFunctionHelper(RexBuilder rexBuilder) {

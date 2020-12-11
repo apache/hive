@@ -73,6 +73,8 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.engine.EngineCompileHelper;
+import org.apache.hadoop.hive.ql.engine.EngineQueryHelper;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
@@ -85,7 +87,6 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.type.ExprNodeTypeCheck;
 import org.apache.hadoop.hive.ql.parse.type.TypeCheckCtx;
-import org.apache.hadoop.hive.ql.parse.type.TypeCheckProcFactory;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -93,7 +94,6 @@ import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.impala.ImpalaHelper;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.util.DirectionUtils;
@@ -138,7 +138,7 @@ public abstract class BaseSemanticAnalyzer {
   protected Context ctx;
   protected Map<String, String> idToTableNameMap;
   protected QueryProperties queryProperties;
-  protected ImpalaHelper impalaHelper;
+  protected EngineQueryHelper impalaHelper;
 
   /**
    * A set of FileSinkOperators being written to in an ACID compliant way.  We need to remember
@@ -289,7 +289,8 @@ public abstract class BaseSemanticAnalyzer {
     this.ctx = ctx;
     try {
       impalaHelper = isImpalaPlan(conf)
-          ? new ImpalaHelper(conf, SessionState.get().getCurrentDatabase(),
+          ? EngineCompileHelper.getInstance(conf).getQueryHelper(conf,
+             SessionState.get().getCurrentDatabase(),
              StringUtils.defaultString(SessionState.get().getUserName()), getTxnMgr(), ctx)
           : null;
     } catch (SemanticException e) {
@@ -1854,6 +1855,7 @@ public abstract class BaseSemanticAnalyzer {
     // Nothing to do
   }
 
+  //XXX: CDPD-20696 Remove reference to Impala
   public static boolean isImpalaPlan(HiveConf conf) {
     return conf.getEngine() == Engine.IMPALA;
   }

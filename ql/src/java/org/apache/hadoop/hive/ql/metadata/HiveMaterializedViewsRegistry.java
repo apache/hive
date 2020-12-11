@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.metastore.DefaultMetaStoreFilterHookImpl;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.engine.EngineCompileHelper;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.optimizer.calcite.CalciteSemanticException;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
@@ -393,7 +394,8 @@ public final class HiveMaterializedViewsRegistry {
 
   private static RelNode createMaterializedViewScan(HiveConf conf, Hive db, Table viewTable) {
     // 0. Recreate cluster
-    final RelDataTypeSystem typeSystem = CalcitePlanner.createTypeSystem(conf);
+    final RelDataTypeSystem typeSystem =
+        EngineCompileHelper.getInstance(conf).getRelDataTypeSystem();
     final RexBuilder rexBuilder = new RexBuilder(new JavaTypeFactoryImpl(typeSystem));
     // TODO: Create engine specific function helper for MV loading (CDPD-15150)
     final RelOptPlanner planner = CalcitePlanner.createPlanner(
@@ -493,7 +495,7 @@ public final class HiveMaterializedViewsRegistry {
       // if constraints on a table object are existing, but constraints cannot be defined
       // for materialized views.
       // We use the HivePartitionPruneRuleHelper right now instead of an engine specific pruner.
-      // The Impala Pruner currently relies on a specific query being run, as it takes a
+      // An engine specific pruner currently relies on a specific query being run, as it takes a
       // "QueryContext" in its constructor. While it might be more aesthetic to use the correct
       // pruner, it isn't really necessary. The key portion needed is the "rowCount" and this
       // doesn't change based on the engine. Furthermore, the partitionCache is not saved when this

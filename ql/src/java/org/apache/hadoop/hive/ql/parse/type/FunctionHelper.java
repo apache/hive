@@ -175,6 +175,9 @@ public interface FunctionHelper {
    */
   boolean isStateful(FunctionInfo fi);
 
+  void validateFunction(String functionName, boolean windowSpec) throws SemanticException;
+  boolean isAggregateFunction(String functionName);
+
   /**
    * Class to store aggregate function related information.
    */

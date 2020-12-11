@@ -113,6 +113,7 @@ public enum VirtualColumn {
       }
       l.add(ROWID);
       break;
+    //XXX: CDPD-20696 Remove reference to Impala
     case IMPALA:
       // TODO: CDPD-11988: Add ROW_ID to virtual columns for Impala engine
       //       once IMPALA-9515 has been fixed

@@ -709,4 +709,11 @@ public class HiveFunctionHelper implements FunctionHelper {
     return FunctionRegistry.isStateful(fi.getGenericUDF());
   }
 
+  public void validateFunction(String functionName, boolean windowSpec) {
+    throw new RuntimeException("Not implemented");
+  }
+
+  public boolean isAggregateFunction(String functionName) {
+    throw new RuntimeException("Not implemented");
+  }
 }

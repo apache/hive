@@ -46,7 +46,7 @@ import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.plan.impala.work.ImpalaWork;
+import org.apache.hadoop.hive.ql.engine.EngineWork;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,8 +115,8 @@ public class QueryPlanPostProcessor {
           work instanceof MoveWork ||
           work instanceof BasicStatsNoJobWork ||
           work instanceof StatsWork ||
-          // CDPD-6964: Investigate ACID support in Impala Streaming
-          work instanceof ImpalaWork) {
+          // CDPD-6964: Investigate ACID support for external engine streaming
+          work instanceof EngineWork) {
         LOG.debug("Found " + work.getClass().getName() + " - no FileSinkOperation can be present.  executionId=" + executionId);
       }
       else {

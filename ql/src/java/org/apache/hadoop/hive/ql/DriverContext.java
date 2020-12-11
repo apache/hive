@@ -26,10 +26,10 @@ import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.ql.cache.results.CacheUsage;
 import org.apache.hadoop.hive.ql.cache.results.QueryResultsCache.CacheEntry;
+import org.apache.hadoop.hive.ql.engine.EngineEventSequence;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.plan.mapper.StatsSource;
-import org.apache.impala.util.EventSequence;
 
 /**
  * Context for the procedure managed by the Driver.
@@ -53,7 +53,7 @@ public class DriverContext {
   // transaction manager.
   private final HiveTxnManager initTxnManager;
 
-  private EventSequence timeline;
+  private EngineEventSequence timeline;
 
   private QueryPlan plan;
   private Schema schema;
@@ -257,11 +257,11 @@ public class DriverContext {
     this.operationId = operationId;
   }
 
-  public void setTimeline(EventSequence timeline) {
+  public void setTimeline(EngineEventSequence timeline) {
     this.timeline = timeline;
   }
 
-  public EventSequence getTimeline() {
+  public EngineEventSequence getTimeline() {
     return this.timeline;
   }
 }

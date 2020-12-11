@@ -21,7 +21,7 @@ import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
-import org.apache.impala.util.EventSequence;
+import org.apache.hadoop.hive.ql.engine.EngineEventSequence;
 
 public class MarkEventRule extends RelOptRule {
 
@@ -41,10 +41,10 @@ public class MarkEventRule extends RelOptRule {
       // Bail out
       return;
     }
-    final EventSequence timeline =
-        call.getPlanner().getContext().unwrap(EventSequence.class);
+    final EngineEventSequence timeline =
+        call.getPlanner().getContext().unwrap(EngineEventSequence.class);
     if (timeline != null) {
-      // NOOP if this is not an Impala plan
+      // NOOP if this is not an external engine plan
       timeline.markEvent(event);
     }
     triggered = true;

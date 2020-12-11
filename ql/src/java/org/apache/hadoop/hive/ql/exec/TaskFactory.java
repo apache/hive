@@ -25,7 +25,6 @@ import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ddl.DDLTask;
 import org.apache.hadoop.hive.ql.ddl.DDLWork;
-import org.apache.hadoop.hive.ql.exec.impala.ImpalaTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.exec.repl.AtlasDumpTask;
@@ -45,6 +44,9 @@ import org.apache.hadoop.hive.ql.exec.repl.ReplStateLogWork;
 import org.apache.hadoop.hive.ql.exec.schq.ScheduledQueryMaintenanceTask;
 import org.apache.hadoop.hive.ql.exec.spark.SparkTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
+import org.apache.hadoop.hive.ql.engine.EngineHelper;
+import org.apache.hadoop.hive.ql.engine.EngineLoader;
+import org.apache.hadoop.hive.ql.engine.EngineWork;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileTask;
 import org.apache.hadoop.hive.ql.io.merge.MergeFileWork;
 import org.apache.hadoop.hive.ql.plan.ColumnStatsUpdateWork;
@@ -67,11 +69,9 @@ import org.apache.hadoop.hive.ql.exec.repl.RangerDumpTask;
 import org.apache.hadoop.hive.ql.plan.SparkWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
-import org.apache.hadoop.hive.ql.plan.impala.work.ImpalaWork;
 import org.apache.hadoop.hive.ql.scheduled.ScheduledQueryMaintenanceWork;
 
 import com.google.common.annotations.VisibleForTesting;
-
 
 /**
  * TaskFactory implementation.
@@ -120,7 +120,10 @@ public final class TaskFactory {
         DependencyCollectionTask.class));
     taskvec.add(new TaskTuple<TezWork>(TezWork.class, TezTask.class));
     taskvec.add(new TaskTuple<SparkWork>(SparkWork.class, SparkTask.class));
-    taskvec.add(new TaskTuple<ImpalaWork>(ImpalaWork.class, ImpalaTask.class));
+    EngineHelper helper = EngineLoader.getExternalInstance();
+    if (helper != null) {
+      taskvec.add(new TaskTuple<EngineWork>(EngineWork.class, helper.getRuntimeHelper().getTaskClass()));
+    }
     taskvec.add(new TaskTuple<>(ReplDumpWork.class, ReplDumpTask.class));
     taskvec.add(new TaskTuple<>(ReplLoadWork.class, ReplLoadTask.class));
     taskvec.add(new TaskTuple<>(ReplStateLogWork.class, ReplStateLogTask.class));
@@ -159,6 +162,19 @@ public final class TaskFactory {
 
     for (TaskTuple<? extends Serializable> t : taskvec) {
       if (t.workClass == workClass) {
+        try {
+          Task<T> ret = (Task<T>) t.taskClass.newInstance();
+          ret.setId("Stage-" + Integer.toString(getAndIncrementId()));
+          return ret;
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+
+    // Second pass where we check if it's a superclass.
+    for (TaskTuple<? extends Serializable> t : taskvec) {
+      if (t.workClass.isAssignableFrom(workClass)) {
         try {
           Task<T> ret = (Task<T>) t.taskClass.newInstance();
           ret.setId("Stage-" + Integer.toString(getAndIncrementId()));

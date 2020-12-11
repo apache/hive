@@ -79,8 +79,9 @@ import org.apache.hadoop.hive.ql.exec.AddToClassPathAction;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.Registry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.impala.ImpalaSession;
-import org.apache.hadoop.hive.ql.exec.impala.ImpalaSessionManager;
+import org.apache.hadoop.hive.ql.engine.EngineCompileHelper;
+import org.apache.hadoop.hive.ql.engine.EngineLoader;
+import org.apache.hadoop.hive.ql.engine.EngineSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSession;
 import org.apache.hadoop.hive.ql.exec.spark.session.SparkSessionManagerImpl;
 import org.apache.hadoop.hive.ql.exec.tez.ExternalSessionsRegistry;
@@ -100,7 +101,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.TempTable;
-import org.apache.hadoop.hive.ql.plan.impala.ImpalaHMSConverter;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.AuthorizationMetaStoreFilterHook;
@@ -267,7 +267,7 @@ public class SessionState {
 
   private String userIpAddress;
 
-  private ImpalaSession impalaSession;
+  private EngineSession engineSession;
 
   private SparkSession sparkSession;
 
@@ -348,7 +348,7 @@ public class SessionState {
 
   private List<Closeable> cleanupItems = new LinkedList<Closeable>();
 
-  private HMSConverter impalaHmsConverter;
+  private HMSConverter externalEngineHmsConverter;
 
   private volatile long waitingTezSession;
 
@@ -474,7 +474,7 @@ public class SessionState {
         HiveConf.getVar(conf, ConfVars.DOWNLOADED_RESOURCES_DIR), udfCacheMap, udfCacheDir);
     killQuery = new NullKillQuery();
     this.cleanupService = cleanupService;
-    impalaHmsConverter = new ImpalaHMSConverter();
+    externalEngineHmsConverter = EngineCompileHelper.getInstance(conf).getHMSConverter();
   }
 
   public Map<String, String> getHiveVariables() {
@@ -1905,7 +1905,7 @@ public class SessionState {
 
     try {
       closeSparkSession();
-      closeImpalaSession();
+      closeExternalSession();
       registry.closeCUDFLoaders();
       dropSessionPaths(sessionConf);
       unCacheDataNucleusClassLoaders();
@@ -1953,14 +1953,15 @@ public class SessionState {
     }
   }
 
-  public void closeImpalaSession() {
-    if (impalaSession != null) {
+  public void closeExternalSession() {
+    // XXX: CDPD-20696 This needs to work for all generic plugins.
+    if (engineSession != null) {
       try {
-        ImpalaSessionManager.getInstance().closeSession(impalaSession);
+        EngineLoader.getExternalInstance().getSessionHelper().closeSession(engineSession);
       } catch (Exception ex) {
-        LOG.error("Error closing impala session.", ex);
+        LOG.error("Error closing external session.", ex);
       } finally {
-        impalaSession = null;
+        engineSession = null;
       }
     }
   }
@@ -1992,8 +1993,7 @@ public class SessionState {
 
   public static HMSConverter getHMSConverter() {
     SessionState ss = get();
-    return (ss == null || ss.getConf() == null || ss.getConf().getEngine() != Engine.IMPALA)
-        ? null : ss.impalaHmsConverter;
+    return ss == null ? null : ss.externalEngineHmsConverter;
   }
 
   /**
@@ -2071,12 +2071,12 @@ public class SessionState {
     this.userIpAddress = userIpAddress;
   }
 
-  public ImpalaSession getImpalaSession() {
-    return impalaSession;
+  public EngineSession getEngineSession() {
+    return engineSession;
   }
 
-  public void setImpalaSession(ImpalaSession impalaSession) {
-    this.impalaSession = impalaSession;
+  public void setEngineSession(EngineSession engineSession) {
+    this.engineSession = engineSession;
   }
 
   public SparkSession getSparkSession() {

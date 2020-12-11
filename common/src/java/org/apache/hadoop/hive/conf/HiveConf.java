@@ -106,6 +106,7 @@ public class HiveConf extends Configuration {
     return isSparkConfigUpdated;
   }
 
+  //XXX: CDPD-20696: need to get rid of Impala reference
   public boolean getImpalaConfigUpdated() {
     return isImpalaConfigUpdated;
   }
@@ -202,11 +203,11 @@ public class HiveConf extends Configuration {
     }
   }
 
-  public enum ImpalaResultMethod {
+  public enum ResultMethod {
     INVALID_METHOD {
       @Override
       public String toString() {
-        return "invalid Impala result method";
+        return "invalid result method";
       }
     },
     FILE {
@@ -4160,11 +4161,13 @@ public class HiveConf extends Configuration {
     HIVE_EXECUTION_MODE("hive.execution.mode", "container", new StringSet("container", "llap"),
         "Chooses whether query fragments will run in container or in llap"),
 
+    //XXX: CDPD-20696: Need to get rid of Impala references
     // Impala specific configuration properties
-    HIVE_IMPALA_RESULT_METHOD("hive.impala.result.method", ImpalaResultMethod.STREAMING.toString(),
-        new StringSet(true, ImpalaResultMethod.FILE.toString(), ImpalaResultMethod.STREAMING.toString()),
-        "Chooses method used to convey results from Impala. file mode writes the result set to a " +
-        "file determined during planning, streaming mode sends the results over the network."),
+    HIVE_RESULT_METHOD("hive.impala.result.method", ResultMethod.STREAMING.toString(),
+        new StringSet(true, ResultMethod.FILE.toString(), ResultMethod.STREAMING.toString()),
+        "Chooses method used to convey results. File mode writes the result set to a " +
+        "file determined during planning, streaming mode sends the results over the network. " +
+        "Supported engines do not necessarily support all result methods." ),
 
     HIVE_IMPALA_ADDRESS("hive.impala.address", "localhost:21150", "Address for Impala execution engine."),
     HIVE_IMPALA_REQUEST_POOL("hive.impala.request.pool", "default-pool",
@@ -5708,6 +5711,7 @@ public class HiveConf extends Configuration {
    * @param name
    * @return
    */
+  //XXX: CDPD-20696: Need to get rid of Impala references
   private boolean isImpalaRelatedConfig(String name) {
     return name.startsWith("impala");
   }
@@ -6291,6 +6295,7 @@ public class HiveConf extends Configuration {
    * @return Currently configured execution engine.
    */
   public Engine getEngine() {
+    //XXX: CDPD-??? Need to handle other engines besides Impala
     Runtime runtime = getRuntime();
     Engine engine = Engine.INVALID_ENGINE;
     switch (runtime) {
@@ -6322,11 +6327,11 @@ public class HiveConf extends Configuration {
   /**
    * @return Currently configured Impala result method.
    */
-  public ImpalaResultMethod getImpalaResultMethod() {
+  public ResultMethod getResultMethod() {
     try {
-      return ImpalaResultMethod.valueOf(this.getVar(ConfVars.HIVE_IMPALA_RESULT_METHOD).toUpperCase());
+      return ResultMethod.valueOf(this.getVar(ConfVars.HIVE_RESULT_METHOD).toUpperCase());
     } catch (Exception e) {
-      return ImpalaResultMethod.INVALID_METHOD;
+      return ResultMethod.INVALID_METHOD;
     }
   }
 

@@ -2331,10 +2331,10 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
     // We don't use the query cache when there is file metadata. There are two main benefits of caching:
     // 1) It saves the call to HMS - we already get this at the HS2 level for Acid tables. It could
     // still provide benefit for non-acid tables, which leads us to #2...
-    // 2) If we cache the converted object (Impala specific), we avoid a conversion - Because the
-    // query cache is empty at the beginning of the query, we are always going to incur the
-    // conversion cost if we cache it. Caveat: We could make the logic a bit more complicated and
-    // use the converted object from the HS2 level, but there's just not a lot of benefit to add
+    // 2) If we cache the converted object (external engine specific), we avoid a conversion -
+    // Because the query cache is empty at the beginning of the query, we are always going to incur
+    // the conversion cost if we cache it. Caveat: We could make the logic a bit more complicated
+    // and use the converted object from the HS2 level, but there's just not a lot of benefit to add
     // that code.
     if (queryCache == null || rqst.isGetFileMetadata()) {
       return super.getPartitionsByNamesInternal(rqst);
@@ -2364,8 +2364,7 @@ public class SessionHiveMetaStoreClient extends HiveMetaStoreClientWithLocalCach
           = super.getPartitionsByNamesInternal(missingNamesRqst);
 
       // Add new data to the cache, potentially doing a conversion on the Partition object.
-      // The decision of whether a conversion is needed is coded within the engine. Currently,
-      // the ImpalaPartitionConverter  only does the conversion if there is file metadata.
+      // The decision of whether a conversion is needed is coded within the engine.
       cacheHelper.addToCache(missingNamesRqst, missingNamesResult, cacheValue);
     }
     // Fetch the final result by extracting only the requested partitions from the cache

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
@@ -89,7 +88,7 @@ import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveConf.Engine;
-import org.apache.hadoop.hive.conf.HiveConf.ImpalaResultMethod;
+import org.apache.hadoop.hive.conf.HiveConf.ResultMethod;
 import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.TransactionalValidationListener;
@@ -124,6 +123,7 @@ import org.apache.hadoop.hive.ql.ddl.table.misc.properties.AlterTableUnsetProper
 import org.apache.hadoop.hive.ql.ddl.table.storage.skewed.SkewedTableUtils;
 import org.apache.hadoop.hive.ql.ddl.view.create.CreateViewDesc;
 import org.apache.hadoop.hive.ql.ddl.view.materialized.update.MaterializedViewUpdateDesc;
+import org.apache.hadoop.hive.ql.engine.EngineCompileHelper;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -244,7 +244,6 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
-import org.apache.hadoop.hive.ql.plan.ImpalaQueryDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
@@ -483,7 +482,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (impalaHelper == null) {
       return;
     }
-    impalaHelper.getTimeline().markEvent(event);
+    ctx.getTimeline().markEvent(event);
   }
 
   @Override
@@ -2400,7 +2399,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             // This is the only place where isQuery is set to true; it defaults to false.
             qb.setIsQuery(true);
             if (conf.getEngine() == Engine.IMPALA &&
-                conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING) {
+                conf.getResultMethod() == ResultMethod.STREAMING) {
               // Streaming mode does not use a staging directory for results
               fname = null;
             } else {
@@ -12969,7 +12968,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // 9. Optimize Physical op tree & Translate to target execution engine (MR,
     // TEZ..)
     if (!ctx.getExplainLogical()) {
-      TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf, pCtx);
+      TaskCompiler compiler = EngineCompileHelper.getInstance(conf).getCompiler(conf);
       compiler.init(queryState, console, db);
       compiler.compile(pCtx, rootTasks, inputs, outputs);
       fetchTask = pCtx.getFetchTask();
@@ -15666,7 +15665,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // At least one mr/tez/spark job or an impala plan that is not streaming
     if (Utilities.getNumClusterJobs(getRootTasks()) == 0 &&
-        (!isImpalaPlan(conf) || conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING)) {
+        (!isImpalaPlan(conf) || conf.getResultMethod() == ResultMethod.STREAMING)) {
       LOG.info("Not eligible for results caching - no mr/tez/spark/impala jobs");
       return false;
     }

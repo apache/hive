@@ -272,8 +272,9 @@ public class SetProcessor implements CommandProcessor {
       if (!"spark".equals(value)) {
         ss.closeSparkSession();
       }
+      //XXX: CDPD-20696 Remove reference to Impala
       if (!"impala".equals(value)) {
-        ss.closeImpalaSession();
+        ss.closeExternalSession();
       }
     }
     if (HiveConf.ConfVars.CREATE_TABLE_AS_EXTERNAL.varname.equals(key)) {

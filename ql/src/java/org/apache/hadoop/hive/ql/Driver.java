@@ -49,6 +49,8 @@ import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.engine.EngineCompileHelper;
+import org.apache.hadoop.hive.ql.engine.EngineEventSequence;
 import org.apache.hadoop.hive.ql.lock.CompileLock;
 import org.apache.hadoop.hive.ql.lock.CompileLockFactory;
 import org.apache.hadoop.hive.ql.lockmgr.HiveLock;
@@ -77,10 +79,6 @@ import org.apache.hadoop.hive.ql.wm.WmContext;
 import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.common.util.ShutdownHookManager;
-import org.apache.hive.common.util.TxnIdUtils;
-import org.apache.impala.util.EventSequence;
-import org.apache.thrift.TException;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -208,7 +206,8 @@ public class Driver implements IDriver {
   }
 
   private void prepareForCompile(boolean resetTaskIds) throws CommandProcessorException {
-    EventSequence timeline = new EventSequence("Frontend Timeline");
+    EngineEventSequence timeline =
+        EngineCompileHelper.getInstance(driverContext.getConf()).getEventSequence("Frontend Timeline");
     driverContext.setTimeline(timeline);
 
     createTransactionManager();

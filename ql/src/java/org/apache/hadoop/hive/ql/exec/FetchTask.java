@@ -25,21 +25,20 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.hadoop.hive.conf.HiveConf.Engine;
-import org.apache.hadoop.hive.conf.HiveConf.ImpalaResultMethod;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.TaskQueue;
-import org.apache.hadoop.hive.ql.exec.impala.ImpalaStreamingFetchOperator;
+import org.apache.hadoop.hive.metastore.api.Schema;
+import org.apache.hadoop.hive.ql.engine.EngineRuntimeHelper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -91,16 +90,12 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
         AcidUtils.setAcidOperationalProperties(job, ts.getConf().isTranscationalTable(),
             ts.getConf().getAcidOperationalProperties());
       }
-
       sink = work.getSink();
 
-      if (needsImpalaStreamingFetchOperator()) {
-        // Currently we only support streaming from Impala execution engine
-        fetch = new ImpalaStreamingFetchOperator(work, job, source, getVirtualColumns(source),
-                queryPlan.getResultSchema());
-      } else {
-        fetch = new FetchOperator(work, job, source, getVirtualColumns(source));
-      }
+      HiveOperation hiveOp = queryPlan == null ? null : queryPlan.getOperation();
+      Schema resultSchema = queryPlan == null ? null : queryPlan.getResultSchema();
+      fetch = EngineRuntimeHelper.getInstance(conf).createFetchOperator(conf, work, job, source,
+          getVirtualColumns(source), resultSchema, hiveOp);
 
       source.initialize(conf, new ObjectInspector[]{fetch.getOutputObjectInspector()});
       totalRows = 0;
@@ -112,19 +107,6 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
       LOG.error("Initialize failed", e);
       throw new RuntimeException(e);
     }
-  }
-
-  private boolean needsImpalaStreamingFetchOperator() {
-    if (conf.getEngine() == Engine.IMPALA) {
-      if (conf.getImpalaResultMethod() == ImpalaResultMethod.STREAMING &&
-          queryPlan.getOperation() == HiveOperation.QUERY) {
-        return true;
-      }
-      if (queryPlan.getOperation() == HiveOperation.ANALYZE_TABLE) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private List<VirtualColumn> getVirtualColumns(Operator<?> ts) {

@@ -22,10 +22,10 @@ import org.apache.calcite.config.CalciteConnectionConfig;
 import org.apache.calcite.plan.Context;
 import org.apache.calcite.rel.RelNode;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
+import org.apache.hadoop.hive.ql.engine.EngineEventSequence;
 import org.apache.hadoop.hive.ql.optimizer.calcite.cost.HiveAlgorithmsConf;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.HiveRulesRegistry;
 import org.apache.hadoop.hive.ql.parse.type.FunctionHelper;
-import org.apache.impala.util.EventSequence;
 
 import java.util.List;
 import java.util.Set;
@@ -38,13 +38,13 @@ public class HivePlannerContext implements Context {
   private final SubqueryConf subqueryConfig;
   private final HiveConfPlannerContext isCorrelatedColumns;
   private final FunctionHelper functionHelper;
-  private final EventSequence timeline;
+  private final EngineEventSequence timeline;
   private final List<Object> resources = Lists.newArrayList();
 
   public HivePlannerContext(HiveAlgorithmsConf algoConfig, HiveRulesRegistry registry,
       CalciteConnectionConfig calciteConfig, Set<RelNode> corrScalarRexSQWithAgg,
       HiveConfPlannerContext isCorrelatedColumns, FunctionHelper functionHelper,
-      EventSequence timeline) {
+      EngineEventSequence timeline) {
     this.algoConfig = algoConfig;
     this.registry = registry;
     this.calciteConfig = calciteConfig;
