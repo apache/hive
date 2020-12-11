@@ -65,7 +65,6 @@ public abstract class DatabaseRule extends ExternalResource {
 
   public final String getContainerHostAddress() {
     String hostAddress = System.getenv("HIVE_TEST_DOCKER_HOST");
-    LOG.info("addr:{}", hostAddress);
     if (hostAddress != null) {
       return hostAddress;
     } else {
