@@ -35,6 +35,8 @@ import org.apache.hadoop.hive.ql.ddl.table.AbstractAlterTableAnalyzer;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.Constraints;
 import org.apache.hadoop.hive.ql.ddl.table.constraint.ConstraintsUtils;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -58,7 +60,7 @@ public class AlterTableAddConstraintAnalyzer extends AbstractAlterTableAnalyzer 
     List<SQLUniqueConstraint> uniqueConstraints = new ArrayList<>();
     List<SQLCheckConstraint> checkConstraints = new ArrayList<>();
 
-    ASTNode constraintNode = (ASTNode)command.getChild(0);
+    ASTNode constraintNode = (ASTNode) command.getChild(0);
     switch (constraintNode.getToken().getType()) {
     case HiveParser.TOK_UNIQUE:
       ConstraintsUtils.processUniqueConstraints(tableName, constraintNode, uniqueConstraints);
@@ -77,9 +79,13 @@ public class AlterTableAddConstraintAnalyzer extends AbstractAlterTableAnalyzer 
       throw new SemanticException(ErrorMsg.NOT_RECOGNIZED_CONSTRAINT.getMsg(constraintNode.getToken().getText()));
     }
 
-    Constraints constraints = new Constraints(primaryKeys, foreignKeys, null, uniqueConstraints, null,
-        checkConstraints);
+    Constraints constraints = new Constraints(primaryKeys, foreignKeys, null, uniqueConstraints, null, checkConstraints);
     AlterTableAddConstraintDesc desc = new AlterTableAddConstraintDesc(tableName, null, constraints);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
+
+    Table table = getTable(tableName);
+    if (AcidUtils.isTransactionalTable(table)) {
+      setAcidDdlDesc(desc);
+    }
   }
 }
