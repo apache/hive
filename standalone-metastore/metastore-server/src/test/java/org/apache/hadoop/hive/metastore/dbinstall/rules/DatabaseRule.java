@@ -57,7 +57,23 @@ public abstract class DatabaseRule extends ExternalResource {
 
   public abstract String getJdbcDriver();
 
-  public abstract String getJdbcUrl();
+  public abstract String getJdbcUrl(String hostAddress);
+
+  public final String getJdbcUrl() {
+    return getJdbcUrl(getContainerHostAddress());
+  }
+
+  public final String getContainerHostAddress() {
+    //xport HIVE_TEST_DOCKER_HOST=$(docker inspect -f '{{range.NetworkSettings.Networks}}{{.Gateway}}{{end}}' `hostname`)
+
+    String hostAddress = System.getenv("HIVE_TEST_DOCKER_HOST");
+    LOG.info("addr:{}", hostAddress);
+    if (hostAddress != null) {
+      return hostAddress;
+    } else {
+      return "localhost";
+    }
+  }
 
   private boolean verbose;
 
@@ -79,7 +95,11 @@ public abstract class DatabaseRule extends ExternalResource {
    *
    * @return URL
    */
-  public abstract String getInitialJdbcUrl();
+  public abstract String getInitialJdbcUrl(String hostAddress);
+
+  public final String getInitialJdbcUrl() {
+    return getJdbcUrl(getContainerHostAddress());
+  }
 
   /**
    * Determine if the docker container is ready to use.

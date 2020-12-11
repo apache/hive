@@ -61,20 +61,20 @@ public class Postgres extends DatabaseRule {
   }
 
   @Override
-  public String getJdbcUrl() {
-    return "jdbc:postgresql://localhost:5432/" + HIVE_DB;
+  public String getJdbcUrl(String hostAddress) {
+    return "jdbc:postgresql://" + hostAddress + ":5432/" + HIVE_DB;
   }
 
   @Override
-  public String getInitialJdbcUrl() {
-    return "jdbc:postgresql://localhost:5432/postgres";
+  public String getInitialJdbcUrl(String hostAddress) {
+    return "jdbc:postgresql://" + hostAddress + ":5432/postgres";
   }
 
   @Override
   public boolean isContainerReady(String logOutput) {
     if (logOutput.contains("PostgreSQL init process complete; ready for start up")) {
       try (Socket socket = new Socket()) {
-        socket.connect(new InetSocketAddress("localhost", 5432), 1000);
+        socket.connect(new InetSocketAddress(getContainerHostAddress(), 5432), 1000);
         return true;
       } catch (IOException e) {
         LOG.info("cant connect to postgres; {}", e.getMessage());
