@@ -73,7 +73,6 @@ import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidTxnWriteIdList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.common.classification.RetrySemantics;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.DatabaseProduct;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.MetaStoreListenerNotifier;
@@ -3880,7 +3879,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         LOG.debug("Going to rollback");
         rollbackDBConn(dbConn);
         checkRetryable(dbConn, e, "cleanupRecords");
-        if (dbProduct.isTableNotExistsError(e) && conf.getBoolean(HiveConf.ConfVars.HIVE_IN_TEST.varname, false)) {
+        if (dbProduct.isTableNotExistsError(e) && conf.getBoolean("hive.in.test", false)) {
           // in many test we do not create the txn tables, but issue a drop database, when this method will try to run
           LOG.warn("Cannot perform cleanup since metastore table does not exist");
         } else {
