@@ -171,7 +171,7 @@ public class TestDropPartitions extends MetaStoreClientTest {
 
     String tableName = "purge_test";
     Map<String, String> tableParams = new HashMap<>();
-    tableParams.put("auto.purge", "true");
+    tableParams.put("skip.trash", "true");
     createTable(tableName, getYearPartCol(), tableParams);
 
     Partition partition1 =
@@ -214,7 +214,7 @@ public class TestDropPartitions extends MetaStoreClientTest {
     String tableName = "external_table";
     Map<String, String> tableParams = new HashMap<>();
     tableParams.put("EXTERNAL", "true");
-    tableParams.put("auto.purge", "true");
+    tableParams.put("skip.trash", "true");
     createTable(tableName, getYearPartCol(), tableParams);
 
     String location = metaStore.getExternalWarehouseRoot() + "/externalTable/year=2017";
@@ -401,7 +401,7 @@ public class TestDropPartitions extends MetaStoreClientTest {
 
     String tableName = "purge_test";
     Map<String, String> tableParams = new HashMap<>();
-    tableParams.put("auto.purge", "true");
+    tableParams.put("skip.trash", "true");
     createTable(tableName, getYearPartCol(), tableParams);
 
     Partition partition1 =

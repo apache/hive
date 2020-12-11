@@ -216,34 +216,14 @@ public class CompactorMR {
    * @throws java.io.IOException if the job fails
    */
   void run(HiveConf conf, String jobName, Table t, Partition p, StorageDescriptor sd, ValidWriteIdList writeIds,
-           CompactionInfo ci, Worker.StatsUpdater su, IMetaStoreClient msc, Directory dir)
-      throws IOException, HiveException {
-
-    if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
-      throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
-    }
-    
-    /**
-     * Run major compaction in a HiveQL query (compaction for MM tables handled in {@link MmMajorQueryCompactor}
-     * class).
-     * Find a better way:
-     * 1. A good way to run minor compaction (currently disabled when this config is enabled)
-     * 2. More generic approach to collecting files in the same logical bucket to compact within the same task
-     * (currently we're using Tez split grouping).
-     */
-    QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
-    if (queryCompactor != null) {
-      LOG.info("Will compact with  " + queryCompactor.getClass().getName());
-      queryCompactor.runCompaction(conf, t, p, sd, writeIds, ci);
-      return;
-    }
+           CompactionInfo ci, Worker.StatsUpdater su, IMetaStoreClient msc, Directory dir) throws IOException {
 
     JobConf job = createBaseJobConf(conf, jobName, t, sd, writeIds, ci);
 
     List<AcidUtils.ParsedDelta> parsedDeltas = dir.getCurrentDirectories();
     int maxDeltasToHandle = conf.getIntVar(HiveConf.ConfVars.COMPACTOR_MAX_NUM_DELTA);
     if (parsedDeltas.size() > maxDeltasToHandle) {
-      /**
+      /*
        * if here, that means we have very high number of delta files.  This may be sign of a temporary
        * glitch or a real issue.  For example, if transaction batch size or transaction size is set too
        * low for the event flow rate in Streaming API, it may generate lots of delta files very
@@ -1013,7 +993,7 @@ public class CompactorMR {
       LOG.debug("Moving contents of " + tmpLocation.toString() + " to " +
           finalLocation.toString());
       if(!fs.exists(tmpLocation)) {
-        /**
+        /*
          * No 'tmpLocation' may happen if job generated created 0 splits, which happens if all
          * input delta and/or base files were empty or had
          * only {@link org.apache.orc.impl.OrcAcidUtils#getSideFile(Path)} files.
@@ -1031,10 +1011,13 @@ public class CompactorMR {
         LOG.info(context.getJobID() + ": " + tmpLocation +
             " not found.  Assuming 0 splits.  Creating " + newDeltaDir);
         fs.mkdirs(newDeltaDir);
-        AcidUtils.OrcAcidVersion.writeVersionFile(newDeltaDir, fs);
+        if (options.isWriteVersionFile()) {
+          AcidUtils.OrcAcidVersion.writeVersionFile(newDeltaDir, fs);
+        }
         return;
       }
       FileStatus[] contents = fs.listStatus(tmpLocation);
+      AcidOutputFormat.Options options = new AcidOutputFormat.Options(conf);
       //minor compaction may actually have delta_x_y and delete_delta_x_y
       for (FileStatus fileStatus : contents) {
         //newPath is the base/delta dir
@@ -1044,7 +1027,9 @@ public class CompactorMR {
         * it will make A a child of B...  thus make sure the rename() is done before creating the
         * meta files which will create base_x/ (i.e. B)...*/
         fs.rename(fileStatus.getPath(), newPath);
-        AcidUtils.OrcAcidVersion.writeVersionFile(newPath, fs);
+        if (options.isWriteVersionFile()) {
+          AcidUtils.OrcAcidVersion.writeVersionFile(newPath, fs);
+        }
       }
       fs.delete(tmpLocation, true);
     }

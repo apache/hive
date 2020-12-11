@@ -34,7 +34,6 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
-import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 
 import com.google.common.collect.ImmutableSet;
@@ -49,7 +48,7 @@ public class AlterTableReplaceColumnsOperation extends AbstractAlterTableOperati
 
   private static final Set<String> VALID_SERIALIZATION_LIBS = ImmutableSet.of(
       MetadataTypedColumnsetSerDe.class.getName(), LazySimpleSerDe.class.getName(), ColumnarSerDe.class.getName(),
-      DynamicSerDe.class.getName(), ParquetHiveSerDe.class.getName(), OrcSerde.class.getName());
+      ParquetHiveSerDe.class.getName(), OrcSerde.class.getName());
 
   @Override
   protected void doAlteration(Table table, Partition partition) throws HiveException {

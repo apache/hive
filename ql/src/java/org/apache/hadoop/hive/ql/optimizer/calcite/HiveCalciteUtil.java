@@ -31,6 +31,7 @@ import org.apache.calcite.plan.RelTraitSet;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.plan.RelOptUtil.InputReferencedVisitor;
 import org.apache.calcite.rel.RelNode;
+import org.apache.calcite.rel.core.Aggregate;
 import org.apache.calcite.rel.core.AggregateCall;
 import org.apache.calcite.rel.core.Join;
 import org.apache.calcite.rel.core.RelFactories.ProjectFactory;
@@ -1226,19 +1227,49 @@ public class HiveCalciteUtil {
       // This is a validation check which can become quite handy debugging type
       // issues. Basically, we need both types to be equal, only difference should
       // be nullability.
-      // However, we make an exception for Hive wrt CHAR type because Hive encodes
-      // the STRING type for literals within CHAR value (see {@link HiveNlsString})
-      // while Calcite always considers these literals to be a CHAR, which means
-      // that the reference may be created as a STRING or VARCHAR from AST node
-      // at parsing time but the actual type referenced is a CHAR.
       if (refType2 == rightType) {
         return new RexInputRef(ref.getIndex(), refType2);
-      } else if (refType2.getFamily() == SqlTypeFamily.CHARACTER &&
-          rightType.getSqlTypeName() == SqlTypeName.CHAR && !rightType.isNullable()) {
-        return new RexInputRef(ref.getIndex(), rightType);
       }
       throw new AssertionError("mismatched type " + ref + " " + rightType);
     }
   }
 
+  /**
+   * Checks if any of the expression given as list expressions are from right side of the join.
+   *  This is used during anti join conversion.
+   *
+   * @param joinRel Join node whose right side has to be searched.
+   * @param expressions The list of expression to search.
+   * @return true if any of the expressions is from right side of join.
+   */
+  public static boolean hasAnyExpressionFromRightSide(RelNode joinRel, List<RexNode> expressions)  {
+    List<RelDataTypeField> joinFields = joinRel.getRowType().getFieldList();
+    int nTotalFields = joinFields.size();
+    List<RelDataTypeField> leftFields = (joinRel.getInputs().get(0)).getRowType().getFieldList();
+    int nFieldsLeft = leftFields.size();
+    ImmutableBitSet rightBitmap = ImmutableBitSet.range(nFieldsLeft, nTotalFields);
+
+    for (RexNode node : expressions) {
+      ImmutableBitSet inputBits = RelOptUtil.InputFinder.bits(node);
+      if (rightBitmap.contains(inputBits)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Extracts inputs referenced by aggregate operator.
+   */
+  public static ImmutableBitSet extractRefs(Aggregate aggregate) {
+    final ImmutableBitSet.Builder refs = ImmutableBitSet.builder();
+    refs.addAll(aggregate.getGroupSet());
+    for (AggregateCall aggCall : aggregate.getAggCallList()) {
+      refs.addAll(aggCall.getArgList());
+      if (aggCall.filterArg != -1) {
+        refs.set(aggCall.filterArg);
+      }
+    }
+    return refs.build();
+  }
 }

@@ -73,7 +73,7 @@ public class HiveBinaryOutputFormat<K extends WritableComparable, V extends Writ
           Text tr = (Text) r;
           outStream.write(tr.getBytes(), 0, tr.getLength());
         } else {
-          // DynamicSerDe always writes out BytesWritable
+          // Binary SerDes always write out BytesWritable
           BytesWritable bw = (BytesWritable) r;
           outStream.write(bw.get(), 0, bw.getSize());
         }

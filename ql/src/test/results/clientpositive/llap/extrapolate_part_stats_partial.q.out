@@ -47,6 +47,7 @@ PREHOOK: Output: default@loc_orc_1d_n1
 POSTHOOK: query: insert overwrite table loc_orc_1d_n1 partition(year) select * from ext_loc_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ext_loc_n1
+POSTHOOK: Output: default@loc_orc_1d_n1
 POSTHOOK: Output: default@loc_orc_1d_n1@year=2000
 POSTHOOK: Output: default@loc_orc_1d_n1@year=2001
 POSTHOOK: Output: default@loc_orc_1d_n1@year=2002
@@ -860,6 +861,7 @@ PREHOOK: Output: default@loc_orc_2d_n1
 POSTHOOK: query: insert overwrite table loc_orc_2d_n1 partition(zip, year) select * from ext_loc_n1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@ext_loc_n1
+POSTHOOK: Output: default@loc_orc_2d_n1
 POSTHOOK: Output: default@loc_orc_2d_n1@zip=43201/year=2001
 POSTHOOK: Output: default@loc_orc_2d_n1@zip=43201/year=2002
 POSTHOOK: Output: default@loc_orc_2d_n1@zip=43201/year=2003

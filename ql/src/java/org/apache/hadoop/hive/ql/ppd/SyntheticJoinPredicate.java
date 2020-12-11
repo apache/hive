@@ -339,6 +339,12 @@ public class SyntheticJoinPredicate extends Transform {
           vector.add(right, left);
           break;
         case JoinDesc.LEFT_OUTER_JOIN:
+        case JoinDesc.ANTI_JOIN:
+        //TODO : In case of anti join, bloom filter can be created on left side also ("IN (keylist right table)").
+        // But the filter should be "not-in" ("NOT IN (keylist right table)") as we want to select the records from
+        // left side which are not present in the right side. But it may cause wrong result as
+        // bloom filter may have false positive and thus simply adding not is not correct,
+        // special handling is required for "NOT IN".
           vector.add(right, left);
           break;
         case JoinDesc.RIGHT_OUTER_JOIN:

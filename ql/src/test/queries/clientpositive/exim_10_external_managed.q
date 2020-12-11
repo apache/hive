@@ -1,4 +1,5 @@
 set hive.test.mode=true;
+set hive.repl.include.external.tables=false;
 set hive.test.mode.prefix=;
 set hive.test.mode.nosamplelist=exim_department_n4,exim_employee;
 

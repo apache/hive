@@ -27,11 +27,11 @@
   <value>org.apache.hadoop.hive.jdbc.HiveDriver;jdbc:hive://</value>
   <description>Hive embedded JDBC (not requiring HiveServer)</description>
 </property>
-<property>
-  <name>hplsql.conn.hive2conn</name>
+  <property>
+    <name>hplsql.conn.hive2conn</name>
   <value>org.apache.hive.jdbc.HiveDriver;jdbc:hive2://localhost:10000;hive;hive</value>
-  <description>HiveServer2 JDBC connection</description>
-</property>
+    <description>HiveServer2 JDBC connection</description>
+  </property>
 <property>
   <name>hplsql.conn.init.hive2conn</name>
   <value>

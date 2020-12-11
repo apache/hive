@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -43,6 +44,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -81,6 +83,7 @@ import org.apache.orc.OrcConf;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -130,6 +133,7 @@ public class TestCompactor {
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER, false);
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVEOPTIMIZEMETADATAQUERIES, false);
 
     TxnDbUtil.setConfValues(hiveConf);
     TxnDbUtil.cleanDb(hiveConf);
@@ -137,6 +141,7 @@ public class TestCompactor {
 
     conf = hiveConf;
     HiveConf.setBoolVar(conf, ConfVars.HIVE_MM_ALLOW_ORIGINALS, true);
+    HiveConf.setTimeVar(conf, ConfVars.HIVE_COMPACTOR_ABORTEDTXN_TIME_THRESHOLD, 0, TimeUnit.MILLISECONDS);
     msClient = new HiveMetaStoreClient(conf);
     driver = DriverFactory.newDriver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
@@ -664,6 +669,121 @@ public class TestCompactor {
   }
 
   @Test
+  public void autoCompactOnStreamingIngestWithDynamicPartition() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+    String columnNamesProperty = "a,b";
+    String columnTypesProperty = "string:int";
+    String agentInfo = "UT_" + Thread.currentThread().getName();
+
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(a STRING) " +
+        " PARTITIONED BY (b INT)" + //currently ACID requires table to be bucketed
+        " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+
+    StrictDelimitedInputWriter writer1 = StrictDelimitedInputWriter.newBuilder()
+        .withFieldDelimiter(',')
+        .build();
+    StrictDelimitedInputWriter writer2 = StrictDelimitedInputWriter.newBuilder()
+        .withFieldDelimiter(',')
+        .build();
+
+    StreamingConnection connection1 = HiveStreamingConnection.newBuilder()
+        .withDatabase(dbName)
+        .withTable(tblName)
+        .withAgentInfo(agentInfo)
+        .withHiveConf(conf)
+        .withRecordWriter(writer1)
+        .withStreamingOptimizations(true)
+        // Transaction size has to be one or exception should happen.
+        .withTransactionBatchSize(1)
+        .connect();
+
+    StreamingConnection connection2 = HiveStreamingConnection.newBuilder()
+        .withDatabase(dbName)
+        .withTable(tblName)
+        .withAgentInfo(agentInfo)
+        .withHiveConf(conf)
+        .withRecordWriter(writer2)
+        .withStreamingOptimizations(true)
+        // Transaction size has to be one or exception should happen.
+        .withTransactionBatchSize(1)
+        .connect();
+
+    try {
+      connection1.beginTransaction();
+      connection1.write("1,1".getBytes());
+      connection1.commitTransaction();
+
+      connection1.beginTransaction();
+      connection1.write("1,1".getBytes());
+      connection1.commitTransaction();
+      connection1.close();
+
+      conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 1);
+      runInitiator(conf);
+
+      TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+      ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+
+      List<ShowCompactResponseElement> compacts1 = rsp.getCompacts();
+      Assert.assertEquals(1, compacts1.size());
+      SortedSet<String> partNames1 = new TreeSet<String>();
+      verifyCompactions(compacts1, partNames1, tblName);
+      List<String> names1 = new ArrayList<String>(partNames1);
+      Assert.assertEquals("b=1", names1.get(0));
+
+      runWorker(conf);
+      runCleaner(conf);
+
+      connection2.beginTransaction();
+      connection2.write("1,1".getBytes());
+      connection2.commitTransaction();
+
+      connection2.beginTransaction();
+      connection2.write("1,1".getBytes());
+      connection2.commitTransaction();
+      connection2.close();
+
+      runInitiator(conf);
+
+      List<ShowCompactResponseElement> compacts2 = rsp.getCompacts();
+      Assert.assertEquals(1, compacts2.size());
+      SortedSet<String> partNames2 = new TreeSet<String>();
+      verifyCompactions(compacts2, partNames2, tblName);
+      List<String> names2 = new ArrayList<String>(partNames2);
+      Assert.assertEquals("b=1", names2.get(0));
+
+      runWorker(conf);
+      runCleaner(conf);
+
+      // Find the location of the table
+      IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+      Table table = msClient.getTable(dbName, tblName);
+      String tablePath = table.getSd().getLocation();
+      String partName = "b=1";
+      Path partPath = new Path(tablePath, partName);
+      FileSystem fs = FileSystem.get(conf);
+      FileStatus[] stat = fs.listStatus(partPath, AcidUtils.baseFileFilter);
+      if (1 != stat.length) {
+        Assert.fail("Expecting 1 file \"base_0000004\" and found " + stat.length + " files " + Arrays.toString(stat));
+      }
+      String name = stat[0].getPath().getName();
+      Assert.assertEquals("base_0000004_v0000008", name);
+      CompactorTestUtil
+          .checkExpectedTxnsPresent(stat[0].getPath(), null, columnNamesProperty, columnTypesProperty, 0, 1L, 4L, null,
+              1);
+    } finally {
+      if (connection1 != null) {
+        connection1.close();
+      }
+      if (connection2 != null) {
+        connection2.close();
+      }
+    }
+  }
+
+  @Test
   public void minorCompactAfterAbort() throws Exception {
     String dbName = "default";
     String tblName = "cws";
@@ -738,6 +858,324 @@ public class TestCompactor {
             Lists.newArrayList(5, 6), 1);
   }
 
+  @Test
+  public void testCleanAbortCompactAfter2ndCommitAbort() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+
+    HiveStreamingConnection connection = prepareTableAndConnection(dbName, tblName, 2);
+
+    connection.beginTransaction();
+    connection.write("1,1".getBytes());
+    connection.write("2,2".getBytes());
+    connection.commitTransaction();
+
+    connection.beginTransaction();
+    connection.write("3,2".getBytes());
+    connection.write("3,3".getBytes());
+    connection.abortTransaction();
+
+    assertAndCompactCleanAbort(dbName, tblName, true, true);
+    connection.close();
+  }
+
+  @Test
+  public void testCleanAbortCompactAfter1stCommitAbort() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+
+    HiveStreamingConnection connection = prepareTableAndConnection(dbName, tblName, 2);
+
+    connection.beginTransaction();
+    connection.write("1,1".getBytes());
+    connection.write("2,2".getBytes());
+    connection.abortTransaction();
+
+    connection.beginTransaction();
+    connection.write("3,2".getBytes());
+    connection.write("3,3".getBytes());
+    connection.commitTransaction();
+
+    assertAndCompactCleanAbort(dbName, tblName, true, true);
+    connection.close();
+  }
+
+  @Test
+  public void testCleanAbortCompactAfterAbortTwoPartitions() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+
+    HiveStreamingConnection connection1 = prepareTableTwoPartitionsAndConnection(dbName, tblName, 1);
+    HiveStreamingConnection connection2 = prepareTableTwoPartitionsAndConnection(dbName, tblName, 1);
+
+    // to skip optimization introduced in HIVE-22122
+    executeStatementOnDriver("truncate " + tblName, driver);
+
+    connection1.beginTransaction();
+    connection1.write("1,1".getBytes());
+    connection1.write("2,2".getBytes());
+    connection1.abortTransaction();
+
+    connection2.beginTransaction();
+    connection2.write("1,3".getBytes());
+    connection2.write("2,3".getBytes());
+    connection2.write("3,3".getBytes());
+    connection2.abortTransaction();
+
+    assertAndCompactCleanAbort(dbName, tblName, false, false);
+
+    connection1.close();
+    connection2.close();
+  }
+
+  @Test
+  public void testCleanAbortCompactAfterAbort() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+
+    // Create three folders with two different transactions
+    HiveStreamingConnection connection1 = prepareTableAndConnection(dbName, tblName, 1);
+    HiveStreamingConnection connection2 = prepareTableAndConnection(dbName, tblName, 1);
+
+    // to skip optimization introduced in HIVE-22122
+    executeStatementOnDriver("truncate " + tblName, driver);
+
+    connection1.beginTransaction();
+    connection1.write("1,1".getBytes());
+    connection1.write("2,2".getBytes());
+    connection1.abortTransaction();
+
+    connection2.beginTransaction();
+    connection2.write("1,3".getBytes());
+    connection2.write("2,3".getBytes());
+    connection2.write("3,3".getBytes());
+    connection2.abortTransaction();
+
+    assertAndCompactCleanAbort(dbName, tblName, false, false);
+
+    connection1.close();
+    connection2.close();
+  }
+
+  private void assertAndCompactCleanAbort(String dbName, String tblName, boolean partialAbort, boolean singleSession) throws Exception {
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+    Table table = msClient.getTable(dbName, tblName);
+    FileSystem fs = FileSystem.get(conf);
+    FileStatus[] stat =
+        fs.listStatus(new Path(table.getSd().getLocation()));
+    if (3 != stat.length) {
+      Assert.fail("Expecting three directories corresponding to three partitions, FileStatus[] stat " + Arrays.toString(stat));
+    }
+
+    int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='i'");
+    // We should have two rows corresponding to the two aborted transactions
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), partialAbort ? 1 : 2, count);
+
+    runInitiator(conf);
+    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
+    // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
+    // with rows in TXN_COMPONENTS
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 1, count);
+    runWorker(conf);
+
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompacts().size());
+    Assert.assertEquals(TxnStore.CLEANING_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals("cws", rsp.getCompacts().get(0).getTablename());
+    Assert.assertEquals(CompactionType.MINOR, rsp.getCompacts().get(0).getType());
+
+    runCleaner(conf);
+
+    // After the cleaner runs TXN_COMPONENTS and COMPACTION_QUEUE should have zero rows, also the folders should have been deleted.
+    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), (singleSession && partialAbort) ? 1 : 0, count);
+
+    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 0, count);
+
+    RemoteIterator it =
+        fs.listFiles(new Path(table.getSd().getLocation()), true);
+    if (it.hasNext() && !partialAbort) {
+      Assert.fail("Expected cleaner to drop aborted delta & base directories, FileStatus[] stat " + Arrays.toString(stat));
+    }
+
+    rsp = txnHandler.showCompact(new ShowCompactRequest());
+    Assert.assertEquals(1, rsp.getCompacts().size());
+    Assert.assertEquals(TxnStore.SUCCEEDED_RESPONSE, rsp.getCompacts().get(0).getState());
+    Assert.assertEquals("cws", rsp.getCompacts().get(0).getTablename());
+    Assert.assertEquals(CompactionType.MINOR, rsp.getCompacts().get(0).getType());
+  }
+
+  @Test
+  public void testCleanAbortCompactSeveralTables() throws Exception {
+    String dbName = "default";
+    String tblName1 = "cws1";
+    String tblName2 = "cws2";
+
+    HiveStreamingConnection connection1 = prepareTableAndConnection(dbName, tblName1, 1);
+    HiveStreamingConnection connection2 = prepareTableAndConnection(dbName, tblName2, 1);
+
+    connection1.beginTransaction();
+    connection1.write("1,1".getBytes());
+    connection1.write("2,2".getBytes());
+    connection1.abortTransaction();
+
+    connection2.beginTransaction();
+    connection2.write("1,1".getBytes());
+    connection2.write("2,2".getBytes());
+    connection2.abortTransaction();
+
+    IMetaStoreClient msClient = new HiveMetaStoreClient(conf);
+    FileSystem fs = FileSystem.get(conf);
+    Table table1 = msClient.getTable(dbName, tblName1);
+    FileStatus[] stat =
+        fs.listStatus(new Path(table1.getSd().getLocation()));
+    if (2 != stat.length) {
+      Assert.fail("Expecting two directories corresponding to two partitions, FileStatus[] stat " + Arrays.toString(stat));
+    }
+    Table table2 = msClient.getTable(dbName, tblName2);
+    stat = fs.listStatus(new Path(table2.getSd().getLocation()));
+    if (2 != stat.length) {
+      Assert.fail("Expecting two directories corresponding to two partitions, FileStatus[] stat " + Arrays.toString(stat));
+    }
+
+    int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='i'");
+    // We should have two rows corresponding to the two aborted transactions
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 2, count);
+
+    runInitiator(conf);
+    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
+    // Only one job is added to the queue per table. This job corresponds to all the entries for a particular table
+    // with rows in TXN_COMPONENTS
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 2, count);
+
+    runWorker(conf);
+    runWorker(conf);
+
+    runCleaner(conf);
+    // After the cleaner runs TXN_COMPONENTS and COMPACTION_QUEUE should have zero rows, also the folders should have been deleted.
+    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
+
+    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 0, count);
+
+    RemoteIterator it =
+        fs.listFiles(new Path(table1.getSd().getLocation()), true);
+    if (it.hasNext()) {
+      Assert.fail("Expected cleaner to drop aborted delta & base directories, FileStatus[] stat " + Arrays.toString(stat));
+    }
+
+    connection1.close();
+    connection2.close();
+  }
+
+  @Test
+  public void testCleanAbortCorrectlyCleaned() throws Exception {
+    // Test that at commit the tables are cleaned properly
+    String dbName = "default";
+    String tblName = "cws";
+    HiveStreamingConnection connection = prepareTableAndConnection(dbName, tblName, 1);
+    connection.beginTransaction();
+    connection.write("1,1".getBytes());
+    connection.write("2,2".getBytes());
+
+    int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='i'");
+    // We should have 1 row corresponding to the aborted transaction
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 1, count);
+
+    connection.commitTransaction();
+
+    // After commit the row should have been deleted
+    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS where TC_OPERATION_TYPE='i'");
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
+  }
+
+  @Test
+  public void testCleanAbortAndMinorCompact() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+
+    HiveStreamingConnection connection = prepareTableAndConnection(dbName, tblName, 1);
+
+    connection.beginTransaction();
+    connection.write("1,1".getBytes());
+    connection.write("2,2".getBytes());
+    connection.abortTransaction();
+
+    executeStatementOnDriver("insert into " + tblName + " partition (a) values (1, '1')", driver);
+    executeStatementOnDriver("delete from " + tblName + " where b=1", driver);
+
+    conf.setIntVar(HiveConf.ConfVars.HIVE_COMPACTOR_DELTA_NUM_THRESHOLD, 0);
+    runInitiator(conf);
+
+    int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 2, count);
+
+    runWorker(conf);
+    runWorker(conf);
+
+    // Cleaning should happen in threads concurrently for the minor compaction and the clean abort one.
+    runCleaner(conf);
+
+    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from COMPACTION_QUEUE");
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from COMPACTION_QUEUE"), 0, count);
+
+    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
+    Assert.assertEquals(TxnDbUtil.queryToString(conf, "select * from TXN_COMPONENTS"), 0, count);
+
+  }
+
+  private HiveStreamingConnection prepareTableAndConnection(String dbName, String tblName, int batchSize) throws Exception {
+    String agentInfo = "UT_" + Thread.currentThread().getName();
+
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(b STRING) " +
+        " PARTITIONED BY (a INT)" + //currently ACID requires table to be bucketed
+        " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+
+    StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
+        .withFieldDelimiter(',')
+        .build();
+
+    // Create three folders with two different transactions
+    return HiveStreamingConnection.newBuilder()
+        .withDatabase(dbName)
+        .withTable(tblName)
+        .withAgentInfo(agentInfo)
+        .withHiveConf(conf)
+        .withRecordWriter(writer)
+        .withStreamingOptimizations(true)
+        // Transaction size has to be one or exception should happen.
+        .withTransactionBatchSize(batchSize)
+        .connect();
+  }
+
+  private HiveStreamingConnection prepareTableTwoPartitionsAndConnection(String dbName, String tblName, int batchSize) throws Exception {
+    String agentInfo = "UT_" + Thread.currentThread().getName();
+
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(c STRING) " +
+        " PARTITIONED BY (a INT, b INT)" + //currently ACID requires table to be bucketed
+        " STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+
+    StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
+        .withFieldDelimiter(',')
+        .build();
+
+    // Create three folders with two different transactions
+    return HiveStreamingConnection.newBuilder()
+        .withDatabase(dbName)
+        .withTable(tblName)
+        .withAgentInfo(agentInfo)
+        .withHiveConf(conf)
+        .withRecordWriter(writer)
+        .withStreamingOptimizations(true)
+        // Transaction size has to be one or exception should happen.
+        .withTransactionBatchSize(batchSize)
+        .connect();
+  }
 
   @Test
   public void mmTable() throws Exception {

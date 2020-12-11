@@ -114,8 +114,6 @@ public class TransactionBatch extends AbstractStreamingTransaction {
       this.numTxns = conn.getTransactionBatchSize();
       this.tableId = conn.getTable().getTTable().getId();
 
-      setupHeartBeatThread();
-
       List<Long> txnIds = openTxnImpl(username, numTxns);
       txnToWriteIds = allocateWriteIdsImpl(txnIds);
       assert (txnToWriteIds.size() == numTxns);
@@ -132,6 +130,7 @@ public class TransactionBatch extends AbstractStreamingTransaction {
           txnToWriteIds.get(numTxns - 1).getWriteId(), conn.getStatementId());
       this.minTxnId = new AtomicLong(txnIds.get(0));
       this.maxTxnId = txnIds.get(txnIds.size() - 1);
+      setupHeartBeatThread();
       success = true;
     } catch (TException e) {
       throw new StreamingException(conn.toString(), e);

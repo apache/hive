@@ -68,7 +68,10 @@ class AsyncTaskCopyLocalJars implements Callable<Void> {
         org.apache.arrow.memory.BaseAllocator.class, //arrow-memory
         org.apache.arrow.flatbuf.Schema.class, //arrow-format
         com.google.flatbuffers.Table.class, //flatbuffers
-        com.carrotsearch.hppc.ByteArrayDeque.class //hppc
+        com.carrotsearch.hppc.ByteArrayDeque.class, //hppc
+        io.jsonwebtoken.security.Keys.class, //jjwt-api
+        io.jsonwebtoken.impl.DefaultJws.class, //jjwt-impl
+        io.jsonwebtoken.io.JacksonSerializer.class, //jjwt-jackson
     };
 
     for (Class<?> c : dependencies) {

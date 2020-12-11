@@ -1,3 +1,4 @@
+--! qt:disabled:disabled in HIVE-23801
 --! qt:authorizer
 --! qt:scheduledqueryservice
 --! qt:sysdb

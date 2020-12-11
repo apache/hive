@@ -88,7 +88,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       value expressions: val1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -106,7 +106,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       value expressions: val2 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -124,7 +124,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       value expressions: val3 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -227,7 +227,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       value expressions: val1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -245,7 +245,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       value expressions: val2 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -263,7 +263,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       value expressions: val3 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -366,7 +366,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       value expressions: val1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -384,7 +384,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       value expressions: val2 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -402,7 +402,7 @@ STAGE PLANS:
                       Statistics: Num rows: 1 Data size: 368 Basic stats: COMPLETE Column stats: NONE
                       value expressions: val3 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

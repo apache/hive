@@ -53,6 +53,8 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.PartitionSpec;
+import org.apache.hadoop.hive.metastore.api.PartitionsSpecByExprResult;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.WMPoolSchedulingPolicy;
@@ -257,6 +259,20 @@ public class MetaStoreUtils {
     return "TRUE".equalsIgnoreCase(tableParams.get(prop));
   }
 
+  /**
+   * Determines whether an table needs to be deleted completely or moved to trash directory.
+   *
+   * @param tableParams parameters of the table
+   *
+   * @return true if the table needs to be deleted rather than moved to trash directory
+   */
+  public static boolean isSkipTrash(Map<String, String> tableParams) {
+    if (tableParams == null) {
+      return false;
+    }
+    return isPropertyTrue(tableParams, "skip.trash")
+        || isPropertyTrue(tableParams, "auto.purge");
+  }
 
   /** Duplicates AcidUtils; used in a couple places in metastore. */
   public static boolean isInsertOnlyTableParam(Map<String, String> params) {
@@ -997,5 +1013,13 @@ public class MetaStoreUtils {
       orderSpecs.add(spec);
     }
     return orderSpecs;
+  }
+
+  public static void addPartitonSpecsToList(PartitionsSpecByExprResult r, List<PartitionSpec> result) {
+    result.addAll(r.getPartitionsSpec());
+  }
+
+  public static boolean hasUnknownPartitions(PartitionsSpecByExprResult r) {
+    return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions();
   }
 }

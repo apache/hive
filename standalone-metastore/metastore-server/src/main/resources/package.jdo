@@ -345,11 +345,11 @@
       <datastore-identity>
         <column name="CD_ID"/>
       </datastore-identity>
-      <field name="cols" table="COLUMNS_V2" >
-        <collection element-type="MFieldSchema"/>
-        <foreign-key name="COLUMNS_V2_FK" delete-action="cascade"/>
+      <field name="cols" persistence-modifier="persistent" table="COLUMNS_V2">
+        <collection element-type="MFieldSchema" dependent-element="true" />
         <join>
-          <primary-key name="COLUMNS_PK">
+          <primary-key name="SQL110922153006740">
+            <column name="CD_ID"/>
             <column name="COLUMN_NAME"/>
           </primary-key>
           <column name="CD_ID"/>
@@ -357,8 +357,8 @@
         <element>
           <embedded>
             <field name="name">
-              <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR"/>
-              </field>
+              <column name="COLUMN_NAME" length="767" jdbc-type="VARCHAR" allows-null="false"/>
+            </field>
             <field name="type">
               <column name="TYPE_NAME" length="32672" jdbc-type="VARCHAR" allows-null="false"/>
             </field>
@@ -1539,11 +1539,39 @@
       <field name="progress">
         <column name="RM_PROGRESS" jdbc-type="varchar" length="4000" allows-null="true"/>
       </field>
+      <field name="startTime">
+         <column name="RM_START_TIME" jdbc-type="integer" allows-null="false"/>
+      </field>
       <index name="PolicyIndex">
         <column name="RM_POLICY"/>
       </index>
       <index name="DumpExecutionIdIndex">
         <column name="RM_DUMP_EXECUTION_ID"/>
+      </index>
+    </class>
+
+    <class name="MStoredProc" table="STORED_PROCS" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="SP_ID"/>
+      </datastore-identity>
+      <field name="createTime">
+        <column name="CREATE_TIME" jdbc-type="integer" allows-null="false"/>
+      </field>
+      <field name="database">
+        <column name="DB_ID" allows-null="false"/>
+      </field>
+      <field name="name">
+        <column name="NAME" length="256" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="owner">
+        <column name="OWNER_NAME" length="128" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name="source">
+        <column name="SOURCE" jdbc-type="CLOB" allows-null="false"/>
+      </field>
+      <index name="UniqueStoredProc" unique="true">
+        <column name="NAME"/>
+        <column name="DB_ID"/>
       </index>
     </class>
   </package>

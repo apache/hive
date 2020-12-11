@@ -70,7 +70,7 @@ public class TestReplicationMetrics extends MetaStoreClientTest {
   public void testAddMetrics() throws Exception {
     ObjectStore objStore = new ObjectStore();
     objStore.setConf(metaStore.getConf());
-    objStore.deleteRuntimeStats(0);
+    objStore.deleteReplicationMetrics(0);
     ReplicationMetricList replicationMetricList = new ReplicationMetricList();
     List<ReplicationMetrics> replicationMetrics = new ArrayList<>();
     replicationMetrics.add(createReplicationMetric("repl1", 1L));
@@ -128,7 +128,7 @@ public class TestReplicationMetrics extends MetaStoreClientTest {
   public void testUpdateMetrics() throws Exception {
     ObjectStore objStore = new ObjectStore();
     objStore.setConf(metaStore.getConf());
-    objStore.deleteRuntimeStats(0);
+    objStore.deleteReplicationMetrics(0);
     ReplicationMetricList replicationMetricList = new ReplicationMetricList();
     List<ReplicationMetrics> replicationMetrics = new ArrayList<>();
     replicationMetrics.add(createReplicationMetric("repl1", 1L));
@@ -193,7 +193,7 @@ public class TestReplicationMetrics extends MetaStoreClientTest {
   public void testGetMetricsByScheduleId() throws Exception {
     ObjectStore objStore = new ObjectStore();
     objStore.setConf(metaStore.getConf());
-    objStore.deleteRuntimeStats(0);
+    objStore.deleteReplicationMetrics(0);
     ReplicationMetricList replicationMetricList = new ReplicationMetricList();
     List<ReplicationMetrics> replicationMetrics = new ArrayList<>();
     replicationMetrics.add(createReplicationMetric("repl1", 1L));
@@ -241,6 +241,45 @@ public class TestReplicationMetrics extends MetaStoreClientTest {
     assertEquals(1, actualMetric0.getDumpExecutionId());
     assertEquals("metadata", actualMetric0.getMetadata());
     assertEquals("progress1", actualMetric0.getProgress());
+
+  }
+
+  @Test
+  public void testDeleteMetrics() throws Exception {
+    ObjectStore objStore = new ObjectStore();
+    objStore.setConf(metaStore.getConf());
+    objStore.deleteReplicationMetrics(0);
+    ReplicationMetricList replicationMetricList = new ReplicationMetricList();
+    List<ReplicationMetrics> replicationMetrics = new ArrayList<>();
+    replicationMetrics.add(createReplicationMetric("repl1", 1L));
+    replicationMetrics.add(createReplicationMetric("repl1", 2L));
+    replicationMetricList.setReplicationMetricList(replicationMetrics);
+    objStore.addReplicationMetrics(replicationMetricList);
+    Thread.sleep(2000);
+    replicationMetrics = new ArrayList<>();
+    replicationMetrics.add(createReplicationMetric("repl1", 3L));
+    replicationMetricList.setReplicationMetricList(replicationMetrics);
+    objStore.addReplicationMetrics(replicationMetricList);
+    Thread.sleep(500);
+
+    GetReplicationMetricsRequest getReplicationMetricsRequest = new GetReplicationMetricsRequest();
+    getReplicationMetricsRequest.setPolicy("repl1");
+    ReplicationMetricList actualList = client.getReplicationMetrics(getReplicationMetricsRequest);
+    assertEquals(3, actualList.getReplicationMetricListSize());
+    //delete older metrics
+    objStore.deleteReplicationMetrics(2);
+
+    getReplicationMetricsRequest = new GetReplicationMetricsRequest();
+    getReplicationMetricsRequest.setPolicy("repl1");
+    actualList = client.getReplicationMetrics(getReplicationMetricsRequest);
+    assertEquals(1, actualList.getReplicationMetricListSize());
+    List<ReplicationMetrics> actualMetrics = actualList.getReplicationMetricList();
+    ReplicationMetrics actualMetric0 = actualMetrics.get(0);
+    assertEquals("repl1", actualMetric0.getPolicy());
+    assertEquals(3L, actualMetric0.getScheduledExecutionId());
+    assertEquals(1, actualMetric0.getDumpExecutionId());
+    assertEquals("metadata", actualMetric0.getMetadata());
+    assertEquals("progress", actualMetric0.getProgress());
 
   }
 

@@ -330,6 +330,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
   }
   @Override
   public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+    LOG.debug("Configuring JobConf for table {}.{}", tableDesc.getDbName(), tableDesc.getTableName());
     try {
       HBaseSerDe.configureJobConf(tableDesc, jobConf);
       /*

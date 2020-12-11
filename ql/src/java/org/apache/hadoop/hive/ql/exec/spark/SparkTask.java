@@ -115,10 +115,10 @@ public class SparkTask extends Task<SparkWork> {
       sparkWork.setRequiredCounterPrefix(getOperatorCounters());
 
       // Submit the Spark job
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
+      perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
       submitTime = perfLogger.getStartTime(PerfLogger.SPARK_SUBMIT_JOB);
       jobRef = sparkSession.submit(taskQueue, context, sparkWork);
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_SUBMIT_JOB);
 
       // If the driver context has been shutdown (due to query cancellation) kill the Spark job
       if (taskQueue.isShutdown()) {

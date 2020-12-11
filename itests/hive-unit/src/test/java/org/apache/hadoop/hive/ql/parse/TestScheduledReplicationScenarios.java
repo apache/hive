@@ -58,7 +58,7 @@ import java.util.ArrayList;
  * TestScheduledReplicationScenarios - test scheduled replication .
  */
 public class TestScheduledReplicationScenarios extends BaseReplicationScenariosAcidTables {
-  private static final long DEFAULT_PROBE_TIMEOUT = 2 * 60 * 1000L; // 2 minutes
+  private static final long DEFAULT_PROBE_TIMEOUT = 5 * 60 * 1000L; // 5 minutes
 
   @BeforeClass
   public static void classLevelSetup() throws Exception {
@@ -183,8 +183,7 @@ public class TestScheduledReplicationScenarios extends BaseReplicationScenariosA
   @Ignore("HIVE-23395")
   public void testExternalTablesReplLoadBootstrapIncr() throws Throwable {
     // Bootstrap
-    String withClause = " WITH('" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname
-            + "'='/replica_external_base', '" + HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA
+    String withClause = " WITH('" + HiveConf.ConfVars.REPL_INCLUDE_AUTHORIZATION_METADATA
             + "' = 'true' ,'" + HiveConf.ConfVars.REPL_INCLUDE_ATLAS_METADATA + "' = 'true' , '"
             + HiveConf.ConfVars.HIVE_IN_TEST + "' = 'true'" + ",'"+ HiveConf.ConfVars.REPL_ATLAS_ENDPOINT
         + "' = 'http://localhost:21000/atlas'" +  ",'"+ HiveConf.ConfVars.REPL_ATLAS_REPLICATED_TO_DB + "' = 'tgt'"

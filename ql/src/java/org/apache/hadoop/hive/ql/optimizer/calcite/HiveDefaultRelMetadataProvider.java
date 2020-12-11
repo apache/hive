@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCollation;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdCumulativeCost;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistinctRowCount;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdDistribution;
+import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdExpressionLineage;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdMemory;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdParallelism;
 import org.apache.hadoop.hive.ql.optimizer.calcite.stats.HiveRelMdPredicates;
@@ -60,6 +61,7 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdRuntimeRowCount.SOURCE,
                   HiveRelMdUniqueKeys.SOURCE,
                   HiveRelMdColumnUniqueness.SOURCE,
+                  HiveRelMdExpressionLineage.SOURCE,
                   HiveRelMdSize.SOURCE,
                   HiveRelMdMemory.SOURCE,
                   HiveRelMdDistribution.SOURCE,
@@ -93,6 +95,7 @@ public class HiveDefaultRelMetadataProvider {
                   HiveRelMdRowCount.SOURCE,
                   HiveRelMdUniqueKeys.SOURCE,
                   HiveRelMdColumnUniqueness.SOURCE,
+                  HiveRelMdExpressionLineage.SOURCE,
                   HiveRelMdSize.SOURCE,
                   HiveRelMdMemory.SOURCE,
                   new HiveRelMdParallelism(maxSplitSize).getMetadataProvider(),
@@ -122,8 +125,6 @@ public class HiveDefaultRelMetadataProvider {
    * be visited during the planning phase.
    */
   public static void initializeMetadataProviderClass(List<Class<? extends RelNode>> nodeClasses) {
-    // This will register the classes in the default Janino implementation
-    JaninoRelMetadataProvider.DEFAULT.register(nodeClasses);
     // This will register the classes in the default Hive implementation
     DEFAULT.register(nodeClasses);
   }

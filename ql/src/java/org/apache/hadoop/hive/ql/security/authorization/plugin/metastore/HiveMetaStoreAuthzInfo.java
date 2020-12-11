@@ -19,6 +19,7 @@
 
 package org.apache.hadoop.hive.ql.security.authorization.plugin.metastore;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.ql.security.authorization.plugin.HiveAuthzContext;
@@ -50,58 +51,65 @@ public class HiveMetaStoreAuthzInfo {
     this.hiveAuthzContext = createHiveAuthzContext();
   }
 
-    public HiveOperationType getOperationType() {
-        return operationType;
+  public HiveOperationType getOperationType() {
+    return operationType;
+  }
+
+  public List<HivePrivilegeObject> getInputHObjs() {
+    return inputHObjs;
+  }
+
+  public List<HivePrivilegeObject> getOutputHObjs() {
+    return outputHObjs;
+  }
+
+  public String getCommandString() {
+    return commandString;
+  }
+
+  public HiveAuthzContext getHiveAuthzContext() {
+    return hiveAuthzContext;
+  }
+
+  public PreEventContext getPreEventContext() {
+    return preEventContext;
+  }
+
+  public UserGroupInformation getUGI() {
+    try {
+      return UserGroupInformation.getCurrentUser();
+    } catch (IOException excp) {
     }
+    return null;
+  }
 
-    public List<HivePrivilegeObject> getInputHObjs() { return inputHObjs; }
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("HiveMetaStoreAuthzInfo= ").append("{");
+    String eventType = (preEventContext != null) ? preEventContext.getEventType().name() : StringUtils.EMPTY;
+    sb.append("eventType=").append(eventType);
+    sb.append(", operationType=").append(operationType.name());
+    sb.append(", commandString=").append(commandString);
+    sb.append(", inputHObjs=").append(inputHObjs);
+    sb.append(", outputHObjs=").append(outputHObjs);
+    sb.append(" }");
+    return sb.toString();
+  }
 
-    public List<HivePrivilegeObject> getOutputHObjs() { return outputHObjs; }
+  private HiveAuthzContext createHiveAuthzContext() {
+    HiveAuthzContext.Builder builder = new HiveAuthzContext.Builder();
+    builder.setCommandString(commandString);
 
-    public String getCommandString() {
-        return commandString;
-    }
+    // TODO: refer to SessionManager/HiveSessionImpl for details on getting ipAddress and forwardedAddresses
+    builder.setForwardedAddresses(new ArrayList<>());
 
-    public HiveAuthzContext getHiveAuthzContext() { return hiveAuthzContext; }
+    String ipAddress = HiveMetaStore.HMSHandler.getIPAddress();
 
-    public PreEventContext getPreEventContext(){
-      return preEventContext;
-    }
+    builder.setUserIpAddress(ipAddress);
 
-    public UserGroupInformation getUGI() {
-      try {
-        return UserGroupInformation.getCurrentUser();
-        } catch (IOException excp) {
-      }
-      return null;
-    }
+    HiveAuthzContext ret = builder.build();
 
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("HiveMetaStoreAuthzInfo= ").append("{");
-      sb.append("eventType=").append(preEventContext.getEventType().name());
-      sb.append(", operationType=").append(operationType.name());
-      sb.append(", commandString=" ).append(commandString);
-      sb.append(", inputHObjs=").append(inputHObjs);
-      sb.append(", outputHObjs=").append(outputHObjs);
-      sb.append(" }");
-      return sb.toString();
-    }
-
-    private HiveAuthzContext createHiveAuthzContext() {
-      HiveAuthzContext.Builder builder = new HiveAuthzContext.Builder();
-      builder.setCommandString(commandString);
-
-      // TODO: refer to SessionManager/HiveSessionImpl for details on getting ipAddress and forwardedAddresses
-      builder.setForwardedAddresses(new ArrayList<>());
-
-      String ipAddress = HiveMetaStore.HMSHandler.getIPAddress();
-
-      builder.setUserIpAddress(ipAddress);
-
-      HiveAuthzContext ret = builder.build();
-
-      return ret;
-    }
+    return ret;
+  }
 }

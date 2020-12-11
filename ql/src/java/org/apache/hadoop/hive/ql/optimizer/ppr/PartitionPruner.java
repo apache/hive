@@ -450,7 +450,7 @@ public class PartitionPruner extends Transform {
       boolean hasUnknownPartitions = false;
       PerfLogger perfLogger = SessionState.getPerfLogger();
       if (!doEvalClientSide) {
-        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+        perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
         try {
           hasUnknownPartitions = Hive.get().getPartitionsByExpr(
               tab, compactExpr, conf, partitions);
@@ -459,7 +459,7 @@ public class PartitionPruner extends Transform {
           LOG.warn("Metastore doesn't support getPartitionsByExpr", ime);
           doEvalClientSide = true;
         } finally {
-          perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+          perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
         }
       }
       if (doEvalClientSide) {
@@ -482,9 +482,9 @@ public class PartitionPruner extends Transform {
 
   private static Set<Partition> getAllPartitions(Table tab) throws HiveException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
     Set<Partition> result = Hive.get().getAllPartitionsOf(tab);
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
     return result;
   }
 
@@ -500,7 +500,7 @@ public class PartitionPruner extends Transform {
   static private boolean pruneBySequentialScan(Table tab, List<Partition> partitions,
       ExprNodeGenericFuncDesc prunerExpr, HiveConf conf) throws HiveException, MetaException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRUNE_LISTING);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.PRUNE_LISTING);
 
     List<String> partNames = Hive.get().getPartitionNames(
         tab.getDbName(), tab.getTableName(), (short) -1);
@@ -511,13 +511,13 @@ public class PartitionPruner extends Transform {
 
     boolean hasUnknownPartitions = prunePartitionNames(
         partCols, partColTypeInfos, prunerExpr, defaultPartitionName, partNames);
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PRUNE_LISTING);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.PRUNE_LISTING);
 
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
     if (!partNames.isEmpty()) {
       partitions.addAll(Hive.get().getPartitionsByNames(tab, partNames));
     }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
     return hasUnknownPartitions;
   }
 

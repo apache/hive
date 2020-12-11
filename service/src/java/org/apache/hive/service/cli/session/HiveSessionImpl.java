@@ -51,7 +51,6 @@ import org.apache.hadoop.hive.ql.processors.SetProcessor;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.thrift.ThriftFormatter;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hive.common.util.HiveVersionInfo;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.cli.FetchOrientation;
@@ -157,7 +156,11 @@ public class HiveSessionImpl implements HiveSession {
    * That's why it is important to create SessionState here rather than in the constructor.
    */
   public void open(Map<String, String> sessionConfMap) throws HiveSQLException {
-    sessionState = new SessionState(sessionConf, username);
+    if (sessionManager != null) {
+      sessionState = new SessionState(sessionConf, username, sessionManager.getCleanupService());
+    } else {
+      sessionState = new SessionState(sessionConf, username);
+    }
     sessionState.setUserIpAddress(ipAddress);
     sessionState.setIsHiveServerQuery(true);
     sessionState.setForwardedAddresses(SessionManager.getForwardedAddresses());
@@ -306,8 +309,8 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   private boolean updateIsUsingThriftJDBCBinarySerDe() {
-	return (8 <= getProtocolVersion().getValue())
-      && sessionConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS);
+    return 8 <= getProtocolVersion().getValue() &&
+      sessionConf.getBoolVar(ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_SERIALIZE_IN_TASKS);
   }
 
   @Override

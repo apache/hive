@@ -184,26 +184,13 @@ public class TestForeignKey extends MetaStoreClientTest {
         table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
     fetched = client.getForeignKeys(rqst);
-    Assert.assertEquals(1, fetched.size());
-    Assert.assertEquals(table.getDbName(), fetched.get(0).getFktable_db());
-    Assert.assertEquals(table.getTableName(), fetched.get(0).getFktable_name());
-    Assert.assertEquals("col1", fetched.get(0).getFkcolumn_name());
-    Assert.assertEquals(parentTable.getDbName(), fetched.get(0).getPktable_db());
-    Assert.assertEquals(parentTable.getTableName(), fetched.get(0).getPktable_name());
-    Assert.assertEquals("col1", fetched.get(0).getFkcolumn_name());
-    Assert.assertEquals(1, fetched.get(0).getKey_seq());
-    Assert.assertEquals(parentTable.getTableName() + "_primary_key", fetched.get(0).getPk_name());
-    Assert.assertEquals(table.getTableName() + "_to_" + parentTable.getTableName() +
-        "_foreign_key", fetched.get(0).getFk_name());
-    String table0FkName = fetched.get(0).getFk_name();
-    Assert.assertTrue(fetched.get(0).isEnable_cstr());
-    Assert.assertFalse(fetched.get(0).isValidate_cstr());
-    Assert.assertFalse(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(table.getCatName(), fetched.get(0).getCatName());
+    fk.get(0).setFk_name(fetched.get(0).getFk_name());
+    Assert.assertEquals(fk, fetched);
+
 
     // Drop a foreign key
     client.dropConstraint(table.getCatName(), table.getDbName(),
-        table.getTableName(), table0FkName);
+        table.getTableName(), fk.get(0).getFk_name());
     rqst = new ForeignKeysRequest(parentTable.getDbName(), parentTable.getTableName(),
         table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
@@ -242,27 +229,12 @@ public class TestForeignKey extends MetaStoreClientTest {
         parentTable.getTableName(), table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
     List<SQLForeignKey> fetched = client.getForeignKeys(rqst);
-    Assert.assertEquals(2, fetched.size());
-    Assert.assertEquals(table.getDbName(), fetched.get(0).getFktable_db());
-    Assert.assertEquals(table.getTableName(), fetched.get(0).getFktable_name());
-    Assert.assertEquals("col1", fetched.get(0).getFkcolumn_name());
-    Assert.assertEquals("col2", fetched.get(1).getFkcolumn_name());
-    Assert.assertEquals(parentTable.getDbName(), fetched.get(0).getPktable_db());
-    Assert.assertEquals(parentTable.getTableName(), fetched.get(0).getPktable_name());
-    Assert.assertEquals("col1", fetched.get(0).getFkcolumn_name());
-    Assert.assertEquals("col2", fetched.get(1).getFkcolumn_name());
-    Assert.assertEquals(1, fetched.get(0).getKey_seq());
-    Assert.assertEquals(parentTable.getTableName() + "_primary_key", fetched.get(0).getPk_name());
-    Assert.assertEquals(constraintName, fetched.get(0).getFk_name());
-    String table0FkName = fetched.get(0).getFk_name();
-    Assert.assertTrue(fetched.get(0).isEnable_cstr());
-    Assert.assertFalse(fetched.get(0).isValidate_cstr());
-    Assert.assertFalse(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(table.getCatName(), fetched.get(0).getCatName());
+    Assert.assertEquals(fk, fetched);
+
 
     // Drop a foreign key
     client.dropConstraint(table.getCatName(), table.getDbName(),
-        table.getTableName(), table0FkName);
+        table.getTableName(), constraintName);
     rqst = new ForeignKeysRequest(parentTable.getDbName(), parentTable.getTableName(),
         table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
@@ -299,25 +271,13 @@ public class TestForeignKey extends MetaStoreClientTest {
         parentTable.getTableName(), table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
     List<SQLForeignKey> fetched = client.getForeignKeys(rqst);
-    Assert.assertEquals(1, fetched.size());
-    Assert.assertEquals(table.getDbName(), fetched.get(0).getFktable_db());
-    Assert.assertEquals(table.getTableName(), fetched.get(0).getFktable_name());
-    Assert.assertEquals("col1", fetched.get(0).getFkcolumn_name());
-    Assert.assertEquals(parentTable.getDbName(), fetched.get(0).getPktable_db());
-    Assert.assertEquals(parentTable.getTableName(), fetched.get(0).getPktable_name());
-    Assert.assertEquals("col1", fetched.get(0).getFkcolumn_name());
-    Assert.assertEquals(1, fetched.get(0).getKey_seq());
-    Assert.assertEquals(parentTable.getTableName() + "_primary_key", fetched.get(0).getPk_name());
-    Assert.assertEquals(constraintName, fetched.get(0).getFk_name());
-    String table0FkName = fetched.get(0).getFk_name();
-    Assert.assertTrue(fetched.get(0).isEnable_cstr());
-    Assert.assertFalse(fetched.get(0).isValidate_cstr());
-    Assert.assertFalse(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(table.getCatName(), fetched.get(0).getCatName());
+    fk.get(0).setFk_name(fetched.get(0).getFk_name());
+    Assert.assertEquals(fk, fetched);
+
 
     // Drop a foreign key
     client.dropConstraint(table.getCatName(), table.getDbName(),
-        table.getTableName(), table0FkName);
+        table.getTableName(), constraintName);
     rqst = new ForeignKeysRequest(parentTable.getDbName(), parentTable.getTableName(),
         table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
@@ -359,20 +319,8 @@ public class TestForeignKey extends MetaStoreClientTest {
         table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
     List<SQLForeignKey> fetched = client.getForeignKeys(rqst);
-    Assert.assertEquals(1, fetched.size());
-    Assert.assertEquals(table.getDbName(), fetched.get(0).getFktable_db());
-    Assert.assertEquals(table.getTableName(), fetched.get(0).getFktable_name());
-    Assert.assertEquals("col1", fetched.get(0).getFkcolumn_name());
-    Assert.assertEquals(parentTable.getDbName(), fetched.get(0).getPktable_db());
-    Assert.assertEquals(parentTable.getTableName(), fetched.get(0).getPktable_name());
-    Assert.assertEquals("col1", fetched.get(0).getFkcolumn_name());
-    Assert.assertEquals(1, fetched.get(0).getKey_seq());
-    Assert.assertEquals(parentTable.getTableName() + "_primary_key", fetched.get(0).getPk_name());
-    Assert.assertEquals(constraintName, fetched.get(0).getFk_name());
-    Assert.assertTrue(fetched.get(0).isEnable_cstr());
-    Assert.assertFalse(fetched.get(0).isValidate_cstr());
-    Assert.assertFalse(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(table.getCatName(), fetched.get(0).getCatName());
+    Assert.assertEquals(fk, fetched);
+
   }
 
   @Test
@@ -406,20 +354,7 @@ public class TestForeignKey extends MetaStoreClientTest {
         table.getDbName(), table.getTableName());
     rqst.setCatName(table.getCatName());
     List<SQLForeignKey> fetched = client.getForeignKeys(rqst);
-    Assert.assertEquals(1, fetched.size());
-    Assert.assertEquals(table.getDbName(), fetched.get(0).getFktable_db());
-    Assert.assertEquals(table.getTableName(), fetched.get(0).getFktable_name());
-    Assert.assertEquals("col1", fetched.get(0).getFkcolumn_name());
-    Assert.assertEquals(parentTable.getDbName(), fetched.get(0).getPktable_db());
-    Assert.assertEquals(parentTable.getTableName(), fetched.get(0).getPktable_name());
-    Assert.assertEquals("col1", fetched.get(0).getFkcolumn_name());
-    Assert.assertEquals(1, fetched.get(0).getKey_seq());
-    Assert.assertEquals(parentTable.getTableName() + "_primary_key", fetched.get(0).getPk_name());
-    Assert.assertEquals(constraintName, fetched.get(0).getFk_name());
-    Assert.assertTrue(fetched.get(0).isEnable_cstr());
-    Assert.assertFalse(fetched.get(0).isValidate_cstr());
-    Assert.assertFalse(fetched.get(0).isRely_cstr());
-    Assert.assertEquals(table.getCatName(), fetched.get(0).getCatName());
+    Assert.assertEquals(fk, fetched);
   }
 
   @Test(expected = MetaException.class)

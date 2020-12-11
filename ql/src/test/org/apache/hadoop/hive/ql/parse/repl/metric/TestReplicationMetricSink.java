@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.repl.dump.metric.BootstrapDumpMetricCollector;
+import org.apache.hadoop.hive.ql.parse.repl.dump.metric.IncrementalDumpMetricCollector;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Stage;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Status;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.Progress;
@@ -127,6 +128,63 @@ public class TestReplicationMetricSink {
     actualMetric.setProgress(progress);
     checkSuccess(actualMetric, expectedMetric, "dump",
         Arrays.asList(ReplUtils.MetricName.TABLES.name(), ReplUtils.MetricName.FUNCTIONS.name()));
+
+    //Incremental
+    conf.set(Constants.SCHEDULED_QUERY_EXECUTIONID, "2");
+    ReplicationMetricCollector incrementDumpMetricCollector = new IncrementalDumpMetricCollector(
+      "testAcidTablesReplLoadBootstrapIncr_1592205875387",
+      "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_parse_TestReplicationScenarios_245261428230295"
+        + "/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGluY3JfMTU5MjIwNTg3NTM4Nw==/0/hive", conf);
+    metricMap = new HashMap<>();
+    metricMap.put(ReplUtils.MetricName.EVENTS.name(), (long) 10);
+    incrementDumpMetricCollector.reportStageStart("dump", metricMap);
+    incrementDumpMetricCollector.reportStageProgress("dump", ReplUtils.MetricName.EVENTS.name(), 10);
+    incrementDumpMetricCollector.reportStageEnd("dump", Status.SUCCESS, 10);
+    incrementDumpMetricCollector.reportEnd(Status.SUCCESS);
+
+    expectedMetadata = new Metadata("testAcidTablesReplLoadBootstrapIncr_1592205875387",
+      Metadata.ReplicationType.INCREMENTAL, "hdfs://localhost:65158/tmp/org_apache_hadoop_hive_ql_"
+      + "parse_TestReplicationScenarios_245261428230295/hrepl0/dGVzdGFjaWR0YWJsZXNyZXBsbG9hZGJvb3RzdHJhcGlu"
+      + "Y3JfMTU5MjIwNTg3NTM4Nw==/0/hive");
+    expectedMetadata.setLastReplId(10);
+    expectedProgress = new Progress();
+    expectedProgress.setStatus(Status.SUCCESS);
+    dumpStage = new Stage("dump", Status.SUCCESS, 0);
+    dumpStage.setEndTime(0);
+    Metric expectedEventsMetric = new Metric(ReplUtils.MetricName.EVENTS.name(), 10);
+    expectedEventsMetric.setCurrentCount(10);
+    dumpStage.addMetric(expectedEventsMetric);
+    expectedProgress.addStage(dumpStage);
+    expectedMetric = new ReplicationMetric(2, "repl", 0,
+      expectedMetadata);
+    expectedMetric.setProgress(expectedProgress);
+    Thread.sleep(1000 * 20);
+    metricsRequest = new GetReplicationMetricsRequest();
+    metricsRequest.setPolicy("repl");
+    actualReplicationMetrics = Hive.get(conf).getMSC().getReplicationMetrics(metricsRequest);
+    Assert.assertEquals(2, actualReplicationMetrics.getReplicationMetricListSize());
+    actualThriftMetric = actualReplicationMetrics.getReplicationMetricList().get(0);
+    mapper = new ObjectMapper();
+    actualMetric = new ReplicationMetric(actualThriftMetric.getScheduledExecutionId(),
+      actualThriftMetric.getPolicy(), actualThriftMetric.getDumpExecutionId(),
+      mapper.readValue(actualThriftMetric.getMetadata(), Metadata.class));
+    progressMapper = mapper.readValue(actualThriftMetric.getProgress(), ProgressMapper.class);
+    progress = new Progress();
+    progress.setStatus(progressMapper.getStatus());
+    for (StageMapper stageMapper : progressMapper.getStages()) {
+      Stage stage = new Stage();
+      stage.setName(stageMapper.getName());
+      stage.setStatus(stageMapper.getStatus());
+      stage.setStartTime(stageMapper.getStartTime());
+      stage.setEndTime(stageMapper.getEndTime());
+      for (Metric metric : stageMapper.getMetrics()) {
+        stage.addMetric(metric);
+      }
+      progress.addStage(stage);
+    }
+    actualMetric.setProgress(progress);
+    checkSuccessIncremental(actualMetric, expectedMetric, "dump",
+      Arrays.asList(ReplUtils.MetricName.EVENTS.name()));
   }
 
   private void checkSuccess(ReplicationMetric actual, ReplicationMetric expected, String stageName,
@@ -147,6 +205,27 @@ public class TestReplicationMetricSink {
       Assert.assertEquals(expected.getProgress().getStageByName(stageName).getMetricByName(metricName)
           .getCurrentCount(), actual.getProgress()
           .getStageByName(stageName).getMetricByName(metricName).getCurrentCount());
+    }
+  }
+
+  private void checkSuccessIncremental(ReplicationMetric actual, ReplicationMetric expected, String stageName,
+                            List<String> metricNames) {
+    Assert.assertEquals(expected.getDumpExecutionId(), actual.getDumpExecutionId());
+    Assert.assertEquals(expected.getPolicy(), actual.getPolicy());
+    Assert.assertEquals(expected.getScheduledExecutionId(), actual.getScheduledExecutionId());
+    Assert.assertEquals(expected.getMetadata().getReplicationType(), actual.getMetadata().getReplicationType());
+    Assert.assertEquals(expected.getMetadata().getDbName(), actual.getMetadata().getDbName());
+    Assert.assertEquals(expected.getMetadata().getStagingDir(), actual.getMetadata().getStagingDir());
+    Assert.assertEquals(expected.getMetadata().getLastReplId(), actual.getMetadata().getLastReplId());
+    Assert.assertEquals(expected.getProgress().getStatus(), actual.getProgress().getStatus());
+    Assert.assertEquals(expected.getProgress().getStageByName(stageName).getStatus(),
+      actual.getProgress().getStageByName(stageName).getStatus());
+    for (String metricName : metricNames) {
+      Assert.assertEquals(expected.getProgress().getStageByName(stageName).getMetricByName(metricName).getTotalCount(),
+        actual.getProgress().getStageByName(stageName).getMetricByName(metricName).getTotalCount());
+      Assert.assertEquals(expected.getProgress().getStageByName(stageName).getMetricByName(metricName)
+        .getCurrentCount(), actual.getProgress()
+        .getStageByName(stageName).getMetricByName(metricName).getCurrentCount());
     }
   }
 

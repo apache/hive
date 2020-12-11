@@ -12,6 +12,6 @@ OUTPUTFORMAT
   'org.apache.hadoop.hive.ql.io.avro.AvroContainerOutputFormat'
 TBLPROPERTIES (
   'numFiles'='1',
-  'avro.schema.literal'='{\"namespace\":\"com.howdy\",\"name\":\"some_schema\",\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"value\",\"type\":{\"type\":\"bytes\",\"logicalType\":\"decimal\",\"precision\":"5",\"scale\":"2"}}]}'
+  'avro.schema.literal'='{\"namespace\":\"com.howdy\",\"name\":\"some_schema\",\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"},{\"name\":\"value\",\"type\":{\"type\":\"bytes\",\"logicalType\":\"decimal\",\"precision\":"a",\"scale\":"b"}}]}'
 );
 

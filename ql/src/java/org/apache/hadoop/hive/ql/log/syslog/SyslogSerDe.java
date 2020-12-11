@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -74,11 +73,6 @@ public class SyslogSerDe extends AbstractSerDe {
   @Override
   public Writable serialize(final Object o, final ObjectInspector objectInspector) throws SerDeException {
     throw new SerDeException("Serialization is not supported yet");
-  }
-
-  @Override
-  public SerDeStats getSerDeStats() {
-    return null;
   }
 
   @Override

@@ -68,7 +68,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: --
                     keys: one (type: string), two (type: string)
-                    null sort order: zz
+                    null sort order: aa
                     Statistics: Num rows: 99 Data size: 31648 Basic stats: PARTIAL Column stats: NONE
                     top n: 5
                     Select Operator
@@ -77,12 +77,11 @@ STAGE PLANS:
                       Statistics: Num rows: 99 Data size: 31648 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
-                        null sort order: zz
+                        null sort order: aa
                         sort order: --
                         Statistics: Num rows: 99 Data size: 31648 Basic stats: PARTIAL Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -273,7 +272,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: --
                     keys: one (type: string), two (type: string)
-                    null sort order: zz
+                    null sort order: aa
                     Statistics: Num rows: 99 Data size: 31648 Basic stats: PARTIAL Column stats: NONE
                     top n: 5
                     Select Operator
@@ -282,12 +281,11 @@ STAGE PLANS:
                       Statistics: Num rows: 99 Data size: 31648 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
-                        null sort order: zz
+                        null sort order: aa
                         sort order: --
                         Statistics: Num rows: 99 Data size: 31648 Basic stats: PARTIAL Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -451,7 +449,7 @@ STAGE PLANS:
                   Top N Key Operator
                     sort order: --
                     keys: one (type: string), two (type: string)
-                    null sort order: zz
+                    null sort order: aa
                     Statistics: Num rows: 99 Data size: 31648 Basic stats: PARTIAL Column stats: NONE
                     top n: 5
                     Select Operator
@@ -460,12 +458,11 @@ STAGE PLANS:
                       Statistics: Num rows: 99 Data size: 31648 Basic stats: PARTIAL Column stats: NONE
                       Reduce Output Operator
                         key expressions: _col0 (type: string), _col1 (type: string)
-                        null sort order: zz
+                        null sort order: aa
                         sort order: --
                         Statistics: Num rows: 99 Data size: 31648 Basic stats: PARTIAL Column stats: NONE
-                        TopN Hash Memory Usage: 0.1
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

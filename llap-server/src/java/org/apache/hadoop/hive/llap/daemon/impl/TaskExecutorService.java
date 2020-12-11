@@ -342,6 +342,9 @@ public class TaskExecutorService extends AbstractService
       SignableVertexSpec fs = c.getVertexSpec();
       value.append(isFirst ? " (" : ", ").append(c.getQueryId())
         .append("/").append(fs.getVertexName()).append(c.isGuaranteed() ? ", guaranteed" : "");
+      if (fs.getDagName() != null) {
+        value.append(", dagName ").append(fs.getDagName());
+      }
       isFirst = false;
     }
     value.append(isFirst ? " (" : ", ");
@@ -580,7 +583,8 @@ public class TaskExecutorService extends AbstractService
       if (LOG.isInfoEnabled()) {
         LOG.info("{} evicted from wait queue in favor of {} because of lower priority",
             evictedTask.getRequestId(), task.getRequestId());
-      } else if (LOG.isDebugEnabled()) { // detailed info about the decision
+      }
+      if (LOG.isDebugEnabled()) { // detailed info about the decision
         FragmentRuntimeInfo evictedInfo =
             evictedTask.getTaskRunnerCallable().getFragmentRuntimeInfo();
         FragmentRuntimeInfo taskInfo = task.getFragmentRuntimeInfo();

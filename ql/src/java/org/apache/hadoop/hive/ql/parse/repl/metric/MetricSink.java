@@ -23,14 +23,17 @@ import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
 import org.apache.hadoop.hive.metastore.api.ReplicationMetrics;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.Retry;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.parse.repl.metric.event.ReplicationMetric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -64,14 +67,16 @@ public final class MetricSink {
   public synchronized void init(HiveConf conf) {
     if (!isInitialised) {
       this.conf = conf;
-      this.executorService.schedule(new MetricSinkWriter(conf), getFrequencyInSecs(), TimeUnit.SECONDS);
+      this.executorService.scheduleAtFixedRate(new MetricSinkWriter(conf), 0,
+        getFrequencyInSecs(), TimeUnit.SECONDS);
       isInitialised = true;
+      LOG.debug("Metrics Sink Initialised with frequency {} ", getFrequencyInSecs());
     }
   }
 
   long getFrequencyInSecs() {
     //Metastore conf is in minutes
-    return MetastoreConf.getLongVar(conf, MetastoreConf.ConfVars.REPL_METRICS_UPDATE_FREQUENCY) * 60;
+    return MetastoreConf.getTimeVar(conf, MetastoreConf.ConfVars.REPL_METRICS_UPDATE_FREQUENCY, TimeUnit.MINUTES) * 60;
   }
 
   public synchronized void tearDown() {
@@ -102,43 +107,43 @@ public final class MetricSink {
     public void run() {
       ReplicationMetricList metricList = new ReplicationMetricList();
       try {
+        LOG.debug("Updating metrics to DB");
         // get metrics
         LinkedList<ReplicationMetric> metrics = collector.getMetrics();
         //Move metrics to thrift list
         if (metrics.size() > 0) {
+          LOG.debug("Converting metrics to thrift metrics {} ", metrics.size());
           int totalMetricsSize = metrics.size();
           List<ReplicationMetrics> replicationMetricsList = new ArrayList<>(totalMetricsSize);
+          ObjectMapper mapper = new ObjectMapper();
           for (int index = 0; index < totalMetricsSize; index++) {
             ReplicationMetric metric = metrics.removeFirst();
             ReplicationMetrics persistentMetric = new ReplicationMetrics();
             persistentMetric.setDumpExecutionId(metric.getDumpExecutionId());
             persistentMetric.setScheduledExecutionId(metric.getScheduledExecutionId());
             persistentMetric.setPolicy(metric.getPolicy());
-            ObjectMapper mapper = new ObjectMapper();
             persistentMetric.setProgress(mapper.writeValueAsString(metric.getProgress()));
             persistentMetric.setMetadata(mapper.writeValueAsString(metric.getMetadata()));
+            LOG.debug("Metric to be persisted {} ", persistentMetric);
             replicationMetricsList.add(persistentMetric);
           }
           metricList.setReplicationMetricList(replicationMetricsList);
+          // write metrics and retry if fails
+          Retryable retryable = Retryable.builder()
+            .withHiveConf(conf)
+            .withRetryOnException(Exception.class).build();
+          retryable.executeCallable((Callable<Void>) () -> {
+            if (metricList.getReplicationMetricListSize() > 0) {
+              LOG.debug("Persisting metrics to DB {} ", metricList.getReplicationMetricListSize());
+              Hive.get(conf).getMSC().addReplicationMetrics(metricList);
+            }
+            return null;
+          });
+        } else {
+          LOG.debug("No Metrics to Update ");
         }
       } catch (Exception e) {
-        throw new RuntimeException("Metrics are not getting persisted", e);
-      }
-      // write metrics and retry if fails
-      Retry<Void> retriable = new Retry<Void>(Exception.class) {
-        @Override
-        public Void execute() throws Exception {
-            //write
-          if (metricList.getReplicationMetricListSize() > 0) {
-            Hive.get(conf).getMSC().addReplicationMetrics(metricList);
-          }
-          return null;
-        }
-      };
-      try {
-        retriable.run();
-      } catch (Exception e) {
-        throw new RuntimeException("Metrics are not getting persisted to HMS", e);
+        LOG.error("Metrics are not getting persisted", e);
       }
     }
   }

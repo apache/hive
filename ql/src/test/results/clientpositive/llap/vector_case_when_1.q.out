@@ -40,11 +40,11 @@ FIELDS TERMINATED BY '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@lineitem_test_txt
-PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem_test_txt
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/lineitem.tbl.bz2' OVERWRITE INTO TABLE lineitem_test_txt
 PREHOOK: type: LOAD
 #### A masked pattern was here ####
 PREHOOK: Output: default@lineitem_test_txt
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/lineitem.txt' OVERWRITE INTO TABLE lineitem_test_txt
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/tpch/tiny/lineitem.tbl.bz2' OVERWRITE INTO TABLE lineitem_test_txt
 POSTHOOK: type: LOAD
 #### A masked pattern was here ####
 POSTHOOK: Output: default@lineitem_test_txt

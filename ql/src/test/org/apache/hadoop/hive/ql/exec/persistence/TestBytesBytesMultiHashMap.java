@@ -49,6 +49,13 @@ public class TestBytesBytesMultiHashMap {
   }
 
   @Test
+  public void testExpandAndRehashToTarget() {
+    BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(CAPACITY, LOAD_FACTOR, WB_SIZE);
+    map.expandAndRehashToTarget(24);
+    assertEquals(32, map.getCapacity());
+  }
+
+  @Test
   public void testPutGetOne() throws Exception {
     BytesBytesMultiHashMap map = new BytesBytesMultiHashMap(CAPACITY, LOAD_FACTOR, WB_SIZE);
     RandomKvSource kv = new RandomKvSource(0, 0);

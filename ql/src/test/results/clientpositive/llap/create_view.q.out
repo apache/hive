@@ -168,15 +168,15 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view0
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
+  Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-0
     Create View
-      columns: valoo string
       expanded text: SELECT `_c0` AS `valoo` FROM (SELECT upper(`src`.`value`) FROM `default`.`src` WHERE `src`.`key`=86) `view0`
-      name: default.view0
       original text: SELECT upper(value) FROM src WHERE key=86
+      columns: valoo string
+      name: default.view0
 
 PREHOOK: query: EXPLAIN
 SELECT * from view2 where key=18
@@ -1076,9 +1076,9 @@ POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@src
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@view12
-POSTHOOK: Lineage: view12.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: view12.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: view12.mycol SCRIPT []
-POSTHOOK: Lineage: view12.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: view12.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: DESCRIBE EXTENDED view12
 PREHOOK: type: DESCTABLE
 PREHOOK: Input: default@view12

@@ -47,7 +47,7 @@ import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
 /**
- * 
+ *
  * An implementation of the Thrift Protocol for ctl separated records. This is
  * not thrift compliant in that it doesn't write out field ids so things cannot
  * actually be versioned.
@@ -177,7 +177,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
 
   /**
    * The transport being wrapped.
-   * 
+   *
    */
   protected final TTransport innerTransport;
 
@@ -297,10 +297,10 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   /**
    * The simple constructor which assumes ctl-a, ctl-b and '\n' separators and
    * to return empty strings for empty fields.
-   * 
+   *
    * @param trans
    *          - the ttransport to use as input or output
-   * 
+   *
    */
 
   public TCTLSeparatedProtocol(TTransport trans) {
@@ -382,9 +382,9 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   protected Pattern stripQuotePostfix;
 
   /**
-   * 
+   *
    * Split the line based on a complex regex pattern.
-   * 
+   *
    * @param line
    *          the current row
    * @param p
@@ -434,7 +434,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
 
   /**
    * Initialize the TProtocol.
-   * 
+   *
    * @param conf
    *          System properties
    * @param tbl
@@ -664,7 +664,7 @@ public class TCTLSeparatedProtocol extends TProtocol implements
   public TField readFieldBegin() throws TException {
     assert (!inner);
     TField f = new TField("", ORDERED_TYPE, (short) -1);
-    // slight hack to communicate to DynamicSerDe that the field ids are not
+    // slight hack to communicate to SerDes that the field ids are not
     // being set but things are ordered.
     return f;
   }

@@ -129,8 +129,13 @@ public class DriverState {
     return driverState == State.EXECUTING;
   }
 
-  public void executionFinished(boolean wasError) {
-    driverState = wasError ? State.ERROR : State.EXECUTED;
+  public void executionFinishedWithLocking(boolean wasError) {
+    lock();
+    try {
+      driverState = wasError ? State.ERROR : State.EXECUTED;
+    } finally {
+      unlock();
+    }
   }
 
   public boolean isExecuted() {

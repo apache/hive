@@ -17,6 +17,7 @@ PREHOOK: query: create table windowing_distinct(
            bin binary)
        row format delimited
        fields terminated by '|'
+       TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@windowing_distinct
@@ -35,6 +36,7 @@ POSTHOOK: query: create table windowing_distinct(
            bin binary)
        row format delimited
        fields terminated by '|'
+       TBLPROPERTIES ("hive.serialization.decode.binary.as.base64"="false")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@windowing_distinct

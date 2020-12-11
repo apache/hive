@@ -26,10 +26,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.CommonMergeJoinOperator;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
-import org.apache.hadoop.hive.ql.plan.BaseWork.BaseExplainVectorization;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
 import org.apache.hadoop.hive.ql.plan.Explain.Vectorization;
 import org.apache.hadoop.mapred.JobConf;
@@ -62,10 +63,6 @@ public class MergeJoinWork extends BaseWork {
   @Override
   public Operator<?> getAnyRootOperator() {
     return getMainWork().getAnyRootOperator();
-  }
-
-  @Override
-  public void configureJobConf(JobConf job) {
   }
 
   public CommonMergeJoinOperator getMergeJoinOperator() {

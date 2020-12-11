@@ -84,6 +84,7 @@ public class TestHiveProtoLoggingHook {
     QueryPlan queryPlan = new QueryPlan(HiveOperation.QUERY) {};
     queryPlan.setQueryId("test_queryId");
     queryPlan.setQueryStartTime(1234L);
+    queryPlan.setQueryString("SELECT * FROM t WHERE i > 10");
     queryPlan.setRootTasks(new ArrayList<>());
     queryPlan.setInputs(new HashSet<>());
     queryPlan.setOutputs(new HashSet<>());
@@ -208,8 +209,8 @@ public class TestHiveProtoLoggingHook {
   @Test
   public void testPostEventLog() throws Exception {
     context.setHookType(HookType.POST_EXEC_HOOK);
-    context.getPerfLogger().PerfLogBegin("test", "LogTest");
-    context.getPerfLogger().PerfLogEnd("test", "LogTest");
+    context.getPerfLogger().perfLogBegin("test", "LogTest");
+    context.getPerfLogger().perfLogEnd("test", "LogTest");
 
     EventLogger evtLogger = new EventLogger(conf, SystemClock.getInstance());
     evtLogger.handle(context);

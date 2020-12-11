@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.conf.HiveServer2TransportMode;
 import org.apache.hadoop.hive.llap.coordinator.LlapCoordinator;
 import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 import org.apache.hadoop.hive.metastore.api.WMPool;
 import org.apache.hadoop.hive.metastore.api.WMResourcePlan;
@@ -219,13 +220,7 @@ public class HiveServer2 extends CompositeService {
     cliService = new CLIService(this, false);
     addService(cliService);
     final HiveServer2 hiveServer2 = this;
-    Runnable oomHook = new Runnable() {
-      @Override
-      public void run() {
-        hiveServer2.stop();
-      }
-    };
-
+    Runnable oomHook = new HiveServer2OomHookRunner(hiveServer2);
     boolean isHttpTransportMode = isHttpTransportMode(hiveConf);
     boolean isAllTransportMode = isAllTransportMode(hiveConf);
     if (isHttpTransportMode || isAllTransportMode) {
@@ -284,6 +279,11 @@ public class HiveServer2 extends CompositeService {
       } catch (Exception err) {
         throw new RuntimeException("Error initializing the query results cache", err);
       }
+    }
+
+    // setup metastore client cache
+    if (hiveConf.getBoolVar(ConfVars.MSC_CACHE_ENABLED)) {
+      HiveMetaStoreClientWithLocalCache.init(hiveConf);
     }
 
     try {
@@ -360,6 +360,9 @@ public class HiveServer2 extends CompositeService {
             builder.setKeyStorePassword(ShimLoader.getHadoopShims().getPassword(
               hiveConf, ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_PASSWORD.varname));
             builder.setKeyStorePath(keyStorePath);
+            builder.setKeyStoreType(hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYSTORE_TYPE));
+            builder.setKeyManagerFactoryAlgorithm(
+                hiveConf.getVar(ConfVars.HIVE_SERVER2_WEBUI_SSL_KEYMANAGERFACTORY_ALGORITHM));
             builder.setUseSSL(true);
           }
           if (hiveConf.getBoolVar(ConfVars.HIVE_SERVER2_WEBUI_USE_SPNEGO)) {

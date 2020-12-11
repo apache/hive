@@ -59,6 +59,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.apache.hadoop.hive.ql.ErrorMsg.CLIENT_POLLING_OPSTATUS_INTERRUPTED;
+
 /**
  * The object used for executing a static SQL statement and returning the
  * results it produces.
@@ -309,6 +311,12 @@ public class HiveStatement implements java.sql.Statement {
     try {
       TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
       Utils.verifySuccessWithInfo(execResp.getStatus());
+      List<String> infoMessages = execResp.getStatus().getInfoMessages();
+      if (infoMessages != null) {
+        for (String message : infoMessages) {
+          LOG.info(message);
+        }
+      }
       stmtHandle = Optional.of(execResp.getOperationHandle());
     } catch (SQLException eS) {
       isLogBeingGenerated = false;
@@ -354,6 +362,10 @@ public class HiveStatement implements java.sql.Statement {
     // Poll on the operation status, till the operation is complete
     do {
       try {
+        if (Thread.currentThread().isInterrupted()) {
+          throw new SQLException(CLIENT_POLLING_OPSTATUS_INTERRUPTED.getMsg(),
+              CLIENT_POLLING_OPSTATUS_INTERRUPTED.getSQLState());
+        }
         /**
          * For an async SQLOperation, GetOperationStatus will use the long polling approach It will
          * essentially return after the HIVE_SERVER2_LONG_POLLING_TIMEOUT (a server config) expires
@@ -748,7 +760,7 @@ public class HiveStatement implements java.sql.Statement {
     // Set on the server side.
     // @see org.apache.hive.service.cli.operation.SQLOperation#prepare
     return (stmtHandle.isPresent())
-        ? Base64.getUrlEncoder().encodeToString(stmtHandle.get().getOperationId().getGuid()).trim()
+        ? Base64.getUrlEncoder().withoutPadding().encodeToString(stmtHandle.get().getOperationId().getGuid())
         : null;
   }
 

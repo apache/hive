@@ -24,7 +24,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@tmptable_n1
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
-WHERE RAND(1) < 0.1 AND `ds` = '2008-04-08'
+WHERE `ds` = '2008-04-08' AND RAND(1) < 0.1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -99,7 +99,7 @@ STAGE PLANS:
                             value expressions: _col0 (type: int), _col1 (type: struct<count:bigint,sum:double,input:int>), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary), _col13 (type: int), _col14 (type: struct<count:bigint,sum:double,input:int>), _col15 (type: bigint), _col16 (type: binary)
                             auto parallelism: false
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

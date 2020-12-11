@@ -543,18 +543,26 @@ class CompactionQueryBuilder {
     if (crud && minor && isBucketed) {
       tblProperties.put("bucketing_version", String.valueOf(bucketingVersion));
     }
-    if (insertOnly && sourceTab != null) { // to avoid NPEs, skip this part if sourceTab is null
-      // Exclude all standard table properties.
-      Set<String> excludes = getHiveMetastoreConstants();
-      excludes.addAll(StatsSetupConst.TABLE_PARAMS_STATS_KEYS);
-      for (Map.Entry<String, String> e : sourceTab.getParameters().entrySet()) {
-        if (e.getValue() == null) {
-          continue;
+    if (sourceTab != null) { // to avoid NPEs, skip this part if sourceTab is null
+      if (insertOnly) {
+        // Exclude all standard table properties.
+        Set<String> excludes = getHiveMetastoreConstants();
+        excludes.addAll(StatsSetupConst.TABLE_PARAMS_STATS_KEYS);
+        for (Map.Entry<String, String> e : sourceTab.getParameters().entrySet()) {
+          if (e.getValue() == null) {
+            continue;
+          }
+          if (excludes.contains(e.getKey())) {
+            continue;
+          }
+          tblProperties.put(e.getKey(), HiveStringUtils.escapeHiveCommand(e.getValue()));
         }
-        if (excludes.contains(e.getKey())) {
-          continue;
+      } else {
+        for (Map.Entry<String, String> e : sourceTab.getParameters().entrySet()) {
+          if (e.getKey().startsWith("orc.")) {
+            tblProperties.put(e.getKey(), HiveStringUtils.escapeHiveCommand(e.getValue()));
+          }
         }
-        tblProperties.put(e.getKey(), HiveStringUtils.escapeHiveCommand(e.getValue()));
       }
     }
 

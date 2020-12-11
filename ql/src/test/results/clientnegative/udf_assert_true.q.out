@@ -29,12 +29,12 @@ STAGE PLANS:
                 Lateral View Join Operator
                   outputColumnNames: _col5
                   Statistics: Num rows: 1000 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: assert_true((_col5 > 0)) (type: void)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 2
+                  Limit
+                    Number of rows: 2
+                    Statistics: Num rows: 2 Data size: 1224 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: assert_true((_col5 > 0)) (type: void)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -53,12 +53,12 @@ STAGE PLANS:
                   Lateral View Join Operator
                     outputColumnNames: _col5
                     Statistics: Num rows: 1000 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: assert_true((_col5 > 0)) (type: void)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 2
+                    Limit
+                      Number of rows: 2
+                      Statistics: Num rows: 2 Data size: 1224 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: assert_true((_col5 > 0)) (type: void)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
@@ -110,12 +110,12 @@ STAGE PLANS:
                 Lateral View Join Operator
                   outputColumnNames: _col5
                   Statistics: Num rows: 1000 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
-                  Select Operator
-                    expressions: assert_true((_col5 < 2)) (type: void)
-                    outputColumnNames: _col0
-                    Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Limit
-                      Number of rows: 2
+                  Limit
+                    Number of rows: 2
+                    Statistics: Num rows: 2 Data size: 1224 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: assert_true((_col5 < 2)) (type: void)
+                      outputColumnNames: _col0
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       File Output Operator
                         compressed: false
@@ -134,12 +134,12 @@ STAGE PLANS:
                   Lateral View Join Operator
                     outputColumnNames: _col5
                     Statistics: Num rows: 1000 Data size: 196000 Basic stats: COMPLETE Column stats: COMPLETE
-                    Select Operator
-                      expressions: assert_true((_col5 < 2)) (type: void)
-                      outputColumnNames: _col0
-                      Statistics: Num rows: 1000 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 2
+                    Limit
+                      Number of rows: 2
+                      Statistics: Num rows: 2 Data size: 1224 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: assert_true((_col5 < 2)) (type: void)
+                        outputColumnNames: _col0
                         Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false

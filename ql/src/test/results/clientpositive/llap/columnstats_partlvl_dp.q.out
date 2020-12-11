@@ -119,7 +119,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 772 Basic stats: PARTIAL Column stats: PARTIAL
                         value expressions: _col2 (type: int), _col3 (type: struct<count:bigint,sum:double,input:int>), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: int), _col9 (type: bigint), _col10 (type: binary)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -277,7 +277,7 @@ STAGE PLANS:
                         Statistics: Num rows: 3 Data size: 1068 Basic stats: PARTIAL Column stats: PARTIAL
                         value expressions: _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -433,7 +433,7 @@ STAGE PLANS:
                         Statistics: Num rows: 31 Data size: 11280 Basic stats: PARTIAL Column stats: PARTIAL
                         value expressions: _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -587,7 +587,7 @@ STAGE PLANS:
                         Statistics: Num rows: 8 Data size: 4736 Basic stats: COMPLETE Column stats: PARTIAL
                         value expressions: _col2 (type: int), _col3 (type: int), _col4 (type: bigint), _col5 (type: bigint), _col6 (type: binary), _col7 (type: int), _col8 (type: struct<count:bigint,sum:double,input:int>), _col9 (type: bigint), _col10 (type: binary)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

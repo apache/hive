@@ -155,8 +155,8 @@ public class TezJobMonitor {
     synchronized (shutdownList) {
       shutdownList.add(dagClient);
     }
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
     DAGStatus.State lastState = null;
     boolean running = false;
 
@@ -218,7 +218,7 @@ public class TezJobMonitor {
               break;
             case RUNNING:
               if (!running) {
-                perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
+                perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
                 console.printInfo("Status: Running (" + dagClient.getExecutionContext() + ")\n");
                 this.executionStartTime = System.currentTimeMillis();
                 running = true;
@@ -308,7 +308,7 @@ public class TezJobMonitor {
       }
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
     printSummary(success, vertexProgressMap);
     return rc;
   }

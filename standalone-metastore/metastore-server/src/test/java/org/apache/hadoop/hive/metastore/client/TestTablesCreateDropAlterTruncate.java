@@ -348,7 +348,7 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
     client.createTable(table);
     Table createdTable = client.getTable(table.getDbName(), table.getTableName());
-    Assert.assertEquals("Storage descriptor location", metaStore.getExternalWarehouseRoot()
+    Assert.assertEquals("Storage descriptor location", metaStore.getWarehouseRoot()
         + "/" + table.getDbName() + ".db/" + table.getTableName(),
         createdTable.getSd().getLocation());
   }
@@ -621,6 +621,29 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
         metaStore.isPathExists(new Path(table.getSd().getLocation())));
     Assert.assertFalse("Table path should not be in trash",
         metaStore.isPathExistsInTrash(new Path(table.getSd().getLocation())));
+
+    Table newTable = table.deepCopy();
+    newTable.setTableName("external_table_for_purge");
+    newTable.getSd().setLocation(metaStore.getWarehouseRoot() + "/external/purge_table_dir");
+    newTable.getParameters().put("external.table.purge", "true");
+
+    client.createTable(newTable);
+    client.dropTable(newTable.getDbName(), newTable.getTableName(), true, true, true);
+
+    Assert.assertFalse("Table path should be removed",
+        metaStore.isPathExists(new Path(newTable.getSd().getLocation())));
+    Assert.assertFalse("Table path should not be in trash",
+        metaStore.isPathExistsInTrash(new Path(newTable.getSd().getLocation())));
+
+    newTable.getParameters().put("skip.trash", "true");
+
+    client.createTable(newTable);
+    client.dropTable(newTable.getDbName(), newTable.getTableName(), true, true, false);
+
+    Assert.assertFalse("Table path should be removed",
+        metaStore.isPathExists(new Path(newTable.getSd().getLocation())));
+    Assert.assertFalse("Table path should not be in trash",
+        metaStore.isPathExistsInTrash(new Path(newTable.getSd().getLocation())));
   }
 
   @Test
@@ -631,8 +654,21 @@ public class TestTablesCreateDropAlterTruncate extends MetaStoreClientTest {
 
     Assert.assertTrue("Table path should not be removed",
         metaStore.isPathExists(new Path(table.getSd().getLocation())));
-    Assert.assertFalse("Table path should be in trash",
+    Assert.assertFalse("Table path should not be in trash",
         metaStore.isPathExistsInTrash(new Path(table.getSd().getLocation())));
+
+    Table newTable = table.deepCopy();
+    newTable.setTableName("external_table_for_purge");
+    newTable.getSd().setLocation(metaStore.getWarehouseRoot() + "/external/purge_table_dir");
+    newTable.getParameters().put("external.table.purge", "true");
+
+    client.createTable(newTable);
+    client.dropTable(newTable.getDbName(), newTable.getTableName(), true, true, false);
+
+    Assert.assertFalse("Table path should be removed",
+        metaStore.isPathExists(new Path(newTable.getSd().getLocation())));
+    Assert.assertTrue("Table path should be in trash",
+        metaStore.isPathExistsInTrash(new Path(newTable.getSd().getLocation())));
   }
 
   @Test

@@ -92,41 +92,44 @@ public class GlobalLimitOptimizer extends Transform {
       //    SELECT * FROM (SELECT col1 as col2 (SELECT * FROM ...) t1 LIMIT ...) t2);
       //
       TableScanOperator ts = topOps.values().iterator().next();
-      LimitOperator tempGlobalLimit = checkQbpForGlobalLimit(ts);
-
-      // query qualify for the optimization
-      if (tempGlobalLimit != null) {
-        LimitDesc tempGlobalLimitDesc = tempGlobalLimit.getConf();
-        Table tab = ts.getConf().getTableMetadata();
-        Set<FilterOperator> filterOps = OperatorUtils.findOperators(ts, FilterOperator.class);
-
-        if (!tab.isPartitioned()) {
-          if (filterOps.size() == 0) {
-            Integer tempOffset = tempGlobalLimitDesc.getOffset();
-            globalLimitCtx.enableOpt(tempGlobalLimitDesc.getLimit(),
-                (tempOffset == null) ? 0 : tempOffset);
-          }
-        } else {
-          // check if the pruner only contains partition columns
-          if (onlyContainsPartnCols(tab, filterOps)) {
-
-            String alias = (String) topOps.keySet().toArray()[0];
-            PrunedPartitionList partsList = pctx.getPrunedPartitions(alias, ts);
-
-            // If there is any unknown partition, create a map-reduce job for
-            // the filter to prune correctly
-            if (!partsList.hasUnknownPartitions()) {
+      Table tab = ts.getConf().getTableMetadata();
+      // StorageHandlers will always have empty tablePath.
+      // GenMapRedUtils.setMapWork removes empty tablePath from input dir with select-Limit
+      // InputFormat.getSplits wont be called if no input path & TS Vertex will have 0 task parallelism
+      if (tab.getStorageHandler() == null) {
+        LimitOperator tempGlobalLimit = checkQbpForGlobalLimit(ts);
+        // query qualify for the optimization
+        if (tempGlobalLimit != null) {
+          LimitDesc tempGlobalLimitDesc = tempGlobalLimit.getConf();
+          Set<FilterOperator> filterOps = OperatorUtils.findOperators(ts, FilterOperator.class);
+          if (!tab.isPartitioned()) {
+            if (filterOps.size() == 0) {
               Integer tempOffset = tempGlobalLimitDesc.getOffset();
               globalLimitCtx.enableOpt(tempGlobalLimitDesc.getLimit(),
                   (tempOffset == null) ? 0 : tempOffset);
             }
+          } else {
+            // check if the pruner only contains partition columns
+            if (onlyContainsPartnCols(tab, filterOps)) {
+
+              String alias = (String) topOps.keySet().toArray()[0];
+              PrunedPartitionList partsList = pctx.getPrunedPartitions(alias, ts);
+
+              // If there is any unknown partition, create a map-reduce job for
+              // the filter to prune correctly
+              if (!partsList.hasUnknownPartitions()) {
+                Integer tempOffset = tempGlobalLimitDesc.getOffset();
+                globalLimitCtx.enableOpt(tempGlobalLimitDesc.getLimit(),
+                        (tempOffset == null) ? 0 : tempOffset);
+              }
+            }
           }
-        }
-        if (globalLimitCtx.isEnable()) {
-          LOG.info("Qualify the optimize that reduces input size for 'offset' for offset "
-              + globalLimitCtx.getGlobalOffset());
-          LOG.info("Qualify the optimize that reduces input size for 'limit' for limit "
-              + globalLimitCtx.getGlobalLimit());
+          if (globalLimitCtx.isEnable()) {
+            LOG.info("Qualify the optimize that reduces input size for 'offset' for offset "
+                + globalLimitCtx.getGlobalOffset());
+            LOG.info("Qualify the optimize that reduces input size for 'limit' for limit "
+                + globalLimitCtx.getGlobalLimit());
+          }
         }
       }
     }

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 import com.google.gson.Gson;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerExportPolicyList;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerPolicy;
 import org.apache.hadoop.hive.ql.exec.repl.ranger.RangerRestClientImpl;
@@ -39,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.REPL_RANGER_ADD_DENY_POLICY_TARGET;
 import static org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils.RANGER_HIVE_SERVICE_NAME;
@@ -72,14 +74,15 @@ public class TestRangerLoadTask {
       .thenCallRealMethod();
     Mockito.when(mockClient.addDenyPolicies(Mockito.anyList(), Mockito.anyString(), Mockito.anyString(),
       Mockito.anyString())).thenCallRealMethod();
-    Mockito.when(mockClient.checkConnection(Mockito.anyString())).thenReturn(true);
+    Mockito.when(mockClient.checkConnection(Mockito.anyString(), Mockito.any())).thenReturn(true);
     Mockito.when(work.getMetricCollector()).thenReturn(metricCollector);
   }
 
   @Test
   public void testFailureInvalidAuthProviderEndpoint() {
+    Mockito.when(work.getCurrentDumpPath()).thenReturn(new Path("dumppath"));
     int status = task.execute();
-    Assert.assertEquals(40000, status);
+    Assert.assertEquals(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.getErrorCode(), status);
   }
 
   @Test
@@ -188,9 +191,10 @@ public class TestRangerLoadTask {
     ArgumentCaptor<String> rangerEndpoint = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> serviceName = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> targetDb = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<HiveConf> confCaptor = ArgumentCaptor.forClass(HiveConf.class);
     Mockito.verify(mockClient,
         Mockito.times(1)).importRangerPolicies(rangerPolicyCapture.capture(),
-        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture());
+        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture(), confCaptor.capture());
     Assert.assertEquals("tgtdb", targetDb.getAllValues().get(0));
     Assert.assertEquals("rangerEndpoint", rangerEndpoint.getAllValues().get(0));
     Assert.assertEquals("hive", serviceName.getAllValues().get(0));
@@ -252,9 +256,10 @@ public class TestRangerLoadTask {
     ArgumentCaptor<String> rangerEndpoint = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> serviceName = ArgumentCaptor.forClass(String.class);
     ArgumentCaptor<String> targetDb = ArgumentCaptor.forClass(String.class);
+    ArgumentCaptor<HiveConf> confCaptor = ArgumentCaptor.forClass(HiveConf.class);
     Mockito.verify(mockClient,
         Mockito.times(1)).importRangerPolicies(rangerPolicyCapture.capture(),
-        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture());
+        targetDb.capture(), rangerEndpoint.capture(), serviceName.capture(), confCaptor.capture());
     Assert.assertEquals("tgtdb", targetDb.getAllValues().get(0));
     Assert.assertEquals("rangerEndpoint", rangerEndpoint.getAllValues().get(0));
     Assert.assertEquals("hive", serviceName.getAllValues().get(0));
@@ -262,5 +267,113 @@ public class TestRangerLoadTask {
     Assert.assertEquals(rangerPolicyList.getMetaDataInfo(), actualPolicyList.getMetaDataInfo());
     //Deny policy is added
     Assert.assertEquals(1, actualPolicyList.getListSize());
+  }
+
+  @Test
+  public void testRangerEndpointCreation() throws Exception {
+    RangerRestClientImpl rangerRestClient = new RangerRestClientImpl();
+    Assert.assertTrue(rangerRestClient.getRangerExportUrl("http://ranger.apache.org:6080",
+      "hive", "dbname").equals("http://ranger.apache.org:6080/service/plugins/"
+      + "policies/exportJson?serviceName=hive&polResource=dbname&resource%3Adatabase=dbname&serviceType=hive"
+      + "&resourceMatchScope=self_or_ancestor&resourceMatch=full"));
+
+    Assert.assertTrue(rangerRestClient.getRangerExportUrl("http://ranger.apache.org:6080/",
+      "hive", "dbname").equals("http://ranger.apache.org:6080/service/plugins/"
+      + "policies/exportJson?serviceName=hive&polResource=dbname&resource%3Adatabase=dbname&serviceType=hive"
+      + "&resourceMatchScope=self_or_ancestor&resourceMatch=full"));
+
+    Assert.assertTrue(rangerRestClient.getRangerImportUrl("http://ranger.apache.org:6080/",
+      "dbname").equals("http://ranger.apache.org:6080/service/plugins/policies/importPoliciesFromFile"
+      + "?updateIfExists=true&polResource=dbname&policyMatchingAlgorithm=matchByName"));
+
+    Assert.assertTrue(rangerRestClient.getRangerImportUrl("http://ranger.apache.org:6080",
+      "dbname").equals("http://ranger.apache.org:6080/service/plugins/policies/importPoliciesFromFile"
+      + "?updateIfExists=true&polResource=dbname&policyMatchingAlgorithm=matchByName"));
+
+  }
+
+  @Test
+  public void testChangeDataSet() throws Exception {
+    RangerRestClientImpl rangerRestClient = new RangerRestClientImpl();
+    String rangerResponse = "{\"metaDataInfo\":{\"Host name\":\"ranger.apache.org\","
+      + "\"Exported by\":\"hive\",\"Export time\":\"May 5, 2020, 8:55:03 AM\",\"Ranger apache version\""
+      + ":\"2.0.0.7.2.0.0-61\"},\"policies\":[{\"service\":\"cm_hive\",\"name\":\"db-level\",\"policyType\":0,"
+      + "\"description\":\"\",\"isAuditEnabled\":true,\"resources\":{\"database\":{\"values\":[\"aa\"],"
+      + "\"isExcludes\":false,\"isRecursive\":false},\"column\":{\"values\":[\"id\"],\"isExcludes\":false,"
+      + "\"isRecursive\":false},\"table\":{\"values\":[\"*\"],\"isExcludes\":false,\"isRecursive\":false}},"
+      + "\"policyItems\":[{\"accesses\":[{\"type\":\"select\",\"isAllowed\":true},{\"type\":\"update\","
+      + "\"isAllowed\":true}],\"users\":[\"admin\"],\"groups\":[\"public\"],\"conditions\":[],"
+      + "\"delegateAdmin\":false}],\"denyPolicyItems\":[],\"allowExceptions\":[],\"denyExceptions\":[],"
+      + "\"dataMaskPolicyItems\":[],\"rowFilterPolicyItems\":[],\"id\":40,\"guid\":"
+      + "\"4e2b3406-7b9a-4004-8cdf-7a239c8e2cae\",\"isEnabled\":true,\"version\":1}]}";
+    RangerExportPolicyList rangerPolicyList = new Gson().fromJson(rangerResponse, RangerExportPolicyList.class);
+    List<RangerPolicy> rangerPolicies = rangerPolicyList.getPolicies();
+    rangerRestClient.changeDataSet(rangerPolicies, null, null);
+    assertEqualsRangerPolicies(rangerPolicies, rangerRestClient.changeDataSet(rangerPolicies,
+      null, null), "aa");
+    assertEqualsRangerPolicies(rangerPolicies, rangerRestClient.changeDataSet(rangerPolicies,
+      "aa", null), "aa");
+    assertEqualsRangerPolicies(rangerPolicies, rangerRestClient.changeDataSet(rangerPolicies,
+      null, "aa"), "aa");
+    assertEqualsRangerPolicies(rangerPolicies, rangerRestClient.changeDataSet(rangerPolicies,
+      "aa", "aa"), "aa");
+    assertNotEqualsRangerPolicies(rangerPolicies, rangerRestClient.changeDataSet(rangerPolicies,
+      "aa", "tgt_aa"), "tgt_aa");
+  }
+
+  private void assertNotEqualsRangerPolicies(List<RangerPolicy> expectedRangerPolicies,
+                                          List<RangerPolicy> actualRangerPolicies, String targetName) {
+    Assert.assertEquals(expectedRangerPolicies.size(), actualRangerPolicies.size());
+    for (int index = 0; index < expectedRangerPolicies.size(); index++) {
+      Assert.assertEquals(expectedRangerPolicies.get(index).getName(), actualRangerPolicies.get(index).getName());
+      Assert.assertEquals(expectedRangerPolicies.get(index).getService(), actualRangerPolicies.get(index).getService());
+      Assert.assertEquals(expectedRangerPolicies.get(index).getDescription(),
+        actualRangerPolicies.get(index).getDescription());
+      Assert.assertEquals(expectedRangerPolicies.get(index).getPolicyType(),
+        actualRangerPolicies.get(index).getPolicyType());
+      Assert.assertEquals(expectedRangerPolicies.get(index).getResources().size(),
+        actualRangerPolicies.get(index).getResources().size());
+      Assert.assertEquals(expectedRangerPolicies.get(index).getResources().size(),
+        actualRangerPolicies.get(index).getResources().size());
+      RangerPolicy.RangerPolicyResource expectedRangerPolicyResource = expectedRangerPolicies.get(index)
+        .getResources().get("database");
+      RangerPolicy.RangerPolicyResource actualRangerPolicyResource = actualRangerPolicies.get(index)
+        .getResources().get("database");
+      Assert.assertEquals(expectedRangerPolicyResource.getValues().size(),
+        actualRangerPolicyResource.getValues().size());
+      for (int resourceIndex = 0; resourceIndex < expectedRangerPolicyResource.getValues().size(); resourceIndex++) {
+        Assert.assertEquals(actualRangerPolicyResource.getValues().get(index),
+          targetName);
+      }
+    }
+  }
+
+  private void assertEqualsRangerPolicies(List<RangerPolicy> expectedRangerPolicies,
+                                          List<RangerPolicy> actualRangerPolicies, String sourceName) {
+    Assert.assertEquals(expectedRangerPolicies.size(), actualRangerPolicies.size());
+    for (int index = 0; index < expectedRangerPolicies.size(); index++) {
+      Assert.assertEquals(expectedRangerPolicies.get(index).getName(), actualRangerPolicies.get(index).getName());
+      Assert.assertEquals(expectedRangerPolicies.get(index).getService(), actualRangerPolicies.get(index).getService());
+      Assert.assertEquals(expectedRangerPolicies.get(index).getDescription(),
+        actualRangerPolicies.get(index).getDescription());
+      Assert.assertEquals(expectedRangerPolicies.get(index).getPolicyType(),
+        actualRangerPolicies.get(index).getPolicyType());
+      Assert.assertEquals(expectedRangerPolicies.get(index).getResources().size(),
+        actualRangerPolicies.get(index).getResources().size());
+      Assert.assertEquals(expectedRangerPolicies.get(index).getResources().size(),
+        actualRangerPolicies.get(index).getResources().size());
+      RangerPolicy.RangerPolicyResource expectedRangerPolicyResource = expectedRangerPolicies.get(index)
+        .getResources().get("database");
+      RangerPolicy.RangerPolicyResource actualRangerPolicyResource = actualRangerPolicies.get(index)
+        .getResources().get("database");
+      Assert.assertEquals(expectedRangerPolicyResource.getValues().size(),
+        actualRangerPolicyResource.getValues().size());
+      for (int resourceIndex = 0; resourceIndex < expectedRangerPolicyResource.getValues().size(); resourceIndex++) {
+        Assert.assertEquals(expectedRangerPolicyResource.getValues().get(index),
+          actualRangerPolicyResource.getValues().get(index));
+        Assert.assertEquals(actualRangerPolicyResource.getValues().get(index),
+          sourceName);
+      }
+    }
   }
 }

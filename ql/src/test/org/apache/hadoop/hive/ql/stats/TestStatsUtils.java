@@ -97,7 +97,8 @@ public class TestStatsUtils {
       if (exclusions.contains(typeName)) {
         continue;
       }
-      long siz = StatsUtils.getSizeOfPrimitiveTypeArraysFromType(typeName, 3, conf);
+      int maxVarLen = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_MAX_VARIABLE_LENGTH);
+      long siz = StatsUtils.getSizeOfPrimitiveTypeArraysFromType(typeName, 3, maxVarLen);
       assertNotEquals(field.toString(), 0, siz);
     }
   }

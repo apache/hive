@@ -21,6 +21,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@dest_n1
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -72,7 +73,7 @@ STAGE PLANS:
                           Statistics: Num rows: 1 Data size: 566 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: int), _col2 (type: struct<count:bigint,sum:double,input:int>), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary), _col6 (type: int), _col7 (type: struct<count:bigint,sum:double,input:int>), _col8 (type: bigint), _col9 (type: binary)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -130,6 +131,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@srcpart
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
 POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
+POSTHOOK: Output: default@dest_n1
 POSTHOOK: Output: default@dest_n1@ds=2008-04-08
 POSTHOOK: Lineage: dest_n1 PARTITION(ds=2008-04-08).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_n1 PARTITION(ds=2008-04-08).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]

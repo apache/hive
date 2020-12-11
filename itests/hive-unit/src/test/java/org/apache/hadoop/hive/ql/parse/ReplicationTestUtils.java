@@ -502,19 +502,11 @@ public class ReplicationTestUtils {
                 "creation", "creation", "merge_update", "merge_insert", "merge_insert"});
   }
 
-  public static List<String> externalTableBasePathWithClause(String replExternalBase, WarehouseInstance replica)
-          throws IOException, SemanticException {
-    Path externalTableLocation = new Path(replExternalBase);
-    DistributedFileSystem fileSystem = replica.miniDFSCluster.getFileSystem();
-    externalTableLocation = PathBuilder.fullyQualifiedHDFSUri(externalTableLocation, fileSystem);
-    fileSystem.mkdirs(externalTableLocation);
-
-    // this is required since the same filesystem is used in both source and target
-    return Arrays.asList(
-            "'" + HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname + "'='"
-                    + externalTableLocation.toString() + "'",
-            "'distcp.options.pugpb'=''"
-    );
+  public static List<String> includeExternalTableClause(boolean enable) {
+    List<String> withClause = new ArrayList<>();
+    withClause.add("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='" + enable + "'");
+    withClause.add("'distcp.options.pugpb'=''");
+    return withClause;
   }
 
   public static List<String> externalTableWithClause(List<String> externalTableBasePathWithClause, Boolean bootstrap,

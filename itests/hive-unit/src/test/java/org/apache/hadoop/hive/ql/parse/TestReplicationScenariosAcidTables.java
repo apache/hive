@@ -24,7 +24,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.messaging.json.gzip.GzipJSONMessageEncoder;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
@@ -53,6 +53,7 @@ import javax.annotation.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -60,13 +61,14 @@ import java.util.List;
 import java.util.Collections;
 import java.util.Map;
 
+
 import static org.apache.hadoop.hive.metastore.ReplChangeManager.SOURCE_OF_REPLICATION;
 import static org.apache.hadoop.hive.ql.exec.repl.ReplAck.DUMP_ACKNOWLEDGEMENT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
-
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
 /**
  * TestReplicationScenariosAcidTables - test replication for ACID tables.
  */
@@ -102,6 +104,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
         put("hive.metastore.disallow.incompatible.col.type.changes", "false");
         put("metastore.warehouse.tenant.colocation", "true");
         put("hive.in.repl.test", "true");
+        put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
       }};
 
     acidEnableConf.putAll(overrides);
@@ -159,25 +162,6 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   }
 
   @Test
-  public void testAcidTablesMoveOptimizationBootStrap() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
-    replica.load(replicatedDbName, primaryDbName,
-            Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
-    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, true);
-  }
-
-  @Test
-  public void testAcidTablesMoveOptimizationIncremental() throws Throwable {
-    WarehouseInstance.Tuple bootstrapDump = primary.dump(primaryDbName);
-    replica.load(replicatedDbName, primaryDbName,
-            Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
-    WarehouseInstance.Tuple incrDump = prepareDataAndDump(primaryDbName, null);
-    replica.load(replicatedDbName, primaryDbName,
-            Collections.singletonList("'hive.repl.enable.move.optimization'='true'"));
-    verifyLoadExecution(replicatedDbName, incrDump.lastReplicationId, true);
-  }
-
-  @Test
   /**
    * Testcase for getting immutable dataset dump, and its corresponding repl load.
    */
@@ -229,19 +213,21 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     // Allocate write ids for both tables t1 and t2 for all txns
     // t1=5+1(insert) and t2=5+2(insert)
     Map<String, Long> tables = new HashMap<>();
-    tables.put("t1", numTxns+1L);
-    tables.put("t2", numTxns+2L);
-    allocateWriteIdsForTables(primaryDbName, tables, txnHandler, txns, primaryConf);
+    tables.put("t1", numTxns + 1L);
+    tables.put("t2", numTxns + 2L);
+    List<Long> lockIds = allocateWriteIdsForTablesAndAquireLocks(primaryDbName, tables, txnHandler, txns, primaryConf);
 
     // Bootstrap dump with open txn timeout as 1s.
     List<String> withConfigs = Arrays.asList(
-            "'hive.repl.bootstrap.dump.open.txn.timeout'='1s'");
+      "'"+ HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT+"'='1s'");
     WarehouseInstance.Tuple bootstrapDump = primary
             .run("use " + primaryDbName)
             .dump(primaryDbName, withConfigs);
 
     // After bootstrap dump, all the opened txns should be aborted. Verify it.
     verifyAllOpenTxnsAborted(txns, primaryConf);
+    //Release the locks
+    releaseLocks(txnHandler, lockIds);
     verifyNextId(tables, primaryDbName, primaryConf);
 
     // Bootstrap load which should also replicate the aborted write ids on both tables.
@@ -273,6 +259,342 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     tables.put("t2", 2L);
     verifyCompactionQueue(tables, replicatedDbName, replicaConf);
   }
+
+  @Test
+  public void testAcidTablesCreateTableIncremental() throws Throwable {
+    // Create 2 tables, one partitioned and other not.
+    primary.run("use " + primaryDbName)
+      .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+        "tblproperties (\"transactional\"=\"true\")")
+      .run("insert into t1 values(1)")
+      .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
+        "\"transactional_properties\"=\"insert_only\")")
+      .run("insert into t2 partition(name='Bob') values(11)")
+      .run("insert into t2 partition(name='Carl') values(10)");
+
+    WarehouseInstance.Tuple bootstrapDump = primary
+      .run("use " + primaryDbName)
+      .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName)
+      .run("use " + replicatedDbName)
+      .run("show tables")
+      .verifyResults(new String[] {"t1", "t2"})
+      .run("repl status " + replicatedDbName)
+      .verifyResult(bootstrapDump.lastReplicationId)
+      .run("select id from t1")
+      .verifyResults(new String[]{"1"})
+      .run("select rank from t2 order by rank")
+      .verifyResults(new String[] {"10", "11"});
+
+    WarehouseInstance.Tuple incrDump = primary.run("use "+ primaryDbName)
+      .run("create table t3 (id int)")
+      .run("insert into t3 values (99)")
+      .run("create table t4 (standard int) partitioned by (name string) stored as orc " +
+        "tblproperties (\"transactional\"=\"true\")")
+      .run("insert into t4 partition(name='Tom') values(11)")
+      .dump(primaryDbName);
+
+    replica.load(replicatedDbName, primaryDbName)
+      .run("use " + replicatedDbName)
+      .run("show tables")
+      .verifyResults(new String[] {"t1", "t2", "t3", "t4"})
+      .run("repl status " + replicatedDbName)
+      .verifyResult(incrDump.lastReplicationId)
+      .run("select id from t1")
+      .verifyResults(new String[]{"1"})
+      .run("select rank from t2 order by rank")
+      .verifyResults(new String[] {"10", "11"})
+      .run("select id from t3")
+      .verifyResults(new String[]{"99"})
+      .run("select standard from t4 order by standard")
+      .verifyResults(new String[] {"11"});
+  }
+
+
+  @Test
+  public void testAcidTablesBootstrapWithOpenTxnsDiffDb() throws Throwable {
+    int numTxns = 5;
+    HiveConf primaryConf = primary.getConf();
+    TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
+    // Open 5 txns
+    List<Long> txns = openTxns(numTxns, txnHandler, primaryConf);
+    // Create 2 tables, one partitioned and other not. Also, have both types of full ACID and MM tables.
+    primary.run("use " + primaryDbName)
+      .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+        "tblproperties (\"transactional\"=\"true\")")
+      .run("insert into t1 values(1)")
+      .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
+        "\"transactional_properties\"=\"insert_only\")")
+      .run("insert into t2 partition(name='Bob') values(11)")
+      .run("insert into t2 partition(name='Carl') values(10)");
+
+    // Allocate write ids for both tables of secondary db for all txns
+    // t1=5 and t2=5
+    Map<String, Long> tablesInSecDb = new HashMap<>();
+    tablesInSecDb.put("t1", (long) numTxns);
+    tablesInSecDb.put("t2", (long) numTxns);
+    List<Long> lockIds = allocateWriteIdsForTablesAndAquireLocks(primaryDbName + "_extra",
+      tablesInSecDb, txnHandler, txns, primaryConf);
+
+    // Bootstrap dump with open txn timeout as 300s.
+    //Since transactions belong to different db it won't wait.
+    List<String> withConfigs = Arrays.asList(
+      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT + "'='300s'");
+    long timeStarted = System.currentTimeMillis();
+    WarehouseInstance.Tuple bootstrapDump = null;
+    try {
+      bootstrapDump = primary
+        .run("use " + primaryDbName)
+        .dump(primaryDbName, withConfigs);
+    } finally {
+      //Dump shouldn't wait for 300s. It should check in the 30 secs itself that those txns belong to different db
+      Assert.assertTrue(System.currentTimeMillis() - timeStarted < 300000);
+    }
+
+    // After bootstrap dump, all the opened txns should not be aborted as itr belongs to a diff db. Verify it.
+    verifyAllOpenTxnsNotAborted(txns, primaryConf);
+    Map<String, Long> tablesInPrimary = new HashMap<>();
+    tablesInPrimary.put("t1", 1L);
+    tablesInPrimary.put("t2", 2L);
+    verifyNextId(tablesInPrimary, primaryDbName, primaryConf);
+
+    // Bootstrap load which should not replicate the write ids on both tables as they are on different db.
+    HiveConf replicaConf = replica.getConf();
+    replica.load(replicatedDbName, primaryDbName)
+      .run("use " + replicatedDbName)
+      .run("show tables")
+      .verifyResults(new String[]{"t1", "t2"})
+      .run("repl status " + replicatedDbName)
+      .verifyResult(bootstrapDump.lastReplicationId)
+      .run("select id from t1")
+      .verifyResults(new String[]{"1"})
+      .run("select rank from t2 order by rank")
+      .verifyResults(new String[]{"10", "11"});
+
+    // Verify if HWM is properly set after REPL LOAD
+    verifyNextId(tablesInPrimary, replicatedDbName, replicaConf);
+
+    // Verify if none of the write ids are not replicated to the replicated DB as they belong to diff db
+    for (Map.Entry<String, Long> entry : tablesInPrimary.entrySet()) {
+      entry.setValue((long) 0);
+    }
+    verifyWriteIdsForTables(tablesInPrimary, replicaConf, replicatedDbName);
+    //Abort the txns
+    txnHandler.abortTxns(new AbortTxnsRequest(txns));
+    verifyAllOpenTxnsAborted(txns, primaryConf);
+    //Release the locks
+    releaseLocks(txnHandler, lockIds);
+  }
+
+  @Test
+  public void testAcidTablesBootstrapWithOpenTxnsWaitingForLock() throws Throwable {
+    int numTxns = 5;
+    HiveConf primaryConf = primary.getConf();
+    TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
+    // Open 5 txns
+    List<Long> txns = openTxns(numTxns, txnHandler, primaryConf);
+
+    // Create 2 tables, one partitioned and other not. Also, have both types of full ACID and MM tables.
+    primary.run("use " + primaryDbName)
+      .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+        "tblproperties (\"transactional\"=\"true\")")
+      .run("insert into t1 values(1)")
+      .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
+        "\"transactional_properties\"=\"insert_only\")")
+      .run("insert into t2 partition(name='Bob') values(11)")
+      .run("insert into t2 partition(name='Carl') values(10)");
+
+    // Bootstrap dump with open txn timeout as 80s. Dump should fail as there will be open txns and
+    // lock is not acquired by them and we have set abort to false
+    List<String> withConfigs = Arrays.asList(
+      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT + "'='80s'",
+      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT + "'='false'");
+    try {
+      primary
+        .run("use " + primaryDbName)
+        .dump(primaryDbName, withConfigs);
+      fail();
+    } catch (Exception e) {
+      Assert.assertEquals(IllegalStateException.class, e.getClass());
+      Assert.assertEquals("REPL DUMP cannot proceed. Force abort all the open txns is disabled. "
+        + "Enable hive.repl.bootstrap.dump.abort.write.txn.after.timeout to proceed.", e.getMessage());
+    }
+
+    withConfigs = Arrays.asList(
+      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT + "'='1s'",
+      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT + "'='true'");
+    // Acquire locks
+    // Allocate write ids for both tables of secondary db for all txns
+    // t1=5 and t2=5
+    Map<String, Long> tablesInSecDb = new HashMap<>();
+    tablesInSecDb.put("t1", (long) numTxns);
+    tablesInSecDb.put("t2", (long) numTxns);
+    List<Long> lockIds = allocateWriteIdsForTablesAndAquireLocks(primaryDbName + "_extra",
+      tablesInSecDb, txnHandler, txns, primaryConf);
+
+    WarehouseInstance.Tuple bootstrapDump  = primary
+      .run("use " + primaryDbName)
+      .dump(primaryDbName, withConfigs);
+    // After bootstrap dump, all the opened txns should not be aborted as itr belongs to a diff db. Verify it.
+    verifyAllOpenTxnsNotAborted(txns, primaryConf);
+    Map<String, Long> tablesInPrimary = new HashMap<>();
+    tablesInPrimary.put("t1", 1L);
+    tablesInPrimary.put("t2", 2L);
+    verifyNextId(tablesInPrimary, primaryDbName, primaryConf);
+
+    // Bootstrap load which should not replicate the write ids on both tables as they are on different db.
+    HiveConf replicaConf = replica.getConf();
+    replica.load(replicatedDbName, primaryDbName)
+      .run("use " + replicatedDbName)
+      .run("show tables")
+      .verifyResults(new String[] {"t1", "t2"})
+      .run("repl status " + replicatedDbName)
+      .verifyResult(bootstrapDump.lastReplicationId)
+      .run("select id from t1")
+      .verifyResults(new String[]{"1"})
+      .run("select rank from t2 order by rank")
+      .verifyResults(new String[] {"10", "11"});
+
+    // Verify if HWM is properly set after REPL LOAD
+    verifyNextId(tablesInPrimary, replicatedDbName, replicaConf);
+
+    // Verify if none of the write ids are not replicated to the replicated DB as they belong to diff db
+    for(Map.Entry<String, Long> entry : tablesInPrimary.entrySet()) {
+      entry.setValue((long) 0);
+    }
+    verifyWriteIdsForTables(tablesInPrimary, replicaConf, replicatedDbName);
+    //Abort the txns
+    txnHandler.abortTxns(new AbortTxnsRequest(txns));
+    verifyAllOpenTxnsAborted(txns, primaryConf);
+    //Release the locks
+    releaseLocks(txnHandler, lockIds);
+  }
+
+  @Test
+  public void testAcidTablesBootstrapWithOpenTxnsPrimaryAndSecondaryDb() throws Throwable {
+    int numTxns = 5;
+    HiveConf primaryConf = primary.getConf();
+    TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
+    // Open 5 txns for secondary db
+    List<Long> txns = openTxns(numTxns, txnHandler, primaryConf);
+    // Open 5 txns for primary db
+    List<Long> txnsSameDb = openTxns(numTxns, txnHandler, primaryConf);
+
+    // Create 2 tables, one partitioned and other not. Also, have both types of full ACID and MM tables.
+    primary.run("use " + primaryDbName)
+      .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+        "tblproperties (\"transactional\"=\"true\")")
+      .run("insert into t1 values(1)")
+      .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
+        "\"transactional_properties\"=\"insert_only\")")
+      .run("insert into t2 partition(name='Bob') values(11)")
+      .run("insert into t2 partition(name='Carl') values(10)");
+
+    // Allocate write ids for both tables of secondary db for all txns
+    // t1=5 and t2=5
+    Map<String, Long> tablesInSecDb = new HashMap<>();
+    tablesInSecDb.put("t1", (long) numTxns);
+    tablesInSecDb.put("t2", (long) numTxns);
+    List<Long> lockIds = allocateWriteIdsForTablesAndAquireLocks(primaryDbName + "_extra",
+      tablesInSecDb, txnHandler, txns, primaryConf);
+    // Allocate write ids for both tables of primary db for all txns
+    // t1=5+1L and t2=5+2L inserts
+    Map<String, Long> tablesInPrimDb = new HashMap<>();
+    tablesInPrimDb.put("t1", (long) numTxns + 1L);
+    tablesInPrimDb.put("t2", (long) numTxns + 2L);
+    lockIds.addAll(allocateWriteIdsForTablesAndAquireLocks(primaryDbName,
+      tablesInPrimDb, txnHandler, txnsSameDb, primaryConf));
+
+    // Bootstrap dump with open txn timeout as 1s.
+    List<String> withConfigs = Arrays.asList(
+      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT + "'='1s'");
+    WarehouseInstance.Tuple bootstrapDump = primary
+      .run("use " + primaryDbName)
+      .dump(primaryDbName, withConfigs);
+
+    // After bootstrap dump, all the opened txns should not be aborted as it belongs to a diff db. Verify it.
+    verifyAllOpenTxnsNotAborted(txns, primaryConf);
+    // After bootstrap dump, all the opened txns should be aborted as it belongs to db under replication. Verify it.
+    verifyAllOpenTxnsAborted(txnsSameDb, primaryConf);
+    verifyNextId(tablesInPrimDb, primaryDbName, primaryConf);
+
+    // Bootstrap load which should replicate the write ids on both tables as they are on same db and
+    // not on different db.
+    HiveConf replicaConf = replica.getConf();
+    replica.load(replicatedDbName, primaryDbName)
+      .run("use " + replicatedDbName)
+      .run("show tables")
+      .verifyResults(new String[] {"t1", "t2"})
+      .run("repl status " + replicatedDbName)
+      .verifyResult(bootstrapDump.lastReplicationId)
+      .run("select id from t1")
+      .verifyResults(new String[]{"1"})
+      .run("select rank from t2 order by rank")
+      .verifyResults(new String[] {"10", "11"});
+
+    // Verify if HWM is properly set after REPL LOAD
+    verifyNextId(tablesInPrimDb, replicatedDbName, replicaConf);
+
+    // Verify if only the write ids belonging to primary db are replicated to the replicated DB.
+    for(Map.Entry<String, Long> entry : tablesInPrimDb.entrySet()) {
+      entry.setValue((long) numTxns);
+    }
+    verifyWriteIdsForTables(tablesInPrimDb, replicaConf, replicatedDbName);
+    //Abort the txns for secondary db
+    txnHandler.abortTxns(new AbortTxnsRequest(txns));
+    verifyAllOpenTxnsAborted(txns, primaryConf);
+    //Release the locks
+    releaseLocks(txnHandler, lockIds);
+  }
+
+  @Test
+  public void testAcidTablesBootstrapWithOpenTxnsAbortDisabled() throws Throwable {
+    int numTxns = 5;
+    HiveConf primaryConf = primary.getConf();
+    TxnStore txnHandler = TxnUtils.getTxnStore(primary.getConf());
+    // Open 5 txns
+    List<Long> txns = openTxns(numTxns, txnHandler, primaryConf);
+
+    // Create 2 tables, one partitioned and other not. Also, have both types of full ACID and MM tables.
+    primary.run("use " + primaryDbName)
+      .run("create table t1 (id int) clustered by(id) into 3 buckets stored as orc " +
+        "tblproperties (\"transactional\"=\"true\")")
+      .run("insert into t1 values(1)")
+      .run("create table t2 (rank int) partitioned by (name string) tblproperties(\"transactional\"=\"true\", " +
+        "\"transactional_properties\"=\"insert_only\")")
+      .run("insert into t2 partition(name='Bob') values(11)")
+      .run("insert into t2 partition(name='Carl') values(10)");
+
+    // Allocate write ids for both tables t1 and t2 for all txns
+    // t1=5+1(insert) and t2=5+2(insert)
+    Map<String, Long> tables = new HashMap<>();
+    tables.put("t1", numTxns + 1L);
+    tables.put("t2", numTxns + 2L);
+    List<Long> lockIds = allocateWriteIdsForTablesAndAquireLocks(primaryDbName, tables, txnHandler, txns, primaryConf);
+
+    // Bootstrap dump with open txn timeout as 1s.
+    List<String> withConfigs = Arrays.asList(
+      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_OPEN_TXN_TIMEOUT + "'='1s'",
+      "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_DUMP_ABORT_WRITE_TXN_AFTER_TIMEOUT + "'='false'");
+    try {
+      WarehouseInstance.Tuple bootstrapDump = primary
+        .run("use " + primaryDbName)
+        .dump(primaryDbName, withConfigs);
+    } catch (Exception e) {
+      Assert.assertEquals("REPL DUMP cannot proceed. Force abort all the open txns is disabled. Enable " +
+        "hive.repl.bootstrap.dump.abort.write.txn.after.timeout to proceed.", e.getMessage());
+    }
+
+    // After bootstrap dump, all the opened txns should not be aborted as it belongs to diff db. Verify it.
+    verifyAllOpenTxnsNotAborted(txns, primaryConf);
+    //Abort the txns
+    txnHandler.abortTxns(new AbortTxnsRequest(txns));
+    verifyAllOpenTxnsAborted(txns, primaryConf);
+    //Release the locks
+    releaseLocks(txnHandler, lockIds);
+  }
+
 
   @Test
   public void testAcidTablesBootstrapWithConcurrentWrites() throws Throwable {
@@ -1099,7 +1421,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
   public void testCheckPointingDataDumpFailureBootstrapDuringIncremental() throws Throwable {
     List<String> dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
-            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
             "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
                     + UserGroupInformation.getCurrentUser().getUserName() + "'");
@@ -1116,7 +1438,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
 
     dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
-            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
             "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
                     + UserGroupInformation.getCurrentUser().getUserName() + "'",
@@ -1298,7 +1620,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     //To force distcp copy
     List<String> dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
-            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
             "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
                     + UserGroupInformation.getCurrentUser().getUserName() + "'");
@@ -1449,7 +1771,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     //Distcp copy
     List<String> dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
-            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
             "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
                     + UserGroupInformation.getCurrentUser().getUserName() + "'");
@@ -1502,7 +1824,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     //To force distcp copy
     List<String> dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
-            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
             "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
                     + UserGroupInformation.getCurrentUser().getUserName() + "'");
@@ -1555,7 +1877,7 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     //To force distcp copy
     List<String> dumpClause = Arrays.asList(
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
-            "'" + HiveConf.ConfVars.HIVE_IN_TEST.varname + "'='false'",
+            "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
             "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
             "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
                     + UserGroupInformation.getCurrentUser().getUserName() + "'");
@@ -1609,6 +1931,55 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertEquals(modifiedTimeTable1, fs.getFileStatus(tablet1Path).getModificationTime());
     assertEquals(modifiedTimeTable1CopyFile, fs.listStatus(tablet1Path)[0].getModificationTime());
     assertTrue(modifiedTimeTable2 < fs.getFileStatus(tablet2Path).getModificationTime());
+  }
+
+  @Test
+  public void testManagedTableLazyCopy() throws Throwable {
+    List<String> withClause = Arrays.asList(
+            "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
+
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string) STORED AS TEXTFILE")
+            .run("CREATE TABLE t2(a string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (2)")
+            .run("insert into t2 values (11)")
+            .run("insert into t2 values (12)")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1", "2"})
+            .run("select * from t2")
+            .verifyResults(new String[]{"11", "12"})
+            .run("show tables")
+            .verifyResults(new String[]{"t1", "t2"});
+
+    primary.run("use " + primaryDbName)
+            .run("insert into t1 values (3)")
+            .run("insert into t2 values (13)")
+            .run("create table t3(a string) STORED AS TEXTFILE")
+            .run("CREATE TABLE t4(a string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("insert into t3 values (21)")
+            .run("insert into t4 values (31)")
+            .run("insert into t4 values (32)")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1", "2", "3"})
+            .run("select * from t2")
+            .verifyResults(new String[]{"11", "12", "13"})
+            .run("show tables")
+            .verifyResults(new String[]{"t1", "t2", "t3", "t4"})
+            .run("select * from t3")
+            .verifyResults(new String[]{"21"})
+            .run("select * from t4")
+            .verifyResults(new String[]{"31","32"});
   }
 
   @Test
@@ -1702,7 +2073,365 @@ public class TestReplicationScenariosAcidTables extends BaseReplicationScenarios
     assertTrue(fs.exists(new Path(dumpPath, DUMP_ACKNOWLEDGEMENT.toString())));
   }
 
+  @Test
+  public void testReplTargetOfReplication() throws Throwable {
+    // Bootstrap
+    WarehouseInstance.Tuple bootstrapDump = prepareDataAndDump(primaryDbName, null);
+    replica.load(replicatedDbName, primaryDbName).verifyReplTargetProperty(replicatedDbName);
+    verifyLoadExecution(replicatedDbName, bootstrapDump.lastReplicationId, true);
+
+    //Try to do a dump on replicated db. It should fail
+    replica.run("alter database " + replicatedDbName + " set dbproperties ('repl.source.for'='1')");
+    try {
+      replica.dump(replicatedDbName);
+    } catch (Exception e) {
+      Assert.assertEquals("Cannot dump database as it is a Target of replication.", e.getMessage());
+      Assert.assertEquals(ErrorMsg.REPL_DATABASE_IS_TARGET_OF_REPLICATION.getErrorCode(),
+        ErrorMsg.getErrorMsg(e.getMessage()).getErrorCode());
+    }
+    replica.run("alter database " + replicatedDbName + " set dbproperties ('repl.source.for'='')");
+
+    //Try to dump a different db on replica. That should succeed
+    replica.run("create database " + replicatedDbName + "_extra with dbproperties ('repl.source.for' = '1, 2, 3')")
+      .dump(replicatedDbName + "_extra");
+    replica.run("drop database if exists " + replicatedDbName + "_extra cascade");
+  }
+
   private void verifyPathExist(FileSystem fs, Path filePath) throws IOException {
     assertTrue("Path not found:" + filePath, fs.exists(filePath));
+  }
+
+  @Test
+  public void testMaterializedViewOnAcidTableReplication() throws Throwable {
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a string)" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (2)")
+            .run("create materialized view mat_view as select * from t1")
+            .run("show tables")
+            .verifyResults(new String[]{"t1", "mat_view"})
+            .run("select * from mat_view")
+            .verifyResults(new String[]{"1", "2"})
+            .dump(primaryDbName);
+
+    //confirm materialized-view not replicated
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1", "2"})
+            .run("show tables")
+            .verifyResults(new String[]{"t1"});
+
+    //test alter materialized-view rebuild
+    primary.run("use " + primaryDbName)
+            .run("insert into t1 values (3)")
+            .run("alter materialized view mat_view rebuild")
+            .run("select * from mat_view")
+            .verifyResults(new String[]{"1", "2", "3"})
+            .dump(primaryDbName);
+
+    //confirm materialized-view not replicated
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("select * from t1")
+            .verifyResults(new String[]{"1", "2", "3"})
+            .run("show tables")
+            .verifyResults(new String[]{"t1"});
+
+    //test alter materialized-view disable rewrite
+    primary.run("use " + primaryDbName)
+            .run("alter materialized view mat_view disable rewrite")
+            .run("select * from mat_view")
+            .verifyResults(new String[]{"1", "2", "3"})
+            .dump(primaryDbName);
+
+    //confirm materialized-view not replicated
+    replica.load(replicatedDbName, primaryDbName)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t1"});
+  }
+
+  @Test
+  public void testORCTableRegularCopyWithCopyOnTarget() throws Throwable {
+    ArrayList<String> withClause = new ArrayList<>();
+    withClause.add("'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'");
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t1(a int) stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE t2(a string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE t3(a string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE tpart1(a int) partitioned by (name string)" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE tpart2(a int) partitioned by (name string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE text1(a string) STORED AS TEXTFILE")
+            .run("insert into t1 values (1)")
+            .run("insert into t1 values (11)")
+            .run("insert into t2 values (2)")
+            .run("insert into t2 values (22)")
+            .run("insert into t3 values (33)")
+            .run("insert into tpart1 partition(name='Tom') values(100)")
+            .run("insert into tpart1 partition(name='Jerry') values(101)")
+            .run("insert into tpart2 partition(name='Bob') values(200)")
+            .run("insert into tpart2 partition(name='Carl') values(201)")
+            .run("insert into text1 values ('ricky')")
+            .dump(primaryDbName, withClause);
+
+    replica.run("DROP TABLE t3");
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("show tables")
+            .verifyResults(new String[]{"t1", "t2", "t3", "tpart1", "tpart2", "text1"})
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1", "11"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[]{"2", "22"})
+            .run("select a from " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"100", "101"})
+            .run("show partitions " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"name=Tom", "name=Jerry"})
+            .run("select a from " + replicatedDbName + ".tpart2")
+            .verifyResults(new String[]{"200", "201"})
+            .run("show partitions " + replicatedDbName + ".tpart2")
+            .verifyResults(new String[]{"name=Bob", "name=Carl"})
+            .run("select a from " + replicatedDbName + ".text1")
+            .verifyResults(new String[]{"ricky"});
+
+    WarehouseInstance.Tuple incrementalDump = primary.run("use " + primaryDbName)
+            .run("CREATE TABLE t4(a int) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE tpart3(a int) partitioned by (name string)" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("CREATE TABLE tpart4(a int) partitioned by (name string) clustered by (a) into 2 buckets" +
+                    " stored as orc TBLPROPERTIES ('transactional'='true')")
+            .run("insert into t1 values (111)")
+            .run("insert into t2 values (222)")
+            .run("insert into t4 values (4)")
+            .run("insert into tpart1 partition(name='Tom') values(102)")
+            .run("insert into tpart1 partition(name='Jerry') values(103)")
+            .run("insert into tpart2 partition(name='Bob') values(202)")
+            .run("insert into tpart2 partition(name='Carl') values(203)")
+            .run("insert into tpart3 partition(name='Tom3') values(300)")
+            .run("insert into tpart3 partition(name='Jerry3') values(301)")
+            .run("insert into tpart4 partition(name='Bob4') values(400)")
+            .run("insert into tpart4 partition(name='Carl4') values(401)")
+            .run("insert into text1 values ('martin')")
+            .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("show tables ")
+            .verifyResults(new String[]{"t1", "t2", "t4", "tpart1", "tpart2", "tpart3", "tpart4", "text1"})
+            .run("select * from " + replicatedDbName + ".t1")
+            .verifyResults(new String[] {"1", "11", "111"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[]{"2", "22", "222"})
+            .run("select * from " + replicatedDbName + ".t4")
+            .verifyResults(new String[]{"4"})
+            .run("select a from " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"100", "101", "102", "103"})
+            .run("show partitions " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"name=Tom", "name=Jerry"})
+            .run("select a from " + replicatedDbName + ".tpart2")
+            .verifyResults(new String[]{"200", "201", "202", "203"})
+            .run("show partitions " + replicatedDbName + ".tpart2")
+            .verifyResults(new String[]{"name=Bob", "name=Carl"})
+            .run("select a from " + replicatedDbName + ".tpart3")
+            .verifyResults(new String[]{"300", "301"})
+            .run("show partitions " + replicatedDbName + ".tpart3")
+            .verifyResults(new String[]{"name=Tom3", "name=Jerry3"})
+            .run("select a from " + replicatedDbName + ".tpart4")
+            .verifyResults(new String[]{"400", "401"})
+            .run("show partitions " + replicatedDbName + ".tpart4")
+            .verifyResults(new String[]{"name=Bob4", "name=Carl4"})
+            .run("select a from " + replicatedDbName + ".text1")
+            .verifyResults(new String[]{"ricky", "martin"});
+
+    incrementalDump = primary.run("use " + primaryDbName)
+            .run("insert into t4 values (44)")
+            .run("insert into t1 values (1111)")
+            .run("DROP TABLE t1")
+            .run("insert into t2 values (2222)")
+            .run("insert into tpart1 partition(name='Tom') values(104)")
+            .run("insert into tpart1 partition(name='Tom_del') values(1000)")
+            .run("insert into tpart1 partition(name='Harry') values(10001)")
+            .run("insert into tpart1 partition(name='Jerry') values(105)")
+            .run("ALTER TABLE tpart1 DROP PARTITION(name='Tom')")
+            .run("DROP TABLE tpart2")
+            .dump(primaryDbName, withClause);
+
+    replica.run("DROP TABLE t4")
+            .run("ALTER TABLE tpart1 DROP PARTITION(name='Tom_del')");
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+            .run("use " + replicatedDbName)
+            .run("show tables ")
+            .verifyResults(new String[]{"t2", "t4", "tpart1", "tpart3", "tpart4", "text1"})
+            .run("select * from " + replicatedDbName + ".t2")
+            .verifyResults(new String[]{"2", "22", "222", "2222"})
+            .run("select a from " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"101", "103", "105", "1000", "10001"})
+            .run("show partitions " + replicatedDbName + ".tpart1")
+            .verifyResults(new String[]{"name=Harry", "name=Jerry", "name=Tom_del"});
+  }
+
+  @Test
+  public void testORCTableDistcpCopyWithCopyOnTarget() throws Throwable {
+    //Distcp copy
+    List<String> withClause = Arrays.asList(
+      "'" + HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname + "'='true'",
+      "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXSIZE.varname + "'='1'",
+      "'" + HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname + "'='false'",
+      "'" + HiveConf.ConfVars.HIVE_EXEC_COPYFILE_MAXNUMFILES.varname + "'='0'",
+      "'" + HiveConf.ConfVars.HIVE_DISTCP_DOAS_USER.varname + "'='"
+        + UserGroupInformation.getCurrentUser().getUserName() + "'");
+    WarehouseInstance.Tuple bootstrapDump = primary.run("use " + primaryDbName)
+      .run("CREATE TABLE t1(a int) stored as orc TBLPROPERTIES ('transactional'='true')")
+      .run("CREATE TABLE t2(a string) clustered by (a) into 2 buckets" +
+        " stored as orc TBLPROPERTIES ('transactional'='true')")
+      .run("CREATE TABLE t3(a string) clustered by (a) into 2 buckets" +
+        " stored as orc TBLPROPERTIES ('transactional'='true')")
+      .run("CREATE TABLE tpart1(a int) partitioned by (name string)" +
+        " stored as orc TBLPROPERTIES ('transactional'='true')")
+      .run("CREATE TABLE tpart2(a int) partitioned by (name string) clustered by (a) into 2 buckets" +
+        " stored as orc TBLPROPERTIES ('transactional'='true')")
+      .run("CREATE TABLE text1(a string) STORED AS TEXTFILE")
+      .run("insert into t1 values (1)")
+      .run("insert into t1 values (11)")
+      .run("insert into t2 values (2)")
+      .run("insert into t2 values (22)")
+      .run("insert into t3 values (33)")
+      .run("insert into tpart1 partition(name='Tom') values(100)")
+      .run("insert into tpart1 partition(name='Jerry') values(101)")
+      .run("insert into tpart2 partition(name='Bob') values(200)")
+      .run("insert into tpart2 partition(name='Carl') values(201)")
+      .run("insert into text1 values ('ricky')")
+      .dump(primaryDbName, withClause);
+
+    replica.run("DROP TABLE t3");
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+      .run("use " + replicatedDbName)
+      .run("show tables")
+      .verifyResults(new String[]{"t1", "t2", "t3", "tpart1", "tpart2", "text1"})
+      .run("select * from " + replicatedDbName + ".t1")
+      .verifyResults(new String[]{"1", "11"})
+      .run("select * from " + replicatedDbName + ".t2")
+      .verifyResults(new String[]{"2", "22"})
+      .run("select a from " + replicatedDbName + ".tpart1")
+      .verifyResults(new String[]{"100", "101"})
+      .run("show partitions " + replicatedDbName + ".tpart1")
+      .verifyResults(new String[]{"name=Tom", "name=Jerry"})
+      .run("select a from " + replicatedDbName + ".tpart2")
+      .verifyResults(new String[]{"200", "201"})
+      .run("show partitions " + replicatedDbName + ".tpart2")
+      .verifyResults(new String[]{"name=Bob", "name=Carl"})
+      .run("select a from " + replicatedDbName + ".text1")
+      .verifyResults(new String[]{"ricky"});
+
+    WarehouseInstance.Tuple incrementalDump = primary.run("use " + primaryDbName)
+      .run("CREATE TABLE t4(a int) clustered by (a) into 2 buckets" +
+        " stored as orc TBLPROPERTIES ('transactional'='true')")
+      .run("CREATE TABLE tpart3(a int) partitioned by (name string)" +
+        " stored as orc TBLPROPERTIES ('transactional'='true')")
+      .run("CREATE TABLE tpart4(a int) partitioned by (name string) clustered by (a) into 2 buckets" +
+        " stored as orc TBLPROPERTIES ('transactional'='true')")
+      .run("insert into t1 values (111)")
+      .run("insert into t2 values (222)")
+      .run("insert into t4 values (4)")
+      .run("insert into tpart1 partition(name='Tom') values(102)")
+      .run("insert into tpart1 partition(name='Jerry') values(103)")
+      .run("insert into tpart2 partition(name='Bob') values(202)")
+      .run("insert into tpart2 partition(name='Carl') values(203)")
+      .run("insert into tpart3 partition(name='Tom3') values(300)")
+      .run("insert into tpart3 partition(name='Jerry3') values(301)")
+      .run("insert into tpart4 partition(name='Bob4') values(400)")
+      .run("insert into tpart4 partition(name='Carl4') values(401)")
+      .run("insert into text1 values ('martin')")
+      .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+      .run("use " + replicatedDbName)
+      .run("show tables ")
+      .verifyResults(new String[]{"t1", "t2", "t4", "tpart1", "tpart2", "tpart3", "tpart4", "text1"})
+      .run("select * from " + replicatedDbName + ".t1")
+      .verifyResults(new String[]{"1", "11", "111"})
+      .run("select * from " + replicatedDbName + ".t2")
+      .verifyResults(new String[]{"2", "22", "222"})
+      .run("select * from " + replicatedDbName + ".t4")
+      .verifyResults(new String[]{"4"})
+      .run("select a from " + replicatedDbName + ".tpart1")
+      .verifyResults(new String[]{"100", "101", "102", "103"})
+      .run("show partitions " + replicatedDbName + ".tpart1")
+      .verifyResults(new String[]{"name=Tom", "name=Jerry"})
+      .run("select a from " + replicatedDbName + ".tpart2")
+      .verifyResults(new String[]{"200", "201", "202", "203"})
+      .run("show partitions " + replicatedDbName + ".tpart2")
+      .verifyResults(new String[]{"name=Bob", "name=Carl"})
+      .run("select a from " + replicatedDbName + ".tpart3")
+      .verifyResults(new String[]{"300", "301"})
+      .run("show partitions " + replicatedDbName + ".tpart3")
+      .verifyResults(new String[]{"name=Tom3", "name=Jerry3"})
+      .run("select a from " + replicatedDbName + ".tpart4")
+      .verifyResults(new String[]{"400", "401"})
+      .run("show partitions " + replicatedDbName + ".tpart4")
+      .verifyResults(new String[]{"name=Bob4", "name=Carl4"})
+      .run("select a from " + replicatedDbName + ".text1")
+      .verifyResults(new String[]{"ricky", "martin"});
+
+    incrementalDump = primary.run("use " + primaryDbName)
+      .run("insert into t4 values (44)")
+      .run("insert into t1 values (1111)")
+      .run("DROP TABLE t1")
+      .run("insert into t2 values (2222)")
+      .run("insert into tpart1 partition(name='Tom') values(104)")
+      .run("insert into tpart1 partition(name='Tom_del') values(1000)")
+      .run("insert into tpart1 partition(name='Harry') values(10001)")
+      .run("insert into tpart1 partition(name='Jerry') values(105)")
+      .run("ALTER TABLE tpart1 DROP PARTITION(name='Tom')")
+      .run("DROP TABLE tpart2")
+      .dump(primaryDbName, withClause);
+
+    replica.run("DROP TABLE t4")
+      .run("ALTER TABLE tpart1 DROP PARTITION(name='Tom_del')");
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+      .run("use " + replicatedDbName)
+      .run("show tables ")
+      .verifyResults(new String[]{"t2", "t4", "tpart1", "tpart3", "tpart4", "text1"})
+      .run("select * from " + replicatedDbName + ".t2")
+      .verifyResults(new String[]{"2", "22", "222", "2222"})
+      .run("select a from " + replicatedDbName + ".tpart1")
+      .verifyResults(new String[]{"101", "103", "105", "1000", "10001"})
+      .run("show partitions " + replicatedDbName + ".tpart1")
+      .verifyResults(new String[]{"name=Harry", "name=Jerry", "name=Tom_del"});
+  }
+
+  @Test
+  public void testTableWithPartitionsInBatch() throws Throwable {
+
+    List<String> withClause = new ArrayList<>();
+    withClause.add("'" + HiveConf.ConfVars.REPL_LOAD_PARTITIONS_WITH_DATA_COPY_BATCH_SIZE.varname + "'='" + 1 + "'");
+
+    primary.run("use " + primaryDbName)
+      .run("create table t2 (place string) partitioned by (country string)")
+      .run("insert into t2 partition(country='india') values ('bangalore')")
+      .run("insert into t2 partition(country='france') values ('paris')")
+      .run("insert into t2 partition(country='australia') values ('sydney')")
+      .dump(primaryDbName, withClause);
+
+    replica.load(replicatedDbName, primaryDbName, withClause)
+      .run("use " + replicatedDbName)
+      .run("show tables like 't2'")
+      .verifyResults(new String[] { "t2" })
+      .run("select distinct(country) from t2")
+      .verifyResults(new String[] { "india", "france", "australia" })
+      .run("select place from t2")
+      .verifyResults(new String[] { "bangalore", "paris", "sydney" })
+      .verifyReplTargetProperty(replicatedDbName);
   }
 }

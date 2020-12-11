@@ -25,6 +25,7 @@ import java.util.BitSet;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
@@ -91,9 +92,16 @@ public class HiveSplitGenerator extends InputInitializer {
   private final MapWork work;
   private final SplitGrouper splitGrouper = new SplitGrouper();
   private final SplitLocationProvider splitLocationProvider;
+  private final Optional<Integer> numSplits;
+
   private boolean generateSingleSplit;
 
   public HiveSplitGenerator(Configuration conf, MapWork work, final boolean generateSingleSplit) throws IOException {
+    this(conf, work, generateSingleSplit, null);
+  }
+
+  public HiveSplitGenerator(Configuration conf, MapWork work, final boolean generateSingleSplit, Integer numSplits)
+      throws IOException {
     super(null);
 
     this.conf = conf;
@@ -117,6 +125,7 @@ public class HiveSplitGenerator extends InputInitializer {
     // initialized, which may cause it to drop events.
     // No dynamic partition pruning
     pruner = null;
+    this.numSplits = Optional.ofNullable(numSplits);
   }
 
   public HiveSplitGenerator(InputInitializerContext initializerContext) throws IOException,
@@ -145,7 +154,7 @@ public class HiveSplitGenerator extends InputInitializer {
     // Setting it up in initialize leads to a window where events may come in before the pruner is
     // initialized, which may cause it to drop events.
     pruner = new DynamicPartitionPruner(initializerContext, work, jobConf);
-
+    this.numSplits = Optional.empty();
   }
 
   @SuppressWarnings("unchecked")
@@ -201,10 +210,16 @@ public class HiveSplitGenerator extends InputInitializer {
           LOG.info("The preferred split size is " + preferredSplitSize);
         }
 
+        float waves;
         // Create the un-grouped splits
-        float waves =
-          conf.getFloat(TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES,
-            TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
+        if (numSplits.isPresent()) {
+          waves = numSplits.get().floatValue() / availableSlots;
+        } else {
+          waves =
+              conf.getFloat(TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES,
+                  TezMapReduceSplitsGrouper.TEZ_GROUPING_SPLIT_WAVES_DEFAULT);
+
+        }
 
         InputSplit[] splits;
         if (generateSingleSplit &&
@@ -240,7 +255,7 @@ public class HiveSplitGenerator extends InputInitializer {
           }
         } else {
           // Raw splits
-          splits = inputFormat.getSplits(jobConf, (int) (availableSlots * waves));
+          splits = inputFormat.getSplits(jobConf, numSplits.orElse(Math.multiplyExact(availableSlots, (int)waves)));
         }
         // Sort the splits, so that subsequent grouping is consistent.
         Arrays.sort(splits, new InputSplitComparator());

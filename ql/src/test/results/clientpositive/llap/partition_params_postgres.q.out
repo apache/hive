@@ -17,6 +17,7 @@ PREHOOK: Output: default@my_table
 POSTHOOK: query: insert into my_table VALUES(11, 201, "F")
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@my_table
 POSTHOOK: Output: default@my_table@col2=F
 POSTHOOK: Lineage: my_table PARTITION(col2=F).col1 SCRIPT []
 POSTHOOK: Lineage: my_table PARTITION(col2=F).col3 SCRIPT []

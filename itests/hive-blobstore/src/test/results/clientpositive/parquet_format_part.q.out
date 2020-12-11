@@ -99,6 +99,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE parquet_events PARTITION (run_date, game
 SELECT * FROM src_events
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src_events
+POSTHOOK: Output: default@parquet_events
 POSTHOOK: Output: default@parquet_events@run_date=20120921/game_id=39/event_name=hq_change
 POSTHOOK: Output: default@parquet_events@run_date=20121021/game_id=39/event_name=hq_change
 POSTHOOK: Output: default@parquet_events@run_date=20121121/game_id=39/event_name=hq_change

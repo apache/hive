@@ -17,6 +17,13 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.topnkey;
 
+import static org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyProcessor.copyDown;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -24,8 +31,8 @@ import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TopNKeyOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
@@ -37,13 +44,6 @@ import org.apache.hadoop.hive.ql.plan.TopNKeyDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
-import static org.apache.hadoop.hive.ql.optimizer.topnkey.TopNKeyProcessor.copyDown;
 
 /**
  * Implementation of TopNKey operator pushdown.
@@ -160,7 +160,7 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
 
     LOG.debug("Pushing a copy of {} through {}", topNKey.getName(), groupBy.getName());
     final TopNKeyDesc newTopNKeyDesc = topNKeyDesc.combine(commonKeyPrefix);
-    pushdown(copyDown(groupBy, newTopNKeyDesc));
+    pushdown((TopNKeyOperator) copyDown(groupBy, newTopNKeyDesc));
 
     if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
       LOG.debug("Removing {} above {}", topNKey.getName(), groupBy.getName());
@@ -189,7 +189,7 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
 
     LOG.debug("Pushing a copy of {} through {}", topNKey.getName(), reduceSink.getName());
     final TopNKeyDesc newTopNKeyDesc = topNKeyDesc.combine(commonKeyPrefix);
-    pushdown(copyDown(reduceSink, newTopNKeyDesc));
+    pushdown((TopNKeyOperator) copyDown(reduceSink, newTopNKeyDesc));
 
     if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
       LOG.debug("Removing {} above {}", topNKey.getName(), reduceSink.getName());
@@ -203,7 +203,8 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
           throws SemanticException {
     CommonJoinOperator<? extends JoinDesc> parent =
             (CommonJoinOperator<? extends JoinDesc>) topNKey.getParentOperators().get(0);
-    JoinCondDesc[] joinConds = parent.getConf().getConds();
+    JoinDesc joinDesc = parent.getConf();
+    JoinCondDesc[] joinConds = joinDesc.getConds();
     JoinCondDesc firstJoinCond = joinConds[0];
     for (JoinCondDesc joinCond : joinConds) {
       if (!firstJoinCond.equals(joinCond)) {
@@ -212,6 +213,8 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
     }
     if (firstJoinCond.getType() == JoinDesc.LEFT_OUTER_JOIN) {
       pushdownThroughLeftOuterJoin(topNKey);
+    } else if (firstJoinCond.getType() == JoinDesc.INNER_JOIN && joinDesc.isPkFkJoin()) {
+      pushdownInnerJoin(topNKey, joinDesc.getFkJoinTableIndex(), joinDesc.isNonFkSideIsFiltered());
     }
   }
 
@@ -247,7 +250,47 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
     LOG.debug("Pushing a copy of {} through {} and {}",
             topNKey.getName(), join.getName(), reduceSinkOperator.getName());
     final TopNKeyDesc newTopNKeyDesc = topNKeyDesc.combine(commonKeyPrefix);
-    pushdown(copyDown(reduceSinkOperator, newTopNKeyDesc));
+    pushdown((TopNKeyOperator) copyDown(reduceSinkOperator, newTopNKeyDesc));
+
+    if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
+      LOG.debug("Removing {} above {}", topNKey.getName(), join.getName());
+      join.removeChildAndAdoptItsChildren(topNKey);
+    }
+  }
+
+  /**
+   * Tries to push the TopNKeyFilter through an inner join:
+   *  requirements:
+   *    - being PK-FK join
+   *    - PK side is not filtered
+   *    - First n TopNKey key columns (Order By) are originated from the FK side.
+   * @throws SemanticException
+   */
+  private void pushdownInnerJoin(TopNKeyOperator topNKey, int fkJoinInputIndex, boolean nonFkSideIsFiltered) throws SemanticException {
+    TopNKeyDesc topNKeyDesc = topNKey.getConf();
+    CommonJoinOperator<? extends JoinDesc> join =
+            (CommonJoinOperator<? extends JoinDesc>) topNKey.getParentOperators().get(0);
+    List<Operator<? extends OperatorDesc>> joinInputs = join.getParentOperators();
+    ReduceSinkOperator fkJoinInput = (ReduceSinkOperator) joinInputs.get(fkJoinInputIndex);
+    if (nonFkSideIsFiltered) {
+      LOG.debug("Not pushing {} through {} as non FK side of the join is filtered", topNKey.getName(), join.getName());
+      return;
+    }
+    CommonKeyPrefix commonKeyPrefix = CommonKeyPrefix.map(
+            mapUntilColumnEquals(topNKeyDesc.getKeyColumns(), join.getColumnExprMap()),
+            topNKeyDesc.getColumnSortOrder(),
+            topNKeyDesc.getNullOrder(),
+            fkJoinInput.getConf().getKeyCols(),
+            fkJoinInput.getConf().getColumnExprMap(),
+            fkJoinInput.getConf().getOrder(),
+            fkJoinInput.getConf().getNullOrder());
+    if (commonKeyPrefix.isEmpty() || commonKeyPrefix.size() == topNKeyDesc.getPartitionKeyColumns().size()) {
+      return;
+    }
+    LOG.debug("Pushing a copy of {} through {} and {}",
+            topNKey.getName(), join.getName(), fkJoinInput.getName());
+    final TopNKeyDesc newTopNKeyDesc = topNKeyDesc.combine(commonKeyPrefix);
+    pushdown((TopNKeyOperator) copyDown(fkJoinInput, newTopNKeyDesc));
 
     if (topNKeyDesc.getKeyColumns().size() == commonKeyPrefix.size()) {
       LOG.debug("Removing {} above {}", topNKey.getName(), join.getName());
@@ -336,22 +379,22 @@ public class TopNKeyPushdownProcessor implements SemanticNodeProcessor {
     return opDesc.isSame(desc);
   }
 
-  private static void moveDown(TopNKeyOperator topNKey) throws SemanticException {
+  public static void moveDown(Operator<? extends OperatorDesc> operator) throws SemanticException {
 
-    assert topNKey.getNumParent() == 1;
-    final Operator<? extends OperatorDesc> parent = topNKey.getParentOperators().get(0);
+    assert operator.getNumParent() == 1;
+    final Operator<? extends OperatorDesc> parent = operator.getParentOperators().get(0);
     final List<Operator<? extends OperatorDesc>> grandParents = parent.getParentOperators();
-    parent.removeChildAndAdoptItsChildren(topNKey);
+    parent.removeChildAndAdoptItsChildren(operator);
     for (Operator<? extends OperatorDesc> grandParent : grandParents) {
-      grandParent.replaceChild(parent, topNKey);
+      grandParent.replaceChild(parent, operator);
     }
-    topNKey.getParentOperators().clear();
-    topNKey.getParentOperators().addAll(grandParents);
+    operator.getParentOperators().clear();
+    operator.getParentOperators().addAll(grandParents);
 
-    topNKey.getChildOperators().clear();
-    topNKey.getChildOperators().add(parent);
+    operator.getChildOperators().clear();
+    operator.getChildOperators().add(parent);
 
     parent.getParentOperators().clear();
-    parent.getParentOperators().add(topNKey);
+    parent.getParentOperators().add(operator);
   }
 }

@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.HookContext;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -128,6 +129,18 @@ public final class DriverUtils {
     hookContext.setException(exception);
     // Get all the failure execution hooks and execute them.
     driverContext.getHookRunner().runFailureHooks(hookContext);
+  }
+
+  public static void handleHiveException(DriverContext driverContext, HiveException e, int ret, String rootMsg)
+      throws CommandProcessorException {
+    String errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
+    if (rootMsg != null) {
+      errorMessage += "\n" + rootMsg;
+    }
+    String sqlState = e.getCanonicalErrorMsg() != null ?
+        e.getCanonicalErrorMsg().getSQLState() : ErrorMsg.findSQLState(e.getMessage());
+    CONSOLE.printError(errorMessage + "\n" + StringUtils.stringifyException(e));
+    throw DriverUtils.createProcessorException(driverContext, ret, errorMessage, sqlState, e);
   }
 
   public static CommandProcessorException createProcessorException(DriverContext driverContext, int ret,

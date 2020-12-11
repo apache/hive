@@ -45,7 +45,16 @@ public class OpenTxnList {
   public GetOpenTxnsInfoResponse toOpenTxnsInfoResponse() {
     return new GetOpenTxnsInfoResponse(getHwm(), openTxnList.stream().map(OpenTxn::toTxnInfo).collect(toList()));
   }
-  public GetOpenTxnsResponse toOpenTxnsResponse() {
+
+  public long getHwm() {
+    return hwm;
+  }
+
+  public List<OpenTxn> getOpenTxnList() {
+    return openTxnList;
+  }
+
+  public GetOpenTxnsResponse toOpenTxnsResponse(List<TxnType> excludeTxnTypes) {
     List<Long> openList = new ArrayList<>();
     long minOpenTxn = Long.MAX_VALUE;
     BitSet abortedBits = new BitSet();
@@ -53,11 +62,12 @@ public class OpenTxnList {
       if (openTxn.getStatus() == OPEN) {
         minOpenTxn = Math.min(minOpenTxn, openTxn.getTxnId());
       }
-      if (openTxn.getType() != TxnType.READ_ONLY) {
-        openList.add(openTxn.getTxnId());
-        if (openTxn.getStatus() == ABORTED) {
-          abortedBits.set(openList.size() - 1);
-        }
+      if (excludeTxnTypes.contains(openTxn.getType())) {
+        continue;
+      }
+      openList.add(openTxn.getTxnId());
+      if (openTxn.getStatus() == ABORTED) {
+        abortedBits.set(openList.size() - 1);
       }
     }
     ByteBuffer byteBuffer = ByteBuffer.wrap(abortedBits.toByteArray());
@@ -66,13 +76,5 @@ public class OpenTxnList {
       otr.setMin_open_txn(minOpenTxn);
     }
     return otr;
-  }
-
-  public long getHwm() {
-    return hwm;
-  }
-
-  public List<OpenTxn> getOpenTxnList() {
-    return openTxnList;
   }
 }

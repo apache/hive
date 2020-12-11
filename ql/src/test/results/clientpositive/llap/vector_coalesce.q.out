@@ -266,14 +266,14 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 4:float), SelectColumnIsNull(col 3:bigint))
-                      Select Vectorization:
-                          className: VectorSelectOperator
+                      Limit Vectorization:
+                          className: VectorLimitOperator
                           native: true
-                          projectedOutputColumnNums: [13, 14, 15]
-                          selectExpressions: ConstantVectorExpression(val null) -> 13:float, ConstantVectorExpression(val null) -> 14:bigint, ConstantVectorExpression(val 0.0) -> 15:float
-                        Limit Vectorization:
-                            className: VectorLimitOperator
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
+                            projectedOutputColumnNums: [13, 14, 15]
+                            selectExpressions: ConstantVectorExpression(val null) -> 13:float, ConstantVectorExpression(val null) -> 14:bigint, ConstantVectorExpression(val 0.0) -> 15:float
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
@@ -465,14 +465,14 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: FilterExprAndExpr(children: SelectColumnIsNull(col 4:float), SelectColumnIsNull(col 3:bigint))
-                      Select Vectorization:
-                          className: VectorSelectOperator
+                      Limit Vectorization:
+                          className: VectorLimitOperator
                           native: true
-                          projectedOutputColumnNums: [13, 14, 15]
-                          selectExpressions: ConstantVectorExpression(val null) -> 13:float, ConstantVectorExpression(val null) -> 14:bigint, ConstantVectorExpression(val null) -> 15:float
-                        Limit Vectorization:
-                            className: VectorLimitOperator
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
+                            projectedOutputColumnNums: [13, 14, 15]
+                            selectExpressions: ConstantVectorExpression(val null) -> 13:float, ConstantVectorExpression(val null) -> 14:bigint, ConstantVectorExpression(val null) -> 15:float
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false
@@ -551,14 +551,14 @@ STAGE PLANS:
                         className: VectorFilterOperator
                         native: true
                         predicateExpression: SelectColumnIsNull(col 3:bigint)
-                      Select Vectorization:
-                          className: VectorSelectOperator
+                      Limit Vectorization:
+                          className: VectorLimitOperator
                           native: true
-                          projectedOutputColumnNums: [13, 0, 0]
-                          selectExpressions: ConstantVectorExpression(val null) -> 13:bigint
-                        Limit Vectorization:
-                            className: VectorLimitOperator
+                        Select Vectorization:
+                            className: VectorSelectOperator
                             native: true
+                            projectedOutputColumnNums: [13, 0, 0]
+                            selectExpressions: ConstantVectorExpression(val null) -> 13:bigint
                           File Sink Vectorization:
                               className: VectorFileSinkOperator
                               native: false

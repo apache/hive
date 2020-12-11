@@ -33,6 +33,7 @@ PREHOOK: Output: default@sc_part_n0_temp
 POSTHOOK: query: insert overwrite table sc_part_n0_temp partition(ts) select * from sc_n0_temp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sc_n0_temp
+POSTHOOK: Output: default@sc_part_n0_temp
 POSTHOOK: Output: default@sc_part_n0_temp@ts=2011-01-11+14%3A18%3A26
 POSTHOOK: Output: default@sc_part_n0_temp@ts=2011-01-11+15%3A18%3A26
 POSTHOOK: Output: default@sc_part_n0_temp@ts=2011-01-11+16%3A18%3A26
@@ -64,6 +65,7 @@ PREHOOK: Output: default@sc_part_n0_temp
 POSTHOOK: query: insert overwrite table sc_part_n0_temp partition(ts) select * from sc_n0_temp
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@sc_n0_temp
+POSTHOOK: Output: default@sc_part_n0_temp
 POSTHOOK: Output: default@sc_part_n0_temp@ts=2011-01-11+14%3A18%3A26
 POSTHOOK: Output: default@sc_part_n0_temp@ts=2011-01-11+15%3A18%3A26
 POSTHOOK: Output: default@sc_part_n0_temp@ts=2011-01-11+16%3A18%3A26

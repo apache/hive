@@ -103,7 +103,7 @@ public class RetryingHMSHandler implements InvocationHandler {
     int threadId = baseHandler.getThreadId();
     boolean error = true;
     PerfLogger perfLogger = PerfLogger.getPerfLogger(false);
-    perfLogger.PerfLogBegin(CLASS_NAME, method.getName());
+    perfLogger.perfLogBegin(CLASS_NAME, method.getName());
     try {
       Result result = invokeInternal(proxy, method, args);
       retryCount = result.numRetries;
@@ -113,7 +113,7 @@ public class RetryingHMSHandler implements InvocationHandler {
       StringBuilder additionalInfo = new StringBuilder();
       additionalInfo.append("threadId=").append(threadId).append(" retryCount=").append(retryCount)
         .append(" error=").append(error);
-      perfLogger.PerfLogEnd(CLASS_NAME, method.getName(), additionalInfo.toString());
+      perfLogger.perfLogEnd(CLASS_NAME, method.getName(), additionalInfo.toString());
     }
   }
 

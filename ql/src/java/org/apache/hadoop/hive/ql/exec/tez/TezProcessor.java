@@ -172,7 +172,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
 
   @Override
   public void initialize() throws IOException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
     Configuration conf = TezUtils.createConfFromUserPayload(getContext().getUserPayload());
     this.jobConf = new JobConf(conf);
     this.processorContext = getContext();
@@ -181,7 +181,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       ((Hook)execCtx).initializeHook(this);
     }
     setupMRLegacyConfigs(processorContext);
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
   }
 
   private void setupMRLegacyConfigs(ProcessorContext processorContext) {
@@ -216,7 +216,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       return;
     }
 
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
     // in case of broadcast-join read the broadcast edge inputs
     // (possibly asynchronously)
 
@@ -267,7 +267,7 @@ public class TezProcessor extends AbstractLogicalIOProcessor {
       rproc.run();
 
       //done - output does not need to be committed as hive does not use outputcommitter
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
     } catch (Throwable t) {
       originalThrowable = t;
     } finally {

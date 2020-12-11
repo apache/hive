@@ -718,6 +718,7 @@ POSTHOOK: Input: default@intermediate_n0
 POSTHOOK: Input: default@intermediate_n0@p=455
 POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@partunion_mm
 POSTHOOK: Output: default@partunion_mm@key=0
 POSTHOOK: Output: default@partunion_mm@key=1
 POSTHOOK: Output: default@partunion_mm@key=10
@@ -870,6 +871,7 @@ POSTHOOK: Input: default@intermediate_n0
 POSTHOOK: Input: default@intermediate_n0@p=455
 POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@skew_dp_union_mm
 POSTHOOK: Output: default@skew_dp_union_mm@k3=0
 POSTHOOK: Output: default@skew_dp_union_mm@k3=10
 POSTHOOK: Output: default@skew_dp_union_mm@k3=100
@@ -1151,6 +1153,7 @@ POSTHOOK: Input: default@intermediate_n0
 POSTHOOK: Input: default@intermediate_n0@p=455
 POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@merge1_mm
 POSTHOOK: Output: default@merge1_mm@key=0
 POSTHOOK: Output: default@merge1_mm@key=10
 POSTHOOK: Output: default@merge1_mm@key=100
@@ -1202,6 +1205,7 @@ POSTHOOK: Input: default@intermediate_n0
 POSTHOOK: Input: default@intermediate_n0@p=455
 POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@merge1_mm
 POSTHOOK: Output: default@merge1_mm@key=0
 POSTHOOK: Output: default@merge1_mm@key=10
 POSTHOOK: Output: default@merge1_mm@key=100
@@ -1632,13 +1636,11 @@ POSTHOOK: Input: default@intermediate_n0
 POSTHOOK: Input: default@intermediate_n0@p=455
 POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@multi1_mm
 POSTHOOK: Output: default@multi1_mm@p=1
-POSTHOOK: Output: default@multi1_mm@p=2
 POSTHOOK: Output: default@multi1_mm@p=455
 POSTHOOK: Output: default@multi1_mm@p=456
 POSTHOOK: Output: default@multi1_mm@p=457
-POSTHOOK: Lineage: ###Masked###
-POSTHOOK: Lineage: ###Masked###
 POSTHOOK: Lineage: ###Masked###
 POSTHOOK: Lineage: ###Masked###
 POSTHOOK: Lineage: ###Masked###
@@ -1715,19 +1717,8 @@ POSTHOOK: Input: default@intermediate_n0
 POSTHOOK: Input: default@intermediate_n0@p=455
 POSTHOOK: Input: default@intermediate_n0@p=456
 POSTHOOK: Input: default@intermediate_n0@p=457
+POSTHOOK: Output: default@multi1_mm
 POSTHOOK: Output: default@multi1_mm@p=1
-POSTHOOK: Output: default@multi1_mm@p=2
-POSTHOOK: Output: default@multi1_mm@p=455
-POSTHOOK: Output: default@multi1_mm@p=456
-POSTHOOK: Output: default@multi1_mm@p=457
-POSTHOOK: Lineage: ###Masked###
-POSTHOOK: Lineage: ###Masked###
-POSTHOOK: Lineage: ###Masked###
-POSTHOOK: Lineage: ###Masked###
-POSTHOOK: Lineage: ###Masked###
-POSTHOOK: Lineage: ###Masked###
-POSTHOOK: Lineage: ###Masked###
-POSTHOOK: Lineage: ###Masked###
 POSTHOOK: Lineage: ###Masked###
 POSTHOOK: Lineage: ###Masked###
 POSTHOOK: Lineage: ###Masked###
@@ -1861,6 +1852,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: insert into table stats_mm  select key from intermediate_n0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@intermediate_n0
@@ -1910,6 +1903,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: drop table stats_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats_mm
@@ -1951,7 +1946,7 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	{\"BASIC_STATS\":\"true\"}
 	bucketing_version   	2                   
-	numFiles            	55                  
+	numFiles            	33                  
 	numRows             	500                 
 	rawDataSize         	5312                
 	totalSize           	5812                
@@ -1967,6 +1962,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: drop table stats2_mm
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@stats2_mm

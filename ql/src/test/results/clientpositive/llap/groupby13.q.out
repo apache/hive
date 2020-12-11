@@ -72,7 +72,7 @@ STAGE PLANS:
                         Statistics: Num rows: 1 Data size: 8 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: int)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

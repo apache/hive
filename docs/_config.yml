@@ -1,0 +1,17 @@
+markdown: kramdown
+highlighter: rouge
+permalink: /news/:year/:month/:day/:title
+excerpt_separator: ""
+encoding: utf-8
+exclude: [README.md, Gemfile*, Dockerfile]
+
+repository: https://github.com/apache/hive
+jira: https://issues.apache.org/jira/browse
+dist: https://downloads.apache.org/hive
+dist_mirror: https://www.apache.org/dyn/closer.cgi/hive
+tag_url: https://github.com/apache/hive/releases/tag/rel
+dist_archive: https://archive.apache.org/dist/hive
+apache: https://www.apache.org/
+license: https://www.apache.org/licenses/LICENSE-2.0.html
+wiki: https://cwiki.apache.org/confluence/display/Hive/
+old_javadoc: https://svn.apache.org/repos/infra/websites/production/hive/content/javadocs

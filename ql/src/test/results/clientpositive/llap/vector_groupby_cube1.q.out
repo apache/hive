@@ -67,6 +67,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: key (type: string), val (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -85,7 +86,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -210,6 +211,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: key (type: string), val (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -228,7 +230,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -379,6 +381,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: _col0 (type: string), _col1 (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -397,7 +400,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -532,6 +535,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT val)
                       keys: key (type: string), 0L (type: bigint), val (type: string)
+                      grouping sets: 0, 1
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -543,7 +547,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string), _col1 (type: bigint)
                         Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -651,6 +655,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: key (type: string), val (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -670,7 +675,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -851,6 +856,7 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: count(DISTINCT val)
                       keys: key (type: string), 0L (type: bigint), val (type: string)
+                      grouping sets: 0, 1
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -862,7 +868,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 2 Data size: 736 Basic stats: COMPLETE Column stats: NONE
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true
@@ -1021,6 +1027,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: key (type: string), val (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -1058,6 +1065,7 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: key (type: string), val (type: string), 0L (type: bigint)
+                      grouping sets: 0, 1, 2, 3
                       minReductionHashAggr: 0.99
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
@@ -1077,7 +1085,7 @@ STAGE PLANS:
                         Statistics: Num rows: 4 Data size: 1472 Basic stats: COMPLETE Column stats: NONE
                         value expressions: _col3 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Map Vectorization:
                 enabled: true
                 enabledConditionsMet: hive.vectorized.use.vector.serde.deserialize IS true

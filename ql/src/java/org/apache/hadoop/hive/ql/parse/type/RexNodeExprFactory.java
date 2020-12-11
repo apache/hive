@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.parse.type;
 
 import com.google.common.collect.ImmutableList;
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -70,11 +71,9 @@ import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.parse.type.RexNodeExprFactory.HiveNlsString.Interpretation;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFWhen;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -191,6 +190,15 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   protected RexNode createNullConstantExpr() {
     return rexBuilder.makeNullLiteral(
         rexBuilder.getTypeFactory().createSqlType(SqlTypeName.NULL));
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected RexNode createDynamicParamExpr(int index) {
+    return rexBuilder.makeDynamicParam(
+        rexBuilder.getTypeFactory().createSqlType(SqlTypeName.NULL), index);
   }
 
   /**
@@ -320,8 +328,8 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
       PrimitiveTypeInfo sourceType) {
     // Extract string value if necessary
     Object constantToInterpret = constantValue;
-    if (constantValue instanceof HiveNlsString) {
-      constantToInterpret = ((HiveNlsString) constantValue).getValue();
+    if (constantValue instanceof NlsString) {
+      constantToInterpret = ((NlsString) constantValue).getValue();
     }
 
     if (constantToInterpret instanceof Number || constantToInterpret instanceof String) {
@@ -374,7 +382,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
         HiveChar newValue = new HiveChar(constValue, length);
         HiveChar maxCharConst = new HiveChar(constValue, HiveChar.MAX_CHAR_LENGTH);
         if (maxCharConst.equals(newValue)) {
-          return makeHiveUnicodeString(Interpretation.CHAR, newValue.getValue());
+          return makeHiveUnicodeString(newValue.getValue());
         } else {
           return null;
         }
@@ -385,7 +393,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
         HiveVarchar newValue = new HiveVarchar(constValue, length);
         HiveVarchar maxCharConst = new HiveVarchar(constValue, HiveVarchar.MAX_VARCHAR_LENGTH);
         if (maxCharConst.equals(newValue)) {
-          return makeHiveUnicodeString(Interpretation.VARCHAR, newValue.getValue());
+          return makeHiveUnicodeString(newValue.getValue());
         } else {
           return null;
         }
@@ -407,8 +415,13 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    */
   @Override
   protected RexLiteral createStringConstantExpr(String value) {
-    return rexBuilder.makeCharLiteral(
-        makeHiveUnicodeString(Interpretation.STRING, value));
+    RelDataType stringType = rexBuilder.getTypeFactory().createTypeWithCharsetAndCollation(
+        rexBuilder.getTypeFactory().createSqlType(SqlTypeName.VARCHAR, Integer.MAX_VALUE),
+        Charset.forName(ConversionUtil.NATIVE_UTF16_CHARSET_NAME), SqlCollation.IMPLICIT);
+    // Note. Though we pass allowCast=true as parameter, this method will return a
+    // VARCHAR literal without a CAST.
+    return (RexLiteral) rexBuilder.makeLiteral(
+        makeHiveUnicodeString(value), stringType, true);
   }
 
   /**
@@ -621,28 +634,12 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected RexNode createFuncCallExpr(TypeInfo returnType, GenericUDF genericUDF,
+  protected RexNode createFuncCallExpr(TypeInfo typeInfo, FunctionInfo functionInfo, String funcText,
       List<RexNode> inputs) throws SemanticException {
-    final String funcText = genericUDF.getClass().getAnnotation(Description.class).name();
-    final FunctionInfo functionInfo = functionHelper.getFunctionInfo(funcText);
-    return functionHelper.getExpression(
-        funcText, functionInfo, inputs,
-        TypeConverter.convert(returnType, rexBuilder.getTypeFactory()));
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  protected RexNode createFuncCallExpr(GenericUDF genericUDF, String funcText,
-      List<RexNode> inputs) throws SemanticException {
-    // 1) Function resolution
-    final FunctionInfo functionInfo = functionHelper.getFunctionInfo(funcText);
     // 2) Compute return type
     RelDataType returnType;
-    if (genericUDF instanceof SettableUDF) {
-      returnType = TypeConverter.convert(
-          ((SettableUDF) genericUDF).getTypeInfo(), rexBuilder.getTypeFactory());
+    if (typeInfo != null) {
+      returnType = TypeConverter.convert(typeInfo, rexBuilder.getTypeFactory());
     } else {
       returnType = functionHelper.getReturnType(functionInfo, inputs);
     }
@@ -796,6 +793,22 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
+  protected boolean isConsistentWithinQuery(FunctionInfo fi) {
+    return functionHelper.isConsistentWithinQuery(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isStateful(FunctionInfo fi) {
+    return functionHelper.isStateful(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   protected boolean isPOSITIVEFuncCallExpr(RexNode expr) {
     return expr.isA(SqlKind.PLUS_PREFIX);
   }
@@ -832,7 +845,7 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
    * {@inheritDoc}
    */
   @Override
-  protected boolean convertCASEIntoCOALESCEFuncCallExpr(GenericUDF genericUDF, List<RexNode> inputs) {
+  protected boolean convertCASEIntoCOALESCEFuncCallExpr(FunctionInfo fi, List<RexNode> inputs) {
     return false;
   }
 
@@ -851,6 +864,46 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
   protected boolean isSTRUCTFuncCallExpr(RexNode expr) {
     return expr instanceof RexCall &&
         ((RexCall) expr).getOperator() == SqlStdOperatorTable.ROW;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isAndFunction(FunctionInfo fi) {
+    return functionHelper.isAndFunction(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isOrFunction(FunctionInfo fi) {
+    return functionHelper.isOrFunction(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isInFunction(FunctionInfo fi) {
+    return functionHelper.isInFunction(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isCompareFunction(FunctionInfo fi) {
+    return functionHelper.isCompareFunction(fi);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected boolean isEqualFunction(FunctionInfo fi) {
+    return functionHelper.isEqualFunction(fi);
   }
 
   /**
@@ -927,6 +980,14 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     }
   }
 
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  protected FunctionInfo getFunctionInfo(String funcName) throws SemanticException {
+    return functionHelper.getFunctionInfo(funcName);
+  }
+
   private static void throwInvalidSubqueryError(final ASTNode comparisonOp) throws SemanticException {
     throw new CalciteSubquerySemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
         "Invalid operator:" + comparisonOp.toString()));
@@ -989,22 +1050,8 @@ public class RexNodeExprFactory extends ExprFactory<RexNode> {
     }
   }
 
-  public static NlsString makeHiveUnicodeString(Interpretation interpretation, String text) {
-    return new HiveNlsString(interpretation, text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
-  }
-
-  public static class HiveNlsString extends NlsString {
-
-    public enum Interpretation {
-      CHAR, VARCHAR, STRING;
-    }
-
-    public final Interpretation interpretation;
-
-    public HiveNlsString(Interpretation interpretation, String value, String charsetName, SqlCollation collation) {
-      super(value, charsetName, collation);
-      this.interpretation = interpretation;
-    }
+  public static NlsString makeHiveUnicodeString(String text) {
+    return new NlsString(text, ConversionUtil.NATIVE_UTF16_CHARSET_NAME, SqlCollation.IMPLICIT);
   }
 
 }

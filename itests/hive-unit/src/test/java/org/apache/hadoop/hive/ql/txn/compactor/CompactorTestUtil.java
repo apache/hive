@@ -28,10 +28,12 @@ import org.apache.hadoop.hive.metastore.api.CompactionRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionType;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
@@ -51,6 +53,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
@@ -94,7 +97,15 @@ class CompactorTestUtil {
       throws IOException {
     Path path = partitionName == null ? new Path(table.getSd().getLocation(), deltaName) : new Path(
         new Path(table.getSd().getLocation()), new Path(partitionName, deltaName));
-    return Arrays.stream(fs.listStatus(path)).map(FileStatus::getPath).map(Path::getName).sorted()
+    return Arrays.stream(fs.listStatus(path, AcidUtils.bucketFileFilter)).map(FileStatus::getPath).map(Path::getName).sorted()
+        .collect(Collectors.toList());
+  }
+
+  static List<String> getBucketFileNamesForMMTables(FileSystem fs, Table table, String partitionName, String deltaName)
+      throws IOException {
+    Path path = partitionName == null ? new Path(table.getSd().getLocation(), deltaName) : new Path(
+        new Path(table.getSd().getLocation()), new Path(partitionName, deltaName));
+    return Arrays.stream(fs.listStatus(path, AcidUtils.hiddenFileFilter)).map(FileStatus::getPath).map(Path::getName).sorted()
         .collect(Collectors.toList());
   }
 
@@ -136,6 +147,9 @@ class CompactorTestUtil {
    * @throws Exception if cleaner cannot be started.
    */
   static void runCleaner(HiveConf hConf) throws Exception {
+    // Wait for the cooldown period so the Cleaner can see last committed txn as the highest committed watermark
+    Thread.sleep(MetastoreConf.getTimeVar(hConf, MetastoreConf.ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS));
+
     HiveConf hiveConf = new HiveConf(hConf);
     Cleaner t = new Cleaner();
     t.setThreadId((int) t.getId());
@@ -159,6 +173,7 @@ class CompactorTestUtil {
       throw new IOException("Failed to execute \"" + cmd + "\". Driver returned: " + e);
     }
     List<String> rs = new ArrayList<>();
+    driver.setMaxRows(400);
     driver.getResults(rs);
     return rs;
   }

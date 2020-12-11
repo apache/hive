@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.ddl.table.column.change;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -61,16 +62,20 @@ public class AlterTableChangeColumnOperation extends AbstractAlterTableOperation
     int i = 1;
 
     List<FieldSchema> oldColumns = (partition == null ? table.getColsForMetastore() : partition.getColsForMetastore());
-    List<FieldSchema> newColumns = new ArrayList<FieldSchema>();
+    List<FieldSchema> newColumns = new ArrayList<>();
     for (FieldSchema oldColumn : oldColumns) {
       String oldColumnName = oldColumn.getName();
       if (oldColumnName.equalsIgnoreCase(desc.getOldColumnName())) {
-        oldColumn.setName(desc.getNewColumnName());
+        oldColumn.setName(desc.getNewColumnName().toLowerCase());
         if (StringUtils.isNotBlank(desc.getNewColumnType())) {
           oldColumn.setType(desc.getNewColumnType());
         }
         if (desc.getNewColumnComment() != null) {
           oldColumn.setComment(desc.getNewColumnComment());
+        }
+        if (CollectionUtils.isNotEmpty(sd.getBucketCols()) && sd.getBucketCols().contains(oldColumnName)) {
+          sd.getBucketCols().remove(oldColumnName);
+          sd.getBucketCols().add(desc.getNewColumnName().toLowerCase());
         }
         found = true;
         if (desc.isFirst() || StringUtils.isNotBlank(desc.getAfterColumn())) {

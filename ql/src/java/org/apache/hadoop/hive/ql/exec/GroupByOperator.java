@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.parse.OpParseContext;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc.Mode;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -1144,6 +1145,12 @@ public class GroupByOperator extends Operator<GroupByDesc> implements IConfigure
     if (conf.getGroupingSetPosition() > 0 && shouldEmitSummaryRow(conf)) {
       job.setBoolean(Utilities.ENSURE_OPERATORS_EXECUTED, true);
     }
+  }
+
+  @Override
+  public void replaceTabAlias(String oldAlias, String newAlias) {
+    super.replaceTabAlias(oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getKeys(), oldAlias, newAlias);
   }
 
 }

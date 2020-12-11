@@ -42,7 +42,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: boolean)
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -65,7 +65,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: boolean)
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -150,7 +150,7 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -215,7 +215,7 @@ STAGE PLANS:
                           tag: -1
                           auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -352,7 +352,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: boolean)
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -375,7 +375,7 @@ STAGE PLANS:
                           Map-reduce partition columns: _col0 (type: boolean)
                           Statistics: Num rows: 1 Data size: 4 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

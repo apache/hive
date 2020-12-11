@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.common.io.encoded.MemoryBufferOrBuffers;
 
@@ -65,4 +66,13 @@ public interface FileMetadataCache {
 
   MemoryBufferOrBuffers putFileMetadata(Object fileKey, int length,
       InputStream is, CacheTag tag, AtomicBoolean isStopped) throws IOException;
+
+  /**
+   * Iterates through the file entries of this cache and for those that match the given predicate (aka have a matching
+   * CacheTag) will have their buffers marked for (a later) proactive eviction.
+   * @param predicate - matching the predicate indicates eligibility for proactive eviction
+   * @param isInstantDeallocation - whether to ask allocator to deallocate eligible buffers immediately after marking
+   * @return number of bytes marked in the buffers eligible for eviction
+   */
+  long markBuffersForProactiveEviction(Predicate<CacheTag> predicate, boolean isInstantDeallocation);
 }

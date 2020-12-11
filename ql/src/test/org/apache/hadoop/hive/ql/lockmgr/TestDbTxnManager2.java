@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.ValidTxnList;
 import org.apache.hadoop.hive.common.ValidWriteIdList;
 import org.apache.hadoop.hive.metastore.MetastoreTaskThread;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
@@ -30,8 +31,11 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.ShowLocksRequest;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponse;
 import org.apache.hadoop.hive.metastore.api.ShowLocksResponseElement;
+import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.AcidHouseKeeperService;
+import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.QueryState;
 import org.apache.hadoop.hive.ql.TestTxnCommands2;
 import org.junit.Assert;
 import org.apache.hadoop.hive.common.FileUtils;
@@ -735,11 +739,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("select * from tab_acid inner join tab_not_acid on a = na", true);
     txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
-    Assert.assertEquals("Unexpected lock count", 6, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    Assert.assertEquals("Unexpected lock count", 4, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
 
@@ -748,11 +750,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("insert into tab_not_acid partition(np='doh') values(5,6)", true);
     ((DbTxnManager)txnMgr2).acquireLocks(driver.getPlan(), ctx, "T2", false);
     locks = getLocks(txnMgr2);
-    Assert.assertEquals("Unexpected lock count", 7, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    Assert.assertEquals("Unexpected lock count", 5, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
     checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "tab_not_acid", "np=doh", locks);
@@ -765,11 +765,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("insert into tab_not_acid partition(np='blah') values(7,8)", true);
     ((DbTxnManager)txnMgr3).acquireLocks(driver.getPlan(), ctx, "T3", false);
     locks = getLocks(txnMgr3);
-    Assert.assertEquals("Unexpected lock count", 8, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    Assert.assertEquals("Unexpected lock count", 6, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
     checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "tab_not_acid", "np=doh", locks);
@@ -798,8 +796,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("select * from tab_acid inner join tab_not_acid on a = na", true);
     txnMgr1.acquireLocks(driver.getPlan(), ctx, "T1");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr1);
-    Assert.assertEquals("Unexpected lock count", 3, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
 
@@ -808,8 +805,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("insert into tab_not_acid partition(np='doh') values(5,6)", true);
     ((DbTxnManager)txnMgr2).acquireLocks(driver.getPlan(), ctx, "T2", false);
     locks = getLocks(txnMgr2);
-    Assert.assertEquals("Unexpected lock count", 4, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=doh", locks);
@@ -819,8 +815,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("insert into tab_not_acid partition(np='blah') values(7,8)", true);
     ((DbTxnManager)txnMgr3).acquireLocks(driver.getPlan(), ctx, "T3", false);
     locks = getLocks(txnMgr3);
-    Assert.assertEquals("Unexpected lock count", 5, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    Assert.assertEquals("Unexpected lock count", 4, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=bar", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "p=foo", locks);
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", "np=blah", locks);
@@ -854,6 +849,8 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
+    txnMgr.rollbackTxn();
+    dropTable(new String[] {"tab_not_acid"});
   }
 
   /** The list is small, and the object is generated, so we don't use sets/equals/etc. */
@@ -1111,7 +1108,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
         "clustered by (a) into 2  buckets stored as orc TBLPROPERTIES ('transactional'='true')");
 
     txnMgr.openTxn(ctx, "Long Running");
-    driver.compileAndRespond("select a from  TAB_PART where p = 'blah'", true);
+    driver.compileAndRespond("select a from TAB_PART where p = 'blah'", true);
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Long Running");
     List<ShowLocksResponseElement> locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
@@ -1189,9 +1186,9 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
 
     locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 0, locks.size());
-    /**
-     * The last transaction will always remain in the transaction table, so we will open an other one,
-     * wait for the timeout period to exceed, then start the initiator that will clean
+    /*
+      The last transaction will always remain in the transaction table, so we will open an other one,
+      wait for the timeout period to exceed, then start the initiator that will clean
      */
     txnMgr.openTxn(ctx, "Long Running");
     Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
@@ -1377,7 +1374,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //txnid:idTxnUpdate3
 
-    ((DbLockManager)txnMgr.getLockManager()).checkLock(locks.get(2).getLockid()); //retest WAITING locks (both have same ext id)
     locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 2, locks.size());
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=two", locks);
@@ -1441,7 +1437,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //txnid:idTxnUpdate1
 
-    ((DbLockManager)txnMgr.getLockManager()).checkLock(locks.get(2).getLockid()); //retest WAITING locks (both have same ext id)
     locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=two", locks);
@@ -1505,7 +1500,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //txnid:idTxnUpdate1
 
-    ((DbLockManager)txnMgr.getLockManager()).checkLock(locks.get(2).getLockid()); //retest WAITING locks (both have same ext id)
     locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=two", locks);
@@ -1582,7 +1576,6 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //"Update tab2"
 
-    ((DbLockManager)txnMgr.getLockManager()).checkLock(locks.get(2).getLockid()); //retest WAITING locks (both have same ext id)
     locks = getLocks(txnMgr);
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=two", locks);
@@ -1642,8 +1635,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.compileAndRespond("delete from tab1 where p='two' and b=2", true);
     ((DbTxnManager)txnMgr).acquireLocks(driver.getPlan(), ctx, "T3", false);
     locks = getLocks(txnMgr);
-    Assert.assertEquals("Unexpected lock count", 5, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB1", null, locks);
+    Assert.assertEquals("Unexpected lock count", 4, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB1", "p=one", locks);
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=two", locks);
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=one", locks);
@@ -1657,10 +1649,8 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnHandler.addDynamicPartitions(adp);
     txnMgr2.commitTxn(); //"delete from tab1" txn
 
-    ((DbLockManager)txnMgr.getLockManager()).checkLock(locks.get(4).getLockid()); //retest WAITING locks (both have same ext id)
     locks = getLocks(txnMgr);
-    Assert.assertEquals("Unexpected lock count", 3, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB1", null, locks);
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "TAB1", "p=one", locks);
     checkLock(LockType.SHARED_WRITE, LockState.ACQUIRED, "default", "TAB1", "p=two", locks);
     //completion of txnid:txnIdSelect
@@ -1767,6 +1757,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals(completedTxnComponentsContents,
         2, TxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" where \"CTC_TXNID\"=6 "
             + "and \"CTC_TABLE\"='tabmmdp' and \"CTC_UPDATE_DELETE\"='N'"));
+    dropTable(new String[] {"tabMmDp", "tab_not_acid"});
   }
 
   private List<ShowLocksResponseElement> getLocksWithFilterOptions(HiveTxnManager txnMgr,
@@ -1896,7 +1887,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals(
         "TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnId1) + "): " +
         TxnDbUtil.queryToString(conf, "select * from \"TXN_COMPONENTS\""),
-        0,
+        1,
         TxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" where \"TC_TXNID\"=" + txnId1));
 
     //complete 1st txn
@@ -1969,7 +1960,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals(
         "TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnId2) + "): " +
         TxnDbUtil.queryToString(conf, "select * from \"TXN_COMPONENTS\""),
-        0,
+        1,
         TxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" where \"TC_TXNID\"=" + txnId2));
 
     //complete 2nd txn
@@ -2015,8 +2006,8 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     catch (LockException e) {
       expectedException = e;
     }
-    if (causeConflict) {
-      Assert.assertNotNull("didn't get exception", expectedException);
+    if (causeConflict && sharedWrite) {
+      Assert.assertNotNull("Didn't get exception", expectedException);
       try {
         Assert.assertEquals("Transaction manager has aborted the transaction txnid:11.  Reason: " +
             "Aborting [txnid:11,11] due to a write conflict on default/target/p=1/q=2 " +
@@ -2049,7 +2040,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       Assert.assertEquals(
           "COMPLETED_TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnId2) + "): " +
           TxnDbUtil.queryToString(conf, "select * from \"COMPLETED_TXN_COMPONENTS\""),
-          4,
+        causeConflict ? 6 : 4,
           TxnDbUtil.countQueryAgent(conf, "select count(*) from \"COMPLETED_TXN_COMPONENTS\" where \"CTC_TXNID\"=" + txnId2));
       Assert.assertEquals(
           "WRITE_SET mismatch(" + JavaUtils.txnIdToString(txnId2) + "): " +
@@ -2060,10 +2051,11 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       Assert.assertEquals(
           "WRITE_SET mismatch(" + JavaUtils.txnIdToString(txnId2) + "): " +
           TxnDbUtil.queryToString(conf, "select * from \"WRITE_SET\""),
-          0,
+        causeConflict ? 2 : 0,
           TxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\" where \"WS_TXNID\"=" + txnId2 +
               " and \"WS_OPERATION_TYPE\"='d'"));
     }
+    dropTable(new String[]{"target", "source", "source2"});
   }
 
   @Test
@@ -2174,7 +2166,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     catch (LockException e) {
       expectedException = e;
     }
-    if (causeConflict) {
+    if (causeConflict && sharedWrite) {
       Assert.assertNotNull("Didn't get exception", expectedException);
       Assert.assertEquals("Got wrong message code", ErrorMsg.TXN_ABORTED, expectedException.getCanonicalErrorMsg());
       Assert.assertEquals("Exception msg didn't match",
@@ -2221,85 +2213,45 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals("Unexpected lock count", 3, locks.size());
     checkLock((sharedWrite ? LockType.SHARED_WRITE : LockType.SHARED_READ),
         LockState.ACQUIRED, "default", "target", null, locks);
-    checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "source", null, locks);
-    checkLock((sharedWrite ? LockType.EXCL_WRITE : LockType.EXCLUSIVE),
-        LockState.WAITING, "default", "target", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "source", null, locks);
+    checkLock((sharedWrite ? LockType.SHARED_WRITE : LockType.EXCL_WRITE),
+        LockState.ACQUIRED, "default", "target", null, locks);
   }
 
   @Test
-  public void testInsertMergeInsertConcurrentSnapshotInvalidateNoDuplicates() throws Exception {
-    testConcurrentMergeInsertSnapshotInvalidate("insert into target values (5, 6)", false);
+  public void testConcurrentInsertMergeInsertGenerateDuplicates() throws Exception {
+    testConcurrentMergeInsert("insert into target values (5, 6)", false, false, true);
   }
   @Test
-  public void testInsertMergeInsertConcurrentSharedWriteSnapshotInvalidateNoDuplicates() throws Exception {
-    testConcurrentMergeInsertSnapshotInvalidate("insert into target values (5, 6)", true);
+  public void testConcurrentInsertMergeInsertSharedWriteGenerateDuplicates() throws Exception {
+    testConcurrentMergeInsert("insert into target values (5, 6)", true,false, true);
   }
   @Test
-  public void test2MergeInsertsConcurrentSnapshotInvalidateNoDuplicates() throws Exception {
-    testConcurrentMergeInsertSnapshotInvalidate("merge into target t using source s on t.a = s.a " +
-      "when not matched then insert values (s.a, s.b)", false);
+  public void testConcurrent2MergeInsertsNoDuplicates() throws Exception {
+    testConcurrentMergeInsert("merge into target t using source s on t.a = s.a " +
+        "when not matched then insert values (s.a, s.b)", false, false,false);
   }
   @Test
-  public void test2MergeInsertsConcurrentSharedWriteSnapshotInvalidateNoDuplicates() throws Exception {
-    testConcurrentMergeInsertSnapshotInvalidate("merge into target t using source s on t.a = s.a " +
-      "when not matched then insert values (s.a, s.b)", true);
+  public void testConcurrent2MergeInsertsSharedWriteNoDuplicates() throws Exception {
+    testConcurrentMergeInsert("merge into target t using source s on t.a = s.a " +
+        "when not matched then insert values (s.a, s.b)", true, false,false);
   }
   @Test
-  public void testMergeInsertNoSnapshotInvalidateNoDuplicates() throws Exception {
-    testConcurrentMergeInsertSnapshotInvalidate("insert into source values (3, 4)", false);
-  }
-
-  private void testConcurrentMergeInsertSnapshotInvalidate(String query, boolean sharedWrite) throws Exception {
-    dropTable(new String[]{"target", "source"});
-    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, !sharedWrite);
-
-    driver.run("create table target (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
-    driver.run("insert into target values (1,2), (3,4)");
-    driver.run("create table source (a int, b int)");
-    driver.run("insert into source values (5,6), (7,8)");
-
-    driver.compileAndRespond("merge into target t using source s on t.a = s.a " +
-      "when not matched then insert values (s.a, s.b)");
-
-    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
-    swapTxnManager(txnMgr2);
-    driver2.run(query);
-    driver2.run("select * from target");
-
-    swapTxnManager(txnMgr);
-    try {
-      driver.run();
-    } catch (Exception ex ){
-      Assert.assertTrue(ex.getCause().getMessage().contains("due to a write conflict"));
-    }
-
-    swapTxnManager(txnMgr2);
-    driver2.run("select * from target");
-    List res = new ArrayList();
-    driver2.getFetchTask().fetch(res);
-    Assert.assertEquals("Duplicate records found", 4, res.size());
-  }
-
-  @Test
-  public void test2MergeInsertsConcurrentNoDuplicates() throws Exception {
-    testConcurrentMergeInsertNoDuplicates("merge into target t using source s on t.a = s.a " +
-        "when not matched then insert values (s.a, s.b)", false);
+  public void testConcurrent2MergeInsertsNoDuplicatesSlowCompile() throws Exception {
+    testConcurrentMergeInsert("merge into target t using source s on t.a = s.a " +
+        "when not matched then insert values (s.a, s.b)", false, true,false);
   }
   @Test
-  public void test2MergeInsertsConcurrentSharedWriteNoDuplicates() throws Exception {
-    testConcurrentMergeInsertNoDuplicates("merge into target t using source s on t.a = s.a " +
-        "when not matched then insert values (s.a, s.b)", true);
+  public void testConcurrent2MergeInsertsSharedWriteNoDuplicatesSlowCompile() throws Exception {
+    testConcurrentMergeInsert("merge into target t using source s on t.a = s.a " +
+        "when not matched then insert values (s.a, s.b)", true, true,false);
   }
   @Test
-  public void testtInsertMergeInsertConcurrentNoDuplicates() throws Exception {
-    testConcurrentMergeInsertNoDuplicates("insert into target values (5, 6)", false);
-  }
-  @Test
-  public void testtInsertMergeInsertConcurrentSharedWriteNoDuplicates() throws Exception {
-    testConcurrentMergeInsertNoDuplicates("insert into target values (5, 6)", true);
+  public void testConcurrentInsertMergeInsertNoDuplicates() throws Exception {
+    testConcurrentMergeInsert("insert into source values (3, 4)", false, false,false);
   }
 
-  private void testConcurrentMergeInsertNoDuplicates(String query, boolean sharedWrite) throws Exception {
+  private void testConcurrentMergeInsert(String query, boolean sharedWrite, boolean slowCompile, boolean extectedDuplicates) throws Exception {
     dropTable(new String[]{"target", "source"});
     conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, !sharedWrite);
     driver2.getConf().setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, !sharedWrite);
@@ -2309,18 +2261,72 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.run("create table source (a int, b int)");
     driver.run("insert into source values (5,6), (7,8)");
 
-    driver.compileAndRespond(query);
+    if (!slowCompile) {
+      driver.compileAndRespond(query);
+    }
 
     DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
     swapTxnManager(txnMgr2);
-
     driver2.compileAndRespond("merge into target t using source s on t.a = s.a " +
-        "when not matched then insert values (s.a, s.b)");
+      "when not matched then insert values (s.a, s.b)");
 
     swapTxnManager(txnMgr);
-    driver.run();
+    if (!slowCompile) {
+      driver.run();
+    } else {
+      driver.run(query);
+    }
 
-    //merge should notice snapshot changes and re-create it
+    swapTxnManager(txnMgr2);
+    try {
+      driver2.run();
+    } catch (CommandProcessorException ex ){
+      Assert.assertTrue(ex.getMessage().contains("write conflict on default/target"));
+    }
+
+    swapTxnManager(txnMgr);
+    driver.run("select * from target");
+    List res = new ArrayList();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals("Duplicate records " + (extectedDuplicates ? "" : "not") + "found",
+      extectedDuplicates ? 5 : 4, res.size());
+    dropTable(new String[]{"target", "source"});
+  }
+
+  @Test
+  public void testConcurrentUpdateMergeUpdateConflict() throws Exception {
+    testConcurrentUpdateMergeUpdateConflict(false);
+  }
+  @Test
+  public void testConcurrentUpdateMergeUpdateConflictSlowCompile() throws Exception {
+    testConcurrentUpdateMergeUpdateConflict(true);
+  }
+
+  private void testConcurrentUpdateMergeUpdateConflict(boolean slowCompile) throws Exception {
+    dropTable(new String[]{"target", "source"});
+    driver2.getConf().setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+
+    driver.run("create table target (a int, b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into target values (1,2), (3,4)");
+    driver.run("create table source (a int, b int)");
+    driver.run("insert into source values (5,6), (7,8)");
+
+    if (!slowCompile) {
+      driver.compileAndRespond("update target set a=5 where a=1");
+    }
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("merge into target t using source s on t.a = s.a " +
+      "when matched then update set b=8");
+
+    swapTxnManager(txnMgr);
+    if (!slowCompile) {
+      driver.run();
+    } else {
+      driver.run("update target set a=5 where a=1");
+    }
+
     swapTxnManager(txnMgr2);
     driver2.run();
 
@@ -2328,7 +2334,200 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.run("select * from target");
     List res = new ArrayList();
     driver.getFetchTask().fetch(res);
-    Assert.assertEquals("Duplicate records found", 4, res.size());
+    Assert.assertEquals(2, res.size());
+    Assert.assertEquals("Lost Update", "5\t8", res.get(1));
+  }
+
+  @Test
+  public void testConcurrent2MergeUpdatesConflict() throws Exception {
+    testConcurrent2MergeUpdatesConflict(false);
+  }
+  @Test
+  public void testConcurrent2MergeUpdatesConflictSlowCompile() throws Exception {
+    testConcurrent2MergeUpdatesConflict(true);
+  }
+
+  private void testConcurrent2MergeUpdatesConflict(boolean slowCompile) throws Exception {
+    dropTable(new String[]{"target", "source"});
+    driver2.getConf().setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+
+    driver.run("create table target (name string, age int) stored as orc TBLPROPERTIES('transactional'='true')");
+    driver.run("insert into target values ('amy', 88), ('drake', 44), ('earl', 21)");
+    driver.run("create table source (name string, age int) stored as orc TBLPROPERTIES('transactional'='true')");
+    driver.run("insert into source values ('amy', 35), ('bob', 66), ('cal', 21)");
+
+    if (!slowCompile) {
+      driver.compileAndRespond("merge into target t using source s on t.name = s.name " +
+        "when matched then update set age=10");
+    }
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("merge into target t using source s on t.age = s.age " +
+      "when matched then update set age=10");
+
+    swapTxnManager(txnMgr);
+    if (!slowCompile) {
+      driver.run();
+    } else {
+      driver.run("merge into target t using source s on t.name = s.name " +
+        "when matched then update set age=10");
+    }
+
+    swapTxnManager(txnMgr2);
+    driver2.run();
+
+    swapTxnManager(txnMgr);
+    driver.run("select * from target where age=10");
+    List res = new ArrayList();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals(2, res.size());
+    Assert.assertEquals("Lost Update", "[earl\t10, amy\t10]", res.toString());
+  }
+
+  @Test
+  public void testConcurrent2InsertOverwritesDiffPartitions() throws Exception {
+    testConcurrent2InsertOverwrites(false);
+  }
+  @Test
+  public void testConcurrent2InsertOverwritesSamePartition() throws Exception {
+    testConcurrent2InsertOverwrites(true);
+  }
+
+  private void testConcurrent2InsertOverwrites(boolean conflict) throws Exception {
+    dropTable(new String[]{"target", "source"});
+    driver2.getConf().setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+
+    driver.run("create table target (a int) partitioned by (b int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into target values (1,2), (3,4)");
+    driver.run("create table source (a int)");
+    driver.run("insert into source values (5), (7)");
+
+    driver.compileAndRespond("insert overwrite table target partition (b='2') select * from source");
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    swapTxnManager(txnMgr2);
+    driver2.compileAndRespond("insert overwrite table target partition (b='" +
+      (conflict ? 2 : 4) + "') select * from source");
+
+    swapTxnManager(txnMgr);
+    driver.run();
+
+    swapTxnManager(txnMgr2);
+    driver2.run();
+
+    swapTxnManager(txnMgr);
+    driver.run("select * from target");
+    List res = new ArrayList();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals(conflict ? 3 : 4, res.size());
+  }
+
+  /**
+   * ValidTxnManager.isValidTxnListState can invalidate a snapshot if a relevant write transaction was committed
+   * between a query compilation and lock acquisition. When this happens we have to recompile the given query,
+   * otherwise we can miss reading partitions created between. The following three cases test these scenarios.
+   * @throws Exception ex
+   */
+  @Test
+  public void testInsertOverwriteMergeInsertDynamicPartitioningSequential() throws Exception {
+    dropTable(new String[]{"target", "source"});
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
+
+    // Create partition c=1
+    driver.run("create table target (a int, b int) partitioned by (c int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into target values (1,1,1), (2,2,1)");
+    //Create partition c=2
+    driver.run("create table source (a int, b int) partitioned by (c int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into source values (3,3,2), (4,4,2)");
+
+    // txn 1 inserts data to an old and a new partition
+    driver.run("insert into source values (5,5,2), (6,6,3)");
+
+    // txn 2 inserts into the target table into a new partition ( and a duplicate considering the source table)
+    driver.run("insert overwrite table target partition (c=2) select 3, 3");
+
+    // txn3 merge
+    driver.run("merge into target t using source s on t.a = s.a " +
+      "when not matched then insert values (s.a, s.b, s.c)");
+    driver.run("select * from target");
+    List res = new ArrayList();
+    driver.getFetchTask().fetch(res);
+    // The merge should see all three partition and not create duplicates
+    Assert.assertEquals("Duplicate records found", 6, res.size());
+    Assert.assertTrue("Partition 3 was skipped", res.contains("6\t6\t3"));
+    dropTable(new String[]{"target", "source"});
+  }
+
+  @Test
+  public void testInsertOverwriteMergeInsertDynamicPartitioningConflict() throws Exception {
+    testInsertOverwriteMergeInsertDynamicPartitioningConflict(false);
+  }
+  @Test
+  public void testInsertOverwriteMergeInsertDynamicPartitioningConflictSlowCompile() throws Exception {
+    testInsertOverwriteMergeInsertDynamicPartitioningConflict(true);
+  }
+
+  private void testInsertOverwriteMergeInsertDynamicPartitioningConflict(boolean slowCompile) throws Exception {
+    conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, true);
+    conf.setBoolVar(HiveConf.ConfVars.TXN_MERGE_INSERT_X_LOCK, true);
+
+    Driver driver3 = new Driver(new QueryState.Builder().withHiveConf(conf).build(), null);
+    dropTable(new String[]{"target", "source"});
+
+    // Create partition c=1
+    driver.run("create table target (a int, b int) partitioned by (c int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into target values (1,1,1), (2,2,1)");
+    //Create partition c=2
+    driver.run("create table source (a int, b int) partitioned by (c int) stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into source values (3,3,2), (4,4,2)");
+
+    DbTxnManager txnMgr2 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(new HiveConf(conf));
+
+    if (!slowCompile) {
+      // txn 1 insert data to an old and a new partition
+      driver.compileAndRespond("insert into source values (5,5,2), (6,6,3)");
+      swapTxnManager(txnMgr2);
+      // txn 2 insert into the target table into a new partition ( and a duplicate considering the source table)
+      driver2.compileAndRespond("insert overwrite table target partition (c=2) select 3, 3");
+    }
+
+    DbTxnManager txnMgr3 = (DbTxnManager) TxnManagerFactory.getTxnManagerFactory().getTxnManager(new HiveConf(conf));
+    swapTxnManager(txnMgr3);
+
+    // Compile txn 3 with only 1 known partition
+    driver3.compileAndRespond("merge into target t using source s on t.a = s.a " +
+      "when not matched then insert values (s.a, s.b, s.c)");
+
+    swapTxnManager(txnMgr);
+    if (!slowCompile) {
+      driver.run();
+    } else {
+      // txn 2 insert data to an old and a new partition
+      driver.run("insert into source values (5,5,2), (6,6,3)");
+    }
+
+    swapTxnManager(txnMgr2);
+    if (!slowCompile) {
+      driver2.run();
+      // Since txn2 was committed and it is part of txn3 snapshot, snapshot should be invalidated and query re-compiled
+    } else {
+      // txn 3 insert into the target table into a new partition ( and a duplicate considering the source table)
+      driver2.run("insert overwrite table target partition (c=2) select 3, 3");
+      // Since we were writing in the target table, txn 3 should break txn 1 snapshot regardless that it was opened later
+    }
+
+    swapTxnManager(txnMgr3);
+    driver3.run();
+
+    swapTxnManager(txnMgr);
+    driver.run("select * from target");
+    List res = new ArrayList();
+    driver.getFetchTask().fetch(res);
+    // The merge should see all three partition and not create duplicates
+    Assert.assertEquals("Duplicate records found", 6, res.size());
+    Assert.assertTrue("Partition 3 was skipped", res.contains("6\t6\t3"));
+    driver3.close();
+    dropTable(new String[]{"target", "source"});
   }
 
   /**
@@ -2367,7 +2566,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals(
         "TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnid1) + "): " +
         TxnDbUtil.queryToString(conf, "select * from \"TXN_COMPONENTS\""),
-        0,
+        1,
         TxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" where \"TC_TXNID\"=" + txnid1));
     //now actually write to table to generate some partitions
     driver.run("insert into target partition(p=1,q) values (1,2,2), (3,4,2), (5,6,3), (7,8,2)");
@@ -2483,7 +2682,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals(
         "TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnId1) + "): " +
         TxnDbUtil.queryToString(conf, "select * from \"TXN_COMPONENTS\""),
-        0, //because it's using a DP write
+        1, //because it's using a DP write
         TxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" where \"TC_TXNID\"=" + txnId1));
 
     //complete T1 transaction (simulate writing to 2 partitions)
@@ -2524,7 +2723,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     Assert.assertEquals(
         "TXN_COMPONENTS mismatch(" + JavaUtils.txnIdToString(txnid2) + "): " +
         TxnDbUtil.queryToString(conf, "select * from \"TXN_COMPONENTS\""),
-        0, //because it's using a DP write
+        1, //because it's using a DP write
         TxnDbUtil.countQueryAgent(conf, "select count(*) from \"TXN_COMPONENTS\" where \"TC_TXNID\"=" + txnid2));
 
     //complete T2 txn
@@ -2560,7 +2759,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     catch (LockException e) {
       expectedException = e;
     }
-    if (causeConflict) {
+    if (causeConflict && sharedWrite) {
       Assert.assertNotNull("Didn't get exception", expectedException);
       Assert.assertEquals("Got wrong message code", ErrorMsg.TXN_ABORTED, expectedException.getCanonicalErrorMsg());
       Assert.assertEquals("Exception msg didn't match",
@@ -2577,6 +2776,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
           1, //1 partitions updated (and no other entries)
           TxnDbUtil.countQueryAgent(conf, "select count(*) from \"WRITE_SET\" where \"WS_TXNID\"=" + txnid2));
     }
+    dropTable(new String[] {"target","source"});
   }
 
   /**
@@ -2720,8 +2920,7 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     //tries to get X lock on T7.p=1 and gets Waiting state
     ((DbTxnManager) txnMgr2).acquireLocks(driver.getPlan(), ctx, "Fiddler", false);
     List<ShowLocksResponseElement> locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", 4, locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
+    Assert.assertEquals("Unexpected lock count", 3, locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
     long extLockId = checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T7", "p=1", locks).getLockid();
@@ -2743,25 +2942,22 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
         ex.getMessage());
     }
     locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", (zeroWaitRead ? 4 : 7), locks.size());
-    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
+    Assert.assertEquals("Unexpected lock count", (zeroWaitRead ? 3 : 5), locks.size());
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
     if (!zeroWaitRead) {
-      checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", null, locks);
       checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=1", locks);
       checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=2", locks);
     }
     checkLock(LockType.EXCLUSIVE, LockState.WAITING, "default", "T7", "p=1", locks);
 
-    txnMgr.commitTxn(); //release locks from "select a from T7" - to unblock hte drop partition
-    //retest the the "drop partiton" X lock
-    ((DbLockManager)txnMgr2.getLockManager()).checkLock(locks.get(zeroWaitRead ? 3 : 6).getLockid());
+    txnMgr.commitTxn(); //release locks from "select a from T7" - to unblock the drop partition
+    //re-test the "drop partiton" X lock
+    ((DbLockManager)txnMgr2.getLockManager()).checkLock(locks.get(zeroWaitRead ? 2 : 4).getLockid());
     locks = getLocks();
-    Assert.assertEquals("Unexpected lock count", (zeroWaitRead ? 1 : 4), locks.size());
+    Assert.assertEquals("Unexpected lock count", (zeroWaitRead ? 1 : 3), locks.size());
     checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T7", "p=1", locks);
     if (!zeroWaitRead) {
-      checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", null, locks);
       checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=1", locks);
       checkLock(LockType.SHARED_READ, LockState.WAITING, "default", "T7", "p=2", locks);
 
@@ -2769,11 +2965,14 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
       //re-test the locks
       ((DbLockManager) txnMgr2.getLockManager()).checkLock(locks.get(1).getLockid()); //S lock on T7
       locks = getLocks();
-      Assert.assertEquals("Unexpected lock count", 3, locks.size());
-      checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", null, locks);
+      Assert.assertEquals("Unexpected lock count", 2, locks.size());
       checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=1", locks);
       checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "T7", "p=2", locks);
+    } else {
+      txnMgr2.rollbackTxn();
     }
+    txnMgr3.rollbackTxn();
+    dropTable(new String[]{"T7"});
   }
 
   @Test
@@ -2855,6 +3054,50 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     driver.run("drop database if exists temp cascade");
   }
 
+  @Test
+  public void testValidTxnList() throws Exception {
+    long readTxnId = txnMgr.openTxn(ctx, "u0", TxnType.READ_ONLY);
+    HiveTxnManager txnManager1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    txnManager1.openTxn(ctx, "u0");
+    //Excludes open read only txns by default
+    ValidTxnList validTxns = txnManager1.getValidTxns();
+    Assert.assertEquals(0, validTxns.getInvalidTransactions().length);
+
+    //Exclude open repl created only txns
+    validTxns = txnManager1.getValidTxns(Arrays.asList(TxnType.REPL_CREATED));
+    Assert.assertEquals(1, validTxns.getInvalidTransactions().length);
+    Assert.assertEquals(readTxnId, validTxns.getInvalidTransactions()[0]);
+    txnManager1.commitTxn();
+    txnMgr.commitTxn();
+
+    long replTxnId = txnMgr.openTxn(ctx, "u0", TxnType.REPL_CREATED);
+    txnManager1 = TxnManagerFactory.getTxnManagerFactory().getTxnManager(conf);
+    txnManager1.openTxn(ctx, "u0");
+    //Excludes open read only txns by default
+    validTxns = txnManager1.getValidTxns();
+    Assert.assertEquals(1, validTxns.getInvalidTransactions().length);
+    Assert.assertEquals(replTxnId, validTxns.getInvalidTransactions()[0]);
+
+    //Exclude open repl created only txns
+    validTxns = txnManager1.getValidTxns(Arrays.asList(TxnType.REPL_CREATED));
+    Assert.assertEquals(0, validTxns.getInvalidTransactions().length);
+
+    //Exclude open read only txns
+    validTxns = txnManager1.getValidTxns(Arrays.asList(TxnType.READ_ONLY));
+    Assert.assertEquals(1, validTxns.getInvalidTransactions().length);
+    Assert.assertEquals(replTxnId, validTxns.getInvalidTransactions()[0]);
+    txnMgr.commitTxn();
+
+    //Transaction is committed. So no open txn
+    validTxns = txnManager1.getValidTxns();
+    Assert.assertEquals(0, validTxns.getInvalidTransactions().length);
+
+    //Exclude open read only txns
+    validTxns = txnManager1.getValidTxns(Arrays.asList(TxnType.READ_ONLY));
+    Assert.assertEquals(0, validTxns.getInvalidTransactions().length);
+    txnManager1.commitTxn();
+  }
+
   @Rule
   public TemporaryFolder exportFolder = new TemporaryFolder();
 
@@ -2920,7 +3163,17 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
   }
 
   @Test
-  public void testTruncate() throws Exception {
+  public void testTruncateWithBaseLockingExlWrite() throws Exception {
+    testTruncate(true);
+  }
+
+  @Test
+  public void testTruncateWithExl() throws Exception {
+    testTruncate(false);
+  }
+
+  private void testTruncate(boolean useBaseDir) throws Exception {
+    MetastoreConf.setBoolVar(conf, MetastoreConf.ConfVars.TRUNCATE_ACID_USE_BASE, useBaseDir);
     dropTable(new String[] {"T"});
     driver.run("create table T (a int, b int) stored as orc tblproperties('transactional'='true')");
     driver.run("insert into T values(0,2),(1,4)");
@@ -2929,6 +3182,60 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     txnMgr.acquireLocks(driver.getPlan(), ctx, "Fifer"); //gets X lock on T
     List<ShowLocksResponseElement> locks = getLocks();
     Assert.assertEquals("Unexpected lock count", 1, locks.size());
-    checkLock(LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T", null, locks);
+    checkLock(useBaseDir ? LockType.EXCL_WRITE : LockType.EXCLUSIVE, LockState.ACQUIRED, "default", "T", null, locks);
+
+    txnMgr.commitTxn();
+    dropTable(new String[] {"T"});
+  }
+
+  @Test
+  public void testAnalyze() throws Exception {
+    dropTable(new String[] {"tab_acid", "tab_not_acid"});
+
+    driver.run("create table tab_not_acid (key string, value string) partitioned by (ds string, hr string) " +
+        "stored as textfile");
+    driver.run("insert into tab_not_acid partition (ds='2008-04-08', hr='11') values ('238', 'val_238')");
+    driver.run("analyze table tab_not_acid PARTITION (ds, hr) compute statistics");
+
+    driver.run("create table tab_acid (key string, value string) partitioned by (ds string, hr string) " +
+        "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("insert into tab_acid PARTITION (ds, hr) select * from tab_not_acid");
+    driver.run("analyze table tab_acid PARTITION (ds, hr) compute statistics");
+
+    driver.compileAndRespond("analyze table tab_not_acid PARTITION(ds, hr) compute statistics", true);
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "dummy");
+
+    List<ShowLocksResponseElement> locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", "ds=2008-04-08/hr=11", locks);
+    txnMgr.commitTxn();
+
+    driver.compileAndRespond("analyze table tab_acid PARTITION(ds, hr) compute statistics");
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "dummy");
+
+    locks = getLocks();
+    Assert.assertEquals("Unexpected lock count", 1, locks.size());
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", "ds=2008-04-08/hr=11", locks);
+  }
+
+  @Test
+  public void testFullTableReadLock() throws Exception {
+    dropTable(new String[] {"tab_acid", "tab_not_acid"});
+    conf.setIntVar(HiveConf.ConfVars.HIVE_LOCKS_PARTITION_THRESHOLD, 2);
+
+    driver.run("create table if not exists tab_acid (a int, b int) partitioned by (p string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='true')");
+    driver.run("create table if not exists tab_not_acid (na int, nb int) partitioned by (np string) " +
+      "stored as orc TBLPROPERTIES ('transactional'='false')");
+    driver.run("insert into tab_acid partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
+    driver.run("insert into tab_not_acid partition(np) (na,nb,np) values(1,2,'blah'),(3,4,'doh')");
+
+    driver.compileAndRespond("select * from tab_acid inner join tab_not_acid on a = na", true);
+    txnMgr.acquireLocks(driver.getPlan(), ctx, "T1");
+    List<ShowLocksResponseElement> locks = getLocks(txnMgr);
+    Assert.assertEquals("Unexpected lock count", 2, locks.size());
+
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
+    checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
   }
 }

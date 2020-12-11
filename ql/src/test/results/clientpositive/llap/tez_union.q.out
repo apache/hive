@@ -56,7 +56,7 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -77,7 +77,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -95,7 +95,7 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Union 2 
             Vertex: Union 2
 
@@ -210,7 +210,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -231,7 +231,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -252,7 +252,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -273,7 +273,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -406,7 +406,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 2 
             Map Operator Tree:
                 TableScan
@@ -438,7 +438,7 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -470,7 +470,7 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Union 3 
             Vertex: Union 3
 
@@ -623,7 +623,7 @@ STAGE PLANS:
                                 Statistics: Num rows: 5939 Data size: 1550079 Basic stats: COMPLETE Column stats: COMPLETE
                                 value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 10 
             Map Operator Tree:
                 TableScan
@@ -656,7 +656,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -677,7 +677,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -732,7 +732,7 @@ STAGE PLANS:
                                 Statistics: Num rows: 5939 Data size: 1550079 Basic stats: COMPLETE Column stats: COMPLETE
                                 value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 6 
             Map Operator Tree:
                 TableScan
@@ -753,7 +753,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 7 
             Map Operator Tree:
                 TableScan
@@ -808,7 +808,7 @@ STAGE PLANS:
                                 Statistics: Num rows: 5939 Data size: 1550079 Basic stats: COMPLETE Column stats: COMPLETE
                                 value expressions: _col0 (type: string), _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 8 
             Map Operator Tree:
                 TableScan
@@ -829,7 +829,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 9 
             Map Operator Tree:
                 TableScan
@@ -862,7 +862,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 3 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -1085,7 +1085,7 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1106,7 +1106,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1138,7 +1138,7 @@ STAGE PLANS:
                               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 5 
             Map Operator Tree:
                 TableScan
@@ -1159,7 +1159,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Union 2 
             Vertex: Union 2
 
@@ -1284,7 +1284,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1312,7 +1312,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1341,7 +1341,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Union 2 
             Vertex: Union 2
 
@@ -1399,7 +1399,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -1420,7 +1420,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 1000 Data size: 87000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 4 
             Map Operator Tree:
                 TableScan
@@ -1448,7 +1448,7 @@ STAGE PLANS:
                             output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Union 2 
             Vertex: Union 2
 

@@ -29,11 +29,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Select Operator
-            expressions: str_to_map('a=1,b=2,c=3',',','=')['a'] (type: string)
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 3
+          Limit
+            Number of rows: 3
+            Select Operator
+              expressions: str_to_map('a=1,b=2,c=3',',','=')['a'] (type: string)
+              outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
@@ -65,11 +65,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Select Operator
-            expressions: str_to_map('a:1,b:2,c:3') (type: map<string,string>)
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 3
+          Limit
+            Number of rows: 3
+            Select Operator
+              expressions: str_to_map('a:1,b:2,c:3') (type: map<string,string>)
+              outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
@@ -101,11 +101,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Select Operator
-            expressions: str_to_map('a:1,b:2,c:3',',',':') (type: map<string,string>)
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 3
+          Limit
+            Number of rows: 3
+            Select Operator
+              expressions: str_to_map('a:1,b:2,c:3',',',':') (type: map<string,string>)
+              outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
@@ -156,12 +156,12 @@ STAGE PLANS:
                           output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                           serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       Statistics: Num rows: 500 Data size: 47500 Basic stats: COMPLETE Column stats: COMPLETE
-                      Select Operator
-                        expressions: str_to_map(_col0,',',':')['a'] (type: string)
-                        outputColumnNames: _col0
-                        Statistics: Num rows: 500 Data size: 92000 Basic stats: COMPLETE Column stats: COMPLETE
-                        Limit
-                          Number of rows: 3
+                      Limit
+                        Number of rows: 3
+                        Statistics: Num rows: 3 Data size: 285 Basic stats: COMPLETE Column stats: COMPLETE
+                        Select Operator
+                          expressions: str_to_map(_col0,',',':')['a'] (type: string)
+                          outputColumnNames: _col0
                           Statistics: Num rows: 3 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                           File Output Operator
                             compressed: false

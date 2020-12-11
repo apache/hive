@@ -56,7 +56,7 @@ public class AlterTableSetSkewedLocationAnalyzer extends AbstractAlterTableAnaly
   @Override
   protected void analyzeCommand(TableName tableName, Map<String, String> partitionSpec, ASTNode command)
       throws SemanticException {
-    ArrayList<Node> locationNodes = command.getChildren();
+    List<Node> locationNodes = command.getChildren();
     if (locationNodes == null) {
       throw new SemanticException(ErrorMsg.ALTER_TBL_SKEWED_LOC_NO_LOC.getMsg());
     }

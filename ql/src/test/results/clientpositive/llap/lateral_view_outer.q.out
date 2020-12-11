@@ -24,11 +24,11 @@ STAGE PLANS:
               outputColumnNames: key, value
               Lateral View Join Operator
                 outputColumnNames: _col0, _col1, _col5
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
-                  outputColumnNames: _col0, _col1, _col2
-                  Limit
-                    Number of rows: 10
+                Limit
+                  Number of rows: 10
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
                     ListSink
             Select Operator
               expressions: array() (type: array<string>)
@@ -38,11 +38,11 @@ STAGE PLANS:
                 outer lateral view: true
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col1, _col5
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Limit
-                      Number of rows: 10
+                  Limit
+                    Number of rows: 10
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string), _col5 (type: string)
+                      outputColumnNames: _col0, _col1, _col2
                       ListSink
 
 PREHOOK: query: select * from src LATERAL VIEW OUTER explode(array()) C AS a limit 10
@@ -89,11 +89,11 @@ STAGE PLANS:
               outputColumnNames: key, value
               Lateral View Join Operator
                 outputColumnNames: _col0, _col1, _col5
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: string), _col5 (type: int)
-                  outputColumnNames: _col0, _col1, _col2
-                  Limit
-                    Number of rows: 10
+                Limit
+                  Number of rows: 10
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), _col5 (type: int)
+                    outputColumnNames: _col0, _col1, _col2
                     ListSink
             Select Operator
               expressions: array(4,5) (type: array<int>)
@@ -103,11 +103,11 @@ STAGE PLANS:
                 outer lateral view: true
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col1, _col5
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: string), _col5 (type: int)
-                    outputColumnNames: _col0, _col1, _col2
-                    Limit
-                      Number of rows: 10
+                  Limit
+                    Number of rows: 10
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: string), _col5 (type: int)
+                      outputColumnNames: _col0, _col1, _col2
                       ListSink
 
 PREHOOK: query: select * from src LATERAL VIEW OUTER explode(array(4,5)) C AS a limit 10
@@ -166,11 +166,11 @@ STAGE PLANS:
               outputColumnNames: key, value
               Lateral View Join Operator
                 outputColumnNames: _col0, _col1, _col5
-                Select Operator
-                  expressions: _col0 (type: string), _col1 (type: array<string>), _col5 (type: string)
-                  outputColumnNames: _col0, _col1, _col2
-                  Limit
-                    Number of rows: 10
+                Limit
+                  Number of rows: 10
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: array<string>), _col5 (type: string)
+                    outputColumnNames: _col0, _col1, _col2
                     ListSink
             Select Operator
               expressions: value (type: array<string>)
@@ -180,11 +180,11 @@ STAGE PLANS:
                 outer lateral view: true
                 Lateral View Join Operator
                   outputColumnNames: _col0, _col1, _col5
-                  Select Operator
-                    expressions: _col0 (type: string), _col1 (type: array<string>), _col5 (type: string)
-                    outputColumnNames: _col0, _col1, _col2
-                    Limit
-                      Number of rows: 10
+                  Limit
+                    Number of rows: 10
+                    Select Operator
+                      expressions: _col0 (type: string), _col1 (type: array<string>), _col5 (type: string)
+                      outputColumnNames: _col0, _col1, _col2
                       ListSink
 
 PREHOOK: query: select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10

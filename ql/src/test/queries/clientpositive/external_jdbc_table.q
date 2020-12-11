@@ -141,12 +141,10 @@ UNION
 SELECT bkey FROM ext_simple_derby_table2;
 
 
-
-
-
-
-
-
+-- CBO explain
+explain cbo
+select ext_simple_derby_table1.fkey, ext_simple_derby_table2.dkey from ext_simple_derby_table1 join ext_simple_derby_table2 on
+(ext_simple_derby_table1.ikey = ext_simple_derby_table2.ikey);
 
 
 

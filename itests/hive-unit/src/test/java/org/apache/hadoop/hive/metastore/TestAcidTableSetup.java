@@ -26,6 +26,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.metastore.client.builder.TableBuilder;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
+import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +58,7 @@ public class TestAcidTableSetup {
     MetastoreConf.setClass(conf, ConfVars.EXPRESSION_PROXY_CLASS,
         DefaultPartitionExpressionProxy.class, PartitionExpressionProxy.class);
     client = new HiveMetaStoreClient(conf);
+    TxnDbUtil.prepDb(conf);
   }
 
   @Test

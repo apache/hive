@@ -66,8 +66,8 @@ POSTHOOK: Input: default@smt_sysdb_scr_txn
 POSTHOOK: Input: default@smt_sysdb_src_buck
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@smt_sysdb_view
-POSTHOOK: Lineage: smt_sysdb_view.key SIMPLE [(smt_sysdb_src_buck)smt_sysdb_src_buck.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: smt_sysdb_view.value SIMPLE [(smt_sysdb_scr_txn)smt_sysdb_scr_txn.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: smt_sysdb_view.key EXPRESSION [(smt_sysdb_src_buck)smt_sysdb_src_buck.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: smt_sysdb_view.value EXPRESSION [(smt_sysdb_scr_txn)smt_sysdb_scr_txn.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: show grant user hive_test_user
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user

@@ -17,7 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse.repl.metric.event;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +37,8 @@ public class StageMapper {
   private long endTime = 0;
 
   private List<Metric> metrics = new ArrayList<>();
+
+  private String errorLogPath;
 
   public StageMapper() {
 
@@ -61,4 +63,7 @@ public class StageMapper {
     return metrics;
   }
 
+  public String getErrorLogPath() {
+    return errorLogPath;
+  }
 }

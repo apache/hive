@@ -173,6 +173,17 @@ POSTHOOK: query: CREATE DATABASE db3
 POSTHOOK: type: CREATEDATABASE
 POSTHOOK: Output: database:db3
 #### A masked pattern was here ####
+PREHOOK: query: SHOW CREATE DATABASE db3
+PREHOOK: type: SHOW_CREATEDATABASE
+PREHOOK: Input: database:db3
+POSTHOOK: query: SHOW CREATE DATABASE db3
+POSTHOOK: type: SHOW_CREATEDATABASE
+POSTHOOK: Input: database:db3
+CREATE DATABASE `db3`
+LOCATION
+#### A masked pattern was here ####
+MANAGEDLOCATION
+#### A masked pattern was here ####
 PREHOOK: query: DESCRIBE DATABASE db3
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:db3

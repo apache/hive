@@ -48,6 +48,7 @@ import org.apache.calcite.sql.SqlAggFunction;
 import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.sql.SqlOperator;
 import org.apache.calcite.sql.fun.SqlStdOperatorTable;
+import org.apache.calcite.sql.type.SqlTypeFamily;
 import org.apache.calcite.sql.type.SqlTypeName;
 import org.apache.calcite.tools.RelBuilder;
 import org.apache.calcite.tools.RelBuilder.AggCall;
@@ -56,7 +57,6 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelBuilder;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveProject;
-import org.apache.hadoop.hive.ql.optimizer.calcite.translator.SqlFunctionConverter;
 import org.apache.hive.plugin.api.HiveUDFPlugin.UDFDescriptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -469,6 +469,13 @@ public final class HiveRewriteToDataSketchesRules {
         return fn.getCalciteFunction().get();
       }
 
+      protected final RelDataType getFloatType() {
+        RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
+        RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
+        RelDataType floatType = typeFactory.createTypeWithNullability(notNullFloatType, true);
+        return floatType;
+      }
+
       /**
        * Do the rewrite for the given expression.
        *
@@ -483,46 +490,45 @@ public final class HiveRewriteToDataSketchesRules {
   }
 
   /**
-   * Rewrites {@code cume_dist() over (order by id)}.
+   * Provides a generic way to rewrite function into using an estimation based on CDF.
    *
+   *  There are a few methods which could be supported this way: NTILE, CUME_DIST, RANK
+   *
+   *  For example:
    *  <pre>
    *   SELECT id, CUME_DIST() OVER (ORDER BY id) FROM sketch_input;
-   *     ⇒ SELECT id, 1.0-ds_kll_cdf(ds, CAST(-id AS FLOAT) )[0]
+   *     ⇒ SELECT id, ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]
    *       FROM sketch_input JOIN (
-   *         SELECT ds_kll_sketch(CAST(-id AS FLOAT)) AS ds FROM sketch_input
+   *         SELECT ds_kll_sketch(CAST(id AS FLOAT)) AS ds FROM sketch_input
    *       ) q;
    *  </pre>
    */
-  public static class CumeDistRewrite extends WindowingToProjectAggregateJoinProject {
+  public static abstract class AbstractRankBasedRewriteRule extends WindowingToProjectAggregateJoinProject {
 
-    public CumeDistRewrite(String sketchType) {
+    public AbstractRankBasedRewriteRule(String sketchType) {
       super(sketchType);
     }
 
-    @Override
-    protected VbuilderPAP buildProcessor(RelOptRuleCall call) {
-      return new VB(sketchType, call.builder());
-    }
+    protected static abstract class AbstractRankBasedRewriteBuilder extends VbuilderPAP {
 
-    private static class VB extends VbuilderPAP {
-
-      protected VB(String sketchClass, RelBuilder relBuilder) {
+      protected AbstractRankBasedRewriteBuilder(String sketchClass, RelBuilder relBuilder) {
         super(sketchClass, relBuilder);
       }
 
       @Override
-      boolean isApplicable(RexOver over) {
-        SqlAggFunction aggOp = over.getAggOperator();
+      final boolean isApplicable(RexOver over) {
         RexWindow window = over.getWindow();
-        if (aggOp.getName().equalsIgnoreCase("cume_dist") && window.orderKeys.size() == 1
-            && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()) {
-          return true;
+        if (window.orderKeys.size() == 1
+            && window.getLowerBound().isUnbounded() && window.getUpperBound().isUnbounded()
+            && isApplicable1(over)) {
+          RelDataType type = window.orderKeys.get(0).getKey().getType();
+          return type.getFamily() == SqlTypeFamily.NUMERIC;
         }
         return false;
       }
 
       @Override
-      RexNode rewrite(RexOver over) {
+      final RexNode rewrite(RexOver over) {
         RexWindow w = over.getWindow();
         RexFieldCollation orderKey = w.orderKeys.get(0);
         // we don't really support nulls in aggregate/etc...they are actually ignored
@@ -534,9 +540,9 @@ public final class HiveRewriteToDataSketchesRules {
         // negating the input will mirror the values on the x axis
         // by using 1-CDF(-x) we could get a <= operator
         RexNode key = orderKey.getKey();
-        key = rexBuilder.makeCall(SqlStdOperatorTable.UNARY_MINUS, key);
         key = rexBuilder.makeCast(getFloatType(), key);
 
+        // @formatter:off
         AggCall aggCall = ((HiveRelBuilder) relBuilder).aggregateCall(
             (SqlAggFunction) getSqlOperator(DataSketchesFunctions.DATA_TO_SKETCH),
             /* distinct */ false,
@@ -546,6 +552,7 @@ public final class HiveRewriteToDataSketchesRules {
             ImmutableList.of(),
             null,
             ImmutableList.of(key));
+        // @formatter:on
 
         relBuilder.aggregate(relBuilder.groupKey(partitionKeys), aggCall);
 
@@ -558,51 +565,196 @@ public final class HiveRewriteToDataSketchesRules {
 
         int sketchFieldIndex = relBuilder.peek().getRowType().getFieldCount() - 1;
         RexInputRef sketchInputRef = relBuilder.field(sketchFieldIndex);
-        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_CDF);
+        SqlOperator projectOperator = getSqlOperator(DataSketchesFunctions.GET_RANK);
 
         // NULLs will be replaced by this value - to be before / after the other values
         // note: the sketch will ignore NULLs entirely but they will be placed at 0.0 or 1.0
         final RexNode nullReplacement =
-            relBuilder.literal(orderKey.getNullDirection() == NullDirection.FIRST ? Float.MAX_VALUE : -Float.MAX_VALUE);
+            relBuilder.literal(orderKey.getNullDirection() == NullDirection.LAST ? Float.MAX_VALUE : -Float.MAX_VALUE);
 
-        // long story short: CAST(1.0f-CDF(CAST(COALESCE(-X, nullReplacement) AS FLOAT))[0] AS targetType)
         RexNode projRex = key;
         projRex = rexBuilder.makeCall(SqlStdOperatorTable.COALESCE, key, nullReplacement);
         projRex = rexBuilder.makeCast(getFloatType(), projRex);
         projRex = rexBuilder.makeCall(projectOperator, ImmutableList.of(sketchInputRef, projRex));
-        projRex = makeItemCall(projRex, relBuilder.literal(0));
-        projRex = rexBuilder.makeCall(SqlStdOperatorTable.MINUS, relBuilder.literal(1.0f), projRex);
+        projRex = evaluateRankValue(projRex, over, sketchInputRef);
         projRex = rexBuilder.makeCast(over.getType(), projRex);
 
         return projRex;
       }
 
-      private RexNode makeItemCall(RexNode arr, RexNode offset) {
-        if(getClass().desiredAssertionStatus()) {
-          try {
-            SqlKind.class.getField("ITEM");
-            throw new RuntimeException("bind SqlKind.ITEM instead of this workaround - C1.23 a02155a70a");
-           } catch(NoSuchFieldException e) {
-             // ignore
-          }
-        }
+      /**
+       * The concreate rewrite should filter supported expressions.
+       *
+       * @param over the windowing expression in question
+       * @return
+       */
+      protected abstract boolean isApplicable1(RexOver over);
 
-        try {
-        SqlOperator indexFn = SqlFunctionConverter.getCalciteFn("index",
-            ImmutableList.of(arr.getType(),offset.getType()),
-            arr.getType().getComponentType(), true, false);
-          RexNode call = rexBuilder.makeCall(indexFn, arr, offset);
-          return call;
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
+      /**
+       * The concreate rewrite should transform the rank value into the desired range/type/etc.
+       *
+       * @param rank the current rank value is in the range of [0,1]
+       * @param over the windowing expression
+       * @param sketchInputRef the sketch is accessible thru this fields if needed
+       * @return
+       */
+      protected abstract RexNode evaluateRankValue(RexNode rank, RexOver over, RexInputRef sketchInputRef);
+
+    }
+  }
+
+  /**
+   * Rewrites {@code cume_dist() over (order by id)}.
+   *
+   *  <pre>
+   *   SELECT id, CUME_DIST() OVER (ORDER BY id) FROM sketch_input;
+   *     ⇒ SELECT id, ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]
+   *       FROM sketch_input JOIN (
+   *         SELECT ds_kll_sketch(CAST(-id AS FLOAT)) AS ds FROM sketch_input
+   *       ) q;
+   *  </pre>
+   */
+  public static class CumeDistRewriteRule extends AbstractRankBasedRewriteRule {
+
+    public CumeDistRewriteRule(String sketchType) {
+      super(sketchType);
+    }
+
+    @Override
+    protected VbuilderPAP buildProcessor(RelOptRuleCall call) {
+      return new CumeDistRewriteBuilder(sketchType, call.builder());
+    }
+
+    private static class CumeDistRewriteBuilder extends AbstractRankBasedRewriteBuilder {
+
+      protected CumeDistRewriteBuilder(String sketchClass, RelBuilder relBuilder) {
+        super(sketchClass, relBuilder);
       }
 
-      private RelDataType getFloatType() {
-        RelDataTypeFactory typeFactory = rexBuilder.getTypeFactory();
-        RelDataType notNullFloatType = typeFactory.createSqlType(SqlTypeName.FLOAT);
-        RelDataType floatType = typeFactory.createTypeWithNullability(notNullFloatType, true);
-        return floatType;
+      @Override
+      protected boolean isApplicable1(RexOver over) {
+        SqlAggFunction aggOp = over.getAggOperator();
+        return aggOp.getName().equalsIgnoreCase("cume_dist");
+      }
+
+      @Override
+      protected RexNode evaluateRankValue(RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
+        return projRex;
+      }
+    }
+  }
+
+  /**
+   * Rewrites {@code ntile(n) over (order by id)}.
+   *
+   *  <pre>
+   *   SELECT id, NTILE(4) OVER (ORDER BY id) FROM sketch_input;
+   *     ⇒ SELECT id, CASE
+   *                    WHEN CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0]) < 1
+   *                      THEN 1
+   *                    ELSE CEIL(ds_kll_cdf(ds, CAST(id AS FLOAT) )[0])
+   *                  END
+   *       FROM sketch_input JOIN (
+   *         SELECT ds_kll_sketch(CAST(id AS FLOAT)) AS ds FROM sketch_input
+   *       ) q;
+   *  </pre>
+   */
+  public static class NTileRewrite extends AbstractRankBasedRewriteRule {
+
+    public NTileRewrite(String sketchType) {
+      super(sketchType);
+    }
+
+    @Override
+    protected VbuilderPAP buildProcessor(RelOptRuleCall call) {
+      return new NTileRewriteBuilder(sketchType, call.builder());
+    }
+
+    private static class NTileRewriteBuilder extends AbstractRankBasedRewriteBuilder {
+
+      protected NTileRewriteBuilder(String sketchClass, RelBuilder relBuilder) {
+        super(sketchClass, relBuilder);
+      }
+
+      @Override
+      protected boolean isApplicable1(RexOver over) {
+        SqlAggFunction aggOp = over.getAggOperator();
+        return aggOp.getName().equalsIgnoreCase("ntile");
+      }
+
+      @Override
+      protected RexNode evaluateRankValue(final RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
+        RexNode ntileOperand = over.getOperands().get(0);
+        RexNode ret = projRex;
+        RexNode literal1 = relBuilder.literal(1.0);
+
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.MULTIPLY, ret, ntileOperand);
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.CEIL, ret);
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.CASE, lt(ret, literal1), literal1, ret);
+        return ret;
+      }
+
+      private RexNode lt(RexNode op1, RexNode op2) {
+        return rexBuilder.makeCall(SqlStdOperatorTable.LESS_THAN, op1, op2);
+      }
+    }
+  }
+
+  /**
+   * Rewrites {@code rank() over (order by id)}.
+   *
+   *  <pre>
+   *   SELECT id, RANK() OVER (ORDER BY id) FROM sketch_input;
+   *     ⇒ SELECT id, CASE
+   *                    WHEN ds_kll_n(ds) < (ceil(ds_kll_rank(ds, CAST(id AS FLOAT) )*ds_kll_n(ds))+1)
+   *                    THEN ds_kll_n(ds)
+   *                    ELSE (ceil(ds_kll_rank(ds, CAST(id AS FLOAT) )*ds_kll_n(ds))+1)
+   *                  END
+   *       FROM sketch_input JOIN (
+   *         SELECT ds_kll_sketch(CAST(id AS FLOAT)) AS ds FROM sketch_input
+   *       ) q;
+   *  </pre>
+   */
+  public static class RankRewriteRule extends AbstractRankBasedRewriteRule {
+
+    public RankRewriteRule(String sketchType) {
+      super(sketchType);
+    }
+
+    @Override
+    protected VbuilderPAP buildProcessor(RelOptRuleCall call) {
+      return new RankRewriteBuilder(sketchType, call.builder());
+    }
+
+    private static class RankRewriteBuilder extends AbstractRankBasedRewriteBuilder {
+
+      protected RankRewriteBuilder(String sketchClass, RelBuilder relBuilder) {
+        super(sketchClass, relBuilder);
+      }
+
+      @Override
+      protected boolean isApplicable1(RexOver over) {
+        SqlAggFunction aggOp = over.getAggOperator();
+        return aggOp.getName().equalsIgnoreCase("rank");
+      }
+
+      @Override
+      protected RexNode evaluateRankValue(final RexNode projRex, RexOver over, RexInputRef sketchInputRef) {
+        RexNode ret = projRex;
+        RexNode literal1 = relBuilder.literal(1.0);
+
+        SqlOperator getNOperator = getSqlOperator(DataSketchesFunctions.GET_N);
+        RexNode n = rexBuilder.makeCall(getNOperator, ImmutableList.of(sketchInputRef));
+
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.MULTIPLY, ret, n);
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.CEIL, ret);
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.PLUS, ret, literal1);
+        ret = rexBuilder.makeCall(SqlStdOperatorTable.CASE, lt(n, ret), n, ret);
+        return ret;
+      }
+
+      private RexNode lt(RexNode op1, RexNode op2) {
+        return rexBuilder.makeCall(SqlStdOperatorTable.LESS_THAN, op1, op2);
       }
     }
   }

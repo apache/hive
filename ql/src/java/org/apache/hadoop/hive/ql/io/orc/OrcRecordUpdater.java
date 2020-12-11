@@ -51,9 +51,11 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.orc.OrcConf;
+import org.apache.orc.OrcProto;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.AcidStats;
 import org.apache.orc.impl.OrcAcidUtils;
+import org.apache.orc.impl.OrcTail;
 import org.apache.orc.impl.SchemaEvolution;
 import org.apache.orc.impl.WriterImpl;
 import org.slf4j.Logger;
@@ -471,7 +473,9 @@ public class OrcRecordUpdater implements RecordUpdater {
         this.deleteEventWriter = OrcFile.createWriter(deleteEventPath,
             deleteWriterOptions.callback(deleteEventIndexBuilder));
         AcidUtils.OrcAcidVersion.setAcidVersionInDataFile(deleteEventWriter);
-        AcidUtils.OrcAcidVersion.writeVersionFile(this.deleteEventPath.getParent(), fs);
+        if (options.isWriteVersionFile()) {
+          AcidUtils.OrcAcidVersion.writeVersionFile(this.deleteEventPath.getParent(), fs);
+        }
       }
 
       // A delete/update generates a delete event for the original row.
@@ -620,11 +624,13 @@ public class OrcRecordUpdater implements RecordUpdater {
     if (writer == null) {
       writer = OrcFile.createWriter(path, writerOptions);
       AcidUtils.OrcAcidVersion.setAcidVersionInDataFile(writer);
-      try {
-        AcidUtils.OrcAcidVersion.writeVersionFile(path.getParent(), fs);
-      } catch (Exception e) {
-        LOG.trace("Ignore; might have been created by another concurrent writer, writing to a"
-            + " different bucket within this delta/base directory", e);
+      if (options.isWriteVersionFile()) {
+        try {
+          AcidUtils.OrcAcidVersion.writeVersionFile(path.getParent(), fs);
+        } catch (Exception e) {
+          LOG.trace("Ignore; might have been created by another concurrent writer, writing to a"
+                        + " different bucket within this delta/base directory", e);
+        }
       }
     }
   }
@@ -644,15 +650,28 @@ public class OrcRecordUpdater implements RecordUpdater {
   }
 
   static RecordIdentifier[] parseKeyIndex(Reader reader) {
+    if (!reader.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)) {
+      return null;
+    }
+
+    ByteBuffer val =
+        reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)
+            .duplicate();
+    return parseKeyIndex(val);
+  }
+
+  static RecordIdentifier[] parseKeyIndex(OrcTail orcTail) {
+    for(OrcProto.UserMetadataItem item: orcTail.getFooter().getMetadataList()) {
+      if (item.hasName() && item.getName().equals(OrcRecordUpdater.ACID_KEY_INDEX_NAME)) {
+        return parseKeyIndex(item.getValue().asReadOnlyByteBuffer().duplicate());
+      }
+    }
+    return null;
+  }
+
+  private static RecordIdentifier[] parseKeyIndex(ByteBuffer val) {
     String[] stripes;
     try {
-      if (!reader.hasMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)) {
-        return null;
-      }
-
-      ByteBuffer val =
-          reader.getMetadataValue(OrcRecordUpdater.ACID_KEY_INDEX_NAME)
-              .duplicate();
       CharsetDecoder utf8Decoder = UTF8.newDecoder();
       stripes = utf8Decoder.decode(val).toString().split(";");
     } catch (CharacterCodingException e) {

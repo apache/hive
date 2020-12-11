@@ -10,7 +10,7 @@ CREATE TABLE part(
     p_comment STRING
 );
 
-LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/part_tiny.txt' overwrite into table part;
+LOAD DATA LOCAL INPATH '${hiveconf:test.data.dir}/tpch/tiny/part.tbl.bz2' overwrite into table part;
 
 analyze table part compute statistics;
 analyze table part compute statistics for columns;

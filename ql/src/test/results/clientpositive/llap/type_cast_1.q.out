@@ -18,11 +18,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Select Operator
-            expressions: 5 (type: int)
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 1
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: 5 (type: int)
+              outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: SELECT IF(false, 1, cast(2 as smallint)) + 3 FROM src LIMIT 1

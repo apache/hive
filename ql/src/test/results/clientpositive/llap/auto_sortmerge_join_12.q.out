@@ -207,7 +207,7 @@ STAGE PLANS:
                       tag: 0
                       auto parallelism: false
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -462,7 +462,7 @@ STAGE PLANS:
                         tag: 1
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

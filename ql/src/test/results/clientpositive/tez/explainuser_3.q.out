@@ -297,10 +297,10 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:1
-    Limit [LIM_2]
-      Number of rows:1
-      Select Operator [SEL_1]
-        Output:["_col0"]
+    Select Operator [SEL_1]
+      Output:["_col0"]
+      Limit [LIM_2]
+        Number of rows:1
         TableScan [TS_0]
 
 PREHOOK: query: explain DROP TEMPORARY MACRO SIGMOID
@@ -541,8 +541,8 @@ POSTHOOK: Output: database:default
 POSTHOOK: Output: default@v_n1
 Plan optimized by CBO.
 
-Stage-1
-  Create View{"name:":"default.v_n1","original text:":"with cte as (select * from src  order by key limit 5)\nselect * from cte"}
+Stage-0
+  Create View{"original text:":"with cte as (select * from src  order by key limit 5)\nselect * from cte","name:":"default.v_n1"}
 
 PREHOOK: query: explain with cte as (select * from src  order by key limit 5)
 select * from cte

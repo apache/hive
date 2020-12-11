@@ -28,10 +28,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLTransactionRollbackException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -62,17 +60,6 @@ public final class TxnDbUtil {
 
   private static final Logger LOG = LoggerFactory.getLogger(TxnDbUtil.class.getName());
   private static final String TXN_MANAGER = "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager";
-
-  private static final EnumMap<DatabaseProduct, String> DB_EPOCH_FN =
-      new EnumMap<DatabaseProduct, String>(DatabaseProduct.class) {{
-        put(DERBY, "{ fn timestampdiff(sql_tsi_frac_second, timestamp('" + new Timestamp(0) +
-            "'), current_timestamp) } / 1000000");
-        put(MYSQL, "round(unix_timestamp(now(3)) * 1000)");
-        put(POSTGRES, "round(extract(epoch from current_timestamp) * 1000)");
-        put(ORACLE, "(cast(systimestamp at time zone 'UTC' as date) - date '1970-01-01')*24*60*60*1000 " +
-            "+ cast(mod( extract( second from systimestamp ), 1 ) * 1000 as int)");
-        put(SQLSERVER, "datediff_big(millisecond, '19700101', sysutcdatetime())");
-      }};
 
   private static int deadlockCnt = 0;
 
@@ -106,14 +93,14 @@ public final class TxnDbUtil {
     try {
       conn = getConnection(conf);
       String s = conn.getMetaData().getDatabaseProductName();
-      DatabaseProduct dbProduct = DatabaseProduct.determineDatabaseProduct(s);
+      DatabaseProduct dbProduct = DatabaseProduct.determineDatabaseProduct(s, conf);
       stmt = conn.createStatement();
       if (checkDbPrepared(stmt)) {
         return;
       }
       String schemaRootPath = getSchemaRootPath();
       IMetaStoreSchemaInfo metaStoreSchemaInfo =
-          MetaStoreSchemaInfoFactory.get(conf, schemaRootPath, DatabaseProduct.getHiveSchemaPostfix(dbProduct));
+          MetaStoreSchemaInfoFactory.get(conf, schemaRootPath, dbProduct.getHiveSchemaPostfix());
       String initFile = metaStoreSchemaInfo.generateInitFileName(null);
       try (InputStream is = new FileInputStream(
           metaStoreSchemaInfo.getMetaStoreScriptDir() + File.separator + initFile)) {
@@ -231,29 +218,37 @@ public final class TxnDbUtil {
       }
 
       // We want to try these, whether they succeed or fail.
-      success &= truncateTable(conn, stmt, "TXN_COMPONENTS");
-      success &= truncateTable(conn, stmt, "COMPLETED_TXN_COMPONENTS");
-      success &= truncateTable(conn, stmt, "TXNS");
-      success &= truncateTable(conn, stmt, "TXN_TO_WRITE_ID");
-      success &= truncateTable(conn, stmt, "NEXT_WRITE_ID");
-      success &= truncateTable(conn, stmt, "HIVE_LOCKS");
-      success &= truncateTable(conn, stmt, "NEXT_LOCK_ID");
-      success &= truncateTable(conn, stmt, "COMPACTION_QUEUE");
-      success &= truncateTable(conn, stmt, "NEXT_COMPACTION_QUEUE_ID");
-      success &= truncateTable(conn, stmt, "COMPLETED_COMPACTIONS");
-      success &= truncateTable(conn, stmt, "AUX_TABLE");
-      success &= truncateTable(conn, stmt, "WRITE_SET");
-      success &= truncateTable(conn, stmt, "REPL_TXN_MAP");
-      success &= truncateTable(conn, stmt, "MATERIALIZATION_REBUILD_LOCKS");
+      success &= truncateTable(conn, conf, stmt, "TXN_COMPONENTS");
+      success &= truncateTable(conn, conf, stmt, "COMPLETED_TXN_COMPONENTS");
+      success &= truncateTable(conn, conf, stmt, "TXNS");
+      success &= truncateTable(conn, conf, stmt, "TXN_TO_WRITE_ID");
+      success &= truncateTable(conn, conf, stmt, "NEXT_WRITE_ID");
+      success &= truncateTable(conn, conf, stmt, "HIVE_LOCKS");
+      success &= truncateTable(conn, conf, stmt, "NEXT_LOCK_ID");
+      success &= truncateTable(conn, conf, stmt, "COMPACTION_QUEUE");
+      success &= truncateTable(conn, conf, stmt, "NEXT_COMPACTION_QUEUE_ID");
+      success &= truncateTable(conn, conf, stmt, "COMPLETED_COMPACTIONS");
+      success &= truncateTable(conn, conf, stmt, "AUX_TABLE");
+      success &= truncateTable(conn, conf, stmt, "WRITE_SET");
+      success &= truncateTable(conn, conf, stmt, "REPL_TXN_MAP");
+      success &= truncateTable(conn, conf, stmt, "MATERIALIZATION_REBUILD_LOCKS");
+      success &= truncateTable(conn, conf, stmt, "MIN_HISTORY_LEVEL");
       try {
-        resetTxnSequence(conn, stmt);
-        stmt.executeUpdate("INSERT INTO \"NEXT_LOCK_ID\" VALUES(1)");
-        stmt.executeUpdate("INSERT INTO \"NEXT_COMPACTION_QUEUE_ID\" VALUES(1)");
-      } catch (SQLException e) {
-        if (!getTableNotExistsErrorCodes().contains(e.getSQLState())) {
-          LOG.error("Error initializing sequence values", e);
-          success = false;
+        String dbProduct = conn.getMetaData().getDatabaseProductName();
+        DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);
+        try {
+          resetTxnSequence(databaseProduct, stmt);
+          stmt.executeUpdate("INSERT INTO \"NEXT_LOCK_ID\" VALUES(1)");
+          stmt.executeUpdate("INSERT INTO \"NEXT_COMPACTION_QUEUE_ID\" VALUES(1)");
+        } catch (SQLException e) {
+          if (!databaseProduct.isTableNotExistsError(e)) {
+            LOG.error("Error initializing sequence values", e);
+            success = false;
+          }
         }
+      } catch (SQLException e) {
+        LOG.error("Unable determine database product ", e);
+        success = false;
       }
       /*
        * Don't drop NOTIFICATION_LOG, SEQUENCE_TABLE and NOTIFICATION_SEQUENCE as its used by other
@@ -270,70 +265,47 @@ public final class TxnDbUtil {
     throw new RuntimeException("Failed to clean up txn tables");
   }
 
-  private static void resetTxnSequence(Connection conn, Statement stmt) throws SQLException, MetaException{
-    String dbProduct = conn.getMetaData().getDatabaseProductName();
-    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct);
-    switch (databaseProduct) {
-
-    case DERBY:
-      stmt.execute("ALTER TABLE \"TXNS\" ALTER \"TXN_ID\" RESTART WITH 1");
-      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
-          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
-          + "  VALUES(0, 'c', 0, 0, '', '')");
-      break;
-    case MYSQL:
-      stmt.execute("ALTER TABLE \"TXNS\" AUTO_INCREMENT=1");
-      stmt.execute("SET SQL_MODE='NO_AUTO_VALUE_ON_ZERO,ANSI_QUOTES'");
-      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
-          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
-          + "  VALUES(0, 'c', 0, 0, '', '')");
-      break;
-    case POSTGRES:
-      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
-          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
-          + "  VALUES(0, 'c', 0, 0, '', '')");
-      stmt.execute("ALTER SEQUENCE \"TXNS_TXN_ID_seq\" RESTART");
-      break;
-    case ORACLE:
-      stmt.execute("ALTER TABLE \"TXNS\" MODIFY \"TXN_ID\" GENERATED BY DEFAULT AS IDENTITY (START WITH 1)");
-      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
-          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
-          + "  VALUES(0, 'c', 0, 0, '_', '_')");
-      break;
-    case SQLSERVER:
-      stmt.execute("DBCC CHECKIDENT ('txns', RESEED, 0)");
-      stmt.execute("SET IDENTITY_INSERT TXNS ON");
-      stmt.execute("INSERT INTO \"TXNS\" (\"TXN_ID\", \"TXN_STATE\", \"TXN_STARTED\","
-          + " \"TXN_LAST_HEARTBEAT\", \"TXN_USER\", \"TXN_HOST\")"
-          + "  VALUES(0, 'c', 0, 0, '', '')");
-      break;
-    case OTHER:
-    default:
-      break;
+  private static void resetTxnSequence(DatabaseProduct databaseProduct, Statement stmt) throws SQLException {
+    for (String s : databaseProduct.getResetTxnSequenceStmts()) {
+      stmt.execute(s);
     }
   }
 
-  private static boolean truncateTable(Connection conn, Statement stmt, String name) {
-    try {
-      // We can not use actual truncate due to some foreign keys, but we don't expect much data during tests
-      String dbProduct = conn.getMetaData().getDatabaseProductName();
-      DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct);
-      if (databaseProduct == POSTGRES || databaseProduct == MYSQL) {
-        stmt.execute("DELETE FROM \"" + name + "\"");
-      } else {
-        stmt.execute("DELETE FROM " + name);
-      }
+  /**
+   * Restarts the txnId sequence with the given seed value.
+   * It is the responsibility of the caller to not set the sequence backward.
+   * @param conn database connection
+   * @param stmt sql statement
+   * @param seedTxnId the seed value for the sequence
+   * @throws SQLException ex
+   */
+  public static void seedTxnSequence(Connection conn, Configuration conf, Statement stmt, long seedTxnId) throws SQLException {
+    String dbProduct = conn.getMetaData().getDatabaseProductName();
+    DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);
+    stmt.execute(databaseProduct.getTxnSeedFn(seedTxnId));
+  }
 
-      LOG.debug("Successfully truncated table " + name);
-      return true;
-    } catch (SQLException e) {
-      if (getTableNotExistsErrorCodes().contains(e.getSQLState())) {
-        LOG.debug("Not truncating " + name + " because it doesn't exist");
-        //failed because object doesn't exist
+  private static boolean truncateTable(Connection conn, Configuration conf, Statement stmt, String name) {
+    try {
+      String dbProduct = conn.getMetaData().getDatabaseProductName();
+      DatabaseProduct databaseProduct = determineDatabaseProduct(dbProduct, conf);
+      try {
+        // We can not use actual truncate due to some foreign keys, but we don't expect much data during tests
+
+        String s = databaseProduct.getTruncateStatement(name);
+        stmt.execute(s);
+
+        LOG.debug("Successfully truncated table " + name);
         return true;
+      } catch (SQLException e) {
+        if (databaseProduct.isTableNotExistsError(e)) {
+          LOG.debug("Not truncating " + name + " because it doesn't exist");
+          return true;
+        }
+        LOG.error("Unable to truncate table " + name, e);
       }
-      LOG.error("Unable to truncate table " + name + ": " + e.getMessage() + " State=" + e.getSQLState() + " code=" + e
-          .getErrorCode());
+    } catch (SQLException e) {
+      LOG.error("Unable determine database product ", e);
     }
     return false;
   }
@@ -419,6 +391,26 @@ public final class TxnDbUtil {
     return sb.toString();
   }
 
+  /**
+   * This is only for testing, it does not use the connectionPool from TxnHandler!
+   * @param conf
+   * @param query
+   * @throws Exception
+   */
+  @VisibleForTesting
+  public static void executeUpdate(Configuration conf, String query)
+      throws Exception {
+    Connection conn = null;
+    Statement stmt = null;
+    try {
+      conn = getConnection(conf);
+      stmt = conn.createStatement();
+      stmt.executeUpdate(query);
+    } finally {
+      closeResources(conn, stmt, null);
+    }
+  }
+
   static Connection getConnection(Configuration conf) throws Exception {
     String jdbcDriver = MetastoreConf.getVar(conf, ConfVars.CONNECTION_DRIVER);
     Driver driver = (Driver) Class.forName(jdbcDriver).newInstance();
@@ -470,14 +462,7 @@ public final class TxnDbUtil {
    * @throws MetaException For unknown database type.
    */
   static String getEpochFn(DatabaseProduct dbProduct) throws MetaException {
-    String epochFn = DB_EPOCH_FN.get(dbProduct);
-    if (epochFn != null) {
-      return epochFn;
-    } else {
-      String msg = "Unknown database product: " + dbProduct.toString();
-      LOG.error(msg);
-      throw new MetaException(msg);
-    }
+    return dbProduct.getMillisAfterEpochFn();
   }
 
   /**
@@ -492,7 +477,7 @@ public final class TxnDbUtil {
    * @throws SQLException Thrown if an execution error occurs.
    */
   static void executeQueriesInBatchNoCount(DatabaseProduct dbProduct, Statement stmt, List<String> queries, int batchSize) throws SQLException {
-    if (dbProduct == ORACLE) {
+    if (dbProduct.isORACLE()) {
       int queryCounter = 0;
       StringBuilder sb = new StringBuilder();
       sb.append("begin ");
@@ -546,29 +531,5 @@ public final class TxnDbUtil {
       Arrays.stream(affectedRecordsByQuery).forEach(affectedRowsByQuery::add);
     }
     return affectedRowsByQuery;
-  }
-
-  /**
-   +   * Checks if the dbms supports the getGeneratedKeys for multiline insert statements.
-   +   * @param dbProduct DBMS type
-   +   * @return true if supports
-   +   * @throws MetaException
-   +   */
-  public static boolean supportsGetGeneratedKeys(DatabaseProduct dbProduct) throws MetaException {
-    switch (dbProduct) {
-    case DERBY:
-    case SQLSERVER:
-      // The getGeneratedKeys is not supported for multi line insert
-      return false;
-    case ORACLE:
-    case MYSQL:
-    case POSTGRES:
-      return true;
-    case OTHER:
-    default:
-      String msg = "Unknown database product: " + dbProduct.toString();
-      LOG.error(msg);
-      throw new MetaException(msg);
-    }
   }
 }

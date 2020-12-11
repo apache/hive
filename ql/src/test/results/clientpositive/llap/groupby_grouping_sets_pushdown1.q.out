@@ -58,7 +58,8 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(s)
                       keys: a (type: string), b (type: string), 0L (type: bigint)
-                      minReductionHashAggr: 0.0
+                      grouping sets: 3, 1, 2, 0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 2 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
@@ -78,7 +79,7 @@ STAGE PLANS:
                           value expressions: _col3 (type: bigint)
                           auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -204,7 +205,8 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(s)
                       keys: a (type: string), b (type: string), 0L (type: bigint)
-                      minReductionHashAggr: 0.0
+                      grouping sets: 1, 0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
@@ -220,7 +222,7 @@ STAGE PLANS:
                         value expressions: _col3 (type: bigint)
                         auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -348,7 +350,8 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(s)
                       keys: a (type: string), b (type: string), 0L (type: bigint)
-                      minReductionHashAggr: 0.0
+                      grouping sets: 1, 0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
@@ -368,7 +371,7 @@ STAGE PLANS:
                           value expressions: _col3 (type: bigint)
                           auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -499,7 +502,8 @@ STAGE PLANS:
                     Group By Operator
                       aggregations: sum(s)
                       keys: a (type: string), b (type: string), 0L (type: bigint)
-                      minReductionHashAggr: 0.0
+                      grouping sets: 1, 0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
@@ -519,7 +523,7 @@ STAGE PLANS:
                           value expressions: _col3 (type: bigint)
                           auto parallelism: true
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -643,3 +647,810 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 aaa	NULL	123456
+PREHOOK: query: EXPLAIN EXTENDED SELECT * FROM (
+SELECT upper(a) x, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((a), (a, b))
+) t WHERE x in ("AAA", "BBB")
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT * FROM (
+SELECT upper(a) x, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((a), (a, b))
+) t WHERE x in ("AAA", "BBB")
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  filterExpr: (upper(a)) IN ('AAA', 'BBB') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (upper(a)) IN ('AAA', 'BBB') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(s)
+                      keys: a (type: string), b (type: string), 0L (type: bigint)
+                      grouping sets: 1, 0
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        null sort order: zzz
+                        numBuckets: -1
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        value expressions: _col3 (type: bigint)
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: t1
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns a,b,s
+                    columns.types string:string:bigint
+#### A masked pattern was here ####
+                    name default.t1
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns a,b,s
+                      columns.comments 
+                      columns.types string:string:bigint
+#### A masked pattern was here ####
+                      name default.t1
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.t1
+                  name: default.t1
+            Truncated Path -> Alias:
+              /t1 [t1]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: upper(_col0) (type: string), _col1 (type: string), _col3 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2
+                          columns.types string:string:bigint
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT * FROM (
+SELECT upper(a) x, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((a), (a, b))
+) t WHERE x in ('AAA', 'BBB')
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM (
+SELECT upper(a) x, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((a), (a, b))
+) t WHERE x in ('AAA', 'BBB')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+AAA	bbb	123456
+AAA	NULL	123456
+PREHOOK: query: EXPLAIN EXTENDED SELECT a, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((a), (a, b))
+HAVING upper(a) = 'AAA' AND 1 != 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT a, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((a), (a, b))
+HAVING upper(a) = 'AAA' AND 1 != 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: false (type: boolean)
+                    Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(s)
+                      keys: a (type: string), b (type: string), 0L (type: bigint)
+                      grouping sets: 1, 0
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        null sort order: zzz
+                        numBuckets: -1
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        value expressions: _col3 (type: bigint)
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: no inputs
+            Path -> Alias:
+              nullscan://null/default.t1/part_ [t1]
+            Path -> Partition:
+              nullscan://null/default.t1/part_ 
+                Partition
+                  input format: org.apache.hadoop.hive.ql.io.OneNullRowInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns a,b,s
+                    columns.types string:string:bigint
+#### A masked pattern was here ####
+                    name default.t1
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
+                  serde: org.apache.hadoop.hive.serde2.NullStructSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns a,b,s
+                      columns.comments 
+                      columns.types string:string:bigint
+#### A masked pattern was here ####
+                      name default.t1
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.t1
+                  name: default.t1
+            Truncated Path -> Alias:
+              nullscan://null/default.t1/part_ [t1]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
+                  outputColumnNames: _col0, _col1, _col2
+                  Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                  File Output Operator
+                    bucketingVersion: 2
+                    compressed: false
+                    GlobalTableId: 0
+#### A masked pattern was here ####
+                    NumFilesPerFileSink: 1
+                    Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        properties:
+                          bucketing_version -1
+                          columns _col0,_col1,_col2
+                          columns.types string:string:bigint
+                          escape.delim \
+                          hive.serialization.extend.additional.nesting.levels true
+                          serialization.escape.crlf true
+                          serialization.format 1
+                          serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    TotalFiles: 1
+                    GatherStats: false
+                    MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT a, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((a), (a, b))
+HAVING upper(a) = 'AAA' AND 1 != 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((a), (a, b))
+HAVING upper(a) = 'AAA' AND 1 != 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+PREHOOK: query: EXPLAIN EXTENDED SELECT a, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((), (a), (a, b))
+HAVING upper(a) = 'AAA' AND sum(s) > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT a, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((), (a), (a, b))
+HAVING upper(a) = 'AAA' AND sum(s) > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Select Operator
+                    expressions: a (type: string), b (type: string), s (type: bigint)
+                    outputColumnNames: a, b, s
+                    Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(s)
+                      keys: a (type: string), b (type: string), 0L (type: bigint)
+                      grouping sets: 3, 1, 0
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      Filter Operator
+                        isSamplingPred: false
+                        predicate: (upper(_col0) = 'AAA') (type: boolean)
+                        Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                          null sort order: zzz
+                          numBuckets: -1
+                          sort order: +++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                          Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col3 (type: bigint)
+                          auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: t1
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns a,b,s
+                    columns.types string:string:bigint
+#### A masked pattern was here ####
+                    name default.t1
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns a,b,s
+                      columns.comments 
+                      columns.types string:string:bigint
+#### A masked pattern was here ####
+                      name default.t1
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.t1
+                  name: default.t1
+            Truncated Path -> Alias:
+              /t1 [t1]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                pruneGroupingSetId: true
+                Filter Operator
+                  isSamplingPred: false
+                  predicate: (_col3 > 100L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      bucketingVersion: 2
+                      compressed: false
+                      GlobalTableId: 0
+#### A masked pattern was here ####
+                      NumFilesPerFileSink: 1
+                      Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          properties:
+                            bucketing_version -1
+                            columns _col0,_col1,_col2
+                            columns.types string:string:bigint
+                            escape.delim \
+                            hive.serialization.extend.additional.nesting.levels true
+                            serialization.escape.crlf true
+                            serialization.format 1
+                            serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      TotalFiles: 1
+                      GatherStats: false
+                      MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT a, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((), (a), (a, b))
+HAVING upper(a) = 'AAA' AND sum(s) > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((), (a), (a, b))
+HAVING upper(a) = 'AAA' AND sum(s) > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+aaa	bbb	123456
+aaa	NULL	123456
+PREHOOK: query: EXPLAIN EXTENDED SELECT upper(a), b, sum(s)
+FROM T1
+GROUP BY upper(a), b GROUPING SETS ((upper(a)), (upper(a), b))
+HAVING upper(a) = 'AAA' AND sum(s) > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT upper(a), b, sum(s)
+FROM T1
+GROUP BY upper(a), b GROUPING SETS ((upper(a)), (upper(a), b))
+HAVING upper(a) = 'AAA' AND sum(s) > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  filterExpr: (upper(a) = 'AAA') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (upper(a) = 'AAA') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(s)
+                      keys: upper(a) (type: string), b (type: string), 0L (type: bigint)
+                      grouping sets: 1, 0
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 287 Basic stats: COMPLETE Column stats: COMPLETE
+                      Reduce Output Operator
+                        bucketingVersion: 2
+                        key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        null sort order: zzz
+                        numBuckets: -1
+                        sort order: +++
+                        Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                        Statistics: Num rows: 1 Data size: 287 Basic stats: COMPLETE Column stats: COMPLETE
+                        tag: -1
+                        value expressions: _col3 (type: bigint)
+                        auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: t1
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns a,b,s
+                    columns.types string:string:bigint
+#### A masked pattern was here ####
+                    name default.t1
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns a,b,s
+                      columns.comments 
+                      columns.types string:string:bigint
+#### A masked pattern was here ####
+                      name default.t1
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.t1
+                  name: default.t1
+            Truncated Path -> Alias:
+              /t1 [t1]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 1 Data size: 287 Basic stats: COMPLETE Column stats: COMPLETE
+                pruneGroupingSetId: true
+                Select Operator
+                  expressions: _col1 (type: string), _col3 (type: bigint)
+                  outputColumnNames: _col1, _col3
+                  Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (_col3 > 100L) (type: boolean)
+                    Statistics: Num rows: 1 Data size: 95 Basic stats: COMPLETE Column stats: COMPLETE
+                    Select Operator
+                      expressions: 'AAA' (type: string), _col1 (type: string), _col3 (type: bigint)
+                      outputColumnNames: _col0, _col1, _col2
+                      Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                      File Output Operator
+                        bucketingVersion: 2
+                        compressed: false
+                        GlobalTableId: 0
+#### A masked pattern was here ####
+                        NumFilesPerFileSink: 1
+                        Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            properties:
+                              bucketing_version -1
+                              columns _col0,_col1,_col2
+                              columns.types string:string:bigint
+                              escape.delim \
+                              hive.serialization.extend.additional.nesting.levels true
+                              serialization.escape.crlf true
+                              serialization.format 1
+                              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                        TotalFiles: 1
+                        GatherStats: false
+                        MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT upper(a), b, sum(s)
+FROM T1
+GROUP BY upper(a), b GROUPING SETS ((upper(a)), (upper(a), b))
+HAVING upper(a) = 'AAA' AND sum(s) > 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT upper(a), b, sum(s)
+FROM T1
+GROUP BY upper(a), b GROUPING SETS ((upper(a)), (upper(a), b))
+HAVING upper(a) = 'AAA' AND sum(s) > 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+AAA	bbb	123456
+AAA	NULL	123456
+PREHOOK: query: EXPLAIN EXTENDED SELECT a, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((b), (a, b))
+HAVING sum(s) > 100 and a IS NOT NULL AND upper(b) = 'BBB'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: EXPLAIN EXTENDED SELECT a, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((b), (a, b))
+HAVING sum(s) > 100 and a IS NOT NULL AND upper(b) = 'BBB'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+
+STAGE PLANS:
+  Stage: Stage-1
+    Tez
+#### A masked pattern was here ####
+      Edges:
+        Reducer 2 <- Map 1 (SIMPLE_EDGE)
+#### A masked pattern was here ####
+      Vertices:
+        Map 1 
+            Map Operator Tree:
+                TableScan
+                  alias: t1
+                  filterExpr: (upper(b) = 'BBB') (type: boolean)
+                  Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                  GatherStats: false
+                  Filter Operator
+                    isSamplingPred: false
+                    predicate: (upper(b) = 'BBB') (type: boolean)
+                    Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                    Group By Operator
+                      aggregations: sum(s)
+                      keys: a (type: string), b (type: string), 0L (type: bigint)
+                      grouping sets: 2, 0
+                      minReductionHashAggr: 0.4
+                      mode: hash
+                      outputColumnNames: _col0, _col1, _col2, _col3
+                      Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                      Filter Operator
+                        isSamplingPred: false
+                        predicate: _col0 is not null (type: boolean)
+                        Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                        Reduce Output Operator
+                          bucketingVersion: 2
+                          key expressions: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                          null sort order: zzz
+                          numBuckets: -1
+                          sort order: +++
+                          Map-reduce partition columns: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
+                          Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                          tag: -1
+                          value expressions: _col3 (type: bigint)
+                          auto parallelism: true
+            Execution mode: vectorized, llap
+            LLAP IO: all inputs
+            Path -> Alias:
+#### A masked pattern was here ####
+            Path -> Partition:
+#### A masked pattern was here ####
+                Partition
+                  base file name: t1
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    bucket_count -1
+                    bucketing_version 2
+                    column.name.delimiter ,
+                    columns a,b,s
+                    columns.types string:string:bigint
+#### A masked pattern was here ####
+                    name default.t1
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucketing_version 2
+                      column.name.delimiter ,
+                      columns a,b,s
+                      columns.comments 
+                      columns.types string:string:bigint
+#### A masked pattern was here ####
+                      name default.t1
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.t1
+                  name: default.t1
+            Truncated Path -> Alias:
+              /t1 [t1]
+        Reducer 2 
+            Execution mode: vectorized, llap
+            Needs Tagging: false
+            Reduce Operator Tree:
+              Group By Operator
+                aggregations: sum(VALUE._col0)
+                keys: KEY._col0 (type: string), KEY._col1 (type: string), KEY._col2 (type: bigint)
+                mode: mergepartial
+                outputColumnNames: _col0, _col1, _col3
+                Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                pruneGroupingSetId: true
+                Filter Operator
+                  isSamplingPred: false
+                  predicate: (_col3 > 100L) (type: boolean)
+                  Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
+                  Select Operator
+                    expressions: _col0 (type: string), _col1 (type: string), _col3 (type: bigint)
+                    outputColumnNames: _col0, _col1, _col2
+                    Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+                    File Output Operator
+                      bucketingVersion: 2
+                      compressed: false
+                      GlobalTableId: 0
+#### A masked pattern was here ####
+                      NumFilesPerFileSink: 1
+                      Statistics: Num rows: 1 Data size: 182 Basic stats: COMPLETE Column stats: COMPLETE
+#### A masked pattern was here ####
+                      table:
+                          input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                          output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                          properties:
+                            bucketing_version -1
+                            columns _col0,_col1,_col2
+                            columns.types string:string:bigint
+                            escape.delim \
+                            hive.serialization.extend.additional.nesting.levels true
+                            serialization.escape.crlf true
+                            serialization.format 1
+                            serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                          serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      TotalFiles: 1
+                      GatherStats: false
+                      MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        ListSink
+
+PREHOOK: query: SELECT a, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((b), (a, b))
+HAVING sum(s) > 100 and a IS NOT NULL AND upper(b) = 'BBB'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@t1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT a, b, sum(s)
+FROM T1
+GROUP BY a, b GROUPING SETS ((b), (a, b))
+HAVING sum(s) > 100 and a IS NOT NULL AND upper(b) = 'BBB'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@t1
+#### A masked pattern was here ####
+aaa	bbb	123456
