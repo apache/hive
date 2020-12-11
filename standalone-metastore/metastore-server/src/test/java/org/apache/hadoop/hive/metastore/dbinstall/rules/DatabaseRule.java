@@ -124,16 +124,14 @@ public abstract class DatabaseRule extends ExternalResource {
 
   @Override
   public void before() throws Exception { //runDockerContainer
-    if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
-      throw new RuntimeException("Unable to remove docker container");
-    }
+    runCmdAndPrintStreams(buildRmCmd(), 600);
     if (runCmdAndPrintStreams(buildRunCmd(), 600) != 0) {
       throw new RuntimeException("Unable to start docker container");
     }
     long startTime = System.currentTimeMillis();
     ProcessResults pr;
     do {
-      Thread.sleep(5000);
+      Thread.sleep(1000);
       pr = runCmd(buildLogCmd(), 5);
       if (pr.rc != 0) {
         throw new RuntimeException("Failed to get docker logs");
@@ -162,8 +160,14 @@ public abstract class DatabaseRule extends ExternalResource {
     }
   }
 
-  protected String getDockerContainerName(){
-    return String.format("metastore-test-%s-install", getDbType());
+  protected String getDockerContainerName() {
+    String suffix = System.getenv("HIVE_TEST_DOCKER_CONTAINER_SUFFIX");
+    if (suffix == null) {
+      suffix = "";
+    } else {
+      suffix = "-" + suffix;
+    }
+    return String.format("metastore-test-%s-install%s", getDbType(), suffix);
   }
 
   private ProcessResults runCmd(String[] cmd, long secondsToWait)
