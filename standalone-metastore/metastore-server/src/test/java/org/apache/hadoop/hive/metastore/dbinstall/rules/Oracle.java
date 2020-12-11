@@ -57,13 +57,13 @@ public class Oracle extends DatabaseRule {
   }
 
   @Override
-  public String getJdbcUrl() {
-    return "jdbc:oracle:thin:@//localhost:1521/xe";
+  public String getJdbcUrl(String hostAddress) {
+    return "jdbc:oracle:thin:@//" + hostAddress + ":1521/xe";
   }
 
   @Override
-  public String getInitialJdbcUrl() {
-    return "jdbc:oracle:thin:@//localhost:1521/xe";
+  public String getInitialJdbcUrl(String hostAddress) {
+    return "jdbc:oracle:thin:@//" + hostAddress + ":1521/xe";
   }
 
   @Override
