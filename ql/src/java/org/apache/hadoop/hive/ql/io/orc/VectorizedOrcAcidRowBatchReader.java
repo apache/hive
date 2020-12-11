@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import com.google.common.annotations.VisibleForTesting;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
@@ -45,12 +46,14 @@ import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
+import org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg;
 import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentFactory;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.JobConf;
@@ -61,8 +64,11 @@ import org.apache.orc.IntegerColumnStatistics;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
+import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.ColumnStatisticsImpl;
 import org.apache.orc.impl.OrcTail;
+import org.apache.orc.impl.SchemaEvolution;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +81,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.toList;
+import static org.apache.hadoop.hive.ql.io.sarg.ConvertAstToSearchArg.sargToKryo;
+
 /**
  * A fast vectorized batch reader class for ACID. Insert events are read directly
  * from the base files/insert_only deltas in vectorized row batches. The deleted
@@ -144,11 +155,6 @@ public class VectorizedOrcAcidRowBatchReader
    * Cachetag associated with the Split
    */
   private final CacheTag cacheTag;
-
-  /**
-   * Skip using Llap IO cache for checking delete_delta files if the configuration is not correct
-   */
-  private static boolean skipLlapCache = false;
 
   //OrcInputFormat c'tor
   VectorizedOrcAcidRowBatchReader(OrcSplit inputSplit, JobConf conf,
@@ -692,7 +698,7 @@ public class VectorizedOrcAcidRowBatchReader
    */
   private static ReaderData getOrcTail(Path path, Configuration conf, CacheTag cacheTag, Object fileKey) throws IOException {
     ReaderData readerData = new ReaderData();
-    if (!skipLlapCache && LlapHiveUtils.isLlapMode(conf) && LlapProxy.isDaemon()) {
+    if (shouldReadDeleteDeltasWithLlap(conf)) {
       try {
         if (LlapProxy.getIo() == null) {
           throw new IllegalCacheConfigurationException("LLAP IO is not enabled.");
@@ -700,13 +706,17 @@ public class VectorizedOrcAcidRowBatchReader
         readerData.orcTail = LlapProxy.getIo().getOrcTailFromCache(path, conf, cacheTag, fileKey);
         return readerData;
       } catch (IllegalCacheConfigurationException icce) {
-        LOG.warn("Cache is not usable. Please fix the configuration", icce);
-        skipLlapCache = true;
+        throw new IOException("LLAP cache is not configured properly while delete delta caching is turned on", icce);
       }
     }
     readerData.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
     readerData.orcTail = new OrcTail(readerData.reader.getFileTail(), readerData.reader.getSerializedFileFooter());
     return readerData;
+  }
+
+  private static boolean shouldReadDeleteDeltasWithLlap(Configuration conf) {
+    return HiveConf.getBoolVar(conf,ConfVars.LLAP_IO_CACHE_DELETEDELTAS)
+        && LlapHiveUtils.isLlapMode(conf) && LlapProxy.isDaemon();
   }
 
   /**
@@ -1356,14 +1366,17 @@ public class VectorizedOrcAcidRowBatchReader
      * the N in bucketN for "base" spit is reliable, all delete events not matching N can be skipped.
      */
     static class DeleteReaderValue {
+
+      private static final List<Integer> DELETE_DELTA_INCLUDE_COLUMNS =
+          IntStream.range(0, OrcInputFormat.getRootColumn(false)).boxed().collect(toList());
+
       private VectorizedRowBatch batch;
-      private final RecordReader recordReader;
+      private RecordReader recordReader;
       private int indexPtrInBatch;
       private final int bucketForSplit; // The bucket value should be same for all the records.
       private final ValidWriteIdList validWriteIdList;
       private boolean isBucketPropertyRepeating;
       private final boolean isBucketedTable;
-      private final Reader reader;
       private final Path deleteDeltaFile;
       private final OrcRawRecordMerger.KeyInterval keyInterval;
       private final OrcSplit orcSplit;
@@ -1381,22 +1394,39 @@ public class VectorizedOrcAcidRowBatchReader
        */
       private long numEventsLoaded = 0;
 
-      DeleteReaderValue(Reader deleteDeltaReader, Path deleteDeltaFile,
-          Reader.Options readerOptions, int bucket, ValidWriteIdList validWriteIdList,
-          boolean isBucketedTable, final JobConf conf,
-          OrcRawRecordMerger.KeyInterval keyInterval, OrcSplit orcSplit)
+      DeleteReaderValue(Reader deleteDeltaReader, Path deleteDeltaFile, Reader.Options readerOptions, int bucket,
+          ValidWriteIdList validWriteIdList, boolean isBucketedTable, final JobConf conf,
+          OrcRawRecordMerger.KeyInterval keyInterval, OrcSplit orcSplit, long numRows, CacheTag cacheTag, Object fileId)
           throws IOException {
-        this.reader = deleteDeltaReader;
         this.deleteDeltaFile = deleteDeltaFile;
-        this.recordReader  = deleteDeltaReader.rowsOptions(readerOptions, conf);
+
+        // ACID schema with empty row struct will be used for reading delete deltas
+        TypeDescription sch = SchemaEvolution.createEventSchema(new TypeDescription(TypeDescription.Category.STRUCT));
+
+        // If configured try with LLAP reader. This may still return null if LLAP record reader can't be created
+        // e.g. due to unsupported schema evolution
+        if (shouldReadDeleteDeltasWithLlap(conf)) {
+          this.recordReader = getLlapRecordReader(deleteDeltaFile, readerOptions, conf, cacheTag, fileId);
+        }
+        if (this.recordReader == null) {
+          if (deleteDeltaReader == null) {
+            // The only case this happens is if using LLAP caching is turned on for delete deltas, and OrcTail of
+            // delete delta files were served out by LLAP, but a record reader for DD content could not be created.
+            deleteDeltaReader = OrcFile.createReader(deleteDeltaFile, OrcFile.readerOptions(conf));
+          }
+          this.recordReader = deleteDeltaReader.rowsOptions(readerOptions, conf);
+        }
+
         this.bucketForSplit = bucket;
+
         final boolean useDecimal64ColumnVector = HiveConf.getVar(conf, ConfVars
           .HIVE_VECTORIZED_INPUT_FORMAT_SUPPORTS_ENABLED).equalsIgnoreCase("decimal_64");
         if (useDecimal64ColumnVector) {
-          this.batch = deleteDeltaReader.getSchema().createRowBatchV2();
+          this.batch = sch.createRowBatchV2();
         } else {
-          this.batch = deleteDeltaReader.getSchema().createRowBatch();
+          this.batch = sch.createRowBatch();
         }
+
         if (!recordReader.nextBatch(batch)) { // Read the first batch.
           this.batch = null; // Oh! the first batch itself was null. Close the reader.
         }
@@ -1408,7 +1438,7 @@ public class VectorizedOrcAcidRowBatchReader
         }
         this.keyInterval = keyInterval;
         this.orcSplit = orcSplit;
-        this.numEvents = deleteDeltaReader.getNumberOfRows();
+        this.numEvents = numRows;
         LOG.debug("Num events stats({},x,x)", numEvents);
       }
 
@@ -1506,8 +1536,83 @@ public class VectorizedOrcAcidRowBatchReader
 
       @Override
       public String toString() {
-        return "{reader=" + reader + ", isBucketPropertyRepeating=" + isBucketPropertyRepeating +
+        return "{recordReader=" + recordReader + ", isBucketPropertyRepeating=" + isBucketPropertyRepeating +
             ", bucketForSplit=" + bucketForSplit + ", isBucketedTable=" + isBucketedTable + "}";
+      }
+
+      private static RecordReader getLlapRecordReader(Path deleteDeltaFile, org.apache.orc.Reader.Options readerOptions, JobConf conf, CacheTag tag, Object fileId)
+          throws IOException {
+        JobConf c = new JobConf(conf);
+        // DeleteReaderValue will actually read the ACID parts itself, thus as far as LLAP concerned this delete
+        // delta should be deemed as an 'original' ORC file.
+        HiveConf.setBoolVar(c, ConfVars.HIVE_TRANSACTIONAL_TABLE_SCAN, false);
+
+        // Jobconf may contain predicate pushdown for the original table, this is not applicable for delete delta
+        c.unset(TableScanDesc.FILTER_EXPR_CONF_STR);
+        c.unset(ConvertAstToSearchArg.SARG_PUSHDOWN);
+
+        // Apply delete delta SARG if any
+        SearchArgument deleteDeltaSarg = readerOptions.getSearchArgument();
+        if (deleteDeltaSarg != null) {
+          c.set(ConvertAstToSearchArg.SARG_PUSHDOWN, sargToKryo(deleteDeltaSarg));
+        }
+        return wrapLlapVectorizedRecordReader(
+            LlapProxy.getIo().llapVectorizedOrcReaderForPath(fileId, deleteDeltaFile, tag,
+            DELETE_DELTA_INCLUDE_COLUMNS, c, 0L, Long.MAX_VALUE)
+        );
+      }
+
+      /**
+       * Wraps an LLAP vectorized record reader to a simple ORC record reader for our delete delta reading effort here.
+       * Assumes VectorizedRowBatch type is used in upstream record reader, will not iterate row-by-row.
+       * @param rr
+       * @return
+       */
+      private static RecordReader wrapLlapVectorizedRecordReader(
+          org.apache.hadoop.mapred.RecordReader<NullWritable, VectorizedRowBatch> rr) {
+        if (rr == null) {
+          return null;
+        }
+        return new RecordReader() {
+          @Override
+          public boolean hasNext() throws IOException {
+            throw new UnsupportedOperationException();
+          }
+
+          @Override
+          public Object next(Object previous) throws IOException {
+            if (previous instanceof VectorizedRowBatch) {
+              return nextBatch((VectorizedRowBatch) previous);
+            } else {
+              throw new UnsupportedOperationException();
+            }
+          }
+
+          @Override
+          public boolean nextBatch(VectorizedRowBatch vectorizedRowBatch) throws IOException {
+            return rr.next(null ,vectorizedRowBatch);
+          }
+
+          @Override
+          public long getRowNumber() throws IOException {
+            throw new UnsupportedOperationException();
+          }
+
+          @Override
+          public float getProgress() throws IOException {
+            return rr.getProgress();
+          }
+
+          @Override
+          public void close() throws IOException {
+            rr.close();
+          }
+
+          @Override
+          public void seekToRow(long l) throws IOException {
+            throw new UnsupportedOperationException();
+          }
+        };
       }
     }
     /**
@@ -1602,10 +1707,11 @@ public class VectorizedOrcAcidRowBatchReader
               Path deleteDeltaPath = deleteDeltaDir.getLeft();
               for (AcidInputFormat.DeltaFileMetaData fileMetaData : deltaMetaData.getDeltaFilesForStmtId(stmtId)) {
                 Path deleteDeltaFile = fileMetaData.getPath(deleteDeltaPath, bucket);
-                ReaderData readerData = getOrcTail(deleteDeltaFile, conf, cacheTag,
-                    fileMetaData.getFileId(deleteDeltaPath, bucket, conf));
+                Object fileId = fileMetaData.getFileId(deleteDeltaFile, bucket, conf);
+                ReaderData readerData = getOrcTail(deleteDeltaFile, conf, cacheTag, fileId);
                 OrcTail orcTail = readerData.orcTail;
-                if (orcTail.getFooter().getNumberOfRows() <= 0) {
+                long numRows = orcTail.getFooter().getNumberOfRows();
+                if (numRows <= 0) {
                   continue; // just a safe check to ensure that we are not reading empty delete files.
                 }
                 OrcRawRecordMerger.KeyInterval deleteKeyInterval = findDeleteMinMaxKeys(orcTail, deleteDeltaFile);
@@ -1613,14 +1719,20 @@ public class VectorizedOrcAcidRowBatchReader
                   // If there is no intersection between data and delete delta, do not read delete file
                   continue;
                 }
-                // Reader can be reused if it was created before for getting orcTail: mostly for non-LLAP cache cases.
-                // For LLAP cases we need to create it here.
-                Reader deleteDeltaReader = readerData.reader != null ? readerData.reader : OrcFile
-                    .createReader(deleteDeltaFile, OrcFile.readerOptions(conf));
-                totalDeleteEventCount += deleteDeltaReader.getNumberOfRows();
-                DeleteReaderValue deleteReaderValue =
-                    new DeleteReaderValue(deleteDeltaReader, deleteDeltaFile, readerOptions, bucket, validWriteIdList,
-                        isBucketedTable, conf, keyInterval, orcSplit);
+
+                totalDeleteEventCount += numRows;
+
+                DeleteReaderValue deleteReaderValue = null;
+
+                // If reader is set, then it got set while retrieving the ORC tail, because reading was not possible
+                // with LLAP. In this case we continue with this reader. In other cases we rely on LLAP to read and
+                // cache delete delta files for us, so we won't create a reader instance ourselves here.
+                if (readerData.reader == null) {
+                  assert HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_CACHE_DELETEDELTAS);
+                }
+                deleteReaderValue = new DeleteReaderValue(readerData.reader, deleteDeltaFile, readerOptions, bucket,
+                    validWriteIdList, isBucketedTable, conf, keyInterval, orcSplit, numRows, cacheTag, fileId);
+
                 DeleteRecordKey deleteRecordKey = new DeleteRecordKey();
                 if (deleteReaderValue.next(deleteRecordKey)) {
                   sortMerger.put(deleteRecordKey, deleteReaderValue);
