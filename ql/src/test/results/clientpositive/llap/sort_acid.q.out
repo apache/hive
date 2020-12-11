@@ -240,11 +240,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 POSTHOOK: Input: default@othertlb
 POSTHOOK: Output: default@acidtlb
-PREHOOK: query: select * from acidtlb
+PREHOOK: query: select * from acidtlb order by a
 PREHOOK: type: QUERY
 PREHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
-POSTHOOK: query: select * from acidtlb
+POSTHOOK: query: select * from acidtlb order by a
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
@@ -316,7 +316,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@acidtlb
 #### A masked pattern was here ####
 10	2021
+30	1000
 60	2023
 70	2024
 80	2025
-30	1000

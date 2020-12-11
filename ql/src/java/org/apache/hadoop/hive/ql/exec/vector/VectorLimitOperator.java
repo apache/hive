@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -58,6 +61,11 @@ public class VectorLimitOperator extends LimitOperator implements VectorizationO
   }
 
   @Override
+  protected void initializeOp(Configuration hconf) throws HiveException {
+    super.initializeOp(hconf);
+  }
+
+  @Override
   public VectorizationContext getInputVectorizationContext() {
     return vContext;
   }
@@ -66,12 +74,16 @@ public class VectorLimitOperator extends LimitOperator implements VectorizationO
   public void process(Object row, int tag) throws HiveException {
     VectorizedRowBatch batch = (VectorizedRowBatch) row;
 
+    AtomicInteger currentCountForAllTasks = getCurrentCount();
+
     // We should skip number of rows equal to offset value
     // skip until sum of current read count and current batch size less than or equal offset value
     if (currCount + batch.size <= offset) {
       currCount += batch.size;
-    } else if (currCount >= offset + limit) {
-      setDone(true);
+    } else if (currCount >= offset + limit || currentCountForAllTasks.get() >= offset + limit) {
+      LOG.debug("Limit reached: currCount: {}, currentCountForAllTasks: {}", currCount,
+          currentCountForAllTasks.get());
+      onLimitReached();
     } else {
       int skipSize = 0;
       if (currCount < offset) {
@@ -91,6 +103,7 @@ public class VectorLimitOperator extends LimitOperator implements VectorizationO
         }
       }
       currCount += batch.size;
+      currentCountForAllTasks.set(currentCountForAllTasks.get() + batch.size);
       batch.size = newBatchSize;
       vectorForward(batch);
     }

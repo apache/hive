@@ -4831,15 +4831,15 @@ public class Vectorizer implements PhysicalPlanResolver {
     return parent;
   }
 
-  private static void fillInPTFEvaluators(
-      List<WindowFunctionDef> windowsFunctions,
-      String[] evaluatorFunctionNames,
+  private static void fillInPTFEvaluators(List<WindowFunctionDef> windowsFunctions,
+      String[] evaluatorFunctionNames, boolean[] evaluatorsAreDistinct,
       WindowFrameDef[] evaluatorWindowFrameDefs,
       List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists) throws HiveException {
     final int functionCount = windowsFunctions.size();
     for (int i = 0; i < functionCount; i++) {
       WindowFunctionDef winFunc = windowsFunctions.get(i);
       evaluatorFunctionNames[i] = winFunc.getName();
+      evaluatorsAreDistinct[i] = winFunc.isDistinct();
       evaluatorWindowFrameDefs[i] = winFunc.getWindowFrame();
 
       List<PTFExpressionDef> args = winFunc.getArgs();
@@ -4942,12 +4942,14 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     String[] evaluatorFunctionNames = new String[functionCount];
+    boolean[] evaluatorsAreDistinct = new boolean[functionCount];
     WindowFrameDef[] evaluatorWindowFrameDefs = new WindowFrameDef[functionCount];
     List<ExprNodeDesc>[] evaluatorInputExprNodeDescLists = (List<ExprNodeDesc>[]) new List<?>[functionCount];
 
     fillInPTFEvaluators(
         windowsFunctions,
         evaluatorFunctionNames,
+        evaluatorsAreDistinct,
         evaluatorWindowFrameDefs,
         evaluatorInputExprNodeDescLists);
 
@@ -4961,6 +4963,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     vectorPTFDesc.setPartitionExprNodeDescs(partitionExprNodeDescs);
 
     vectorPTFDesc.setEvaluatorFunctionNames(evaluatorFunctionNames);
+    vectorPTFDesc.setEvaluatorsAreDistinct(evaluatorsAreDistinct);
     vectorPTFDesc.setEvaluatorWindowFrameDefs(evaluatorWindowFrameDefs);
     vectorPTFDesc.setEvaluatorInputExprNodeDescLists(evaluatorInputExprNodeDescLists);
 

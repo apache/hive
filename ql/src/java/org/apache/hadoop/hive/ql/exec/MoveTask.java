@@ -74,6 +74,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * MoveTask implementation.
@@ -405,9 +406,16 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
               + " into " + tbd.getTable().getTableName());
           }
 
+          int statementId = tbd.getStmtId();
+          if (tbd.isDirectInsert() || tbd.isMmTable()) {
+            statementId = queryPlan.getStatementIdForAcidWriteType(work.getLoadTableWork().getWriteId(),
+                tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
+            LOG.debug("The statementId used when loading the dynamic partitions is " + statementId);
+          }
+
           db.loadTable(tbd.getSourcePath(), tbd.getTable().getTableName(), tbd.getLoadFileType(),
                   work.isSrcLocal(), isSkewedStoredAsDirs(tbd), isFullAcidOp,
-                  resetStatisticsProps(table), tbd.getWriteId(), tbd.getStmtId(),
+                  resetStatisticsProps(table), tbd.getWriteId(), statementId,
                   tbd.isInsertOverwrite(), tbd.isDirectInsert());
           if (work.getOutputs() != null) {
             DDLUtils.addIfAbsentByName(new WriteEntity(table,
@@ -535,11 +543,29 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
       TaskInformation ti, DynamicPartitionCtx dpCtx) throws HiveException,
       IOException, InvalidOperationException {
     DataContainer dc;
-    List<LinkedHashMap<String, String>> dps = Utilities.getFullDPSpecs(conf, dpCtx,
-        work.getLoadTableWork().getWriteId(), tbd.isMmTable(), tbd.isDirectInsert(), tbd.isInsertOverwrite());
+
+    Set<String> dynamiPartitionSpecs = queryPlan.getDynamicPartitionSpecs(work.getLoadTableWork().getWriteId(),
+          tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
+    List<LinkedHashMap<String, String>> dps =
+        Utilities.getFullDPSpecs(conf, dpCtx, work.getLoadTableWork().getWriteId(), tbd.isMmTable(),
+            tbd.isDirectInsert(), tbd.isInsertOverwrite(), work.getLoadTableWork().getWriteType(), dynamiPartitionSpecs);
 
     console.printInfo(System.getProperty("line.separator"));
     long startTime = System.currentTimeMillis();
+    // In case of direct insert, we need to get the statementId in order to make a merge statement work properly.
+    // In case of a merge statement there will be multiple FSOs and multiple MoveTasks. One for the INSERT, one for
+    // the UPDATE and one for the DELETE part of the statement. If the direct insert is turned off, these are identified
+    // by the staging directory path they are using. Also the partition listing will happen within the staging directories,
+    // so all partitions will be listed only in one MoveTask. But in case of direct insert, there won't be any staging dir
+    // only the table dir. So all partitions and all deltas will be listed by all MoveTasks. If we have the statementId
+    // we could restrict the file listing to the directory the particular MoveTask is responsible for.
+    int statementId = tbd.getStmtId();
+    if (tbd.isDirectInsert() || tbd.isMmTable()) {
+      statementId = queryPlan.getStatementIdForAcidWriteType(work.getLoadTableWork().getWriteId(),
+          tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
+      LOG.debug("The statementId used when loading the dynamic partitions is " + statementId);
+    }
+    
     // load the list of DP partitions and return the list of partition specs
     // TODO: In a follow-up to HIVE-1361, we should refactor loadDynamicPartitions
     // to use Utilities.getFullDPSpecs() to get the list of full partSpecs.
@@ -558,11 +584,12 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
         work.getLoadTableWork().getWriteType() != AcidUtils.Operation.NOT_ACID &&
             !tbd.isMmTable(),
         work.getLoadTableWork().getWriteId(),
-        tbd.getStmtId(),
+        statementId,
         resetStatisticsProps(table),
         work.getLoadTableWork().getWriteType(),
         tbd.isInsertOverwrite(),
-        tbd.isDirectInsert()
+        tbd.isDirectInsert(),
+        dynamiPartitionSpecs
         );
 
     // publish DP columns to its subscribers
