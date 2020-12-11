@@ -55,6 +55,7 @@ import java.util.stream.IntStream;
 /**
  * Kafka Iterator Tests.
  */
+@org.junit.Ignore("HIVE-23838: KafkaRecordIteratorTest is flaky")
 @RunWith(Parameterized.class) public class KafkaRecordIteratorTest {
   private static final Logger LOG = LoggerFactory.getLogger(KafkaRecordIteratorTest.class);
   private static final int RECORD_NUMBER = 19384;

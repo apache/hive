@@ -341,6 +341,11 @@ UPDATE COMPLETED_TXN_COMPONENTS SET CTC_WRITEID = CTC_TXNID;
 
 ALTER TABLE TBLS ADD OWNER_TYPE VARCHAR2(10) NULL;
 
+-- HIVE-23211: Fix metastore schema differences between init scripts, and upgrade scripts
+-- Not updating possible NULL values, since if NULLs existing in this table, the upgrade should fail
+ALTER TABLE TXN_COMPONENTS MODIFY (TC_TXNID  NOT NULL);
+ALTER TABLE COMPLETED_TXN_COMPONENTS MODIFY (CTC_TXNID  NOT NULL);
+
 -- These lines need to be last.  Insert any changes above.
 UPDATE VERSION SET SCHEMA_VERSION='3.0.0', VERSION_COMMENT='Hive release version 3.0.0' where VER_ID=1;
 SELECT 'Finished upgrading MetaStore schema from 2.3.0 to 3.0.0' AS Status from dual;

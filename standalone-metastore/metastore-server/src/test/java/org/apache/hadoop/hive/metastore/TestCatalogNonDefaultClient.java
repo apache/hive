@@ -45,7 +45,7 @@ public class TestCatalogNonDefaultClient extends NonCatCallsWithCatalog {
 
     Configuration svrConf = new Configuration(conf);
     int port = MetaStoreTestUtils.startMetaStoreWithRetry(HadoopThriftAuthBridge.getBridge(),
-        svrConf);
+        svrConf, false, false, false, false, false);
     // Only set the default catalog on the client.
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.THRIFT_URIS, "thrift://localhost:" + port);
     MetastoreConf.setVar(conf, MetastoreConf.ConfVars.CATALOG_DEFAULT, catName);
@@ -69,6 +69,11 @@ public class TestCatalogNonDefaultClient extends NonCatCallsWithCatalog {
 
   @Override
   protected String expectedBaseDir() throws MetaException {
+    return catLocation;
+  }
+
+  @Override
+  protected String expectedExtBaseDir() throws MetaException {
     return catLocation;
   }
 }

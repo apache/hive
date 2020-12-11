@@ -1,5 +1,5 @@
-Ln:1 CREATE FUNCTION test1
-EXEC FUNCTION test1
+Ln:1 CREATE FUNCTION TEST1
+EXEC FUNCTION TEST1
 Ln:4 DECLARE ret string = 'Initial value'
 Ln:6 PRINT
 Initial value

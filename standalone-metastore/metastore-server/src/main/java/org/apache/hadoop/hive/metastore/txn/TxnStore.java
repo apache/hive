@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.events.AcidWriteEvent;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -44,6 +45,7 @@ public interface TxnStore extends Configurable {
    */
   String TXN_KEY_START = "_meta";
 
+
   enum MUTEX_KEY {
     Initiator, Cleaner, HouseKeeper, TxnCleaner,
     CompactionScheduler, MaterializationRebuild
@@ -55,6 +57,9 @@ public interface TxnStore extends Configurable {
   String FAILED_RESPONSE = "failed";
   String SUCCEEDED_RESPONSE = "succeeded";
   String ATTEMPTED_RESPONSE = "attempted";
+
+  String[] COMPACTION_STATES = new String[] {INITIATED_RESPONSE, WORKING_RESPONSE, CLEANING_RESPONSE, FAILED_RESPONSE,
+      SUCCEEDED_RESPONSE, ATTEMPTED_RESPONSE};
 
   int TIMED_OUT_TXN_ABORT_BATCH_SIZE = 50000;
 
@@ -75,6 +80,15 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.ReadOnly
   GetOpenTxnsResponse getOpenTxns() throws MetaException;
+
+  /**
+   * Get list of valid transactions.  This gives just the list of transactions that are open.
+   * @param excludeTxnTypes : excludes this type of txns while getting the open txns
+   * @return list of open transactions, as well as a high water mark.
+   * @throws MetaException
+   */
+  @RetrySemantics.ReadOnly
+  GetOpenTxnsResponse getOpenTxns(List<TxnType> excludeTxnTypes) throws MetaException;
 
   /**
    * Get the count for open transactions.
@@ -149,6 +163,8 @@ public interface TxnStore extends Configurable {
   long getTxnIdForWriteId(String dbName, String tblName, long writeId)
       throws MetaException;
 
+  long getLatestTxnIdInConflict(long txnid) throws MetaException;
+
   LockResponse lockMaterializationRebuild(String dbName, String tableName, long txnId)
       throws MetaException;
 
@@ -179,10 +195,25 @@ public interface TxnStore extends Configurable {
     throws NoSuchTxnException, TxnAbortedException, MetaException;
 
   /**
+   * Reads the maximum allocated writeId for the given table
+   * @param rqst table for which the maximum writeId is requested
+   * @return the maximum allocated writeId
+   */
+  MaxAllocatedTableWriteIdResponse getMaxAllocatedTableWrited(MaxAllocatedTableWriteIdRequest rqst)
+      throws MetaException;
+
+  /**
    * Called on conversion of existing table to full acid.  Sets initial write ID to a high
    * enough value so that we can assign unique ROW__IDs to data in existing files.
    */
-  void seedWriteIdOnAcidConversion(InitializeTableWriteIdsRequest rqst) throws MetaException;
+  void seedWriteId(SeedTableWriteIdsRequest rqst) throws MetaException;
+
+  /**
+   * Sets the next txnId to the given value.
+   * If the actual txnId is greater it will throw an exception.
+   * @param rqst
+   */
+  void seedTxnId(SeedTxnIdRequest rqst) throws MetaException;
 
   /**
    * Obtain a lock.
@@ -355,10 +386,12 @@ public interface TxnStore extends Configurable {
   /**
    * Find entries in the queue that are ready to
    * be cleaned.
+   * @param minOpenTxnWaterMark Minimum open txnId
+   * @param retentionTime Milliseconds to delay the cleaner
    * @return information on the entry in the queue.
    */
   @RetrySemantics.ReadOnly
-  List<CompactionInfo> findReadyToClean() throws MetaException;
+  List<CompactionInfo> findReadyToClean(long minOpenTxnWaterMark, long retentionTime) throws MetaException;
 
   /**
    * This will remove an entry from the queue after
@@ -523,4 +556,23 @@ public interface TxnStore extends Configurable {
    */
   @RetrySemantics.Idempotent
   long findMinOpenTxnIdForCleaner() throws MetaException;
+
+  /**
+   * Returns the compaction running in the transaction txnId
+   * @param txnId transaction Id
+   * @return compaction info
+   * @throws MetaException ex
+   */
+  @RetrySemantics.ReadOnly
+  Optional<CompactionInfo> getCompactionByTxnId(long txnId) throws MetaException;
+
+  /**
+   * Returns the smallest txnid that could be seen in open state across all active transactions in
+   * the system or -1 if there are no active transactions.
+   * @return transaction ID
+   * @deprecated remove when min_history_level table is dropped
+   */
+  @RetrySemantics.ReadOnly
+  @Deprecated
+  long findMinTxnIdSeenOpen() throws MetaException;
 }

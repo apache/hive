@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 import javax.net.SocketFactory;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.io.CacheTag;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos;
@@ -229,12 +230,59 @@ public final class ProactiveEviction {
     }
 
     /**
-     * Match a CacheTag to this eviction request.
+     * Match a CacheTag to this eviction request. Must only be used on LLAP side only, where the received request may
+     * only contain one information for one DB.
+     *
      * @param cacheTag
      * @return true if cacheTag matches and the related buffer is eligible for proactive eviction, false otherwise.
      */
     public boolean isTagMatch(CacheTag cacheTag) {
-      // TODO: HIVE-23198
+      String db = getSingleDbName();
+      if (db == null) {
+        // Number of DBs in the request was not exactly 1.
+        throw new UnsupportedOperationException("Predicate only implemented for 1 DB case.");
+      }
+      TableName tagTableName = TableName.fromString(cacheTag.getTableName(), null, null);
+
+      // Check against DB.
+      if (!db.equals(tagTableName.getDb())) {
+        return false;
+      }
+
+      Map<String, Set<LinkedHashMap<String, String>>> tables = entities.get(db);
+
+      // If true, must be a drop DB event and this cacheTag matches.
+      if (tables.isEmpty()) {
+        return true;
+      }
+
+      Map<String, String> tagPartDescMap = null;
+      if (cacheTag instanceof CacheTag.PartitionCacheTag) {
+        tagPartDescMap = ((CacheTag.PartitionCacheTag) cacheTag).getPartitionDescMap();
+      }
+
+      // Check against table name.
+      for (String tableAndDbName : tables.keySet()) {
+        if (tableAndDbName.equals(tagTableName.getNotEmptyDbTable())) {
+
+          Set<LinkedHashMap<String, String>> partDescs = tables.get(tableAndDbName);
+
+          // If true, must be a drop table event, and this cacheTag matches.
+          if (partDescs == null) {
+            return true;
+          }
+
+          // Check against partition keys and values and alas for drop partition event.
+          if (!(cacheTag instanceof CacheTag.PartitionCacheTag)) {
+            throw new IllegalArgumentException("CacheTag has no partition information, while trying" +
+                " to evict due to (and based on) a drop partition DDL statement..");
+          }
+
+          if (partDescs.contains(tagPartDescMap)) {
+            return true;
+          }
+        }
+      }
       return false;
     }
 

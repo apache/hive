@@ -9701,6 +9701,31 @@ public final class LlapDaemonProtocolProtos {
      * <code>optional bool is_guaranteed = 12 [default = false];</code>
      */
     boolean getIsGuaranteed();
+
+    // optional string jwt = 13;
+    /**
+     * <code>optional string jwt = 13;</code>
+     */
+    boolean hasJwt();
+    /**
+     * <code>optional string jwt = 13;</code>
+     */
+    java.lang.String getJwt();
+    /**
+     * <code>optional string jwt = 13;</code>
+     */
+    com.google.protobuf.ByteString
+        getJwtBytes();
+
+    // optional bool is_external_client_request = 14 [default = false];
+    /**
+     * <code>optional bool is_external_client_request = 14 [default = false];</code>
+     */
+    boolean hasIsExternalClientRequest();
+    /**
+     * <code>optional bool is_external_client_request = 14 [default = false];</code>
+     */
+    boolean getIsExternalClientRequest();
   }
   /**
    * Protobuf type {@code SubmitWorkRequestProto}
@@ -9827,6 +9852,16 @@ public final class LlapDaemonProtocolProtos {
             case 96: {
               bitField0_ |= 0x00000800;
               isGuaranteed_ = input.readBool();
+              break;
+            }
+            case 106: {
+              bitField0_ |= 0x00001000;
+              jwt_ = input.readBytes();
+              break;
+            }
+            case 112: {
+              bitField0_ |= 0x00002000;
+              isExternalClientRequest_ = input.readBool();
               break;
             }
           }
@@ -10155,6 +10190,65 @@ public final class LlapDaemonProtocolProtos {
       return isGuaranteed_;
     }
 
+    // optional string jwt = 13;
+    public static final int JWT_FIELD_NUMBER = 13;
+    private java.lang.Object jwt_;
+    /**
+     * <code>optional string jwt = 13;</code>
+     */
+    public boolean hasJwt() {
+      return ((bitField0_ & 0x00001000) == 0x00001000);
+    }
+    /**
+     * <code>optional string jwt = 13;</code>
+     */
+    public java.lang.String getJwt() {
+      java.lang.Object ref = jwt_;
+      if (ref instanceof java.lang.String) {
+        return (java.lang.String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        java.lang.String s = bs.toStringUtf8();
+        if (bs.isValidUtf8()) {
+          jwt_ = s;
+        }
+        return s;
+      }
+    }
+    /**
+     * <code>optional string jwt = 13;</code>
+     */
+    public com.google.protobuf.ByteString
+        getJwtBytes() {
+      java.lang.Object ref = jwt_;
+      if (ref instanceof java.lang.String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8(
+                (java.lang.String) ref);
+        jwt_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+
+    // optional bool is_external_client_request = 14 [default = false];
+    public static final int IS_EXTERNAL_CLIENT_REQUEST_FIELD_NUMBER = 14;
+    private boolean isExternalClientRequest_;
+    /**
+     * <code>optional bool is_external_client_request = 14 [default = false];</code>
+     */
+    public boolean hasIsExternalClientRequest() {
+      return ((bitField0_ & 0x00002000) == 0x00002000);
+    }
+    /**
+     * <code>optional bool is_external_client_request = 14 [default = false];</code>
+     */
+    public boolean getIsExternalClientRequest() {
+      return isExternalClientRequest_;
+    }
+
     private void initFields() {
       workSpec_ = org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary.getDefaultInstance();
       workSpecSignature_ = com.google.protobuf.ByteString.EMPTY;
@@ -10168,6 +10262,8 @@ public final class LlapDaemonProtocolProtos {
       initialEventBytes_ = com.google.protobuf.ByteString.EMPTY;
       initialEventSignature_ = com.google.protobuf.ByteString.EMPTY;
       isGuaranteed_ = false;
+      jwt_ = "";
+      isExternalClientRequest_ = false;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -10216,6 +10312,12 @@ public final class LlapDaemonProtocolProtos {
       }
       if (((bitField0_ & 0x00000800) == 0x00000800)) {
         output.writeBool(12, isGuaranteed_);
+      }
+      if (((bitField0_ & 0x00001000) == 0x00001000)) {
+        output.writeBytes(13, getJwtBytes());
+      }
+      if (((bitField0_ & 0x00002000) == 0x00002000)) {
+        output.writeBool(14, isExternalClientRequest_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -10273,6 +10375,14 @@ public final class LlapDaemonProtocolProtos {
       if (((bitField0_ & 0x00000800) == 0x00000800)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(12, isGuaranteed_);
+      }
+      if (((bitField0_ & 0x00001000) == 0x00001000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(13, getJwtBytes());
+      }
+      if (((bitField0_ & 0x00002000) == 0x00002000)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(14, isExternalClientRequest_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -10357,6 +10467,16 @@ public final class LlapDaemonProtocolProtos {
         result = result && (getIsGuaranteed()
             == other.getIsGuaranteed());
       }
+      result = result && (hasJwt() == other.hasJwt());
+      if (hasJwt()) {
+        result = result && getJwt()
+            .equals(other.getJwt());
+      }
+      result = result && (hasIsExternalClientRequest() == other.hasIsExternalClientRequest());
+      if (hasIsExternalClientRequest()) {
+        result = result && (getIsExternalClientRequest()
+            == other.getIsExternalClientRequest());
+      }
       result = result &&
           getUnknownFields().equals(other.getUnknownFields());
       return result;
@@ -10417,6 +10537,14 @@ public final class LlapDaemonProtocolProtos {
       if (hasIsGuaranteed()) {
         hash = (37 * hash) + IS_GUARANTEED_FIELD_NUMBER;
         hash = (53 * hash) + hashBoolean(getIsGuaranteed());
+      }
+      if (hasJwt()) {
+        hash = (37 * hash) + JWT_FIELD_NUMBER;
+        hash = (53 * hash) + getJwt().hashCode();
+      }
+      if (hasIsExternalClientRequest()) {
+        hash = (37 * hash) + IS_EXTERNAL_CLIENT_REQUEST_FIELD_NUMBER;
+        hash = (53 * hash) + hashBoolean(getIsExternalClientRequest());
       }
       hash = (29 * hash) + getUnknownFields().hashCode();
       memoizedHashCode = hash;
@@ -10561,6 +10689,10 @@ public final class LlapDaemonProtocolProtos {
         bitField0_ = (bitField0_ & ~0x00000400);
         isGuaranteed_ = false;
         bitField0_ = (bitField0_ & ~0x00000800);
+        jwt_ = "";
+        bitField0_ = (bitField0_ & ~0x00001000);
+        isExternalClientRequest_ = false;
+        bitField0_ = (bitField0_ & ~0x00002000);
         return this;
       }
 
@@ -10645,6 +10777,14 @@ public final class LlapDaemonProtocolProtos {
           to_bitField0_ |= 0x00000800;
         }
         result.isGuaranteed_ = isGuaranteed_;
+        if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
+          to_bitField0_ |= 0x00001000;
+        }
+        result.jwt_ = jwt_;
+        if (((from_bitField0_ & 0x00002000) == 0x00002000)) {
+          to_bitField0_ |= 0x00002000;
+        }
+        result.isExternalClientRequest_ = isExternalClientRequest_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -10700,6 +10840,14 @@ public final class LlapDaemonProtocolProtos {
         }
         if (other.hasIsGuaranteed()) {
           setIsGuaranteed(other.getIsGuaranteed());
+        }
+        if (other.hasJwt()) {
+          bitField0_ |= 0x00001000;
+          jwt_ = other.jwt_;
+          onChanged();
+        }
+        if (other.hasIsExternalClientRequest()) {
+          setIsExternalClientRequest(other.getIsExternalClientRequest());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -11450,6 +11598,113 @@ public final class LlapDaemonProtocolProtos {
       public Builder clearIsGuaranteed() {
         bitField0_ = (bitField0_ & ~0x00000800);
         isGuaranteed_ = false;
+        onChanged();
+        return this;
+      }
+
+      // optional string jwt = 13;
+      private java.lang.Object jwt_ = "";
+      /**
+       * <code>optional string jwt = 13;</code>
+       */
+      public boolean hasJwt() {
+        return ((bitField0_ & 0x00001000) == 0x00001000);
+      }
+      /**
+       * <code>optional string jwt = 13;</code>
+       */
+      public java.lang.String getJwt() {
+        java.lang.Object ref = jwt_;
+        if (!(ref instanceof java.lang.String)) {
+          java.lang.String s = ((com.google.protobuf.ByteString) ref)
+              .toStringUtf8();
+          jwt_ = s;
+          return s;
+        } else {
+          return (java.lang.String) ref;
+        }
+      }
+      /**
+       * <code>optional string jwt = 13;</code>
+       */
+      public com.google.protobuf.ByteString
+          getJwtBytes() {
+        java.lang.Object ref = jwt_;
+        if (ref instanceof String) {
+          com.google.protobuf.ByteString b = 
+              com.google.protobuf.ByteString.copyFromUtf8(
+                  (java.lang.String) ref);
+          jwt_ = b;
+          return b;
+        } else {
+          return (com.google.protobuf.ByteString) ref;
+        }
+      }
+      /**
+       * <code>optional string jwt = 13;</code>
+       */
+      public Builder setJwt(
+          java.lang.String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00001000;
+        jwt_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string jwt = 13;</code>
+       */
+      public Builder clearJwt() {
+        bitField0_ = (bitField0_ & ~0x00001000);
+        jwt_ = getDefaultInstance().getJwt();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional string jwt = 13;</code>
+       */
+      public Builder setJwtBytes(
+          com.google.protobuf.ByteString value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00001000;
+        jwt_ = value;
+        onChanged();
+        return this;
+      }
+
+      // optional bool is_external_client_request = 14 [default = false];
+      private boolean isExternalClientRequest_ ;
+      /**
+       * <code>optional bool is_external_client_request = 14 [default = false];</code>
+       */
+      public boolean hasIsExternalClientRequest() {
+        return ((bitField0_ & 0x00002000) == 0x00002000);
+      }
+      /**
+       * <code>optional bool is_external_client_request = 14 [default = false];</code>
+       */
+      public boolean getIsExternalClientRequest() {
+        return isExternalClientRequest_;
+      }
+      /**
+       * <code>optional bool is_external_client_request = 14 [default = false];</code>
+       */
+      public Builder setIsExternalClientRequest(boolean value) {
+        bitField0_ |= 0x00002000;
+        isExternalClientRequest_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional bool is_external_client_request = 14 [default = false];</code>
+       */
+      public Builder clearIsExternalClientRequest() {
+        bitField0_ = (bitField0_ & ~0x00002000);
+        isExternalClientRequest_ = false;
         onChanged();
         return this;
       }
@@ -22603,6 +22858,10 @@ public final class LlapDaemonProtocolProtos {
   }
   /**
    * Protobuf type {@code EvictEntityRequestProto}
+   *
+   * <pre>
+   * Used for proactive eviction request. Must contain one DB name, and optionally table information.
+   * </pre>
    */
   public static final class EvictEntityRequestProto extends
       com.google.protobuf.GeneratedMessage
@@ -22960,6 +23219,10 @@ public final class LlapDaemonProtocolProtos {
     }
     /**
      * Protobuf type {@code EvictEntityRequestProto}
+     *
+     * <pre>
+     * Used for proactive eviction request. Must contain one DB name, and optionally table information.
+     * </pre>
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
@@ -23515,6 +23778,13 @@ public final class LlapDaemonProtocolProtos {
   }
   /**
    * Protobuf type {@code TableProto}
+   *
+   * <pre>
+   * Used in EvictEntityRequestProto, can be used for non-partitioned and partitioned tables too.
+   * For the latter part_key contains only the keys, part_val has the values for all partitions on all keys:
+   * e.g.: for partitions pk0=p00/pk1=p01/pk2=p02 and pk0=p10/pk1=p11/pk2=p12
+   * part_key: [pk0, pk1, pk2], part_val: [p00, p01, p02, p10, p11, p12]
+   * </pre>
    */
   public static final class TableProto extends
       com.google.protobuf.GeneratedMessage
@@ -23925,6 +24195,13 @@ public final class LlapDaemonProtocolProtos {
     }
     /**
      * Protobuf type {@code TableProto}
+     *
+     * <pre>
+     * Used in EvictEntityRequestProto, can be used for non-partitioned and partitioned tables too.
+     * For the latter part_key contains only the keys, part_val has the values for all partitions on all keys:
+     * e.g.: for partitions pk0=p00/pk1=p01/pk2=p02 and pk0=p10/pk1=p11/pk2=p12
+     * part_key: [pk0, pk1, pk2], part_val: [p00, p01, p02, p10, p11, p12]
+     * </pre>
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessage.Builder<Builder>
@@ -26113,7 +26390,7 @@ public final class LlapDaemonProtocolProtos {
       " \001(\005\022\032\n\022app_attempt_number\030\003 \001(\005\"l\n\013NotT" +
       "ezEvent\022\037\n\027input_event_proto_bytes\030\001 \002(\014" +
       "\022\023\n\013vertex_name\030\002 \002(\t\022\027\n\017dest_input_name" +
-      "\030\003 \002(\t\022\016\n\006key_id\030\004 \001(\005\"\366\002\n\026SubmitWorkReq" +
+      "\030\003 \002(\t\022\016\n\006key_id\030\004 \001(\005\"\256\003\n\026SubmitWorkReq" +
       "uestProto\022\"\n\twork_spec\030\001 \001(\0132\017.VertexOrB" +
       "inary\022\033\n\023work_spec_signature\030\002 \001(\014\022\027\n\017fr" +
       "agment_number\030\003 \001(\005\022\026\n\016attempt_number\030\004 " +
@@ -26122,73 +26399,74 @@ public final class LlapDaemonProtocolProtos {
       "s_binary\030\010 \001(\014\0223\n\025fragment_runtime_info\030" +
       "\t \001(\0132\024.FragmentRuntimeInfo\022\033\n\023initial_e" +
       "vent_bytes\030\n \001(\014\022\037\n\027initial_event_signat" +
-      "ure\030\013 \001(\014\022\034\n\ris_guaranteed\030\014 \001(\010:\005false\"" +
-      "t\n\027RegisterDagRequestProto\022\014\n\004user\030\001 \001(\t" +
-      "\022/\n\020query_identifier\030\002 \002(\0132\025.QueryIdenti" +
-      "fierProto\022\032\n\022credentials_binary\030\003 \001(\014\"\032\n" +
-      "\030RegisterDagResponseProto\"b\n\027SubmitWorkR" +
-      "esponseProto\022/\n\020submission_state\030\001 \001(\0162\025",
-      ".SubmissionStateProto\022\026\n\016unique_node_id\030" +
-      "\002 \001(\t\"\205\001\n\036SourceStateUpdatedRequestProto" +
-      "\022/\n\020query_identifier\030\001 \001(\0132\025.QueryIdenti" +
-      "fierProto\022\020\n\010src_name\030\002 \001(\t\022 \n\005state\030\003 \001" +
-      "(\0162\021.SourceStateProto\"!\n\037SourceStateUpda" +
-      "tedResponseProto\"e\n\031QueryCompleteRequest" +
-      "Proto\022/\n\020query_identifier\030\001 \001(\0132\025.QueryI" +
-      "dentifierProto\022\027\n\014delete_delay\030\002 \001(\003:\0010\"" +
-      "\034\n\032QueryCompleteResponseProto\"t\n\035Termina" +
-      "teFragmentRequestProto\022/\n\020query_identifi",
-      "er\030\001 \001(\0132\025.QueryIdentifierProto\022\"\n\032fragm" +
-      "ent_identifier_string\030\002 \001(\t\" \n\036Terminate" +
-      "FragmentResponseProto\"\210\001\n\032UpdateFragment" +
-      "RequestProto\022/\n\020query_identifier\030\001 \001(\0132\025" +
-      ".QueryIdentifierProto\022\"\n\032fragment_identi" +
-      "fier_string\030\002 \001(\t\022\025\n\ris_guaranteed\030\003 \001(\010" +
-      "\"D\n\033UpdateFragmentResponseProto\022\016\n\006resul" +
-      "t\030\001 \001(\010\022\025\n\ris_guaranteed\030\002 \001(\010\"&\n\024GetTok" +
-      "enRequestProto\022\016\n\006app_id\030\001 \001(\t\"&\n\025GetTok" +
-      "enResponseProto\022\r\n\005token\030\001 \001(\014\"A\n\033LlapOu",
-      "tputSocketInitMessage\022\023\n\013fragment_id\030\001 \002" +
-      "(\t\022\r\n\005token\030\002 \001(\014\"\030\n\026PurgeCacheRequestPr" +
-      "oto\"6\n\027PurgeCacheResponseProto\022\033\n\023purged" +
-      "_memory_bytes\030\001 \001(\003\"&\n\010MapEntry\022\013\n\003key\030\001" +
-      " \001(\t\022\r\n\005value\030\002 \001(\003\"\036\n\034GetDaemonMetricsR" +
-      "equestProto\";\n\035GetDaemonMetricsResponseP" +
-      "roto\022\032\n\007metrics\030\001 \003(\0132\t.MapEntry\"A\n\027SetC" +
-      "apacityRequestProto\022\023\n\013executorNum\030\001 \001(\005" +
-      "\022\021\n\tqueueSize\030\002 \001(\005\"\032\n\030SetCapacityRespon" +
-      "seProto\"F\n\027EvictEntityRequestProto\022\017\n\007db",
-      "_name\030\001 \002(\t\022\032\n\005table\030\002 \003(\0132\013.TableProto\"" +
-      "D\n\nTableProto\022\022\n\ntable_name\030\001 \002(\t\022\020\n\010par" +
-      "t_key\030\002 \003(\t\022\020\n\010part_val\030\003 \003(\t\"1\n\030EvictEn" +
-      "tityResponseProto\022\025\n\revicted_bytes\030\001 \002(\003" +
-      "*2\n\020SourceStateProto\022\017\n\013S_SUCCEEDED\020\001\022\r\n" +
-      "\tS_RUNNING\020\002*E\n\024SubmissionStateProto\022\014\n\010" +
-      "ACCEPTED\020\001\022\014\n\010REJECTED\020\002\022\021\n\rEVICTED_OTHE" +
-      "R\020\0032\337\003\n\022LlapDaemonProtocol\022B\n\013registerDa" +
-      "g\022\030.RegisterDagRequestProto\032\031.RegisterDa" +
-      "gResponseProto\022?\n\nsubmitWork\022\027.SubmitWor",
-      "kRequestProto\032\030.SubmitWorkResponseProto\022" +
-      "W\n\022sourceStateUpdated\022\037.SourceStateUpdat" +
-      "edRequestProto\032 .SourceStateUpdatedRespo" +
-      "nseProto\022H\n\rqueryComplete\022\032.QueryComplet" +
-      "eRequestProto\032\033.QueryCompleteResponsePro" +
-      "to\022T\n\021terminateFragment\022\036.TerminateFragm" +
-      "entRequestProto\032\037.TerminateFragmentRespo" +
-      "nseProto\022K\n\016updateFragment\022\033.UpdateFragm" +
-      "entRequestProto\032\034.UpdateFragmentResponse" +
-      "Proto2\371\002\n\026LlapManagementProtocol\022C\n\022getD",
-      "elegationToken\022\025.GetTokenRequestProto\032\026." +
-      "GetTokenResponseProto\022?\n\npurgeCache\022\027.Pu" +
-      "rgeCacheRequestProto\032\030.PurgeCacheRespons" +
-      "eProto\022Q\n\020getDaemonMetrics\022\035.GetDaemonMe" +
-      "tricsRequestProto\032\036.GetDaemonMetricsResp" +
-      "onseProto\022B\n\013setCapacity\022\030.SetCapacityRe" +
-      "questProto\032\031.SetCapacityResponseProto\022B\n" +
-      "\013evictEntity\022\030.EvictEntityRequestProto\032\031" +
-      ".EvictEntityResponseProtoBH\n&org.apache." +
-      "hadoop.hive.llap.daemon.rpcB\030LlapDaemonP",
-      "rotocolProtos\210\001\001\240\001\001"
+      "ure\030\013 \001(\014\022\034\n\ris_guaranteed\030\014 \001(\010:\005false\022" +
+      "\013\n\003jwt\030\r \001(\t\022)\n\032is_external_client_reque" +
+      "st\030\016 \001(\010:\005false\"t\n\027RegisterDagRequestPro" +
+      "to\022\014\n\004user\030\001 \001(\t\022/\n\020query_identifier\030\002 \002" +
+      "(\0132\025.QueryIdentifierProto\022\032\n\022credentials" +
+      "_binary\030\003 \001(\014\"\032\n\030RegisterDagResponseProt",
+      "o\"b\n\027SubmitWorkResponseProto\022/\n\020submissi" +
+      "on_state\030\001 \001(\0162\025.SubmissionStateProto\022\026\n" +
+      "\016unique_node_id\030\002 \001(\t\"\205\001\n\036SourceStateUpd" +
+      "atedRequestProto\022/\n\020query_identifier\030\001 \001" +
+      "(\0132\025.QueryIdentifierProto\022\020\n\010src_name\030\002 " +
+      "\001(\t\022 \n\005state\030\003 \001(\0162\021.SourceStateProto\"!\n" +
+      "\037SourceStateUpdatedResponseProto\"e\n\031Quer" +
+      "yCompleteRequestProto\022/\n\020query_identifie" +
+      "r\030\001 \001(\0132\025.QueryIdentifierProto\022\027\n\014delete" +
+      "_delay\030\002 \001(\003:\0010\"\034\n\032QueryCompleteResponse",
+      "Proto\"t\n\035TerminateFragmentRequestProto\022/" +
+      "\n\020query_identifier\030\001 \001(\0132\025.QueryIdentifi" +
+      "erProto\022\"\n\032fragment_identifier_string\030\002 " +
+      "\001(\t\" \n\036TerminateFragmentResponseProto\"\210\001" +
+      "\n\032UpdateFragmentRequestProto\022/\n\020query_id" +
+      "entifier\030\001 \001(\0132\025.QueryIdentifierProto\022\"\n" +
+      "\032fragment_identifier_string\030\002 \001(\t\022\025\n\ris_" +
+      "guaranteed\030\003 \001(\010\"D\n\033UpdateFragmentRespon" +
+      "seProto\022\016\n\006result\030\001 \001(\010\022\025\n\ris_guaranteed" +
+      "\030\002 \001(\010\"&\n\024GetTokenRequestProto\022\016\n\006app_id",
+      "\030\001 \001(\t\"&\n\025GetTokenResponseProto\022\r\n\005token" +
+      "\030\001 \001(\014\"A\n\033LlapOutputSocketInitMessage\022\023\n" +
+      "\013fragment_id\030\001 \002(\t\022\r\n\005token\030\002 \001(\014\"\030\n\026Pur" +
+      "geCacheRequestProto\"6\n\027PurgeCacheRespons" +
+      "eProto\022\033\n\023purged_memory_bytes\030\001 \001(\003\"&\n\010M" +
+      "apEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\003\"\036\n\034G" +
+      "etDaemonMetricsRequestProto\";\n\035GetDaemon" +
+      "MetricsResponseProto\022\032\n\007metrics\030\001 \003(\0132\t." +
+      "MapEntry\"A\n\027SetCapacityRequestProto\022\023\n\013e" +
+      "xecutorNum\030\001 \001(\005\022\021\n\tqueueSize\030\002 \001(\005\"\032\n\030S",
+      "etCapacityResponseProto\"F\n\027EvictEntityRe" +
+      "questProto\022\017\n\007db_name\030\001 \002(\t\022\032\n\005table\030\002 \003" +
+      "(\0132\013.TableProto\"D\n\nTableProto\022\022\n\ntable_n" +
+      "ame\030\001 \002(\t\022\020\n\010part_key\030\002 \003(\t\022\020\n\010part_val\030" +
+      "\003 \003(\t\"1\n\030EvictEntityResponseProto\022\025\n\revi" +
+      "cted_bytes\030\001 \002(\003*2\n\020SourceStateProto\022\017\n\013" +
+      "S_SUCCEEDED\020\001\022\r\n\tS_RUNNING\020\002*E\n\024Submissi" +
+      "onStateProto\022\014\n\010ACCEPTED\020\001\022\014\n\010REJECTED\020\002" +
+      "\022\021\n\rEVICTED_OTHER\020\0032\337\003\n\022LlapDaemonProtoc" +
+      "ol\022B\n\013registerDag\022\030.RegisterDagRequestPr",
+      "oto\032\031.RegisterDagResponseProto\022?\n\nsubmit" +
+      "Work\022\027.SubmitWorkRequestProto\032\030.SubmitWo" +
+      "rkResponseProto\022W\n\022sourceStateUpdated\022\037." +
+      "SourceStateUpdatedRequestProto\032 .SourceS" +
+      "tateUpdatedResponseProto\022H\n\rqueryComplet" +
+      "e\022\032.QueryCompleteRequestProto\032\033.QueryCom" +
+      "pleteResponseProto\022T\n\021terminateFragment\022" +
+      "\036.TerminateFragmentRequestProto\032\037.Termin" +
+      "ateFragmentResponseProto\022K\n\016updateFragme" +
+      "nt\022\033.UpdateFragmentRequestProto\032\034.Update",
+      "FragmentResponseProto2\371\002\n\026LlapManagement" +
+      "Protocol\022C\n\022getDelegationToken\022\025.GetToke" +
+      "nRequestProto\032\026.GetTokenResponseProto\022?\n" +
+      "\npurgeCache\022\027.PurgeCacheRequestProto\032\030.P" +
+      "urgeCacheResponseProto\022Q\n\020getDaemonMetri" +
+      "cs\022\035.GetDaemonMetricsRequestProto\032\036.GetD" +
+      "aemonMetricsResponseProto\022B\n\013setCapacity" +
+      "\022\030.SetCapacityRequestProto\032\031.SetCapacity" +
+      "ResponseProto\022B\n\013evictEntity\022\030.EvictEnti" +
+      "tyRequestProto\032\031.EvictEntityResponseProt",
+      "oBH\n&org.apache.hadoop.hive.llap.daemon." +
+      "rpcB\030LlapDaemonProtocolProtos\210\001\001\240\001\001"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -26254,7 +26532,7 @@ public final class LlapDaemonProtocolProtos {
           internal_static_SubmitWorkRequestProto_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_SubmitWorkRequestProto_descriptor,
-              new java.lang.String[] { "WorkSpec", "WorkSpecSignature", "FragmentNumber", "AttemptNumber", "ContainerIdString", "AmHost", "AmPort", "CredentialsBinary", "FragmentRuntimeInfo", "InitialEventBytes", "InitialEventSignature", "IsGuaranteed", });
+              new java.lang.String[] { "WorkSpec", "WorkSpecSignature", "FragmentNumber", "AttemptNumber", "ContainerIdString", "AmHost", "AmPort", "CredentialsBinary", "FragmentRuntimeInfo", "InitialEventBytes", "InitialEventSignature", "IsGuaranteed", "Jwt", "IsExternalClientRequest", });
           internal_static_RegisterDagRequestProto_descriptor =
             getDescriptor().getMessageTypes().get(10);
           internal_static_RegisterDagRequestProto_fieldAccessorTable = new

@@ -49,6 +49,7 @@ public interface ColumnVectorProducer {
     List<Integer> getPhysicalColumnIds();
     List<Integer> getReaderLogicalColumnIds();
     TypeDescription[] getBatchReaderTypes(TypeDescription fileSchema);
+    String[] getOriginalColumnNames(TypeDescription fileSchema);
     String getQueryId();
     boolean isProbeDecodeEnabled();
     byte getProbeMjSmallTablePos();

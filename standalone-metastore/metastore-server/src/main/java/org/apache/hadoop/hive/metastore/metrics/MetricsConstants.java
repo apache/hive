@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.metastore.metrics;
 public class MetricsConstants {
   public static final String ACTIVE_CALLS = "active_calls_";
   public static final String API_PREFIX = "api_";
+  public static final String COMPACTION_STATUS_PREFIX = "compaction_num_";
+  public static final String COMPACTION_OLDEST_ENQUEUE_AGE = "compaction_oldest_enqueue_age_in_sec";
 
   public static final String TOTAL_API_CALLS = "total_api_calls";
 

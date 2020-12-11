@@ -147,7 +147,7 @@ public class TBinarySortableProtocol extends TProtocol implements
           .charAt(topLevelStructFieldID) != '-');
     } else {
       writeRawBytes(nonNullByte, 0, 1);
-      // If the struct is null and level > 1, DynamicSerDe will call
+      // If the struct is null and level > 1, SerDes will call
       // writeNull();
     }
   }
@@ -415,7 +415,7 @@ public class TBinarySortableProtocol extends TProtocol implements
 
   @Override
   public TField readFieldBegin() throws TException {
-    // slight hack to communicate to DynamicSerDe that the field ids are not
+    // slight hack to communicate to SerDes that the field ids are not
     // being set but things are ordered.
     f = new TField("", ORDERED_TYPE, (short) -1);
     return f;

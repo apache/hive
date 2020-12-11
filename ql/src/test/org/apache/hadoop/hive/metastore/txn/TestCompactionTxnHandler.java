@@ -68,6 +68,7 @@ public class TestCompactionTxnHandler {
 
   public TestCompactionTxnHandler() throws Exception {
     TxnDbUtil.setConfValues(conf);
+    TxnDbUtil.prepDb(conf);
     // Set config so that TxnUtils.buildQueryWithINClauseStrings() will
     // produce multiple queries
     conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 1);
@@ -182,15 +183,15 @@ public class TestCompactionTxnHandler {
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
     assertNotNull(ci);
 
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
     txnHandler.markCompacted(ci);
     assertNull(txnHandler.findNextToCompact("fred"));
 
-    List<CompactionInfo> toClean = txnHandler.findReadyToClean();
+    List<CompactionInfo> toClean = txnHandler.findReadyToClean(0, 0);
     assertEquals(1, toClean.size());
     assertNull(txnHandler.findNextToCompact("fred"));
 
@@ -211,20 +212,20 @@ public class TestCompactionTxnHandler {
     CompactionRequest rqst = new CompactionRequest("foo", "bar", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
     txnHandler.compact(rqst);
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
     CompactionInfo ci = txnHandler.findNextToCompact("fred");
     assertNotNull(ci);
 
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
     txnHandler.markCompacted(ci);
     assertNull(txnHandler.findNextToCompact("fred"));
 
-    List<CompactionInfo> toClean = txnHandler.findReadyToClean();
+    List<CompactionInfo> toClean = txnHandler.findReadyToClean(0, 0);
     assertEquals(1, toClean.size());
     assertNull(txnHandler.findNextToCompact("fred"));
     txnHandler.markCleaned(ci);
     assertNull(txnHandler.findNextToCompact("fred"));
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
 
     ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
     assertEquals(1, rsp.getCompactsSize());
@@ -261,11 +262,11 @@ public class TestCompactionTxnHandler {
     CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
     rqst.setPartitionname(partitionName);
     txnHandler.compact(rqst);
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
     CompactionInfo ci = txnHandler.findNextToCompact(workerId);
     assertNotNull(ci);
 
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
     ci.errorMessage = errorMessage;
     txnHandler.markFailed(ci);
     assertNull(txnHandler.findNextToCompact(workerId));
@@ -400,7 +401,7 @@ public class TestCompactionTxnHandler {
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB,
         "mydb");
     comp.setTablename("yourtable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.UPDATE);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -417,7 +418,7 @@ public class TestCompactionTxnHandler {
       sawMyTable |= (ci.dbname.equals("mydb") && ci.tableName.equals("mytable") &&
           ci.partName ==  null);
       sawYourTable |= (ci.dbname.equals("mydb") && ci.tableName.equals("yourtable") &&
-          ci.partName.equals("mypartition"));
+          ci.partName.equals("mypartition=myvalue"));
     }
     assertTrue(sawMyTable);
     assertTrue(sawYourTable);
@@ -474,7 +475,7 @@ public class TestCompactionTxnHandler {
     txnid = openTxn();
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("foo");
-    comp.setPartitionname("bar");
+    comp.setPartitionname("bar=compact");
     comp.setOperationType(DataOperationType.UPDATE);
     components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -485,7 +486,7 @@ public class TestCompactionTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("foo");
-    comp.setPartitionname("baz");
+    comp.setPartitionname("baz=compact");
     comp.setOperationType(DataOperationType.UPDATE);
     components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -500,12 +501,13 @@ public class TestCompactionTxnHandler {
     // Now clean them and check that they are removed from the count.
     CompactionRequest rqst = new CompactionRequest("mydb", "mytable", CompactionType.MAJOR);
     txnHandler.compact(rqst);
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
     ci = txnHandler.findNextToCompact("fred");
     assertNotNull(ci);
     txnHandler.markCompacted(ci);
 
-    List<CompactionInfo> toClean = txnHandler.findReadyToClean();
+    Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
+    List<CompactionInfo> toClean = txnHandler.findReadyToClean(0, 0);
     assertEquals(1, toClean.size());
     txnHandler.markCleaned(ci);
 
@@ -515,21 +517,20 @@ public class TestCompactionTxnHandler {
     // Create one aborted for low water mark
     txnid = openTxn();
     txnHandler.abortTxn(new AbortTxnRequest(txnid));
-    txnHandler.setOpenTxnTimeOutMillis(1);
+    Thread.sleep(txnHandler.getOpenTxnTimeOutMillis());
     txnHandler.cleanEmptyAbortedAndCommittedTxns();
     txnList = txnHandler.getOpenTxns();
     assertEquals(3, txnList.getOpen_txnsSize());
-    txnHandler.setOpenTxnTimeOutMillis(1000);
 
     rqst = new CompactionRequest("mydb", "foo", CompactionType.MAJOR);
     rqst.setPartitionname("bar");
     txnHandler.compact(rqst);
-    assertEquals(0, txnHandler.findReadyToClean().size());
+    assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
     ci = txnHandler.findNextToCompact("fred");
     assertNotNull(ci);
     txnHandler.markCompacted(ci);
 
-    toClean = txnHandler.findReadyToClean();
+    toClean = txnHandler.findReadyToClean(0, 0);
     assertEquals(1, toClean.size());
     txnHandler.markCleaned(ci);
 
@@ -588,6 +589,65 @@ public class TestCompactionTxnHandler {
       default: throw new RuntimeException("What?");
       }
     }
+  }
+
+  @Test
+  public void testEnqueueTimeEvenAfterFailed() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setPartitionname(partitionName);
+    long before = System.currentTimeMillis();
+    txnHandler.compact(rqst);
+    long after = System.currentTimeMillis();
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
+    assertTrue(element.isSetEnqueueTime());
+    long enqueueTime = element.getEnqueueTime();
+    assertTrue(enqueueTime <= after);
+    assertTrue(enqueueTime >= before);
+
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    txnHandler.markFailed(ci);
+
+    checkEnqueueTime(enqueueTime);
+  }
+
+  @Test
+  public void testEnqueueTimeThroughLifeCycle() throws Exception {
+    final String dbName = "foo";
+    final String tableName = "bar";
+    final String partitionName = "ds=today";
+    CompactionRequest rqst = new CompactionRequest(dbName, tableName, CompactionType.MINOR);
+    rqst.setPartitionname(partitionName);
+    long before = System.currentTimeMillis();
+    txnHandler.compact(rqst);
+    long after = System.currentTimeMillis();
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
+    assertTrue(element.isSetEnqueueTime());
+    long enqueueTime = element.getEnqueueTime();
+    assertTrue(enqueueTime <= after);
+    assertTrue(enqueueTime >= before);
+
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    ci.runAs = "bob";
+    txnHandler.updateCompactorState(ci, openTxn());
+    checkEnqueueTime(enqueueTime);
+
+    txnHandler.markCompacted(ci);
+    checkEnqueueTime(enqueueTime);
+
+    txnHandler.markCleaned(ci);
+    checkEnqueueTime(enqueueTime);
+  }
+
+  private void checkEnqueueTime(long enqueueTime) throws MetaException {
+    ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
+    ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
+    assertTrue(element.isSetEnqueueTime());
+    assertEquals(enqueueTime, element.getEnqueueTime());
   }
 
   @Before

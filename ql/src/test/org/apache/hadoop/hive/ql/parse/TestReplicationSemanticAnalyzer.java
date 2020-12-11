@@ -18,9 +18,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -41,8 +39,7 @@ public class TestReplicationSemanticAnalyzer {
 
   private static ASTNode parse(String command) throws Exception {
     SessionState.start(hiveConf);
-    Context context = new Context(hiveConf);
-    return (ASTNode) driver.parse(command, context).getChild(0);
+    return (ASTNode) driver.parse(command, hiveConf).getTree().getChild(0);
   }
 
   private static void assertWithClause(ASTNode root, int replConfigIndex) {

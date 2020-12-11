@@ -24,7 +24,6 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -38,20 +37,19 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.PathFilter;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.RecordIdentifier;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
-import org.apache.orc.CompressionKind;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.OrcProto.StripeStatistics;
-import org.apache.orc.impl.OrcAcidUtils;
 import org.apache.orc.tools.FileDump;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.LinkedList;
+import java.util.Properties;
 
 /**
  * Utility to check and fix the ACID key index of an ORC file if it has been written incorrectly
@@ -76,6 +74,11 @@ public class FixAcidKeyIndex {
       HelpFormatter formatter = new HelpFormatter();
       formatter.printHelp("fixacidkeyindex", opts);
       return;
+    }
+
+    Properties configProps = cli.getOptionProperties("hiveconf");
+    for (String key: configProps.stringPropertyNames()) {
+      conf.set(key, configProps.getProperty(key));
     }
 
     String backupPath = DEFAULT_BACKUP_PATH;
@@ -106,28 +109,6 @@ public class FixAcidKeyIndex {
     } else {
       System.err.println("check-only or recover option must be specified");
     }
-  }
-
-  static boolean isAcidKeyIndexValid(Reader reader) {
-    if (reader.getNumberOfRows() == 0) {
-      return true;
-    }
-
-    // The number of stripes should match the key index count
-    List<StripeInformation> stripes = reader.getStripes();
-    RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(reader);
-    if (keyIndex == null) {
-      return false;
-    }
-
-    for (int idx = 0; idx < keyIndex.length; ++idx) {
-      if (keyIndex[idx] == null) {
-        LOG.info("*** keyIndex[" + idx + "] is null");
-        return false;
-      }
-    }
-
-    return stripes.size() == keyIndex.length;
   }
 
   static void recoverFiles(Configuration conf, List<String> fileList, String backup) {
@@ -163,9 +144,48 @@ public class FixAcidKeyIndex {
       return;
     }
 
-    boolean validIndex = isAcidKeyIndexValid(reader);
+    AcidKeyIndexValidationResult validationResult = validate(conf, inputPath);
+    boolean validIndex = validationResult.isValid;
     System.out.println("Checking " + inputPath + " - acid key index is " +
         (validIndex ? "valid" : "invalid"));
+  }
+
+  public static AcidKeyIndexValidationResult validate(Configuration conf, Path inputPath) throws IOException {
+    AcidKeyIndexValidationResult result = new AcidKeyIndexValidationResult();
+    FileSystem fs = inputPath.getFileSystem(conf);
+    Reader reader = OrcFile.createReader(fs, inputPath);
+    List<StripeInformation> stripes = reader.getStripes();
+    RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(reader);
+    StructObjectInspector soi = (StructObjectInspector) reader.getObjectInspector();
+    // struct<operation:int,originalTransaction:bigint,bucket:int,rowId:bigint,currentTransaction:bigint
+    List<? extends StructField> structFields = soi.getAllStructFieldRefs();
+    StructField transactionField = structFields.get(1);
+    LongObjectInspector transactionOI = (LongObjectInspector) transactionField.getFieldObjectInspector();
+    StructField bucketField = structFields.get(2);
+    IntObjectInspector bucketOI = (IntObjectInspector) bucketField.getFieldObjectInspector();
+    StructField rowIdField = structFields.get(3);
+    LongObjectInspector rowIdOI = (LongObjectInspector) rowIdField.getFieldObjectInspector();
+
+    long rowsProcessed = 0;
+    try (RecordReader rr = reader.rows()) {
+      for (int i = 0; i < stripes.size(); i++) {
+        rowsProcessed += stripes.get(i).getNumberOfRows();
+        rr.seekToRow(rowsProcessed - 1);
+        OrcStruct row = (OrcStruct) rr.next(null);
+
+        long lastTransaction = transactionOI.get(soi.getStructFieldData(row, transactionField));
+        int lastBucket = bucketOI.get(soi.getStructFieldData(row, bucketField));
+        long lastRowId = rowIdOI.get(soi.getStructFieldData(row, rowIdField));
+
+        RecordIdentifier recordIdentifier = new RecordIdentifier(lastTransaction, lastBucket, lastRowId);
+        result.recordIdentifiers.add(recordIdentifier);
+
+        if (stripes.size() != keyIndex.length || keyIndex[i] == null || recordIdentifier.compareTo(keyIndex[i]) != 0) {
+          result.isValid = false;
+        }
+      }
+    }
+    return result;
   }
 
   static void recoverFile(Configuration conf, Path inputPath, String backup) throws IOException {
@@ -177,8 +197,8 @@ public class FixAcidKeyIndex {
       return;
     }
 
-    boolean validIndex = isAcidKeyIndexValid(reader);
-    if (validIndex) {
+    AcidKeyIndexValidationResult validationResult = validate(conf, inputPath);
+    if (validationResult.isValid) {
       System.out.println(inputPath + " has a valid acid key index. No need to recover.");
       return;
     }
@@ -205,17 +225,6 @@ public class FixAcidKeyIndex {
     }
 
     try (Writer writer = OrcFile.createWriter(recoveredPath, writerOptions)) {
-
-      // For HIVE-18817, the only thing missing is the last stripe index information.
-      // Get the information from the last stripe and append it to the existing index.
-      // The actual stripe data can be written as-is, similar to OrcFileMergeOperator.
-
-      String keyIndexString = getKeyIndexAsString(reader);
-      if (keyIndexString == null || keyIndexString.equals("null")) {
-        // Key index can be null/"null" if there is only a single stripe. Just start fresh.
-        keyIndexString = "";
-      }
-
       List<StripeInformation> stripes = reader.getStripes();
       List<StripeStatistics> stripeStats = reader.getOrcProtoStripeStatistics();
 
@@ -232,29 +241,6 @@ public class FixAcidKeyIndex {
         }
       }
 
-      // For last stripe we need to get the last trasactionId/bucket/rowId from the last row.
-      long lastRow = reader.getNumberOfRows() - 1;
-      //RecordReader rr = reader.rows();
-      try (RecordReader rr = reader.rows()) {
-        rr.seekToRow(lastRow);
-        OrcStruct row = (OrcStruct) rr.next(null);
-        StructObjectInspector soi = (StructObjectInspector) reader.getObjectInspector();
-        // struct<operation:int,originalTransaction:bigint,bucket:int,rowId:bigint,currentTransaction:bigint
-        List<? extends StructField> structFields = soi.getAllStructFieldRefs();
-
-        StructField transactionField = structFields.get(1);
-        StructField bucketField = structFields.get(2);
-        StructField rowIdField = structFields.get(3);
-
-        long lastTransaction = ((LongObjectInspector) transactionField.getFieldObjectInspector()).get(
-            soi.getStructFieldData(row, transactionField));
-        int lastBucket = ((IntObjectInspector) bucketField.getFieldObjectInspector()).get(
-            soi.getStructFieldData(row, bucketField));
-        long lastRowId = ((LongObjectInspector) rowIdField.getFieldObjectInspector()).get(
-            soi.getStructFieldData(row, rowIdField));
-        keyIndexString += lastTransaction + "," + lastBucket + "," + lastRowId + ";";
-      }
-
       // Add the rest of the metadata keys.
       for (String metadataKey : reader.getMetadataKeys()) {
         if (!metadataKey.equals(OrcRecordUpdater.ACID_KEY_INDEX_NAME)) {
@@ -262,14 +248,19 @@ public class FixAcidKeyIndex {
         }
       }
 
+      StringBuilder sb = new StringBuilder();
+      validationResult.recordIdentifiers.stream().forEach(
+              ri -> sb.append(ri.getWriteId()).append(",")
+                      .append(ri.getBucketProperty()).append(",")
+                      .append(ri.getRowId()).append(";"));
       // Finally add the fixed acid key index.
-      writer.addUserMetadata(OrcRecordUpdater.ACID_KEY_INDEX_NAME, UTF8.encode(keyIndexString));
+      writer.addUserMetadata(OrcRecordUpdater.ACID_KEY_INDEX_NAME, UTF8.encode(sb.toString()));
     }
 
     // Confirm the file is really fixed, and replace the old file.
-    Reader newReader = OrcFile.createReader(fs, recoveredPath);
-    boolean fileFixed = isAcidKeyIndexValid(newReader);
-    if (fileFixed) {
+    AcidKeyIndexValidationResult fileFixed = validate(conf, recoveredPath);
+
+    if (fileFixed.isValid) {
       Path backupDataPath;
       String scheme = inputPath.toUri().getScheme();
       String authority = inputPath.toUri().getAuthority();
@@ -351,6 +342,14 @@ public class FixAcidKeyIndex {
         .create());
 
     result.addOption(OptionBuilder
+            .withValueSeparator()
+            .hasArgs(2)
+            .withArgName("property=value")
+            .withLongOpt("hiveconf")
+            .withDescription("Use value for given property")
+            .create());
+
+    result.addOption(OptionBuilder
         .withLongOpt("help")
         .withDescription("print help message")
         .create('h'));
@@ -377,5 +376,15 @@ public class FixAcidKeyIndex {
     }
 
     return filesInPath;
+  }
+
+  private static class AcidKeyIndexValidationResult {
+    private boolean isValid;
+    private List<RecordIdentifier> recordIdentifiers;
+
+    private AcidKeyIndexValidationResult() {
+      isValid = true;
+      recordIdentifiers = new LinkedList<>();
+    }
   }
 }

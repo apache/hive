@@ -111,11 +111,7 @@ public class TestCleanerWithReplication extends CompactorTest {
     burnThroughTransactions(dbName, "camtc", 25);
 
     CompactionRequest rqst = new CompactionRequest(dbName, "camtc", CompactionType.MAJOR);
-    txnHandler.compact(rqst);
-    CompactionInfo ci = txnHandler.findNextToCompact("fred");
-    ci.runAs = System.getProperty("user.name");
-    txnHandler.updateCompactorState(ci, openTxn());
-    txnHandler.markCompacted(ci);
+    compactInTxn(rqst);
 
     assertCleanerActions(6);
   }
@@ -134,11 +130,7 @@ public class TestCleanerWithReplication extends CompactorTest {
 
     CompactionRequest rqst = new CompactionRequest(dbName, "campc", CompactionType.MAJOR);
     rqst.setPartitionname("ds=today");
-    txnHandler.compact(rqst);
-    CompactionInfo ci = txnHandler.findNextToCompact("fred");
-    ci.runAs = System.getProperty("user.name");
-    txnHandler.updateCompactorState(ci, openTxn());
-    txnHandler.markCompacted(ci);
+    compactInTxn(rqst);
 
     assertCleanerActions(6);
   }
@@ -155,11 +147,7 @@ public class TestCleanerWithReplication extends CompactorTest {
     burnThroughTransactions(dbName, "camitc", 25);
 
     CompactionRequest rqst = new CompactionRequest(dbName, "camitc", CompactionType.MINOR);
-    txnHandler.compact(rqst);
-    CompactionInfo ci = txnHandler.findNextToCompact("fred");
-    ci.runAs = System.getProperty("user.name");
-    txnHandler.updateCompactorState(ci, openTxn());
-    txnHandler.markCompacted(ci);
+    compactInTxn(rqst);
 
     assertCleanerActions(4);
   }
@@ -178,11 +166,7 @@ public class TestCleanerWithReplication extends CompactorTest {
 
     CompactionRequest rqst = new CompactionRequest(dbName, "camipc", CompactionType.MINOR);
     rqst.setPartitionname("ds=today");
-    txnHandler.compact(rqst);
-    CompactionInfo ci = txnHandler.findNextToCompact("fred");
-    ci.runAs = System.getProperty("user.name");
-    txnHandler.updateCompactorState(ci, openTxn());
-    txnHandler.markCompacted(ci);
+    compactInTxn(rqst);
 
     assertCleanerActions(4);
   }

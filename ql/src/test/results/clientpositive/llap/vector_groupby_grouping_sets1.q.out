@@ -97,7 +97,8 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: a (type: string), b (type: string), 0L (type: bigint)
-                      minReductionHashAggr: 0.0
+                      grouping sets: 0, 1, 2, 3
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
@@ -265,7 +266,8 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: a (type: string), b (type: string), 0L (type: bigint)
-                      minReductionHashAggr: 0.0
+                      grouping sets: 0, 1, 2, 3
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
@@ -433,7 +435,8 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: a (type: string), b (type: string), 0L (type: bigint)
-                      minReductionHashAggr: 0.0
+                      grouping sets: 0, 1, 2, 3
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 12 Data size: 2232 Basic stats: COMPLETE Column stats: COMPLETE
@@ -601,7 +604,8 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: [0]
                       keys: a (type: string), b (type: string), 0L (type: bigint)
-                      minReductionHashAggr: 0.0
+                      grouping sets: 0, 1
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 6 Data size: 1116 Basic stats: COMPLETE Column stats: COMPLETE
@@ -763,7 +767,8 @@ STAGE PLANS:
                           vectorProcessingMode: HASH
                           projectedOutputColumnNums: []
                       keys: a (type: string), b (type: string), c (type: string), 0L (type: bigint)
-                      minReductionHashAggr: 0.0
+                      grouping sets: 3, 5, 6
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 9 Data size: 2367 Basic stats: COMPLETE Column stats: COMPLETE

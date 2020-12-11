@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.optimizer.calcite.rules;
 
 import java.util.BitSet;
 import java.util.List;
-import java.util.ListIterator;
 
 import org.apache.calcite.plan.RelOptRule;
 import org.apache.calcite.plan.RelOptRuleCall;
@@ -28,21 +27,25 @@ import org.apache.calcite.plan.RelOptUtil;
 import org.apache.calcite.plan.RelOptUtil.InputFinder;
 import org.apache.calcite.rel.core.Filter;
 import org.apache.calcite.rel.core.Join;
-import org.apache.calcite.rel.core.JoinRelType;
 import org.apache.calcite.rel.rules.FilterJoinRule;
-import org.apache.calcite.rex.RexCall;
 import org.apache.calcite.rex.RexNode;
-import org.apache.calcite.sql.SqlKind;
 import org.apache.calcite.tools.RelBuilderFactory;
 import org.apache.calcite.util.ImmutableBitSet;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveCalciteUtil;
 import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelFactories;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil;
+import org.apache.hadoop.hive.ql.optimizer.calcite.HiveRelOptUtil.RewritablePKFKJoinInfo;
 
 public abstract class HiveFilterJoinRule extends FilterJoinRule {
 
-  public static final HiveFilterJoinRule FILTER_ON_JOIN = new HiveFilterJoinMergeRule();
+  public static final HiveFilterJoinRule FILTER_ON_NON_FILTERING_JOIN =
+      new HiveFilterNonFilteringJoinMergeRule();
 
-  public static final HiveFilterJoinRule JOIN           = new HiveFilterJoinTransposeRule();
+  public static final HiveFilterJoinRule FILTER_ON_JOIN =
+      new HiveFilterJoinMergeRule();
+
+  public static final HiveFilterJoinRule JOIN =
+      new HiveFilterJoinTransposeRule();
 
   /**
    * Creates a PushFilterPastJoinRule with an explicit root operand.
@@ -54,12 +57,32 @@ public abstract class HiveFilterJoinRule extends FilterJoinRule {
 
   /**
    * Rule that tries to push filter expressions into a join condition and into
+   * the inputs of the join, iff the join is a column appending
+   * non-filtering join.
+   */
+  public static class HiveFilterNonFilteringJoinMergeRule extends HiveFilterJoinMergeRule {
+
+    @Override
+    public boolean matches(RelOptRuleCall call) {
+      Join join = call.rel(1);
+      RewritablePKFKJoinInfo joinInfo = HiveRelOptUtil.isRewritablePKFKJoin(
+          join, join.getLeft(), join.getRight(), call.getMetadataQuery());
+      if (!joinInfo.rewritable) {
+        return false;
+      }
+      return super.matches(call);
+    }
+
+  }
+
+  /**
+   * Rule that tries to push filter expressions into a join condition and into
    * the inputs of the join.
    */
   public static class HiveFilterJoinMergeRule extends HiveFilterJoinRule {
     public HiveFilterJoinMergeRule() {
-      super(RelOptRule.operand(Filter.class, RelOptRule.operand(Join.class, RelOptRule.any())),
-          "HiveFilterJoinRule:filter", true, HiveRelFactories.HIVE_BUILDER);
+      super(operand(Filter.class, operand(Join.class, any())),
+          null, true, HiveRelFactories.HIVE_BUILDER);
     }
 
     @Override

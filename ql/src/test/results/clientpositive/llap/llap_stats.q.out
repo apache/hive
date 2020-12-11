@@ -19,6 +19,7 @@ POSTHOOK: query: insert into table llap_stats partition(cint)
 select cint, ctinyint, csmallint from alltypesorc where cint is not null limit 10
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@llap_stats
 POSTHOOK: Output: default@llap_stats@cint=-13326
 POSTHOOK: Output: default@llap_stats@cint=-15431
 POSTHOOK: Output: default@llap_stats@cint=-15549

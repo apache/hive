@@ -16,11 +16,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Select Operator
-            expressions: (CAST( UDFToInteger(key) AS decimal(10,0)) / CAST( UDFToInteger(key) AS decimal(10,0))) (type: decimal(21,11))
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 1
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: (CAST( UDFToInteger(key) AS decimal(10,0)) / CAST( UDFToInteger(key) AS decimal(10,0))) (type: decimal(21,11))
+              outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: select cast(key as int) / cast(key as int) from src limit 1
@@ -50,11 +50,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          Select Operator
-            expressions: (UDFToDouble(UDFToInteger(key)) / UDFToDouble(UDFToInteger(key))) (type: double)
-            outputColumnNames: _col0
-            Limit
-              Number of rows: 1
+          Limit
+            Number of rows: 1
+            Select Operator
+              expressions: (UDFToDouble(UDFToInteger(key)) / UDFToDouble(UDFToInteger(key))) (type: double)
+              outputColumnNames: _col0
               ListSink
 
 PREHOOK: query: select cast(key as int) / cast(key as int) from src limit 1

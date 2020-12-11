@@ -22,6 +22,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Lists;
 
 import com.google.common.collect.Multimap;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.common.repl.ReplConst;
 import org.apache.hadoop.hive.common.TableName;
@@ -59,7 +60,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -129,6 +129,14 @@ public class HiveAlterHandler implements AlterHandler {
     String validate = MetaStoreServerUtils.validateTblColumns(newt.getSd().getCols());
     if (validate != null) {
       throw new InvalidOperationException("Invalid column " + validate);
+    }
+
+    // Validate bucketedColumns in new table
+    List<String> bucketColumns = MetaStoreServerUtils.validateBucketColumns(newt.getSd());
+    if (CollectionUtils.isNotEmpty(bucketColumns)) {
+      String errMsg = "Bucket columns - " + bucketColumns.toString() + " doesn't match with any table columns";
+      LOG.error(errMsg);
+      throw new InvalidOperationException(errMsg);
     }
 
     Path srcPath = null;
@@ -362,24 +370,38 @@ public class HiveAlterHandler implements AlterHandler {
 
         if (isPartitionedTable) {
           //Currently only column related changes can be cascaded in alter table
-          if(!MetaStoreServerUtils.areSameColumns(oldt.getSd().getCols(), newt.getSd().getCols())) {
-            parts = msdb.getPartitions(catName, dbname, name, -1);
-            for (Partition part : parts) {
-              Partition oldPart = new Partition(part);
-              List<FieldSchema> oldCols = part.getSd().getCols();
-              part.getSd().setCols(newt.getSd().getCols());
-              List<ColumnStatistics> colStats = updateOrGetPartitionColumnStats(msdb, catName, dbname, name,
-                  part.getValues(), oldCols, oldt, part, null, null);
-              assert(colStats.isEmpty());
-              if (cascade) {
-                msdb.alterPartition(
+          boolean runPartitionMetadataUpdate =
+              (cascade && !MetaStoreServerUtils.areSameColumns(oldt.getSd().getCols(), newt.getSd().getCols()));
+          // we may skip the update entirely if there are only new columns added
+          runPartitionMetadataUpdate |=
+              !cascade && !MetaStoreServerUtils.arePrefixColumns(oldt.getSd().getCols(), newt.getSd().getCols());
+
+          boolean retainOnColRemoval =
+              MetastoreConf.getBoolVar(handler.getConf(), MetastoreConf.ConfVars.COLSTATS_RETAIN_ON_COLUMN_REMOVAL);
+
+          if (runPartitionMetadataUpdate) {
+            if (cascade || retainOnColRemoval) {
+              parts = msdb.getPartitions(catName, dbname, name, -1);
+              for (Partition part : parts) {
+                Partition oldPart = new Partition(part);
+                List<FieldSchema> oldCols = part.getSd().getCols();
+                part.getSd().setCols(newt.getSd().getCols());
+                List<ColumnStatistics> colStats = updateOrGetPartitionColumnStats(msdb, catName, dbname, name,
+                    part.getValues(), oldCols, oldt, part, null, null);
+                assert (colStats.isEmpty());
+                if (cascade) {
+                  msdb.alterPartition(
                     catName, dbname, name, part.getValues(), part, writeIdList);
-              } else {
-                // update changed properties (stats)
-                oldPart.setParameters(part.getParameters());
-                msdb.alterPartition(
-                    catName, dbname, name, part.getValues(), oldPart, writeIdList);
+                } else {
+                  // update changed properties (stats)
+                  oldPart.setParameters(part.getParameters());
+                  msdb.alterPartition(catName, dbname, name, part.getValues(), oldPart, writeIdList);
+                }
               }
+            } else {
+              // clear all column stats to prevent incorract behaviour in case same column is reintroduced
+              TableName tableName = new TableName(catName, dbname, name);
+              msdb.deleteAllPartitionColumnStatistics(tableName, writeIdList);
             }
             // Don't validate table-level stats for a partitoned table.
             msdb.alterTable(catName, dbname, name, newt, null);
@@ -426,9 +448,9 @@ public class HiveAlterHandler implements AlterHandler {
           assert(olddb != null);
           assert(oldt != null);
           Path deleteOldDataLoc = new Path(oldt.getSd().getLocation());
-          boolean isAutoPurge = "true".equalsIgnoreCase(oldt.getParameters().get("auto.purge"));
+          boolean isSkipTrash = MetaStoreUtils.isSkipTrash(oldt.getParameters());
           try {
-            wh.deleteDir(deleteOldDataLoc, true, isAutoPurge,
+            wh.deleteDir(deleteOldDataLoc, true, isSkipTrash,
                     ReplChangeManager.shouldEnableCm(olddb, oldt));
             LOG.info("Deleted the old data location: {} for the table: {}",
                     deleteOldDataLoc, dbname + "." + name);

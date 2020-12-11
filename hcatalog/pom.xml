@@ -43,7 +43,6 @@
     <module>server-extensions</module>
     <module>webhcat/java-client</module>
     <module>webhcat/svr</module>
-    <module>streaming</module>
   </modules>
 
   <dependencies>

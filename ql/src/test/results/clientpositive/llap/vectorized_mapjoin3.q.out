@@ -111,7 +111,7 @@ POSTHOOK: Input: default@table_19
 POSTHOOK: Input: default@table_6
 #### A masked pattern was here ####
 418.9
-Warning: Shuffle Join MERGEJOIN[49][tables = [$hdt$_0]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[59][tables = [$hdt$_0]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: SELECT
   t1.t_id,
   null
@@ -196,6 +196,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:int_col_1, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -409,6 +410,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: (int_col_1 is not null and decimal0801_col is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:int_col_1, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -622,6 +624,7 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   filterExpr: (decimal0801_col is not null and int_col_1 is not null) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_25_container, bigKeyColName:int_col_1, smallTablePos:1, keyRatio:1.0
                   Statistics: Num rows: 5 Data size: 580 Basic stats: COMPLETE Column stats: NONE
                   TableScan Vectorization:
                       native: true
@@ -797,7 +800,7 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-Warning: Shuffle Join MERGEJOIN[46][tables = [$hdt$_0]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[56][tables = [$hdt$_0]] in Stage 'Reducer 2' is a cross product
 PREHOOK: query: EXPLAIN VECTORIZATION DETAIL
 SELECT
   t1.t_id,

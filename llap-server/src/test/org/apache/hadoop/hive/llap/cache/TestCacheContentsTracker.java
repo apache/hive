@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.llap.cache;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.io.CacheTag;
@@ -124,7 +125,7 @@ public class TestCacheContentsTracker {
 
   @Test
   public void testEncodingDecoding() throws Exception {
-    Map<String, String> partDescs = new HashMap<>();
+    LinkedHashMap<String, String> partDescs = new LinkedHashMap<>();
     partDescs.put("pytha=goras", "a2+b2=c2");
     CacheTag tag = CacheTag.build("math.rules", partDescs);
     CacheTag.SinglePartitionCacheTag stag = ((CacheTag.SinglePartitionCacheTag)tag);
@@ -166,9 +167,9 @@ public class TestCacheContentsTracker {
     return llapCacheableBufferMock;
   }
 
-  private static CacheTag cacheTagBuilder(String dbAndTable, String... partitions) {
+  public static CacheTag cacheTagBuilder(String dbAndTable, String... partitions) {
     if (partitions != null && partitions.length > 0) {
-      Map<String, String> partDescs = new HashMap<>();
+      LinkedHashMap<String, String> partDescs = new LinkedHashMap<>();
       for (String partition : partitions) {
         String[] partDesc = partition.split("=");
         partDescs.put(partDesc[0], partDesc[1]);

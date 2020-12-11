@@ -256,4 +256,15 @@ public class TopNKeyDesc extends AbstractOperatorDesc {
             efficiencyThreshold, checkEfficiencyNumBatches, maxNumberOfPartitions);
   }
 
+  public TopNKeyDesc withKeyColumns(int prefixLength) {
+    return new TopNKeyDesc(topN,
+            columnSortOrder,
+            nullOrder,
+            keyColumns.subList(0, prefixLength),
+            partitionKeyColumns,
+            efficiencyThreshold,
+            checkEfficiencyNumBatches,
+            maxNumberOfPartitions);
+  }
+
 }

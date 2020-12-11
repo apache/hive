@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAggregate;
+import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveAntiJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveFilter;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveJoin;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveMultiJoin;
@@ -98,7 +99,9 @@ public class HiveOpConverter {
     } else if (rn instanceof HiveJoin) {
       return new JoinVisitor(this).visit((HiveJoin) rn);
     } else if (rn instanceof HiveSemiJoin) {
-      return new JoinVisitor(this).visit((HiveSemiJoin) rn);
+      return new JoinVisitor(this).visit(rn);
+    } else if (rn instanceof HiveAntiJoin) {
+      return new JoinVisitor(this).visit(rn);
     } else if (rn instanceof HiveFilter) {
       return new HiveFilterVisitor(this).visit((HiveFilter) rn);
     } else if (rn instanceof HiveSortLimit) {

@@ -32,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.BucketCodec;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -94,7 +95,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * Evaluators for bucketing columns. This is used to compute bucket number.
    */
   protected transient ExprNodeEvaluator[] bucketEval = null;
-  // TODO: we use MetadataTypedColumnsetSerDe for now, till DynamicSerDe is ready
   protected transient Serializer keySerializer;
   protected transient boolean keyIsText;
   protected transient Serializer valueSerializer;
@@ -454,6 +454,19 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     if (LOG.isTraceEnabled()) {
       LOG.trace("Going to return hash code " + hashCode);
     }
+    if (conf.isCompaction()) {
+      int bucket;
+      Object bucketProperty = ((Object[]) row)[2];
+      if (bucketProperty == null) {
+        return hashCode;
+      }
+      if (bucketProperty instanceof Writable) {
+        bucket = ((IntWritable) bucketProperty).get();
+      } else {
+        bucket = (int) bucketProperty;
+      }
+      return BucketCodec.determineVersion(bucket).decodeWriterId(bucket);
+    }
     return hashCode;
   }
 
@@ -592,4 +605,12 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     this.out = _out;
   }
 
+  @Override
+  public void replaceTabAlias(String oldAlias, String newAlias) {
+    super.replaceTabAlias(oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getColumnExprMap(), oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getBucketCols(), oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getPartitionCols(), oldAlias, newAlias);
+    ExprNodeDescUtils.replaceTabAlias(getConf().getKeyCols(), oldAlias, newAlias);
+  }
 }

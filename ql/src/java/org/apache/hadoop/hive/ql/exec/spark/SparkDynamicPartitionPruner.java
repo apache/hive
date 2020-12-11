@@ -79,11 +79,11 @@ public class SparkDynamicPartitionPruner {
       // Nothing to prune for this MapWork
       return;
     }
-    perfLogger.PerfLogBegin(CLASS_NAME,
+    perfLogger.perfLogBegin(CLASS_NAME,
             PerfLogger.SPARK_DYNAMICALLY_PRUNE_PARTITIONS + work.getName());
     processFiles(work, jobConf);
     prunePartitions(work);
-    perfLogger.PerfLogBegin(CLASS_NAME,
+    perfLogger.perfLogBegin(CLASS_NAME,
             PerfLogger.SPARK_DYNAMICALLY_PRUNE_PARTITIONS + work.getName());
   }
 

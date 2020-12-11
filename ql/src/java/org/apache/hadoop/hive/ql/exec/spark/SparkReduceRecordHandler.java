@@ -78,7 +78,6 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   private final Object[] valueObject = new Object[Byte.MAX_VALUE];
   private final List<Object> row = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
 
-  // TODO: move to DynamicSerDe when it's ready
   private Deserializer inputKeyDeserializer;
   private Operator<?> reducer;
   private boolean isTagged = false;
@@ -116,7 +115,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   @Override
   @SuppressWarnings("unchecked")
   public void init(JobConf job, OutputCollector output, Reporter reporter) throws Exception {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SPARK_INIT_OPERATORS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.SPARK_INIT_OPERATORS);
     super.init(job, output, reporter);
 
     rowObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
@@ -259,7 +258,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         throw new RuntimeException("Reduce operator initialization failed", e);
       }
     }
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SPARK_INIT_OPERATORS);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.SPARK_INIT_OPERATORS);
   }
 
   /**

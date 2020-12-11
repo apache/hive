@@ -18,11 +18,14 @@
 
 package org.apache.hadoop.hive.ql.security.authorization;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.Database;
+import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -49,12 +52,15 @@ public interface HiveAuthorizationProvider extends Configurable{
    *          a list of privileges needed for inputs.
    * @param writeRequiredPriv
    *          a list of privileges needed for outputs.
+   * @param inputs
+   *          input entities to be authorized
+   * @param outputs
+   *          output entities to be authorized
    * @throws HiveException
    * @throws AuthorizationException
    */
-  public void authorize(Privilege[] readRequiredPriv,
-      Privilege[] writeRequiredPriv) throws HiveException,
-      AuthorizationException;
+  void authorizeDbLevelOperations(Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv,
+      Collection<ReadEntity> inputs, Collection<WriteEntity> outputs) throws HiveException, AuthorizationException;
 
   /**
    * Authorization privileges against a database object.

@@ -61,7 +61,7 @@ public class TestQBSubQuery {
   }
 
   ASTNode parse(String query) throws ParseException {
-    ASTNode nd = pd.parse(query);
+    ASTNode nd = pd.parse(query).getTree();
     return (ASTNode) nd.getChild(0);
   }
 

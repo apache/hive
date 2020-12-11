@@ -191,7 +191,7 @@ STAGE PLANS:
                 TableScan
                   alias: orders_fact
                   filterExpr: (key2 is not null and key3 is not null) (type: boolean)
-                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_46_container, bigKeyColName:_col0, smallTablePos:1, keyRatio:0.16666666666666666
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_46_container, bigKeyColName:key3, smallTablePos:1, keyRatio:0.16666666666666666
                   Statistics: Num rows: 6 Data size: 288 Basic stats: COMPLETE Column stats: COMPLETE
                   TableScan Vectorization:
                       native: true

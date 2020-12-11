@@ -23,6 +23,8 @@ import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.events.AddCheckConstraintEvent;
+import org.apache.hadoop.hive.metastore.events.AddDefaultConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddForeignKeyEvent;
 import org.apache.hadoop.hive.metastore.events.AddNotNullConstraintEvent;
 import org.apache.hadoop.hive.metastore.events.AddPrimaryKeyEvent;
@@ -35,6 +37,7 @@ import org.apache.hadoop.hive.metastore.events.AddPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.AlterTableEvent;
+import org.apache.hadoop.hive.metastore.events.CommitCompactionEvent;
 import org.apache.hadoop.hive.metastore.events.ConfigChangeEvent;
 import org.apache.hadoop.hive.metastore.events.CreateCatalogEvent;
 import org.apache.hadoop.hive.metastore.events.CreateDatabaseEvent;
@@ -209,6 +212,20 @@ public abstract class MetaStoreEventListener implements Configurable {
   }
 
   /**
+   * @param addDefaultConstraintEvent add default constraint event
+   * @throws MetaException
+   */
+  public void onAddDefaultConstraint(AddDefaultConstraintEvent addDefaultConstraintEvent) throws MetaException {
+  }
+
+  /**
+   * @param addCheckConstraintEvent add check constraint event
+   * @throws MetaException
+   */
+  public void onAddCheckConstraint(AddCheckConstraintEvent addCheckConstraintEvent) throws MetaException {
+  }
+
+  /**
    * @param dropConstraintEvent drop constraint event
    * @throws MetaException
    */
@@ -332,6 +349,17 @@ public abstract class MetaStoreEventListener implements Configurable {
    */
   public void onDeletePartitionColumnStat(DeletePartitionColumnStatEvent deletePartColStatEvent)
           throws MetaException {
+  }
+
+  /**
+   * This will be called to commit a compaction transaction.
+   * @param commitCompactionEvent event to be processed
+   * @param dbConn jdbc connection to remote meta store db.
+   * @param sqlGenerator helper class to generate db specific sql string.
+   * @throws MetaException ex
+   */
+  public void onCommitCompaction(CommitCompactionEvent commitCompactionEvent, Connection dbConn,
+      SQLGenerator sqlGenerator) throws MetaException {
   }
 
   /**

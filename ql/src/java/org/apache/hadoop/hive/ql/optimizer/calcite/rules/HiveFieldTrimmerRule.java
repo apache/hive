@@ -40,10 +40,14 @@ public class HiveFieldTrimmerRule  extends RelOptRule {
   private boolean triggered;
 
   public HiveFieldTrimmerRule(boolean fetchStats) {
+    this(fetchStats, "HiveFieldTrimmerRule");
+  }
+
+  protected HiveFieldTrimmerRule(boolean fetchStats, String description) {
     super(operand(RelNode.class, any()),
-        HiveRelFactories.HIVE_BUILDER, "HiveFieldTrimmerRule");
+        HiveRelFactories.HIVE_BUILDER, description);
     this.fetchStats = fetchStats;
-    triggered = false;
+    this.triggered = false;
   }
 
   @Override
@@ -63,11 +67,13 @@ public class HiveFieldTrimmerRule  extends RelOptRule {
     final HepPlanner tmpPlanner = new HepPlanner(PROGRAM);
     tmpPlanner.setRoot(node);
     node = tmpPlanner.findBestExp();
-    call.transformTo(
-        HiveRelFieldTrimmer.get(fetchStats).trim(call.builder(), node));
+    call.transformTo(trim(call, node));
     triggered = true;
   }
 
+  protected RelNode trim(RelOptRuleCall call, RelNode node) {
+    return HiveRelFieldTrimmer.get(fetchStats).trim(call.builder(), node);
+  }
 
   /**
    * The goal of this rule is to extract the RelNode from the

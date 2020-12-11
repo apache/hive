@@ -38,11 +38,7 @@ public class RandomTypeUtil {
     }
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < length; i++) {
-      if (characters == null) {
-        sb.append((char) (r.nextInt(128)));
-      } else {
-        sb.append(characters.charAt(r.nextInt(characters.length())));
-      }
+      sb.append(characters.charAt(r.nextInt(characters.length())));
     }
     return sb.toString();
   }
@@ -131,9 +127,6 @@ public class RandomTypeUtil {
   public static Timestamp getRandTimestamp(Random r, int minYear, int maxYear) {
     String optionalNanos = "";
     switch (r.nextInt(4)) {
-    case 0:
-      // No nanos.
-      break;
     case 1:
       optionalNanos = String.format(".%09d",
           Integer.valueOf(r.nextInt((int) NANOSECONDS_PER_SECOND)));
@@ -147,6 +140,9 @@ public class RandomTypeUtil {
       // Limit to below milliseconds only...
       optionalNanos = String.format(".%09d",
           Integer.valueOf(r.nextInt((int) NANOSECONDS_PER_MILLISSECOND)));
+      break;
+    default:
+      // No nanos.
       break;
     }
     String timestampStr = String.format("%04d-%02d-%02d %02d:%02d:%02d%s",

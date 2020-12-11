@@ -24,6 +24,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionUtils;
@@ -104,8 +108,25 @@ final class CommandAuthorizerV2 {
         continue;
       }
       if (privObject instanceof ReadEntity && !((ReadEntity)privObject).isDirect()) {
-        // This ReadEntity represents one of the underlying tables/views of a view, so skip it.
-        continue;
+        // This ReadEntity represents one of the underlying tables/views of a view, skip it if
+        // it's not inside a deferred authorized view.
+        ReadEntity reTable = (ReadEntity)privObject;
+        Boolean isDeferred = false;
+        if( reTable.getParents() != null && reTable.getParents().size() > 0){
+          for( ReadEntity re: reTable.getParents()){
+            if (re.getTyp() == Type.TABLE && re.getTable() != null ) {
+              Table t = re.getTable();
+              if(!isDeferredAuthView(t)){
+                continue;
+              }else{
+                isDeferred = true;
+              }
+            }
+          }
+        }
+        if(!isDeferred){
+          continue;
+        }
       }
       if (privObject instanceof WriteEntity && ((WriteEntity)privObject).isTempURI()) {
         // do not authorize temporary uris
@@ -119,6 +140,32 @@ final class CommandAuthorizerV2 {
       addHivePrivObject(privObject, tableName2Cols, hivePrivobjs);
     }
     return hivePrivobjs;
+  }
+
+  /**
+   * A deferred authorization view is view created by non-super user like spark-user. This view contains a parameter "Authorized"
+   * set to false, so ranger will not authorize it during view creation. When a select statement is issued, then the ranger authorizes
+   * the under lying tables.
+   * @param Table t
+   * @return boolean value
+   */
+  private static boolean isDeferredAuthView(Table t){
+    String tableType = t.getTTable().getTableType();
+    String authorizedKeyword = "Authorized";
+    boolean isView = false;
+    if (TableType.MATERIALIZED_VIEW.name().equals(tableType) || TableType.VIRTUAL_VIEW.name().equals(tableType)) {
+      isView = true;
+    }
+    if(isView){
+      Map<String, String> params = t.getParameters();
+      if (params != null && params.containsKey(authorizedKeyword)) {
+        String authorizedValue = params.get(authorizedKeyword);
+        if ("false".equalsIgnoreCase(authorizedValue)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private static void addHivePrivObject(Entity privObject, Map<String, List<String>> tableName2Cols,

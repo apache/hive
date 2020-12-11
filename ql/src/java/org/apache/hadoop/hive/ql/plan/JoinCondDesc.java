@@ -73,6 +73,9 @@ public class JoinCondDesc implements Serializable {
     case LEFTSEMI:
       type = JoinDesc.LEFT_SEMI_JOIN;
       break;
+    case ANTI:
+      type = JoinDesc.ANTI_JOIN;
+      break;
     default:
       assert false;
     }
@@ -140,6 +143,9 @@ public class JoinCondDesc implements Serializable {
     case JoinDesc.LEFT_SEMI_JOIN:
       sb.append("Left Semi Join ");
       break;
+    case JoinDesc.ANTI_JOIN:
+      sb.append("Anti Join ");
+      break;
     default:
       sb.append("Unknown Join ");
       break;
@@ -174,6 +180,9 @@ public class JoinCondDesc implements Serializable {
         break;
       case JoinDesc.LEFT_SEMI_JOIN:
         join.put("type", "Left Semi");
+        break;
+      case JoinDesc.ANTI_JOIN:
+        join.put("type", "Anti");
         break;
       default:
         join.put("type", "Unknown Join");

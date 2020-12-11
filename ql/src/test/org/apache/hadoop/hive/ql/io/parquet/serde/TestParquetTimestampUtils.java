@@ -187,9 +187,9 @@ public class TestParquetTimestampUtils {
     Assert.assertEquals(n2.getTimeOfDayNanos() - n1.getTimeOfDayNanos(), 600000000009L);
 
     NanoTime n3 = new NanoTime(n1.getJulianDay() - 1, n1.getTimeOfDayNanos() + TimeUnit.DAYS.toNanos(1));
-    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false, GMT));
+    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false, GMT, false));
     n3 = new NanoTime(n1.getJulianDay() + 3, n1.getTimeOfDayNanos() - TimeUnit.DAYS.toNanos(3));
-    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false, GMT));
+    Assert.assertEquals(ts1, NanoTimeUtils.getTimestamp(n3, false, GMT, false));
   }
 
   @Test

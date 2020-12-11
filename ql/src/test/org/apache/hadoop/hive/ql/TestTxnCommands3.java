@@ -60,6 +60,8 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
   @Test
   public void testRenameTable() throws Exception {
     MetastoreConf.setBoolVar(hiveConf, MetastoreConf.ConfVars.CREATE_TABLES_AS_ACID, true);
+    hiveConf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
+
     runStatementOnDriver("drop database if exists mydb1 cascade");
     runStatementOnDriver("drop database if exists mydb2 cascade");
     runStatementOnDriver("create database mydb1");
@@ -77,7 +79,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         {"{\"writeid\":1,\"bucketid\":536870912,\"rowid\":0}\t1\t2",
             "s/delta_0000001_0000001_0000/bucket_00000_0"},
         {"{\"writeid\":2,\"bucketid\":536870912,\"rowid\":0}\t4\t6",
-            "s/delta_0000002_0000002_0000/bucket_00000"}};
+            "s/delta_0000002_0000002_0000/bucket_00000_0"}};
     checkResult(expected, testQuery, false, "check data", LOG);
 
 
@@ -286,14 +288,14 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
 
     String[][] expected2 = new String[][]{
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t1\tfred\ttoday",
-            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0000/bucket_00001"},
+            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0000/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\tfred\ttoday",
-            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0000/bucket_00000"},
+            "warehouse/acid_uap/ds=today/delta_0000003_0000003_0000/bucket_00000_0"},
 
         {"{\"writeid\":3,\"bucketid\":536936448,\"rowid\":0}\t1\tfred\ttomorrow",
-            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0000/bucket_00001"},
+            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0000/bucket_00001_0"},
         {"{\"writeid\":3,\"bucketid\":536870912,\"rowid\":0}\t2\tfred\ttomorrow",
-            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0000/bucket_00000"}};
+            "warehouse/acid_uap/ds=tomorrow/delta_0000003_0000003_0000/bucket_00000_0"}};
     checkResult(expected2, testQuery, isVectorized, "after update", LOG);
   }
   @Test
@@ -338,7 +340,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
      ├── delta_0000001_0000001_0000
      │   ├── _orc_acid_version
      │   └── bucket_00000
-     ├── delta_0000001_0000002_v0000019
+     ├── delta_0000001_0000002_v0000018
      │   ├── _orc_acid_version
      │   └── bucket_00000
      └── delta_0000002_0000002_0000
@@ -350,7 +352,7 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
         FileUtils.HIDDEN_FILES_PATH_FILTER);
 
     String[] expectedList = new String[] {
-        "/t/delta_0000001_0000002_v0000019",
+        "/t/delta_0000001_0000002_v0000018",
         "/t/delta_0000001_0000001_0000",
         "/t/delta_0000002_0000002_0000",
     };
@@ -377,13 +379,13 @@ public class TestTxnCommands3 extends TxnCommandsBaseForTests {
     runStatementOnDriver("alter table T compact 'minor'");
     runWorker(hiveConf);
     /*
-    at this point delta_0000001_0000003_v0000022 is visible to everyone
+    at this point delta_0000001_0000003_v0000020 is visible to everyone
     so cleaner removes all files shadowed by it (which is everything in this case)
     */
     runCleaner(hiveConf);
 
     expectedList = new String[] {
-        "/t/delta_0000001_0000003_v0000022"
+        "/t/delta_0000001_0000003_v0000020"
     };
     actualList = fs.listStatus(new Path(warehousePath + "/t"),
         FileUtils.HIDDEN_FILES_PATH_FILTER);

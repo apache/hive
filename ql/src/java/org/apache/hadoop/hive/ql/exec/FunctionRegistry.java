@@ -832,6 +832,7 @@ public final class FunctionRegistry {
       return a;
     }
 
+
     if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
       // It is not primitive; check if it is a struct and we can infer a common class
       if (a.getCategory() == Category.STRUCT && b.getCategory() == Category.STRUCT) {
@@ -848,6 +849,15 @@ public final class FunctionRegistry {
       // Same primitive category but different qualifiers.
       // Rely on getTypeInfoForPrimitiveCategory() to sort out the type params.
       return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcA);
+    }
+
+    if (pcA == PrimitiveCategory.VOID) {
+      // Handle NULL, we return the type of pcB
+      return b;
+    }
+    if (pcB == PrimitiveCategory.VOID) {
+      // Handle NULL, we return the type of pcA
+      return a;
     }
 
     PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
@@ -1539,11 +1549,6 @@ public final class FunctionRegistry {
       return (TableFunctionResolver) ReflectionUtils.newInstance(tfInfo.getFunctionClass(), null);
     }
     return null;
-  }
-
-  public static TableFunctionResolver getWindowingTableFunction()
-      throws SemanticException {
-    return getTableFunctionResolver(WINDOWING_TABLE_FUNCTION);
   }
 
   public static boolean isNoopFunction(String fnName) {

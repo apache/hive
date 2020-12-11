@@ -151,6 +151,7 @@ public class TestCodahaleMetrics {
    * @throws Exception if fails to read counter value
    */
   @Test
+  @org.junit.Ignore("flaky test HIVE-23692")
   public void testFileReporting() throws Exception {
     int runs = 5;
     String  counterName = "count2";

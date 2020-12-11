@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.llap.cache;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.apache.hadoop.hive.common.io.Allocator;
 import org.apache.hadoop.hive.common.io.CacheTag;
@@ -100,6 +101,11 @@ public class SimpleBufferManager implements BufferUsageManager, LowLevelCache {
 
   @Override
   public void notifyEvicted(MemoryBuffer buffer) {
+    throw new UnsupportedOperationException("Buffer manager doesn't have cache");
+  }
+
+  @Override
+  public long markBuffersForProactiveEviction(Predicate<CacheTag> predicate, boolean isInstantDeallocation) {
     throw new UnsupportedOperationException("Buffer manager doesn't have cache");
   }
 }

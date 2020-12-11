@@ -82,7 +82,6 @@ public final class SearchArgumentImpl implements SearchArgument {
       checkLiteralType(literal, type, conf);
       this.literalList = literalList;
       if (literalList != null) {
-        Class valueCls = type.getValueClass();
         for(Object lit: literalList) {
           checkLiteralType(lit, type, conf);
         }

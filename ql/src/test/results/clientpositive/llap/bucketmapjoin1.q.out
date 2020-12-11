@@ -487,7 +487,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -555,7 +555,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -905,7 +905,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:
@@ -973,7 +973,7 @@ STAGE PLANS:
                         value expressions: _col1 (type: string)
                         auto parallelism: true
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
             Path -> Alias:
 #### A masked pattern was here ####
             Path -> Partition:

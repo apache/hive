@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -61,15 +62,17 @@ final class CommandAuthorizerV1 {
     Hive db = sem.getDb();
     HiveAuthorizationProvider authorizer = ss.getAuthorizer();
 
-    authorizeOperation(op, sem, db, authorizer);
+    authorizeOperation(op, sem, inputs, outputs, db, authorizer);
     authorizeOutputs(op, outputs, db, authorizer);
     authorizeInputs(op, sem, inputs, authorizer);
   }
 
-  private static void authorizeOperation(HiveOperation op, BaseSemanticAnalyzer sem, Hive db,
+  private static void authorizeOperation(HiveOperation op, BaseSemanticAnalyzer sem, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs, Hive db,
       HiveAuthorizationProvider authorizer) throws HiveException {
-    if (op.equals(HiveOperation.CREATEDATABASE)) {
-      authorizer.authorize(op.getInputRequiredPrivileges(), op.getOutputRequiredPrivileges());
+    if (op.equals(HiveOperation.CREATEDATABASE) || op.equals(HiveOperation.ALTERDATABASE_LOCATION)) {
+      authorizer.authorizeDbLevelOperations(op.getInputRequiredPrivileges(), op.getOutputRequiredPrivileges(),
+          inputs, outputs);
     } else if (op.equals(HiveOperation.CREATETABLE_AS_SELECT) || op.equals(HiveOperation.CREATETABLE)) {
       authorizer.authorize(db.getDatabase(SessionState.get().getCurrentDatabase()), null,
           HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());

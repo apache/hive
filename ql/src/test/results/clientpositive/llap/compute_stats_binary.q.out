@@ -31,4 +31,4 @@ POSTHOOK: query: select compute_stats(a, 16) from tab_binary
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tab_binary
 #### A masked pattern was here ####
-{"columntype":"Binary","maxlength":36,"avglength":20.0,"countnulls":0}
+{"columntype":"Binary","maxlength":58,"avglength":32.5,"countnulls":0}

@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.common;
 
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+import org.apache.hive.common.util.SuppressFBWarnings;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,24 +68,28 @@ public class CopyOnFirstWriteProperties extends Properties {
   /*************   Public API of java.util.Properties   ************/
 
   @Override
+  @SuppressFBWarnings(value = "IS2_INCONSISTENT_SYNC", justification = "Intended")
   public String getProperty(String key) {
     if (interned != null) return interned.getProperty(key);
     else return super.getProperty(key);
   }
 
   @Override
+  @SuppressFBWarnings(value = {"IS2_INCONSISTENT_SYNC", "UG_SYNC_SET_UNSYNC_GET"}, justification = "Intended")
   public String getProperty(String key, String defaultValue) {
     if (interned != null) return interned.getProperty(key, defaultValue);
     else return super.getProperty(key, defaultValue);
   }
 
   @Override
+  @SuppressFBWarnings(value = "IS2_INCONSISTENT_SYNC", justification = "Intended")
   public void list(PrintStream out) {
     if (interned != null) interned.list(out);
     else super.list(out);
   }
 
   @Override
+  @SuppressFBWarnings(value = "IS2_INCONSISTENT_SYNC", justification = "Intended")
   public void list(PrintWriter out) {
     if (interned != null) interned.list(out);
     else super.list(out);
@@ -347,7 +352,7 @@ public class CopyOnFirstWriteProperties extends Properties {
     if (p != null) {
       this.interned = INTERNER.intern(p);
     } else {
-      this.interned = p;
+      this.interned = null;
     }
   }
 

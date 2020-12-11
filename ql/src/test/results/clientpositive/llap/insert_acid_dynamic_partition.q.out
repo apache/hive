@@ -13,6 +13,7 @@ PREHOOK: Output: default@acid_dynamic
 POSTHOOK: query: insert into table acid_dynamic partition (ds) select cint, cast(cstring1 as varchar(128)), cstring2 from alltypesorc where cint is not null and cint < 0 order by cint limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@acid_dynamic
 POSTHOOK: Output: default@acid_dynamic@ds=4KWs6gw7lv2WYd66P
 POSTHOOK: Output: default@acid_dynamic@ds=4hA4KQj2vD3fI6gX82220d
 POSTHOOK: Output: default@acid_dynamic@ds=KbaDXiN85adbHRx58v

@@ -19,7 +19,6 @@
 
 package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 
-import java.io.Serializable;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -123,7 +122,8 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
   protected void authorize(Privilege[] inputPrivs, Privilege[] outputPrivs)
     throws AuthorizationException, SemanticException {
     try {
-      getAuthProvider().authorize(inputPrivs, outputPrivs);
+      getAuthProvider().authorizeDbLevelOperations(inputPrivs, outputPrivs,
+          null, null);
     } catch (HiveException ex) {
       throw new SemanticException(ex);
     }

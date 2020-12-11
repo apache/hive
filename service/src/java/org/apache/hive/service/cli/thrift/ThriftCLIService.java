@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import javax.security.auth.login.LoginException;
@@ -326,10 +327,12 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
       final int fetchSize = hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE);
 
+      Map<String, String> map = new HashMap<>();
+      map.put(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname, Integer.toString(fetchSize));
+      map.put(HiveConf.ConfVars.HIVE_DEFAULT_NULLS_LAST.varname,
+          String.valueOf(hiveConf.getBoolVar(ConfVars.HIVE_DEFAULT_NULLS_LAST)));
       resp.setSessionHandle(sessionHandle.toTSessionHandle());
-      resp.setConfiguration(Collections
-          .singletonMap(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_RESULTSET_DEFAULT_FETCH_SIZE.varname,
-              Integer.toString(fetchSize)));
+      resp.setConfiguration(map);
       resp.setStatus(OK_STATUS);
       ThriftCLIServerContext context =
         (ThriftCLIServerContext)currentServerContext.get();
@@ -569,7 +572,22 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
               queryTimeout) : cliService.executeStatement(sessionHandle, statement, confOverlay,
               queryTimeout);
       resp.setOperationHandle(operationHandle.toTOperationHandle());
-      resp.setStatus(OK_STATUS);
+      SessionManager sessionManager = cliService.getSessionManager();
+      if (sessionManager.getOperationManager().canShowDrilldownLink(operationHandle)) {
+        StringBuilder urlBuilder = new StringBuilder("The url to track the operation: ")
+            .append(hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_USE_SSL) ? "https" : "http")
+            .append("://")
+            .append(sessionManager.getHiveServer2HostName())
+            .append(":")
+            .append(hiveConf.getIntVar(HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT))
+            .append("/query_page?operationId=")
+            .append(operationHandle.getHandleIdentifier().toString());
+        TStatus successWithInfo = new TStatus(TStatusCode.SUCCESS_WITH_INFO_STATUS);
+        successWithInfo.addToInfoMessages(urlBuilder.toString());
+        resp.setStatus(successWithInfo);
+      } else {
+        resp.setStatus(OK_STATUS);
+      }
     } catch (Exception e) {
       // Note: it's rather important that this (and other methods) catch Exception, not Throwable;
       // in combination with HiveSessionProxy.invoke code, perhaps unintentionally, it used

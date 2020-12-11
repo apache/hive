@@ -509,6 +509,7 @@ POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
   SELECT * FROM orc_create_people_staging
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@orc_create_people_staging
+POSTHOOK: Output: default@orc_create_people
 POSTHOOK: Output: default@orc_create_people@state=Ca
 POSTHOOK: Output: default@orc_create_people@state=Or
 POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]

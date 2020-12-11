@@ -152,17 +152,10 @@ public class OrcEncodedDataConsumer
         }
 
         ColumnVectorBatch cvb = cvbPool.take();
+        cvb.filterContext.reset();
         // assert cvb.cols.length == batch.getColumnIxs().length; // Must be constant per split.
         cvb.size = batchSize;
         for (int idx = 0; idx < columnReaders.length; ++idx) {
-          TreeReader reader = columnReaders[idx];
-          if (cvb.cols[idx] == null) {
-            // Orc store rows inside a root struct (hive writes it this way).
-            // When we populate column vectors we skip over the root struct.
-            cvb.cols[idx] = createColumn(batchSchemas[idx], VectorizedRowBatch.DEFAULT_SIZE, useDecimal64ColumnVectors);
-          }
-          trace.logTreeReaderNextVector(idx);
-
           /*
            * Currently, ORC's TreeReaderFactory class does this:
            *
@@ -198,9 +191,8 @@ public class OrcEncodedDataConsumer
            *     it doesn't get confused.
            *
            */
-          ColumnVector cv = cvb.cols[idx];
-          cv.reset();
-          cv.ensureSize(batchSize, false);
+          TreeReader reader = columnReaders[idx];
+          ColumnVector cv = prepareColumnVector(cvb, idx, batchSize);
           reader.nextVector(cv, null, batchSize);
         }
 
@@ -216,6 +208,19 @@ public class OrcEncodedDataConsumer
       // Caller will return the batch.
       downstreamConsumer.setError(e);
     }
+  }
+
+  private ColumnVector prepareColumnVector(ColumnVectorBatch cvb, int idx, int batchSize) {
+    if (cvb.cols[idx] == null) {
+      // Orc store rows inside a root struct (hive writes it this way).
+      // When we populate column vectors we skip over the root struct.
+      cvb.cols[idx] = createColumn(batchSchemas[idx], VectorizedRowBatch.DEFAULT_SIZE, useDecimal64ColumnVectors);
+    }
+    trace.logTreeReaderNextVector(idx);
+    ColumnVector cv = cvb.cols[idx];
+    cv.reset();
+    cv.ensureSize(batchSize, false);
+    return cv;
   }
 
   private void createColumnReaders(OrcEncodedColumnBatch batch,

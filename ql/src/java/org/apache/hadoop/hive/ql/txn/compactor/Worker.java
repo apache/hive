@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.common.util.Ref;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -72,7 +73,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private String CLASS_NAME = Worker.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private long SLEEP_TIME = 10000;
-  private static final int NOT_SET = -1;
+  private static final int TXN_ID_NOT_SET = -1;
 
   private String workerName;
 
@@ -129,6 +130,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
           } catch (InterruptedException e) {
           }
         }
+        LOG.info("Worker thread finished one loop.");
       } while (!stop.get());
     } finally {
       if (executor != null) {
@@ -140,8 +142,18 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
   }
 
+  private void verifyTableIdHasNotChanged(CompactionInfo ci, Table originalTable) throws HiveException, MetaException {
+    Table currentTable = resolveTable(ci);
+    if (originalTable.getId() != currentTable.getId()) {
+      throw new HiveException("Table " + originalTable.getDbName() + "." + originalTable.getTableName()
+          + " id (" + currentTable.getId() + ") is not equal to its id when compaction started ("
+          + originalTable.getId() + "). The table might have been dropped and recreated while compaction was running."
+          + " Marking compaction as failed.");
+    }
+  }
+
   private void commitTxnIfSet(long compactorTxnId) {
-    if (compactorTxnId != NOT_SET) {
+    if (compactorTxnId != TXN_ID_NOT_SET) {
       try {
         if (msc != null) {
           msc.commitTxn(compactorTxnId);
@@ -339,7 +351,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
 
     if (!isEnoughToCompact) {
-      LOG.debug("Not compacting {}; current base: {}, delta files: {}, originals: {}",
+      LOG.info("Not enough files in {} to compact; current base: {}, delta files: {}, originals: {}",
           sd.getLocation(), dir.getBaseDirectory(), deltaInfo, origCount);
     }
     return isEnoughToCompact;
@@ -354,10 +366,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
    * @return true if cleaning is needed
    */
   public static boolean needsCleaning(AcidUtils.Directory dir, StorageDescriptor sd) {
-    int numObsoleteDirs = dir.getObsolete().size();
+    int numObsoleteDirs = dir.getObsolete().size() + dir.getAbortedDirectories().size();
     boolean needsJustCleaning = numObsoleteDirs > 0;
     if (needsJustCleaning) {
-      LOG.debug("{} obsolete directories in {} found; marked for cleaning.", numObsoleteDirs,
+      LOG.info("{} obsolete directories in {} found; marked for cleaning.", numObsoleteDirs,
           sd.getLocation());
     }
     return needsJustCleaning;
@@ -391,10 +403,15 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     // so wrap it in a big catch Throwable statement.
     CompactionHeartbeater heartbeater = null;
     CompactionInfo ci = null;
-    long compactorTxnId = NOT_SET;
+    long compactorTxnId = TXN_ID_NOT_SET;
     try {
       if (msc == null) {
-        msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
+        try {
+          msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
+        } catch (Exception e) {
+          LOG.error("Failed to connect to HMS", e);
+          return false;
+        }
       }
       ci = CompactionInfo.optionalCompactionInfoStructToInfo(msc.findNextCompact(workerName));
       LOG.debug("Processing compaction request " + ci);
@@ -491,8 +508,12 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       jobName.append(ci.getFullPartitionName());
 
       // Don't start compaction or cleaning if not necessary
+      if (isDynPartAbort(t, ci)) {
+        msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
+        return false;
+      }
       AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
-          tblValidWriteIds, Ref.from(false), true, null, false);
+          tblValidWriteIds, Ref.from(false), true);
       if (!isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
         if (needsCleaning(dir, sd)) {
           msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
@@ -505,54 +526,50 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
 
       checkInterrupt();
 
-      LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in " +
+      LOG.info("Starting " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in txnId " +
                    JavaUtils.txnIdToString(compactorTxnId) + " with compute stats set to " + computeStats);
       final StatsUpdater su = computeStats ? StatsUpdater.init(ci, msc.findColumnsWithStats(
           CompactionInfo.compactionInfoToStruct(ci)), conf,
           runJobAsSelf(ci.runAs) ? ci.runAs : t.getOwner()) : null;
-      final CompactorMR mr = new CompactorMR();
+
       try {
-        if (runJobAsSelf(ci.runAs)) {
-          mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
+        failCompactionIfSetForTest();
+
+        /*
+        First try to run compaction via HiveQL queries.
+        Compaction for MM tables happens here, or run compaction for Crud tables if query-based compaction is enabled.
+        todo Find a more generic approach to collecting files in the same logical bucket to compact within the same
+        task (currently we're using Tez split grouping).
+        */
+        QueryCompactor queryCompactor = QueryCompactorFactory.getQueryCompactor(t, conf, ci);
+        if (queryCompactor != null) {
+          LOG.info("Will compact id: " + ci.id + " with query-based compactor class: "
+              + queryCompactor.getClass().getName());
+          queryCompactor.runCompaction(conf, t, p, sd, tblValidWriteIds, ci, dir);
         } else {
-          UserGroupInformation ugi = UserGroupInformation.createProxyUser(t.getOwner(),
-              UserGroupInformation.getLoginUser());
-          final Partition fp = p;
-          final CompactionInfo fci = ci;
-          ugi.doAs(new PrivilegedExceptionAction<Object>() {
-            @Override
-            public Object run() throws Exception {
-              mr.run(conf, jobName.toString(), t, fp, sd, tblValidWriteIds, fci, su, msc, dir);
-              return null;
-            }
-          });
-          try {
-            FileSystem.closeAllForUGI(ugi);
-          } catch (IOException exception) {
-            LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " +
-                          ci.getFullPartitionName(), exception);
-          }
+          LOG.info("Will compact id: " + ci.id + " via MR job");
+          runCompactionViaMrJob(ci, t, p, sd, tblValidWriteIds, jobName, dir, su);
         }
+
         heartbeater.cancel();
+
+        verifyTableIdHasNotChanged(ci, t1);
+
+        LOG.info("Completed " + ci.type.toString() + " compaction for " + ci.getFullPartitionName() + " in txn "
+            + JavaUtils.txnIdToString(compactorTxnId) + ", marking as compacted.");
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
       } catch (Throwable e) {
         LOG.error("Caught exception while trying to compact " + ci +
-                      ".  Marking failed to avoid repeated failures", e);
-        ci.errorMessage = e.getMessage();
-        msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
-        msc.abortTxns(Collections.singletonList(compactorTxnId));
-        compactorTxnId = NOT_SET;
+            ".  Marking failed to avoid repeated failures", e);
+        abortCompactionAndMarkFailed(ci, compactorTxnId, e);
       }
     } catch (TException | IOException t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
       try {
-        if (msc != null && ci != null) {
-          ci.errorMessage = t.getMessage();
-          msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
-          compactorTxnId = NOT_SET;
-        }
+        abortCompactionAndMarkFailed(ci, compactorTxnId, t);
       } catch (TException e) {
-        LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, e);
+        LOG.error("Caught an exception while trying to mark compaction {} as failed: {}" +
+                (compactorTxnId != TXN_ID_NOT_SET ? " or abort txnId " + compactorTxnId : "") , ci, e);
       } finally {
         if (msc != null) {
           msc.close();
@@ -561,7 +578,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       }
     } catch (Throwable t) {
       LOG.error("Caught an exception in the main loop of compactor worker " + workerName, t);
-      compactorTxnId = NOT_SET;
     } finally {
       commitTxnIfSet(compactorTxnId);
       if (heartbeater != null) {
@@ -571,9 +587,53 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     return true;
   }
 
+  private void failCompactionIfSetForTest() {
+    if(conf.getBoolVar(HiveConf.ConfVars.HIVE_IN_TEST) && conf.getBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION)) {
+      throw new RuntimeException(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION.name() + "=true");
+    }
+  }
+
+  private void runCompactionViaMrJob(CompactionInfo ci, Table t, Partition p, StorageDescriptor sd,
+      ValidCompactorWriteIdList tblValidWriteIds, StringBuilder jobName, AcidUtils.Directory dir, StatsUpdater su)
+      throws IOException, HiveException, InterruptedException {
+    final CompactorMR mr = new CompactorMR();
+    if (runJobAsSelf(ci.runAs)) {
+      mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
+    } else {
+      UserGroupInformation ugi = UserGroupInformation.createProxyUser(ci.runAs, UserGroupInformation.getLoginUser());
+      ugi.doAs((PrivilegedExceptionAction<Object>) () -> {
+        mr.run(conf, jobName.toString(), t, p, sd, tblValidWriteIds, ci, su, msc, dir);
+        return null;
+      });
+      try {
+        FileSystem.closeAllForUGI(ugi);
+      } catch (IOException exception) {
+        LOG.error("Could not clean up file-system handles for UGI: " + ugi + " for " + ci.getFullPartitionName(),
+            exception);
+      }
+    }
+  }
+
+  private void abortCompactionAndMarkFailed(CompactionInfo ci, long compactorTxnId, Throwable e) throws TException {
+    if (ci != null) {
+      ci.errorMessage = e.getMessage();
+    }
+    if (msc != null) {
+      msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
+      if (compactorTxnId != TXN_ID_NOT_SET) {
+        msc.abortTxns(Collections.singletonList(compactorTxnId));
+      }
+    }
+  }
+
   private void checkInterrupt() throws InterruptedException {
     if (Thread.interrupted()) {
       throw new InterruptedException("Compaction execution is interrupted");
     }
+  }
+
+  private static boolean isDynPartAbort(Table t, CompactionInfo ci) {
+    return t.getPartitionKeys() != null && t.getPartitionKeys().size() > 0
+        && ci.partName == null;
   }
 }

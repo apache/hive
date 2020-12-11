@@ -83,6 +83,43 @@ public interface FunctionHelper {
   }
 
   /**
+   * returns true if FunctionInfo is an And function.
+   */
+  boolean isAndFunction(FunctionInfo fi);
+
+  /**
+   * returns true if FunctionInfo is an Or function.
+   */
+  boolean isOrFunction(FunctionInfo fi);
+
+  /**
+   * returns true if FunctionInfo is an In function.
+   */
+  boolean isInFunction(FunctionInfo fi);
+
+  /**
+   * returns true if FunctionInfo is a compare function (e.g. '<=')
+   */
+  boolean isCompareFunction(FunctionInfo fi);
+
+  /**
+   * returns true if FunctionInfo is an == function.
+   */
+  boolean isEqualFunction(FunctionInfo fi);
+
+  /**
+   * Returns whether the expression, for a single query, returns the same result given
+   * the same arguments/children. This includes deterministic functions as well as runtime
+   * constants (which may not be deterministic across queries).
+   */
+  boolean isConsistentWithinQuery(FunctionInfo fi);
+
+  /**
+   * returns true if FunctionInfo is a stateful function.
+   */
+  boolean isStateful(FunctionInfo fi);
+
+  /**
    * Class to store aggregate function related information.
    */
   class AggregateInfo {

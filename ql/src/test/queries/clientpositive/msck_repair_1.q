@@ -8,8 +8,8 @@ MSCK TABLE repairtable;
 
 SHOW PARTITIONS repairtable;
 
-dfs ${system:test.dfs.mkdir} ${system:test.warehouse.dir}/repairtable/p1=c/p2=a/p3=b;
-dfs -touchz ${system:test.warehouse.dir}/repairtable/p1=c/p2=a/p3=b/datafile;
+dfs ${system:test.dfs.mkdir} ${system:test.local.warehouse.dir}/repairtable/p1=c/p2=a/p3=b;
+dfs -touchz ${system:test.local.warehouse.dir}/repairtable/p1=c/p2=a/p3=b/datafile;
 
 MSCK TABLE default.repairtable;
 

@@ -380,7 +380,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   // Core logic to load hash table using HashTableLoader
   private Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> loadHashTableInternal(
           ExecMapperContext mapContext, MapredContext mrContext) throws HiveException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
     loader.init(mapContext, mrContext, hconf, this);
     try {
       loader.load(mapJoinTables, mapJoinTableSerdes);
@@ -399,7 +399,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     Pair<MapJoinTableContainer[], MapJoinTableContainerSerDe[]> pair =
             new ImmutablePair<> (mapJoinTables, mapJoinTableSerdes);
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
 
     if (canSkipJoinProcessing(mapContext)) {
       LOG.info("Skipping big table join processing for " + this.toString());

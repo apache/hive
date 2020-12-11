@@ -198,6 +198,9 @@ PREHOOK: query: create view viewDeterministicUDFA partitioned on (vpart1, vpart2
 where part1 in ('US', 'CA')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@testa
+PREHOOK: Input: default@testa@part1=CA/part2=ABC/part3=300
+PREHOOK: Input: default@testa@part1=US/part2=ABC/part3=123
+PREHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
 PREHOOK: Output: database:default
 PREHOOK: Output: default@viewDeterministicUDFA
 POSTHOOK: query: create view viewDeterministicUDFA partitioned on (vpart1, vpart2, vpart3) as select
@@ -213,6 +216,9 @@ POSTHOOK: query: create view viewDeterministicUDFA partitioned on (vpart1, vpart
 where part1 in ('US', 'CA')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@testa
+POSTHOOK: Input: default@testa@part1=CA/part2=ABC/part3=300
+POSTHOOK: Input: default@testa@part1=US/part2=ABC/part3=123
+POSTHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@viewDeterministicUDFA
 POSTHOOK: Lineage: viewDeterministicUDFA.vcol1 EXPRESSION [(testa)testa.FieldSchema(name:col1, type:string, comment:), ]
@@ -231,6 +237,10 @@ PREHOOK: query: create view viewDeterministicUDFB partitioned on (vpart1, vpart2
 where part1 in ('US', 'CA')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@testb
+PREHOOK: Input: default@testb@part1=CA/part2=ABC/part3=300
+PREHOOK: Input: default@testb@part1=CA/part2=ABC/part3=400
+PREHOOK: Input: default@testb@part1=US/part2=DEF/part3=200
+PREHOOK: Input: default@testb@part1=US/part2=PQR/part3=123
 PREHOOK: Output: database:default
 PREHOOK: Output: default@viewDeterministicUDFB
 POSTHOOK: query: create view viewDeterministicUDFB partitioned on (vpart1, vpart2, vpart3) as select
@@ -244,6 +254,10 @@ POSTHOOK: query: create view viewDeterministicUDFB partitioned on (vpart1, vpart
 where part1 in ('US', 'CA')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@testb
+POSTHOOK: Input: default@testb@part1=CA/part2=ABC/part3=300
+POSTHOOK: Input: default@testb@part1=CA/part2=ABC/part3=400
+POSTHOOK: Input: default@testb@part1=US/part2=DEF/part3=200
+POSTHOOK: Input: default@testb@part1=US/part2=PQR/part3=123
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@viewDeterministicUDFB
 POSTHOOK: Lineage: viewDeterministicUDFB.vcola EXPRESSION [(testb)testb.FieldSchema(name:cola, type:string, comment:), ]
@@ -262,6 +276,9 @@ PREHOOK: query: create view viewNoUDFA partitioned on (part1, part2, part3) as s
 where part1 in ('US', 'CA')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@testa
+PREHOOK: Input: default@testa@part1=CA/part2=ABC/part3=300
+PREHOOK: Input: default@testa@part1=US/part2=ABC/part3=123
+PREHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
 PREHOOK: Output: database:default
 PREHOOK: Output: default@viewNoUDFA
 POSTHOOK: query: create view viewNoUDFA partitioned on (part1, part2, part3) as select
@@ -277,6 +294,9 @@ POSTHOOK: query: create view viewNoUDFA partitioned on (part1, part2, part3) as 
 where part1 in ('US', 'CA')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@testa
+POSTHOOK: Input: default@testa@part1=CA/part2=ABC/part3=300
+POSTHOOK: Input: default@testa@part1=US/part2=ABC/part3=123
+POSTHOOK: Input: default@testa@part1=US/part2=DEF/part3=200
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@viewNoUDFA
 POSTHOOK: Lineage: viewNoUDFA.vcol1 EXPRESSION [(testa)testa.FieldSchema(name:col1, type:string, comment:), ]
@@ -295,6 +315,10 @@ PREHOOK: query: create view viewNoUDFB partitioned on (part1, part2, part3) as s
 where part1 in ('US', 'CA')
 PREHOOK: type: CREATEVIEW
 PREHOOK: Input: default@testb
+PREHOOK: Input: default@testb@part1=CA/part2=ABC/part3=300
+PREHOOK: Input: default@testb@part1=CA/part2=ABC/part3=400
+PREHOOK: Input: default@testb@part1=US/part2=DEF/part3=200
+PREHOOK: Input: default@testb@part1=US/part2=PQR/part3=123
 PREHOOK: Output: database:default
 PREHOOK: Output: default@viewNoUDFB
 POSTHOOK: query: create view viewNoUDFB partitioned on (part1, part2, part3) as select
@@ -308,6 +332,10 @@ POSTHOOK: query: create view viewNoUDFB partitioned on (part1, part2, part3) as 
 where part1 in ('US', 'CA')
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Input: default@testb
+POSTHOOK: Input: default@testb@part1=CA/part2=ABC/part3=300
+POSTHOOK: Input: default@testb@part1=CA/part2=ABC/part3=400
+POSTHOOK: Input: default@testb@part1=US/part2=DEF/part3=200
+POSTHOOK: Input: default@testb@part1=US/part2=PQR/part3=123
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@viewNoUDFB
 POSTHOOK: Lineage: viewNoUDFB.vcola EXPRESSION [(testb)testb.FieldSchema(name:cola, type:string, comment:), ]

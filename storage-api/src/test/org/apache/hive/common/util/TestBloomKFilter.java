@@ -508,7 +508,7 @@ public class TestBloomKFilter {
     BloomKFilter.serialize(bytesOut, bf1);
     byte[] bf1Bytes = bytesOut.toByteArray();
     bytesOut.reset();
-    BloomKFilter.serialize(bytesOut, bf1);
+    BloomKFilter.serialize(bytesOut, bf2);
     byte[] bf2Bytes = bytesOut.toByteArray();
 
     // Merge bytes

@@ -18,6 +18,10 @@
 
 package org.apache.hadoop.hive.ql.io.orc.encoded;
 
+import static org.apache.hadoop.hive.common.NumberUtils.getFirstInt;
+import static org.apache.hadoop.hive.common.NumberUtils.getSecondInt;
+import static org.apache.hadoop.hive.common.NumberUtils.makeIntPair;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.Pool;
 import org.apache.hadoop.hive.common.io.DiskRange;
@@ -215,18 +219,6 @@ public final class IoTrace {
     }
     default: throw new AssertionError("Unknown " + event);
     }
-  }
-
-  //Utility methods used to store pairs of ints as long.
-  private static long makeIntPair(int first, int second) {
-    return ((long)first) << 32 | second;
-  }
-
-  private static int getFirstInt(long result) {
-    return (int) (result >>> 32);
-  }
-  private static int getSecondInt(long result) {
-    return (int) (result & ((1L << 32) - 1));
   }
 
   public void logTreeReaderNextVector(int idx) {

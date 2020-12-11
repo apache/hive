@@ -56,7 +56,7 @@ STAGE PLANS:
                         Map-reduce partition columns: rand() (type: double)
                         Statistics: Num rows: 250 Data size: 21250 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:

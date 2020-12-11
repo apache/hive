@@ -203,8 +203,8 @@ POSTHOOK: Input: arc_view@mv_tv_view_data_av1
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
-1.5	1300000
-4.5	15000000
+1.5000	1300000
+4.5000	15000000
 PREHOOK: query: insert into tv_view_data values ('scream', 20000000)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -293,16 +293,16 @@ STAGE PLANS:
                 Statistics: Num rows: 4 Data size: 480 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: max(_col1)
-                  keys: _col2 (type: decimal(12,1))
+                  keys: _col2 (type: decimal(12,4))
                   minReductionHashAggr: 0.5
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col0 (type: decimal(12,1))
+                    key expressions: _col0 (type: decimal(12,4))
                     null sort order: z
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: decimal(12,1))
+                    Map-reduce partition columns: _col0 (type: decimal(12,4))
                     Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
         Reducer 3 
@@ -310,7 +310,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
-                keys: KEY._col0 (type: decimal(12,1))
+                keys: KEY._col0 (type: decimal(12,4))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
@@ -324,7 +324,7 @@ STAGE PLANS:
                       name: arc_view.mv_tv_view_data_av1
                   Write Type: INSERT
                 Select Operator
-                  expressions: _col0 (type: decimal(12,1)), _col1 (type: bigint)
+                  expressions: _col0 (type: decimal(12,4)), _col1 (type: bigint)
                   outputColumnNames: quartile, total
                   Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
@@ -337,7 +337,7 @@ STAGE PLANS:
                       null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: decimal(12,1)), _col1 (type: decimal(12,1)), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: binary)
+                      value expressions: _col0 (type: decimal(12,4)), _col1 (type: decimal(12,4)), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: binary)
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
@@ -347,7 +347,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'DECIMAL' (type: string), _col0 (type: decimal(12,1)), _col1 (type: decimal(12,1)), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), _col5 (type: bigint), _col6 (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  expressions: 'DECIMAL' (type: string), _col0 (type: decimal(12,4)), _col1 (type: decimal(12,4)), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), _col5 (type: bigint), _col6 (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
                   Statistics: Num rows: 1 Data size: 739 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -388,7 +388,7 @@ STAGE PLANS:
                     predicate: _col0 is not null (type: boolean)
                     Statistics: Num rows: 4 Data size: 1468 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col1 (type: bigint), sum_window_0 (type: decimal(12,1)), _col0 (type: string)
+                      expressions: _col1 (type: bigint), sum_window_0 (type: decimal(12,4)), _col0 (type: string)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 4 Data size: 844 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
@@ -397,7 +397,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col2 (type: string)
                         Statistics: Num rows: 4 Data size: 844 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint), _col1 (type: decimal(12,1))
+                        value expressions: _col0 (type: bigint), _col1 (type: decimal(12,4))
 
   Stage: Stage-2
     Dependency Collection
@@ -418,7 +418,7 @@ STAGE PLANS:
       Basic Stats Work:
       Column Stats Desc:
           Columns: quartile, total
-          Column Types: decimal(12,1), bigint
+          Column Types: decimal(12,4), bigint
           Table: arc_view.mv_tv_view_data_av1
 
   Stage: Stage-4
@@ -513,9 +513,9 @@ POSTHOOK: Input: arc_view@mv_tv_view_data_av1
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
-1.5	1300000
-4.5	15000000
-6.0	20000000
+1.5000	1300000
+4.5000	15000000
+6.0000	20000000
 PREHOOK: query: insert into tv_view_data values ('scream2', 30000000)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
@@ -604,16 +604,16 @@ STAGE PLANS:
                 Statistics: Num rows: 5 Data size: 600 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: max(_col1)
-                  keys: _col2 (type: decimal(12,1))
+                  keys: _col2 (type: decimal(12,4))
                   minReductionHashAggr: 0.6
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                   Reduce Output Operator
-                    key expressions: _col0 (type: decimal(12,1))
+                    key expressions: _col0 (type: decimal(12,4))
                     null sort order: z
                     sort order: +
-                    Map-reduce partition columns: _col0 (type: decimal(12,1))
+                    Map-reduce partition columns: _col0 (type: decimal(12,4))
                     Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                     value expressions: _col1 (type: bigint)
         Reducer 3 
@@ -621,7 +621,7 @@ STAGE PLANS:
             Reduce Operator Tree:
               Group By Operator
                 aggregations: max(VALUE._col0)
-                keys: KEY._col0 (type: decimal(12,1))
+                keys: KEY._col0 (type: decimal(12,4))
                 mode: mergepartial
                 outputColumnNames: _col0, _col1
                 Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
@@ -635,7 +635,7 @@ STAGE PLANS:
                       name: arc_view.mv_tv_view_data_av1
                   Write Type: INSERT
                 Select Operator
-                  expressions: _col0 (type: decimal(12,1)), _col1 (type: bigint)
+                  expressions: _col0 (type: decimal(12,4)), _col1 (type: bigint)
                   outputColumnNames: quartile, total
                   Statistics: Num rows: 2 Data size: 240 Basic stats: COMPLETE Column stats: COMPLETE
                   Group By Operator
@@ -648,7 +648,7 @@ STAGE PLANS:
                       null sort order: 
                       sort order: 
                       Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
-                      value expressions: _col0 (type: decimal(12,1)), _col1 (type: decimal(12,1)), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: binary)
+                      value expressions: _col0 (type: decimal(12,4)), _col1 (type: decimal(12,4)), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: bigint), _col6 (type: bigint), _col7 (type: bigint), _col8 (type: binary)
         Reducer 4 
             Execution mode: llap
             Reduce Operator Tree:
@@ -658,7 +658,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
                 Statistics: Num rows: 1 Data size: 552 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'DECIMAL' (type: string), _col0 (type: decimal(12,1)), _col1 (type: decimal(12,1)), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), _col5 (type: bigint), _col6 (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
+                  expressions: 'DECIMAL' (type: string), _col0 (type: decimal(12,4)), _col1 (type: decimal(12,4)), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'LONG' (type: string), _col5 (type: bigint), _col6 (type: bigint), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11
                   Statistics: Num rows: 1 Data size: 739 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -699,7 +699,7 @@ STAGE PLANS:
                     predicate: _col0 is not null (type: boolean)
                     Statistics: Num rows: 5 Data size: 1835 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: _col1 (type: bigint), sum_window_0 (type: decimal(12,1)), _col0 (type: string)
+                      expressions: _col1 (type: bigint), sum_window_0 (type: decimal(12,4)), _col0 (type: string)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 5 Data size: 1055 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
@@ -708,7 +708,7 @@ STAGE PLANS:
                         sort order: +
                         Map-reduce partition columns: _col2 (type: string)
                         Statistics: Num rows: 5 Data size: 1055 Basic stats: COMPLETE Column stats: COMPLETE
-                        value expressions: _col0 (type: bigint), _col1 (type: decimal(12,1))
+                        value expressions: _col0 (type: bigint), _col1 (type: decimal(12,4))
 
   Stage: Stage-2
     Dependency Collection
@@ -729,7 +729,7 @@ STAGE PLANS:
       Basic Stats Work:
       Column Stats Desc:
           Columns: quartile, total
-          Column Types: decimal(12,1), bigint
+          Column Types: decimal(12,4), bigint
           Table: arc_view.mv_tv_view_data_av1
 
   Stage: Stage-4
@@ -824,10 +824,10 @@ POSTHOOK: Input: arc_view@mv_tv_view_data_av1
 POSTHOOK: Input: arc_view@tv_view_data
 POSTHOOK: Input: arc_view@wealth
 #### A masked pattern was here ####
-1.5	1300000
-4.5	15000000
-6.0	20000000
-7.5	30000000
+1.5000	1300000
+4.5000	15000000
+6.0000	20000000
+7.5000	30000000
 PREHOOK: query: drop materialized view mv_tv_view_data_av1
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: arc_view@mv_tv_view_data_av1
@@ -882,12 +882,12 @@ from tv_view_data
 POSTHOOK: type: QUERY
 POSTHOOK: Input: arc_view@tv_view_data
 #### A masked pattern was here ####
-1300000	1.5	simpsons
-2700000	3.0	bbt
-15000000	4.5	super bowl
-20000000	6.0	scream
-30000000	7.5	scream2
-40000000	9.0	scream3
+1300000	1.5000	simpsons
+2700000	3.0000	bbt
+15000000	4.5000	super bowl
+20000000	6.0000	scream
+30000000	7.5000	scream2
+40000000	9.0000	scream3
 PREHOOK: query: explain
 alter materialized view mv_tv_view_data_av2 rebuild
 PREHOOK: type: QUERY
@@ -956,7 +956,7 @@ STAGE PLANS:
                               window frame: RANGE PRECEDING(MAX)~CURRENT
                   Statistics: Num rows: 6 Data size: 2202 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: _col1 (type: bigint), sum_window_0 (type: decimal(12,1)), _col0 (type: string)
+                    expressions: _col1 (type: bigint), sum_window_0 (type: decimal(12,4)), _col0 (type: string)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 6 Data size: 1266 Basic stats: COMPLETE Column stats: COMPLETE
                     File Output Operator
@@ -969,7 +969,7 @@ STAGE PLANS:
                           name: arc_view.mv_tv_view_data_av2
                       Write Type: INSERT
                     Select Operator
-                      expressions: _col0 (type: bigint), _col1 (type: decimal(12,1)), _col2 (type: string)
+                      expressions: _col0 (type: bigint), _col1 (type: decimal(12,4)), _col2 (type: string)
                       outputColumnNames: total_views, quartile, program
                       Statistics: Num rows: 6 Data size: 1266 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
@@ -982,7 +982,7 @@ STAGE PLANS:
                           null sort order: 
                           sort order: 
                           Statistics: Num rows: 1 Data size: 784 Basic stats: COMPLETE Column stats: COMPLETE
-                          value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: decimal(12,1)), _col6 (type: decimal(12,1)), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary)
+                          value expressions: _col0 (type: bigint), _col1 (type: bigint), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: decimal(12,4)), _col6 (type: decimal(12,4)), _col7 (type: bigint), _col8 (type: binary), _col9 (type: int), _col10 (type: struct<count:bigint,sum:double,input:int>), _col11 (type: bigint), _col12 (type: binary)
         Reducer 3 
             Execution mode: llap
             Reduce Operator Tree:
@@ -992,7 +992,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
                 Statistics: Num rows: 1 Data size: 716 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: 'LONG' (type: string), _col0 (type: bigint), _col1 (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DECIMAL' (type: string), _col5 (type: decimal(12,1)), _col6 (type: decimal(12,1)), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
+                  expressions: 'LONG' (type: string), _col0 (type: bigint), _col1 (type: bigint), (_col2 - _col3) (type: bigint), COALESCE(ndv_compute_bit_vector(_col4),0) (type: bigint), _col4 (type: binary), 'DECIMAL' (type: string), _col5 (type: decimal(12,4)), _col6 (type: decimal(12,4)), (_col2 - _col7) (type: bigint), COALESCE(ndv_compute_bit_vector(_col8),0) (type: bigint), _col8 (type: binary), 'STRING' (type: string), UDFToLong(COALESCE(_col9,0)) (type: bigint), COALESCE(_col10,0) (type: double), (_col2 - _col11) (type: bigint), COALESCE(ndv_compute_bit_vector(_col12),0) (type: bigint), _col12 (type: binary)
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17
                   Statistics: Num rows: 1 Data size: 1005 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -1022,7 +1022,7 @@ STAGE PLANS:
       Basic Stats Work:
       Column Stats Desc:
           Columns: total_views, quartile, program
-          Column Types: bigint, decimal(12,1), string
+          Column Types: bigint, decimal(12,4), string
           Table: arc_view.mv_tv_view_data_av2
 
   Stage: Stage-4
@@ -1057,12 +1057,12 @@ from tv_view_data
 POSTHOOK: type: QUERY
 POSTHOOK: Input: arc_view@tv_view_data
 #### A masked pattern was here ####
-1300000	1.5	simpsons
-2700000	3.0	bbt
-15000000	4.5	super bowl
-20000000	6.0	scream
-30000000	7.5	scream2
-40000000	9.0	scream3
+1300000	1.5000	simpsons
+2700000	3.0000	bbt
+15000000	4.5000	super bowl
+20000000	6.0000	scream
+30000000	7.5000	scream2
+40000000	9.0000	scream3
 PREHOOK: query: drop materialized view mv_tv_view_data_av2
 PREHOOK: type: DROP_MATERIALIZED_VIEW
 PREHOOK: Input: arc_view@mv_tv_view_data_av2

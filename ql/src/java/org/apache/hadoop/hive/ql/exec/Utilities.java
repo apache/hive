@@ -76,7 +76,6 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -112,7 +111,6 @@ import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.DriverState;
-import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
@@ -161,8 +159,6 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.api.Adjacency;
-import org.apache.hadoop.hive.ql.plan.api.Graph;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -1453,9 +1449,9 @@ public final class Utilities {
         Path tmpPathOriginal = tmpPath;
         tmpPath = new Path(tmpPath.getParent(), tmpPath.getName() + ".moved");
         LOG.debug("shouldAvoidRename is false therefore moving/renaming " + tmpPathOriginal + " to " + tmpPath);
-        perfLogger.PerfLogBegin("FileSinkOperator", "rename");
+        perfLogger.perfLogBegin("FileSinkOperator", "rename");
         Utilities.rename(fs, tmpPathOriginal, tmpPath);
-        perfLogger.PerfLogEnd("FileSinkOperator", "rename");
+        perfLogger.perfLogEnd("FileSinkOperator", "rename");
       }
 
       // Remove duplicates from tmpPath
@@ -1464,21 +1460,21 @@ public final class Utilities {
       FileStatus[] statuses = statusList.toArray(new FileStatus[statusList.size()]);
       if(statuses != null && statuses.length > 0) {
         Set<FileStatus> filesKept = new HashSet<>();
-        perfLogger.PerfLogBegin("FileSinkOperator", "RemoveTempOrDuplicateFiles");
+        perfLogger.perfLogBegin("FileSinkOperator", "RemoveTempOrDuplicateFiles");
         // remove any tmp file or double-committed output files
         List<Path> emptyBuckets = Utilities.removeTempOrDuplicateFiles(
             fs, statuses, dpCtx, conf, hconf, filesKept, false);
-        perfLogger.PerfLogEnd("FileSinkOperator", "RemoveTempOrDuplicateFiles");
+        perfLogger.perfLogEnd("FileSinkOperator", "RemoveTempOrDuplicateFiles");
         // create empty buckets if necessary
         if (!emptyBuckets.isEmpty()) {
-          perfLogger.PerfLogBegin("FileSinkOperator", "CreateEmptyBuckets");
+          perfLogger.perfLogBegin("FileSinkOperator", "CreateEmptyBuckets");
           createEmptyBuckets(
               hconf, emptyBuckets, conf.getCompressed(), conf.getTableInfo(), reporter);
           for(Path p:emptyBuckets) {
             FileStatus[] items = fs.listStatus(p);
             filesKept.addAll(Arrays.asList(items));
           }
-          perfLogger.PerfLogEnd("FileSinkOperator", "CreateEmptyBuckets");
+          perfLogger.perfLogEnd("FileSinkOperator", "CreateEmptyBuckets");
         }
 
         // move to the file destination
@@ -1489,16 +1485,16 @@ public final class Utilities {
           conf.getFilesToFetch().addAll(filesKept);
         } else if (conf !=null && conf.isCTASorCM() && isBlobStorage) {
           // for CTAS or Create MV statements
-          perfLogger.PerfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
+          perfLogger.perfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
           LOG.debug("CTAS/Create MV: Files being renamed:  " + filesKept.toString());
           moveSpecifiedFilesInParallel(hconf, fs, tmpPath, specPath, filesKept);
-          perfLogger.PerfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
+          perfLogger.perfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
         } else {
           // for rest of the statement e.g. INSERT, LOAD etc
-          perfLogger.PerfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
+          perfLogger.perfLogBegin("FileSinkOperator", "RenameOrMoveFiles");
           LOG.debug("Final renaming/moving. Source: " + tmpPath + " .Destination: " + specPath);
           renameOrMoveFilesInParallel(hconf, fs, tmpPath, specPath);
-          perfLogger.PerfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
+          perfLogger.perfLogEnd("FileSinkOperator", "RenameOrMoveFiles");
         }
       }
     } else {
@@ -1528,7 +1524,7 @@ public final class Utilities {
     LOG.info("rename {} files from {} to dest {}",
         filesToMove.size(), srcPath, destPath);
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
+    perfLogger.perfLogBegin("FileSinkOperator", "moveSpecifiedFileStatus");
 
     final ExecutorService pool = createMoveThreadPool(conf);
 
@@ -1538,7 +1534,7 @@ public final class Utilities {
     shutdownAndCleanup(pool, futures);
     LOG.info("Completed rename from {} to {}", srcPath, destPath);
 
-    perfLogger.PerfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
+    perfLogger.perfLogEnd("FileSinkOperator", "moveSpecifiedFileStatus");
   }
 
   /**
@@ -1676,8 +1672,9 @@ public final class Utilities {
   /**
    * Remove all temporary files and duplicate (double-committed) files from a given directory.
    */
-  public static void removeTempOrDuplicateFiles(FileSystem fs, Path path, boolean isBaseDir) throws IOException {
-    removeTempOrDuplicateFiles(fs, path, null,null,null, isBaseDir);
+  public static void removeTempOrDuplicateFiles(FileSystem fs, Path path, Configuration hconf, boolean isBaseDir)
+      throws IOException {
+    removeTempOrDuplicateFiles(fs, path, null, null, hconf, isBaseDir);
   }
 
   public static List<Path> removeTempOrDuplicateFiles(FileSystem fs, Path path,
@@ -2541,7 +2538,7 @@ public final class Utilities {
   public static ContentSummary getInputSummary(final Context ctx, MapWork work, PathFilter filter)
       throws IOException {
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
 
     final long[] summary = {0L, 0L, 0L};
     final Set<Path> pathNeedProcess = new HashSet<>();
@@ -2583,7 +2580,7 @@ public final class Utilities {
       }
       getInputSummaryWithPool(ctx, Collections.unmodifiableSet(pathNeedProcess),
           work, summary, executor);
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
+      perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
     }
     return new ContentSummary.Builder().length(summary[0])
         .fileCount(summary[1]).directoryCount(summary[2]).build();
@@ -2783,16 +2780,21 @@ public final class Utilities {
   }
 
   public static boolean isEmptyPath(Configuration job, Path dirPath) throws IOException {
-    FileSystem inpFs = dirPath.getFileSystem(job);
-    try {
-      FileStatus[] fStats = inpFs.listStatus(dirPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
-      if (fStats.length > 0) {
-        return false;
-      }
-    } catch(FileNotFoundException fnf) {
-      return true;
+    FileStatus[] fStats = listNonHiddenFileStatus(job, dirPath);
+    if (fStats.length > 0) {
+      return false;
     }
     return true;
+  }
+
+  public static FileStatus[] listNonHiddenFileStatus(Configuration job, Path dirPath)
+      throws IOException {
+    FileSystem inpFs = dirPath.getFileSystem(job);
+    try {
+      return inpFs.listStatus(dirPath, FileUtils.HIDDEN_FILES_PATH_FILTER);
+    } catch (FileNotFoundException e) {
+      return new FileStatus[] {};
+    }
   }
 
   public static List<TezTask> getTezTasks(List<Task<?>> tasks) {
@@ -2848,16 +2850,39 @@ public final class Utilities {
    * Construct a list of full partition spec from Dynamic Partition Context and the directory names
    * corresponding to these dynamic partitions.
    */
-  public static List<LinkedHashMap<String, String>> getFullDPSpecs(Configuration conf,
-      DynamicPartitionCtx dpCtx) throws HiveException {
+  public static List<LinkedHashMap<String, String>> getFullDPSpecs(Configuration conf, DynamicPartitionCtx dpCtx,
+      long writeId, boolean isMmTable, boolean isDirectInsert, boolean isInsertOverwrite, AcidUtils.Operation acidOperation, Set<String> dynamiPartitionSpecs) throws HiveException {
 
     try {
       Path loadPath = dpCtx.getRootPath();
       FileSystem fs = loadPath.getFileSystem(conf);
       int numDPCols = dpCtx.getNumDPCols();
-      List<FileStatus> status = HiveStatsUtils.getFileStatusRecurse(loadPath, numDPCols, fs);
+      List<Path> path = new ArrayList<>();
+      if (isMmTable || isDirectInsert) {
+        Path[] leafStatus = Utilities.getDirectInsertDirectoryCandidates(fs, loadPath, numDPCols, null, writeId, -1,
+            conf, isInsertOverwrite, acidOperation);
+        for (Path p : leafStatus) {
+          Path dpPath = p.getParent();
+          String partitionSpec = dpPath.toString().substring(loadPath.toString().length() + 1);
+          if (!path.contains(dpPath)) {
+            if (isInsertOverwrite) {
+              if (dynamiPartitionSpecs == null || dynamiPartitionSpecs.contains(partitionSpec)) {
+                path.add(dpPath);
+              }
+            }
+            else {
+              path.add(dpPath);
+            }
+          }
+        }
+      } else {
+        List<FileStatus> status = HiveStatsUtils.getFileStatusRecurse(loadPath, numDPCols, fs);
+        for (FileStatus fileStatus : status) {
+          path.add(fileStatus.getPath());
+        }
+      }
 
-      if (status.isEmpty()) {
+      if (path.isEmpty()) {
         LOG.warn("No partition is generated by dynamic partitioning");
         return null;
       }
@@ -2870,9 +2895,7 @@ public final class Utilities {
 
       // for each dynamically created DP directory, construct a full partition spec
       // and load the partition based on that
-      for (int i = 0; i < status.size(); ++i) {
-        // get the dynamically created directory
-        Path partPath = status.get(i).getPath();
+      for (Path partPath : path) {
         assert fs.getFileStatus(partPath).isDir() : "partitions " + partPath
             + " is not a directory !";
 
@@ -3462,7 +3485,7 @@ public final class Utilities {
       Context ctx, boolean skipDummy) throws Exception {
 
     PerfLogger perfLogger = SessionState.getPerfLogger();
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_PATHS);
+    perfLogger.perfLogBegin(CLASS_NAME, PerfLogger.INPUT_PATHS);
 
     Set<Path> pathsProcessed = new HashSet<Path>();
     List<Path> pathsToAdd = new LinkedList<Path>();
@@ -3551,7 +3574,7 @@ public final class Utilities {
       }
     }
 
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_PATHS);
+    perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.INPUT_PATHS);
 
     return finalPathsToAdd;
   }
@@ -4230,7 +4253,7 @@ public final class Utilities {
 
   public static Path[] getDirectInsertDirectoryCandidates(FileSystem fs, Path path, int dpLevels,
       PathFilter filter, long writeId, int stmtId, Configuration conf,
-      Boolean isBaseDir) throws IOException {
+      Boolean isBaseDir, AcidUtils.Operation acidOperation) throws IOException {
     int skipLevels = dpLevels;
     if (filter == null) {
       filter = new AcidUtils.IdPathFilter(writeId, stmtId);
@@ -4246,7 +4269,8 @@ public final class Utilities {
         || (HiveConf.getBoolVar(conf, ConfVars.HIVE_MM_AVOID_GLOBSTATUS_ON_S3) && isS3(fs))) {
       return getDirectInsertDirectoryCandidatesRecursive(fs, path, skipLevels, filter);
     }
-    return getDirectInsertDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, writeId, stmtId, isBaseDir);
+    return getDirectInsertDirectoryCandidatesGlobStatus(fs, path, skipLevels, filter, writeId, stmtId, isBaseDir,
+        acidOperation);
   }
 
   private static boolean isS3(FileSystem fs) {
@@ -4323,7 +4347,7 @@ public final class Utilities {
   }
 
   private static Path[] getDirectInsertDirectoryCandidatesGlobStatus(FileSystem fs, Path path, int skipLevels,
-      PathFilter filter, long writeId, int stmtId, boolean isBaseDir) throws IOException {
+      PathFilter filter, long writeId, int stmtId, boolean isBaseDir, AcidUtils.Operation acidOperation) throws IOException {
     StringBuilder sb = new StringBuilder(path.toUri().getPath());
     for (int i = 0; i < skipLevels; i++) {
       sb.append(Path.SEPARATOR).append('*');
@@ -4333,7 +4357,15 @@ public final class Utilities {
       // sb.append(Path.SEPARATOR).append(AcidUtils.deltaSubdir(writeId, writeId)).append("_*");
       throw new AssertionError("GlobStatus should not be called without a statement ID");
     } else {
-      sb.append(Path.SEPARATOR).append(AcidUtils.baseOrDeltaSubdir(isBaseDir, writeId, writeId, stmtId));
+      String deltaSubDir = AcidUtils.baseOrDeltaSubdir(isBaseDir, writeId, writeId, stmtId);
+      if (AcidUtils.Operation.DELETE.equals(acidOperation)) {
+        deltaSubDir = AcidUtils.deleteDeltaSubdir(writeId, writeId, stmtId);
+      }
+      if (AcidUtils.Operation.UPDATE.equals(acidOperation)) {
+        String deltaPostFix = deltaSubDir.replace("delta", "");
+        deltaSubDir = "{delete_delta,delta}" + deltaPostFix;
+      }
+      sb.append(Path.SEPARATOR).append(deltaSubDir);
     }
     Path pathPattern = new Path(path, sb.toString());
     return statusToPath(fs.globStatus(pathPattern, filter));
@@ -4341,9 +4373,9 @@ public final class Utilities {
 
   private static void tryDeleteAllDirectInsertFiles(FileSystem fs, Path specPath, Path manifestDir,
       int dpLevels, int lbLevels, AcidUtils.IdPathFilter filter, long writeId, int stmtId,
-      Configuration conf) throws IOException {
+      Configuration conf, AcidUtils.Operation acidOperation) throws IOException {
     Path[] files = getDirectInsertDirectoryCandidates(
-        fs, specPath, dpLevels, filter, writeId, stmtId, conf, null);
+        fs, specPath, dpLevels, filter, writeId, stmtId, conf, null, acidOperation);
     if (files != null) {
       for (Path path : files) {
         Utilities.FILE_OP_LOGGER.info("Deleting {} on failure", path);
@@ -4357,7 +4389,7 @@ public final class Utilities {
 
   public static void writeCommitManifest(List<Path> commitPaths, Path specPath, FileSystem fs,
       String taskId, Long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite,
-      boolean hasDynamicPartitions, Set<String> dynamicPartitionSpecs) throws HiveException {
+      boolean hasDynamicPartitions, Set<String> dynamicPartitionSpecs, String staticSpec, boolean isDelete) throws HiveException {
 
     // When doing a multi-statement insert overwrite with dynamic partitioning,
     // the partition information will be written to the manifest file.
@@ -4372,8 +4404,9 @@ public final class Utilities {
     if (commitPaths.isEmpty() && !writeDynamicPartitionsToManifest) {
       return;
     }
+
     // We assume one FSOP per task (per specPath), so we create it in specPath.
-    Path manifestPath = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite);
+    Path manifestPath = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite, staticSpec, isDelete);
     manifestPath = new Path(manifestPath, taskId + MANIFEST_EXTENSION);
     Utilities.FILE_OP_LOGGER.info("Writing manifest to {} with {}", manifestPath, commitPaths);
     try {
@@ -4400,10 +4433,21 @@ public final class Utilities {
     }
   }
 
-  private static Path getManifestDir(
-      Path specPath, long writeId, int stmtId, String unionSuffix, boolean isInsertOverwrite) {
-    Path manifestPath = new Path(specPath, "_tmp." +
-      AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId));
+  private static Path getManifestDir(Path specPath, long writeId, int stmtId, String unionSuffix,
+      boolean isInsertOverwrite, String staticSpec, boolean isDelete) {
+    Path manifestRoot = specPath;
+    if (staticSpec != null) {
+      String tableRoot = specPath.toString();
+      tableRoot = tableRoot.substring(0, tableRoot.length() - staticSpec.length());
+      manifestRoot = new Path(tableRoot);
+    }
+
+    String deltaDir = AcidUtils.baseOrDeltaSubdir(isInsertOverwrite, writeId, writeId, stmtId);
+    if (isDelete) {
+      deltaDir = AcidUtils.deleteDeltaSubdir(writeId, writeId, stmtId);
+    }
+    Path manifestPath = new Path(manifestRoot, "_tmp." + deltaDir);
+
     if (isInsertOverwrite) {
       // When doing a multi-statement insert overwrite query with dynamic partitioning, the
       // generated manifest directory is the same for each FileSinkOperator.
@@ -4427,14 +4471,15 @@ public final class Utilities {
 
   public static void handleDirectInsertTableFinalPath(Path specPath, String unionSuffix, Configuration hconf,
       boolean success, int dpLevels, int lbLevels, MissingBucketsContext mbc, long writeId, int stmtId,
-      Reporter reporter, boolean isMmTable, boolean isMmCtas, boolean isInsertOverwrite, boolean isDirectInsert)
-      throws IOException, HiveException {
+      Reporter reporter, boolean isMmTable, boolean isMmCtas, boolean isInsertOverwrite, boolean isDirectInsert,
+      String staticSpec, AcidUtils.Operation acidOperation, FileSinkDesc conf) throws IOException, HiveException {
     FileSystem fs = specPath.getFileSystem(hconf);
-    Path manifestDir = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite);
+    boolean isDelete = AcidUtils.Operation.DELETE.equals(acidOperation);
+    Path manifestDir = getManifestDir(specPath, writeId, stmtId, unionSuffix, isInsertOverwrite, staticSpec, isDelete);
     if (!success) {
       AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId);
       tryDeleteAllDirectInsertFiles(fs, specPath, manifestDir, dpLevels, lbLevels,
-          filter, writeId, stmtId, hconf);
+          filter, writeId, stmtId, hconf, acidOperation);
       return;
     }
 
@@ -4483,7 +4528,8 @@ public final class Utilities {
     }
 
     Utilities.FILE_OP_LOGGER.debug("Looking for files in: {}", specPath);
-    AcidUtils.IdPathFilter filter = new AcidUtils.IdPathFilter(writeId, stmtId, dynamicPartitionSpecs, dpLevels);
+    AcidUtils.IdPathFilter filter =
+        new AcidUtils.IdPathFilter(writeId, stmtId, dynamicPartitionSpecs, dpLevels);
     if (!fs.exists(specPath)) {
       Utilities.FILE_OP_LOGGER.info("Creating directory with no output at {}", specPath);
       FileUtils.mkdir(fs, specPath, hconf);
@@ -4492,7 +4538,7 @@ public final class Utilities {
     Path[] files = null;
     if (!isInsertOverwrite || dpLevels == 0 || !dynamicPartitionSpecs.isEmpty()) {
       files = getDirectInsertDirectoryCandidates(
-          fs, specPath, dpLevels, filter, writeId, stmtId, hconf, isInsertOverwrite);
+          fs, specPath, dpLevels, filter, writeId, stmtId, hconf, isInsertOverwrite, acidOperation);
     }
 
     ArrayList<Path> directInsertDirectories = new ArrayList<>();
@@ -4520,6 +4566,8 @@ public final class Utilities {
     if (!directInsertDirectories.isEmpty()) {
       cleanDirectInsertDirectoriesConcurrently(directInsertDirectories, committed, fs, hconf, unionSuffix, lbLevels);
     }
+
+    conf.setDynPartitionValues(dynamicPartitionSpecs);
 
     if (!committed.isEmpty()) {
       throw new HiveException("The following files were committed but not found: " + committed);

@@ -32,7 +32,7 @@ Stage-0
             Select Operator [SEL_9] (rows=500/12 width=178)
               Output:["_col0","_col1"]
               TableScan [TS_8] (rows=500/13 width=178)
-                Output:["key","value"]
+                default@src,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
       <-Map 3 [CONTAINS]
         File Output Operator [FS_17]
           Limit [LIM_16] (rows=10/10 width=178)
@@ -40,7 +40,7 @@ Stage-0
             Select Operator [SEL_14] (rows=500/12 width=178)
               Output:["_col0","_col1"]
               TableScan [TS_13] (rows=500/13 width=178)
-                Output:["key","value"]
+                default@src,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: select key from src
 PREHOOK: type: QUERY
@@ -200,10 +200,10 @@ Plan optimized by CBO.
 Stage-0
   Fetch Operator
     limit:10
-    Limit [LIM_2]
-      Number of rows:10
-      Select Operator [SEL_1]
-        Output:["_col0"]
+    Select Operator [SEL_1]
+      Output:["_col0"]
+      Limit [LIM_2]
+        Number of rows:10
         TableScan [TS_0]
           Output:["key"]
 
@@ -465,13 +465,13 @@ Stage-0
           Select Operator [SEL_8] (rows=500/500 width=178)
             Output:["_col0","_col1"]
             TableScan [TS_7] (rows=500/500 width=178)
-              Output:["key","value"]
+              default@src,a,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
       <-Map 3 [CONTAINS]
         File Output Operator [FS_14]
           Select Operator [SEL_12] (rows=500/500 width=178)
             Output:["_col0","_col1"]
             TableScan [TS_11] (rows=500/500 width=178)
-              Output:["key","value"]
+              default@src,b,Tbl:COMPLETE,Col:COMPLETE,Output:["key","value"]
 
 PREHOOK: query: select count(*) from (select * from src a union all select * from src b)subq
 PREHOOK: type: QUERY

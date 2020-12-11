@@ -1,38 +1,47 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hive.kafka;
 
-import kafka.admin.AdminUtils;
-import kafka.admin.RackAwareMode;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServerStartable;
-import kafka.utils.ZKStringSerializer$;
-import kafka.utils.ZkUtils;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.service.AbstractService;
-import org.apache.hive.druid.MiniDruidCluster;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.ByteArraySerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import com.google.common.base.Throwables;
 import com.google.common.io.Files;
 
-import org.I0Itec.zkclient.ZkClient;
-import org.I0Itec.zkclient.ZkConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.IntStream;
 
 /**
@@ -46,7 +55,6 @@ public class SingleNodeKafkaCluster extends AbstractService {
 
 
   private final KafkaServerStartable serverStartable;
-  private final String zkString;
   private final int brokerPort;
   private final String kafkaServer;
 
@@ -67,7 +75,7 @@ public class SingleNodeKafkaCluster extends AbstractService {
         throw new RuntimeException(e);
       }
     }
-    this.zkString = String.format("localhost:%d", zkPort);
+    String zkString = String.format("localhost:%d", zkPort);
 
     this.kafkaServer = String.format("%s:%d", LOCALHOST, this.brokerPort);
 
@@ -157,24 +165,18 @@ public class SingleNodeKafkaCluster extends AbstractService {
     }
   }
 
-  public void createTopic(String topic) {
-    int sessionTimeoutMs = 1000;
-    ZkClient zkClient = new ZkClient(
-        this.zkString, sessionTimeoutMs, sessionTimeoutMs,
-        ZKStringSerializer$.MODULE$
-    );
-    ZkUtils zkUtils = new ZkUtils(zkClient, new ZkConnection(zkString, sessionTimeoutMs), false);
-    int numPartitions = 1;
-    int replicationFactor = 1;
-    Properties topicConfig = new Properties();
-    AdminUtils.createTopic(
-        zkUtils,
-        topic,
-        numPartitions,
-        replicationFactor,
-        topicConfig,
-        RackAwareMode.Disabled$.MODULE$
-    );
-  }
+  private void createTopic(String topic) {
+    Properties properties = new Properties();
+    properties.setProperty("bootstrap.servers", "localhost:9092");
+    properties.setProperty("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
+    properties.setProperty("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");
 
+    int numPartitions = 1;
+    short replicationFactor = 1;
+    AdminClient adminClient = AdminClient.create(properties);
+    NewTopic newTopic = new NewTopic(topic, numPartitions, replicationFactor);
+
+    adminClient.createTopics(Collections.singletonList(newTopic));
+    adminClient.close();
+  }
 }

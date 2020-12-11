@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -61,12 +63,12 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
   private static final String SKETCH_TO_STRING = "stringify";
   private static final String UNION_SKETCH = "union";
   private static final String UNION_SKETCH1 = "union_f";
-  private static final String GET_N = "n";
-  private static final String GET_CDF = "cdf";
+  public static final String GET_N = "n";
+  public static final String GET_CDF = "cdf";
   private static final String GET_PMF = "pmf";
   private static final String GET_QUANTILES = "quantiles";
   public static final String GET_QUANTILE = "quantile";
-  private static final String GET_RANK = "rank";
+  public static final String GET_RANK = "rank";
   private static final String INTERSECT_SKETCH = "intersect";
   private static final String INTERSECT_SKETCH1 = "intersect_f";
   private static final String EXCLUDE_SKETCH = "exclude";
@@ -123,13 +125,18 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
 
   private void buildCalciteFns() {
     for (SketchDescriptor sd : sketchClasses.values()) {
+
+      registerAsHiveFunction(sd.fnMap.get(SKETCH_TO_ESTIMATE));
+      registerAsHiveFunction(sd.fnMap.get(GET_QUANTILE));
+      registerAsHiveFunction(sd.fnMap.get(GET_CDF));
+      registerAsHiveFunction(sd.fnMap.get(GET_N));
+      registerAsHiveFunction(sd.fnMap.get(GET_RANK));
+
       // Mergability is exposed to Calcite; which enables to use it during rollup.
       RelProtoDataType sketchType = RelDataTypeImpl.proto(SqlTypeName.BINARY, true);
 
       SketchFunctionDescriptor sketchSFD = sd.fnMap.get(DATA_TO_SKETCH);
       SketchFunctionDescriptor unionSFD = sd.fnMap.get(UNION_SKETCH);
-      SketchFunctionDescriptor estimateSFD = sd.fnMap.get(SKETCH_TO_ESTIMATE);
-      SketchFunctionDescriptor quantileSFD = sd.fnMap.get(GET_QUANTILE);
 
       if (sketchSFD == null || unionSFD == null) {
         continue;
@@ -152,33 +159,24 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
 
       unionSFD.setCalciteFunction(unionFn);
       sketchSFD.setCalciteFunction(sketchFn);
-      if (estimateSFD != null && estimateSFD.getReturnRelDataType().isPresent()) {
 
-        SqlFunction estimateFn = new HiveSqlFunction(estimateSFD.name,
-            SqlKind.OTHER_FUNCTION,
-            ReturnTypes.explicit(estimateSFD.getReturnRelDataType().get().getSqlTypeName()),
-            InferTypes.ANY_NULLABLE,
-            OperandTypes.family(),
-            SqlFunctionCategory.USER_DEFINED_FUNCTION,
-            true,
-            false);
 
-        estimateSFD.setCalciteFunction(estimateFn);
-      }
+    }
+  }
 
-      if (quantileSFD != null && quantileSFD.getReturnRelDataType().isPresent()) {
-        SqlFunction quantileFn = new HiveSqlFunction(quantileSFD.name,
-            SqlKind.OTHER_FUNCTION,
-            ReturnTypes.explicit(quantileSFD.getReturnRelDataType().get().getSqlTypeName()),
-            InferTypes.ANY_NULLABLE,
-            OperandTypes.family(),
-            SqlFunctionCategory.USER_DEFINED_FUNCTION,
-            true,
-            false);
+  private void registerAsHiveFunction(SketchFunctionDescriptor sfd) {
+    if (sfd != null && sfd.getReturnRelDataType().isPresent()) {
+      SqlFunction cdfFn =
+          new HiveSqlFunction(sfd.name,
+              SqlKind.OTHER_FUNCTION,
+              ReturnTypes.explicit(sfd.getReturnRelDataType().get()),
+              InferTypes.ANY_NULLABLE,
+              OperandTypes.family(),
+              SqlFunctionCategory.USER_DEFINED_FUNCTION,
+              true,
+              false);
 
-        quantileSFD.setCalciteFunction(quantileFn);
-
-      }
+      sfd.setCalciteFunction(cdfFn);
     }
   }
 
@@ -209,11 +207,11 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
 
   }
 
-  private static class SketchFunctionDescriptor implements HiveUDFPlugin.UDFDescriptor {
+  static class SketchFunctionDescriptor implements HiveUDFPlugin.UDFDescriptor {
     String name;
     Class<?> udfClass;
     private SqlFunction calciteFunction;
-    private Class<?> returnType;
+    private Type returnType;
 
     public SketchFunctionDescriptor(String name, Class<?> udfClass) {
       this.name = name;
@@ -235,12 +233,21 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
         return Optional.empty();
       } else {
         JavaTypeFactoryImpl typeFactory = new JavaTypeFactoryImpl(new HiveTypeSystemImpl());
+        if (returnType instanceof ParameterizedType) {
+          ParameterizedType parameterizedType = (ParameterizedType) returnType;
+          if (parameterizedType.getRawType() == List.class) {
+            final RelDataType componentRelType = typeFactory.createType(parameterizedType.getActualTypeArguments()[0]);
+            return Optional
+                .of(typeFactory.createArrayType(typeFactory.createTypeWithNullability(componentRelType, true), -1));
+          }
+          return Optional.empty();
+        }
         return Optional.of(typeFactory.createType(returnType));
       }
     }
 
-    public void setReturnType(Class<?> returnType) {
-      this.returnType = returnType;
+    public void setReturnType(Type type) {
+      this.returnType = type;
     }
 
     @Override
@@ -272,7 +279,7 @@ public final class DataSketchesFunctions implements HiveUDFPlugin {
       if (UDF.class.isAssignableFrom(clazz)) {
         Optional<Method> evaluateMethod = getEvaluateMethod(clazz);
         if (evaluateMethod.isPresent()) {
-          value.setReturnType(evaluateMethod.get().getReturnType());
+          value.setReturnType(evaluateMethod.get().getGenericReturnType());
         }
       }
       fnMap.put(name, value);

@@ -18,12 +18,14 @@
 
 package org.apache.hive.service.cli.thrift;
 
+import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import javax.net.ssl.KeyManagerFactory;
 import javax.ws.rs.HttpMethod;
 
 import org.apache.hadoop.hive.common.metrics.common.Metrics;
@@ -135,6 +137,14 @@ public class ThriftHttpCLIService extends ThriftCLIService {
               ConfVars.HIVE_SERVER2_SSL_KEYSTORE_PATH.varname 
               + " Not configured for SSL connection");
         }
+        String keyStoreType = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYSTORE_TYPE).trim();
+        if (keyStoreType.isEmpty()) {
+          keyStoreType = KeyStore.getDefaultType();
+        }
+        String keyStoreAlgorithm = hiveConf.getVar(ConfVars.HIVE_SERVER2_SSL_KEYMANAGERFACTORY_ALGORITHM).trim();
+        if (keyStoreAlgorithm.isEmpty()) {
+          keyStoreAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
+        }
         SslContextFactory sslContextFactory = new SslContextFactory();
         String[] excludedProtocols = hiveConf.getVar(ConfVars.HIVE_SSL_PROTOCOL_BLACKLIST).split(",");
         LOG.info("HTTP Server SSL: adding excluded protocols: " + Arrays.toString(excludedProtocols));
@@ -143,6 +153,8 @@ public class ThriftHttpCLIService extends ThriftCLIService {
             + Arrays.toString(sslContextFactory.getExcludeProtocols()));
         sslContextFactory.setKeyStorePath(keyStorePath);
         sslContextFactory.setKeyStorePassword(keyStorePassword);
+        sslContextFactory.setKeyStoreType(keyStoreType);
+        sslContextFactory.setKeyManagerFactoryAlgorithm(keyStoreAlgorithm);
         connector = new ServerConnector(server, sslContextFactory, http);
       } else {
         connector = new ServerConnector(server, http);

@@ -18,22 +18,28 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ReturnObjectInspectorResolver;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -145,10 +151,37 @@ public abstract class GenericUDFBaseCompare extends GenericUDFBaseBinary {
 
         converter0 = ObjectInspectorConverters.getConverter(arguments[0], compareOI);
         converter1 = ObjectInspectorConverters.getConverter(arguments[1], compareOI);
+
+        checkConversionAllowed(arguments[0], compareOI);
+        checkConversionAllowed(arguments[1], compareOI);
       }
     }
     return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;
 
+  }
+
+  protected void checkConversionAllowed(ObjectInspector argOI, ObjectInspector compareOI)
+      throws UDFArgumentException {
+    if (primitiveGroupOf(argOI) != PrimitiveGrouping.DATE_GROUP) {
+      return;
+    }
+    SessionState ss = SessionState.get();
+    if (ss != null && ss.getConf().getBoolVar(ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION)) {
+      if (primitiveGroupOf(compareOI) == PrimitiveGrouping.NUMERIC_GROUP) {
+        throw new UDFArgumentException(
+            "Casting DATE/TIMESTAMP to NUMERIC is prohibited (" + ConfVars.HIVE_STRICT_TIMESTAMP_CONVERSION + ")");
+      }
+    }
+  }
+
+  protected PrimitiveGrouping primitiveGroupOf(ObjectInspector oi) {
+    if (oi instanceof PrimitiveObjectInspector) {
+      PrimitiveCategory category = ((PrimitiveObjectInspector) oi).getPrimitiveCategory();
+      PrimitiveGrouping group = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(category);
+      return group;
+    } else {
+      return null;
+    }
   }
 
   public Integer compare(DeferredObject[] arguments) throws HiveException {

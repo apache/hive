@@ -119,6 +119,7 @@ PREHOOK: Output: default@acid_partitioned
 POSTHOOK: query: insert into acid_partitioned partition (p) (a,p) values(1,2)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@acid_partitioned
 POSTHOOK: Output: default@acid_partitioned@p=2
 POSTHOOK: Lineage: acid_partitioned PARTITION(p=2).a SCRIPT []
 POSTHOOK: Lineage: acid_partitioned PARTITION(p=2).c SIMPLE []

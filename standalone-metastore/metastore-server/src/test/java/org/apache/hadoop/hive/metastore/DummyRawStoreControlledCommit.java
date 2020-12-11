@@ -21,10 +21,13 @@ package org.apache.hadoop.hive.metastore;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.metastore.api.CreationMetadata;
 import org.apache.hadoop.hive.metastore.api.GetPartitionsFilterSpec;
-import org.apache.hadoop.hive.metastore.api.GetPartitionsProjectionSpec;
+import org.apache.hadoop.hive.metastore.api.GetProjectionsSpec;
 import org.apache.hadoop.hive.metastore.api.ISchemaName;
+import org.apache.hadoop.hive.metastore.api.ListStoredProcedureRequest;
+import org.apache.hadoop.hive.metastore.api.SQLAllTableConstraints;
 import org.apache.hadoop.hive.metastore.api.SchemaVersionDescriptor;
 import org.apache.hadoop.hive.metastore.api.Catalog;
+import org.apache.hadoop.hive.metastore.api.StoredProcedure;
 import org.apache.hadoop.hive.metastore.api.WMFullResourcePlan;
 
 import java.nio.ByteBuffer;
@@ -66,6 +69,8 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.RolePrincipalGrant;
 import org.apache.hadoop.hive.metastore.api.RuntimeStat;
+import org.apache.hadoop.hive.metastore.api.ReplicationMetricList;
+import org.apache.hadoop.hive.metastore.api.GetReplicationMetricsRequest;
 import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
 import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
@@ -346,6 +351,12 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public List<Table> getTableObjectsByName(String catName, String dbname, List<String> tableNames,
+                                           GetProjectionsSpec projectionSpec) throws MetaException, UnknownDBException {
+    return Collections.emptyList();
+  }
+
+  @Override
   public List<String> getAllTables(String catName, String dbName) throws MetaException {
     return objectStore.getAllTables(catName, dbName);
   }
@@ -398,7 +409,7 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   @Override
   public List<Partition> getPartitionSpecsByFilterAndProjection(Table table,
-      GetPartitionsProjectionSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
+      GetProjectionsSpec projectionSpec, GetPartitionsFilterSpec filterSpec)
       throws MetaException, NoSuchObjectException {
     return objectStore.getPartitionSpecsByFilterAndProjection(table, projectionSpec, filterSpec);
   }
@@ -1007,13 +1018,13 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
     return null;
   }
 
+  @Override public SQLAllTableConstraints getAllTableConstraints(String catName, String dbName, String tblName)
+      throws MetaException, NoSuchObjectException {
+    return null;
+  }
+
   @Override
-  public List<String> createTableWithConstraints(Table tbl,
-    List<SQLPrimaryKey> primaryKeys, List<SQLForeignKey> foreignKeys,
-    List<SQLUniqueConstraint> uniqueConstraints,
-    List<SQLNotNullConstraint> notNullConstraints,
-    List<SQLDefaultConstraint> defaultConstraints,
-    List<SQLCheckConstraint> checkConstraints)
+  public SQLAllTableConstraints createTableWithConstraints(Table tbl, SQLAllTableConstraints constraints )
     throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
     return null;
@@ -1026,40 +1037,40 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
-  public List<String> addPrimaryKeys(List<SQLPrimaryKey> pks)
+  public List<SQLPrimaryKey> addPrimaryKeys(List<SQLPrimaryKey> pks)
     throws InvalidObjectException, MetaException {
     return null;
   }
 
   @Override
-  public List<String> addForeignKeys(List<SQLForeignKey> fks)
+  public List<SQLForeignKey> addForeignKeys(List<SQLForeignKey> fks)
     throws InvalidObjectException, MetaException {
     return null;
   }
 
   @Override
-  public List<String> addUniqueConstraints(List<SQLUniqueConstraint> uks)
-    throws InvalidObjectException, MetaException {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public List<String> addNotNullConstraints(List<SQLNotNullConstraint> nns)
+  public List<SQLUniqueConstraint> addUniqueConstraints(List<SQLUniqueConstraint> uks)
     throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public List<String> addDefaultConstraints(List<SQLDefaultConstraint> nns)
+  public List<SQLNotNullConstraint> addNotNullConstraints(List<SQLNotNullConstraint> nns)
+    throws InvalidObjectException, MetaException {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<SQLDefaultConstraint> addDefaultConstraints(List<SQLDefaultConstraint> nns)
       throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public List<String> addCheckConstraints(List<SQLCheckConstraint> nns)
+  public List<SQLCheckConstraint> addCheckConstraints(List<SQLCheckConstraint> nns)
       throws InvalidObjectException, MetaException {
     // TODO Auto-generated method stub
     return null;
@@ -1327,6 +1338,21 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public void addReplicationMetrics(ReplicationMetricList replicationMetricList) {
+    objectStore.addReplicationMetrics(replicationMetricList);
+  }
+
+  @Override
+  public ReplicationMetricList getReplicationMetrics(GetReplicationMetricsRequest replicationMetricsRequest) {
+    return objectStore.getReplicationMetrics(replicationMetricsRequest);
+  }
+
+  @Override
+  public int deleteReplicationMetrics(int maxRetainSecs) {
+    return objectStore.deleteReplicationMetrics(maxRetainSecs);
+  }
+
+  @Override
   public ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws NoSuchObjectException {
     return objectStore.getScheduledQuery(scheduleKey);
   }
@@ -1339,5 +1365,30 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   @Override
   public int markScheduledExecutionsTimedOut(int timeoutSecs) throws InvalidOperationException, MetaException {
     return objectStore.markScheduledExecutionsTimedOut(timeoutSecs);
+  }
+
+  @Override
+  public void deleteAllPartitionColumnStatistics(TableName tn, String w) {
+    objectStore.deleteAllPartitionColumnStatistics(tn, w);
+  }
+
+  @Override
+  public void createOrUpdateStoredProcedure(StoredProcedure proc) throws NoSuchObjectException, MetaException {
+    objectStore.createOrUpdateStoredProcedure(proc);
+  }
+
+  @Override
+  public StoredProcedure getStoredProcedure(String catName, String db, String name) throws MetaException, NoSuchObjectException {
+    return objectStore.getStoredProcedure(catName, db, name);
+  }
+
+  @Override
+  public void dropStoredProcedure(String catName, String dbName, String funcName) throws MetaException, NoSuchObjectException {
+    objectStore.dropStoredProcedure(catName, dbName, funcName);
+  }
+
+  @Override
+  public List<String> getAllStoredProcedures(ListStoredProcedureRequest request) {
+    return getAllStoredProcedures(request);
   }
 }

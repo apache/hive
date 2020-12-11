@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.exec.repl;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.parse.repl.metric.ReplicationMetricCollector;
 import org.apache.hadoop.hive.ql.plan.Explain;
 
 import java.io.Serializable;
@@ -36,10 +37,12 @@ public class RangerDumpWork implements Serializable {
   private static final long serialVersionUID = 1L;
   private Path currentDumpPath;
   private String dbName;
+  private final transient ReplicationMetricCollector metricCollector;
 
-  public RangerDumpWork(Path currentDumpPath, String dbName) {
+  public RangerDumpWork(Path currentDumpPath, String dbName, ReplicationMetricCollector metricCollector) {
     this.currentDumpPath = currentDumpPath;
     this.dbName = dbName;
+    this.metricCollector = metricCollector;
   }
 
   public Path getCurrentDumpPath() {
@@ -52,5 +55,9 @@ public class RangerDumpWork implements Serializable {
 
   URL getRangerConfigResource() {
     return getClass().getClassLoader().getResource(ReplUtils.RANGER_CONFIGURATION_RESOURCE_NAME);
+  }
+
+  public ReplicationMetricCollector getMetricCollector() {
+    return metricCollector;
   }
 }

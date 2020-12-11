@@ -64,6 +64,14 @@ POSTHOOK: query: select d from decimal_1_1 order by d desc
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_1_1
 #### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
 0.9
 0.9
 0.3
@@ -86,14 +94,6 @@ POSTHOOK: Input: default@decimal_1_1
 -0.3
 -0.9
 -0.9
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
-NULL
 PREHOOK: query: drop table decimal_1_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@decimal_1_1

@@ -28,8 +28,10 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
+import com.google.common.collect.Sets;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -63,15 +65,6 @@ import org.apache.hadoop.hive.ql.plan.SubqueryType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCoalesce;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualNS;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -117,7 +110,6 @@ public class TypeCheckProcFactory<T> {
     SPECIAL_UNARY_OPERATOR_TEXT_MAP = new HashMap<>();
     SPECIAL_UNARY_OPERATOR_TEXT_MAP.put(HiveParser.PLUS, "positive");
     SPECIAL_UNARY_OPERATOR_TEXT_MAP.put(HiveParser.MINUS, "negative");
-
     CONVERSION_FUNCTION_TEXT_MAP = new HashMap<Integer, String>();
     CONVERSION_FUNCTION_TEXT_MAP.put(HiveParser.TOK_BOOLEAN,
         serdeConstants.BOOLEAN_TYPE_NAME);
@@ -173,7 +165,6 @@ public class TypeCheckProcFactory<T> {
     WINDOWING_TOKENS.add(HiveParser.TOK_NULLS_LAST);
   }
 
-
   /**
    * Factory that will be used to create the different expressions.
    */
@@ -191,7 +182,7 @@ public class TypeCheckProcFactory<T> {
 
     SetMultimap<Integer, SemanticNodeProcessor> astNodeToProcessor = HashMultimap.create();
     astNodeToProcessor.put(HiveParser.TOK_NULL, getNullExprProcessor());
-
+    astNodeToProcessor.put(HiveParser.TOK_PARAMETER, getDynamicParameterProcessor());
     astNodeToProcessor.put(HiveParser.Number, getNumExprProcessor());
     astNodeToProcessor.put(HiveParser.IntegralLiteral, getNumExprProcessor());
     astNodeToProcessor.put(HiveParser.NumberLiteral, getNumExprProcessor());
@@ -282,12 +273,41 @@ public class TypeCheckProcFactory<T> {
   }
 
   /**
+   * Processor for processing Dynamic expression.
+   */
+  public class DynamicParameterProcessor implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
+      if (ctx.getError() != null) {
+        return null;
+      }
+
+      ASTNode node = (ASTNode)nd;
+      String indexStr = ((ASTNode)(node)).getText();
+      int index = Integer.parseInt(indexStr);
+      return exprFactory.createDynamicParamExpr(index);
+    }
+
+  }
+
+
+  /**
    * Factory method to get NullExprProcessor.
    *
    * @return NullExprProcessor.
    */
   protected NullExprProcessor getNullExprProcessor() {
     return new NullExprProcessor();
+  }
+
+  /**
+   * Factory method to get {@link DynamicParameterProcessor}.
+   */
+  protected DynamicParameterProcessor getDynamicParameterProcessor() {
+    return new DynamicParameterProcessor();
   }
 
   /**
@@ -696,7 +716,7 @@ public class TypeCheckProcFactory<T> {
    */
   public class DefaultExprProcessor implements SemanticNodeProcessor {
 
-    protected boolean isRedundantConversionFunction(ASTNode expr,
+    private boolean isRedundantConversionFunction(ASTNode expr,
         boolean isFunction, List<T> children) {
       if (!isFunction) {
         return false;
@@ -728,7 +748,7 @@ public class TypeCheckProcFactory<T> {
 
       FunctionInfo fi;
       try {
-        fi = FunctionRegistry.getFunctionInfo(udfName);
+        fi = exprFactory.getFunctionInfo(udfName);
       } catch (SemanticException e) {
         throw new UDFArgumentException(e);
       }
@@ -736,23 +756,15 @@ public class TypeCheckProcFactory<T> {
         throw new UDFArgumentException(udfName + " not found.");
       }
 
-      GenericUDF genericUDF = fi.getGenericUDF();
-      if (genericUDF == null) {
+      if (!fi.isGenericUDF()) {
         throw new UDFArgumentException(udfName
             + " is an aggregation function or a table function.");
-      }
-
-      // Add udfData to UDF if necessary
-      if (typeInfo != null) {
-        if (genericUDF instanceof SettableUDF) {
-          ((SettableUDF) genericUDF).setTypeInfo(typeInfo);
-        }
       }
 
       List<T> childrenList = new ArrayList<>(children.length);
 
       childrenList.addAll(Arrays.asList(children));
-      return exprFactory.createFuncCallExpr(genericUDF, udfName, childrenList);
+      return exprFactory.createFuncCallExpr(typeInfo, fi, udfName, childrenList);
     }
 
     public T getFuncExprNodeDesc(String udfName, T... children) throws SemanticException {
@@ -776,11 +788,25 @@ public class TypeCheckProcFactory<T> {
       return getDefaultExprProcessor().getFuncExprNodeDescWithUdfData(baseType, tableFieldTypeInfo, column);
     }
 
+    private boolean unSafeCompareWithBigInt(TypeInfo otherTypeInfo, TypeInfo bigintCandidate) {
+      Set<PrimitiveObjectInspector.PrimitiveCategory> unsafeConventionTyps = Sets.newHashSet(
+          PrimitiveObjectInspector.PrimitiveCategory.STRING,
+          PrimitiveObjectInspector.PrimitiveCategory.VARCHAR,
+          PrimitiveObjectInspector.PrimitiveCategory.CHAR);
+
+      if (bigintCandidate.equals(TypeInfoFactory.longTypeInfo) && otherTypeInfo instanceof PrimitiveTypeInfo) {
+        PrimitiveObjectInspector.PrimitiveCategory pCategory =
+            ((PrimitiveTypeInfo)otherTypeInfo).getPrimitiveCategory();
+        return unsafeConventionTyps.contains(pCategory);
+      }
+      return false;
+    }
+
     protected void validateUDF(ASTNode expr, boolean isFunction, TypeCheckCtx ctx, FunctionInfo fi,
-        List<T> children, GenericUDF genericUDF) throws SemanticException {
+        List<T> children) throws SemanticException {
       // Check if a bigint is implicitely cast to a double as part of a comparison
       // Perform the check here instead of in GenericUDFBaseCompare to guarantee it is only run once per operator
-      if (genericUDF instanceof GenericUDFBaseCompare && children.size() == 2) {
+      if (exprFactory.isCompareFunction(fi) && children.size() == 2) {
         TypeInfo oiTypeInfo0 = exprFactory.getTypeInfo(children.get(0));
         TypeInfo oiTypeInfo1 = exprFactory.getTypeInfo(children.get(1));
 
@@ -790,11 +816,17 @@ public class TypeCheckProcFactory<T> {
         LogHelper console = new LogHelper(LOG);
 
         // For now, if a bigint is going to be cast to a double throw an error or warning
-        if ((oiTypeInfo0.equals(TypeInfoFactory.stringTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
-            (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.stringTypeInfo))) {
+        if (unSafeCompareWithBigInt(oiTypeInfo0, oiTypeInfo1) || unSafeCompareWithBigInt(oiTypeInfo1, oiTypeInfo0)) {
           String error = StrictChecks.checkTypeSafety(conf);
-          if (error != null) throw new UDFArgumentException(error);
-          console.printError("WARNING: Comparing a bigint and a string may result in a loss of precision.");
+          if (error != null) {
+            throw new UDFArgumentException(error);
+          }
+          // To  make the error output be consistency, get the other side type name that comparing with biginit.
+          String type = oiTypeInfo0.getTypeName();
+          if (!oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) {
+            type = oiTypeInfo1.getTypeName();
+          }
+          console.printError("WARNING: Comparing a bigint and a " + type + " may result in a loss of precision.");
         } else if ((oiTypeInfo0.equals(TypeInfoFactory.doubleTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
             (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.doubleTypeInfo))) {
           console.printError("WARNING: Comparing a bigint and a double may result in a loss of precision.");
@@ -816,14 +848,14 @@ public class TypeCheckProcFactory<T> {
               ErrorMsg.UDAF_INVALID_LOCATION.getMsg(), expr));
         }
       }
-      if (!ctx.getAllowStatefulFunctions() && (genericUDF != null)) {
-        if (FunctionRegistry.isStateful(genericUDF)) {
+      if (!ctx.getAllowStatefulFunctions()) {
+        if (exprFactory.isStateful(fi)) {
           throw new SemanticException(ErrorMsg.UDF_STATEFUL_INVALID_LOCATION.getMsg());
         }
       }
     }
 
-    protected void insertCast(String funcText, List<T> children) throws SemanticException {
+    private void insertCast(String funcText, List<T> children) throws SemanticException {
       // substring, concat UDFs expect first argument as string. Therefore this method inserts explicit cast
       // to cast the first operand to string
       if (funcText.equals("substring") || funcText.equals("concat")) {
@@ -846,8 +878,6 @@ public class TypeCheckProcFactory<T> {
       String funcText = getFunctionText(node, isFunction);
       T expr;
       if (funcText.equals(".")) {
-        // "." : FIELD Expression
-
         assert (children.size() == 2);
         // Only allow constant field name for now
         assert (exprFactory.isConstantExpr(children.get(1)));
@@ -873,6 +903,9 @@ public class TypeCheckProcFactory<T> {
 
         expr = exprFactory.createNestedColumnRefExpr(t, children.get(0), fieldNameString, isList);
       } else if (funcText.equals("[")) {
+        funcText = "index";
+        FunctionInfo fi = exprFactory.getFunctionInfo(funcText);
+
         // "[]" : LSQUARE/INDEX Expression
         if (!ctx.getallowIndexExpr()) {
           throw new SemanticException(ASTErrorUtils.getMsg(
@@ -894,7 +927,7 @@ public class TypeCheckProcFactory<T> {
 
           // Calculate TypeInfo
           TypeInfo t = ((ListTypeInfo) myt).getListElementTypeInfo();
-          expr = exprFactory.createFuncCallExpr(t, FunctionRegistry.getGenericUDFForIndex(), children);
+          expr = exprFactory.createFuncCallExpr(t, fi, funcText, children);
         } else if (myt.getCategory() == Category.MAP) {
           if (!TypeInfoUtils.implicitConvertible(exprFactory.getTypeInfo(children.get(1)),
               ((MapTypeInfo) myt).getMapKeyTypeInfo())) {
@@ -903,14 +936,14 @@ public class TypeCheckProcFactory<T> {
           }
           // Calculate TypeInfo
           TypeInfo t = ((MapTypeInfo) myt).getMapValueTypeInfo();
-          expr = exprFactory.createFuncCallExpr(t, FunctionRegistry.getGenericUDFForIndex(), children);
+          expr = exprFactory.createFuncCallExpr(t, fi, funcText, children);
         } else {
           throw new SemanticException(ASTErrorUtils.getMsg(
               ErrorMsg.NON_COLLECTION_TYPE.getMsg(), node, myt.getTypeName()));
         }
       } else {
         // other operators or functions
-        FunctionInfo fi = FunctionRegistry.getFunctionInfo(funcText);
+        FunctionInfo fi = exprFactory.getFunctionInfo(funcText);
 
         if (fi == null) {
           if (isFunction) {
@@ -922,63 +955,21 @@ public class TypeCheckProcFactory<T> {
           }
         }
 
-        // getGenericUDF() actually clones the UDF. Just call it once and reuse.
-        GenericUDF genericUDF = fi.getGenericUDF();
-
         if (!fi.isNative()) {
           ctx.getUnparseTranslator().addIdentifierTranslation(
               (ASTNode) node.getChild(0));
         }
 
         // Handle type casts that may contain type parameters
-        if (isFunction) {
-          ASTNode funcNameNode = (ASTNode) node.getChild(0);
-          switch (funcNameNode.getType()) {
-            case HiveParser.TOK_CHAR:
-              // Add type params
-              CharTypeInfo charTypeInfo = ParseUtils.getCharTypeInfo(funcNameNode);
-              if (genericUDF != null) {
-                ((SettableUDF) genericUDF).setTypeInfo(charTypeInfo);
-              }
-              break;
-            case HiveParser.TOK_VARCHAR:
-              VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(funcNameNode);
-              if (genericUDF != null) {
-                ((SettableUDF) genericUDF).setTypeInfo(varcharTypeInfo);
-              }
-              break;
-            case HiveParser.TOK_TIMESTAMPLOCALTZ:
-              TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = new TimestampLocalTZTypeInfo();
-              HiveConf conf;
-              try {
-                conf = Hive.get().getConf();
-              } catch (HiveException e) {
-                throw new SemanticException(e);
-              }
-              timestampLocalTZTypeInfo.setTimeZone(conf.getLocalTimeZone());
-              if (genericUDF != null) {
-                ((SettableUDF) genericUDF).setTypeInfo(timestampLocalTZTypeInfo);
-              }
-              break;
-            case HiveParser.TOK_DECIMAL:
-              DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(funcNameNode);
-              if (genericUDF != null) {
-                ((SettableUDF) genericUDF).setTypeInfo(decTypeInfo);
-              }
-              break;
-            default:
-              // Do nothing
-              break;
-          }
-        }
+        TypeInfo typeInfo = isFunction ? getTypeInfo((ASTNode) node.getChild(0)) : null;
 
         insertCast(funcText, children);
 
-        validateUDF(node, isFunction, ctx, fi, children, genericUDF);
+        validateUDF(node, isFunction, ctx, fi, children);
 
         // Try to infer the type of the constant only if there are two
         // nodes, one of them is column and the other is numeric const
-        if (genericUDF instanceof GenericUDFBaseCompare
+        if (exprFactory.isCompareFunction(fi)
             && children.size() == 2
             && ((exprFactory.isConstantExpr(children.get(0))
             && exprFactory.isColumnRefExpr(children.get(1)))
@@ -996,15 +987,19 @@ public class TypeCheckProcFactory<T> {
           if (newChild == null) {
             // non-interpretable as target type...
             // TODO: all comparisons with null should result in null
-            if (genericUDF instanceof GenericUDFOPEqual
-                && !(genericUDF instanceof GenericUDFOPEqualNS)) {
+            if (exprFactory.isEqualFunction(fi)) {
               return exprFactory.createBooleanConstantExpr(null);
             }
           } else {
             children.set(constIdx, newChild);
           }
         }
-        if (genericUDF instanceof GenericUDFIn) {
+        // The "in" function is sometimes changed to an "or".  Later on, the "or"
+        // function is processed a little differently.  We don't want to process this
+        // new "or" function differently, so we track it with this variable.
+        // TODO: Test to see if this can be removed.
+        boolean functionInfoChangedFromIn = false;
+        if (exprFactory.isInFunction(fi)) {
           // We will split the IN clause into different IN clauses, one for each
           // different value type. The reason is that Hive and Calcite treat
           // types in IN clauses differently and it is practically impossible
@@ -1041,19 +1036,20 @@ public class TypeCheckProcFactory<T> {
           if (numEntries == 1) {
             children.addAll(expressions.asMap().values().iterator().next());
             funcText = "in";
-            genericUDF = new GenericUDFIn();
+            fi = exprFactory.getFunctionInfo("in");
           } else {
+            FunctionInfo inFunctionInfo  = exprFactory.getFunctionInfo("in");
             for (Collection<T> c : expressions.asMap().values()) {
-              newExprs.add(
-                  exprFactory.createFuncCallExpr(
-                      new GenericUDFIn(), "in", (List<T>) c));
+              newExprs.add(exprFactory.createFuncCallExpr(null, inFunctionInfo,
+                  "in", (List<T>) c));
             }
             children.addAll(newExprs);
             funcText = "or";
-            genericUDF = new GenericUDFOPOr();
+            fi = exprFactory.getFunctionInfo("or");
+            functionInfoChangedFromIn = true;
           }
         }
-        if (genericUDF instanceof GenericUDFOPOr) {
+        if (exprFactory.isOrFunction(fi) && !functionInfoChangedFromIn) {
           // flatten OR
           List<T> childrenList = new ArrayList<>(children.size());
           for (T child : children) {
@@ -1066,8 +1062,8 @@ public class TypeCheckProcFactory<T> {
               childrenList.add(child);
             }
           }
-          expr = exprFactory.createFuncCallExpr(genericUDF, funcText, childrenList);
-        } else if (genericUDF instanceof GenericUDFOPAnd) {
+          expr = exprFactory.createFuncCallExpr(null, fi, funcText, childrenList);
+        } else if (exprFactory.isAndFunction(fi)) {
           // flatten AND
           List<T> childrenList = new ArrayList<>(children.size());
           for (T child : children) {
@@ -1080,22 +1076,24 @@ public class TypeCheckProcFactory<T> {
               childrenList.add(child);
             }
           }
-          expr = exprFactory.createFuncCallExpr(genericUDF, funcText, childrenList);
-        } else if (ctx.isFoldExpr() && exprFactory.convertCASEIntoCOALESCEFuncCallExpr(genericUDF, children)) {
+          expr = exprFactory.createFuncCallExpr(null, fi, funcText, childrenList);
+        } else if (ctx.isFoldExpr() && exprFactory.convertCASEIntoCOALESCEFuncCallExpr(fi, children)) {
           // Rewrite CASE into COALESCE
-          expr = exprFactory.createFuncCallExpr(new GenericUDFCoalesce(), "coalesce",
+          fi = exprFactory.getFunctionInfo("coalesce");
+          expr = exprFactory.createFuncCallExpr(null, fi, "coalesce",
               Lists.newArrayList(children.get(0), exprFactory.createBooleanConstantExpr(Boolean.FALSE.toString())));
           if (Boolean.FALSE.equals(exprFactory.getConstantValue(children.get(1)))) {
-            expr = exprFactory.createFuncCallExpr(new GenericUDFOPNot(), "not", Lists.newArrayList(expr));
+            fi = exprFactory.getFunctionInfo("not");
+            expr = exprFactory.createFuncCallExpr(null, fi, "not", Lists.newArrayList(expr));
           }
         } else {
-          expr = exprFactory.createFuncCallExpr(genericUDF, funcText, children);
+          expr = exprFactory.createFuncCallExpr(typeInfo, fi, funcText, children);
         }
 
         // If the function is deterministic and the children are constants,
         // we try to fold the expression to remove e.g. cast on constant
         if (ctx.isFoldExpr() && exprFactory.isFuncCallExpr(expr) &&
-            FunctionRegistry.isConsistentWithinQuery(genericUDF) &&
+            exprFactory.isConsistentWithinQuery(fi) &&
             exprFactory.isAllConstants(children)) {
           T constantExpr = exprFactory.foldExpr(expr);
           if (constantExpr != null) {
@@ -1123,6 +1121,28 @@ public class TypeCheckProcFactory<T> {
       return expr;
     }
 
+    private TypeInfo getTypeInfo(ASTNode funcNameNode) throws SemanticException {
+      switch (funcNameNode.getType()) {
+        case HiveParser.TOK_CHAR:
+          return ParseUtils.getCharTypeInfo(funcNameNode);
+        case HiveParser.TOK_VARCHAR:
+          return ParseUtils.getVarcharTypeInfo(funcNameNode);
+        case HiveParser.TOK_TIMESTAMPLOCALTZ:
+          TimestampLocalTZTypeInfo timestampLocalTZTypeInfo = new TimestampLocalTZTypeInfo();
+          HiveConf conf;
+          try {
+            conf = Hive.get().getConf();
+          } catch (HiveException e) {
+            throw new SemanticException(e);
+          }
+          timestampLocalTZTypeInfo.setTimeZone(conf.getLocalTimeZone());
+          return timestampLocalTZTypeInfo;
+        case HiveParser.TOK_DECIMAL:
+          return ParseUtils.getDecimalTypeTypeInfo(funcNameNode);
+        default:
+          return null;
+      }
+    }
     /**
      * Interprets the given value as the input columnDesc if possible.
      * Otherwise, returns input valueDesc as is.

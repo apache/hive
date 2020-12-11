@@ -121,6 +121,16 @@
       <artifactId>junit</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -249,6 +259,7 @@
                       <exclude>com.zaxxer:*</exclude>
                       <exclude>io.airlift:*</exclude>
                       <exclude>io.dropwizard.metrics:*</exclude>
+                      <exclude>io.netty:*</exclude>
                       <exclude>javax.activation:*</exclude>
                       <exclude>javax.inject:*</exclude>
                       <exclude>javax.jdo:*</exclude>
@@ -357,10 +368,6 @@
                     <relocation>
                       <pattern>javolution</pattern>
                       <shadedPattern>org.apache.hive.javolution</shadedPattern>
-                    </relocation>
-                    <relocation>
-                      <pattern>io.netty</pattern>
-                      <shadedPattern>org.apache.hive.io.netty</shadedPattern>
                     </relocation>
                   </relocations>
                 </configuration>

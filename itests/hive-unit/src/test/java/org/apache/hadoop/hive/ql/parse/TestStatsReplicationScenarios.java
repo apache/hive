@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.NotificationEvent;
@@ -32,6 +33,9 @@ import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.BehaviourInjection;
 import org.apache.hadoop.hive.metastore.InjectableBehaviourObjectStore.CallerArguments;
 import org.apache.hadoop.hive.shims.Utils;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -96,6 +100,7 @@ public class TestStatsReplicationScenarios {
     Map<String, String> additionalOverrides = new HashMap<String, String>() {{
         put("fs.defaultFS", miniDFSCluster.getFileSystem().getUri().toString());
         put(HiveConf.ConfVars.HIVE_IN_TEST_REPL.varname, "true");
+        put(HiveConf.ConfVars.REPL_RUN_DATA_COPY_TASKS_ON_TARGET.varname, "false");
       }};
     Map<String, String> replicatedOverrides = new HashMap<>();
 
@@ -125,6 +130,10 @@ public class TestStatsReplicationScenarios {
 
   @Before
   public void setup() throws Throwable {
+    // set up metastore client cache
+    if (conf.getBoolVar(HiveConf.ConfVars.MSC_CACHE_ENABLED)) {
+      HiveMetaStoreClientWithLocalCache.init(conf);
+    }
     primaryDbName = testName.getMethodName() + "_" + +System.currentTimeMillis();
     replicatedDbName = "replicated_" + primaryDbName;
     primary.run("create database " + primaryDbName + " WITH DBPROPERTIES ( '" +
@@ -336,7 +345,13 @@ public class TestStatsReplicationScenarios {
         failIncrementalLoad();
       }
     }
-
+    
+    Path baseDumpDir = new Path(primary.hiveConf.getVar(HiveConf.ConfVars.REPLDIR));
+    Path nonRecoverablePath = TestReplicationScenarios.getNonRecoverablePath(baseDumpDir, primaryDbName, primary.hiveConf);
+    if(nonRecoverablePath != null){
+      baseDumpDir.getFileSystem(primary.hiveConf).delete(nonRecoverablePath, true);
+    }
+    
     // Load, possibly a retry
     replica.load(replicatedDbName, primaryDbName);
 
@@ -659,7 +674,7 @@ public class TestStatsReplicationScenarios {
     lastReplicationId = dumpLoadVerify(tableNames, lastReplicationId, parallelBootstrap,
             metadataOnly, false);
   }
-
+  
   @Test
   public void testNonParallelBootstrapLoad() throws Throwable {
     LOG.info("Testing " + testName.getClass().getName() + "." + testName.getMethodName());

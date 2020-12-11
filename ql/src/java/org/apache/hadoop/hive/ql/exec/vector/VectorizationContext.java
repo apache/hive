@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -869,8 +870,7 @@ import com.google.common.annotations.VisibleForTesting;
 
     } else {
       // Ok, we need to convert.
-      ArrayList<ExprNodeDesc> exprAsList = new ArrayList<>(1);
-      exprAsList.add(exprDesc);
+      List<ExprNodeDesc> exprAsList = Collections.singletonList(exprDesc);
 
       // First try our cast method that will handle a few special cases.
       VectorExpression castToBooleanExpr = getCastToBoolean(exprAsList);

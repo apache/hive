@@ -118,6 +118,7 @@ POSTHOOK: Input: default@intermediate_n4
 POSTHOOK: Input: default@intermediate_n4@p=455
 POSTHOOK: Input: default@intermediate_n4@p=456
 POSTHOOK: Input: default@intermediate_n4@p=457
+POSTHOOK: Output: default@intermmediate
 POSTHOOK: Output: default@intermmediate@p=455
 POSTHOOK: Output: default@intermmediate@p=456
 POSTHOOK: Output: default@intermmediate@p=457
@@ -326,6 +327,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: select * from import2_mm order by key, p
 PREHOOK: type: QUERY
 PREHOOK: Input: default@import2_mm
@@ -402,6 +405,8 @@ Compressed:         	No
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
 Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
 PREHOOK: query: select * from import3_mm order by key, p
 PREHOOK: type: QUERY
 PREHOOK: Input: default@import3_mm

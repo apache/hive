@@ -45,6 +45,7 @@ STAGE PLANS:
                 TableScan
                   alias: c
                   filterExpr: (cint < 2000000000) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:cint, smallTablePos:1, keyRatio:2.0131022135416665
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint < 2000000000) (type: boolean)
@@ -173,6 +174,7 @@ STAGE PLANS:
                 TableScan
                   alias: c
                   filterExpr: (cint < 2000000000) (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:cint, smallTablePos:1, keyRatio:2.0131022135416665
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: (cint < 2000000000) (type: boolean)
@@ -300,6 +302,7 @@ STAGE PLANS:
                 TableScan
                   alias: c
                   filterExpr: cint is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:cint, smallTablePos:1, keyRatio:1.121826171875
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cint is not null (type: boolean)
@@ -424,6 +427,7 @@ STAGE PLANS:
                 TableScan
                   alias: c
                   filterExpr: cint is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:cint, smallTablePos:1, keyRatio:1.121826171875
                   Statistics: Num rows: 12288 Data size: 36696 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: cint is not null (type: boolean)

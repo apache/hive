@@ -139,13 +139,6 @@ public abstract class AbstractAlterTableOperation<T extends AbstractAlterTableDe
       environmentContext.putToProperties(HiveMetaHook.ALTER_TABLE_OPERATION_TYPE, alterTable.getType().name());
       if (partitions == null) {
         long writeId = alterTable.getWriteId() != null ? alterTable.getWriteId() : 0;
-        if (alterTable.getReplicationSpec() != null && alterTable.getReplicationSpec().isMigratingToTxnTable()) {
-          Long tmpWriteId = ReplUtils.getMigrationCurrentTblWriteId(context.getConf());
-          if (tmpWriteId == null) {
-            throw new HiveException("DDLTask : Write id is not set in the config by open txn task for migration");
-          }
-          writeId = tmpWriteId;
-        }
         context.getDb().alterTable(alterTable.getDbTableName(), table, alterTable.isCascade(), environmentContext, true,
             writeId);
       } else {

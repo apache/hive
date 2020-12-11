@@ -134,10 +134,10 @@ public abstract class DatabaseRule extends ExternalResource {
       return;
     }
     try {
-      if (runCmdAndPrintStreams(buildStopCmd(), 60) != 0) {
+      if (runCmdAndPrintStreams(buildStopCmd(), 600) != 0) {
         throw new RuntimeException("Unable to stop docker container");
       }
-      if (runCmdAndPrintStreams(buildRmCmd(), 15) != 0) {
+      if (runCmdAndPrintStreams(buildRmCmd(), 600) != 0) {
         throw new RuntimeException("Unable to remove docker container");
       }
     } catch (InterruptedException | IOException e) {

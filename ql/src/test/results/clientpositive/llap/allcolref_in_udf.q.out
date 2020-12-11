@@ -21,11 +21,11 @@ STAGE PLANS:
           filterExpr: (UDFToDouble(key) < 100.0D) (type: boolean)
           Filter Operator
             predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
-            Select Operator
-              expressions: concat(key, value) (type: string), array(key,value) (type: array<string>)
-              outputColumnNames: _col0, _col1
-              Limit
-                Number of rows: 10
+            Limit
+              Number of rows: 10
+              Select Operator
+                expressions: concat(key, value) (type: string), array(key,value) (type: array<string>)
+                outputColumnNames: _col0, _col1
                 ListSink
 
 PREHOOK: query: select concat(*),array(*) from src where key < 100 limit 10
@@ -93,7 +93,7 @@ STAGE PLANS:
                         Statistics: Num rows: 166 Data size: 61420 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Map 3 
             Map Operator Tree:
                 TableScan
@@ -115,7 +115,7 @@ STAGE PLANS:
                         Statistics: Num rows: 500 Data size: 185000 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col0 (type: string), _col1 (type: string), _col2 (type: string)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -134,12 +134,12 @@ STAGE PLANS:
                   UDTF Operator
                     Statistics: Num rows: 262 Data size: 242088 Basic stats: COMPLETE Column stats: COMPLETE
                     function name: stack
-                    Select Operator
-                      expressions: col0 (type: string), col1 (type: string), col2 (type: string)
-                      outputColumnNames: _col0, _col1, _col2
-                      Statistics: Num rows: 262 Data size: 2096 Basic stats: COMPLETE Column stats: COMPLETE
-                      Limit
-                        Number of rows: 10
+                    Limit
+                      Number of rows: 10
+                      Statistics: Num rows: 10 Data size: 9240 Basic stats: COMPLETE Column stats: COMPLETE
+                      Select Operator
+                        expressions: col0 (type: string), col1 (type: string), col2 (type: string)
+                        outputColumnNames: _col0, _col1, _col2
                         Statistics: Num rows: 10 Data size: 80 Basic stats: COMPLETE Column stats: COMPLETE
                         File Output Operator
                           compressed: false
@@ -211,11 +211,11 @@ STAGE PLANS:
             outputColumnNames: _col0
             UDTF Operator
               function name: explode
-              Select Operator
-                expressions: col (type: string)
-                outputColumnNames: _col0
-                Limit
-                  Number of rows: 10
+              Limit
+                Number of rows: 10
+                Select Operator
+                  expressions: col (type: string)
+                  outputColumnNames: _col0
                   ListSink
 
 PREHOOK: query: select explode(*) as x from allcolref limit 10

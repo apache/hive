@@ -84,6 +84,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hive.beeline.cli.CliOptionsProcessor;
@@ -186,6 +187,8 @@ public class BeeLine implements Closeable {
       "tsv", new DeprecatedSeparatedValuesOutputFormat(this, '\t'),
       "xmlattr", new XMLAttributeOutputFormat(this),
       "xmlelements", new XMLElementOutputFormat(this),
+      "json", new JSONOutputFormat(this),
+      "jsonfile", new JSONFileOutputFormat(this),
   });
 
   private List<String> supportedLocalDriver =
@@ -890,8 +893,12 @@ public class BeeLine implements Closeable {
     getOpts().setInitFiles(cl.getOptionValues("i"));
     getOpts().setScriptFile(cl.getOptionValue("f"));
 
-
     if (url != null) {
+      String hplSqlMode = Utils.parsePropertyFromUrl(url, Constants.MODE);
+      if ("HPLSQL".equalsIgnoreCase(hplSqlMode)) {
+        getOpts().setDelimiter("/");
+        getOpts().setEntireLineAsCommand(true);
+      }
       // Specifying username/password/driver explicitly will override the values from the url;
       // make sure we don't override the values present in the url with empty values.
       if (user == null) {
@@ -931,6 +938,8 @@ public class BeeLine implements Closeable {
       if (!dispatch("!properties " + propertyFile)) {
         exit = true;
         return false;
+      } else {
+        return true;
       }
     }
     return false;

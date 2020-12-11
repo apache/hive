@@ -132,6 +132,8 @@ message SubmitWorkRequestProto {
   optional bytes initial_event_signature = 11;
 
   optional bool is_guaranteed = 12 [default = false];
+  optional string jwt = 13;
+  optional bool is_external_client_request = 14 [default = false];
 }
 
 message RegisterDagRequestProto {

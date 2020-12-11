@@ -24,7 +24,11 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.utils.StringUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.repl.util.FileList;
+import org.apache.hadoop.hive.ql.exec.repl.util.ReplUtils;
+import org.apache.hadoop.hive.ql.exec.util.Retryable;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
@@ -40,12 +44,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 /**
  * Format of the file used to dump information about external tables:
@@ -60,18 +65,27 @@ public final class ReplExternalTables {
   private static final Logger LOG = LoggerFactory.getLogger(ReplExternalTables.class);
   private static final String FIELD_SEPARATOR = ",";
   public static final String FILE_NAME = "_external_tables_info";
-  private static final int MAX_RETRIES = 5;
 
   private ReplExternalTables(){}
 
   public static String externalTableLocation(HiveConf hiveConf, String location) throws SemanticException {
-    String baseDir = hiveConf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
-    Path basePath = new Path(baseDir);
+    Path basePath = getExternalTableBaseDir(hiveConf);
     Path currentPath = new Path(location);
     Path dataLocation = externalTableDataPath(hiveConf, basePath, currentPath);
 
     LOG.info("Incoming external table location: {} , new location: {}", location, dataLocation.toString());
     return dataLocation.toString();
+  }
+
+  public static Path getExternalTableBaseDir(HiveConf hiveConf) throws SemanticException {
+    String baseDir = hiveConf.get(HiveConf.ConfVars.REPL_EXTERNAL_TABLE_BASE_DIR.varname);
+    URI baseDirUri  = StringUtils.isEmpty(baseDir) ? null : new Path(baseDir).toUri();
+    if (baseDirUri == null || baseDirUri.getScheme() == null || baseDirUri.getAuthority() == null) {
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format(
+              String.format("Fully qualified path for 'hive.repl.replica.external.table.base.dir' is required %s",
+                      baseDir == null ? "" : "- ('" + baseDir + "')"), ReplUtils.REPL_HIVE_SERVICE));
+    }
+    return new Path(baseDirUri);
   }
 
   public static Path externalTableDataPath(HiveConf hiveConf, Path basePath, Path sourcePath)
@@ -90,7 +104,8 @@ public final class ReplExternalTables {
               basePath.getFileSystem(hiveConf)
       );
     } catch (IOException e) {
-      throw new SemanticException(ErrorMsg.INVALID_PATH.getMsg(), e);
+      throw new SemanticException(ErrorMsg.REPL_INVALID_CONFIG_FOR_SERVICE.format(
+        ErrorMsg.INVALID_PATH.getMsg(), ReplUtils.REPL_HIVE_SERVICE), e);
     }
     return dataPath;
   }
@@ -110,7 +125,7 @@ public final class ReplExternalTables {
       dumpMetadataOnly = hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY) ||
               hiveConf.getBoolVar(HiveConf.ConfVars.REPL_DUMP_METADATA_ONLY_FOR_EXTERNAL_TABLE);
       if (shouldWrite()) {
-        this.writer = FileSystem.get(hiveConf).create(writePath);
+        this.writer = writePath.getFileSystem(hiveConf).create(writePath);
       }
     }
 
@@ -123,10 +138,10 @@ public final class ReplExternalTables {
      * table if the table is partitioned and the partition location is outside the table.
      * It returns list of all the external table locations.
      */
-    List<Path> dataLocationDump(Table table) throws InterruptedException, IOException, HiveException {
-      List<Path> extTableLocations = new LinkedList<>();
+    void dataLocationDump(Table table, FileList fileList, HiveConf conf)
+            throws InterruptedException, IOException, HiveException {
       if (!shouldWrite()) {
-        return extTableLocations;
+        return;
       }
       if (!TableType.EXTERNAL_TABLE.equals(table.getTableType())) {
         throw new IllegalArgumentException(
@@ -136,7 +151,7 @@ public final class ReplExternalTables {
       Path fullyQualifiedDataLocation =
           PathBuilder.fullyQualifiedHDFSUri(table.getDataLocation(), FileSystem.get(hiveConf));
       write(lineFor(table.getTableName(), fullyQualifiedDataLocation, hiveConf));
-      extTableLocations.add(fullyQualifiedDataLocation);
+      dirLocationToCopy(fileList, fullyQualifiedDataLocation, conf);
       if (table.isPartitioned()) {
         List<Partition> partitions;
         try {
@@ -145,7 +160,7 @@ public final class ReplExternalTables {
           if (e.getCause() instanceof NoSuchObjectException) {
             // If table is dropped when dump in progress, just skip partitions data location dump
             LOG.debug(e.getMessage());
-            return extTableLocations;
+            return;
           }
           throw e;
         }
@@ -158,11 +173,17 @@ public final class ReplExternalTables {
             fullyQualifiedDataLocation = PathBuilder
                 .fullyQualifiedHDFSUri(partition.getDataLocation(), FileSystem.get(hiveConf));
             write(lineFor(table.getTableName(), fullyQualifiedDataLocation, hiveConf));
-            extTableLocations.add(fullyQualifiedDataLocation);
+            dirLocationToCopy(fileList, fullyQualifiedDataLocation, conf);
           }
         }
       }
-      return extTableLocations;
+    }
+
+    private void dirLocationToCopy(FileList fileList, Path sourcePath, HiveConf conf)
+            throws HiveException {
+      Path basePath = getExternalTableBaseDir(conf);
+      Path targetPath = externalTableDataPath(conf, basePath, sourcePath);
+      fileList.add(new DirCopyWork(sourcePath, targetPath).convertToString());
     }
 
     private static String lineFor(String tableName, Path dataLoc, HiveConf hiveConf)
@@ -178,23 +199,22 @@ public final class ReplExternalTables {
       return lineToWrite.toString();
     }
 
-    private void write(String line) throws InterruptedException {
-      int currentRetry = 0;
-      while (currentRetry < MAX_RETRIES) {
-        try {
-          writer.write(line.getBytes(StandardCharsets.UTF_8));
-          break;
-        } catch (IOException e) {
-          currentRetry++;
-          if (currentRetry < MAX_RETRIES) {
-            LOG.warn("failed to write data with maxRetries {} due to", currentRetry, e);
-          } else {
-            LOG.error("failed to write data with maxRetries {} due to", currentRetry, e);
-            throw new RuntimeException("failed to write data", e);
+    private void write(String line) throws SemanticException {
+      Retryable retryable = Retryable.builder()
+        .withHiveConf(hiveConf)
+        .withRetryOnException(IOException.class).build();
+      try {
+        retryable.executeCallable((Callable<Void>) () -> {
+          try {
+            writer.write(line.getBytes(StandardCharsets.UTF_8));
+          } catch (IOException e) {
+            writer = openWriterAppendMode();
+            throw e;
           }
-          Thread.sleep(100 * currentRetry * currentRetry);
-          writer = openWriterAppendMode();
-        }
+          return null;
+        });
+      } catch (Exception e) {
+        throw new SemanticException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
       }
     }
 
@@ -270,33 +290,27 @@ public final class ReplExternalTables {
       if (!fileSystem.exists(externalTableInfo)) {
         return locationsToCopy;
       }
-
-      int currentRetry = 0;
-      BufferedReader reader = null;
-      while (currentRetry < MAX_RETRIES) {
-        try {
-          reader = reader(fileSystem, externalTableInfo);
-          for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-            String[] splits = line.split(FIELD_SEPARATOR);
-            locationsToCopy
+      Retryable retryable = Retryable.builder()
+        .withHiveConf(hiveConf)
+        .withRetryOnException(IOException.class).build();
+      try {
+        return retryable.executeCallable(() -> {
+          BufferedReader reader = null;
+          try {
+            reader = reader(fileSystem, externalTableInfo);
+            for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+              String[] splits = line.split(FIELD_SEPARATOR);
+              locationsToCopy
                 .add(new String(Base64.getDecoder().decode(splits[1]), StandardCharsets.UTF_8));
-          }
-          return locationsToCopy;
-        } catch (IOException e) {
-          currentRetry++;
-          if (currentRetry < MAX_RETRIES) {
+            }
+            return locationsToCopy;
+          } finally {
             closeQuietly(reader);
-            LOG.warn("failed to read {}", externalTableInfo.toString(), e);
-          } else {
-            LOG.error("failed to read {}", externalTableInfo.toString(), e);
-            throw e;
           }
-        } finally {
-          closeQuietly(reader);
-        }
+        });
+      } catch (Exception e) {
+        throw new IOException(ErrorMsg.REPL_RETRY_EXHAUSTED.format(e.getMessage()), e);
       }
-      // we should never reach here
-      throw new IllegalStateException("we should never reach this condition");
     }
 
     private static void closeQuietly(BufferedReader reader) {

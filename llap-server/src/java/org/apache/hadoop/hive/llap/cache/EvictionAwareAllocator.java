@@ -27,4 +27,5 @@ import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
  */
 public interface EvictionAwareAllocator extends Allocator {
   void deallocateEvicted(MemoryBuffer buffer);
+  void deallocateProactivelyEvicted(MemoryBuffer buffer);
 }

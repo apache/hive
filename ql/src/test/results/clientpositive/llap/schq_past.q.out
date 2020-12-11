@@ -1,0 +1,8 @@
+PREHOOK: query: set role admin
+PREHOOK: type: SHOW_ROLES
+POSTHOOK: query: set role admin
+POSTHOOK: type: SHOW_ROLES
+PREHOOK: query: create scheduled query ingest cron '0 0 0 1 * ? 2000' defined as select 1
+PREHOOK: type: CREATE SCHEDULED QUERY
+POSTHOOK: query: create scheduled query ingest cron '0 0 0 1 * ? 2000' defined as select 1
+POSTHOOK: type: CREATE SCHEDULED QUERY

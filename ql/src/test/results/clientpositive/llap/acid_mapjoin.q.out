@@ -88,6 +88,7 @@ STAGE PLANS:
                 TableScan
                   alias: acid1
                   filterExpr: key is not null (type: boolean)
+                  probeDecodeDetails: cacheKey:HASH_MAP_MAPJOIN_29_container, bigKeyColName:key, smallTablePos:1, keyRatio:26.25
                   Statistics: Num rows: 316 Data size: 1264 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)

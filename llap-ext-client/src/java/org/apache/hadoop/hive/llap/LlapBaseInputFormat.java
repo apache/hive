@@ -20,7 +20,6 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.nio.ByteBuffer;
@@ -29,13 +28,11 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Pattern;
@@ -48,14 +45,13 @@ import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.LlapOutpu
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SignableVertexSpec;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.SubmitWorkRequestProto;
 import org.apache.hadoop.hive.llap.daemon.rpc.LlapDaemonProtocolProtos.VertexOrBinary;
+import org.apache.hadoop.hive.llap.ext.LlapDaemonInfo;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient;
 import org.apache.hadoop.hive.llap.ext.LlapTaskUmbilicalExternalClient.LlapTaskUmbilicalExternalResponder;
 import org.apache.hadoop.hive.llap.registry.LlapServiceInstance;
-import org.apache.hadoop.hive.llap.registry.impl.LlapRegistryService;
 import org.apache.hadoop.hive.llap.security.LlapTokenIdentifier;
 import org.apache.hadoop.hive.llap.tez.Converters;
 import org.apache.hadoop.hive.ql.io.arrow.ArrowWrapperWritable;
-import org.apache.hadoop.hive.registry.ServiceInstanceSet;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -122,7 +118,6 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
   public static final Pattern SET_QUERY_PATTERN = Pattern.compile("^\\s*set\\s+.*=.+$", Pattern.CASE_INSENSITIVE);
 
   public static final String SPLIT_QUERY = "select get_llap_splits(\"%s\",%d)";
-  public static final LlapServiceInstance[] serviceInstanceArray = new LlapServiceInstance[0];
 
   public LlapBaseInputFormat(String url, String user, String pwd, String query) {
     this.url = url;
@@ -157,12 +152,13 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     HiveConf.setVar(job, HiveConf.ConfVars.LLAP_ZK_REGISTRY_USER, llapSplit.getLlapUser());
     SubmitWorkInfo submitWorkInfo = SubmitWorkInfo.fromBytes(llapSplit.getPlanBytes());
 
-    LlapServiceInstance serviceInstance = getServiceInstance(job, llapSplit);
-    String host = serviceInstance.getHost();
-    int llapSubmitPort = serviceInstance.getRpcPort();
+    // llapSplit.getLlapDaemonInfos() will never be empty as of now, also validated this in GenericUDTFGetSplits while populating.
+    final LlapDaemonInfo llapDaemonInfo = llapSplit.getLlapDaemonInfos()[0];
+    final String host = llapDaemonInfo.getHost();
+    final int outputPort = llapDaemonInfo.getOutputFormatPort();
+    final int llapSubmitPort = llapDaemonInfo.getRpcPort();
 
-    LOG.info("Found service instance for host " + host + " with rpc port " + llapSubmitPort
-        + " and outputformat port " + serviceInstance.getOutputFormatPort());
+    LOG.info("Will try to submit request to first Llap Daemon in the split - {}", llapDaemonInfo);
 
     byte[] llapTokenBytes = llapSplit.getTokenBytes();
     Token<LlapTokenIdentifier> llapToken = null;
@@ -196,24 +192,28 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
 
     SubmitWorkRequestProto request = constructSubmitWorkRequestProto(
         submitWorkInfo, taskNum, attemptNum, llapClient.getAddress(),
-        submitWorkInfo.getToken(), llapSplit.getFragmentBytes(),
-        llapSplit.getFragmentBytesSignature(), job);
-    llapClient.submitWork(request, host, llapSubmitPort);
+        submitWorkInfo.getToken(), llapSplit, job);
 
-    Socket socket = new Socket(host, serviceInstance.getOutputFormatPort());
-
-    LOG.debug("Socket connected");
     SignableVertexSpec vertex = SignableVertexSpec.parseFrom(submitWorkInfo.getVertexBinary());
-
     String fragmentId =
         Converters.createTaskAttemptId(vertex.getQueryIdentifier(), vertex.getVertexIndex(),
             request.getFragmentNumber(), request.getAttemptNumber()).toString();
+
+    LOG.info("Submitting fragment:{} to llap [host = {}, port = {}] ", fragmentId, host, llapSubmitPort);
+
+    llapClient.submitWork(request, host, llapSubmitPort);
+
+    Socket socket = new Socket(host, outputPort);
+
     OutputStream socketStream = socket.getOutputStream();
     LlapOutputSocketInitMessage.Builder builder =
         LlapOutputSocketInitMessage.newBuilder().setFragmentId(fragmentId);
     if (llapSplit.getTokenBytes() != null) {
       builder.setToken(ByteString.copyFrom(llapSplit.getTokenBytes()));
     }
+
+    LOG.info("Registering fragment:{} to llap [host = {}, output port = {}] to read output",
+        fragmentId, host, outputPort);
     builder.build().writeDelimitedTo(socketStream);
     socketStream.flush();
 
@@ -418,91 +418,12 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     });
   }
 
-  private LlapServiceInstance getServiceInstance(JobConf job, LlapInputSplit llapSplit) throws IOException {
-    LlapRegistryService registryService = LlapRegistryService.getClient(job);
-    LlapServiceInstance serviceInstance = null;
-    String[] hosts = llapSplit.getLocations();
-    if (hosts != null && hosts.length > 0) {
-      String host = llapSplit.getLocations()[0];
-      serviceInstance = getServiceInstanceForHost(registryService, host);
-      if (serviceInstance == null) {
-        LOG.info("No service instances found for " + host + " in registry.");
-      }
-    }
-
-    if (serviceInstance == null) {
-      serviceInstance = getServiceInstanceRandom(registryService);
-      if (serviceInstance == null) {
-        throw new IOException("No service instances found in registry");
-      }
-    }
-
-    return serviceInstance;
-  }
-
-  private LlapServiceInstance getServiceInstanceForHost(LlapRegistryService registryService, String host) throws IOException {
-    InetAddress address = InetAddress.getByName(host);
-    ServiceInstanceSet<LlapServiceInstance> instanceSet = registryService.getInstances();
-    LlapServiceInstance serviceInstance = null;
-
-    // The name used in the service registry may not match the host name we're using.
-    // Try hostname/canonical hostname/host address
-
-    String name = address.getHostName();
-    LOG.info("Searching service instance by hostname " + name);
-    serviceInstance = selectServiceInstance(instanceSet.getByHost(name));
-    if (serviceInstance != null) {
-      return serviceInstance;
-    }
-
-    name = address.getCanonicalHostName();
-    LOG.info("Searching service instance by canonical hostname " + name);
-    serviceInstance = selectServiceInstance(instanceSet.getByHost(name));
-    if (serviceInstance != null) {
-      return serviceInstance;
-    }
-
-    name = address.getHostAddress();
-    LOG.info("Searching service instance by address " + name);
-    serviceInstance = selectServiceInstance(instanceSet.getByHost(name));
-    if (serviceInstance != null) {
-      return serviceInstance;
-    }
-
-    return serviceInstance;
-  }
-
-
-  private LlapServiceInstance getServiceInstanceRandom(LlapRegistryService registryService) throws IOException {
-    ServiceInstanceSet<LlapServiceInstance> instanceSet = registryService.getInstances();
-    LlapServiceInstance serviceInstance = null;
-
-    LOG.info("Finding random live service instance");
-    Collection<LlapServiceInstance> allInstances = instanceSet.getAll();
-    if (allInstances.size() > 0) {
-      int randIdx = rand.nextInt(allInstances.size());;
-      serviceInstance = allInstances.toArray(serviceInstanceArray)[randIdx];
-    }
-    return serviceInstance;
-  }
-
-  private LlapServiceInstance selectServiceInstance(Set<LlapServiceInstance> serviceInstances) {
-    if (serviceInstances == null || serviceInstances.isEmpty()) {
-      return null;
-    }
-
-    // Get the first live service instance
-    for (LlapServiceInstance serviceInstance : serviceInstances) {
-      return serviceInstance;
-    }
-
-    LOG.info("No live service instances were found");
-    return null;
-  }
-
   private SubmitWorkRequestProto constructSubmitWorkRequestProto(SubmitWorkInfo submitWorkInfo,
       int taskNum, int attemptNum, InetSocketAddress address, Token<JobTokenIdentifier> token,
-      byte[] fragmentBytes, byte[] fragmentBytesSignature, JobConf job) throws IOException {
+      LlapInputSplit llapInputSplit, JobConf job) throws IOException {
+    byte[] fragmentBytes = llapInputSplit.getFragmentBytes();
+    byte[] fragmentBytesSignature = llapInputSplit.getFragmentBytesSignature();
+
     ApplicationId appId = submitWorkInfo.getFakeAppId();
 
     // This works, assuming the executor is running within YARN.
@@ -545,6 +466,8 @@ public class LlapBaseInputFormat<V extends WritableComparable<?>>
     if (fragmentBytesSignature != null) {
       builder.setInitialEventSignature(ByteString.copyFrom(fragmentBytesSignature));
     }
+    builder.setJwt(llapInputSplit.getJwt());
+    builder.setIsExternalClientRequest(true);
     return builder.build();
   }
 

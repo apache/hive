@@ -37,6 +37,7 @@ PREHOOK: Output: default@test2_n6
 POSTHOOK: query: FROM test1_n9 INSERT OVERWRITE TABLE test2_n6 PARTITION(age) SELECT test1_n9.name, test1_n9.age
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@test1_n9
+POSTHOOK: Output: default@test2_n6
 POSTHOOK: Output: default@test2_n6@age=15
 POSTHOOK: Output: default@test2_n6@age=30
 POSTHOOK: Output: default@test2_n6@age=40

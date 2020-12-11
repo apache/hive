@@ -48,7 +48,7 @@ STAGE PLANS:
                         Statistics: Num rows: 250 Data size: 24750 Basic stats: COMPLETE Column stats: COMPLETE
                         value expressions: _col1 (type: bigint)
             Execution mode: vectorized, llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Operator Tree:
@@ -469,6 +469,7 @@ PREHOOK: Output: default@tmp_src_part
 POSTHOOK: query: EXPLAIN INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_src
+POSTHOOK: Output: default@tmp_src_part
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
@@ -519,7 +520,7 @@ STAGE PLANS:
                           Statistics: Num rows: 5 Data size: 1220 Basic stats: COMPLETE Column stats: COMPLETE
                           value expressions: _col1 (type: int), _col2 (type: struct<count:bigint,sum:double,input:int>), _col3 (type: bigint), _col4 (type: bigint), _col5 (type: binary)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:
@@ -571,6 +572,7 @@ PREHOOK: Output: default@tmp_src_part
 POSTHOOK: query: INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tmp_src
+POSTHOOK: Output: default@tmp_src_part
 POSTHOOK: Output: default@tmp_src_part@d=1
 POSTHOOK: Output: default@tmp_src_part@d=2
 POSTHOOK: Output: default@tmp_src_part@d=3
@@ -1023,7 +1025,7 @@ STAGE PLANS:
                             Statistics: Num rows: 1 Data size: 400 Basic stats: COMPLETE Column stats: COMPLETE
                             value expressions: _col0 (type: int), _col1 (type: int), _col2 (type: bigint), _col3 (type: bigint), _col4 (type: binary), _col5 (type: int), _col6 (type: struct<count:bigint,sum:double,input:int>), _col7 (type: bigint), _col8 (type: binary)
             Execution mode: llap
-            LLAP IO: no inputs
+            LLAP IO: all inputs
         Reducer 2 
             Execution mode: llap
             Reduce Operator Tree:

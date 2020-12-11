@@ -32,13 +32,16 @@ import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.EximUtil;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.repl.CopyUtils;
 import org.apache.hadoop.hive.ql.parse.repl.dump.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -88,6 +91,27 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
     return event.getEventId();
   }
 
+  private BufferedWriter writer(Context withinContext, Path dataPath) throws IOException {
+    Path filesPath = new Path(dataPath, EximUtil.FILES_NAME);
+    FileSystem fs = dataPath.getFileSystem(withinContext.hiveConf);
+    return new BufferedWriter(new OutputStreamWriter(fs.create(filesPath)));
+  }
+
+  protected void writeEncodedDumpFiles(Context withinContext, Iterable<String> files, Path dataPath)
+          throws IOException, SemanticException {
+    boolean replaceNSInHACase = withinContext.hiveConf.getBoolVar(
+            HiveConf.ConfVars.REPL_HA_DATAPATH_REPLACE_REMOTE_NAMESERVICE);
+    // encoded filename/checksum of files, write into _files
+    try (BufferedWriter fileListWriter = writer(withinContext, dataPath)) {
+      for (String file : files) {
+        String encodedFilePath = replaceNSInHACase ? Utils.replaceNameserviceInEncodedURI(file, withinContext.hiveConf):
+                file;
+        fileListWriter.write(encodedFilePath);
+        fileListWriter.newLine();
+      }
+    }
+  }
+
   protected void writeFileEntry(Table table, Partition ptn, String file, Context withinContext)
           throws IOException, LoginException, MetaException, HiveFatalException {
     HiveConf hiveConf = withinContext.hiveConf;
@@ -108,7 +132,7 @@ abstract class AbstractEventHandler<T extends EventMessage> implements EventHand
       filePaths.add(fileInfo);
       FileSystem dstFs = dataPath.getFileSystem(hiveConf);
       CopyUtils copyUtils = new CopyUtils(distCpDoAsUser, hiveConf, dstFs);
-      copyUtils.copyAndVerify(dataPath, filePaths, srcDataPath, false);
+      copyUtils.copyAndVerify(dataPath, filePaths, srcDataPath, true, false);
       copyUtils.renameFileCopiedFromCmPath(dataPath, dstFs, filePaths);
     }
   }

@@ -28,8 +28,10 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
+import javolution.util.FastBitSet;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.LateralViewJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -55,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
+import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -733,6 +736,99 @@ public final class OpProcFactory {
     }
   }
 
+  public static class GroupByPPD extends DefaultPPD implements SemanticNodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+      super.process(nd, stack, procCtx, nodeOutputs);
+      OpWalkerInfo owi = (OpWalkerInfo) procCtx;
+      GroupByDesc groupByDesc = ((GroupByOperator)nd).getConf();
+      ExprWalkerInfo prunedPred = owi.getPrunedPreds((Operator<? extends OperatorDesc>) nd);
+      if (prunedPred == null || !prunedPred.hasAnyCandidates() ||
+          !groupByDesc.isGroupingSetsPresent()) {
+        return null;
+      }
+
+      List<Long> groupingSets = groupByDesc.getListGroupingSets();
+      Map<String, List<ExprNodeDesc>> candidates = prunedPred.getFinalCandidates();
+      FastBitSet[] fastBitSets = new FastBitSet[groupingSets.size()];
+      int groupingSetPosition = groupByDesc.getGroupingSetPosition();
+      for (int pos = 0; pos < fastBitSets.length; pos ++) {
+        fastBitSets[pos] = GroupByOperator.groupingSet2BitSet(groupingSets.get(pos),
+            groupingSetPosition);
+      }
+      List<ExprNodeDesc> groupByKeys = ((GroupByOperator)nd).getConf().getKeys();
+      Map<ExprNodeDesc, ExprNodeDesc> newToOldExprMap = prunedPred.getNewToOldExprMap();
+      Map<String, List<ExprNodeDesc>> nonFinalCandidates = new HashMap<String, List<ExprNodeDesc>>();
+      Iterator<Map.Entry<String, List<ExprNodeDesc>>> iter = candidates.entrySet().iterator();
+      while (iter.hasNext()) {
+        Map.Entry<String, List<ExprNodeDesc>> entry = iter.next();
+        List<ExprNodeDesc> residualExprs = new ArrayList<ExprNodeDesc>();
+        List<ExprNodeDesc> finalCandidates = new ArrayList<ExprNodeDesc>();
+        List<ExprNodeDesc> exprs = entry.getValue();
+        for (ExprNodeDesc expr : exprs) {
+          if (canPredPushdown(expr, groupByKeys, fastBitSets, groupingSetPosition)) {
+            finalCandidates.add(expr);
+          } else {
+            residualExprs.add(newToOldExprMap.get(expr));
+          }
+        }
+        if (!residualExprs.isEmpty()) {
+          nonFinalCandidates.put(entry.getKey(), residualExprs);
+        }
+
+        if (finalCandidates.isEmpty()) {
+          iter.remove();
+        } else {
+          exprs.clear();
+          exprs.addAll(finalCandidates);
+        }
+      }
+
+      logExpr(nd, prunedPred);
+      if (!nonFinalCandidates.isEmpty()) {
+        createFilter((Operator) nd, nonFinalCandidates, owi);
+      }
+      return null;
+    }
+
+    private void getGBYKeyPosFromExpr(ExprNodeDesc expr, List<ExprNodeDesc> groupByKeys,
+        List<Integer> gbyKeyPos) {
+      for (int i = 0; i < groupByKeys.size(); i++) {
+        if (groupByKeys.get(i).isSame(expr)) {
+          gbyKeyPos.add(i);
+          return;
+        }
+      }
+      if (expr.getChildren() != null) {
+        for (int i = 0; i < expr.getChildren().size(); i++) {
+          getGBYKeyPosFromExpr(expr.getChildren().get(i), groupByKeys, gbyKeyPos);
+        }
+      }
+    }
+
+    private boolean canPredPushdown(ExprNodeDesc expr, List<ExprNodeDesc> groupByKeys,
+        FastBitSet[] bitSets, int groupingSetPosition) {
+      List<Integer> gbyKeyPos = new ArrayList<Integer>();
+      getGBYKeyPosFromExpr(expr, groupByKeys, gbyKeyPos);
+      // gbyKeysInExpr can be empty, maybe the expr is a boolean constant, let the expr push down
+      for (Integer pos : gbyKeyPos) {
+        for (FastBitSet bitset : bitSets) {
+          int keyPos = bitset.nextClearBit(0);
+          while (keyPos < groupingSetPosition && keyPos != pos) {
+            keyPos = bitset.nextClearBit(keyPos + 1);
+          }
+          // If the gbyKey has not be found in grouping sets, the expr should not be pushed down
+          if (keyPos != pos) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+  }
+
   /**
    * Default processor which just merges its children.
    */
@@ -1091,6 +1187,10 @@ public final class OpProcFactory {
 
   public static SemanticNodeProcessor getRSProc() {
     return new ReduceSinkPPD();
+  }
+
+  public static SemanticNodeProcessor getGBYProc() {
+    return new GroupByPPD();
   }
 
   private OpProcFactory() {

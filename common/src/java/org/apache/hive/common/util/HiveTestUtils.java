@@ -25,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -61,8 +62,9 @@ public class HiveTestUtils {
     final Process p1 = Runtime.getRuntime().exec(cmdArr, null, dir);
     new Thread(new Runnable() {
       @Override
+      @SuppressFBWarnings(value = "OS_OPEN_STREAM", justification = "Testing only")
       public void run() {
-        BufferedReader input = new BufferedReader(new InputStreamReader(p1.getErrorStream()));
+        BufferedReader input = new BufferedReader(new InputStreamReader(p1.getErrorStream(), StandardCharsets.UTF_8));
         String line;
         try {
           while ((line = input.readLine()) != null) {
@@ -81,6 +83,7 @@ public class HiveTestUtils {
     return genLocalJarForTest(pathToClazzFile, clazzName, new HashMap<File, String>());
   }
 
+  @SuppressFBWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE", justification = "Testing only")
   public static File genLocalJarForTest(String pathToClazzFile, String clazzName, Map<File,String>extraContent)
       throws IOException, InterruptedException {
     String u = pathToClazzFile;
@@ -100,7 +103,7 @@ public class HiveTestUtils {
 
     for (Entry<File, String> entry : extraContent.entrySet()) {
       zos.putNextEntry(new ZipEntry(entry.getKey().toString()));
-      zos.write(entry.getValue().getBytes());
+      zos.write(entry.getValue().getBytes(StandardCharsets.UTF_8));
       zos.closeEntry();
     }
     zos.close();
