@@ -188,7 +188,7 @@ def loadFile(name) {
 
 jobWrappers {
 
-  def splits
+  def splits = []
   executorNode {
     container('hdb') {
       stage('Checkout') {
