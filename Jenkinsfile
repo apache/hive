@@ -66,6 +66,7 @@ def setPrLabel(String prLabel) {
 setPrLabel("PENDING");
 
 def executorNode(run) {
+  if(false)
   hdbPodTemplate {
     timeout(time: 6, unit: 'HOURS') {
       node(POD_LABEL) {
