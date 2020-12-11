@@ -2,7 +2,6 @@
 set hive.support.concurrency=true;
 set hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 set hive.materializedview.rewriting=false;
-set hive.materializedview.rewriting.sql=true;
 
 set user.name=user1;
 

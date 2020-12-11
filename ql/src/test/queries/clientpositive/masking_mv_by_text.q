@@ -6,7 +6,6 @@ set hive.mapred.mode=nonstrict;
 set hive.security.authorization.enabled=true;
 set hive.security.authorization.manager=org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactoryForTest;
 set hive.materializedview.rewriting=false;
-set hive.materializedview.rewriting.sql=true;
 
 
 create table `masking_test_n_mv` stored as orc TBLPROPERTIES ('transactional'='true') as
