@@ -82,6 +82,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.Entity;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.io.AcidInputFormat.DeltaFileMetaData;
 import org.apache.hadoop.hive.ql.io.orc.OrcFile;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcRecordUpdater;
@@ -264,7 +265,7 @@ public class AcidUtils {
     return createBucketFile(subdir, bucket, null, true);
   }
 
-  public static Path createBucketFile(Path subdir, int bucket, String attemptId) {
+  public static Path createBucketFile(Path subdir, int bucket, Integer attemptId) {
     return createBucketFile(subdir, bucket, attemptId, true);
   }
 
@@ -274,7 +275,7 @@ public class AcidUtils {
    * @param bucket the bucket number
    * @return the filename
    */
-  private static Path createBucketFile(Path subdir, int bucket, String attemptId, boolean isAcidSchema) {
+  private static Path createBucketFile(Path subdir, int bucket, Integer attemptId, boolean isAcidSchema) {
     if(isAcidSchema) {
       String fileName = BUCKET_PREFIX + String.format(BUCKET_DIGITS, bucket);
       if (attemptId != null) {
@@ -485,12 +486,12 @@ public class AcidUtils {
     return -1;
   }
 
-  public static String parseAttemptId(Path bucketFile) {
+  public static Integer parseAttemptId(Path bucketFile) {
     String filename = bucketFile.getName();
     Matcher matcher = BUCKET_PATTERN.matcher(filename);
-    String attemptId = null;
+    Integer attemptId = null;
     if (matcher.matches()) {
-      attemptId = matcher.group(2) != null ? matcher.group(2).substring(1) : null;
+      attemptId = matcher.group(2) != null ? Integer.valueOf(matcher.group(2).substring(1)) : null;
     }
     if (Utilities.FILE_OP_LOGGER.isDebugEnabled()) {
       Utilities.FILE_OP_LOGGER.debug("Parsing attempt ID = " + attemptId + " from file name '" + bucketFile + "'");
@@ -511,7 +512,7 @@ public class AcidUtils {
     AcidOutputFormat.Options result = new AcidOutputFormat.Options(conf);
     String filename = bucketFile.getName();
     int bucket = parseBucketId(bucketFile);
-    String attemptId = parseAttemptId(bucketFile);
+    Integer attemptId = parseAttemptId(bucketFile);
     if (ORIGINAL_PATTERN.matcher(filename).matches() || ORIGINAL_PATTERN_COPY.matcher(filename).matches()) {
       long minWriteId = 0;
       long maxWriteId = 0;
@@ -561,6 +562,31 @@ public class AcidUtils {
           .maximumWriteId(0);
     }
     return result;
+  }
+
+  /**
+   * If the direct insert is on for ACID tables, the files will contain an "_attempID" postfix.
+   * In order to be able to read the files from the delete deltas, we need to know which
+   * attemptId belongs to which delta. To make this lookup easy, this method created a map
+   * to link the deltas to the attemptId.
+   * @param pathToDeltaMetaData
+   * @param deleteDeltaDirs
+   * @param bucket
+   * @return
+   */
+  public static Map<String, Integer> getDeltaToAttemptIdMap(
+      Map<String, AcidInputFormat.DeltaMetaData> pathToDeltaMetaData, Path[] deleteDeltaDirs, int bucket) {
+    Map<String, Integer> deltaToAttemptId = new HashMap<>();
+    for (Path delta : deleteDeltaDirs) {
+      AcidInputFormat.DeltaMetaData deltaMetaData = pathToDeltaMetaData.get(delta.getName());
+      for (DeltaFileMetaData files : deltaMetaData.getDeltaFiles()) {
+        if (bucket == files.getBucketId()) {
+          deltaToAttemptId.put(delta.getName(), files.getAttemptId());
+          break;
+        }
+      }
+    }
+    return deltaToAttemptId;
   }
 
   public static final class DirectoryImpl implements Directory {
@@ -1177,10 +1203,16 @@ public class AcidUtils {
    * @param deleteDeltas list of begin/end write id pairs
    * @return the list of delta paths
    */
-  public static Path[] deserializeDeleteDeltas(Path root, final List<AcidInputFormat.DeltaMetaData> deleteDeltas) {
+  public static Path[] deserializeDeleteDeltas(Path root, final List<AcidInputFormat.DeltaMetaData> deleteDeltas,
+      Map<String, AcidInputFormat.DeltaMetaData> pathToDeltaMetaData) {
     List<Path> results = new ArrayList<>(deleteDeltas.size());
     for (AcidInputFormat.DeltaMetaData dmd : deleteDeltas) {
       results.addAll(dmd.getPaths(root).stream().map(Pair::getLeft).collect(Collectors.toList()));
+      if (pathToDeltaMetaData != null) {
+        for (Pair<Path, Integer> pathPair : dmd.getPaths(root)) {
+          pathToDeltaMetaData.put(pathPair.getLeft().getName(), dmd);
+        }
+      }
     }
     return results.toArray(new Path[results.size()]);
   }
@@ -2774,7 +2806,7 @@ public class AcidUtils {
   }
 
   public static class IdPathFilter implements PathFilter {
-    private String baseDirName, deltaDirName;
+    private String baseDirName, deltaDirName, deleteDeltaDirName;
     private final boolean isDeltaPrefix;
     private final Set<String> dpSpecs;
     private final int dpLevel;
@@ -2784,16 +2816,19 @@ public class AcidUtils {
     }
 
     public IdPathFilter(long writeId, int stmtId, Set<String> dpSpecs, int dpLevel) {
-      String deltaDirName = null;
-      deltaDirName = DELTA_PREFIX + String.format(DELTA_DIGITS, writeId) + "_" +
-              String.format(DELTA_DIGITS, writeId);
+      String deltaDirName = DELTA_PREFIX + String.format(DELTA_DIGITS, writeId) + "_" +
+          String.format(DELTA_DIGITS, writeId);
+      String deleteDeltaDirName = DELETE_DELTA_PREFIX + String.format(DELTA_DIGITS, writeId) + "_" +
+          String.format(DELTA_DIGITS, writeId);
       isDeltaPrefix = (stmtId < 0);
       if (!isDeltaPrefix) {
         deltaDirName += "_" + String.format(STATEMENT_DIGITS, stmtId);
+        deleteDeltaDirName += "_" + String.format(STATEMENT_DIGITS, stmtId);
       }
 
       this.baseDirName = BASE_PREFIX + String.format(DELTA_DIGITS, writeId);
       this.deltaDirName = deltaDirName;
+      this.deleteDeltaDirName = deleteDeltaDirName;
       this.dpSpecs = dpSpecs;
       this.dpLevel = dpLevel;
     }
@@ -2817,8 +2852,9 @@ public class AcidUtils {
         return (name.equals(baseDirName) && dpSpecs.contains(partitionSpec));
       }
       else {
-        return name.equals(baseDirName) || (isDeltaPrefix && name.startsWith(deltaDirName))
-            || (!isDeltaPrefix && name.equals(deltaDirName));
+        return name.equals(baseDirName) 
+            || (isDeltaPrefix && (name.startsWith(deltaDirName) || name.startsWith(deleteDeltaDirName)))
+            || (!isDeltaPrefix && (name.equals(deltaDirName) || name.equals(deleteDeltaDirName)));
       }
     }
   }
