@@ -10836,7 +10836,7 @@ public class ObjectStore implements RawStore, Configurable {
     try {
       tx.begin();
 
-      try (Query query = pm.newQuery(MNotificationLog.class, "eventTime < tooOld")) {
+      try (Query query = pm.newQuery(MNotificationLog.class, "eventTime <= tooOld")) {
         query.declareParameters("java.lang.Integer tooOld");
         query.setOrdering("eventId ascending");
         if (batchSize.isPresent()) {
