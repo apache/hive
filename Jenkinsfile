@@ -219,7 +219,6 @@ jobWrappers {
     }
   }
 
-  stage('Testing') {
     def branches = [:]
     for (def d in ['derby','postgres']) {
       def dbType=d
@@ -282,28 +281,27 @@ reinit_metastore $dbType
         }
       }
     }
-    try {
+  try {
+    stage('Testing') {
       parallel branches
-    } finally {
-  stage('Archive') {
-    executorNode {
-      for (int i = 0; i < splits.size(); i++) {
-        def num = i
-        def splitName=String.format("split-%02d",num+1)
-        def fn="${splitName}.tgz"
-        loadFile(fn)
+    }
+  } finally {
+    stage('Archive') {
+      executorNode {
+        for (int i = 0; i < splits.size(); i++) {
+          def num = i
+          def splitName=String.format("split-%02d",num+1)
+          def fn="${splitName}.tgz"
+          loadFile(fn)
+          sh("""#!/bin/bash -e
+              mkdir ${splitName}
+              tar xzf ${fn} -C ${splitName}
+              unlink ${fn}""")
+        }
         sh("""#!/bin/bash -e
-            mkdir ${splitName}
-            tar xzf ${fn} -C ${splitName}
-            unlink ${fn}""")
+        tar czf test-results.tgz split*""")
+        archiveArtifacts artifacts: "**/test-results.tgz"
       }
-      sh("""#!/bin/bash -e
-      tar czf test-results.tgz split*""")
-      archiveArtifacts artifacts: "**/test-results.tgz"
     }
   }
-
-    }
-  }
-
 }
