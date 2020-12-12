@@ -13914,6 +13914,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       throws SemanticException {
     try {
       // Do not allow view to be defined on temp table or other materialized view
+      boolean usesNonTransactional = false;
       Set<String> tableAliases = qb.getTabAliases();
       for (String alias : tableAliases) {
         try {
@@ -13928,12 +13929,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException("View definition references materialized view " + alias);
           }
           if (createVwDesc.isRewriteEnabled() && !AcidUtils.isTransactionalTable(table)) {
-            throw new SemanticException("Automatic rewriting for materialized view cannot "
-                + "be enabled if the materialized view uses non-transactional tables");
+            usesNonTransactional = true;
           }
         } catch (HiveException ex) {
           throw new SemanticException(ex);
         }
+      }
+      if (usesNonTransactional) {
+        LOG.warn("Automatic rewriting for materialized view cannot "
+            + "check for data staleness if a materialized view uses non-transactional tables");
       }
 
       if (!qb.hasTableDefined()) {
