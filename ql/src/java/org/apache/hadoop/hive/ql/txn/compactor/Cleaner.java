@@ -290,7 +290,7 @@ public class Cleaner extends MetaStoreCompactorThread {
      * See {@link TxnStore#markCleaned(CompactionInfo)}
      */
     Table table = getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
-    if (isDynPartAbort(table, ci)) {
+    if (isDynPartAbort(table, ci) || dir.hasUncompactedAborts()) {
       ci.setWriteIds(dir.getAbortedWriteIds());
     }
     obsoleteDirs.addAll(dir.getAbortedDirectories());
