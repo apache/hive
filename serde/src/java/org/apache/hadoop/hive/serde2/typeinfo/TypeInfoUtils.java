@@ -924,6 +924,11 @@ public final class TypeInfoUtils {
     PrimitiveGrouping fromPg = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(from);
     PrimitiveGrouping toPg = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(to);
 
+    // Allow implicit String to Decimal conversion
+    if (fromPg == PrimitiveGrouping.STRING_GROUP && to == PrimitiveCategory.DECIMAL) {
+      return true;
+    }
+    
     // Allow implicit String to Double conversion
     if (fromPg == PrimitiveGrouping.STRING_GROUP && to == PrimitiveCategory.DOUBLE) {
       return true;
