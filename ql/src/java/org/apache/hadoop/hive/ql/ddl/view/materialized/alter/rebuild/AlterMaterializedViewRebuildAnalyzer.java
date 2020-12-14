@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.ddl.DDLSemanticAnalyzerFactory.DDLType;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.lockmgr.HiveTxnManager;
 import org.apache.hadoop.hive.ql.lockmgr.LockException;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
@@ -36,6 +37,8 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
 
 /**
  * Analyzer for alter materialized view rebuild commands.
@@ -71,6 +74,23 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
 
     LOG.debug("Rebuilding materialized view " + tableName.getNotEmptyDbTable());
     super.analyzeInternal(rewrittenAST);
+
+    try {
+      Table table = db.getTable(tableName.getDb(), tableName.getTable());
+      Boolean outdated = db.isOutdatedMaterializedView(
+              table, new ArrayList<>(table.getCreationMetadata().getTablesUsed()), false);
+
+      if (outdated != null && !outdated) {
+        rootTasks.clear();
+        String msg = String.format("Materialized view %s.%s is up to date. Cancelling rebuild.",
+                tableName.getDb(), tableName.getTable());
+        LOG.info(msg);
+        console.printInfo(msg, false);
+      }
+
+    } catch (HiveException e) {
+      LOG.warn("Error while checking materialized view " + tableName.getDb() + "." + tableName.getTable(), e);
+    }
   }
 
   private static final String REWRITTEN_INSERT_STATEMENT = "INSERT OVERWRITE TABLE %s %s";
