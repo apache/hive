@@ -325,24 +325,24 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
     void serialize(Object colInfo, Field field, int adjustedBatchIndex) throws IOException {
       serializeUnionWrite((UnionColumnVector)colInfo, field, adjustedBatchIndex);
     }
-  }
 
-  private void serializeUnionWrite(
-      UnionColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
+    private void serializeUnionWrite(
+            UnionColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
 
-    UnionTypeInfo typeInfo = (UnionTypeInfo) field.typeInfo;
-    UnionObjectInspector objectInspector = (UnionObjectInspector) field.objectInspector;
+      UnionTypeInfo typeInfo = (UnionTypeInfo) field.typeInfo;
+      UnionObjectInspector objectInspector = (UnionObjectInspector) field.objectInspector;
 
-    final byte tag = (byte) colVector.tags[adjustedBatchIndex];
-    final ColumnVector fieldColumnVector = colVector.fields[tag];
-    final Field childField = field.children[tag];
+      final byte tag = (byte) colVector.tags[adjustedBatchIndex];
+      final ColumnVector fieldColumnVector = colVector.fields[tag];
+      final Field childField = field.children[tag];
 
-    serializeWrite.beginUnion(tag);
-    serializeWrite(
-        fieldColumnVector,
-        childField,
-        adjustedBatchIndex);
-    serializeWrite.finishUnion();
+      serializeWrite.beginUnion(tag);
+      serializeWrite(
+              fieldColumnVector,
+              childField,
+              adjustedBatchIndex);
+      serializeWrite.finishUnion();
+    }
   }
 
   class VectorSerializeStructWriter extends VectorSerializeWriter {
@@ -350,33 +350,33 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
     void serialize(Object colInfo, Field field, int adjustedBatchIndex) throws IOException {
       serializeStructWrite((StructColumnVector)colInfo, field, adjustedBatchIndex);
     }
-  }
 
-  private void serializeStructWrite(
-      StructColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
+    private void serializeStructWrite(
+            StructColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
 
-    StructTypeInfo typeInfo = (StructTypeInfo) field.typeInfo;
-    StructObjectInspector objectInspector = (StructObjectInspector) field.objectInspector;
+      StructTypeInfo typeInfo = (StructTypeInfo) field.typeInfo;
+      StructObjectInspector objectInspector = (StructObjectInspector) field.objectInspector;
 
-    final ColumnVector[] fieldColumnVectors = colVector.fields;
-    final Field[] children = field.children;
-    final List<? extends StructField> structFields = objectInspector.getAllStructFieldRefs();
-    final int size = field.count;
+      final ColumnVector[] fieldColumnVectors = colVector.fields;
+      final Field[] children = field.children;
+      final List<? extends StructField> structFields = objectInspector.getAllStructFieldRefs();
+      final int size = field.count;
 
-    final List list = (List) vectorExtractRow.extractRowColumn(
-        colVector, typeInfo, objectInspector, adjustedBatchIndex);
+      final List list = (List) vectorExtractRow.extractRowColumn(
+              colVector, typeInfo, objectInspector, adjustedBatchIndex);
 
-    serializeWrite.beginStruct(list);
-    for (int i = 0; i < size; i++) {
-      if (i > 0) {
-        serializeWrite.separateStruct();
+      serializeWrite.beginStruct(list);
+      for (int i = 0; i < size; i++) {
+        if (i > 0) {
+          serializeWrite.separateStruct();
+        }
+        serializeWrite(
+                fieldColumnVectors[i],
+                children[i],
+                adjustedBatchIndex);
       }
-      serializeWrite(
-          fieldColumnVectors[i],
-          children[i],
-          adjustedBatchIndex);
+      serializeWrite.finishStruct();
     }
-    serializeWrite.finishStruct();
   }
 
   class VectorSerializeMapWriter extends VectorSerializeWriter {
@@ -384,34 +384,34 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
     void serialize(Object colInfo, Field field, int adjustedBatchIndex) throws IOException {
       serializeMapWrite((MapColumnVector)colInfo, field, adjustedBatchIndex);
     }
-  }
 
-  private void serializeMapWrite(
-      MapColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
+    private void serializeMapWrite(
+            MapColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
 
-    MapTypeInfo typeInfo = (MapTypeInfo) field.typeInfo;
-    MapObjectInspector objectInspector = (MapObjectInspector) field.objectInspector;
+      MapTypeInfo typeInfo = (MapTypeInfo) field.typeInfo;
+      MapObjectInspector objectInspector = (MapObjectInspector) field.objectInspector;
 
-    final ColumnVector keyColumnVector = colVector.keys;
-    final ColumnVector valueColumnVector = colVector.values;
-    final Field keyField = field.children[0];
-    final Field valueField = field.children[1];
-    final int offset = (int) colVector.offsets[adjustedBatchIndex];
-    final int size = (int) colVector.lengths[adjustedBatchIndex];
+      final ColumnVector keyColumnVector = colVector.keys;
+      final ColumnVector valueColumnVector = colVector.values;
+      final Field keyField = field.children[0];
+      final Field valueField = field.children[1];
+      final int offset = (int) colVector.offsets[adjustedBatchIndex];
+      final int size = (int) colVector.lengths[adjustedBatchIndex];
 
-    final Map map = (Map) vectorExtractRow.extractRowColumn(
-        colVector, typeInfo, objectInspector, adjustedBatchIndex);
+      final Map map = (Map) vectorExtractRow.extractRowColumn(
+              colVector, typeInfo, objectInspector, adjustedBatchIndex);
 
-    serializeWrite.beginMap(map);
-    for (int i = 0; i < size; i++) {
-      if (i > 0) {
-        serializeWrite.separateKeyValuePair();
+      serializeWrite.beginMap(map);
+      for (int i = 0; i < size; i++) {
+        if (i > 0) {
+          serializeWrite.separateKeyValuePair();
+        }
+        serializeWrite(keyColumnVector, keyField, offset + i);
+        serializeWrite.separateKey();
+        serializeWrite(valueColumnVector, valueField, offset + i);
       }
-      serializeWrite(keyColumnVector, keyField, offset + i);
-      serializeWrite.separateKey();
-      serializeWrite(valueColumnVector, valueField, offset + i);
+      serializeWrite.finishMap();
     }
-    serializeWrite.finishMap();
   }
 
   class VectorSerializeListWriter extends VectorSerializeWriter {
@@ -419,32 +419,32 @@ public final class VectorSerializeRow<T extends SerializeWrite> {
     void serialize(Object colInfo, Field field, int adjustedBatchIndex) throws IOException {
       serializeListWrite((ListColumnVector)colInfo, field, adjustedBatchIndex);
     }
-  }
 
-  private void serializeListWrite(
-      ListColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
+    private void serializeListWrite(
+            ListColumnVector colVector, Field field, int adjustedBatchIndex) throws IOException {
 
-    final ListTypeInfo typeInfo = (ListTypeInfo) field.typeInfo;
-    final ListObjectInspector objectInspector = (ListObjectInspector) field.objectInspector;
+      final ListTypeInfo typeInfo = (ListTypeInfo) field.typeInfo;
+      final ListObjectInspector objectInspector = (ListObjectInspector) field.objectInspector;
 
-    final ColumnVector childColumnVector = colVector.child;
-    final Field elementField = field.children[0];
-    final int offset = (int) colVector.offsets[adjustedBatchIndex];
-    final int size = (int) colVector.lengths[adjustedBatchIndex];
+      final ColumnVector childColumnVector = colVector.child;
+      final Field elementField = field.children[0];
+      final int offset = (int) colVector.offsets[adjustedBatchIndex];
+      final int size = (int) colVector.lengths[adjustedBatchIndex];
 
-    final ObjectInspector elementObjectInspector = objectInspector.getListElementObjectInspector();
-    final List list = (List) vectorExtractRow.extractRowColumn(
-        colVector, typeInfo, objectInspector, adjustedBatchIndex);
+      final ObjectInspector elementObjectInspector = objectInspector.getListElementObjectInspector();
+      final List list = (List) vectorExtractRow.extractRowColumn(
+              colVector, typeInfo, objectInspector, adjustedBatchIndex);
 
-    serializeWrite.beginList(list);
-    for (int i = 0; i < size; i++) {
-      if (i > 0) {
-        serializeWrite.separateList();
+      serializeWrite.beginList(list);
+      for (int i = 0; i < size; i++) {
+        if (i > 0) {
+          serializeWrite.separateList();
+        }
+        serializeWrite(
+                childColumnVector, elementField, offset + i);
       }
-      serializeWrite(
-          childColumnVector, elementField, offset + i);
+      serializeWrite.finishList();
     }
-    serializeWrite.finishList();
   }
 
   class VectorSerializeBooleanWriter extends VectorSerializeWriter {
