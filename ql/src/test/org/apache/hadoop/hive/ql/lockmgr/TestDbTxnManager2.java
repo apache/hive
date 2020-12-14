@@ -3238,26 +3238,4 @@ public class TestDbTxnManager2 extends DbTxnManagerEndToEndTestBase{
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_acid", null, locks);
     checkLock(LockType.SHARED_READ, LockState.ACQUIRED, "default", "tab_not_acid", null, locks);
   }
-
-  @Test
-  public void myTest() throws Exception {
-    conf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
-    conf.setVar(HiveConf.ConfVars.HIVE_ORC_SPLIT_STRATEGY, "BI");
-    dropTable(new String[] {"tab_acidTest"});
-    driver.run("create table if not exists tab_acidTest (a int, b int) partitioned by (p string) " +
-        "stored as orc TBLPROPERTIES ('transactional'='true')");
-    driver.run("insert into tab_acidTest partition(p) (a,b,p) values(1,2,'foo'),(3,4,'bar')");
-    driver.run("insert into tab_acidTest partition(p) (a,b,p) values(4,5,'foo')");
-    driver.run("select * from tab_acidTest where p='foo'");
-    List res = new ArrayList();
-    driver.getFetchTask().fetch(res);
-    driver.run("alter table tab_acidTest partition(p='foo') compact 'major'");
-    TestTxnCommands2.runWorker(conf);
-    TestTxnCommands2.runCleaner(conf);
-    driver.run("select * from tab_acidTest where p='foo'");
-    res = new ArrayList();
-    driver.getFetchTask().fetch(res);
-    Assert.assertEquals(2, res.size());
-    dropTable(new String[] {"tab_acidTest"});
-  }
 }
