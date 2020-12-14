@@ -4487,15 +4487,7 @@ public final class Utilities {
     List<Path> manifests = new ArrayList<>();
     if (fs.exists(manifestDir)) {
       FileStatus[] manifestFiles = fs.listStatus(manifestDir);
-      if (manifestFiles != null) {
-        for (FileStatus status : manifestFiles) {
-          Path path = status.getPath();
-          if (path.getName().endsWith(MANIFEST_EXTENSION)) {
-            Utilities.FILE_OP_LOGGER.info("Reading manifest {}", path);
-            manifests.add(path);
-          }
-        }
-      }
+      manifests = selectManifestFiles(manifestFiles);
     } else {
       Utilities.FILE_OP_LOGGER.info("No manifests found in directory {} - query produced no output", manifestDir);
       manifestDir = null;
@@ -4599,6 +4591,67 @@ public final class Utilities {
         Utilities.createEmptyBuckets(hconf, emptyBuckets, mbc.isCompressed, mbc.tableInfo, reporter);
       }
     }
+  }
+
+  /**
+   * The name of a manifest file consists of the task ID and a .manifest extension, where
+   * the task ID includes the attempt ID as well. It can happen that a task attempt already
+   * wrote out the manifest file, and then fails, so Tez restarts it. If the next attempt
+   * successfully finishes, the query won't fail but there could be multiple manifest files with
+   * the same task ID, but different attempt IDs. In this case the manifest file which has
+   * the highest attempt ID, and not empty, has to be considered.
+   * The empty manifest files and the ones with the same task ID but lower attempt ID has to be ignored.
+   * @param manifestFiles All the files listed in the manifest directory
+   * @return The list of manifest files which have the highest attempt ID and are not empty
+   */
+  @VisibleForTesting
+  static List<Path> selectManifestFiles(FileStatus[] manifestFiles) {
+    List<Path> manifests = new ArrayList<>();
+    if (manifestFiles != null) {
+      Map<String, Integer> fileNameToAttempId = new HashMap<>();
+      Map<String, Path> fileNameToPath = new HashMap<>();
+
+      for (FileStatus manifestFile : manifestFiles) {
+        Path path = manifestFile.getPath();
+        if (manifestFile.getLen() == 0L) {
+          Utilities.FILE_OP_LOGGER.info("Found manifest file {}, but it is empty.", path);
+          continue;
+        }
+        String fileName = path.getName();
+        if (fileName.endsWith(MANIFEST_EXTENSION)) {
+          Pattern pattern = Pattern.compile("([0-9]+)_([0-9]+).manifest");
+          Matcher matcher = pattern.matcher(fileName);
+          if (matcher.matches()) {
+            String taskId = matcher.group(1);
+            int attemptId = Integer.parseInt(matcher.group(2));
+            Integer maxAttemptId = fileNameToAttempId.get(taskId);
+            if (maxAttemptId == null) {
+              fileNameToAttempId.put(taskId, attemptId);
+              fileNameToPath.put(taskId, path);
+              Utilities.FILE_OP_LOGGER.info("Found manifest file {} with attemptId {}.", path, attemptId);
+            } else if (attemptId > maxAttemptId) {
+              fileNameToAttempId.put(taskId, attemptId);
+              fileNameToPath.put(taskId, path);
+              Utilities.FILE_OP_LOGGER.info(
+                  "Found manifest file {} which has higher attemptId than {}. Ignore the manifest files with attemptId below {}.",
+                  path, maxAttemptId, attemptId);
+            } else {
+              Utilities.FILE_OP_LOGGER.info(
+                  "Found manifest file {} with attemptId {}, but already have a manifest file with attemptId {}. Ignore this manifest file.",
+                  path, attemptId, maxAttemptId);
+            }
+          } else {
+            Utilities.FILE_OP_LOGGER.info("Found manifest file {}", path);
+            manifests.add(path);
+          }
+        }
+      }
+
+      if (!fileNameToPath.isEmpty()) {
+        manifests.addAll(fileNameToPath.values());
+      }
+    }
+    return manifests;
   }
 
   private static void cleanDirectInsertDirectoriesConcurrently(
