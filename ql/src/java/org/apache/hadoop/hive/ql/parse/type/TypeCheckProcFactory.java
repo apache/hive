@@ -23,6 +23,7 @@ import com.google.common.collect.ListMultimap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -39,7 +40,6 @@ import org.apache.hadoop.hive.conf.HiveConf.StrictChecks;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
-import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
@@ -64,14 +64,11 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.SubqueryType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -80,7 +77,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TimestampLocalTZTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -801,6 +797,22 @@ public class TypeCheckProcFactory<T> {
       }
       return false;
     }
+    
+    private boolean isDecimalCharacterComparison(TypeInfo type1, TypeInfo type2) {
+      if(type1 instanceof PrimitiveTypeInfo && type2 instanceof PrimitiveTypeInfo) {
+        Set<Set<PrimitiveObjectInspector.PrimitiveCategory>> comparisons = new HashSet<>(3);
+        comparisons.add(EnumSet.of(
+            PrimitiveObjectInspector.PrimitiveCategory.DECIMAL, PrimitiveObjectInspector.PrimitiveCategory.CHAR));
+        comparisons.add(EnumSet.of(
+            PrimitiveObjectInspector.PrimitiveCategory.DECIMAL, PrimitiveObjectInspector.PrimitiveCategory.VARCHAR));
+        comparisons.add(EnumSet.of(
+            PrimitiveObjectInspector.PrimitiveCategory.DECIMAL, PrimitiveObjectInspector.PrimitiveCategory.STRING));
+        PrimitiveTypeInfo pt1 = (PrimitiveTypeInfo) type1;
+        PrimitiveTypeInfo pt2 = (PrimitiveTypeInfo) type2;
+        return comparisons.contains(EnumSet.of(pt1.getPrimitiveCategory(), pt2.getPrimitiveCategory()));
+      }
+      return false;
+    }
 
     protected void validateUDF(ASTNode expr, boolean isFunction, TypeCheckCtx ctx, FunctionInfo fi,
         List<T> children) throws SemanticException {
@@ -830,6 +842,13 @@ public class TypeCheckProcFactory<T> {
         } else if ((oiTypeInfo0.equals(TypeInfoFactory.doubleTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.longTypeInfo)) ||
             (oiTypeInfo0.equals(TypeInfoFactory.longTypeInfo) && oiTypeInfo1.equals(TypeInfoFactory.doubleTypeInfo))) {
           console.printError("WARNING: Comparing a bigint and a double may result in a loss of precision.");
+        } else if (isDecimalCharacterComparison(oiTypeInfo0, oiTypeInfo1)) {
+          String error = StrictChecks.checkTypeSafety(conf);
+          if (error != null) {
+            throw new UDFArgumentException(error);
+          }
+          console.printError("WARNING: Comparing " + oiTypeInfo0.getTypeName() + " and " + oiTypeInfo1.getTypeName()
+              + " may result in loss of precision.");
         }
       }
 
