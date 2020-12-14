@@ -69,38 +69,3 @@ explain select * from str_tbl inner join dec_tbl on decimal_col = char_col;
 
 explain select * from str_tbl inner join dec_tbl on varchar_col= decimal_col;
 explain select * from str_tbl inner join dec_tbl on decimal_col =varchar_col;
-
-
--- 
--- explain cbo select a from str_tbl where a=1208925742523269479013976;
--- explain select a from str_tbl where a=1208925742523269479013976;
--- 
--- 
--- create table str_tbl (a string);
--- insert into str_tbl values ('1208925742523269458163819');
--- select a from str_tbl where a=1208925742523269479013976;
--- explain cbo select a from str_tbl where a=1208925742523269479013976;
--- explain select a from str_tbl where a=1208925742523269479013976;
--- 
--- create table t_str (str_col string);
--- create table t_dec (dec_col decimal(25,0));
--- insert into t_str values ('1208925742523269458163819');
--- insert into t_str values ('320892574252326945816300300000000000001233456789');
--- insert into t_dec values (1208925742523269479013976);
--- insert into t_dec values (3208925742523269458163003);
--- 
--- select cast (str_col as decimal(38,13)) from t_str;
--- 
--- explain plan for select * from strtbl where strcol=1208925742523269479013976;
--- explain plan for select * from dectbl where deccol='1208925742523269458163819';
--- explain plan for select * from dectbl inner join strtbl on deccol=strcol;
--- 
--- 
--- select * from t_dec inner join t_str on dec_col=str_col;
--- select * from t_dec inner join t_str on str_col=dec_col;
--- 
--- set hive.explain.user=false;
--- explain select * from t_str where str_col=1208925742523269479013976;
--- explain select * from t_dec where dec_col='1208925742523269458163819';
--- explain select * from t_dec inner join t_str on dec_col=str_col;
--- explain select * from t_dec inner join t_str on str_col=dec_col;
