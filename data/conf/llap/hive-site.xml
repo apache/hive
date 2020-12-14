@@ -406,5 +406,9 @@
   <name>hive.strict.timestamp.conversion</name>
   <value>false</value>
 </property>
+<property>
+  <name>hive.strict.checks.type.safety</name>
+  <value>false</value>
+</property>
 
 </configuration>
