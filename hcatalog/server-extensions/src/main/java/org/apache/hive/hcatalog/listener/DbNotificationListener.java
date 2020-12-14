@@ -1077,7 +1077,7 @@ public class DbNotificationListener extends TransactionalMetaStoreEventListener 
 
       // Event time
       columns = columns + ", \"EVENT_TIME\"";
-      insertVal = insertVal + "," + now();
+      insertVal = insertVal + "," + event.getEventTime();
 
       // Event type
       columns = columns + ", \"EVENT_TYPE\"";
