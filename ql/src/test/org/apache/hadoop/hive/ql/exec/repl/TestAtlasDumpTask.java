@@ -24,6 +24,7 @@ import org.apache.atlas.AtlasClientV2;
 import org.apache.atlas.AtlasServiceException;
 import org.apache.atlas.model.impexp.AtlasExportRequest;
 import org.apache.atlas.model.impexp.AtlasServer;
+import org.apache.commons.configuration.ConfigurationConverter;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.repl.atlas.AtlasReplInfo;
@@ -42,6 +43,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.powermock.reflect.Whitebox;
@@ -55,6 +57,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.mock;
@@ -65,7 +68,7 @@ import static org.powermock.api.mockito.PowerMockito.when;
  * Unit test class for testing Atlas metadata Dump.
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({LoggerFactory.class, UserGroupInformation.class})
+@PrepareForTest({LoggerFactory.class, UserGroupInformation.class, ConfigurationConverter.class})
 public class TestAtlasDumpTask {
 
   @Mock
@@ -216,6 +219,27 @@ public class TestAtlasDumpTask {
     }
     ArgumentCaptor<String> getServerReqCaptor = ArgumentCaptor.forClass(String.class);
     Mockito.verify(atlasClientV2, Mockito.times(4)).getServer(getServerReqCaptor.capture());
+  }
+
+  @Test
+  public void testAtlasClientTimeouts() throws Exception {
+    when(conf.getTimeVar(HiveConf.ConfVars.REPL_EXTERNAL_CLIENT_CONNECT_TIMEOUT,
+            TimeUnit.MILLISECONDS)).thenReturn(20L);
+    when(conf.getTimeVar(HiveConf.ConfVars.REPL_ATLAS_CLIENT_READ_TIMEOUT, TimeUnit.MILLISECONDS)).thenReturn(500L);
+    mockStatic(UserGroupInformation.class);
+    when(UserGroupInformation.getLoginUser()).thenReturn(mock(UserGroupInformation.class));
+    mockStatic(ConfigurationConverter.class);
+    when(ConfigurationConverter.getConfiguration(Mockito.any(Properties.class))).thenCallRealMethod();
+    AtlasRestClientBuilder atlasRestCleintBuilder = new AtlasRestClientBuilder("http://localhost:31000");
+    AtlasRestClient atlasClient = atlasRestCleintBuilder.getClient(conf);
+    Assert.assertTrue(atlasClient != null);
+    ArgumentCaptor<Properties> propsCaptor = ArgumentCaptor.forClass(Properties.class);
+    PowerMockito.verifyStatic(ConfigurationConverter.class, Mockito.times(1));
+    ConfigurationConverter.getConfiguration(propsCaptor.capture());
+    Assert.assertEquals("20", propsCaptor.getValue().getProperty(
+            AtlasRestClientBuilder.ATLAS_PROPERTY_CONNECT_TIMEOUT_IN_MS));
+    Assert.assertEquals("500", propsCaptor.getValue().getProperty(
+            AtlasRestClientBuilder.ATLAS_PROPERTY_READ_TIMEOUT_IN_MS));
   }
 
   private void setupConfForRetry() {

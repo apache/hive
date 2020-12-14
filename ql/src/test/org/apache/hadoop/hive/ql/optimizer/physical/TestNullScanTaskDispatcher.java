@@ -136,6 +136,11 @@ public class TestNullScanTaskDispatcher {
   }
 
   @Test
+  public void testNumberOfListStatusCalls_whenExternalLookupRunsInCaller() throws IOException, SemanticException {
+    verifyNumberOfReads(1, 0, 0, 1);
+  }
+
+  @Test
   public void testTwoManagedTables() throws IOException, SemanticException {
     final String managedTable1 = "table1";
     final String managedTable2 = "table2";

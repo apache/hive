@@ -155,7 +155,7 @@ public class CreateTableOperation extends DDLOperation<CreateTableDesc> {
         Path tabLocation = new Path(tTable.getSd().getLocation());
         List<Path> newFilesList = new ArrayList<>();
         try {
-          Hive.listFilesInsideAcidDirectory(tabLocation, tabLocation.getFileSystem(context.getConf()), newFilesList);
+          Hive.listFilesInsideAcidDirectory(tabLocation, tabLocation.getFileSystem(context.getConf()), newFilesList, null);
         } catch (IOException e) {
           LOG.error("Error listing files", e);
           throw new HiveException(e);

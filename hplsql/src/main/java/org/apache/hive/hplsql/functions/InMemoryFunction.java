@@ -54,18 +54,20 @@ public class InMemoryFunction implements Function {
 
   @Override
   public boolean exists(String name) {
+    name = name.toUpperCase();
     return funcMap.containsKey(name) || procMap.containsKey(name);
   }
 
   @Override
   public boolean exec(String name, HplsqlParser.Expr_func_paramsContext ctx) {
+    name = name.toUpperCase();
     if (builtinFunctions.exec(name, ctx)) {
       return true;
     }
     if (execFunction(name, ctx)) {
       return true;
     }
-    return (isProc(name) && execProc(name, ctx));
+    return (procMap.get(name) != null && execProc(name, ctx));
   }
 
   /**
@@ -88,16 +90,6 @@ public class InMemoryFunction implements Function {
     visit(userCtx.single_block_stmt());
     exec.leaveScope(); 
     return true;
-  }
-
-  /**
-   * Check if the stored procedure with the specified name is defined
-   */
-  public boolean isProc(String name) {
-    if (procMap.get(name.toUpperCase()) != null) {
-      return true;
-    }
-    return false;
   }
 
   /**
@@ -218,7 +210,7 @@ public class InMemoryFunction implements Function {
 
   @Override
   public void addUserFunction(HplsqlParser.Create_function_stmtContext ctx) {
-    String name = ctx.ident().getText();
+    String name = ctx.ident().getText().toUpperCase();
     if (builtinFunctions.exists(name)) {
       exec.info(ctx, name + " is a built-in function which cannot be redefined.");
       return;
@@ -231,7 +223,7 @@ public class InMemoryFunction implements Function {
 
   @Override
   public void addUserProcedure(HplsqlParser.Create_procedure_stmtContext ctx) {
-    String name = ctx.ident(0).getText();
+    String name = ctx.ident(0).getText().toUpperCase();
     if (builtinFunctions.exists(name)) {
       exec.info(ctx, name + " is a built-in function which cannot be redefined.");
       return;

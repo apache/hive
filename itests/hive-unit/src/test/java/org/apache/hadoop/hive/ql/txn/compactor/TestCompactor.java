@@ -1177,6 +1177,104 @@ public class TestCompactor {
         .connect();
   }
 
+  /**
+   * There is a special case handled in Compaction Worker that will skip compaction
+   * if there is only one valid delta. But this compaction will be still cleaned up, if there are aborted directories.
+   * @see Worker.isEnoughToCompact
+   * However if no compaction was done, deltas containing mixed aborted / committed writes from streaming can not be cleaned
+   * and the metadata belonging to those aborted transactions can not be removed.
+   * @throws Exception ex
+   */
+  @Test
+  public void testSkippedCompactionCleanerKeepsAborted() throws Exception {
+    String dbName = "default";
+    String tblName = "cws";
+
+    String agentInfo = "UT_" + Thread.currentThread().getName();
+    TxnStore txnHandler = TxnUtils.getTxnStore(conf);
+
+    executeStatementOnDriver("drop table if exists " + tblName, driver);
+    executeStatementOnDriver("CREATE TABLE " + tblName + "(b STRING) " +
+        " PARTITIONED BY (a INT) STORED AS ORC  TBLPROPERTIES ('transactional'='true')", driver);
+    executeStatementOnDriver("alter table " + tblName + " add partition(a=1)", driver);
+
+    StrictDelimitedInputWriter writer = StrictDelimitedInputWriter.newBuilder()
+        .withFieldDelimiter(',')
+        .build();
+
+    // Create initial aborted txn
+    HiveStreamingConnection connection = HiveStreamingConnection.newBuilder()
+        .withDatabase(dbName)
+        .withTable(tblName)
+        .withStaticPartitionValues(Collections.singletonList("1"))
+        .withAgentInfo(agentInfo)
+        .withHiveConf(conf)
+        .withRecordWriter(writer)
+        .withStreamingOptimizations(true)
+        .withTransactionBatchSize(1)
+        .connect();
+
+    connection.beginTransaction();
+    connection.write("3,1".getBytes());
+    connection.write("4,1".getBytes());
+    connection.abortTransaction();
+
+    connection.close();
+
+    // Create a sequence of commit, abort, commit to the same delta folder
+    connection = HiveStreamingConnection.newBuilder()
+        .withDatabase(dbName)
+        .withTable(tblName)
+        .withStaticPartitionValues(Collections.singletonList("1"))
+        .withAgentInfo(agentInfo)
+        .withHiveConf(conf)
+        .withRecordWriter(writer)
+        .withStreamingOptimizations(true)
+        .withTransactionBatchSize(3)
+        .connect();
+
+    connection.beginTransaction();
+    connection.write("1,1".getBytes());
+    connection.write("2,1".getBytes());
+    connection.commitTransaction();
+
+    connection.beginTransaction();
+    connection.write("3,1".getBytes());
+    connection.write("4,1".getBytes());
+    connection.abortTransaction();
+
+    connection.beginTransaction();
+    connection.write("5,1".getBytes());
+    connection.write("6,1".getBytes());
+    connection.commitTransaction();
+
+    connection.close();
+
+    // Check that aborted are not read back
+    driver.run("select * from cws");
+    List res = new ArrayList();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals(4, res.size());
+
+    int count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
+    Assert.assertEquals("There should be 2 record for two aborted transaction", 2, count);
+
+    // Start a compaction, that will be skipped, because only one valid delta is there
+    driver.run("alter table cws partition(a='1') compact 'minor'");
+    runWorker(conf);
+    // Cleaner should not delete info about aborted txn 2
+    runCleaner(conf);
+    txnHandler.cleanEmptyAbortedAndCommittedTxns();
+    count = TxnDbUtil.countQueryAgent(conf, "select count(*) from TXN_COMPONENTS");
+    Assert.assertEquals("There should be 1 record for the second aborted transaction", 1, count);
+
+    driver.run("select * from cws");
+    res.clear();
+    driver.getFetchTask().fetch(res);
+    Assert.assertEquals(4, res.size());
+
+  }
+
   @Test
   public void mmTable() throws Exception {
     String dbName = "default";

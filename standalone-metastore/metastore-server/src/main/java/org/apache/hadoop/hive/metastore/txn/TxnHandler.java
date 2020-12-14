@@ -65,6 +65,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.ValidReadTxnList;
 import org.apache.hadoop.hive.common.ValidReaderWriteIdList;
@@ -145,6 +146,7 @@ import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
 import org.apache.hadoop.hive.metastore.tools.SQLGenerator;
+import org.apache.hadoop.hive.metastore.utils.FileUtils;
 import org.apache.hadoop.hive.metastore.utils.JavaUtils;
 import org.apache.hadoop.hive.metastore.utils.LockTypeUtil;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
@@ -153,6 +155,8 @@ import org.apache.hadoop.hive.metastore.utils.StringableMap;
 import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Splitter;
 
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatch;
 import static org.apache.hadoop.hive.metastore.txn.TxnDbUtil.executeQueriesInBatchNoCount;
@@ -307,6 +311,9 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   private int retryNum;
   // Current number of open txns
   private AtomicInteger numOpenTxns;
+  // Whether to use min_history_level table or not.
+  // At startup we read it from the config, but set it to false if min_history_level does nto exists.
+  static boolean useMinHistoryLevel;
 
   /**
    * Derby specific concurrency control
@@ -381,6 +388,17 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     openTxnTimeOutMillis = MetastoreConf.getTimeVar(conf, ConfVars.TXN_OPENTXN_TIMEOUT, TimeUnit.MILLISECONDS);
 
     try {
+      boolean minHistoryConfig = MetastoreConf.getBoolVar(conf, ConfVars.TXN_USE_MIN_HISTORY_LEVEL);
+      // override the config if table does not exists anymore
+      // this helps to roll out his feature when multiple HMS is accessing the same backend DB
+      useMinHistoryLevel = checkMinHistoryLevelTable(minHistoryConfig);
+    } catch (MetaException e) {
+      String msg = "Error during TxnHandler startup, " + e.getMessage();
+      LOG.error(msg);
+      throw new RuntimeException(e);
+    }
+
+    try {
       transactionalListeners = MetaStoreServerUtils.getMetaStoreListeners(
               TransactionalMetaStoreEventListener.class,
                       conf, MetastoreConf.getVar(conf, ConfVars.TRANSACTIONAL_EVENT_LISTENERS));
@@ -389,6 +407,42 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       LOG.error(msg);
       throw new RuntimeException(e);
     }
+  }
+
+  /**
+   * Check if min_history_level table is usable
+   * @return
+   * @throws MetaException
+   */
+  private boolean checkMinHistoryLevelTable(boolean configValue) throws MetaException {
+    if (!configValue) {
+      // don't check it if disabled
+      return false;
+    }
+    Connection dbConn = null;
+    boolean tableExists = true;
+    try {
+      dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+      try (Statement stmt = dbConn.createStatement()) {
+        // Dummy query to see if table exists
+        try (ResultSet rs = stmt.executeQuery("SELECT 1 FROM \"MIN_HISTORY_LEVEL\"")) {
+          rs.next();
+        }
+      }
+      dbConn.rollback();
+    } catch (SQLException e) {
+      rollbackDBConn(dbConn);
+      LOG.debug("Catching sql exception in min history level check", e);
+      if (dbProduct.isTableNotExistsError(e)) {
+        tableExists = false;
+      } else {
+        throw new MetaException(
+            "Unable to select from transaction database: " + getMessage(e) + StringUtils.stringifyException(e));
+      }
+    } finally {
+      closeDbConn(dbConn);
+    }
+    return tableExists;
   }
 
   @Override
@@ -630,6 +684,11 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         txnType = TxnType.REPL_CREATED;
       }
 
+      long minOpenTxnId = 0;
+      if (useMinHistoryLevel) {
+        minOpenTxnId = getMinOpenTxnIdWaterMark(dbConn);
+      }
+
       List<Long> txnIds = new ArrayList<>(numTxns);
       /*
        * The getGeneratedKeys are not supported in every dbms, after executing a multi line insert.
@@ -670,6 +729,8 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
 
       assert txnIds.size() == numTxns;
+
+      addTxnToMinHistoryLevel(dbConn, txnIds, minOpenTxnId);
 
       if (rqst.isSetReplPolicy()) {
         List<String> rowsRepl = new ArrayList<>(numTxns);
@@ -1384,6 +1445,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           deleteReplTxnMapEntry(dbConn, sourceTxnId, rqst.getReplPolicy());
         }
         updateWSCommitIdAndCleanUpMetadata(stmt, txnid, txnType.get(), commitId, tempCommitId);
+        removeCommittedTxnFromMinHistoryLevel(dbConn, txnid);
         if (rqst.isSetKeyValue()) {
           updateKeyValueAssociatedWithTxn(rqst, stmt);
         }
@@ -2725,7 +2787,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
           }
           String dbName = normalizeCase(lc.getDbname());
           String tblName = normalizeCase(lc.getTablename());
-          String partName = normalizeCase(lc.getPartitionname());
+          String partName = normalizePartitionCase(lc.getPartitionname());
           OperationType opType = OperationType.fromDataOperationType(lc.getOperationType());
 
           if (isDynPart.test(lc)) {
@@ -2848,7 +2910,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
         pstmt.setLong(3, txnid);
         pstmt.setString(4, normalizeCase(lc.getDbname()));
         pstmt.setString(5, normalizeCase(lc.getTablename()));
-        pstmt.setString(6, normalizeCase(lc.getPartitionname()));
+        pstmt.setString(6, normalizePartitionCase(lc.getPartitionname()));
         pstmt.setString(7, Character.toString(LOCK_WAITING));
         pstmt.setString(8, lockType);
         pstmt.setString(9, rqst.getUser());
@@ -2875,6 +2937,14 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
 
   private static String normalizeCase(String s) {
     return s == null ? null : s.toLowerCase();
+  }
+
+  private static String normalizePartitionCase(String s) {
+    if (s == null) {
+      return null;
+    }
+    Map<String, String> map = Splitter.on(Path.SEPARATOR).withKeyValueSeparator('=').split(s);
+    return FileUtils.makePartName(new ArrayList<>(map.keySet()), new ArrayList<>(map.values()));
   }
 
   private LockResponse checkLockWithRetry(Connection dbConn, long extLockId, long txnId, boolean zeroWaitReadEnabled)
@@ -4394,6 +4464,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
     if (txnids.isEmpty()) {
       return 0;
     }
+    removeAbortedTxnsFromMinHistoryLevel(dbConn, txnids);
     try {
       stmt = dbConn.createStatement();
       //This is an update statement, thus at any Isolation level will take Write locks so will block
@@ -5104,6 +5175,99 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
     } catch (RetryException e) {
       countOpenTxns();
+    }
+  }
+
+  /**
+   * Add min history level entry for each generated txn record
+   * @param dbConn Connection
+   * @param txnIds new transaction ids
+   * @deprecated Remove this method when min_history_level table is dropped
+   * @throws SQLException ex
+   */
+  @Deprecated
+  private void addTxnToMinHistoryLevel(Connection dbConn, List<Long> txnIds, long minOpenTxnId) throws SQLException {
+    if (!useMinHistoryLevel) {
+      return;
+    }
+    // Need to register minimum open txnid for current transactions into MIN_HISTORY table.
+    try (Statement stmt = dbConn.createStatement()) {
+
+      List<String> rows = txnIds.stream().map(txnId -> txnId + ", " + minOpenTxnId).collect(Collectors.toList());
+
+      // Insert transaction entries into MIN_HISTORY_LEVEL.
+      List<String> inserts =
+          sqlGenerator.createInsertValuesStmt("\"MIN_HISTORY_LEVEL\" (\"MHL_TXNID\", \"MHL_MIN_OPEN_TXNID\")", rows);
+      for (String insert : inserts) {
+        LOG.debug("Going to execute insert <" + insert + ">");
+        stmt.execute(insert);
+      }
+      LOG.info("Added entries to MIN_HISTORY_LEVEL for current txns: (" + txnIds + ") with min_open_txn: " + minOpenTxnId);
+    } catch (SQLException e) {
+      if (dbProduct.isTableNotExistsError(e)) {
+        // If the table does not exists anymore, we disable the flag and start to work the new way
+        // This enables to switch to the new functionality without a restart
+        useMinHistoryLevel = false;
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Remove record from min_history_level for a committed transaction
+   * @param dbConn connection
+   * @param txnid committed transaction
+   * @deprecated Remove this method when min_history_level table is dropped
+   * @throws SQLException ex
+   */
+  @Deprecated
+  private void removeCommittedTxnFromMinHistoryLevel(Connection dbConn, long txnid) throws SQLException {
+    if (!useMinHistoryLevel) {
+      return;
+    }
+    try (PreparedStatement pStmt = dbConn.prepareStatement("DELETE FROM \"MIN_HISTORY_LEVEL\" WHERE \"MHL_TXNID\" = ?")) {
+      pStmt.setLong(1, txnid);
+      pStmt.executeUpdate();
+      LOG.debug("Removed committed transaction txnId: (" + txnid + ") from MIN_HISTORY_LEVEL");
+    } catch (SQLException e) {
+      if (dbProduct.isTableNotExistsError(e)) {
+        // If the table does not exists anymore, we disable the flag and start to work the new way
+        // This enables to switch to the new funcionality without a restart
+        useMinHistoryLevel = false;
+      } else {
+        throw e;
+      }
+    }
+  }
+
+  /**
+   * Remove aborted txns from min_history_level table
+   * @param dbConn connection
+   * @param abortedTxnids aborted transactions
+   * @deprecated Remove this method when min_history_level table is dropped
+   */
+  @Deprecated
+  private void removeAbortedTxnsFromMinHistoryLevel(Connection dbConn, List<Long> abortedTxnids) throws SQLException {
+    if (!useMinHistoryLevel) {
+      return;
+    }
+    try (Statement stmt = dbConn.createStatement()) {
+      List<String> queries = new ArrayList<>();
+      StringBuilder prefix = new StringBuilder();
+      prefix.append("DELETE FROM \"MIN_HISTORY_LEVEL\" WHERE ");
+      TxnUtils.buildQueryWithINClause(conf, queries, prefix, new StringBuilder(), abortedTxnids, "\"MHL_TXNID\"", false,
+          false);
+      executeQueriesInBatch(stmt, queries, maxBatchSize);
+      LOG.info("Removed aborted transactions: (" + abortedTxnids + ") from MIN_HISTORY_LEVEL");
+    } catch (SQLException e) {
+      if (dbProduct.isTableNotExistsError(e)) {
+        // If the table does not exists anymore, we disable the flag and start to work the new way
+        // This enables to switch to the new funcionality without a restart
+        useMinHistoryLevel = false;
+      } else {
+        throw e;
+      }
     }
   }
 

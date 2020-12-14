@@ -30853,6 +30853,11 @@ void GetTablesRequest::__set_processorIdentifier(const std::string& val) {
   this->processorIdentifier = val;
 __isset.processorIdentifier = true;
 }
+
+void GetTablesRequest::__set_projectionSpec(const GetProjectionsSpec& val) {
+  this->projectionSpec = val;
+__isset.projectionSpec = true;
+}
 std::ostream& operator<<(std::ostream& out, const GetTablesRequest& obj)
 {
   obj.printTo(out);
@@ -30954,6 +30959,14 @@ uint32_t GetTablesRequest::read(::apache::thrift::protocol::TProtocol* iprot) {
           xfer += iprot->skip(ftype);
         }
         break;
+      case 7:
+        if (ftype == ::apache::thrift::protocol::T_STRUCT) {
+          xfer += this->projectionSpec.read(iprot);
+          this->__isset.projectionSpec = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -31018,6 +31031,11 @@ uint32_t GetTablesRequest::write(::apache::thrift::protocol::TProtocol* oprot) c
     xfer += oprot->writeString(this->processorIdentifier);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.projectionSpec) {
+    xfer += oprot->writeFieldBegin("projectionSpec", ::apache::thrift::protocol::T_STRUCT, 7);
+    xfer += this->projectionSpec.write(oprot);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -31031,6 +31049,7 @@ void swap(GetTablesRequest &a, GetTablesRequest &b) {
   swap(a.catName, b.catName);
   swap(a.processorCapabilities, b.processorCapabilities);
   swap(a.processorIdentifier, b.processorIdentifier);
+  swap(a.projectionSpec, b.projectionSpec);
   swap(a.__isset, b.__isset);
 }
 
@@ -31041,6 +31060,7 @@ GetTablesRequest::GetTablesRequest(const GetTablesRequest& other1156) {
   catName = other1156.catName;
   processorCapabilities = other1156.processorCapabilities;
   processorIdentifier = other1156.processorIdentifier;
+  projectionSpec = other1156.projectionSpec;
   __isset = other1156.__isset;
 }
 GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other1157) {
@@ -31050,6 +31070,7 @@ GetTablesRequest& GetTablesRequest::operator=(const GetTablesRequest& other1157)
   catName = other1157.catName;
   processorCapabilities = other1157.processorCapabilities;
   processorIdentifier = other1157.processorIdentifier;
+  projectionSpec = other1157.projectionSpec;
   __isset = other1157.__isset;
   return *this;
 }
@@ -31062,6 +31083,7 @@ void GetTablesRequest::printTo(std::ostream& out) const {
   out << ", " << "catName="; (__isset.catName ? (out << to_string(catName)) : (out << "<null>"));
   out << ", " << "processorCapabilities="; (__isset.processorCapabilities ? (out << to_string(processorCapabilities)) : (out << "<null>"));
   out << ", " << "processorIdentifier="; (__isset.processorIdentifier ? (out << to_string(processorIdentifier)) : (out << "<null>"));
+  out << ", " << "projectionSpec="; (__isset.projectionSpec ? (out << to_string(projectionSpec)) : (out << "<null>"));
   out << ")";
 }
 

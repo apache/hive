@@ -783,7 +783,7 @@ public class HiveStreamingConnection implements StreamingConnection {
         // List the new files added inside the write path (delta directory).
         FileSystem fs = tableObject.getDataLocation().getFileSystem(conf);
         List<Path> newFiles = new ArrayList<>();
-        Hive.listFilesInsideAcidDirectory(writeInfo.getWriteDir(), fs, newFiles);
+        Hive.listFilesInsideAcidDirectory(writeInfo.getWriteDir(), fs, newFiles, null);
 
         // If no files are added by this streaming writes, then no need to log write notification event.
         if (newFiles.isEmpty()) {

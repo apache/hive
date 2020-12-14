@@ -401,7 +401,7 @@ public class TestCompactionTxnHandler {
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB,
         "mydb");
     comp.setTablename("yourtable");
-    comp.setPartitionname("mypartition");
+    comp.setPartitionname("mypartition=myvalue");
     comp.setOperationType(DataOperationType.UPDATE);
     components.add(comp);
     LockRequest req = new LockRequest(components, "me", "localhost");
@@ -418,7 +418,7 @@ public class TestCompactionTxnHandler {
       sawMyTable |= (ci.dbname.equals("mydb") && ci.tableName.equals("mytable") &&
           ci.partName ==  null);
       sawYourTable |= (ci.dbname.equals("mydb") && ci.tableName.equals("yourtable") &&
-          ci.partName.equals("mypartition"));
+          ci.partName.equals("mypartition=myvalue"));
     }
     assertTrue(sawMyTable);
     assertTrue(sawYourTable);
@@ -475,7 +475,7 @@ public class TestCompactionTxnHandler {
     txnid = openTxn();
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("foo");
-    comp.setPartitionname("bar");
+    comp.setPartitionname("bar=compact");
     comp.setOperationType(DataOperationType.UPDATE);
     components = new ArrayList<LockComponent>(1);
     components.add(comp);
@@ -486,7 +486,7 @@ public class TestCompactionTxnHandler {
 
     comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, "mydb");
     comp.setTablename("foo");
-    comp.setPartitionname("baz");
+    comp.setPartitionname("baz=compact");
     comp.setOperationType(DataOperationType.UPDATE);
     components = new ArrayList<LockComponent>(1);
     components.add(comp);

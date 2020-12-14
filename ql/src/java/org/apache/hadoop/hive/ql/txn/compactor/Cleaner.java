@@ -98,6 +98,8 @@ public class Cleaner extends MetaStoreCompactorThread {
           handle = txnHandler.getMutexAPI().acquireLock(TxnStore.MUTEX_KEY.Cleaner.name());
           startedAt = System.currentTimeMillis();
           long minOpenTxnId = txnHandler.findMinOpenTxnIdForCleaner();
+          long minTxnIdSeenOpen = txnHandler.findMinTxnIdSeenOpen();
+          final long cleanerWaterMark = minTxnIdSeenOpen < 0 ? minOpenTxnId : Math.min(minOpenTxnId, minTxnIdSeenOpen);
           boolean delayedCleanupEnabled = HiveConf.getBoolVar(conf, HIVE_COMPACTOR_DELAYED_CLEANUP_ENABLED);
           long retentionTime = 0;
           if (delayedCleanupEnabled) {
@@ -105,9 +107,15 @@ public class Cleaner extends MetaStoreCompactorThread {
           }
           LOG.info("Cleaning based on min open txn id: " + minOpenTxnId);
           List<CompletableFuture<Void>> cleanerList = new ArrayList<>();
+          // For checking which compaction can be cleaned we can use the minOpenTxnId
+          // However findReadyToClean will return all records that were compacted with old version of HMS
+          // where the CQ_NEXT_TXN_ID is not set. For these compactions we need to provide minTxnIdSeenOpen
+          // to the clean method, to avoid cleaning up deltas needed for running queries
+          // when min_history_level is finally dropped, than every HMS will commit compaction the new way
+          // and minTxnIdSeenOpen can be removed and minOpenTxnId can be used instead.
           for (CompactionInfo compactionInfo : txnHandler.findReadyToClean(minOpenTxnId, retentionTime)) {
             cleanerList.add(CompletableFuture.runAsync(CompactorUtil.ThrowingRunnable.unchecked(() ->
-                  clean(compactionInfo, minOpenTxnId)), cleanerExecutor));
+                  clean(compactionInfo, cleanerWaterMark)), cleanerExecutor));
           }
           CompletableFuture.allOf(cleanerList.toArray(new CompletableFuture[0])).join();
         } catch (Throwable t) {
@@ -283,7 +291,7 @@ public class Cleaner extends MetaStoreCompactorThread {
      * See {@link TxnStore#markCleaned(CompactionInfo)}
      */
     Table table = getMSForConf(conf).getTable(getDefaultCatalog(conf), ci.dbname, ci.tableName);
-    if (isDynPartAbort(table, ci)) {
+    if (isDynPartAbort(table, ci) || dir.hasUncompactedAborts()) {
       ci.setWriteIds(dir.getAbortedWriteIds());
     }
     obsoleteDirs.addAll(dir.getAbortedDirectories());

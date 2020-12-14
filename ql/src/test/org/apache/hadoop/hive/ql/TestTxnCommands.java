@@ -378,6 +378,41 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     return msClient;
   }
 
+  @Test
+  public void testAddConstraintAdvancingWriteIds() throws Exception {
+
+    String tableName = "constraints_table";
+    hiveConf.setBoolean("hive.stats.autogather", true);
+    hiveConf.setBoolean("hive.stats.column.autogather", true);
+    // Need to close the thread local Hive object so that configuration change is reflected to HMS.
+    Hive.closeCurrent();
+    runStatementOnDriver("drop table if exists " + tableName);
+    runStatementOnDriver(String.format("create table %s (a int, b string) stored as orc " +
+        "TBLPROPERTIES ('transactional'='true', 'transactional_properties'='insert_only')",
+        tableName));
+    runStatementOnDriver(String.format("insert into %s (a) values (0)", tableName));
+    IMetaStoreClient msClient = new HiveMetaStoreClient(hiveConf);
+    String validWriteIds = msClient.getValidWriteIds("default." + tableName).toString();
+    LOG.info("ValidWriteIds before add constraint::"+ validWriteIds);
+    Assert.assertEquals("default.constraints_table:1:9223372036854775807::", validWriteIds);
+    runStatementOnDriver(String.format("alter table %s  ADD CONSTRAINT a_PK PRIMARY KEY (`a`) DISABLE NOVALIDATE", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    LOG.info("ValidWriteIds after add constraint primary key::"+ validWriteIds);
+    Assert.assertEquals("default.constraints_table:2:9223372036854775807::", validWriteIds);
+    runStatementOnDriver(String.format("alter table %s CHANGE COLUMN b b STRING NOT NULL", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    LOG.info("ValidWriteIds after add constraint not null::"+ validWriteIds);
+    Assert.assertEquals("default.constraints_table:3:9223372036854775807::", validWriteIds);
+    runStatementOnDriver(String.format("alter table %s ADD CONSTRAINT check1 CHECK (a <= 25)", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    LOG.info("ValidWriteIds after add constraint check::"+ validWriteIds);
+    Assert.assertEquals("default.constraints_table:4:9223372036854775807::", validWriteIds);
+    runStatementOnDriver(String.format("alter table %s ADD CONSTRAINT unique1 UNIQUE (a, b) DISABLE", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    LOG.info("ValidWriteIds after add constraint unique::"+ validWriteIds);
+    Assert.assertEquals("default.constraints_table:5:9223372036854775807::", validWriteIds); 
+  
+  }
 
   @Test
   public void testParallelInsertAnalyzeStats() throws Exception {

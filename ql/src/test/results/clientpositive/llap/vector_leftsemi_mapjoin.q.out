@@ -574,7 +574,7 @@ STAGE PLANS:
                       Statistics: Num rows: 17 Data size: 136 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: int), _col1 (type: boolean)
-                        minReductionHashAggr: 0.35294116
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1619,7 +1619,7 @@ STAGE PLANS:
                       Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: int), _col1 (type: string)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
@@ -3886,7 +3886,7 @@ STAGE PLANS:
                       Statistics: Num rows: 17 Data size: 136 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: int), _col1 (type: boolean)
-                        minReductionHashAggr: 0.35294116
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
@@ -4940,7 +4940,7 @@ STAGE PLANS:
                       Statistics: Num rows: 11 Data size: 1023 Basic stats: COMPLETE Column stats: COMPLETE
                       Group By Operator
                         keys: _col0 (type: int), _col1 (type: string)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
@@ -10420,7 +10420,7 @@ STAGE PLANS:
                             native: false
                             vectorProcessingMode: HASH
                         keys: _col0 (type: int), _col1 (type: boolean)
-                        minReductionHashAggr: 0.35294116
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
@@ -12030,7 +12030,7 @@ STAGE PLANS:
                             native: false
                             vectorProcessingMode: HASH
                         keys: _col0 (type: int), _col1 (type: string)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
@@ -15172,7 +15172,7 @@ STAGE PLANS:
                             native: false
                             vectorProcessingMode: HASH
                         keys: _col0 (type: int), _col1 (type: boolean)
-                        minReductionHashAggr: 0.35294116
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
@@ -16757,7 +16757,7 @@ STAGE PLANS:
                             native: false
                             vectorProcessingMode: HASH
                         keys: _col0 (type: int), _col1 (type: string)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE
@@ -19858,7 +19858,7 @@ STAGE PLANS:
                             native: false
                             vectorProcessingMode: HASH
                         keys: _col0 (type: int), _col1 (type: boolean)
-                        minReductionHashAggr: 0.35294116
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 8 Data size: 64 Basic stats: COMPLETE Column stats: COMPLETE
@@ -21452,7 +21452,7 @@ STAGE PLANS:
                             native: false
                             vectorProcessingMode: HASH
                         keys: _col0 (type: int), _col1 (type: string)
-                        minReductionHashAggr: 0.0
+                        minReductionHashAggr: 0.4
                         mode: hash
                         outputColumnNames: _col0, _col1
                         Statistics: Num rows: 5 Data size: 465 Basic stats: COMPLETE Column stats: COMPLETE

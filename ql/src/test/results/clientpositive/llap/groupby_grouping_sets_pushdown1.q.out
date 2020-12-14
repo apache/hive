@@ -59,7 +59,7 @@ STAGE PLANS:
                       aggregations: sum(s)
                       keys: a (type: string), b (type: string), 0L (type: bigint)
                       grouping sets: 3, 1, 2, 0
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 2 Data size: 380 Basic stats: COMPLETE Column stats: COMPLETE
@@ -206,7 +206,7 @@ STAGE PLANS:
                       aggregations: sum(s)
                       keys: a (type: string), b (type: string), 0L (type: bigint)
                       grouping sets: 1, 0
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
@@ -351,7 +351,7 @@ STAGE PLANS:
                       aggregations: sum(s)
                       keys: a (type: string), b (type: string), 0L (type: bigint)
                       grouping sets: 1, 0
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
@@ -503,7 +503,7 @@ STAGE PLANS:
                       aggregations: sum(s)
                       keys: a (type: string), b (type: string), 0L (type: bigint)
                       grouping sets: 1, 0
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
@@ -690,7 +690,7 @@ STAGE PLANS:
                       aggregations: sum(s)
                       keys: a (type: string), b (type: string), 0L (type: bigint)
                       grouping sets: 1, 0
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
@@ -848,7 +848,7 @@ STAGE PLANS:
                       aggregations: sum(s)
                       keys: a (type: string), b (type: string), 0L (type: bigint)
                       grouping sets: 1, 0
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1001,7 +1001,7 @@ STAGE PLANS:
                       aggregations: sum(s)
                       keys: a (type: string), b (type: string), 0L (type: bigint)
                       grouping sets: 3, 1, 0
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1166,7 +1166,7 @@ STAGE PLANS:
                       aggregations: sum(s)
                       keys: upper(a) (type: string), b (type: string), 0L (type: bigint)
                       grouping sets: 1, 0
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 287 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1331,7 +1331,7 @@ STAGE PLANS:
                       aggregations: sum(s)
                       keys: a (type: string), b (type: string), 0L (type: bigint)
                       grouping sets: 2, 0
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2, _col3
                       Statistics: Num rows: 1 Data size: 190 Basic stats: COMPLETE Column stats: COMPLETE

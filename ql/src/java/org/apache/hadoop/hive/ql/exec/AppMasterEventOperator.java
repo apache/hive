@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.tez.TezContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AppMasterEventDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.DataOutputBuffer;
@@ -66,6 +67,12 @@ public class AppMasterEventOperator extends Operator<AppMasterEventDesc> {
     MAX_SIZE = HiveConf.getLongVar(hconf, ConfVars.TEZ_DYNAMIC_PARTITION_PRUNING_MAX_EVENT_SIZE);
     serializer =
         (Serializer) ReflectionUtils.newInstance(conf.getTable().getDeserializerClass(), null);
+    try {
+      serializer.initialize(null, conf.getTable().getProperties());
+    } catch (SerDeException e) {
+      LOG.error("Initialization failed for serializer", e);
+      throw new HiveException(e.getMessage());
+    }
     initDataBuffer(false);
   }
 
