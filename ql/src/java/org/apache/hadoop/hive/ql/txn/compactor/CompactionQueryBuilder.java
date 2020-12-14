@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.ddl.table.create.show.ShowCreateTableOperation;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -65,7 +66,7 @@ class CompactionQueryBuilder {
   private StorageDescriptor storageDescriptor; // for Create in insert-only
   private String location; // for Create
   private ValidWriteIdList validWriteIdList; // for Alter/Insert in minor and CRUD
-  private AcidUtils.Directory dir; // for Alter in minor
+  private AcidDirectory dir; // for Alter in minor
   private Partition sourcePartition; // for Insert in major and insert-only minor
   private String sourceTabForInsert; // for Insert
 
@@ -139,7 +140,7 @@ class CompactionQueryBuilder {
    *
    * @param dir Acid Directory, not null
    */
-  CompactionQueryBuilder setDir(AcidUtils.Directory dir) {
+  CompactionQueryBuilder setDir(AcidDirectory dir) {
     this.dir = dir;
     return this;
   }

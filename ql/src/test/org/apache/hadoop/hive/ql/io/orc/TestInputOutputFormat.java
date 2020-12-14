@@ -73,6 +73,7 @@ import org.apache.hadoop.hive.ql.exec.vector.StructColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -1013,13 +1014,13 @@ public class TestInputOutputFormat {
 
   public List<SplitStrategy<?>> createOrCombineStrategies(OrcInputFormat.Context context,
       MockFileSystem fs, String path, OrcInputFormat.CombinedCtx combineCtx) throws IOException {
-    OrcInputFormat.AcidDirInfo adi = createAdi(context, fs, path);
+    AcidDirectory adi = createAdi(context, fs, path);
     return OrcInputFormat.determineSplitStrategies(combineCtx, context,
-        adi.fs, adi.splitPath, adi.baseFiles, adi.deleteEvents,
+        adi.getFs(), adi.getPath(), adi.getBaseAndDeltaFiles(), adi.getDeleteDeltas(),
         null, null, true);
   }
 
-  public OrcInputFormat.AcidDirInfo createAdi(
+  public AcidDirectory createAdi(
       OrcInputFormat.Context context, final MockFileSystem fs, String path) throws IOException {
     return new OrcInputFormat.FileGenerator(
         context, () -> fs, new MockPath(fs, path), false, null).call();
@@ -1027,9 +1028,9 @@ public class TestInputOutputFormat {
 
   private List<OrcInputFormat.SplitStrategy<?>> createSplitStrategies(
       OrcInputFormat.Context context, OrcInputFormat.FileGenerator gen) throws IOException {
-    OrcInputFormat.AcidDirInfo adi = gen.call();
+    AcidDirectory adi = gen.call();
     return OrcInputFormat.determineSplitStrategies(
-        null, context, adi.fs, adi.splitPath, adi.baseFiles, adi.deleteEvents,
+        null, context, adi.getFs(), adi.getPath(), adi.getBaseAndDeltaFiles(), adi.getDeleteDeltas(),
         null, null, true);
   }
 
