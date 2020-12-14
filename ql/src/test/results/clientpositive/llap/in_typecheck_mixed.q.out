@@ -35,9 +35,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: t
-          filterExpr: ((UDFToDouble(a)) IN (1.0D, 2.0D) or (a = 'x')) (type: boolean)
+          filterExpr: ((CAST( a AS decimal(38,18))) IN (1, 2) or (a = 'x')) (type: boolean)
           Filter Operator
-            predicate: ((UDFToDouble(a)) IN (1.0D, 2.0D) or (a = 'x')) (type: boolean)
+            predicate: ((CAST( a AS decimal(38,18))) IN (1, 2) or (a = 'x')) (type: boolean)
             Select Operator
               expressions: a (type: string)
               outputColumnNames: _col0

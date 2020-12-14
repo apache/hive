@@ -326,11 +326,20 @@ sys	wm_triggers			hive_test_user	USER	DELETE	true	-1	hive_test_user
 sys	wm_triggers			hive_test_user	USER	INSERT	true	-1	hive_test_user
 sys	wm_triggers			hive_test_user	USER	SELECT	true	-1	hive_test_user
 sys	wm_triggers			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+tpch_0_001	lineitem			hive_test_user	USER	DELETE	true	-1	hive_test_user
+tpch_0_001	lineitem			hive_test_user	USER	INSERT	true	-1	hive_test_user
+tpch_0_001	lineitem			hive_test_user	USER	SELECT	true	-1	hive_test_user
+tpch_0_001	lineitem			hive_test_user	USER	UPDATE	true	-1	hive_test_user
+tpch_0_001	partsupp			hive_test_user	USER	DELETE	true	-1	hive_test_user
+tpch_0_001	partsupp			hive_test_user	USER	INSERT	true	-1	hive_test_user
+tpch_0_001	partsupp			hive_test_user	USER	SELECT	true	-1	hive_test_user
+tpch_0_001	partsupp			hive_test_user	USER	UPDATE	true	-1	hive_test_user
 PREHOOK: query: SHOW RESOURCE PLANS
 PREHOOK: type: SHOW RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: SHOW RESOURCE PLANS
 POSTHOOK: type: SHOW RESOURCEPLAN
+rp	DISABLED	 
 PREHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@wm_resourceplans
@@ -339,6 +348,7 @@ POSTHOOK: query: SELECT * FROM SYS.WM_RESOURCEPLANS
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
+rp	default	DISABLED	NULL	default
 Activate a resource plan to enable workload management!
 PREHOOK: query: EXPLAIN ENABLE WORKLOAD MANAGEMENT
 PREHOOK: type: ALTER RESOURCEPLAN
@@ -382,6 +392,7 @@ PREHOOK: Output: dummyHostnameForTest
 POSTHOOK: query: SHOW RESOURCE PLANS
 POSTHOOK: type: SHOW RESOURCEPLAN
 plan_1	DISABLED	 
+rp	DISABLED	 
 PREHOOK: query: EXPLAIN SHOW RESOURCE PLAN plan_1
 PREHOOK: type: SHOW RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -419,6 +430,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	default	DISABLED	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: EXPLAIN CREATE RESOURCE PLAN plan_2 WITH QUERY_PARALLELISM=5
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -464,6 +476,7 @@ POSTHOOK: query: SHOW RESOURCE PLANS
 POSTHOOK: type: SHOW RESOURCEPLAN
 plan_1	DISABLED	 
 plan_2	DISABLED	10
+rp	DISABLED	 
 PREHOOK: query: SHOW RESOURCE PLAN plan_2
 PREHOOK: type: SHOW RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -482,6 +495,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	default	DISABLED	NULL	default
 plan_2	default	DISABLED	10	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: CREATE RESOURCE PLAN plan_2
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -506,6 +520,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	default	DISABLED	NULL	default
 plan_2	default	DISABLED	10	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_1 RENAME TO plan_3
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -521,6 +536,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	DISABLED	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 4
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -536,6 +552,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	DISABLED	4	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 UNSET QUERY_PARALLELISM
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -551,6 +568,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	DISABLED	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 SET QUERY_PARALLELISM = 30, DEFAULT POOL = default1
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -580,6 +598,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	DISABLED	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -636,6 +655,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	DISABLED	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -650,6 +670,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	DISABLED	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -665,6 +686,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	DISABLED	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -680,6 +702,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	ENABLED	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -695,6 +718,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	ACTIVE	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -710,6 +734,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	ACTIVE	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -724,6 +749,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	ACTIVE	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -738,6 +764,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	ACTIVE	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: EXPLAIN DISABLE WORKLOAD MANAGEMENT
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -765,6 +792,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	ENABLED	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -785,6 +813,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	DISABLED	10	default
 plan_3	default	ACTIVE	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -800,6 +829,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	ENABLED	10	default
 plan_3	default	ACTIVE	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 ACTIVATE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -815,6 +845,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	ACTIVE	10	default
 plan_3	default	ENABLED	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 ENABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -830,6 +861,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	ACTIVE	10	default
 plan_3	default	ENABLED	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: ALTER RESOURCE PLAN plan_3 DISABLE
 PREHOOK: type: ALTER RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -845,6 +877,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	ACTIVE	10	default
 plan_3	default	DISABLED	NULL	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: EXPLAIN DROP RESOURCE PLAN plan_2
 PREHOOK: type: DROP RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -876,6 +909,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	ACTIVE	10	default
+rp	default	DISABLED	NULL	default
 PREHOOK: query: DROP RESOURCE PLAN plan_99999
 PREHOOK: type: DROP RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
@@ -904,6 +938,7 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_2	default	ACTIVE	10	default
+rp	default	DISABLED	NULL	default
 table	default	DISABLED	1	default
 PREHOOK: query: create table wm_test(key string)
 PREHOOK: type: CREATETABLE
@@ -1144,6 +1179,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	default	ENABLED	NULL	default
 plan_2	default	ACTIVE	10	default
+rp	default	DISABLED	NULL	default
 table	default	DISABLED	1	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
@@ -1168,6 +1204,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	default	ACTIVE	NULL	default
 plan_2	default	ENABLED	10	default
+rp	default	DISABLED	NULL	default
 table	default	DISABLED	1	default
 PREHOOK: query: DROP TRIGGER plan_1.trigger_2
 PREHOOK: type: DROP TRIGGER
@@ -1241,6 +1278,7 @@ POSTHOOK: Input: sys@wm_pools
 #### A masked pattern was here ####
 plan_1	default	default	1.0	4	NULL
 plan_2	default	default	1.0	5	NULL
+rp	default	default	1.0	4	NULL
 table	default	default	1.0	4	NULL
 PREHOOK: query: CREATE POOL plan_2.default.c1 WITH
     ALLOC_FRACTION=0.3, QUERY_PARALLELISM=3, SCHEDULING_POLICY='invalid'
@@ -1329,6 +1367,7 @@ plan_1	default	default	1.0	4	NULL
 plan_2	default	default	1.0	5	NULL
 plan_2	default	default.c1	0.3	3	fair
 plan_2	default	default.c2	0.7	1	fair
+rp	default	default	1.0	4	NULL
 table	default	default	1.0	4	NULL
 PREHOOK: query: ALTER POOL plan_2.default.c2 UNSET SCHEDULING_POLICY
 PREHOOK: type: ALTER POOL
@@ -1347,6 +1386,7 @@ plan_1	default	default	1.0	4	NULL
 plan_2	default	default	1.0	5	NULL
 plan_2	default	default.c1	0.3	3	fair
 plan_2	default	default.c2	0.7	1	NULL
+rp	default	default	1.0	4	NULL
 table	default	default	1.0	4	NULL
 PREHOOK: query: ALTER RESOURCE PLAN plan_2 VALIDATE
 PREHOOK: type: ALTER RESOURCEPLAN
@@ -1386,6 +1426,7 @@ plan_1	default	default	1.0	4	NULL
 plan_2	default	def	1.0	5	NULL
 plan_2	default	def.c1	0.3	3	fair
 plan_2	default	def.c2	0.7	1	NULL
+rp	default	default	1.0	4	NULL
 table	default	default	1.0	4	NULL
 PREHOOK: query: EXPLAIN DROP POOL plan_2.default
 PREHOOK: type: DROP POOL
@@ -1417,6 +1458,7 @@ plan_1	default	default	1.0	4	NULL
 plan_2	default	def	1.0	5	NULL
 plan_2	default	def.c1	0.3	3	fair
 plan_2	default	def.c2	0.7	1	NULL
+rp	default	default	1.0	4	NULL
 table	default	default	1.0	4	NULL
 PREHOOK: query: CREATE POOL plan_2.child1.child2 WITH
     QUERY_PARALLELISM=2, SCHEDULING_POLICY='fifo', ALLOC_FRACTION=0.8
@@ -1468,6 +1510,7 @@ plan_1	default	default	1.0	4	NULL
 plan_2	default	def	1.0	5	NULL
 plan_2	default	def.c1	0.3	3	fair
 plan_2	default	def.c2	0.7	1	NULL
+rp	default	default	1.0	4	NULL
 table	default	default	1.0	4	NULL
 table	default	table	0.0	1	fifo
 table	default	table.pool1	0.9	3	fair
@@ -1490,6 +1533,7 @@ plan_1	default	default	1.0	4	NULL
 plan_2	default	def	1.0	5	NULL
 plan_2	default	def.c1	0.3	3	fair
 plan_2	default	def.c2	0.7	1	NULL
+rp	default	default	1.0	4	NULL
 table	default	default	1.0	4	NULL
 table	default	table	0.0	1	fifo
 table	default	table.pool	0.9	3	fair
@@ -1511,6 +1555,7 @@ plan_1	default	default	1.0	4	NULL
 plan_2	default	def	1.0	5	NULL
 plan_2	default	def.c1	0.3	3	fair
 plan_2	default	def.c2	0.7	1	NULL
+rp	default	default	1.0	4	NULL
 table	default	default	1.0	4	NULL
 table	default	table	0.0	1	fifo
 table	default	table.pool	0.9	3	fair
@@ -1532,6 +1577,7 @@ plan_1	default	default	1.0	4	NULL
 plan_2	default	def	1.0	5	NULL
 plan_2	default	def.c1	0.3	3	fair
 plan_2	default	def.c2	0.7	1	NULL
+rp	default	default	1.0	4	NULL
 table	default	default	1.0	4	NULL
 table	default	table	0.0	1	fifo
 table	default	table.pool	0.9	3	fair
@@ -1547,6 +1593,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	default	ACTIVE	NULL	default
 plan_2	default	DISABLED	10	def
+rp	default	DISABLED	NULL	default
 table	default	DISABLED	1	default
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=2
 PREHOOK: type: ALTER RESOURCEPLAN
@@ -1578,6 +1625,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	default	ACTIVE	NULL	default
 plan_2	default	DISABLED	10	def
+rp	default	DISABLED	NULL	default
 table	default	DISABLED	2	table.pool
 PREHOOK: query: EXPLAIN ALTER RESOURCE PLAN `table` UNSET DEFAULT POOL, QUERY_PARALLELISM
 PREHOOK: type: ALTER RESOURCEPLAN
@@ -1609,6 +1657,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	default	ACTIVE	NULL	default
 plan_2	default	DISABLED	10	def
+rp	default	DISABLED	NULL	default
 table	default	DISABLED	NULL	NULL
 PREHOOK: query: ALTER RESOURCE PLAN `table` SET DEFAULT POOL = `table`.pool, QUERY_PARALLELISM=1
 PREHOOK: type: ALTER RESOURCEPLAN
@@ -1632,6 +1681,7 @@ plan_1	default	default	1.0	4	NULL
 plan_2	default	def	1.0	5	NULL
 plan_2	default	def.c1	0.3	3	fair
 plan_2	default	def.c2	0.7	1	NULL
+rp	default	default	1.0	4	NULL
 table	default	table	0.0	1	fifo
 table	default	table.pool	0.9	3	fair
 table	default	table.pool.child1	0.3	1	fair
@@ -1651,6 +1701,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 #### A masked pattern was here ####
 plan_1	default	ACTIVE	NULL	default
 plan_2	default	DISABLED	10	def
+rp	default	DISABLED	NULL	default
 table	default	DISABLED	1	NULL
 PREHOOK: query: EXPLAIN ALTER POOL plan_2.def.c1 ADD TRIGGER trigger_1
 PREHOOK: type: ALTER POOL
@@ -2055,6 +2106,7 @@ POSTHOOK: Input: sys@wm_resourceplans
 plan_1	default	ENABLED	NULL	default
 plan_2	default	DISABLED	NULL	default
 plan_4	default	ACTIVE	NULL	default
+rp	default	DISABLED	NULL	default
 table	default	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
@@ -2067,6 +2119,7 @@ POSTHOOK: Input: sys@wm_pools
 plan_1	default	default	1.0	4	NULL
 plan_2	default	default	1.0	4	NULL
 plan_4	default	default	1.0	4	NULL
+rp	default	default	1.0	4	NULL
 table	default	table	0.0	1	fifo
 table	default	table.pool	0.9	3	fair
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
@@ -2152,6 +2205,7 @@ plan_2	default	DISABLED	NULL	default
 plan_4	default	ACTIVE	NULL	default
 plan_4a	default	DISABLED	NULL	default
 plan_4b	default	DISABLED	NULL	default
+rp	default	DISABLED	NULL	default
 table	default	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
@@ -2169,6 +2223,7 @@ plan_4a	default	pool1	0.0	2	fair
 plan_4b	default	default	1.0	4	NULL
 plan_4b	default	pool1	0.0	2	fair
 plan_4b	default	pool2	0.0	3	fair
+rp	default	default	1.0	4	NULL
 table	default	table	0.0	1	fifo
 table	default	table.pool	0.9	3	fair
 PREHOOK: query: SELECT * FROM SYS.WM_TRIGGERS
@@ -2241,6 +2296,7 @@ plan_2	default	DISABLED	NULL	default
 plan_4	default	ACTIVE	NULL	default
 plan_4a	default	DISABLED	NULL	default
 plan_4a_old_0	default	DISABLED	NULL	default
+rp	default	DISABLED	NULL	default
 table	default	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
@@ -2258,6 +2314,7 @@ plan_4a	default	pool1	0.0	2	fair
 plan_4a	default	pool2	0.0	3	fair
 plan_4a_old_0	default	default	1.0	4	NULL
 plan_4a_old_0	default	pool1	0.0	2	fair
+rp	default	default	1.0	4	NULL
 table	default	table	0.0	1	fifo
 table	default	table.pool	0.9	3	fair
 PREHOOK: query: SHOW RESOURCE PLAN plan_4a_old_0
@@ -2291,6 +2348,7 @@ plan_2	default	DISABLED	NULL	default
 plan_4	default	ACTIVE	NULL	default
 plan_4_old_0	default	DISABLED	NULL	default
 plan_4a_old_0	default	DISABLED	NULL	default
+rp	default	DISABLED	NULL	default
 table	default	DISABLED	1	NULL
 PREHOOK: query: CREATE RESOURCE PLAN plan_4a LIKE plan_4
 PREHOOK: type: CREATE RESOURCEPLAN
@@ -2337,6 +2395,7 @@ plan_4	default	ACTIVE	NULL	default
 plan_4_old_0	default	DISABLED	NULL	default
 plan_4_old_1	default	DISABLED	NULL	default
 plan_4a_old_0	default	DISABLED	NULL	default
+rp	default	DISABLED	NULL	default
 table	default	DISABLED	1	NULL
 PREHOOK: query: SELECT * FROM SYS.WM_POOLS
 PREHOOK: type: QUERY
@@ -2358,5 +2417,6 @@ plan_4_old_1	default	pool1	0.0	2	fair
 plan_4_old_1	default	pool2	0.0	3	fair
 plan_4a_old_0	default	default	1.0	4	NULL
 plan_4a_old_0	default	pool1	0.0	2	fair
+rp	default	default	1.0	4	NULL
 table	default	table	0.0	1	fifo
 table	default	table.pool	0.9	3	fair

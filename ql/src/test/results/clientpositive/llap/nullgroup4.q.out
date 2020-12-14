@@ -25,10 +25,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (UDFToDouble(key) = 9999.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) = 9999) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 9999.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 9999) (type: boolean)
                     Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string)
@@ -121,10 +121,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (UDFToDouble(key) = 9999.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) = 9999) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 9999.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 9999) (type: boolean)
                     Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string)
@@ -223,10 +223,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (UDFToDouble(key) = 9999.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) = 9999) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 9999.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 9999) (type: boolean)
                     Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string)
@@ -310,10 +310,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: (UDFToDouble(key) = 9999.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) = 9999) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 9999.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 9999) (type: boolean)
                     Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string)

@@ -29,7 +29,7 @@ STAGE PLANS:
                     Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: key (type: string), value (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
@@ -226,10 +226,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                     Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
@@ -301,10 +301,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                     Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
@@ -574,10 +574,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                     Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
@@ -771,7 +771,7 @@ STAGE PLANS:
                     Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: key (type: string), value (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
@@ -860,10 +860,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                     Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
@@ -961,10 +961,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                     Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: count()
@@ -1047,7 +1047,7 @@ STAGE PLANS:
                     Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: key (type: string), value (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1162,14 +1162,14 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                     Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: key (type: string), value (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 6 Data size: 1050 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1238,10 +1238,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                     Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: key (type: string)
@@ -1314,10 +1314,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                   Statistics: Num rows: 25 Data size: 2150 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key)) IN (128.0D, 146.0D, 150.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18))) IN (128, 146, 150) (type: boolean)
                     Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 12 Data size: 1032 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1651,7 +1651,7 @@ STAGE PLANS:
                     Statistics: Num rows: 25 Data size: 11075 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: _col0 (type: string), _col1 (type: string), _col2 (type: bigint)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 12 Data size: 2196 Basic stats: COMPLETE Column stats: COMPLETE
@@ -1745,7 +1745,7 @@ STAGE PLANS:
                     Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: key (type: string), value (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
@@ -2262,7 +2262,7 @@ STAGE PLANS:
                     Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       keys: key (type: string), value (type: string)
-                      minReductionHashAggr: 0.0
+                      minReductionHashAggr: 0.4
                       mode: hash
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE

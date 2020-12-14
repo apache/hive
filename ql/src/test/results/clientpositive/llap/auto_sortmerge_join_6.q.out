@@ -588,10 +588,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                  filterExpr: (key is not null and CAST( key AS decimal(38,18)) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: (key is not null and CAST( key AS decimal(38,18)) is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int)
@@ -601,15 +601,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                  filterExpr: (key is not null and CAST( key AS decimal(38,18)) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: (key is not null and CAST( key AS decimal(38,18)) is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: key (type: int), UDFToDouble(key) (type: double)
+                      expressions: key (type: int), CAST( key AS decimal(38,18)) (type: decimal(38,18))
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 500 Data size: 6000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 58000 Basic stats: COMPLETE Column stats: COMPLETE
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -617,33 +617,33 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col1
-                        Statistics: Num rows: 825 Data size: 6600 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 825 Data size: 92400 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          key expressions: _col1 (type: double)
+                          key expressions: _col1 (type: decimal(38,18))
                           null sort order: z
                           sort order: +
-                          Map-reduce partition columns: _col1 (type: double)
-                          Statistics: Num rows: 825 Data size: 6600 Basic stats: COMPLETE Column stats: COMPLETE
+                          Map-reduce partition columns: _col1 (type: decimal(38,18))
+                          Statistics: Num rows: 825 Data size: 92400 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: c
-                  filterExpr: UDFToDouble(key) is not null (type: boolean)
+                  filterExpr: CAST( key AS decimal(38,18)) is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    predicate: CAST( key AS decimal(38,18)) is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: UDFToDouble(key) (type: double)
+                      expressions: CAST( key AS decimal(38,18)) (type: decimal(38,18))
                       outputColumnNames: _col0
-                      Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 56000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: double)
+                        key expressions: _col0 (type: decimal(38,18))
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: double)
-                        Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: decimal(38,18))
+                        Statistics: Num rows: 500 Data size: 56000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -653,8 +653,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: double)
-                  1 _col0 (type: double)
+                  0 _col1 (type: decimal(38,18))
+                  1 _col0 (type: decimal(38,18))
                 Statistics: Num rows: 1305 Data size: 10440 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()
@@ -1200,10 +1200,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                  filterExpr: (key is not null and CAST( key AS decimal(38,18)) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: (key is not null and CAST( key AS decimal(38,18)) is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: int)
@@ -1213,15 +1213,15 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                  filterExpr: (key is not null and CAST( key AS decimal(38,18)) is not null) (type: boolean)
                   Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (key is not null and UDFToDouble(key) is not null) (type: boolean)
+                    predicate: (key is not null and CAST( key AS decimal(38,18)) is not null) (type: boolean)
                     Statistics: Num rows: 500 Data size: 2000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: key (type: int), UDFToDouble(key) (type: double)
+                      expressions: key (type: int), CAST( key AS decimal(38,18)) (type: decimal(38,18))
                       outputColumnNames: _col0, _col1
-                      Statistics: Num rows: 500 Data size: 6000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 58000 Basic stats: COMPLETE Column stats: COMPLETE
                       Merge Join Operator
                         condition map:
                              Inner Join 0 to 1
@@ -1229,33 +1229,33 @@ STAGE PLANS:
                           0 _col0 (type: int)
                           1 _col0 (type: int)
                         outputColumnNames: _col1
-                        Statistics: Num rows: 825 Data size: 6600 Basic stats: COMPLETE Column stats: COMPLETE
+                        Statistics: Num rows: 825 Data size: 92400 Basic stats: COMPLETE Column stats: COMPLETE
                         Reduce Output Operator
-                          key expressions: _col1 (type: double)
+                          key expressions: _col1 (type: decimal(38,18))
                           null sort order: z
                           sort order: +
-                          Map-reduce partition columns: _col1 (type: double)
-                          Statistics: Num rows: 825 Data size: 6600 Basic stats: COMPLETE Column stats: COMPLETE
+                          Map-reduce partition columns: _col1 (type: decimal(38,18))
+                          Statistics: Num rows: 825 Data size: 92400 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: llap
         Map 5 
             Map Operator Tree:
                 TableScan
                   alias: c
-                  filterExpr: UDFToDouble(key) is not null (type: boolean)
+                  filterExpr: CAST( key AS decimal(38,18)) is not null (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: UDFToDouble(key) is not null (type: boolean)
+                    predicate: CAST( key AS decimal(38,18)) is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: UDFToDouble(key) (type: double)
+                      expressions: CAST( key AS decimal(38,18)) (type: decimal(38,18))
                       outputColumnNames: _col0
-                      Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                      Statistics: Num rows: 500 Data size: 56000 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
-                        key expressions: _col0 (type: double)
+                        key expressions: _col0 (type: decimal(38,18))
                         null sort order: z
                         sort order: +
-                        Map-reduce partition columns: _col0 (type: double)
-                        Statistics: Num rows: 500 Data size: 4000 Basic stats: COMPLETE Column stats: COMPLETE
+                        Map-reduce partition columns: _col0 (type: decimal(38,18))
+                        Statistics: Num rows: 500 Data size: 56000 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
         Reducer 2 
@@ -1265,8 +1265,8 @@ STAGE PLANS:
                 condition map:
                      Inner Join 0 to 1
                 keys:
-                  0 _col1 (type: double)
-                  1 _col0 (type: double)
+                  0 _col1 (type: decimal(38,18))
+                  1 _col0 (type: decimal(38,18))
                 Statistics: Num rows: 1305 Data size: 10440 Basic stats: COMPLETE Column stats: COMPLETE
                 Group By Operator
                   aggregations: count()

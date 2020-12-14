@@ -351,7 +351,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: (key is not null or (UDFToDouble(key) = 5.0D)) (type: boolean)
+                  filterExpr: (key is not null or (CAST( key AS decimal(38,18)) = 5)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: key is not null (type: boolean)
@@ -367,7 +367,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 5.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 5) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE

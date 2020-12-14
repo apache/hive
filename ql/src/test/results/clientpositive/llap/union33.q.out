@@ -49,10 +49,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (UDFToDouble(key) = 0.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) = 0) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 0.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 0) (type: boolean)
                     Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -304,10 +304,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (UDFToDouble(key) = 0.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) = 0) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 0.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 0) (type: boolean)
                     Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)

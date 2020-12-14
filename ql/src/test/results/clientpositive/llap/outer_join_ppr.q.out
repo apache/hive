@@ -49,12 +49,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
+                  filterExpr: ((CAST( key AS decimal(38,18)) < 20) and (CAST( key AS decimal(38,18)) > 15)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
+                    predicate: ((CAST( key AS decimal(38,18)) < 20) and (CAST( key AS decimal(38,18)) > 15)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -114,12 +114,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: ((UDFToDouble(key) > 15.0D) and (UDFToDouble(key) < 20.0D)) (type: boolean)
+                  filterExpr: ((CAST( key AS decimal(38,18)) > 15) and (CAST( key AS decimal(38,18)) < 20)) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((UDFToDouble(key) > 15.0D) and (UDFToDouble(key) < 20.0D)) (type: boolean)
+                    predicate: ((CAST( key AS decimal(38,18)) > 15) and (CAST( key AS decimal(38,18)) < 20)) (type: boolean)
                     Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -351,12 +351,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
+                  filterExpr: ((CAST( key AS decimal(38,18)) < 20) and (CAST( key AS decimal(38,18)) > 15)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((UDFToDouble(key) < 20.0D) and (UDFToDouble(key) > 15.0D)) (type: boolean)
+                    predicate: ((CAST( key AS decimal(38,18)) < 20) and (CAST( key AS decimal(38,18)) > 15)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -416,12 +416,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: ((UDFToDouble(key) > 15.0D) and (UDFToDouble(key) < 20.0D)) (type: boolean)
+                  filterExpr: ((CAST( key AS decimal(38,18)) > 15) and (CAST( key AS decimal(38,18)) < 20)) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((UDFToDouble(key) > 15.0D) and (UDFToDouble(key) < 20.0D)) (type: boolean)
+                    predicate: ((CAST( key AS decimal(38,18)) > 15) and (CAST( key AS decimal(38,18)) < 20)) (type: boolean)
                     Statistics: Num rows: 111 Data size: 19758 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)

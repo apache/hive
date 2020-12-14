@@ -80,7 +80,7 @@ STAGE PLANS:
                   alias: src3
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: string), value (type: string), (UDFToDouble(key) < 10.0D) (type: boolean)
+                    expressions: key (type: string), value (type: string), (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
@@ -668,7 +668,7 @@ STAGE PLANS:
                       condition map:
                            Left Outer Join 0 to 1
                       filter predicates:
-                        0 {(UDFToDouble(_col0) < 10.0D)}
+                        0 {(CAST( _col0 AS decimal(38,18)) < 10)}
                         1 
                       keys:
                         0 _col0 (type: string)
@@ -698,10 +698,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src2
-                  filterExpr: (UDFToDouble(key) > 10.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) > 10) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) > 10.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) > 10) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -720,10 +720,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src3
-                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1294,10 +1294,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1326,7 +1326,7 @@ STAGE PLANS:
                            Right Outer Join 0 to 1
                       filter predicates:
                         0 
-                        1 {(UDFToDouble(_col0) > 10.0D)}
+                        1 {(CAST( _col0 AS decimal(38,18)) > 10)}
                       keys:
                         0 _col0 (type: string)
                         1 _col0 (type: string)
@@ -1355,10 +1355,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src3
-                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1942,10 +1942,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src1
-                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1970,7 +1970,7 @@ STAGE PLANS:
                     predicate: key is not null (type: boolean)
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
-                      expressions: key (type: string), value (type: string), (UDFToDouble(key) > 10.0D) (type: boolean)
+                      expressions: key (type: string), value (type: string), (CAST( key AS decimal(38,18)) > 10) (type: boolean)
                       outputColumnNames: _col0, _col1, _col2
                       Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
                       Map Join Operator
@@ -2001,7 +2001,7 @@ STAGE PLANS:
                   alias: src3
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: string), value (type: string), (UDFToDouble(key) < 10.0D) (type: boolean)
+                    expressions: key (type: string), value (type: string), (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
@@ -2656,10 +2656,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src3
-                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -2788,7 +2788,7 @@ STAGE PLANS:
                   alias: src3
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
-                    expressions: key (type: string), value (type: string), (UDFToDouble(key) < 10.0D) (type: boolean)
+                    expressions: key (type: string), value (type: string), (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                     outputColumnNames: _col0, _col1, _col2
                     Statistics: Num rows: 500 Data size: 91000 Basic stats: COMPLETE Column stats: COMPLETE
                     Map Join Operator
@@ -3398,7 +3398,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                       Filter Operator
-                        predicate: (UDFToDouble(_col0) < 10.0D) (type: boolean)
+                        predicate: (CAST( _col0 AS decimal(38,18)) < 10) (type: boolean)
                         Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
@@ -3423,10 +3423,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src3
-                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -3525,10 +3525,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src2
-                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -3568,10 +3568,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src3
-                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -3696,7 +3696,7 @@ STAGE PLANS:
                       outputColumnNames: _col0, _col1
                       Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                       Filter Operator
-                        predicate: (UDFToDouble(_col0) < 10.0D) (type: boolean)
+                        predicate: (CAST( _col0 AS decimal(38,18)) < 10) (type: boolean)
                         Statistics: Num rows: 1 Data size: 178 Basic stats: COMPLETE Column stats: COMPLETE
                         Map Join Operator
                           condition map:
@@ -3721,10 +3721,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src3
-                  filterExpr: (UDFToDouble(key) < 10.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) < 10.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) < 10) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)

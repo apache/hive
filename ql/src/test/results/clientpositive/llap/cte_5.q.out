@@ -79,7 +79,7 @@ Stage-0
             XPROD_EDGE [RS_16]
               Select Operator [SEL_15] (rows=1 width=4)
                 Filter Operator [FIL_14] (rows=1 width=4)
-                  predicate:(UDFToDouble(colnum) = 5.0D)
+                  predicate:(CAST( colnum AS decimal(38,18)) = 5)
                   TableScan [TS_0] (rows=1 width=4)
                     mydb@q1_n0,a,Tbl:COMPLETE,Col:COMPLETE,Output:["colnum"]
           <-Map 3 [XPROD_EDGE] vectorized, llap

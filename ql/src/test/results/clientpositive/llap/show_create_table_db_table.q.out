@@ -10,6 +10,7 @@ POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
 default
 tmp_feng
+tpch_0_001
 PREHOOK: query: CREATE TABLE tmp_feng.tmp_showcrt1(key string, value int)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:tmp_feng

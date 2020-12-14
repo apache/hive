@@ -40,7 +40,7 @@ SELECT key+11, value FROM src WHERE key=484
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@fact_tz_n2@ds=1/hr=2
-POSTHOOK: Lineage: fact_tz_n2 PARTITION(ds=1,hr=2).x EXPRESSION []
+POSTHOOK: Lineage: fact_tz_n2 PARTITION(ds=1,hr=2).x EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_tz_n2 PARTITION(ds=1,hr=2).y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 #### A masked pattern was here ####
 PREHOOK: query: alter table fact_daily_n5 skewed by (x) on (484)

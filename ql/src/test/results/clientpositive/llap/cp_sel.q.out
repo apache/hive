@@ -28,7 +28,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (11.0D = 11.0D) (type: boolean)
+                  filterExpr: (11 = 11) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
                   Top N Key Operator
                     sort order: +
@@ -130,7 +130,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: srcpart
-                  filterExpr: (11.0D = 11.0D) (type: boolean)
+                  filterExpr: (11 = 11) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 178000 Basic stats: COMPLETE Column stats: COMPLETE
                   Select Operator
                     expressions: key (type: string), value (type: string), 'hello' (type: string), 'world' (type: string)

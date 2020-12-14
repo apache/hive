@@ -40,12 +40,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: ((UDFToDouble(key) < 100.0D) and (ds = '2008-04-08')) (type: boolean)
+                  filterExpr: ((CAST( key AS decimal(38,18)) < 100) and (ds = '2008-04-08')) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) < 100) (type: boolean)
                     Statistics: Num rows: 333 Data size: 120546 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string), hr (type: string)
@@ -150,12 +150,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
-                  filterExpr: ((UDFToDouble(key) < 100.0D) and (ds = '2008-04-08')) (type: boolean)
+                  filterExpr: ((CAST( key AS decimal(38,18)) < 100) and (ds = '2008-04-08')) (type: boolean)
                   Statistics: Num rows: 1000 Data size: 362000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(key) < 100.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) < 100) (type: boolean)
                     Statistics: Num rows: 333 Data size: 120546 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string), hr (type: string)

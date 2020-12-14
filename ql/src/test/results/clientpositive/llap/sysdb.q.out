@@ -953,10 +953,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@columns_v2
 #### A masked pattern was here ####
 a	decimal(10,2)	0
-acquired_at	string	9
-action_expression	string	4
-active_execution_id	bigint	8
-active_execution_id	bigint	8
+a	int	0
+a	int	0
+a	int	0
+a	int	0
 PREHOOK: query: select param_key, param_value from database_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@database_params
@@ -1188,7 +1188,7 @@ POSTHOOK: query: select count(*) from sds
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@sds
 #### A masked pattern was here ####
-73
+100
 PREHOOK: query: select param_key, param_value from sd_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sd_params
@@ -1207,9 +1207,9 @@ POSTHOOK: Input: sys@serdes
 #### A masked pattern was here ####
 NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
 NULL	org.apache.hadoop.hive.ql.io.orc.OrcSerde
-NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-NULL	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+NULL	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+NULL	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
+NULL	org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
 PREHOOK: query: select param_key, param_value from serde_params order by param_key, param_value limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@serde_params
@@ -1231,6 +1231,10 @@ POSTHOOK: query: select skewed_col_name from skewed_col_names order by skewed_co
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_col_names
 #### A masked pattern was here ####
+col2
+col2
+col4
+col4
 key
 PREHOOK: query: select count(*) from skewed_col_value_loc_map
 PREHOOK: type: QUERY
@@ -1240,7 +1244,7 @@ POSTHOOK: query: select count(*) from skewed_col_value_loc_map
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_col_value_loc_map
 #### A masked pattern was here ####
-0
+44
 PREHOOK: query: select * from skewed_string_list limit 0
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@skewed_string_list
@@ -1265,7 +1269,7 @@ POSTHOOK: query: select count(*) from skewed_values
 POSTHOOK: type: QUERY
 POSTHOOK: Input: sys@skewed_values
 #### A masked pattern was here ####
-3
+54
 PREHOOK: query: select column_name, `order` from sort_cols order by column_name limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: sys@sort_cols
@@ -1537,7 +1541,7 @@ POSTHOOK: Input: sys@dbs
 POSTHOOK: Input: sys@tbl_privs
 POSTHOOK: Input: sys@tbls
 #### A masked pattern was here ####
-3
+4
 PREHOOK: query: select * from TABLES order by TABLE_SCHEMA, TABLE_NAME
 PREHOOK: type: QUERY
 PREHOOK: Input: information_schema@tables

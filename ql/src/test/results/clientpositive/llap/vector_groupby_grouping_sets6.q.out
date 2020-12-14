@@ -71,8 +71,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 4:double, val 5.0)(children: CastStringToDouble(col 0:string) -> 4:double)
-                    predicate: (UDFToDouble(a) = 5.0D) (type: boolean)
+                        predicateExpression: FilterDecimalColEqualDecimalScalar(col 4:decimal(38,18), val 5)(children: CastStringToDecimal(col 0:string) -> 4:decimal(38,18))
+                    predicate: (CAST( a AS decimal(38,18)) = 5) (type: boolean)
                     Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       Group By Vectorization:
@@ -115,7 +115,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: a:string, b:string, c:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, bigint]
+                    scratchColumnTypeNames: [decimal(38,18), bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:
@@ -220,8 +220,8 @@ STAGE PLANS:
                     Filter Vectorization:
                         className: VectorFilterOperator
                         native: true
-                        predicateExpression: FilterDoubleColEqualDoubleScalar(col 4:double, val 5.0)(children: CastStringToDouble(col 0:string) -> 4:double)
-                    predicate: (UDFToDouble(a) = 5.0D) (type: boolean)
+                        predicateExpression: FilterDecimalColEqualDecimalScalar(col 4:decimal(38,18), val 5)(children: CastStringToDecimal(col 0:string) -> 4:decimal(38,18))
+                    predicate: (CAST( a AS decimal(38,18)) = 5) (type: boolean)
                     Statistics: Num rows: 3 Data size: 510 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       Group By Vectorization:
@@ -264,7 +264,7 @@ STAGE PLANS:
                     includeColumns: [0, 1]
                     dataColumns: a:string, b:string, c:string
                     partitionColumnCount: 0
-                    scratchColumnTypeNames: [double, bigint]
+                    scratchColumnTypeNames: [decimal(38,18), bigint]
         Reducer 2 
             Execution mode: vectorized, llap
             Reduce Vectorization:

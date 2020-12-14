@@ -26,16 +26,16 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          filterExpr: (UDFToDouble(key) > 400.0D) (type: boolean)
+          filterExpr: (CAST( key AS decimal(38,18)) > 400) (type: boolean)
           Filter Operator
-            predicate: (UDFToDouble(key) > 400.0D) (type: boolean)
+            predicate: (CAST( key AS decimal(38,18)) > 400) (type: boolean)
             Select Operator
               expressions: array(key,value) (type: array<string>)
               outputColumnNames: _col0
               UDTF Operator
                 function name: explode
                 Filter Operator
-                  predicate: (UDFToDouble(col) < 450.0D) (type: boolean)
+                  predicate: (CAST( col AS decimal(38,18)) < 450) (type: boolean)
                   Select Operator
                     expressions: col (type: string)
                     outputColumnNames: _col0

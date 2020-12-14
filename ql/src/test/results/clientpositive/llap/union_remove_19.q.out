@@ -232,10 +232,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: inputtbl1_n1
-                  filterExpr: (UDFToDouble(key) = 7.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) = 7) (type: boolean)
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 7.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 7) (type: boolean)
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: NONE
                     Group By Operator
                       aggregations: count()

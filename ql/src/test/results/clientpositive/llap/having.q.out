@@ -119,10 +119,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (UDFToDouble(key) <> 302.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) <> 302) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) <> 302.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) <> 302) (type: boolean)
                     Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(value)
@@ -785,10 +785,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (UDFToDouble(key) > 300.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) > 300) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) > 300.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) > 300) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
                       aggregations: max(value)

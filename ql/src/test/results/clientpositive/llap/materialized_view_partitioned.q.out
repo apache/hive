@@ -49,10 +49,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_txn
-                  filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  filterExpr: ((CAST( key AS decimal(38,18)) > 200) and (CAST( key AS decimal(38,18)) < 250)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    predicate: ((CAST( key AS decimal(38,18)) > 200) and (CAST( key AS decimal(38,18)) < 250)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 9790 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string), key (type: string)
@@ -301,7 +301,7 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partition_mv_1
-          filterExpr: (238.0D = 238.0D) (type: boolean)
+          filterExpr: (238 = 238) (type: boolean)
           Select Operator
             expressions: value (type: string), key (type: string)
             outputColumnNames: _col0, _col1
@@ -521,9 +521,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: partition_mv_2
-          filterExpr: (UDFToDouble(key) = 238.0D) (type: boolean)
+          filterExpr: (CAST( key AS decimal(38,18)) = 238) (type: boolean)
           Filter Operator
-            predicate: (UDFToDouble(key) = 238.0D) (type: boolean)
+            predicate: (CAST( key AS decimal(38,18)) = 238) (type: boolean)
             Select Operator
               expressions: value (type: string)
               outputColumnNames: _col0
@@ -643,10 +643,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_txn
-                  filterExpr: ((ROW__ID.writeid > 1L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  filterExpr: ((ROW__ID.writeid > 1L) and (CAST( key AS decimal(38,18)) > 200) and (CAST( key AS decimal(38,18)) < 250)) (type: boolean)
                   Statistics: Num rows: 501 Data size: 90180 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 1L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 1L) and (CAST( key AS decimal(38,18)) > 200) and (CAST( key AS decimal(38,18)) < 250)) (type: boolean)
                     Statistics: Num rows: 18 Data size: 3240 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string), key (type: string)
@@ -981,10 +981,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_txn
-                  filterExpr: ((ROW__ID.writeid > 2L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  filterExpr: ((ROW__ID.writeid > 2L) and (CAST( key AS decimal(38,18)) > 200) and (CAST( key AS decimal(38,18)) < 250)) (type: boolean)
                   Statistics: Num rows: 502 Data size: 90862 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ROW__ID.writeid > 2L) and (UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    predicate: ((ROW__ID.writeid > 2L) and (CAST( key AS decimal(38,18)) > 200) and (CAST( key AS decimal(38,18)) < 250)) (type: boolean)
                     Statistics: Num rows: 18 Data size: 3258 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -1003,10 +1003,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src_txn_2
-                  filterExpr: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                  filterExpr: ((CAST( key AS decimal(38,18)) > 200) and (CAST( key AS decimal(38,18)) < 250)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) > 200.0D) and (UDFToDouble(key) < 250.0D)) (type: boolean)
+                    predicate: ((CAST( key AS decimal(38,18)) > 200) and (CAST( key AS decimal(38,18)) < 250)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 4785 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)

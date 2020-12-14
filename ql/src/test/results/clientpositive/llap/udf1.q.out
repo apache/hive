@@ -54,10 +54,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: src
-                  filterExpr: (UDFToDouble(key) = 86.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) = 86) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 86.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 86) (type: boolean)
                     Statistics: Num rows: 250 Data size: 21750 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: 'TRUE' (type: string), 'FALSE' (type: string), 'TRUE' (type: string), 'TRUE' (type: string), 'TRUE' (type: string), 'FALSE' (type: string), 'FALSE' (type: string), 'FALSE' (type: string), 'TRUE' (type: string), 'TRUE' (type: string), 'FALSE' (type: string), 'TRUE' (type: string), 'TRUE' (type: string), 'acc' (type: string), 'abc' (type: string), 'abb' (type: string), 'hive' (type: string), 'hadoop' (type: string), 'AaAbAcA' (type: string), 'FALSE' (type: string)

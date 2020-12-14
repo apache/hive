@@ -2,7 +2,7 @@ PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
 POSTHOOK: type: SHOWDATABASES
-{"databases":["default"]}
+{"databases":["default","tpch_0_001"]}
 PREHOOK: query: DESC DATABASE default
 PREHOOK: type: DESCDATABASE
 PREHOOK: Input: database:default
@@ -78,23 +78,5 @@ POSTHOOK: type: SHOWMATERIALIZEDVIEWS
 PREHOOK: query: CREATE RESOURCE PLAN rp
 PREHOOK: type: CREATE RESOURCEPLAN
 PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: CREATE RESOURCE PLAN rp
-POSTHOOK: type: CREATE RESOURCEPLAN
-PREHOOK: query: SHOW RESOURCE PLANS
-PREHOOK: type: SHOW RESOURCEPLAN
-PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: SHOW RESOURCE PLANS
-POSTHOOK: type: SHOW RESOURCEPLAN
-[{"name":"rp","status":"DISABLED","defaultPoolPath":"default"}]
-PREHOOK: query: SHOW RESOURCE PLAN rp
-PREHOOK: type: SHOW RESOURCEPLAN
-PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: SHOW RESOURCE PLAN rp
-POSTHOOK: type: SHOW RESOURCEPLAN
-{"name":"rp","status":"DISABLED","parallelism":null,"defaultPool":"default","pools":[{"name":"default","allocFraction":1.0,"schedulingPolicy":null,"parallelism":4,"triggers":[],"mappings":[{"type":"default","values":[]}],"pools":[]}]}
-PREHOOK: query: ALTER RESOURCE PLAN rp VALIDATE
-PREHOOK: type: ALTER RESOURCEPLAN
-PREHOOK: Output: dummyHostnameForTest
-POSTHOOK: query: ALTER RESOURCE PLAN rp VALIDATE
-POSTHOOK: type: ALTER RESOURCEPLAN
-{"errors":[],"warnings":[]}
+FAILED: Execution Error, return code 10417 from org.apache.hadoop.hive.ql.ddl.DDLTask. Resource plan rp already exists
+{"error":"FAILED: Execution Error, return code 10417 from org.apache.hadoop.hive.ql.ddl.DDLTask. Resource plan rp already exists","errorCode":10417,"sqlState":"42000"}

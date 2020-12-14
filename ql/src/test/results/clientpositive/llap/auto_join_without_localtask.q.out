@@ -380,10 +380,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (UDFToDouble(key) > 100.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) > 100) (type: boolean)
                   Statistics: Num rows: 500 Data size: 43500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) > 100.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) > 100) (type: boolean)
                     Statistics: Num rows: 166 Data size: 14442 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string)
@@ -401,7 +401,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: c
-                  filterExpr: (value is not null or ((UDFToDouble(key) > 100.0D) and value is not null)) (type: boolean)
+                  filterExpr: (value is not null or ((CAST( key AS decimal(38,18)) > 100) and value is not null)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
                     predicate: value is not null (type: boolean)
@@ -417,7 +417,7 @@ STAGE PLANS:
                         Map-reduce partition columns: _col0 (type: string)
                         Statistics: Num rows: 500 Data size: 45500 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) > 100.0D) and value is not null) (type: boolean)
+                    predicate: ((CAST( key AS decimal(38,18)) > 100) and value is not null) (type: boolean)
                     Statistics: Num rows: 166 Data size: 29548 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)

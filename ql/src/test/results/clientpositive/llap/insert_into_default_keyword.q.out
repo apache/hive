@@ -2009,10 +2009,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: insert_into1_n0
-                  filterExpr: (UDFToDouble(value) = 1.0D) (type: boolean)
+                  filterExpr: (CAST( value AS decimal(38,18)) = 1) (type: boolean)
                   Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(value) = 1.0D) (type: boolean)
+                    predicate: (CAST( value AS decimal(38,18)) = 1) (type: boolean)
                     Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), value (type: string), i (type: int)
@@ -2122,10 +2122,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: insert_into1_n0
-                  filterExpr: (UDFToDouble(value) = 1.0D) (type: boolean)
+                  filterExpr: (CAST( value AS decimal(38,18)) = 1) (type: boolean)
                   Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(value) = 1.0D) (type: boolean)
+                    predicate: (CAST( value AS decimal(38,18)) = 1) (type: boolean)
                     Statistics: Num rows: 1 Data size: 89 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: ROW__ID (type: struct<writeid:bigint,bucketid:int,rowid:bigint>), i (type: int)

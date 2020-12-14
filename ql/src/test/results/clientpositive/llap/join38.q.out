@@ -15,17 +15,17 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@tmp_n1
 POSTHOOK: Lineage: tmp_n1.col0 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-POSTHOOK: Lineage: tmp_n1.col1 EXPRESSION []
-POSTHOOK: Lineage: tmp_n1.col10 EXPRESSION []
-POSTHOOK: Lineage: tmp_n1.col11 EXPRESSION []
-POSTHOOK: Lineage: tmp_n1.col2 EXPRESSION []
-POSTHOOK: Lineage: tmp_n1.col3 EXPRESSION []
-POSTHOOK: Lineage: tmp_n1.col4 EXPRESSION []
-POSTHOOK: Lineage: tmp_n1.col5 EXPRESSION []
-POSTHOOK: Lineage: tmp_n1.col6 EXPRESSION []
-POSTHOOK: Lineage: tmp_n1.col7 EXPRESSION []
-POSTHOOK: Lineage: tmp_n1.col8 EXPRESSION []
-POSTHOOK: Lineage: tmp_n1.col9 EXPRESSION []
+POSTHOOK: Lineage: tmp_n1.col1 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_n1.col10 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_n1.col11 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_n1.col2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_n1.col3 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_n1.col4 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_n1.col5 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_n1.col6 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_n1.col7 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_n1.col8 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tmp_n1.col9 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: select * from tmp_n1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tmp_n1
@@ -71,10 +71,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (UDFToDouble(key) = 111.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) = 111) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 111.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 111) (type: boolean)
                     Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -110,10 +110,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: b
-                  filterExpr: (UDFToDouble(col11) = 111.0D) (type: boolean)
+                  filterExpr: (CAST( col11 AS decimal(38,18)) = 111) (type: boolean)
                   Statistics: Num rows: 2 Data size: 348 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(col11) = 111.0D) (type: boolean)
+                    predicate: (CAST( col11 AS decimal(38,18)) = 111) (type: boolean)
                     Statistics: Num rows: 1 Data size: 174 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: col5 (type: string), col11 (type: string)

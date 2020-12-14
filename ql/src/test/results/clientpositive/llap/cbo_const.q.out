@@ -150,9 +150,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: src
-          filterExpr: (UDFToDouble(key) = 4.0D) (type: boolean)
+          filterExpr: (CAST( key AS decimal(38,18)) = 4) (type: boolean)
           Filter Operator
-            predicate: (UDFToDouble(key) = 4.0D) (type: boolean)
+            predicate: (CAST( key AS decimal(38,18)) = 4) (type: boolean)
             Select Operator
               expressions: key (type: string)
               outputColumnNames: _col0
@@ -227,10 +227,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: x
-                  filterExpr: ((UDFToDouble(key) = 3.0D) and value is not null) (type: boolean)
+                  filterExpr: ((CAST( key AS decimal(38,18)) = 3) and value is not null) (type: boolean)
                   Statistics: Num rows: 25 Data size: 4375 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((UDFToDouble(key) = 3.0D) and value is not null) (type: boolean)
+                    predicate: ((CAST( key AS decimal(38,18)) = 3) and value is not null) (type: boolean)
                     Statistics: Num rows: 12 Data size: 2100 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)
@@ -249,10 +249,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: z
-                  filterExpr: ((ds = '2008-04-08') and (UDFToDouble(hr) = 14.0D) and value is not null) (type: boolean)
+                  filterExpr: ((ds = '2008-04-08') and (CAST( hr AS decimal(38,18)) = 14) and value is not null) (type: boolean)
                   Statistics: Num rows: 1 Data size: 452 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: ((ds = '2008-04-08') and (UDFToDouble(hr) = 14.0D) and value is not null) (type: boolean)
+                    predicate: ((ds = '2008-04-08') and (CAST( hr AS decimal(38,18)) = 14) and value is not null) (type: boolean)
                     Statistics: Num rows: 1 Data size: 452 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: value (type: string)
@@ -270,10 +270,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: y
-                  filterExpr: (UDFToDouble(key) = 3.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) = 3) (type: boolean)
                   Statistics: Num rows: 500 Data size: 89000 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 3.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 3) (type: boolean)
                     Statistics: Num rows: 250 Data size: 44500 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), value (type: string)

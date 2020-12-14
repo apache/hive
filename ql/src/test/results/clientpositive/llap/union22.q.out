@@ -111,12 +111,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dst_union22_delta
-                  filterExpr: ((UDFToDouble(k0) <= 50.0D) and (ds = '1')) (type: boolean)
+                  filterExpr: ((CAST( k0 AS decimal(38,18)) <= 50) and (ds = '1')) (type: boolean)
                   Statistics: Num rows: 500 Data size: 221500 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(k0) <= 50.0D) (type: boolean)
+                    predicate: (CAST( k0 AS decimal(38,18)) <= 50) (type: boolean)
                     Statistics: Num rows: 166 Data size: 73538 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: k1 (type: string), k2 (type: string), k3 (type: string), k4 (type: string)
@@ -220,12 +220,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: a
-                  filterExpr: (UDFToDouble(k1) > 20.0D) (type: boolean)
+                  filterExpr: (CAST( k1 AS decimal(38,18)) > 20) (type: boolean)
                   Statistics: Num rows: 500 Data size: 181000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: (UDFToDouble(k1) > 20.0D) (type: boolean)
+                    predicate: (CAST( k1 AS decimal(38,18)) > 20) (type: boolean)
                     Statistics: Num rows: 166 Data size: 60092 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: k1 (type: string), k2 (type: string), (ds = '1') (type: boolean)
@@ -350,12 +350,12 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: dst_union22_delta
-                  filterExpr: ((UDFToDouble(k0) > 50.0D) and (UDFToDouble(k1) > 20.0D)) (type: boolean)
+                  filterExpr: ((CAST( k0 AS decimal(38,18)) > 50) and (CAST( k1 AS decimal(38,18)) > 20)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 176000 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
                     isSamplingPred: false
-                    predicate: ((UDFToDouble(k0) > 50.0D) and (UDFToDouble(k1) > 20.0D)) (type: boolean)
+                    predicate: ((CAST( k0 AS decimal(38,18)) > 50) and (CAST( k1 AS decimal(38,18)) > 20)) (type: boolean)
                     Statistics: Num rows: 55 Data size: 19360 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: k1 (type: string), k3 (type: string), k4 (type: string)

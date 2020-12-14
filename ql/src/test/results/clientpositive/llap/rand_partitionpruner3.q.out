@@ -10,7 +10,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
-WHERE CAST(`key` AS DOUBLE) BETWEEN 10 AND 50 AND `ds` = '2008-04-08' AND RAND(1) < 0.1 AND `hr` LIKE '%2'
+WHERE CAST(`key` AS DECIMAL(38, 18)) BETWEEN 10 AND 50 AND `ds` = '2008-04-08' AND RAND(1) < 0.1 AND `hr` LIKE '%2'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -60,7 +60,7 @@ STAGE PLANS:
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: (UDFToDouble(key) BETWEEN 10.0D AND 50.0D and (rand(1) < 0.1D)) (type: boolean)
+            predicate: (CAST( key AS decimal(38,18)) BETWEEN 10 AND 50 and (rand(1) < 0.1D)) (type: boolean)
             Select Operator
               expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3
@@ -90,7 +90,7 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 #### A masked pattern was here ####
 OPTIMIZED SQL: SELECT `key`, `value`, CAST('2008-04-08' AS STRING) AS `ds`, `hr`
 FROM `default`.`srcpart`
-WHERE CAST(`key` AS DOUBLE) BETWEEN 10 AND 50 AND `ds` = '2008-04-08' AND `hr` LIKE '%2'
+WHERE CAST(`key` AS DECIMAL(38, 18)) BETWEEN 10 AND 50 AND `ds` = '2008-04-08' AND `hr` LIKE '%2'
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
 
@@ -137,11 +137,11 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: a
-          filterExpr: (UDFToDouble(key) BETWEEN 10.0D AND 50.0D and (ds = '2008-04-08') and (hr like '%2')) (type: boolean)
+          filterExpr: (CAST( key AS decimal(38,18)) BETWEEN 10 AND 50 and (ds = '2008-04-08') and (hr like '%2')) (type: boolean)
           GatherStats: false
           Filter Operator
             isSamplingPred: false
-            predicate: UDFToDouble(key) BETWEEN 10.0D AND 50.0D (type: boolean)
+            predicate: CAST( key AS decimal(38,18)) BETWEEN 10 AND 50 (type: boolean)
             Select Operator
               expressions: key (type: string), value (type: string), '2008-04-08' (type: string), hr (type: string)
               outputColumnNames: _col0, _col1, _col2, _col3

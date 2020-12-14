@@ -5097,10 +5097,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: t2_n34
-                  filterExpr: (UDFToDouble(key) = 8.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) = 8) (type: boolean)
                   Statistics: Num rows: 6 Data size: 1026 Basic stats: COMPLETE Column stats: COMPLETE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 8.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 8) (type: boolean)
                     Statistics: Num rows: 3 Data size: 513 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       expressions: key (type: string), val (type: string)

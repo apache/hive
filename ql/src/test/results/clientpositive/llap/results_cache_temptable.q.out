@@ -86,10 +86,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: tmptab
-                  filterExpr: (UDFToDouble(key) = 0.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) = 0) (type: boolean)
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 0.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 0) (type: boolean)
                     Statistics: Num rows: 250 Data size: 43792 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 250 Data size: 43792 Basic stats: COMPLETE Column stats: NONE
@@ -194,10 +194,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rct
-                  filterExpr: (UDFToDouble(key) = 0.0D) (type: boolean)
+                  filterExpr: (CAST( key AS decimal(38,18)) = 0) (type: boolean)
                   Statistics: Num rows: 500 Data size: 87584 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: (UDFToDouble(key) = 0.0D) (type: boolean)
+                    predicate: (CAST( key AS decimal(38,18)) = 0) (type: boolean)
                     Statistics: Num rows: 250 Data size: 43792 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 250 Data size: 43792 Basic stats: COMPLETE Column stats: NONE
@@ -306,10 +306,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: rct_part
-                  filterExpr: ((ds = '2008-04-08') and (UDFToDouble(key) = 0.0D)) (type: boolean)
+                  filterExpr: ((ds = '2008-04-08') and (CAST( key AS decimal(38,18)) = 0)) (type: boolean)
                   Statistics: Num rows: 500 Data size: 175168 Basic stats: COMPLETE Column stats: NONE
                   Filter Operator
-                    predicate: ((ds = '2008-04-08') and (UDFToDouble(key) = 0.0D)) (type: boolean)
+                    predicate: ((ds = '2008-04-08') and (CAST( key AS decimal(38,18)) = 0)) (type: boolean)
                     Statistics: Num rows: 2 Data size: 700 Basic stats: COMPLETE Column stats: NONE
                     Select Operator
                       Statistics: Num rows: 2 Data size: 700 Basic stats: COMPLETE Column stats: NONE

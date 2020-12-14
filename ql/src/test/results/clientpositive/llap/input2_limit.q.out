@@ -18,9 +18,9 @@ STAGE PLANS:
       Processor Tree:
         TableScan
           alias: x
-          filterExpr: (UDFToDouble(key) < 300.0D) (type: boolean)
+          filterExpr: (CAST( key AS decimal(38,18)) < 300) (type: boolean)
           Filter Operator
-            predicate: (UDFToDouble(key) < 300.0D) (type: boolean)
+            predicate: (CAST( key AS decimal(38,18)) < 300) (type: boolean)
             Limit
               Number of rows: 5
               Select Operator

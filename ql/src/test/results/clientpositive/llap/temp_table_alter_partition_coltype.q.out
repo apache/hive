@@ -344,7 +344,7 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alter_coltype_temp
-                  filterExpr: ((ts = 3.0D) and (100.0D = 100.0D)) (type: boolean)
+                  filterExpr: ((ts = 3.0D) and (100 = 100)) (type: boolean)
                   Statistics: Num rows: 50 Data size: 782 Basic stats: COMPLETE Column stats: COMPLETE
                   GatherStats: false
                   Filter Operator
