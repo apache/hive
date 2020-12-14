@@ -68,18 +68,17 @@ public class TestDecimalStringValidation {
 
   @Parameterized.Parameters(name = "{index}: {0}")
   public static Collection<FunctionCall> params() throws Exception {
-    ExprNodeDesc[] characterExps =
-        new ExprNodeDesc[] { new ExprNodeColumnDesc(TypeInfoFactory.varcharTypeInfo, "varchar_col", null, false),
+    ExprNodeDesc[] characterExps = new ExprNodeDesc[] { 
+            new ExprNodeColumnDesc(TypeInfoFactory.varcharTypeInfo, "varchar_col", null, false),
             new ExprNodeColumnDesc(TypeInfoFactory.charTypeInfo, "char_col", null, false),
             new ExprNodeColumnDesc(TypeInfoFactory.stringTypeInfo, "string_col", null, false),
             new ExprNodeConstantDesc(TypeInfoFactory.varcharTypeInfo, "123.3"),
             new ExprNodeConstantDesc(TypeInfoFactory.charTypeInfo, "123.3"),
             new ExprNodeConstantDesc(TypeInfoFactory.stringTypeInfo, "123.3"), };
-    ExprNodeDesc[] numericExps =
-        new ExprNodeDesc[] { new ExprNodeColumnDesc(TypeInfoFactory.decimalTypeInfo, "decimal_col", null, false),
+    ExprNodeDesc[] numericExps = new ExprNodeDesc[] { 
+            new ExprNodeColumnDesc(TypeInfoFactory.decimalTypeInfo, "decimal_col", null, false),
             new ExprNodeConstantDesc(TypeInfoFactory.decimalTypeInfo, 123.3), };
-    FunctionInfo[] functions =
-        new FunctionInfo[] { 
+    FunctionInfo[] functions = new FunctionInfo[] { 
             FunctionRegistry.getFunctionInfo("="),
             FunctionRegistry.getFunctionInfo("<"),
             FunctionRegistry.getFunctionInfo(">"),
