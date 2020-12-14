@@ -56,7 +56,6 @@ import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -74,7 +73,6 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   static final private String CLASS_NAME = Worker.class.getName();
   static final private Logger LOG = LoggerFactory.getLogger(CLASS_NAME);
   static final private long SLEEP_TIME = 10000;
-  private static final int TXN_ID_NOT_SET = -1;
 
   private String workerName;
 
@@ -607,7 +605,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     try {
       msc.markFailed(CompactionInfo.compactionInfoToStruct(ci));
     } catch (TException e1) {
-      LOG.error("Caught an exception while trying to mark compaction {} as failed or abort txnId {}: {}", ci, e);
+      LOG.error("Caught an exception while trying to mark compaction {} as failed: {}", ci, e);
     }
   }
 
@@ -643,10 +641,17 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       status = TxnStatus.OPEN;
     }
 
-    public void wasSuccessful() {
+    /**
+     * Mark compaction as successful. This means the txn will be committed; otherwise it will be aborted.
+     */
+    void wasSuccessful() {
       this.succeessfulCompaction = true;
     }
 
+    /**
+     * Commit or abort txn.
+     * @throws Exception
+     */
     @Override public void close() throws Exception {
       if (status == TxnStatus.UNKNOWN) {
         return;
@@ -667,34 +672,37 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
 
     /**
-     * Abort the txn if open.
-     * @throws TException
+     * Commit the txn if open.
      */
-    private void abort() throws TException {
+    private void commit() {
+      if (msc == null) {
+        LOG.error("Metastore client was null. Could not commit txn " + this);
+        return;
+      }
+      if (status == TxnStatus.OPEN) {
+        try {
+          msc.commitTxn(txnId);
+          status = TxnStatus.COMMITTED;
+        } catch (TException e) {
+          LOG.error("Caught an exception while committing compaction txn in worker " + workerName, e);
+        }
+      }
+    }
+
+    /**
+     * Abort the txn if open.
+     */
+    private void abort() {
       if (msc == null) {
         LOG.error("Metastore client was null. Could not abort txn " + this);
         return;
       }
       if (status == TxnStatus.OPEN) {
-        msc.abortTxns(Collections.singletonList(txnId));
-        status = TxnStatus.ABORTED;
-      }
-    }
-
-    /**
-     * Commit the txn if open.
-     */
-    private void commit() {
-      if (status == TxnStatus.OPEN) {
-        if (msc == null) {
-          LOG.error("Metastore client was null. Could not commit txn " + this);
-          return;
-        }
         try {
-          msc.commitTxn(txnId);
-          status = TxnStatus.COMMITTED;
+          msc.abortTxns(Collections.singletonList(txnId));
+          status = TxnStatus.ABORTED;
         } catch (TException e) {
-          LOG.error("Caught an exception while committing compaction in worker " + workerName, e);
+          LOG.error("Caught an exception while aborting compaction txn in worker " + workerName, e);
         }
       }
     }
