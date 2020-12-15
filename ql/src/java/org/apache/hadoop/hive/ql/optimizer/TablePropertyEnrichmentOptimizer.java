@@ -115,13 +115,13 @@ class TablePropertyEnrichmentOptimizer extends Transform {
       String deserializerClassName = null;
       try {
         deserializerClassName = tableScanDesc.getTableMetadata().getSd().getSerdeInfo().getSerializationLib();
-        AbstractSerDe deserializer = ReflectionUtil.newInstance(
+        AbstractSerDe serDe = ReflectionUtil.newInstance(
             context.conf.getClassByName(deserializerClassName)
                 .asSubclass(AbstractSerDe.class),
             context.conf);
 
         if (context.serdeClassesUnderConsideration.contains(deserializerClassName)) {
-          deserializer.initialize(context.conf, clonedTableParameters, null);
+          serDe.initialize(context.conf, clonedTableParameters, null);
           LOG.debug("SerDe init succeeded for class: " + deserializerClassName);
           for (Map.Entry property : clonedTableParameters.entrySet()) {
             if (!property.getValue().equals(originalTableParameters.get(property.getKey()))) {

@@ -350,10 +350,10 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     try {
       TableDesc keyTableDesc = conf.getKeyTblDesc();
-      AbstractSerDe keySerializer = (AbstractSerDe) ReflectionUtil.newInstance(
+      AbstractSerDe keySerDe = (AbstractSerDe) ReflectionUtil.newInstance(
           keyTableDesc.getSerDeClass(), null);
-      keySerializer.initialize(null, keyTableDesc.getProperties(), null);
-      MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerializer, false);
+      keySerDe.initialize(null, keyTableDesc.getProperties(), null);
+      MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerDe, false);
       for (int pos = 0; pos < order.length; pos++) {
         if (pos == posBigTable) {
           continue;

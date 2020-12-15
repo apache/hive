@@ -273,13 +273,13 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
     try {
       this.hconf = hconf;
 
-      AbstractSerDe outputSerde = conf.getScriptOutputInfo().getSerDeClass().newInstance();
-      outputSerde.initialize(hconf, conf.getScriptOutputInfo().getProperties(), null);
+      AbstractSerDe outputSerDe = conf.getScriptOutputInfo().getSerDeClass().newInstance();
+      outputSerDe.initialize(hconf, conf.getScriptOutputInfo().getProperties(), null);
 
       AbstractSerDe inputSerde = conf.getScriptInputInfo().getSerDeClass().newInstance();
       inputSerde.initialize(hconf, conf.getScriptInputInfo().getProperties(), null);
 
-      scriptOutputDeserializer = outputSerde;
+      scriptOutputDeserializer = outputSerDe;
       scriptInputSerializer = inputSerde;
 
       outputObjInspector = scriptOutputDeserializer.getObjectInspector();

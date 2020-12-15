@@ -178,10 +178,10 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     }
     try {
       TableDesc keyTableDesc = conf.getKeyTblDesc();
-      AbstractSerDe keySerde = (AbstractSerDe) ReflectionUtils.newInstance(keyTableDesc.getSerDeClass(),
+      AbstractSerDe keySerDe = (AbstractSerDe) ReflectionUtils.newInstance(keyTableDesc.getSerDeClass(),
           null);
-      keySerde.initialize(null, keyTableDesc.getProperties(), null);
-      MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerde, false);
+      keySerDe.initialize(null, keyTableDesc.getProperties(), null);
+      MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerDe, false);
       for (Byte pos : order) {
         if (pos == posBigTableAlias) {
           continue;

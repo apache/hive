@@ -44,9 +44,9 @@ public class HashTableDummyOperator extends Operator<HashTableDummyDesc> impleme
     super.initializeOp(hconf);
     TableDesc tbl = this.getConf().getTbl();
     try {
-      AbstractSerDe serde = tbl.getSerDeClass().newInstance();
-      serde.initialize(hconf, tbl.getProperties(), null);
-      this.outputObjInspector = serde.getObjectInspector();
+      AbstractSerDe serDe = tbl.getSerDeClass().newInstance();
+      serDe.initialize(hconf, tbl.getProperties(), null);
+      this.outputObjInspector = serDe.getObjectInspector();
     } catch (Exception e) {
       LOG.error("Generating output obj inspector from dummy object error", e);
     }

@@ -27,7 +27,6 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.common.NoDynamicValuesException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
-import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -105,9 +104,9 @@ public class DynamicValueRegistryTez implements DynamicValueRegistry {
       RuntimeValuesInfo runtimeValuesInfo = rct.baseWork.getInputSourceToRuntimeValuesInfo().get(inputSourceName);
 
       // Setup deserializer/obj inspectors for the incoming data source
-      AbstractSerDe deserializer = ReflectionUtils.newInstance(runtimeValuesInfo.getTableDesc().getSerDeClass(), null);
-      deserializer.initialize(rct.conf, runtimeValuesInfo.getTableDesc().getProperties(), null);
-      ObjectInspector inspector = deserializer.getObjectInspector();
+      AbstractSerDe serDe = ReflectionUtils.newInstance(runtimeValuesInfo.getTableDesc().getSerDeClass(), null);
+      serDe.initialize(rct.conf, runtimeValuesInfo.getTableDesc().getProperties(), null);
+      ObjectInspector inspector = serDe.getObjectInspector();
 
       // Set up col expressions for the dynamic values using this input
       List<ExprNodeEvaluator> colExprEvaluators = new ArrayList<ExprNodeEvaluator>();
@@ -125,7 +124,7 @@ public class DynamicValueRegistryTez implements DynamicValueRegistry {
       KeyValueReader kvReader = (KeyValueReader) runtimeValueInput.getReader();
       long rowCount = 0;
       while (kvReader.next()) {
-        Object row = deserializer.deserialize((Writable) kvReader.getCurrentValue());
+        Object row = serDe.deserialize((Writable) kvReader.getCurrentValue());
         rowCount++;
         for (int colIdx = 0; colIdx < colExprEvaluators.size(); ++colIdx) {
           // Read each expression and save it to the value registry

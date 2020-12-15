@@ -150,8 +150,8 @@ class InternalUtil {
                      HCatTableInfo info, HCatSchema schema) throws SerDeException {
     Properties props = getSerdeProperties(info, schema);
     LOG.info("Initializing " + deserializer.getClass().getName() + " with properties " + props);
-    AbstractSerDe serde = (AbstractSerDe)deserializer;
-    serde.initialize(conf, props, null);
+    AbstractSerDe serDe = (AbstractSerDe) deserializer;
+    serDe.initialize(conf, props, null);
   }
 
   private static Properties getSerdeProperties(HCatTableInfo info, HCatSchema s)

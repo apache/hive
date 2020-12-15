@@ -760,13 +760,13 @@ public final class GenMapRedUtils {
    *          current plan
    * @param local
    *          whether you need to add to map-reduce or local work
-   * @param tt_desc
+   * @param ttDesc
    *          table descriptor
    * @throws SemanticException
    */
   public static void setTaskPlan(Path path, String alias,
       Operator<? extends OperatorDesc> topOp, MapWork plan, boolean local,
-      TableDesc tt_desc) throws SemanticException {
+      TableDesc ttDesc) throws SemanticException {
 
     if (path == null || alias == null) {
       return;
@@ -775,7 +775,7 @@ public final class GenMapRedUtils {
     if (topOp instanceof TableScanOperator) {
       try {
         Utilities.addSchemaEvolutionToTableScanOperator(
-          (StructObjectInspector) tt_desc.getSerDe().getObjectInspector(),
+          (StructObjectInspector) ttDesc.getSerDe().getObjectInspector(),
           (TableScanOperator) topOp);
       } catch (Exception e) {
         throw new SemanticException(e);
@@ -784,7 +784,7 @@ public final class GenMapRedUtils {
 
     if (!local) {
       plan.addPathToAlias(path, alias);
-      plan.addPathToPartitionInfo(path, new PartitionDesc(tt_desc, null));
+      plan.addPathToPartitionInfo(path, new PartitionDesc(ttDesc, null));
       plan.getAliasToWork().put(alias, topOp);
     } else {
       // populate local work if needed
@@ -798,7 +798,7 @@ public final class GenMapRedUtils {
       assert localPlan.getAliasToWork().get(alias) == null;
       assert localPlan.getAliasToFetchWork().get(alias) == null;
       localPlan.getAliasToWork().put(alias, topOp);
-      localPlan.getAliasToFetchWork().put(alias, new FetchWork(new Path(alias), tt_desc));
+      localPlan.getAliasToFetchWork().put(alias, new FetchWork(new Path(alias), ttDesc));
       plan.setMapRedLocalWork(localPlan);
     }
   }

@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -407,7 +408,7 @@ public class MapOperator extends AbstractMapOperator {
       StructObjectInspector soi = null;
       PartitionDesc partDesc = conf.getAliasToPartnInfo().get(tsOp.getConf().getAlias());
       Configuration newConf = tableNameToConf.get(partDesc.getTableDesc().getTableName());
-      Deserializer serde = partDesc.getTableDesc().getSerDe();
+      AbstractSerDe serde = partDesc.getTableDesc().getSerDe();
       partDesc.setProperties(partDesc.getProperties());
       MapOpCtx opCtx = new MapOpCtx(tsOp.getConf().getAlias(), child, partDesc);
       StructObjectInspector tableRowOI = (StructObjectInspector) serde.getObjectInspector();

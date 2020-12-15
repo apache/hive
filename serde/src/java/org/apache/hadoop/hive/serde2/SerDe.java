@@ -24,7 +24,7 @@ package org.apache.hadoop.hive.serde2;
 public interface SerDe {
 
   /**
-   * Returns statistics collected when serializing
+   * Returns statistics collected when (de)serializing.
    *
    * @return {@link SerDeStats} object; or in case not supported: null
    */

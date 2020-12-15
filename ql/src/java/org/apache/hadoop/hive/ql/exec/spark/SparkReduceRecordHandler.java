@@ -79,7 +79,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
   private final Object[] valueObject = new Object[Byte.MAX_VALUE];
   private final List<Object> row = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
 
-  private Deserializer inputKeyDeserializer;
+  private AbstractSerDe inputKeySerDe;
   private Operator<?> reducer;
   private boolean isTagged = false;
   private TableDesc keyTableDesc;
@@ -133,12 +133,11 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
     isTagged = gWork.getNeedsTagging();
     try {
       keyTableDesc = gWork.getKeyDesc();
-      AbstractSerDe serde = ReflectionUtils.newInstance(keyTableDesc
+      inputKeySerDe = ReflectionUtils.newInstance(keyTableDesc
         .getSerDeClass(), null);
-      serde.initialize(null, keyTableDesc.getProperties(), null);
-      keyObjectInspector = serde.getObjectInspector();
+      inputKeySerDe.initialize(null, keyTableDesc.getProperties(), null);
+      keyObjectInspector = inputKeySerDe.getObjectInspector();
 
-      inputKeyDeserializer = serde;
       valueTableDesc = new TableDesc[gWork.getTagToValueDesc().size()];
 
       if (vectorized) {
@@ -158,11 +157,11 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         // We should initialize the SerDe with the TypeInfo when available.
         valueTableDesc[tag] = gWork.getTagToValueDesc().get(tag);
 
-        AbstractSerDe sd = ReflectionUtils.newInstance(valueTableDesc[tag].getSerDeClass(), null);
-        sd.initialize(null, valueTableDesc[tag].getProperties(), null);
+        AbstractSerDe inputValueSerDe = ReflectionUtils.newInstance(valueTableDesc[tag].getSerDeClass(), null);
+        inputValueSerDe.initialize(null, valueTableDesc[tag].getProperties(), null);
 
-        inputValueDeserializer[tag] = sd;
-        valueObjectInspector[tag] = inputValueDeserializer[tag].getObjectInspector();
+        inputValueDeserializer[tag] = inputValueSerDe;
+        valueObjectInspector[tag] = inputValueSerDe.getObjectInspector();
 
         ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
 
@@ -178,7 +177,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
           batch = gWork.getVectorizedRowBatchCtx().createVectorizedRowBatch();
 
           // Setup vectorized deserialization for the key and value.
-          BinarySortableSerDe binarySortableSerDe = (BinarySortableSerDe) inputKeyDeserializer;
+          BinarySortableSerDe binarySortableSerDe = (BinarySortableSerDe) inputKeySerDe;
 
           keyBinarySortableDeserializeToRow =
               new VectorDeserializeRow<BinarySortableDeserializeRead>(
@@ -353,7 +352,7 @@ public class SparkReduceRecordHandler extends SparkRecordHandler {
         }
 
         try {
-          keyObject = inputKeyDeserializer.deserialize(keyWritable);
+          keyObject = inputKeySerDe.deserialize(keyWritable);
         } catch (Exception e) {
           // Log the input key which caused exception so that it's available for debugging. But when
           // exposed through an error message it can leak sensitive information, even to the client

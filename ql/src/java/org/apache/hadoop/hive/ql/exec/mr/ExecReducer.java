@@ -69,7 +69,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   private final Object[] valueObject = new Object[Byte.MAX_VALUE];
   private final List<Object> row = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
 
-  private Deserializer inputKeyDeserializer;
+  private AbstractSerDe inputKeySerDe;
   private JobConf jc;
   private OutputCollector<?, ?> oc;
   private Operator<?> reducer;
@@ -101,18 +101,17 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     isTagged = gWork.getNeedsTagging();
     try {
       keyTableDesc = gWork.getKeyDesc();
-      AbstractSerDe serDe = ReflectionUtils.newInstance(keyTableDesc
+      inputKeySerDe = ReflectionUtils.newInstance(keyTableDesc
           .getSerDeClass(), null);
-      serDe.initialize(null, keyTableDesc.getProperties(), null);
-      inputKeyDeserializer = serDe;
-      keyObjectInspector = inputKeyDeserializer.getObjectInspector();
+      inputKeySerDe.initialize(null, keyTableDesc.getProperties(), null);
+      keyObjectInspector = inputKeySerDe.getObjectInspector();
       valueTableDesc = new TableDesc[gWork.getTagToValueDesc().size()];
       for (int tag = 0; tag < gWork.getTagToValueDesc().size(); tag++) {
         // We should initialize the SerDe with the TypeInfo when available.
         valueTableDesc[tag] = gWork.getTagToValueDesc().get(tag);
-        AbstractSerDe sd = ReflectionUtils.newInstance(valueTableDesc[tag].getSerDeClass(), null);
-        sd.initialize(null, valueTableDesc[tag].getProperties(), null);
-        inputValueDeserializer[tag] = sd;
+        AbstractSerDe valueObjectSerDe = ReflectionUtils.newInstance(valueTableDesc[tag].getSerDeClass(), null);
+        valueObjectSerDe.initialize(null, valueTableDesc[tag].getProperties(), null);
+        inputValueDeserializer[tag] = valueObjectSerDe;
         valueObjectInspector[tag] = inputValueDeserializer[tag].getObjectInspector();
 
         ArrayList<ObjectInspector> ois = new ArrayList<ObjectInspector>();
@@ -180,7 +179,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         }
 
         try {
-          keyObject = inputKeyDeserializer.deserialize(keyWritable);
+          keyObject = inputKeySerDe.deserialize(keyWritable);
         } catch (Exception e) {
           throw new HiveException(
               "Hive Runtime Error: Unable to deserialize reduce input key from "

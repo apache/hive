@@ -171,10 +171,10 @@ public class PartitionDesc implements Serializable, Cloneable {
   public Deserializer getDeserializer(Configuration conf) throws Exception {
     Properties schema = getProperties();
     String clazzName = getDeserializerClassName();
-    AbstractSerDe deserializer = ReflectionUtil.newInstance(conf.getClassByName(clazzName)
+    AbstractSerDe serDe = ReflectionUtil.newInstance(conf.getClassByName(clazzName)
         .asSubclass(AbstractSerDe.class), conf);
-    deserializer.initialize(conf, getTableDesc().getProperties(), schema);
-    return deserializer;
+    serDe.initialize(conf, getTableDesc().getProperties(), schema);
+    return serDe;
   }
 
   public void setInputFileFormatClass(
