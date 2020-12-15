@@ -43,8 +43,6 @@ import org.apache.hadoop.hive.common.io.DiskRangeList.MutateHelper;
 import org.apache.hadoop.hive.common.io.encoded.EncodedColumnBatch.ColumnStreamData;
 import org.apache.hadoop.hive.common.io.encoded.MemoryBuffer;
 import org.apache.orc.CompressionCodec;
-import org.apache.orc.CompressionKind;
-import org.apache.orc.DataReader;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcFile.WriterVersion;
 import org.apache.orc.OrcProto.ColumnEncoding;
@@ -121,7 +119,7 @@ class EncodedReaderImpl implements EncodedReader {
     }
   };
   private final Object fileKey;
-  private final DataReader dataReader;
+  private final LlapDataReader dataReader;
   private boolean isDataReaderOpen = false;
   private CompressionCodec codec;
   private final boolean isCodecFromPool;
@@ -143,7 +141,7 @@ class EncodedReaderImpl implements EncodedReader {
 
   public EncodedReaderImpl(Object fileKey, List<OrcProto.Type> types,
       TypeDescription fileSchema, org.apache.orc.CompressionKind kind, WriterVersion version,
-      int bufferSize, long strideRate, DataCache cacheWrapper, DataReader dataReader,
+      int bufferSize, long strideRate, DataCache cacheWrapper, LlapDataReader dataReader,
       PoolFactory pf, IoTrace trace, boolean useCodecPool, CacheTag tag, boolean isReadCacheOnly) throws IOException {
     this.fileKey = fileKey;
     this.compressionKind = kind;
@@ -282,6 +280,128 @@ class EncodedReaderImpl implements EncodedReader {
     }
   }
 
+  public static boolean[] findPresentStreamsByColumn(
+      List<OrcProto.Stream> streamList, List<OrcProto.Type> types) {
+    boolean[] hasNull = new boolean[types.size()];
+    for(OrcProto.Stream stream: streamList) {
+      if (stream.hasKind() && (stream.getKind() == OrcProto.Stream.Kind.PRESENT)) {
+        hasNull[stream.getColumn()] = true;
+      }
+    }
+    return hasNull;
+  }
+
+  public static void addEntireStreamToRanges(
+      long offset, long length, DiskRangeList.CreateHelper list, boolean doMergeBuffers) {
+    list.addOrMerge(offset, offset + length, doMergeBuffers, false);
+  }
+
+  public static void addRgFilteredStreamToRanges(OrcProto.Stream stream,
+      boolean[] includedRowGroups, boolean isCompressed, OrcProto.RowIndex index,
+      OrcProto.ColumnEncoding encoding, OrcProto.Type type, int compressionSize, boolean hasNull,
+      long offset, long length, DiskRangeList.CreateHelper list, boolean doMergeBuffers) {
+    for (int group = 0; group < includedRowGroups.length; ++group) {
+      if (!includedRowGroups[group]) continue;
+      int posn = getIndexPosition(
+          encoding.getKind(), type.getKind(), stream.getKind(), isCompressed, hasNull);
+      long start = index.getEntry(group).getPositions(posn);
+      final long nextGroupOffset;
+      boolean isLast = group == (includedRowGroups.length - 1);
+      nextGroupOffset = isLast ? length : index.getEntry(group + 1).getPositions(posn);
+
+      start += offset;
+      long end = offset + estimateRgEndOffset(
+          isCompressed, isLast, nextGroupOffset, length, compressionSize);
+      list.addOrMerge(start, end, doMergeBuffers, true);
+    }
+  }
+
+  // for uncompressed streams, what is the most overlap with the following set
+  // of rows (long vint literal group).
+  static final int WORST_UNCOMPRESSED_SLOP = 2 + 8 * 512;
+
+  public static long estimateRgEndOffset(boolean isCompressed, boolean isLast,
+      long nextGroupOffset, long streamLength, int bufferSize) {
+    // figure out the worst case last location
+    // if adjacent groups have the same compressed block offset then stretch the slop
+    // by factor of 2 to safely accommodate the next compression block.
+    // One for the current compression block and another for the next compression block.
+    long slop = isCompressed ? 2 * (OutStream.HEADER_SIZE + bufferSize) : WORST_UNCOMPRESSED_SLOP;
+    return isLast ? streamLength : Math.min(streamLength, nextGroupOffset + slop);
+  }
+
+  private static final int BYTE_STREAM_POSITIONS = 1;
+  private static final int RUN_LENGTH_BYTE_POSITIONS = BYTE_STREAM_POSITIONS + 1;
+  private static final int BITFIELD_POSITIONS = RUN_LENGTH_BYTE_POSITIONS + 1;
+  private static final int RUN_LENGTH_INT_POSITIONS = BYTE_STREAM_POSITIONS + 1;
+
+  /**
+   * Get the offset in the index positions for the column that the given
+   * stream starts.
+   * @param columnEncoding the encoding of the column
+   * @param columnType the type of the column
+   * @param streamType the kind of the stream
+   * @param isCompressed is the file compressed
+   * @param hasNulls does the column have a PRESENT stream?
+   * @return the number of positions that will be used for that stream
+   */
+  public static int getIndexPosition(OrcProto.ColumnEncoding.Kind columnEncoding,
+      OrcProto.Type.Kind columnType,
+      OrcProto.Stream.Kind streamType,
+      boolean isCompressed,
+      boolean hasNulls) {
+    if (streamType == OrcProto.Stream.Kind.PRESENT) {
+      return 0;
+    }
+    int compressionValue = isCompressed ? 1 : 0;
+    int base = hasNulls ? (BITFIELD_POSITIONS + compressionValue) : 0;
+    switch (columnType) {
+    case BOOLEAN:
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+    case FLOAT:
+    case DOUBLE:
+    case DATE:
+    case STRUCT:
+    case MAP:
+    case LIST:
+    case UNION:
+      return base;
+    case CHAR:
+    case VARCHAR:
+    case STRING:
+      if (columnEncoding == OrcProto.ColumnEncoding.Kind.DICTIONARY ||
+          columnEncoding == OrcProto.ColumnEncoding.Kind.DICTIONARY_V2) {
+        return base;
+      } else {
+        if (streamType == OrcProto.Stream.Kind.DATA) {
+          return base;
+        } else {
+          return base + BYTE_STREAM_POSITIONS + compressionValue;
+        }
+      }
+    case BINARY:
+      if (streamType == OrcProto.Stream.Kind.DATA) {
+        return base;
+      }
+      return base + BYTE_STREAM_POSITIONS + compressionValue;
+    case DECIMAL:
+      if (streamType == OrcProto.Stream.Kind.DATA) {
+        return base;
+      }
+      return base + BYTE_STREAM_POSITIONS + compressionValue;
+    case TIMESTAMP:
+      if (streamType == OrcProto.Stream.Kind.DATA) {
+        return base;
+      }
+      return base + RUN_LENGTH_INT_POSITIONS + compressionValue;
+    default:
+      throw new IllegalArgumentException("Unknown type " + columnType);
+    }
+  }
+
   @Override
   public void readEncodedColumns(int stripeIx, StripeInformation stripe,
       OrcProto.RowIndex[] indexes, List<OrcProto.ColumnEncoding> encodings,
@@ -293,7 +413,7 @@ class EncodedReaderImpl implements EncodedReader {
     // 1. Figure out what we have to read.
     long offset = 0; // Stream offset in relation to the stripe.
     // 1.1. Figure out which columns have a present stream
-    boolean[] hasNull = RecordReaderUtils.findPresentStreamsByColumn(streamList, types);
+    boolean[] hasNull = findPresentStreamsByColumn(streamList, types);
     if (isTracingEnabled) {
       LOG.trace("The following columns have PRESENT streams: " + arrayToString(hasNull));
     }
@@ -335,7 +455,7 @@ class EncodedReaderImpl implements EncodedReader {
       }
       ColumnReadContext ctx = colCtxs[colIx];
       assert ctx != null;
-      int indexIx = RecordReaderUtils.getIndexPosition(ctx.encoding.getKind(),
+      int indexIx = getIndexPosition(ctx.encoding.getKind(),
           types.get(colIx).getKind(), streamKind, isCompressed, hasNull[colIx]);
       ctx.addStream(offset, stream, indexIx);
       if (isTracingEnabled) {
@@ -344,13 +464,13 @@ class EncodedReaderImpl implements EncodedReader {
       }
       if (rgs == null || RecordReaderUtils.isDictionary(streamKind, encodings.get(colIx))) {
         trace.logAddStream(colIx, streamKind, offset, length, indexIx, true);
-        RecordReaderUtils.addEntireStreamToRanges(offset, length, listToRead, true);
+        addEntireStreamToRanges(offset, length, listToRead, true);
         if (isTracingEnabled) {
           LOG.trace("Will read whole stream " + streamKind + "; added to " + listToRead.getTail());
         }
       } else {
         trace.logAddStream(colIx, streamKind, offset, length, indexIx, false);
-        RecordReaderUtils.addRgFilteredStreamToRanges(stream, rgs,
+        addRgFilteredStreamToRanges(stream, rgs,
             isCompressed, indexes[colIx], encodings.get(colIx), types.get(colIx),
             bufferSize, hasNull[colIx], offset, length, listToRead, true);
       }
@@ -480,7 +600,7 @@ class EncodedReaderImpl implements EncodedReader {
                       : nextIndex.getPositions(sctx.streamIndexOffset);
                   // Offset before which this RG is guaranteed to end. Can only be estimated.
                   // We estimate the same way for compressed and uncompressed for now.
-                  long endCOffset = sctx.offset + RecordReaderUtils.estimateRgEndOffset(
+                  long endCOffset = sctx.offset + estimateRgEndOffset(
                       isCompressed, isLastRg, nextCOffsetRel, sctx.length, bufferSize);
                   // As we read, we can unlock initial refcounts for the buffers that end before
                   // the data that we need for this RG.
@@ -1299,7 +1419,7 @@ class EncodedReaderImpl implements EncodedReader {
     cacheWrapper.reuseBuffer(buffer);
     ByteBuffer dest = buffer.getByteBufferRaw();
     CacheChunk tcc = new CacheChunk(buffer, bc.getOffset(), bc.getEnd());
-    copyUncompressedChunk(bc.getChunk(), dest);
+    copyUncompressedChunk(bc.getData(), dest);
     bc.replaceSelfWith(tcc);
     return tcc;
   }
@@ -1544,7 +1664,7 @@ class EncodedReaderImpl implements EncodedReader {
       IdentityHashMap<ByteBuffer, Boolean> toRelease, List<ByteBuffer> toReleaseCopies,
       List<IncompleteCb> badEstimates) throws IOException {
     ByteBuffer slice = null;
-    ByteBuffer compressed = current.getChunk();
+    ByteBuffer compressed = current.getData();
     long cbStartOffset = current.getOffset();
     int b0 = -1, b1 = -1, b2 = -1;
     // First, read the CB header. Due to ORC estimates, ZCR, etc. this can be complex.
@@ -1559,7 +1679,7 @@ class EncodedReaderImpl implements EncodedReader {
       current = readLengthBytesFromSmallBuffers(
           current, cbStartOffset, bytes, badEstimates, isTracingEnabled, trace);
       if (current == null) return null;
-      compressed = current.getChunk();
+      compressed = current.getData();
       b0 = bytes[0];
       b1 = bytes[1];
       b2 = bytes[2];
@@ -1658,7 +1778,7 @@ class EncodedReaderImpl implements EncodedReader {
           cbStartOffset, first, 0, isTracingEnabled, trace));
       return null; // This is impossible to read from this chunk.
     }
-    int ix = readLengthBytes(first.getChunk(), result, 0);
+    int ix = readLengthBytes(first.getData(), result, 0);
     assert ix < 3; // Otherwise we wouldn't be here.
     DiskRangeList current = first.next;
     first.removeSelf();
@@ -1668,7 +1788,7 @@ class EncodedReaderImpl implements EncodedReader {
             "Trying to extend compressed block into uncompressed block " + current);
       }
       BufferChunk currentBc = (BufferChunk) current;
-      ix = readLengthBytes(currentBc.getChunk(), result, ix);
+      ix = readLengthBytes(currentBc.getData(), result, ix);
       if (ix == 3) return currentBc; // Done, we have 3 bytes. Continue reading this buffer.
       DiskRangeList tmp = current;
       current = current.hasContiguousNext() ? current.next : null;
@@ -1763,12 +1883,12 @@ class EncodedReaderImpl implements EncodedReader {
       LOG.trace("Adjusting " + lastChunk + " to consume " + lastChunkLength + " compressed bytes");
     }
     if (doTrace) {
-      trace.logCompositeOrcCb(lastChunkLength, lastChunk.getChunk().remaining(), cc);
+      trace.logCompositeOrcCb(lastChunkLength, lastChunk.getData().remaining(), cc);
     }
-    lastChunk.getChunk().position(lastChunk.getChunk().position() + lastChunkLength);
+    lastChunk.getData().position(lastChunk.getData().position() + lastChunkLength);
     // Finally, put it in the ranges list for future use (if shared between RGs).
     // Before anyone else accesses it, it would have been allocated and decompressed locally.
-    if (lastChunk.getChunk().remaining() <= 0) {
+    if (lastChunk.getData().remaining() <= 0) {
       if (isTracingEnabled) {
         LOG.trace("Replacing " + lastChunk + " with " + cc + " in the buffers");
       }

@@ -250,6 +250,7 @@ public class TestOrcFile {
   @Before
   public void openFileSystem () throws Exception {
     conf = new Configuration();
+    System.out.println("ZeroCopy: "+ zeroCopy);
     if(zeroCopy) {
       conf.setBoolean(OrcConf.USE_ZEROCOPY.getHiveConfName(), zeroCopy);
     }
@@ -325,7 +326,7 @@ public class TestOrcFile {
         + "binary,string1:string,middle:struct<list:array<struct<int1:int,"
         + "string1:string>>>,list:array<struct<int1:int,string1:string>>,"
         + "map:map<string,struct<int1:int,string1:string>>,ts:timestamp,"
-        + "decimal1:decimal(38,18)>", readerInspector.getTypeName());
+        + "decimal1:decimal(38,10)>", readerInspector.getTypeName());
     List<? extends StructField> fields = readerInspector
         .getAllStructFieldRefs();
     BooleanObjectInspector bo = (BooleanObjectInspector) readerInspector
@@ -1132,8 +1133,8 @@ public class TestOrcFile {
                                          OrcFile.writerOptions(conf)
                                          .inspector(inspector)
                                          .stripeSize(1000)
-                                         .compress(CompressionKind.NONE)
-                                         .bufferSize(100)
+//                                         .compress(CompressionKind.NONE)
+//                                         .bufferSize(100)
                                          .rowIndexStride(1000));
     Random r1 = new Random(1);
     Random r2 = new Random(2);
@@ -1382,9 +1383,9 @@ public class TestOrcFile {
                                          OrcFile.writerOptions(conf)
                                          .inspector(inspector)
                                          .stripeSize(1000)
-                                         .compress(CompressionKind.NONE)
+//                                         .compress(CompressionKind.NONE)
                                          .batchSize(1000)
-                                         .bufferSize(100)
+//                                         .bufferSize(100)
                                          .blockPadding(false));
     OrcStruct row = new OrcStruct(3);
     OrcUnion union = new OrcUnion();
@@ -1586,7 +1587,7 @@ public class TestOrcFile {
                                          OrcFile.writerOptions(conf)
                                          .inspector(inspector)
                                          .stripeSize(1000)
-                                         .compress(CompressionKind.SNAPPY)
+//                                         .compress(CompressionKind.SNAPPY)
                                          .bufferSize(100));
     Random rand = new Random(12);
     for(int i=0; i < 10000; ++i) {
@@ -1626,8 +1627,8 @@ public class TestOrcFile {
                                          OrcFile.writerOptions(conf)
                                          .inspector(inspector)
                                          .stripeSize(5000)
-                                         .compress(CompressionKind.SNAPPY)
-                                         .bufferSize(1000)
+//                                         .compress(CompressionKind.SNAPPY)
+//                                         .bufferSize(1000)
                                          .rowIndexStride(0));
     Random rand = new Random(24);
     for(int i=0; i < 10000; ++i) {

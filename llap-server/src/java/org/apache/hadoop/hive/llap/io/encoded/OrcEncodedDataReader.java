@@ -68,6 +68,7 @@ import org.apache.hadoop.hive.ql.io.orc.RecordReaderImpl;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedOrcFile;
 import org.apache.hadoop.hive.ql.io.orc.encoded.EncodedReader;
 import org.apache.hadoop.hive.ql.io.orc.encoded.IoTrace;
+import org.apache.hadoop.hive.ql.io.orc.encoded.LlapDataReader;
 import org.apache.hadoop.hive.ql.io.orc.encoded.OrcBatchKey;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader;
 import org.apache.hadoop.hive.ql.io.orc.encoded.Reader.OrcEncodedColumnBatch;
@@ -79,7 +80,6 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.orc.CompressionCodec;
 import org.apache.orc.CompressionKind;
-import org.apache.orc.DataReader;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
 import org.apache.orc.OrcProto.BloomFilterIndex;
@@ -91,6 +91,7 @@ import org.apache.orc.OrcProto.StripeStatistics;
 import org.apache.orc.StripeInformation;
 import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.BufferChunk;
+import org.apache.orc.impl.BufferChunkList;
 import org.apache.orc.impl.DataReaderProperties;
 import org.apache.orc.impl.InStream;
 import org.apache.orc.impl.OrcCodecPool;
@@ -104,8 +105,6 @@ import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.counters.TezCounters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Lists;
 
 import static org.apache.hadoop.hive.llap.LlapHiveUtils.throwIfCacheOnlyRead;
 
@@ -169,7 +168,7 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   private OrcFileMetadata fileMetadata;
   private Path path;
   private Reader orcReader;
-  private DataReader rawDataReader;
+  private LlapDataReader rawDataReader;
   private boolean isRawDataReaderOpen = false;
   private EncodedReader stripeReader;
   private CompressionCodec codec;
@@ -631,10 +630,21 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           OrcTail orcTail = getOrcTailFromLlapBuffers(tailBuffers);
           counters.incrCounter(LlapIOCounters.METADATA_CACHE_HIT);
           FileTail tail = orcTail.getFileTail();
-          stats = orcTail.getStripeStatisticsProto();
+
+          CompressionCodec codec = OrcCodecPool.getCodec(orcTail.getCompressionKind());
+          InStream.StreamOptions options = new InStream.StreamOptions();
+          if (codec != null) {
+            options.withCodec(codec).withBufferSize(orcTail.getCompressionBufferSize());
+          }
+          InStream stream = InStream.create("stripe stats", orcTail.getTailBuffer(),
+              orcTail.getMetadataOffset(), orcTail.getMetadataSize(), options);
+          stats = OrcProto.Metadata.parseFrom(InStream.createCodedInputStream(stream)).getStripeStatsList();
+//          stats = orcTail.getStripeStatisticsProto();
+
           stripes = new ArrayList<>(tail.getFooter().getStripesCount());
+          int stipeIdx = 0;
           for (OrcProto.StripeInformation stripeProto : tail.getFooter().getStripesList()) {
-            stripes.add(new ReaderImpl.StripeInformationImpl(stripeProto));
+            stripes.add(new ReaderImpl.StripeInformationImpl(stripeProto, stipeIdx++, -1, null));
           }
           return new OrcFileMetadata(
               fileKey, tail.getFooter(), tail.getPostscript(), stats, stripes,
@@ -696,9 +706,14 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
   }
 
   private OrcProto.StripeFooter buildStripeFooter(
-      List<DiskRange> bcs, int len, CompressionCodec codec, int bufferSize) throws IOException {
+      BufferChunk bcs, int len, CompressionCodec codec, int bufferSize) throws IOException {
+    InStream.StreamOptions options = InStream.options();
+    if (codec.getKind() != CompressionKind.NONE) {
+      options.withCodec(OrcCodecPool.getCodec(codec.getKind()))
+          .withBufferSize(bufferSize);
+    }
     return OrcProto.StripeFooter.parseFrom(InStream.createCodedInputStream(
-        "footer", bcs, len, codec, bufferSize));
+        InStream.create("footer",  new BufferChunk(bcs.getData(), 0), 0, len, options)));
   }
 
   /**
@@ -746,18 +761,18 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
           MemoryBuffer footerBuffer = footerBuffers.getSingleBuffer();
           if (footerBuffer != null) {
             ByteBuffer bb = footerBuffer.getByteBufferDup();
-            return buildStripeFooter(Lists.<DiskRange>newArrayList(new BufferChunk(bb, 0)),
+            return buildStripeFooter(new BufferChunk(bb, 0),
                 bb.remaining(), codec, fileMetadata.getCompressionBufferSize());
           } else {
             MemoryBuffer[] footerBufferArray = footerBuffers.getMultipleBuffers();
             int pos = 0;
-            List<DiskRange> bcs = new ArrayList<>(footerBufferArray.length);
+            BufferChunkList bcs = new BufferChunkList();
             for (MemoryBuffer buf : footerBufferArray) {
               ByteBuffer bb = buf.getByteBufferDup();
               bcs.add(new BufferChunk(bb, pos));
               pos += bb.remaining();
             }
-            return buildStripeFooter(bcs, pos, codec, fileMetadata.getCompressionBufferSize());
+            return buildStripeFooter(bcs.get(), pos, codec, fileMetadata.getCompressionBufferSize());
           }
         } finally {
           metadataCache.decRefBuffer(footerBuffers);
@@ -791,8 +806,8 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     CompressionCodec codec = isPool ? OrcCodecPool.getCodec(kind) : WriterImpl.createCodec(kind);
     boolean isCodecError = true;
     try {
-      OrcProto.StripeFooter result = buildStripeFooter(Lists.<DiskRange>newArrayList(
-          new BufferChunk(bb, 0)), bb.remaining(), codec, orcReader.getCompressionSize());
+      OrcProto.StripeFooter result = buildStripeFooter(new BufferChunk(bb, 0), bb.remaining(), codec,
+          orcReader.getCompressionSize());
       isCodecError = false;
       return result;
     } finally {
@@ -822,11 +837,15 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     }
     long startTime = counters.startTimeCounter();
     boolean useZeroCopy = (daemonConf != null) && OrcConf.USE_ZEROCOPY.getBoolean(daemonConf);
-    rawDataReader = RecordReaderUtils.createDefaultDataReader(
-        DataReaderProperties.builder().withBufferSize(orcReader.getCompressionSize())
-        .withCompression(orcReader.getCompressionKind())
+    InStream.StreamOptions options = InStream.options();
+    if (orcReader.getCompressionKind() != CompressionKind.NONE) {
+      options.withCodec(OrcCodecPool.getCodec(orcReader.getCompressionKind()))
+          .withBufferSize(orcReader.getCompressionSize());
+    }
+    rawDataReader = LlapRecordReaderUtils.createDefaultLlapDataReader(
+        DataReaderProperties.builder()
         .withFileSystemSupplier(fsSupplier).withPath(path)
-        .withTypeCount(orcReader.getSchema().getMaximumId() + 1)
+        .withCompression(options)
         .withZeroCopy(useZeroCopy)
         .build());
 
@@ -980,9 +999,9 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
     stripeRgs = new boolean[stripeIxTo - stripeIxFrom][];
   }
 
-  private class DataWrapperForOrc implements DataReader, DataCache, BufferObjectFactory {
+  private class DataWrapperForOrc implements LlapDataReader, DataCache, BufferObjectFactory {
     /** A reference to parent DataReader not owned by this object. */
-    private final DataReader orcDataReaderRef;
+    private final LlapDataReader orcDataReaderRef;
 
     public DataWrapperForOrc() throws IOException {
       ensureRawDataReader(false);
@@ -1061,6 +1080,20 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       trace.logRanges(fileKey, baseOffset, result, IoTrace.RangesSrc.DISK);
       return result;
     }
+
+//    @Override
+//    public BufferChunkList readFileData(BufferChunkList range, boolean doForceDirect) throws IOException {
+//      throw new RuntimeException("readFileData with BufferChunkList not supported!!!");
+////      long startTime = counters.startTimeCounter();
+////      orcDataReaderRef.readFileData(range, doForceDirect);
+////      counters.recordHdfsTime(startTime);
+////      if (LlapIoImpl.ORC_LOGGER.isTraceEnabled()) {
+////        LlapIoImpl.ORC_LOGGER.trace("Disk ranges after disk read (file {}, base offset {}): {}",
+////            fileKey, range.get().getOffset(), RecordReaderUtils.stringifyDiskRanges(range.get()));
+////      }
+////      trace.logRanges(fileKey, range.get().getOffset(), range.get(), IoTrace.RangesSrc.DISK);
+////      return range;
+//    }
 
     @Override
     public boolean isTrackingDiskRanges() {

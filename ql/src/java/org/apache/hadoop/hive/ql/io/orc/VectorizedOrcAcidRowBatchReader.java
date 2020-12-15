@@ -60,12 +60,12 @@ import org.apache.orc.IntegerColumnStatistics;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcProto;
 import org.apache.orc.StripeInformation;
+import org.apache.orc.StripeStatistics;
 import org.apache.orc.impl.ColumnStatisticsImpl;
 import org.apache.orc.impl.OrcTail;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -437,7 +437,8 @@ public class VectorizedOrcAcidRowBatchReader
       return new OrcRawRecordMerger.KeyInterval(null, null);
     }
 
-    OrcTail orcTail = getOrcTail(orcSplit.getPath(), conf, cacheTag, orcSplit.getFileKey()).orcTail;
+    VectorizedOrcAcidRowBatchReader.ReaderData orcTailReader =
+        getOrcTail(orcSplit.getPath(), conf, cacheTag, orcSplit.getFileKey());
 
     if(orcSplit.isOriginal()) {
       /**
@@ -451,10 +452,10 @@ public class VectorizedOrcAcidRowBatchReader
        * Reader.Options, Configuration, OrcRawRecordMerger.Options)}*/
       LOG.debug("findMinMaxKeys(original split)");
 
-      return findOriginalMinMaxKeys(orcSplit, orcTail, deleteEventReaderOptions);
+      return findOriginalMinMaxKeys(orcSplit, orcTailReader.orcTail, deleteEventReaderOptions);
     }
 
-    List<StripeInformation> stripes = orcTail.getStripes();
+    List<StripeInformation> stripes = orcTailReader.orcTail.getStripes();
     final long splitStart = orcSplit.getStart();
     final long splitEnd = splitStart + orcSplit.getLength();
     int firstStripeIndex = -1;
@@ -510,7 +511,7 @@ public class VectorizedOrcAcidRowBatchReader
           lastStripeIndex + ")");
       return new OrcRawRecordMerger.KeyInterval(null, null);
     }
-    RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(orcTail);
+    RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(orcTailReader.orcTail);
 
     if(keyIndex == null) {
       LOG.warn("Could not find keyIndex (" + firstStripeIndex + "," +
@@ -530,12 +531,14 @@ public class VectorizedOrcAcidRowBatchReader
      * are actually computed.  Streaming ingest used to set it 0 and Minor
      * compaction so there are lots of legacy files with no (rather, bad)
      * column stats*/
-    boolean columnStatsPresent = orcTail.getFooter().getRowIndexStride() > 0;
+    boolean columnStatsPresent = orcTailReader.orcTail.getFooter().getRowIndexStride() > 0;
     if(!columnStatsPresent) {
       LOG.debug("findMinMaxKeys() No ORC column stats");
     }
 
-    List<OrcProto.StripeStatistics> stats = orcTail.getStripeStatisticsProto();
+    List<StripeStatistics> stats = orcTailReader.reader.getStripeStatistics();
+
+//    List<OrcProto.StripeStatistics> stats = orcTail.getStripeStatisticsProto();
     assert stripes.size() == stats.size() : "str.s=" + stripes.size() +
         " sta.s=" + stats.size();
 
@@ -548,7 +551,7 @@ public class VectorizedOrcAcidRowBatchReader
     }
     else {
       if(columnStatsPresent) {
-        minKey = getKeyInterval(stats.get(firstStripeIndex).getColStatsList()).getMinKey();
+        minKey = getKeyInterval(stats.get(firstStripeIndex).getColumnStatistics()).getMinKey();
       }
     }
 
@@ -558,7 +561,7 @@ public class VectorizedOrcAcidRowBatchReader
       maxKey = keyIndex[lastStripeIndex];
     } else {
       if(columnStatsPresent) {
-        maxKey = getKeyInterval(stats.get(firstStripeIndex).getColStatsList()).getMaxKey();
+        maxKey = getKeyInterval(stats.get(firstStripeIndex).getColumnStatistics()).getMaxKey();
       }
     }
     OrcRawRecordMerger.KeyInterval keyInterval =
@@ -586,7 +589,7 @@ public class VectorizedOrcAcidRowBatchReader
        * writeId is the same in both cases
        */
       for(int i = firstStripeIndex; i <= lastStripeIndex; i++) {
-        OrcRawRecordMerger.KeyInterval key = getKeyInterval(stats.get(i).getColStatsList());
+        OrcRawRecordMerger.KeyInterval key = getKeyInterval(stats.get(i).getColumnStatistics());
         if(key.getMinKey().getBucketProperty() < minBucketProp) {
           minBucketProp = key.getMinKey().getBucketProperty();
         }
@@ -1881,6 +1884,22 @@ public class VectorizedOrcAcidRowBatchReader
    * @param colStats The statistics array
    * @return The min record key
    */
+  private static OrcRawRecordMerger.KeyInterval getKeyInterval(ColumnStatistics[] colStats) {
+    IntegerColumnStatistics origWriteId = (IntegerColumnStatistics) colStats[OrcRecordUpdater.ORIGINAL_WRITEID + 1];// deserializeIntColumnStatistics(colStats, OrcRecordUpdater.ORIGINAL_WRITEID + 1);
+    IntegerColumnStatistics bucketProperty = (IntegerColumnStatistics) colStats[OrcRecordUpdater.BUCKET + 1]; //deserializeIntColumnStatistics(colStats, OrcRecordUpdater.BUCKET + 1);
+    IntegerColumnStatistics rowId = (IntegerColumnStatistics) colStats[OrcRecordUpdater.ROW_ID + 1]; //deserializeIntColumnStatistics(colStats, OrcRecordUpdater.ROW_ID + 1);
+
+    // We may want to change bucketProperty from int to long in the future(across the stack) this protects
+    // the following cast to int
+    assert bucketProperty.getMaximum() <= Integer.MAX_VALUE :
+        "was bucketProperty (max) changed to a long (" + bucketProperty.getMaximum() + ")?!";
+    assert bucketProperty.getMinimum() <= Integer.MAX_VALUE :
+        "was bucketProperty (min) changed to a long (" + bucketProperty.getMaximum() + ")?!";
+    RecordIdentifier maxKey = new RecordIdentifier(origWriteId.getMaximum(), (int) bucketProperty.getMaximum(), rowId.getMaximum());
+    RecordIdentifier minKey = new RecordIdentifier(origWriteId.getMinimum(), (int) bucketProperty.getMinimum(), rowId.getMinimum());
+    return new OrcRawRecordMerger.KeyInterval(minKey, maxKey);
+  }
+
   private static OrcRawRecordMerger.KeyInterval getKeyInterval(List<OrcProto.ColumnStatistics> colStats) {
     IntegerColumnStatistics origWriteId = deserializeIntColumnStatistics(colStats, OrcRecordUpdater.ORIGINAL_WRITEID + 1);
     IntegerColumnStatistics bucketProperty = deserializeIntColumnStatistics(colStats, OrcRecordUpdater.BUCKET + 1);

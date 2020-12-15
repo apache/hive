@@ -1773,11 +1773,15 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         stripeStats = orcReader.getStripeStatistics();
       } else {
         stripes = orcTail.getStripes();
-        OrcProto.Footer footer = orcTail.getFooter();
-        boolean writerUsedProlepticGregorian = footer.hasCalendar()
-            ? footer.getCalendar() == OrcProto.CalendarKind.PROLEPTIC_GREGORIAN
-            : OrcConf.PROLEPTIC_GREGORIAN_DEFAULT.getBoolean(context.conf);
-        stripeStats = orcTail.getStripeStatistics(writerUsedProlepticGregorian, true);
+//        OrcProto.Footer footer = orcTail.getFooter();
+//        boolean writerUsedProlepticGregorian = footer.hasCalendar()
+//            ? footer.getCalendar() == OrcProto.CalendarKind.PROLEPTIC_GREGORIAN
+//            : OrcConf.PROLEPTIC_GREGORIAN_DEFAULT.getBoolean(context.conf);
+        org.apache.orc.Reader dummyReader = new org.apache.orc.impl.ReaderImpl(null,
+            org.apache.orc.OrcFile.readerOptions(org.apache.orc.OrcFile.readerOptions(context.conf).getConfiguration())
+                .useUTCTimestamp(true).orcTail(orcTail));
+        stripeStats = dummyReader.getVariantStripeStatistics(null);
+//        stripeStats = orcTail.getStripeStatistics(writerUsedProlepticGregorian, true);
       }
       fileTypes = orcTail.getTypes();
       TypeDescription fileSchema = OrcUtils.convertTypeFromProtobuf(fileTypes, 0);
@@ -1818,7 +1822,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     }
 
     private long computeProjectionSize(List<OrcProto.Type> fileTypes,
-        List<OrcProto.ColumnStatistics> stats, boolean[] fileIncluded) {
+        List<OrcProto.ColumnStatistics> stats, boolean[] fileIncluded) throws FileFormatException {
       List<Integer> internalColIds = Lists.newArrayList();
       if (fileIncluded == null) {
         // Add all.
