@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse.type;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -101,7 +102,16 @@ public class TypeCheckProcFactory<T> {
   static final HashMap<Integer, String> SPECIAL_UNARY_OPERATOR_TEXT_MAP;
   static final HashMap<Integer, String> CONVERSION_FUNCTION_TEXT_MAP;
   static final HashSet<Integer> WINDOWING_TOKENS;
-
+  private static final Set<Set<PrimitiveObjectInspector.PrimitiveCategory>> DECIMAL_CHARACTER_CATEGORIES =
+      ImmutableSet.<Set<PrimitiveObjectInspector.PrimitiveCategory>>builder()
+          .add(EnumSet.of(
+              PrimitiveObjectInspector.PrimitiveCategory.DECIMAL, PrimitiveObjectInspector.PrimitiveCategory.CHAR))
+          .add(EnumSet.of(
+              PrimitiveObjectInspector.PrimitiveCategory.DECIMAL, PrimitiveObjectInspector.PrimitiveCategory.VARCHAR))
+          .add(EnumSet.of(
+              PrimitiveObjectInspector.PrimitiveCategory.DECIMAL, PrimitiveObjectInspector.PrimitiveCategory.STRING))
+          .build();
+  
   static {
     SPECIAL_UNARY_OPERATOR_TEXT_MAP = new HashMap<>();
     SPECIAL_UNARY_OPERATOR_TEXT_MAP.put(HiveParser.PLUS, "positive");
@@ -800,16 +810,10 @@ public class TypeCheckProcFactory<T> {
     
     private boolean isDecimalCharacterComparison(TypeInfo type1, TypeInfo type2) {
       if(type1 instanceof PrimitiveTypeInfo && type2 instanceof PrimitiveTypeInfo) {
-        Set<Set<PrimitiveObjectInspector.PrimitiveCategory>> comparisons = new HashSet<>(3);
-        comparisons.add(EnumSet.of(
-            PrimitiveObjectInspector.PrimitiveCategory.DECIMAL, PrimitiveObjectInspector.PrimitiveCategory.CHAR));
-        comparisons.add(EnumSet.of(
-            PrimitiveObjectInspector.PrimitiveCategory.DECIMAL, PrimitiveObjectInspector.PrimitiveCategory.VARCHAR));
-        comparisons.add(EnumSet.of(
-            PrimitiveObjectInspector.PrimitiveCategory.DECIMAL, PrimitiveObjectInspector.PrimitiveCategory.STRING));
         PrimitiveTypeInfo pt1 = (PrimitiveTypeInfo) type1;
         PrimitiveTypeInfo pt2 = (PrimitiveTypeInfo) type2;
-        return comparisons.contains(EnumSet.of(pt1.getPrimitiveCategory(), pt2.getPrimitiveCategory()));
+        return DECIMAL_CHARACTER_CATEGORIES
+            .contains(EnumSet.of(pt1.getPrimitiveCategory(), pt2.getPrimitiveCategory()));
       }
       return false;
     }
