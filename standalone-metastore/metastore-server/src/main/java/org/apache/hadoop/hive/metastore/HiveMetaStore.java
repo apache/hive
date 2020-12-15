@@ -7054,7 +7054,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     public List<Partition> get_partitions_by_names(final String dbName, final String tblName,
                                                    final List<String> partNames)
             throws TException {
-      return get_partitions_by_names(dbName, tblName, partNames);
+      return get_partitions_by_names(dbName, tblName, partNames, false, null, null);
     }
 
     @Override
