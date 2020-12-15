@@ -96,6 +96,7 @@ import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
@@ -2675,12 +2676,13 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   public static TypeDescription getDesiredRowTypeDescr(Configuration conf,
                                                        boolean isAcidRead,
                                                        int dataColumns) {
-
     String columnNameProperty = null;
     String columnTypeProperty = null;
 
     ArrayList<String> schemaEvolutionColumnNames = null;
     ArrayList<TypeDescription> schemaEvolutionTypeDescrs = null;
+    // Make sure we split colNames using the right Delimiter
+    final String columnNameDelimiter = conf.get(serdeConstants.COLUMN_NAME_DELIMITER, String.valueOf(SerDeUtils.COMMA));
 
     boolean haveSchemaEvolutionProperties = false;
     if (isAcidRead || HiveConf.getBoolVar(conf, ConfVars.HIVE_SCHEMA_EVOLUTION) ) {
@@ -2692,7 +2694,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
           (columnNameProperty != null && columnTypeProperty != null);
 
       if (haveSchemaEvolutionProperties) {
-        schemaEvolutionColumnNames = Lists.newArrayList(columnNameProperty.split(","));
+        schemaEvolutionColumnNames = Lists.newArrayList(columnNameProperty.split(columnNameDelimiter));
         if (schemaEvolutionColumnNames.size() == 0) {
           haveSchemaEvolutionProperties = false;
         } else {
@@ -2726,7 +2728,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         return null;
       }
 
-      schemaEvolutionColumnNames = Lists.newArrayList(columnNameProperty.split(","));
+      schemaEvolutionColumnNames = Lists.newArrayList(columnNameProperty.split(columnNameDelimiter));
       if (schemaEvolutionColumnNames.size() == 0) {
         return null;
       }
