@@ -72,7 +72,7 @@ public class ZooKeeperHiveLock extends HiveLock {
       obj.equals(zLock.getHiveLockObject()) &&
       mode == zLock.getHiveLockMode();
   }
-  
+
   @Override
   public int hashCode() {
     HashCodeBuilder builder = new HashCodeBuilder();
@@ -93,10 +93,9 @@ public class ZooKeeperHiveLock extends HiveLock {
     }
     return builder.toHashCode();
   }
-  
+
   @Override
   public String toString() {
     return String.format("ZKHL[%s;%s;%s]", path, obj, mode);
-    
   }
 }

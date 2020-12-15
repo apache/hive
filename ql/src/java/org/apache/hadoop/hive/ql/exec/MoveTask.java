@@ -19,17 +19,6 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import org.apache.commons.collections.CollectionUtils;
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -80,6 +69,7 @@ import org.apache.hadoop.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -89,6 +79,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Optional;
 
 /**
  * MoveTask implementation.
@@ -580,7 +571,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
           tbd.getMoveTaskId(), work.getLoadTableWork().getWriteType(), tbd.getSourcePath());
       LOG.debug("The statementId used when loading the dynamic partitions is " + statementId);
     }
-    
+
     // load the list of DP partitions and return the list of partition specs
     // TODO: In a follow-up to HIVE-1361, we should refactor loadDynamicPartitions
     // to use Utilities.getFullDPSpecs() to get the list of full partSpecs.
@@ -824,17 +815,25 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
   }
 
-  private LocalTableLock acquireLockForFileMove(LoadTableDesc loadTableWork) throws HiveException {
-    // nothing needs to be done
-    if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY)) {
-      return new LocalTableLock(Optional.empty());
-    }
-    String lockFileMoveMode = conf.getVar(HiveConf.ConfVars.HIVE_LOCK_FILE_MOVE_MODE);
+  static enum LockFileMoveMode {
+    none, dp, all;
 
-    if ("none".equalsIgnoreCase(lockFileMoveMode)) {
+    public static LockFileMoveMode fromConf(HiveConf conf) {
+      if (!conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY)) {
+        return none;
+      }
+      String lockFileMoveMode = conf.getVar(HiveConf.ConfVars.HIVE_LOCK_FILE_MOVE_MODE);
+      return valueOf(lockFileMoveMode);
+    }
+  }
+
+  private LocalTableLock acquireLockForFileMove(LoadTableDesc loadTableWork) throws HiveException {
+    LockFileMoveMode mode = LockFileMoveMode.fromConf(conf);
+
+    if (mode == LockFileMoveMode.none) {
       return new LocalTableLock(Optional.empty());
     }
-    if ("dp".equalsIgnoreCase(lockFileMoveMode)) {
+    if (mode == LockFileMoveMode.dp) {
       if (loadTableWork.getDPCtx() == null) {
         return new LocalTableLock(Optional.empty());
       }
