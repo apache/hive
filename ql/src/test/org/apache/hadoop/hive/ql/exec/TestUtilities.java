@@ -36,10 +36,13 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -47,6 +50,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.Timestamp;
@@ -718,5 +722,82 @@ public class TestUtilities {
     assertEquals(Lists.newArrayList(rootTask, child1, child2, child11),
         Utilities.getMRTasks(getTestDiamondTaskGraph(rootTask)));
 
+  }
+
+  @Test
+  public void testSelectManifestFilesOnlyOneAttemptId() {
+    FileStatus[] manifestFiles = generateTestNotEmptyFileStatuses("000000_0.manifest", "000001_0.manifest",
+        "000002_0.manifest", "000003_0.manifest");
+    Set<String> expectedPathes =
+        getExpectedPathes("000000_0.manifest", "000001_0.manifest", "000002_0.manifest", "000003_0.manifest");
+    List<Path> foundManifestFiles = Utilities.selectManifestFiles(manifestFiles);
+    Set<String> resultPathes = getResultPathes(foundManifestFiles);
+    assertEquals(expectedPathes, resultPathes);
+  }
+
+  @Test
+  public void testSelectManifestFilesMultipleAttemptIds() {
+    FileStatus[] manifestFiles = generateTestNotEmptyFileStatuses("000000_1.manifest", "000000_0.manifest",
+        "000000_3.manifest", "000000_2.manifest", "000003_0.manifest", "000003_1.manifest", "000003_2.manifest");
+    Set<String> expectedPathes = getExpectedPathes("000000_3.manifest", "000003_2.manifest");
+    List<Path> foundManifestFiles = Utilities.selectManifestFiles(manifestFiles);
+    Set<String> resultPathes = getResultPathes(foundManifestFiles);
+    assertEquals(expectedPathes, resultPathes);
+  }
+
+  @Test
+  public void testSelectManifestFilesWithEmptyManifests() {
+    Set<String> emptyFiles = new HashSet<>();
+    emptyFiles.add("000001_0.manifest");
+    emptyFiles.add("000001_2.manifest");
+    emptyFiles.add("000002_2.manifest");
+    FileStatus[] manifestFiles = generateTestNotEmptyFileStatuses(emptyFiles, "000001_1.manifest", "000001_0.manifest",
+        "000001_3.manifest", "000001_2.manifest", "000002_0.manifest", "000002_1.manifest", "000002_2.manifest");
+    Set<String> expectedPathes = getExpectedPathes("000001_3.manifest", "000002_1.manifest");
+    List<Path> foundManifestFiles = Utilities.selectManifestFiles(manifestFiles);
+    Set<String> resultPathes = getResultPathes(foundManifestFiles);
+    assertEquals(expectedPathes, resultPathes);
+  }
+
+  @Test
+  public void testSelectManifestFilesWithWrongManifestNames() {
+    FileStatus[] manifestFiles = generateTestNotEmptyFileStatuses("000004_0.manifest", "000005.manifest",
+        "000004_1.manifest", "000006.manifest", "000007_0.wrong", "000008_1", "000004_2.manifest");
+    Set<String> expectedPathes = getExpectedPathes("000005.manifest", "000006.manifest", "000004_2.manifest");
+    List<Path> foundManifestFiles = Utilities.selectManifestFiles(manifestFiles);
+    Set<String> resultPathes = getResultPathes(foundManifestFiles);
+    assertEquals(expectedPathes, resultPathes);
+  }
+
+  private FileStatus[] generateTestNotEmptyFileStatuses(String... fileNames) {
+    return generateTestNotEmptyFileStatuses(null, fileNames);
+  }
+
+  private FileStatus[] generateTestNotEmptyFileStatuses(Set<String> emptyFiles, String... fileNames) {
+    FileStatus[] manifestFiles = new FileStatus[fileNames.length];
+    for (int i = 0; i < fileNames.length; i++) {
+      long len = 10000L;
+      if (emptyFiles != null && emptyFiles.contains(fileNames[i])) {
+        len = 0L;
+      }
+      manifestFiles[i] = new FileStatus(len, false, 0, 250L, 123456L, new Path("/sometestpath/" + fileNames[i]));
+    }
+    return manifestFiles;
+  }
+
+  private Set<String> getExpectedPathes(String... fileNames) {
+    Set<String> expectedPathes = new HashSet<>();
+    for (String fileName : fileNames) {
+      expectedPathes.add("/sometestpath/" + fileName);
+    }
+    return expectedPathes;
+  }
+
+  private Set<String> getResultPathes(List<Path> foundManifestFiles) {
+    Set<String> resultPathes = new HashSet<>();
+    for (Path path : foundManifestFiles) {
+      resultPathes.add(path.toString());
+    }
+    return resultPathes;
   }
 }
