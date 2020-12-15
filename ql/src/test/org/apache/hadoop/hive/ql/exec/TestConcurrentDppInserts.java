@@ -163,7 +163,6 @@ public class TestConcurrentDppInserts {
 
       conf.setVar(ConfVars.HIVE_LOCK_FILE_MOVE_MODE, "all");
       conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
-      conf.setBoolVar(ConfVars.HIVESTATSAUTOGATHER, true);
       conf.setTimeVar(HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES, 100, TimeUnit.MILLISECONDS);
       conf.set("asd", Integer.toString(idx++));
 
