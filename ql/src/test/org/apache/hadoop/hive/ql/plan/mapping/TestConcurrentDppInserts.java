@@ -25,8 +25,6 @@ import java.util.List;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.DriverFactory;
@@ -42,11 +40,11 @@ import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import avro.shaded.com.google.common.base.Joiner;
+import com.google.common.base.Joiner;
 
-public class TestRX {
+public class TestConcurrentDppInserts {
 
-  static final private Logger LOG = LoggerFactory.getLogger(TestRX.class.getName());
+  static final private Logger LOG = LoggerFactory.getLogger(TestConcurrentDppInserts.class.getName());
 
   @ClassRule
   public static HiveTestEnvSetup env_setup = new HiveTestEnvSetup();
@@ -81,9 +79,9 @@ public class TestRX {
     }
   }
 
-  int N = 10; // num parallel threads
+  int N = 3; // num parallel threads
   int M = 3; // num partitions a thread inserts into at a time
-  int K = 5; // num tests to repeat
+  int K = 3; // num tests to repeat
 
   CyclicBarrier barrier = new CyclicBarrier(N);
   Semaphore finished = new Semaphore(0);
@@ -147,7 +145,14 @@ public class TestRX {
   }
 
   private String getExceptionMessages() {
-    return exceptions.stream().map(Exception::getMessage).collect(Collectors.joining(", "));
+    StringBuilder sb = new StringBuilder();
+    for (Exception exception : exceptions) {
+      if (sb.length() > 0) {
+        sb.append(", ");
+      }
+      sb.append(exception.getClass().getName() + ":" + exception.getMessage());
+    }
+    return sb.toString();
   }
 
   static int idx = 0;
@@ -156,7 +161,7 @@ public class TestRX {
 
     if (custom) {
 
-      conf.setVar(ConfVars.HIVE_LOCK_FILE_MOVE_MODE, "none");
+      conf.setVar(ConfVars.HIVE_LOCK_FILE_MOVE_MODE, "all");
       conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
       conf.setBoolVar(ConfVars.HIVESTATSAUTOGATHER, false);
       conf.setTimeVar(HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES, 100, TimeUnit.MILLISECONDS);

@@ -5654,6 +5654,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       // all prehooks are fired together followed by all post hooks
       List<Partition> oldParts = null;
       Exception ex = null;
+      Lock tableLock = tablelocks.get(db_name + "." + tbl_name);
+      tableLock.lock();
       try {
         for (Partition tmpPart : new_parts) {
           // Make sure the catalog name is set in the new partition
@@ -5700,6 +5702,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ex = e;
         throw newMetaException(e);
       } finally {
+        tableLock.unlock();
         endFunction("alter_partition", oldParts != null, ex, tbl_name);
       }
     }
