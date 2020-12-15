@@ -337,11 +337,19 @@ public class HiveMaterializedViewUtils {
     return value;
   }
 
+  public static RelOptMaterialization copyMaterializationToNewCluster(RelOptCluster optCluster, RelOptMaterialization materialization) {
+    final RelNode viewScan = materialization.tableRel;
+    final RelNode newViewScan = HiveMaterializedViewUtils.copyNodeNewCluster(
+            optCluster, viewScan);
+    return new RelOptMaterialization(newViewScan, materialization.queryRel, null,
+            materialization.qualifiedTableName);
+  }
+
   /**
    * Method that will recreate the plan rooted at node using the cluster given
    * as a parameter.
    */
-  public static RelNode copyNodeNewCluster(RelOptCluster optCluster, RelNode node) {
+  private static RelNode copyNodeNewCluster(RelOptCluster optCluster, RelNode node) {
     if (node instanceof Filter) {
       final Filter f = (Filter) node;
       return new HiveFilter(optCluster, f.getTraitSet(),

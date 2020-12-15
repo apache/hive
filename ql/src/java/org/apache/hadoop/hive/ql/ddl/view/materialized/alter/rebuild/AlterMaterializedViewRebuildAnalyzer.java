@@ -57,7 +57,9 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
 
     ASTNode tableTree = (ASTNode) root.getChild(0);
     TableName tableName = getQualifiedTableName(tableTree);
-    if (ctx.enableUnparse()) {
+    // If this was called from ScheduledQueryAnalyzer we do not want to execute the Alter materialized view statement
+    // now. However query scheduler requires the fully qualified table name.
+    if (ctx.isScheduledQuery()) {
       unparseTranslator.addTableNameTranslation(tableTree, SessionState.get().getCurrentDatabase());
       return;
     }
