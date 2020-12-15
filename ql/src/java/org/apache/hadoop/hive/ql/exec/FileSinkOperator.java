@@ -1203,14 +1203,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   private void closeRecordwriters(boolean abort) {
-    for (RecordWriter writer : rowOutWriters) {
-      try {
-        if (writer != null) {
-          LOG.info("Closing {} on exception", writer);
-          writer.close(abort);
+    if (rowOutWriters != null) {
+      for (RecordWriter writer : rowOutWriters) {
+        try {
+          if (writer != null) {
+            LOG.info("Closing {} on exception", writer);
+            writer.close(abort);
+          }
+        } catch (IOException e) {
+          LOG.error("Error closing rowOutWriter" + writer, e);
         }
-      } catch (IOException e) {
-        LOG.error("Error closing rowOutWriter" + writer, e);
       }
     }
   }
