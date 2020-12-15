@@ -72,25 +72,25 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     mvRebuildDbName = tableName.getDb();
     mvRebuildName = tableName.getTable();
 
-    LOG.debug("Rebuilding materialized view " + tableName.getNotEmptyDbTable());
-    super.analyzeInternal(rewrittenAST);
-
     try {
       Table table = db.getTable(tableName.getDb(), tableName.getTable());
       Boolean outdated = db.isOutdatedMaterializedView(
               table, new ArrayList<>(table.getCreationMetadata().getTablesUsed()), false);
 
       if (outdated != null && !outdated) {
-        rootTasks.clear();
         String msg = String.format("Materialized view %s.%s is up to date. Cancelling rebuild.",
                 tableName.getDb(), tableName.getTable());
         LOG.info(msg);
         console.printInfo(msg, false);
+        return;
       }
 
     } catch (HiveException e) {
       LOG.warn("Error while checking materialized view " + tableName.getDb() + "." + tableName.getTable(), e);
     }
+
+    LOG.debug("Rebuilding materialized view " + tableName.getNotEmptyDbTable());
+    super.analyzeInternal(rewrittenAST);
   }
 
   private static final String REWRITTEN_INSERT_STATEMENT = "INSERT OVERWRITE TABLE %s %s";
