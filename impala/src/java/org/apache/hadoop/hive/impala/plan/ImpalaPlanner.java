@@ -23,6 +23,7 @@ import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,9 +37,13 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.parse.QB;
 import org.apache.hadoop.hive.ql.parse.QBMetaData;
+import org.apache.hadoop.hive.ql.parse.SemanticAnalyzer;
+import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.impala.analysis.Expr;
 import org.apache.impala.analysis.LiteralExpr;
+import org.apache.impala.analysis.NullLiteral;
+import org.apache.impala.analysis.StatementBase;
 import org.apache.impala.catalog.Column;
 import org.apache.impala.catalog.FeTable;
 import org.apache.impala.catalog.HdfsTable;
@@ -272,6 +277,70 @@ public class ImpalaPlanner {
             getQB().getMetaData().getDestTypeForAlias(dest) == QBMetaData.DEST_LOCAL_FILE));
   }
 
+  private List<Expr> mapResultExprs(List<Expr> resultExprs, String dest,
+      List<String> targetTableSchema) throws SemanticException, AnalysisException {
+    org.apache.hadoop.hive.ql.metadata.Table target =
+        getQB().getMetaData().getDestTableForAlias(dest);
+    Partition partition = (target == null) ?
+        getQB().getMetaData().getDestPartitionForAlias(dest) : null;
+
+    if (targetTableSchema.size() != resultExprs.size()) {
+      throw new SemanticException(
+          "Expected " + targetTableSchema.size() + " columns for " + dest +
+          (target != null ? "/" + target.getCompleteName() : (partition != null ? "/" + partition.getCompleteName() : "")) +
+          "; select produces " + resultExprs.size() + " columns");
+    }
+
+    List<FieldSchema> targetTableCols = target != null ? target.getCols() : partition.getCols();
+
+    List<String> targetTableColNames = new ArrayList<String>();
+    for (FieldSchema fs : targetTableCols) {
+      targetTableColNames.add(fs.getName());
+    }
+
+    Map<String, Expr> targetCol2Projection = new HashMap<String, Expr>();
+    int colListPos = 0;
+    for (String targetCol : targetTableSchema) {
+      targetCol2Projection.put(targetCol, resultExprs.get(colListPos++));
+    }
+
+    List<Expr> mappedResultExprs = new ArrayList<Expr>();
+    Map<String, String> colNameToDefaultVal = null;
+
+    // See if we need to fetch default constraints from metastore
+    if (targetCol2Projection.size() < targetTableColNames.size()) {
+      colNameToDefaultVal = SemanticAnalyzer.getColNameToDefaultValueMap(target);
+    }
+
+    FeTable targetTable = ctx_.getTargetTable();
+    for (String f: targetTableColNames) {
+      Expr exp;
+      if (targetCol2Projection.containsKey(f)) {
+        // Put existing column in new list to make sure it is in the right position
+        exp = targetCol2Projection.get(f);
+      } else {
+        // Add new 'synthetic' columns for projections not provided by Select
+        assert(colNameToDefaultVal != null);
+        if (colNameToDefaultVal.containsKey(f)) {
+          // Make an expression for default value
+          String defaultValue = colNameToDefaultVal.get(f);
+          exp = LiteralExpr.createFromUnescapedStr(defaultValue, targetTable.getColumn(f).getType());
+          LOG.debug("Added default value from metastore: {}", exp);
+        }
+        else {
+          exp = NullLiteral.create(targetTable.getColumn(f).getType());
+        }
+      }
+
+      exp = StatementBase.checkTypeCompatibility(target.getCompleteName(),
+          targetTable.getColumn(f), exp, ctx_.getQueryOptions().isDecimal_v2(),
+          null);
+
+      mappedResultExprs.add(exp);
+      colListPos++;
+    }
+    return mappedResultExprs;
+  }
   /**
    * Create one or more plan fragments corresponding to the supplied single node physical plan.
    * This function calls Impala's DistributedPlanner to create the plan fragments and does
@@ -308,8 +377,18 @@ public class ImpalaPlanner {
 
     rootFragment.verifyTree();
 
-    int numStaticColumns = 0;
-    if (ctx_.getTargetTable() != null) {
+    FeTable targetTable = ctx_.getTargetTable();
+
+    // Validate that the select output and target table schema are compatible
+    Preconditions.checkState(getQB().getParseInfo().getClauseNames().size() == 1);
+    String dest = getQB().getParseInfo().getClauseNames().iterator().next();
+    List<String> targetTableSchema = getQB().getParseInfo().getDestSchemaForClause(dest);
+    List<Expr> resultExprs = (targetTableSchema != null ) ?
+        mapResultExprs(ctx_.getResultExprs(), dest, targetTableSchema) :
+        ctx_.getResultExprs();
+
+    if (targetTable != null) {
+      int numStaticColumns = 0;
       List<Expr> partitionKeyExprs = new ArrayList<>(); // List order must match table order
       List<Integer> referencedColumns = new ArrayList<>(); // Kudu only position mapping
       boolean inputIsClustered = false; // !hasNoClusteredHint_ || !sortExprs_.isEmpty();
@@ -317,7 +396,6 @@ public class ImpalaPlanner {
       List<Integer> sortColumns = new ArrayList<>(); // Sort column positions
       TSortingOrder sortingOrder = TSortingOrder.LEXICAL;
       Pair<List<Integer>, TSortingOrder> sortProperties = new Pair<>(sortColumns, sortingOrder);
-      FeTable targetTable = ctx_.getTargetTable();
       if (targetTable instanceof HdfsTable && ((HdfsTable)targetTable).isPartitioned()) {
         Partition part = ctx_.getTargetPartition();
         if (part != null) { // Static partition case
@@ -331,7 +409,6 @@ public class ImpalaPlanner {
             partitionKeyExprs.add(LiteralExpr.createFromUnescapedStr(value, targetTable.getColumn(fs.getName()).getType()));
           }
         } else {
-          String dest = getQB().getParseInfo().getClauseNames().iterator().next();
           Map<String, String> partSpec = getQB().getMetaData().getDPCtx(dest).getPartSpec();
           int numPartitionColumns = partSpec.size();
           for (Map.Entry<String,String> partEntry : partSpec.entrySet()) {
@@ -358,7 +435,7 @@ public class ImpalaPlanner {
       }
       TableSink sink = TableSink.create(ctx_.getTargetTable(),
             isUpsert ? TableSink.Op.UPSERT : TableSink.Op.INSERT,
-            partitionKeyExprs, ctx_.getResultExprs(), referencedColumns,
+            partitionKeyExprs, resultExprs, referencedColumns,
             isOverwrite, inputIsClustered, sortProperties, writeId, 0);
       Preconditions.checkState(sink instanceof HdfsTableSink, "Currently only HDFS table sinks are supported");
       Preconditions.checkNotNull(destination, "Invalid destination for Impala sink");
@@ -382,7 +459,6 @@ public class ImpalaPlanner {
         // The location is determined based on various factors, such as if encryption zones are enabled.
         Path resultPath = fileSinkDesc_.getDirName();
         String fileFormatClass = fileSinkDesc_.getTableInfo().getInputFileFormatClassName();
-        List<Expr> resultExprs = ctx_.getResultExprs();
         ImpalaResultLocation resultLocation = new ImpalaResultLocation(resultExprs,
             resultPath.toUri().toString(), fileFormatClass);
         ctx_.getRootAnalyzer().getDescTbl().setTargetTable(resultLocation);
@@ -394,7 +470,7 @@ public class ImpalaPlanner {
             new Pair<>(ImmutableList.<Integer> of(), TSortingOrder.LEXICAL), -1, 0, true);
         rootFragment.setSink(sink);
       } else { // Streaming query results
-        rootFragment.setSink(new PlanRootSink(ctx_.getResultExprs()));
+        rootFragment.setSink(new PlanRootSink(resultExprs));
       }
     }
 
