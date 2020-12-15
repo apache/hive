@@ -60,7 +60,7 @@ public class TestRX {
     dropTables(driver);
     String[] cmds = {
         // @formatter:off
-        "create table tu(i int) partitioned by (p string)",
+        "create table tu(i int) partitioned by (k string, p string)",
         // @formatter:on
     };
     for (String cmd : cmds) {
@@ -81,7 +81,7 @@ public class TestRX {
     }
   }
 
-  int N = 5; // num parallel threads
+  int N = 10; // num parallel threads
   int M = 3; // num partitions a thread inserts into at a time
   int K = 5; // num tests to repeat
 
@@ -114,7 +114,7 @@ public class TestRX {
         for (int i = 0; i < M; i++) {
           parts.add(String.format("select %d as i,%d as p", M * pIdx + i, M * pIdx + i));
         }
-        driver.run("insert into tu partition(p) (" + Joiner.on(" union all ").join(parts) + ")");
+        driver.run("insert into tu partition(k=1,p) (" + Joiner.on(" union all ").join(parts) + ")");
 
       } catch (Exception e) {
         LOG.info("Exception in InserterThread:", e);
@@ -150,6 +150,7 @@ public class TestRX {
     return exceptions.stream().map(Exception::getMessage).collect(Collectors.joining(", "));
   }
 
+  static int idx = 0;
   private static IDriver createDriver(boolean custom) {
     HiveConf conf = new HiveConf(env_setup.getTestCtx().hiveConf);
 
@@ -159,6 +160,7 @@ public class TestRX {
       conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
       conf.setBoolVar(ConfVars.HIVESTATSAUTOGATHER, false);
       conf.setTimeVar(HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES, 100, TimeUnit.MILLISECONDS);
+      conf.set("asd", Integer.toString(idx++));
 
     }
 

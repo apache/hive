@@ -3942,8 +3942,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       List<ColumnStatistics> partsColStats = new ArrayList<>(parts.size());
       List<Long> partsWriteIds = new ArrayList<>(parts.size());
 
-      Lock tableLock = tablelocks.get(dbName + "." + tblName);
-      tableLock.lock();
+//      Lock tableLock = tablelocks.get(dbName + "." + tblName);
+//      tableLock.lock();
       try {
         ms.openTransaction();
         tbl = ms.getTable(catName, dbName, tblName, null);
@@ -3984,7 +3984,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             existingParts.add(part);
           }
         }
-
+try{
+	Thread.sleep(1000);
+}catch(Exception e){
+throw new RuntimeException(e);
+}
         newParts.addAll(createPartitionFolders(partitionsToAdd, tbl, addedPartitions));
 
         if (!newParts.isEmpty()) {
@@ -4051,7 +4055,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           }
           }
         } finally {
-          tableLock.unlock();
+//          tableLock.unlock();
         }
       }
 
@@ -4335,8 +4339,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       Table tbl = null;
       Map<String, String> transactionalListenerResponses = Collections.emptyMap();
       Database db = null;
-      Lock tableLock = tablelocks.get(dbName + tblName);
-      tableLock.lock();
+//      Lock tableLock = tablelocks.get(dbName + tblName);
+//      tableLock.lock();
       try {
         ms.openTransaction();
         tbl = ms.getTable(catName, dbName, tblName, null);
@@ -4389,7 +4393,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                                                   transactionalListenerResponses, ms);
           }
         } finally {
-          tableLock.unlock();
+//          tableLock.unlock();
         }
       }
     }
