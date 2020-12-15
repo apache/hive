@@ -825,10 +825,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 10
-                    Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator
@@ -950,10 +950,10 @@ STAGE PLANS:
             Map Operator Tree:
                 TableScan
                   alias: alltypes_orc
-                  Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                  Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                   Limit
                     Number of rows: 10
-                    Statistics: Num rows: 2 Data size: 1686 Basic stats: COMPLETE Column stats: COMPLETE
+                    Statistics: Num rows: 2 Data size: 1718 Basic stats: COMPLETE Column stats: COMPLETE
                     Select Operator
                       Statistics: Num rows: 2 Data size: 8 Basic stats: COMPLETE Column stats: COMPLETE
                       Reduce Output Operator

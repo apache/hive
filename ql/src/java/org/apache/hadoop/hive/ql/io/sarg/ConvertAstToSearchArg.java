@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.io.sarg;
 
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -68,6 +70,10 @@ public class ConvertAstToSearchArg {
 
   private static final int KRYO_OUTPUT_BUFFER_SIZE = 4 * 1024;
   private static final int KRYO_OUTPUT_BUFFER_MAX_SIZE = 10 * 1024 * 1024;
+  private static final GregorianCalendar PROLEPTIC = new GregorianCalendar();
+  {
+    PROLEPTIC.setGregorianChange(new java.util.Date(Long.MIN_VALUE));
+  }
 
   private final SearchArgument.Builder builder;
   private final Configuration conf;
@@ -222,9 +228,8 @@ public class ConvertAstToSearchArg {
         }
         return ts;
       case DATE:
-        return new Date(
-            DateWritable.daysToMillis(
-                org.apache.hadoop.hive.common.type.Date.valueOf(lit.toString()).toEpochDay()));
+        // TODO [ORC-661]: use ChronoLocalDate and day of epoch instead of java's sql Date
+        return Date.valueOf(LocalDate.parse(lit.toString()));
       case DECIMAL:
         return new HiveDecimalWritable(lit.toString());
       case BOOLEAN:

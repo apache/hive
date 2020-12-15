@@ -89,7 +89,6 @@ import org.apache.hadoop.mapred.SplitLocationInfo;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.common.util.FixedSizedObjectPool;
 import org.apache.hive.common.util.Ref;
-import org.apache.orc.CompressionCodec;
 import org.apache.orc.CompressionKind;
 import org.apache.orc.OrcConf;
 import org.apache.orc.OrcFile.EncodingStrategy;
@@ -103,6 +102,8 @@ import org.apache.orc.TypeDescription;
 import org.apache.orc.impl.MemoryManager;
 import org.apache.orc.impl.SchemaEvolution;
 import org.apache.orc.impl.StreamName;
+import org.apache.orc.impl.writer.StreamOptions;
+import org.apache.orc.impl.writer.WriterEncryptionVariant;
 import org.apache.tez.common.CallableWithNdc;
 import org.apache.tez.common.counters.TezCounters;
 
@@ -356,6 +357,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     private final Map<StreamName, OutputReceiver> streams = new HashMap<>();
     private final Map<Integer, List<CacheOutputReceiver>> colStreams = new HashMap<>();
     private final boolean doesSourceHaveIncludes;
+    private final StreamOptions options;
     private final AtomicBoolean isStopped;
 
     public CacheWriter(BufferUsageManager bufferManager, List<Integer> columnIds,
@@ -368,6 +370,7 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       this.columnIds = columnIds;
       this.bufferFactory = bufferFactory;
       this.isStopped = isStopped;
+      this.options = new StreamOptions(bufferManager.getAllocator().getMaxAllocation());
       startStripe();
     }
 
@@ -477,15 +480,13 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
     }
 
     @Override
-    public void writeIndex(StreamName name, OrcProto.RowIndex.Builder index,
-        CompressionCodec codec) throws IOException {
+    public void writeIndex(StreamName name, OrcProto.RowIndex.Builder index) throws IOException {
       // TODO: right now we treat each slice as a stripe with a single RG and never bother
       //       with indexes. In phase 4, we need to add indexing and filtering.
     }
 
     @Override
-    public void writeBloomFilter(StreamName name, OrcProto.BloomFilterIndex.Builder bloom,
-        CompressionCodec codec) throws IOException {
+    public void writeBloomFilter(StreamName name, OrcProto.BloomFilterIndex.Builder bloom) throws IOException {
     }
 
     @Override
@@ -546,6 +547,11 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       startStripe();
     }
 
+    @Override
+    public void writeStatistics(StreamName streamName, OrcProto.ColumnStatistics.Builder builder) throws IOException {
+
+    }
+
     private int getSparseOrcIndexFromDenseDest(int denseColIx) {
       // denseColIx is index in ORC writer with includes. We -1 to skip the root column; get the
       // original text file index; then add the root column again. This makes many assumptions.
@@ -568,21 +574,8 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       throw new UnsupportedOperationException(); // Only used in ACID writer.
     }
 
-    public void setCurrentStripeOffsets(long currentKnownTornStart,
-        long firstStartOffset, long lastStartOffset, long currentFileOffset) {
-      currentStripe.knownTornStart = currentKnownTornStart;
-      currentStripe.firstRowStart = firstStartOffset;
-      currentStripe.lastRowStart = lastStartOffset;
-      currentStripe.lastRowEnd = currentFileOffset;
-    }
-
     @Override
-    public CompressionCodec getCompressionCodec() {
-      return null;
-    }
-
-    @Override
-    public long getFileBytes(int column) {
+    public long getFileBytes(int column, WriterEncryptionVariant writerEncryptionVariant) {
       long size = 0L;
       List<CacheOutputReceiver> l = this.colStreams.get(column);
       if (l == null) {
@@ -597,8 +590,19 @@ public class SerDeEncodedDataReader extends CallableWithNdc<Void>
       }
       return size;
     }
-  }
 
+    @Override
+    public StreamOptions getStreamOptions() {
+      return this.options;
+    }
+
+    public void setCurrentStripeOffsets(long currentKnownTornStart, long firstStartOffset, long lastStartOffset, long currentFileOffset) {
+      currentStripe.knownTornStart = currentKnownTornStart;
+      currentStripe.firstRowStart = firstStartOffset;
+      currentStripe.lastRowStart = lastStartOffset;
+      currentStripe.lastRowEnd = currentFileOffset;
+    }
+  }
   private interface CacheOutput {
     List<MemoryBuffer> getData();
     StreamName getName();

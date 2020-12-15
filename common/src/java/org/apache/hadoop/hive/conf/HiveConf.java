@@ -4509,7 +4509,7 @@ public class HiveConf extends Configuration {
         "Minimum allocation possible from LLAP buddy allocator. Allocations below that are\n" +
         "padded to minimum allocation. For ORC, should generally be the same as the expected\n" +
         "compression buffer size, or next lowest power of 2. Must be a power of 2."),
-    LLAP_ALLOCATOR_MAX_ALLOC("hive.llap.io.allocator.alloc.max", "16Mb", new SizeValidator(),
+    LLAP_ALLOCATOR_MAX_ALLOC("hive.llap.io.allocator.alloc.max", "4Mb", new SizeValidator(),
         "Maximum allocation possible from LLAP buddy allocator. For ORC, should be as large as\n" +
         "the largest expected ORC compression buffer size. Must be a power of 2."),
     LLAP_ALLOCATOR_ARENA_COUNT("hive.llap.io.allocator.arena.count", 8,
