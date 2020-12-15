@@ -1188,6 +1188,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
     } catch (IOException e) {
+      LOG.error("Trying to close the writers as an IOException occurred: " + e.getMessage());
       closeWriters(true);
       throw new HiveException(e);
     } catch (SerDeException e) {
@@ -1202,12 +1203,16 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   }
 
   private void closeRecordwriters(boolean abort) {
-    for (RecordWriter writer : rowOutWriters) {
-      try {
-        LOG.info("Closing {} on exception", writer);
-        writer.close(abort);
-      } catch (IOException e) {
-        LOG.error("Error closing rowOutWriter" + writer, e);
+    if (rowOutWriters != null) {
+      for (RecordWriter writer : rowOutWriters) {
+        try {
+          if (writer != null) {
+            LOG.info("Closing {} on exception", writer);
+            writer.close(abort);
+          }
+        } catch (IOException e) {
+          LOG.error("Error closing rowOutWriter" + writer, e);
+        }
       }
     }
   }
