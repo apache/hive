@@ -1190,9 +1190,10 @@ public class AcidUtils {
       ParsedDelta p = parsedDelta(deltaDir, isRawFormat);
       List<HdfsFileStatusWithId> files = null;
       if (dirSnapshot != null) {
+        final PathFilter filter = isRawFormat ? AcidUtils.originalBucketFilter : AcidUtils.bucketFileFilter;
         // If we already know the files, store it for future use
         files = dirSnapshot.getFiles().stream()
-            .filter(fileStatus -> bucketFileFilter.accept(fileStatus.getPath()))
+            .filter(fileStatus -> filter.accept(fileStatus.getPath()))
             .map(HdfsFileStatusWithoutId::new)
             .collect(Collectors.toList());
       }
