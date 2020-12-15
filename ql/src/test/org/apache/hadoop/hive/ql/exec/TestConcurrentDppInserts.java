@@ -86,7 +86,7 @@ public class TestConcurrentDppInserts {
   CyclicBarrier barrier = new CyclicBarrier(N);
   Semaphore finished = new Semaphore(0);
 
-  LinkedList<Exception> exceptions = new LinkedList();
+  LinkedList<Exception> exceptions = new LinkedList<>();
 
   class InserterThread extends Thread {
 
