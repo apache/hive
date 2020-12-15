@@ -155,17 +155,13 @@ public class TestConcurrentDppInserts {
     return sb.toString();
   }
 
-  static int idx = 0;
   private static IDriver createDriver(boolean custom) {
     HiveConf conf = new HiveConf(env_setup.getTestCtx().hiveConf);
 
     if (custom) {
-
       conf.setVar(ConfVars.HIVE_LOCK_FILE_MOVE_MODE, "all");
       conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, true);
       conf.setTimeVar(HiveConf.ConfVars.HIVE_LOCK_SLEEP_BETWEEN_RETRIES, 100, TimeUnit.MILLISECONDS);
-      conf.set("asd", Integer.toString(idx++));
-
     }
 
     SessionState.start(conf);
