@@ -495,6 +495,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
       // Don't start compaction or cleaning if not necessary
       if (isDynPartAbort(t, ci)) {
         msc.markCompacted(CompactionInfo.compactionInfoToStruct(ci));
+        compactionTxn.wasSuccessful();
         return false;
       }
       AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
