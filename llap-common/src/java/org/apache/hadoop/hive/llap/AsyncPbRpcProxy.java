@@ -302,7 +302,7 @@ public abstract class AsyncPbRpcProxy<ProtocolType, TokenType extends TokenIdent
           LOG.warn("RequestManager shutdown with error", t);
         }
       }
-    });
+    }, MoreExecutors.directExecutor());
   }
 
   @Override
