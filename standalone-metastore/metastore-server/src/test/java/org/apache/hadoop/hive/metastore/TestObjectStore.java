@@ -152,7 +152,7 @@ public class TestObjectStore {
     objectStore = new ObjectStore();
     objectStore.setConf(conf);
 
-    HiveMetaStore.HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
+    HMSHandler.createDefaultCatalog(objectStore, new Warehouse(conf));
   }
 
   private void setupRandomObjectStoreUrl(){
