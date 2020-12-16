@@ -45,17 +45,7 @@ import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.common.type.Date;
 import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.metastore.api.DataConnector;
-import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.SQLCheckConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLDefaultConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLForeignKey;
-import org.apache.hadoop.hive.metastore.api.SQLNotNullConstraint;
-import org.apache.hadoop.hive.metastore.api.SQLPrimaryKey;
-import org.apache.hadoop.hive.metastore.api.SQLUniqueConstraint;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.CompilationOpContext;
 import org.apache.hadoop.hive.ql.Context;
@@ -135,6 +125,7 @@ public abstract class BaseSemanticAnalyzer {
   protected Context ctx;
   protected Map<String, String> idToTableNameMap;
   protected QueryProperties queryProperties;
+  protected static boolean isRemoteType = false;
 
   /**
    * A set of FileSinkOperators being written to in an ACID compliant way.  We need to remember
@@ -477,6 +468,10 @@ public abstract class BaseSemanticAnalyzer {
     }
 
     return getUnescapedName(node);
+  }
+
+  public static boolean getIsRemoteType(){
+    return isRemoteType;
   }
 
   public static String getTableAlias(ASTNode node) throws SemanticException {
@@ -1697,6 +1692,11 @@ public abstract class BaseSemanticAnalyzer {
     Database database;
     try {
       database = db.getDatabase(dbName);
+      if (database.getType().equals(DatabaseType.REMOTE)) {
+        isRemoteType = true;
+      }else{
+        isRemoteType = false;
+      }
     } catch (Exception e) {
       throw new SemanticException(e.getMessage(), e);
     }

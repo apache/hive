@@ -3744,7 +3744,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             return DataConnectorProviderFactory.getDataConnectorProvider(db).getTable(name);
           }
         }
-      } catch (Exception e) { /* appears exception is not thrown currently if db doesnt exist */ }
+      } catch (Exception e) { /* appears exception is not thrown currently if db doesnt exist */
+        throwMetaException(e);
+      }
 
       try {
         t = getMS().getTable(catName, dbname, name, writeIdList);
@@ -6043,7 +6045,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             return DataConnectorProviderFactory.getDataConnectorProvider(db).getTableNames();
           }
         }
-      } catch (Exception e) { /* appears we return empty set instead of throwing an exception */ }
+      } catch (Exception e) { /* appears we return empty set instead of throwing an exception */
+        throw newMetaException(e);
+      }
 
       try {
         ret = getMS().getTables(parsedDbName[CAT_NAME], parsedDbName[DB_NAME], pattern);
