@@ -30,7 +30,8 @@ public final class AuthenticationProviderFactory {
     LDAP("LDAP"),
     PAM("PAM"),
     CUSTOM("CUSTOM"),
-    NONE("NONE");
+    NONE("NONE"),
+    SAML2_0("SAML2_0");
 
     private final String authMethod;
 
@@ -75,6 +76,9 @@ public final class AuthenticationProviderFactory {
     } else if (authMethod == AuthMethods.CUSTOM) {
       return new CustomAuthenticationProviderImpl((conf == null) ? AuthMethods.CUSTOM.getConf() : conf);
     } else if (authMethod == AuthMethods.NONE) {
+      return new AnonymousAuthenticationProviderImpl();
+    } else if (authMethod == AuthMethods.SAML2_0) {
+      //TODO right thing to do?
       return new AnonymousAuthenticationProviderImpl();
     } else {
       throw new AuthenticationException("Unsupported authentication method");

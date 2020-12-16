@@ -16,29 +16,22 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.auth;
+package org.apache.hive.service.auth.saml;
 
-public class HiveAuthConstants {
-  public enum AuthTypes {
-    NOSASL("NOSASL"),
-    NONE("NONE"),
-    LDAP("LDAP"),
-    KERBEROS("KERBEROS"),
-    CUSTOM("CUSTOM"),
-    PAM("PAM"),
-    SAML2_0("SAML2_0");
+public class HiveSamlRelayStateInfo {
+  private final int port;
+  private final long codeVerifier;
 
-    private final String authType;
-
-    AuthTypes(String authType) {
-      this.authType = authType;
-    }
-
-    public String getAuthName() {
-      return authType;
-    }
+  HiveSamlRelayStateInfo(int port, long codeVerifier) {
+    this.port = port;
+    this.codeVerifier = codeVerifier;
   }
 
-  public static final String HS2_PROXY_USER = "hive.server2.proxy.user";
-  public static final String HS2_CLIENT_TOKEN = "hiveserver2ClientToken";
+  public int getPort() {
+    return port;
+  }
+
+  public long getCodeVerifier() {
+    return codeVerifier;
+  }
 }

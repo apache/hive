@@ -2142,7 +2142,8 @@ public class HiveConf extends Configuration {
             "Dynamically allocate some bits from statement id when bucket id overflows. This allows having more than 4096 buckets."),
     HIVETESTMODEACIDKEYIDXSKIP("hive.test.acid.key.index.skip", false, "For testing only. OrcRecordUpdater will skip "
         + "generation of the hive.acid.key.index", false),
-
+    HIVE_TEST_MODE_SAML_BROWSER_AUTH("hive.test.browser.mode", false, "For testing only.\n"
+         + " If this configuration is set, the JDBC connection uses a test browser client to complete the SAML auth flow."),
     HIVEMERGEMAPFILES("hive.merge.mapfiles", true,
         "Merge small files at the end of a map-only job"),
     HIVEMERGEMAPREDFILES("hive.merge.mapredfiles", false,
@@ -3909,7 +3910,7 @@ public class HiveConf extends Configuration {
 
     // HiveServer2 auth configuration
     HIVE_SERVER2_AUTHENTICATION("hive.server2.authentication", "NONE",
-      new StringSet("NOSASL", "NONE", "LDAP", "KERBEROS", "PAM", "CUSTOM"),
+      new StringSet("NOSASL", "NONE", "LDAP", "KERBEROS", "PAM", "CUSTOM", "SAML2_0"),
         "Client authentication types.\n" +
         "  NONE: no authentication check\n" +
         "  LDAP: LDAP/AD based authentication\n" +
@@ -3917,7 +3918,8 @@ public class HiveConf extends Configuration {
         "  CUSTOM: Custom authentication provider\n" +
         "          (Use with property hive.server2.custom.authentication.class)\n" +
         "  PAM: Pluggable authentication module\n" +
-        "  NOSASL:  Raw transport"),
+        "  NOSASL:  Raw transport\n" +
+        "  SAML2_0: SAML 2.0 compliant authentication"),
     HIVE_SERVER2_TRUSTED_DOMAIN("hive.server2.trusted.domain", "",
         "Specifies the host or a domain to trust connections from. Authentication is skipped " +
         "for any connection coming from a host whose hostname ends with the value of this" +
@@ -4023,6 +4025,38 @@ public class HiveConf extends Configuration {
       "List of the underlying pam services that should be used when auth type is PAM\n" +
       "A file with the same name must exist in /etc/pam.d"),
 
+    // HS2 SAML2.0 configuration
+    HIVE_SERVER2_SAML_KEYSTORE_PATH("hive.server2.saml2.keystore.path", "",
+        "Keystore path to the saml2 client."),
+    HIVE_SERVER2_SAML_KEYSTORE_PASSWORD("hive.server2.saml2.keystore.password", "",
+        "Keystore path to the saml2 client."),
+    HIVE_SERVER2_SAML_PRIVATE_KEY_PASSWORD("hive.server2.saml2.private.key.password", "",
+        "Keystore path to the saml2 client."),
+    HIVE_SERVER2_SAML_IDP_METADATA("hive.server2.saml2.idp.metadata", "",
+        "IDP metadata file for the SAML configuration"),
+    HIVE_SERVER2_SAML_SP_ID("hive.server2.saml2.sp.entity.id", "",
+        "Service provider entity id"),
+    HIVE_SERVER2_SAML_CALLBACK_URL("hive.server2.saml2.sp.callback.url", "",
+        "Callback URL where SAML responses should be posted. Currently this\n" +
+            " must be configured at the same port number as defined by hive.server2.thrift.http.port."),
+    HIVE_SERVER2_SAML_WANT_ASSERTIONS_SIGNED("hive.server2.saml2.want.assertions.signed", true,
+        "When this configuration is set to true, hive server2 will validate the signature\n"
+            + " of the assertions received at the callback url. For security reasons, it is recommended"
+            + "that this value should be true."),
+    HIVE_SERVER2_SAML_SIGN_REQUESTS("hive.server2.saml2.sign.requests", false,
+        "When this configuration is set to true, HiveServer2 will sign the SAML requests\n" +
+            " which can be validated by the IDP provider."),
+    HIVE_SERVER2_SAML_CALLBACK_TOKEN_TTL("hive.server2.saml2.callback.token.ttl", "30s",
+        new TimeValidator(TimeUnit.MILLISECONDS), "Time for which the token issued by\n"
+        + "service provider is valid."),
+    HIVE_SERVER2_SAML_GROUP_ATTRIBUTE_NAME("hive.server2.saml2.group.attribute.name",
+        "", "The attribute name in the SAML assertion which would\n"
+        + " be used to compare for the group name matching. By default it is empty\n"
+        + " which would allow any authenticated user. If this value is set then\n"
+            + " then hive.server2.saml2.group.filter must be set to a non-empty value."),
+    HIVE_SERVER2_SAML_GROUP_FILTER("hive.server2.saml2.group.filter", "",
+        "Comma separated list of group names which will be allowed when SAML\n"
+            + " authentication is enabled."),
     HIVE_SERVER2_ENABLE_DOAS("hive.server2.enable.doAs", true,
         "Setting this property to true will have HiveServer2 execute\n" +
         "Hive operations as the user making the calls to it."),

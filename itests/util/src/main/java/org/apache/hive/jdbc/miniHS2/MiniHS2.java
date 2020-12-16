@@ -21,6 +21,8 @@ package org.apache.hive.jdbc.miniHS2;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -404,6 +406,7 @@ public class MiniHS2 extends AbstractHiveService {
               MetaStoreTestUtils.findFreePort());
           HiveConf.setIntVar(getHiveConf(), HiveConf.ConfVars.HIVE_SERVER2_WEBUI_PORT,
               MetaStoreTestUtils.findFreePort());
+          resetSamlACSUrl();
         }
       }
     }
@@ -414,6 +417,25 @@ public class MiniHS2 extends AbstractHiveService {
 
     waitForStartup();
     setStarted(true);
+  }
+
+  private void resetSamlACSUrl() throws URISyntaxException {
+    if (isSAMLAuth()) {
+      // in case this is a SAML Auth miniHS2 we should make sure that the
+      // assertion consumer service url is appropriately reconfigured if the http
+      // port changed.
+      String existingAcs = HiveConf
+          .getVar(getHiveConf(), ConfVars.HIVE_SERVER2_SAML_CALLBACK_URL);
+      String existingPort = String.valueOf(new URI(existingAcs).getPort());
+      String newAcs = existingAcs.replace(":" + existingPort, ":" + HiveConf
+          .getVar(getHiveConf(), ConfVars.HIVE_SERVER2_THRIFT_HTTP_PORT));
+      HiveConf.setVar(getHiveConf(), ConfVars.HIVE_SERVER2_SAML_CALLBACK_URL, newAcs);
+    }
+  }
+
+  private boolean isSAMLAuth() {
+    return "SAML2_0"
+        .equals(HiveConf.getVar(getHiveConf(), ConfVars.HIVE_SERVER2_SAML_CALLBACK_URL));
   }
 
   public void stop() {
