@@ -18,6 +18,8 @@
 
 package org.apache.hive.jdbc;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import org.apache.hadoop.hive.metastore.security.DelegationTokenIdentifier;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.security.Credentials;
@@ -30,6 +32,13 @@ import org.apache.hive.service.rpc.thrift.TSetClientInfoReq;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.auth.HiveAuthUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hive.jdbc.saml.HiveJdbcBrowserClientFactory;
+import org.apache.hive.jdbc.saml.HiveJdbcSamlRedirectStrategy;
+import org.apache.hive.jdbc.saml.HttpSamlAuthRequestInterceptor;
+import org.apache.hive.jdbc.saml.IJdbcBrowserClient;
+import org.apache.hive.jdbc.saml.IJdbcBrowserClient.HiveJdbcBrowserException;
+import org.apache.hive.jdbc.saml.IJdbcBrowserClient.HiveJdbcBrowserServerResponse;
+import org.apache.hive.jdbc.saml.IJdbcBrowserClientFactory;
 import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
 import org.apache.hive.service.auth.HiveAuthConstants;
 import org.apache.hive.service.auth.KerberosSaslHelper;
@@ -51,6 +60,7 @@ import org.apache.hive.service.rpc.thrift.TRenewDelegationTokenResp;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.ServiceUnavailableRetryStrategy;
@@ -151,6 +161,7 @@ public class HiveConnection implements java.sql.Connection {
   private String wmPool = null, wmApp = null;
   private Properties clientInfo;
   private Subject loggedInSubject;
+  private final IJdbcBrowserClient browserClient;
 
   /**
    * Get all direct HiveServer2 URLs from a ZooKeeper based HiveServer2 URL
@@ -242,7 +253,20 @@ public class HiveConnection implements java.sql.Connection {
     return url.toString();
   }
 
+  @VisibleForTesting
+  public HiveConnection() {
+    sessConfMap = null;
+    isEmbeddedMode = true;
+    browserClient = null;
+  }
+
   public HiveConnection(String uri, Properties info) throws SQLException {
+    this(uri, info, HiveJdbcBrowserClientFactory.get());
+  }
+
+  @VisibleForTesting
+  protected HiveConnection(String uri, Properties info,
+      IJdbcBrowserClientFactory browserClientFactory) throws SQLException {
     setupLoginTimeout();
     try {
       connParams = Utils.parseURL(uri, info);
@@ -258,6 +282,8 @@ public class HiveConnection implements java.sql.Connection {
     sessConfMap = connParams.getSessionVars();
     if (isKerberosAuthMode()) {
       host = Utils.getCanonicalHostName(connParams.getHost());
+    } else if (isBrowserAuthMode() && !isHttpTransportMode()) {
+      throw new SQLException("Browser auth mode is only applicable in http mode");
     } else {
       host = connParams.getHost();
     }
@@ -288,12 +314,25 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V9);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V10);
 
+    if (isBrowserAuthMode()) {
+      try {
+        browserClient = browserClientFactory.create(connParams);
+      } catch (HiveJdbcBrowserException e) {
+        throw new SQLException("");
+      }
+    } else {
+      browserClient = null;
+    }
     if (isEmbeddedMode) {
       EmbeddedThriftBinaryCLIService embeddedClient = new EmbeddedThriftBinaryCLIService();
       embeddedClient.init(null, connParams.getHiveConfs());
       client = embeddedClient;
       connParams.getHiveConfs().clear();
       // open client session
+      if (isBrowserAuthMode()) {
+        throw new SQLException(new IllegalArgumentException(
+            "Browser mode is not supported in embedded mode"));
+      }
       openSession();
       executeInitSql();
     } else {
@@ -465,10 +504,21 @@ public class HiveConnection implements java.sql.Connection {
   private TTransport createHttpTransport() throws SQLException, TTransportException {
     CloseableHttpClient httpClient;
     boolean useSsl = isSslConnection();
-    // Create an http client from the configs
+    validateSslForBrowserMode();
     httpClient = getHttpClient(useSsl);
     transport = new THttpClient(getServerHttpUrl(useSsl), httpClient);
     return transport;
+  }
+
+  protected void validateSslForBrowserMode() throws SQLException {
+    if (disableSSLValidation()) {
+      LOG.warn("SSL validation for the browser mode is disabled.");
+      return;
+    }
+    if (isBrowserAuthMode() && !isSslConnection()) {
+      throw new SQLException(new IllegalArgumentException(
+          "Browser mode is only supported with SSL is enabled"));
+    }
   }
 
   private CloseableHttpClient getHttpClient(Boolean useSsl) throws SQLException {
@@ -479,7 +529,7 @@ public class HiveConnection implements java.sql.Connection {
       JdbcConnectionParams.DEFAULT_COOKIE_NAMES_HS2 :
       sessConfMap.get(JdbcConnectionParams.COOKIE_NAME);
     CookieStore cookieStore = isCookieEnabled ? new BasicCookieStore() : null;
-    HttpClientBuilder httpClientBuilder;
+    HttpClientBuilder httpClientBuilder = null;
     // Request interceptor for any request pre-processing logic
     HttpRequestInterceptor requestInterceptor;
     Map<String, String> additionalHttpHeaders = new HashMap<String, String>();
@@ -514,9 +564,14 @@ public class HiveConnection implements java.sql.Connection {
        * for sending to the server before every request.
        * In https mode, the entire information is encrypted
        */
-      requestInterceptor = new HttpKerberosRequestInterceptor(sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
-          host, getServerHttpUrl(useSsl), loggedInSubject, cookieStore, cookieName, useSsl, additionalHttpHeaders,
+      requestInterceptor = new HttpKerberosRequestInterceptor(
+          sessConfMap.get(JdbcConnectionParams.AUTH_PRINCIPAL),
+          host, getServerHttpUrl(useSsl), loggedInSubject, cookieStore, cookieName,
+          useSsl, additionalHttpHeaders,
           customCookies);
+    } else if (isBrowserAuthMode()) {
+      requestInterceptor = new HttpSamlAuthRequestInterceptor(browserClient, cookieStore,
+          cookieName, useSsl, additionalHttpHeaders, customCookies);
     } else {
       // Check for delegation token, if present add it in the header
       String tokenStr = getClientDelegationToken(sessConfMap);
@@ -579,6 +634,10 @@ public class HiveConnection implements java.sql.Connection {
       }
     });
 
+    if (isBrowserAuthMode()) {
+      httpClientBuilder
+          .setRedirectStrategy(new HiveJdbcSamlRedirectStrategy(browserClient));
+    }
     // Add the request interceptor to the client builder
     httpClientBuilder.addInterceptorFirst(requestInterceptor);
 
@@ -865,8 +924,59 @@ public class HiveConnection implements java.sql.Connection {
       openReq.setPassword(sessConfMap.get(JdbcConnectionParams.AUTH_PASSWD));
     }
 
+    //TODO This is a bit hacky. We piggy back on a dummy OpenSession call
+    // to get the redirect response from the server. Instead its probably cleaner to
+    // explicitly do a HTTP post request and get the response.
+    int numRetry = isBrowserAuthMode() ? 2 : 1;
+    for (int i=0; i<numRetry; i++) {
+      try {
+        openSession(openReq);
+      } catch (TException e) {
+        if (isSamlRedirect(e)) {
+          boolean success = doBrowserSSO();
+          if (!success) {
+            String msg = browserClient.getServerResponse() == null
+                || browserClient.getServerResponse().getMsg() == null ? ""
+                : browserClient.getServerResponse().getMsg();
+            throw new SQLException(
+                "Could not establish connection to " + jdbcUriString + ": "
+                    + msg, " 08S01", e);
+          }
+        } else {
+          throw new SQLException(
+              "Could not establish connection to " + jdbcUriString + ": " + e
+                  .getMessage(), " 08S01", e);
+        }
+      }
+    }
+    isClosed = false;
+  }
+
+  private boolean doBrowserSSO() throws SQLException {
     try {
-      TOpenSessionResp openResp = client.OpenSession(openReq);
+      Preconditions.checkNotNull(browserClient);
+      try (IJdbcBrowserClient bc = browserClient) {
+        browserClient.doBrowserSSO();
+        HiveJdbcBrowserServerResponse response = browserClient.getServerResponse();
+        if (response != null) {
+          return response.isSuccessful();
+        }
+        return false;
+      }
+    } catch (Exception ex) {
+      throw new SQLException("Browser based SSO failed: " + ex.getMessage(),
+          " 08S01",
+          ex);
+    }
+  }
+
+  @VisibleForTesting
+  public IJdbcBrowserClient getBrowserClient() {
+    return browserClient;
+  }
+
+  private void openSession(TOpenSessionReq openReq) throws TException, SQLException {
+    TOpenSessionResp openResp = client.OpenSession(openReq);
 
       // validate connection
       Utils.verifySuccess(openResp.getStatus());
@@ -882,12 +992,32 @@ public class HiveConnection implements java.sql.Connection {
       if (serverFetchSize != null) {
         fetchSize = Integer.parseInt(serverFetchSize);
       }
-    } catch (TException e) {
-      LOG.error("Error opening session", e);
-      throw new SQLException("Could not establish connection to "
-          + jdbcUriString + ": " + e.getMessage(), " 08S01", e);
+   }
+
+  /**
+   * This is a util method to parse the message from the TException and extract
+   * the HTTP response code. In case of SAML 2.0 specification with redirect binding,
+   * we expect the response code to be either 302 or 303. This method returns true, if
+   * the response code was 302 and 303 else false based on the exception message.
+   *
+   * This is not very clean. Ideally we should get the underlying HttpResponse, but
+   * THttpClient doesn't expose that information.
+   */
+  private boolean isSamlRedirect(TException e) {
+    //Unfortunately, thrift over http doesn't return the response code
+    if (e.getMessage().startsWith("HTTP Response code: ")) {
+      String code = e.getMessage().substring("HTTP Response code: ".length());
+      try {
+        int statusCode = Integer.parseInt(code.trim());
+        if (statusCode == HttpStatus.SC_SEE_OTHER
+            || statusCode == HttpStatus.SC_MOVED_TEMPORARILY) {
+          return true;
+        }
+      } catch (NumberFormatException ex) {
+        // ignore, return false
+      }
     }
-    isClosed = false;
+    return false;
   }
 
   /**
@@ -912,6 +1042,21 @@ public class HiveConnection implements java.sql.Connection {
     return !JdbcConnectionParams.AUTH_SIMPLE.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))
         && !JdbcConnectionParams.AUTH_TOKEN.equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE))
         && sessConfMap.containsKey(JdbcConnectionParams.AUTH_PRINCIPAL);
+  }
+
+  private boolean isBrowserAuthMode() {
+    return JdbcConnectionParams.AUTH_SSO_BROWSER_MODE
+        .equals(sessConfMap.get(JdbcConnectionParams.AUTH_TYPE));
+  }
+
+  /**
+   * This checks for {@code JdbcConnectionParams.AUTH_BROWSER_DISABLE_SSL_VALIDATION}
+   * on the connection url and returns the boolean value of it. Returns false if the
+   * parameter is not present.
+   */
+  private boolean disableSSLValidation() {
+    return Boolean.parseBoolean(
+        sessConfMap.get(JdbcConnectionParams.AUTH_BROWSER_DISABLE_SSL_VALIDATION));
   }
 
   private boolean isHttpTransportMode() {
