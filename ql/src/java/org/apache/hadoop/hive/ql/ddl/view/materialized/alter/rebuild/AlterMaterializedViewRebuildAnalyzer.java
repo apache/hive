@@ -68,10 +68,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     }
 
     try {
-      Table table = db.getTable(tableName.getDb(), tableName.getTable());
-      Boolean outdated = db.isOutdatedMaterializedView(
-              table, new ArrayList<>(table.getCreationMetadata().getTablesUsed()), false);
-
+      Boolean outdated = db.isOutdatedMaterializedView(tableName);
       if (outdated != null && !outdated) {
         String msg = String.format("Materialized view %s.%s is up to date. Cancelling rebuild.",
                 tableName.getDb(), tableName.getTable());
@@ -79,7 +76,6 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
         console.printInfo(msg, false);
         return;
       }
-
     } catch (HiveException e) {
       LOG.warn("Error while checking materialized view " + tableName.getDb() + "." + tableName.getTable(), e);
     }
