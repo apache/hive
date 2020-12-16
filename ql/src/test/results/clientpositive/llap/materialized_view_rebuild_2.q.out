@@ -30,30 +30,18 @@ POSTHOOK: Output: default@mat1
 Materialized view default.mat1 is up to date. Cancelling rebuild.
 PREHOOK: query: explain
 alter materialized view mat1 rebuild
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mat1
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@mat1
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: query: explain
 alter materialized view mat1 rebuild
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mat1
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@mat1
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 STAGE DEPENDENCIES:
 
 STAGE PLANS:
 Materialized view default.mat1 is up to date. Cancelling rebuild.
 PREHOOK: query: alter materialized view mat1 rebuild
-PREHOOK: type: QUERY
-PREHOOK: Input: default@mat1
-PREHOOK: Input: default@t1
-PREHOOK: Output: default@mat1
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: query: alter materialized view mat1 rebuild
-POSTHOOK: type: QUERY
-POSTHOOK: Input: default@mat1
-POSTHOOK: Input: default@t1
-POSTHOOK: Output: default@mat1
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: query: insert into t1(col0) values(1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
