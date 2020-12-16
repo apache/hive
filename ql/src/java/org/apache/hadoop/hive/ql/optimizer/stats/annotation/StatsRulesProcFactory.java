@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.calcite.rel.metadata.RelMdUtil;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -2546,19 +2547,25 @@ public class StatsRulesProcFactory {
       for (ColStatistics cs : colStats) {
         colNameStatsAvailable.add(cs.getColumnName());
         int pos = jop.getConf().getReversedExprs().get(cs.getColumnName());
-        long oldRowCount = rowCountParents.get(pos);
-        double ratio = (double) newNumRows / (double) oldRowCount;
         long oldDV = cs.getCountDistint();
+
+        boolean useCalciteForNdvReadjustment
+            = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_JOIN_NDV_READJUSTMENT);
         long newDV = oldDV;
+        if (useCalciteForNdvReadjustment) {
+          newDV = RelMdUtil.numDistinctVals(oldDV * 1.0, newNumRows * 1.0).longValue();
+        } else {
+          long oldRowCount = rowCountParents.get(pos);
+          double ratio = (double) newNumRows / (double) oldRowCount;
 
-        // if ratio is greater than 1, then number of rows increases. This can happen
-        // when some operators like GROUPBY duplicates the input rows in which case
-        // number of distincts should not change. Update the distinct count only when
-        // the output number of rows is less than input number of rows.
-        if (ratio <= 1.0) {
-          newDV = (long) Math.ceil(ratio * oldDV);
+          // if ratio is greater than 1, then number of rows increases. This can happen
+          // when some operators like GROUPBY duplicates the input rows in which case
+          // number of distincts should not change. Update the distinct count only when
+          // the output number of rows is less than input number of rows.
+          if (ratio <= 1.0) {
+            newDV = (long) Math.ceil(ratio * oldDV);
+          }
         }
-
         cs.setCountDistint(newDV);
         updateNumNulls(cs, leftUnmatchedRows, rightUnmatchedRows, newNumRows, pos, jop);
       }
