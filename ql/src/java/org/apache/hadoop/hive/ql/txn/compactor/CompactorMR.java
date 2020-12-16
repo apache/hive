@@ -403,10 +403,6 @@ public class CompactorMR {
     HiveConf.setVar(job, HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
   }
 
-  public JobConf getMrJob() {
-    return mrJob;
-  }
-
   static class CompactorInputSplit implements InputSplit {
     private long length = 0;
     private List<String> locations;
