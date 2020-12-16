@@ -66,11 +66,6 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
       unparseTranslator.addTableNameTranslation(tableTree, SessionState.get().getCurrentDatabase());
       return;
     }
-    ASTNode rewrittenAST = getRewrittenAST(tableName);
-
-    mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
-    mvRebuildDbName = tableName.getDb();
-    mvRebuildName = tableName.getTable();
 
     try {
       Table table = db.getTable(tableName.getDb(), tableName.getTable());
@@ -88,6 +83,12 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     } catch (HiveException e) {
       LOG.warn("Error while checking materialized view " + tableName.getDb() + "." + tableName.getTable(), e);
     }
+
+    ASTNode rewrittenAST = getRewrittenAST(tableName);
+
+    mvRebuildMode = MaterializationRebuildMode.INSERT_OVERWRITE_REBUILD;
+    mvRebuildDbName = tableName.getDb();
+    mvRebuildName = tableName.getTable();
 
     LOG.debug("Rebuilding materialized view " + tableName.getNotEmptyDbTable());
     super.analyzeInternal(rewrittenAST);
