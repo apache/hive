@@ -19,3 +19,16 @@
 # Build system
 'Jenkinsfile':
   - kgyrtkirk
+# ddl changes
+'**/ddl/**':
+  - miklosgergely
+# driver related changes
+'**/ql/(*Driver*|Compiler|Executor).java':
+  - miklosgergely
+# schematool changes
+'**schematool**':
+  - miklosgergely
+# metatool changes
+'**metatool**':
+  - miklosgergely
+  
