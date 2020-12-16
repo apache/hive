@@ -588,6 +588,26 @@ public class HiveStatement implements java.sql.Statement {
   }
 
   @Override
+  public long getLargeUpdateCount() throws SQLException {
+    checkConnection("getLargeUpdateCount");
+    /**
+     * Poll on the operation status, till the operation is complete. We want to ensure that since a
+     * client might end up using executeAsync and then call this to check if the query run is
+     * finished.
+     */
+    long numModifiedRows = -1L;
+    TGetOperationStatusResp resp = waitForOperationToComplete();
+    if (resp != null) {
+      numModifiedRows = resp.getNumModifiedRows();
+    }
+    if (numModifiedRows == -1L || numModifiedRows > Long.MAX_VALUE) {
+      LOG.warn("Invalid number of updated rows: {}", numModifiedRows);
+      return -1;
+    }
+    return numModifiedRows;
+  }
+
+  @Override
   public SQLWarning getWarnings() throws SQLException {
     checkConnection("getWarnings");
     return warningChain;

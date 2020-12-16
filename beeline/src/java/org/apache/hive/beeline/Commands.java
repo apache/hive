@@ -1045,7 +1045,7 @@ public class Commands {
             outputFile.fetchFinished();
           }
         } else {
-          int count = stmnt.getUpdateCount();
+          long count = stmnt.getLargeUpdateCount();
           long end = System.currentTimeMillis();
 
           if (showReport()) {
