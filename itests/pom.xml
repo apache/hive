@@ -33,29 +33,47 @@
     <hive.path.to.root>..</hive.path.to.root>
   </properties>
 
-  <modules>
-   <module>custom-serde</module>
-   <module>custom-udfs</module>
-   <module>hcatalog-unit</module>
-   <module>hive-unit</module>
-   <module>hive-blobstore</module>
-   <module>util</module>
-   <module>test-serde</module>
-   <module>qtest</module>
-   <module>qtest-accumulo</module>
-   <module>hive-jmh</module>
-   <module>hive-unit-hadoop2</module>
-   <module>hive-minikdc</module>
-   <module>qtest-druid</module>
-   <module>qtest-kudu</module>
-   <module>catalogd-unit</module>
-  </modules>
-
   <profiles>
     <profile>
       <id>spark-test</id>
       <modules>
         <module>qtest-spark</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>hive-build</id>
+      <activation>
+        <file>
+          <exists>pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>custom-serde</module>
+        <module>custom-udfs</module>
+        <module>hcatalog-unit</module>
+        <module>hive-unit</module>
+        <module>hive-blobstore</module>
+        <module>util</module>
+        <module>test-serde</module>
+        <module>qtest</module>
+        <module>qtest-accumulo</module>
+        <module>hive-jmh</module>
+        <module>hive-unit-hadoop2</module>
+        <module>hive-minikdc</module>
+        <module>qtest-druid</module>
+        <module>qtest-kudu</module>
+        <module>catalogd-unit</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>full-build</id>
+      <activation>
+        <file>
+          <exists>pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>qtest-impala</module>
       </modules>
     </profile>
   </profiles>
