@@ -204,6 +204,10 @@
           <groupId>dom4j</groupId>
           <artifactId>dom4j</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>net.shibboleth.tool</groupId>
+          <artifactId>xmlsectool</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
