@@ -1542,7 +1542,7 @@
 
   <profiles>
     <profile>
-      <id>libs-build</id>
+      <id>hive-build</id>
       <activation>
         <file>
           <exists>pom.xml</exists>
@@ -1559,18 +1559,6 @@
         <module>udf</module>
         <module>service-rpc</module>
         <module>serde</module>
-        <module>packaging</module>
-      </modules>
-    </profile>
-
-    <profile>
-      <id>full-build</id>
-      <activation>
-        <file>
-          <exists>pom.xml</exists>
-        </file>
-      </activation>
-      <modules>
         <module>accumulo-handler</module>
         <module>vector-code-gen</module>
         <module>beeline</module>
@@ -1596,6 +1584,19 @@
         <module>testutils</module>
         <module>upgrade-acid</module>
         <module>kafka-handler</module>
+        <module>packaging</module>
+      </modules>
+    </profile>
+
+    <profile>
+      <id>full-build</id>
+      <activation>
+        <file>
+          <exists>pom.xml</exists>
+        </file>
+      </activation>
+      <modules>
+        <module>impala</module>
       </modules>
     </profile>
 

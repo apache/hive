@@ -47,7 +47,7 @@ public class EngineLoader {
     // XXX: CDPD-20696 we shouldn't hardcode Impala here
     try {
       EngineHelper impalaHelper = (EngineHelper)
-          Class.forName("org.apache.hadoop.hive.ql.impala.ImpalaHelper").newInstance();
+          Class.forName("org.apache.hadoop.hive.impala.ImpalaHelper").newInstance();
       engineHelpers.put(Engine.IMPALA, impalaHelper);
     } catch (Exception e) {
       throw new RuntimeException("Could not load Impala Helper class.");

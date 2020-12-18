@@ -34,7 +34,7 @@
 
   <profiles>
     <profile>
-      <id>libs-build</id>
+      <id>hive-build</id>
       <activation>
         <file>
           <exists>pom.xml</exists>
@@ -71,17 +71,6 @@
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-storage-api</artifactId>
         </dependency>
-      </dependencies>
-    </profile>
-    <profile>
-      <id>full-build</id>
-      <activation>
-        <file>
-          <exists>pom.xml</exists>
-        </file>
-      </activation>
-      <dependencies>
-        <!-- dependencies are always listed in sorted order by groupId, artifactId -->
         <dependency>
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-testutils</artifactId>
@@ -226,6 +215,22 @@
         <dependency>
           <groupId>org.apache.hive</groupId>
           <artifactId>hive-kudu-handler</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+    <profile>
+      <id>full-build</id>
+      <activation>
+        <file>
+          <exists>pom.xml</exists>
+        </file>
+      </activation>
+      <dependencies>
+        <!-- dependencies are always listed in sorted order by groupId, artifactId -->
+        <dependency>
+          <groupId>org.apache.hive</groupId>
+          <artifactId>hive-impala</artifactId>
           <version>${project.version}</version>
         </dependency>
       </dependencies>
