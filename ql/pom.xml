@@ -880,12 +880,6 @@
                   <include>joda-time:joda-time</include>
                   <include>org.apache.calcite:*</include>
                   <include>org.apache.calcite.avatica:avatica</include>
-                  <!-- include all of calcite's transitive dependencies as well since
-                    otherwise they'll be removed in assembly packaging -->
-                  <include>net.hydromatic:eigenbase-properties</include>
-                  <include>org.codehaus.janino:janino</include>
-                  <include>org.codehaus.janino:commons-compiler</include>
-                  <include>org.pentaho:pentaho-aggdesigner-algorithm</include>
                 </includes>
               </artifactSet>
               <relocations>
@@ -906,16 +900,6 @@
                   <shadedPattern>org.apache.hive.com.google.thirdparty.publicsuffix</shadedPattern>
                 </relocation>
               </relocations>
-              <filters>
-                <filter>
-                  <artifact>*:*</artifact>
-                  <excludes>
-                    <exclude>META-INF/*.SF</exclude>
-                    <exclude>META-INF/*.DSA</exclude>
-                    <exclude>META-INF/*.RSA</exclude>
-                  </excludes>
-                </filter>
-              </filters>
             </configuration>
           </execution>
         </executions>
