@@ -35,6 +35,6 @@ public class SettableUncompressedStream extends InStream.UncompressedStream {
   }
 
   private void setOffset(DiskRangeList list) {
-    currentOffset = list.listSize() > 1 ? list.next.getOffset() : 0;
+    currentOffset = list == null || list.listSize() < 2 ? 0 :  list.next.getOffset();
   }
 }
