@@ -711,6 +711,22 @@
       <version>${glassfish.jersey.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>net.hydromatic</groupId>
+      <artifactId>eigenbase-properties</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>commons-compiler</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.janino</groupId>
+      <artifactId>janino</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.pentaho</groupId>
+      <artifactId>pentaho-aggdesigner-algorithm</artifactId>
+    </dependency>
   </dependencies>
 
   <profiles>
