@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer.graph;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -100,9 +101,27 @@ public class DotExporter {
     if ((n instanceof FilterOperator)) {
       FilterOperator fil = (FilterOperator) n;
       FilterDesc conf = fil.getConf();
-      rows.add(vBox("filter:", conf.getPredicateString()));
+      rows.add(vBox("filter:", escape(conf.getPredicateString())));
     }
     return vBox(rows);
+  }
+
+  private String escape(String str) {
+    StringWriter writer = new StringWriter(str.length() * 2);
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+      switch (c) {
+      case '\\':
+      case '<':
+      case '>':
+      case '|':
+        writer.write("\\");
+      default:
+        writer.write(c);
+      }
+    }
+    return writer.toString();
+
   }
 
   private String hBox(List<String> rows) {

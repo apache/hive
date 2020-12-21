@@ -143,6 +143,15 @@ public class SharedWorkOptimizer extends Transform {
       return pctx;
     }
 
+    try {
+      new OperatorGraph(pctx).toDot(new java.io.File("/tmp/0.full.dot"));
+      new OperatorGraph(pctx).implode().toDot(new java.io.File("/tmp/0.joins.dot"));
+    } catch (Exception e1) {
+      throw new RuntimeException(e1);
+    }
+
+    //    subTreeDeDuplicator(pctx);
+
     if (LOG.isDebugEnabled()) {
       LOG.debug("Before SharedWorkOptimizer:\n" + Operator.toString(pctx.getTopOps().values()));
     }
@@ -300,8 +309,23 @@ public class SharedWorkOptimizer extends Transform {
       }
     }
 
+    try {
+      new OperatorGraph(pctx).toDot(new java.io.File("/tmp/1.full.dot"));
+      new OperatorGraph(pctx).implode().toDot(new java.io.File("/tmp/1.joins.dot"));
+    } catch (Exception e1) {
+      throw new RuntimeException(e1);
+    }
+
     return pctx;
   }
+
+  //  private void subTreeDeDuplicator(ParseContext pctx) {
+  //    pctx.getFetchSink();0
+  //    OperatorGraph og = new OperatorGraph(pctx);
+  //    OpTreeSignatureFactory sigFactory = OpTreeSignatureFactory.newCache();
+  //    sigFactory.getSignature(pctx);
+  //    OpTreeSignature.of(root);
+  //  }
 
   /** SharedWorkOptimization strategy modes */
   public enum Mode {
