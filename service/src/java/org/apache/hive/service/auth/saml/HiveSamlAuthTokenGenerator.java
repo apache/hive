@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * is passed back to the client (Jdbc/ODBC Driver) via the browser. This token is
  * presented by the subsequent http request as a bearer token.
  */
-public class HiveSamlAuthTokenGenerator implements AuthTokenGenerator {
+public class HiveSamlAuthTokenGenerator implements ISAMLAuthTokenGenerator {
 
   private final long ttlMs;
   private final SecureRandom rand = new SecureRandom();
@@ -50,7 +50,7 @@ public class HiveSamlAuthTokenGenerator implements AuthTokenGenerator {
   private static HiveSamlAuthTokenGenerator INSTANCE;
   private static final Logger LOG = LoggerFactory.getLogger(HiveSamlAuthTokenGenerator.class);
 
-  public static synchronized AuthTokenGenerator get(HiveConf conf) {
+  public static synchronized ISAMLAuthTokenGenerator get(HiveConf conf) {
     if (INSTANCE != null) {
       return INSTANCE;
     }

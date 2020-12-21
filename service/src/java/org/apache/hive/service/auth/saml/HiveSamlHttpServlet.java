@@ -34,7 +34,7 @@ public class HiveSamlHttpServlet extends HttpServlet {
   private static final Logger LOG = LoggerFactory
       .getLogger(HiveSamlHttpServlet.class);
   private final HiveConf conf;
-  private final AuthTokenGenerator tokenGenerator;
+  private final ISAMLAuthTokenGenerator tokenGenerator;
   private static final String LOOP_BACK_INTERFACE = "127.0.0.1";
 
   public HiveSamlHttpServlet(HiveConf conf) {

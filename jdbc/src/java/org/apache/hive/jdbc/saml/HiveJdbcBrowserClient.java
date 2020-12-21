@@ -64,7 +64,7 @@ public class HiveJdbcBrowserClient implements IJdbcBrowserClient {
   private HiveJdbcBrowserServerResponse serverResponse;
   protected JdbcBrowserClientContext clientContext;
   // By default we wait for 2 min unless overridden by a JDBC connection param
-  // saml.response.timeout
+  // browserResponseTimeout
   private static final int DEFAULT_SOCKET_TIMEOUT_SECS = 120;
   private final ExecutorService serverResponseThread = Executors.newSingleThreadExecutor(
       new ThreadFactoryBuilder().setNameFormat("Hive-Jdbc-Browser-Client-%d")
@@ -180,11 +180,15 @@ public class HiveJdbcBrowserClient implements IJdbcBrowserClient {
       if (Desktop.isDesktopSupported()) {
         Desktop.getDesktop().browse(ssoUri);
       } else {
+        LOG.debug(
+            "Desktop mode is not supported. Attempting to use OS "
+                + "commands to open the default browser");
         //Desktop is not supported, lets try to open the browser process
         OsType os = getOperatingSystem();
         switch (os) {
           case WINDOWS:
-            //TODO(Vihang)
+            Runtime.getRuntime()
+                .exec("rundll32 url.dll,FileProtocolHandler " + ssoUri.toString());
             break;
           case MAC:
             Runtime.getRuntime().exec("open " + ssoUri.toString());
@@ -227,7 +231,6 @@ public class HiveJdbcBrowserClient implements IJdbcBrowserClient {
         String[] lines = response.split("\r\n");
         for (String line : lines) {
           if (!Strings.isNullOrEmpty(line)) {
-            //TODO(Vihang) may be better to have a Jetty server and parse the response
             if (line.contains("token=")) {
               serverResponse = new HiveJdbcBrowserServerResponse(line);
               sendBrowserMsg(socket, serverResponse.isSuccessful());

@@ -39,14 +39,13 @@ import org.slf4j.LoggerFactory;
  */
 public class HiveSamlRelayStateStore implements ValueGenerator {
 
+  private static final Logger LOG = LoggerFactory
+      .getLogger(HiveSamlRelayStateStore.class);
   private final Cache<String, HiveSamlRelayStateInfo> relayStateCache =
       CacheBuilder.newBuilder()
           //TODO(Vihang) make this configurable
           .expireAfterWrite(5, TimeUnit.MINUTES)
           .build();
-  private static final Random randGenerator = new SecureRandom();
-  private static final Logger LOG = LoggerFactory
-      .getLogger(HiveSamlRelayStateStore.class);
 
   private static final HiveSamlRelayStateStore INSTANCE = new HiveSamlRelayStateStore();
 
@@ -57,6 +56,16 @@ public class HiveSamlRelayStateStore implements ValueGenerator {
     return INSTANCE;
   }
 
+  /**
+   * This method is used to generate the RelayState for a given SAML authentication
+   * request. It generates a UUID which is added to the SAMl authentication request URL
+   * as a query parameter RelayState. This RelayState is resent by the IDP later as per
+   * SAML specification and it is used to extract the state associated with the given
+   * SAML authentication request. It is important to note that the RelayState identifier
+   * itself should not contain any secrets since it can be seen by anyone from the URL.
+   * @return RelayState identifier to be used as value of the query parameter RelayState
+   * in the SAML authentication request redirect URL.
+   */
   @Override
   public String generateValue(WebContext webContext) {
     Optional<String> portNumber = webContext
@@ -68,14 +77,21 @@ public class HiveSamlRelayStateStore implements ValueGenerator {
     }
     int port = Integer.parseInt(portNumber.get());
     String relayState = UUID.randomUUID().toString();
+    // note that clientIdentifier below is a different UUID than relayState.
+    // relayState should not contain any secrets since it is visible on the URL string.
     HiveSamlRelayStateInfo relayStateInfo = new HiveSamlRelayStateInfo(port,
-        randGenerator.nextLong());
+        UUID.randomUUID().toString());
     webContext.setResponseHeader(HiveSamlUtils.SSO_CLIENT_IDENTIFIER,
-        String.valueOf(relayStateInfo.getCodeVerifier()));
+        relayStateInfo.getClientIdentifier());
     relayStateCache.put(relayState, relayStateInfo);
     return relayState;
   }
 
+  /**
+   * Get the RelayState from the {@link HttpServletRequest}.
+   * @throws HttpSamlAuthenticationException If RelayState parameter is not available
+   * in the request.
+   */
   public String getRelayStateInfo(HttpServletRequest request,
       HttpServletResponse response)
       throws HttpSamlAuthenticationException {
@@ -87,26 +103,41 @@ public class HiveSamlRelayStateStore implements ValueGenerator {
     return relayState;
   }
 
-  public HiveSamlRelayStateInfo getRelayStateInfo(String relayState)
+  /**
+   * Given a RelayStateIdentifier, return the {@link HiveSamlRelayStateInfo}
+   * @param relayStateId
+   * @return
+   * @throws HttpSamlAuthenticationException if there is no {@link HiveSamlRelayStateInfo}
+   * for the given relayStateIdentifier. This could happen if there is a unknown relay
+   * state from the request or if the IDP responded too late and the cached RelayState
+   * was evicted.
+   */
+  public HiveSamlRelayStateInfo getRelayStateInfo(String relayStateId)
       throws HttpSamlAuthenticationException {
-    HiveSamlRelayStateInfo relayStateInfo = relayStateCache.getIfPresent(relayState);
+    HiveSamlRelayStateInfo relayStateInfo = relayStateCache.getIfPresent(relayStateId);
     if (relayStateInfo == null) {
       throw new HttpSamlAuthenticationException(
-          "Invalid value of relay state received: " + relayState);
+          "Invalid value of relay state received: " + relayStateId);
     }
     return relayStateInfo;
   }
 
-  public synchronized boolean validateCodeVerifier(String relayStateKey,
-      String codeVerifier) {
+  /**
+   * Given a relayState and a client identifier, this method makes sure that the relay
+   * state exists and that the client identifier matches with the relay state. Note that
+   * this is one-time use only. Once successfully validated, the same relayState and
+   * client identifier cannot be validated again. This is mainly used to make sure that
+   * the SAML token issued by the Hiveserver2 is only used once.
+   */
+  public synchronized boolean validateClientIdentifier(String relayStateKey,
+      String clientIdentifier) {
     HiveSamlRelayStateInfo relayStateInfo = relayStateCache.getIfPresent(relayStateKey);
     if (relayStateInfo == null) {
       return false;
     }
-    //TODO(Vihang) compare the hash instead of the value?
     relayStateCache.invalidate(relayStateKey);
-    LOG.debug("Validating code verifier {} with {}", codeVerifier,
-        relayStateInfo.getCodeVerifier());
-    return String.valueOf(relayStateInfo.getCodeVerifier()).equals(codeVerifier);
+    LOG.debug("Validating client identifier {} with {}", clientIdentifier,
+        relayStateInfo.getClientIdentifier());
+    return String.valueOf(relayStateInfo.getClientIdentifier()).equals(clientIdentifier);
   }
 }

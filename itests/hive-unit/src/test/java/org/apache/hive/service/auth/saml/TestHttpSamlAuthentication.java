@@ -258,6 +258,11 @@ public class TestHttpSamlAuthentication {
         String testPass) throws SQLException {
       super(uri, info, new TestHiveJdbcBrowserClientFactory(testUser, testPass, 0L));
     }
+
+    @Override
+    protected void validateSslForBrowserMode() {
+      // the tests using non-ssl connection; we skip the validation.
+    }
   }
 
   /**

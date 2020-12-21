@@ -18,20 +18,23 @@
 
 package org.apache.hive.service.auth.saml;
 
+/**
+ * Wrapper class to store the RelayState of the SAML authentication flow.
+ */
 public class HiveSamlRelayStateInfo {
   private final int port;
-  private final long codeVerifier;
+  private final String clientIdentifier;
 
-  HiveSamlRelayStateInfo(int port, long codeVerifier) {
+  HiveSamlRelayStateInfo(int port, String clientIdentifier) {
     this.port = port;
-    this.codeVerifier = codeVerifier;
+    this.clientIdentifier = clientIdentifier;
   }
 
   public int getPort() {
     return port;
   }
 
-  public long getCodeVerifier() {
-    return codeVerifier;
+  public String getClientIdentifier() {
+    return clientIdentifier;
   }
 }

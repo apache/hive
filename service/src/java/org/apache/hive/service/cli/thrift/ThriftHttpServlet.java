@@ -323,13 +323,14 @@ public class ThriftHttpServlet extends TServlet {
       throw new HttpSamlAuthenticationException("Client identifier not found");
     }
     String user = HiveSamlAuthTokenGenerator.get(hiveConf).validate(token);
-    // token is valid; now confirm if the code verifier matches with the relay state.
+    // token is valid; now confirm if the client identifier matches with the relay state.
     Map<String, String> keyValues = new HashMap<>();
     if (HiveSamlAuthTokenGenerator.parse(token, keyValues)) {
       String relayStateKey = keyValues.get(HiveSamlAuthTokenGenerator.RELAY_STATE);
       if (!HiveSamlRelayStateStore.get()
-          .validateCodeVerifier(relayStateKey, clientIdentifier)) {
-        throw new HttpSamlAuthenticationException("Code verifier could not be validated");
+          .validateClientIdentifier(relayStateKey, clientIdentifier)) {
+        throw new HttpSamlAuthenticationException(
+            "Client identifier could not be validated");
       }
     }
     return user;

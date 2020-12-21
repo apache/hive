@@ -22,9 +22,12 @@ import static org.apache.hive.service.auth.saml.HiveSamlUtils.SSO_TOKEN_RESPONSE
 import static org.opensaml.saml.common.xml.SAMLConstants.SAML2_POST_BINDING_URI;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Splitter;
 import java.io.IOException;
 import java.net.URI;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -38,6 +41,7 @@ import org.pac4j.saml.config.SAML2Configuration;
 import org.pac4j.saml.credentials.SAML2Credentials;
 import org.pac4j.saml.credentials.SAML2Credentials.SAMLAttribute;
 import org.pac4j.saml.credentials.extractor.SAML2CredentialsExtractor;
+import org.pac4j.saml.replay.ReplayCacheProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +50,11 @@ import org.slf4j.LoggerFactory;
  * heavy lifting. This class implements the initialization logic of the underlying {@link
  * SAML2Client} using the HiveConf. Also, implements the generation of SAML requests using
  * HTTP-Redirect binding. //TODO: Add support for HTTP-Post binding for SAML request.
+ *
+ * //TODO Note that this implementation is only to be used when HiveServer2 is not
+ * deployed in HA mode. In case of HA mode, we should implement a
+ * {@link ReplayCacheProvider} such that the {@link org.opensaml.storage.ReplayCache} is
+ * shared between all HS2 instances. Ref: http://www.pac4j.org/docs/clients/saml.html
  */
 public class HiveSaml2Client extends SAML2Client {
 
@@ -60,7 +69,6 @@ public class HiveSaml2Client extends SAML2Client {
     setStateGenerator(HiveSamlRelayStateStore.get());
     groupNameFilter = new HiveSamlGroupNameFilter(conf);
     init();
-    //TODO handle the replayCache as described in http://www.pac4j.org/docs/clients/saml.html
   }
 
   private static String getCallBackUrl(HiveConf conf) throws Exception {
@@ -94,6 +102,24 @@ public class HiveSaml2Client extends SAML2Client {
     saml2Configuration
         .setAuthnRequestBindingType(SAMLConstants.SAML2_REDIRECT_BINDING_URI);
     saml2Configuration.setResponseBindingType(SAML2_POST_BINDING_URI);
+    saml2Configuration.setForceAuth(
+        conf.getBoolean(ConfVars.HIVE_SERVER2_SAML_FORCE_AUTH.varname, false));
+    saml2Configuration.setMaximumAuthenticationLifetime(
+        ((int) conf.getTimeVar(ConfVars.HIVE_SERVER2_SAML_AUTHENTICATION_LIFETIME,
+            TimeUnit.SECONDS)));
+    String acsIndex = conf.get(ConfVars.HIVE_SERVER2_SAML_ACS_INDEX.varname, "");
+    if (!acsIndex.isEmpty()) {
+      saml2Configuration.setAssertionConsumerServiceIndex(
+          conf.getIntVar(ConfVars.HIVE_SERVER2_SAML_ACS_INDEX));
+    }
+    List<String> blackListedSignAlgos = Splitter.on(',').splitToList(
+        conf.get(ConfVars.HIVE_SERVER2_SAML_BLACKLISTED_SIGNATURE_ALGORITHMS.varname,
+            ""));
+    if (!blackListedSignAlgos.isEmpty()) {
+      LOG.info(
+          "List of disallowed signature algorithms: " + blackListedSignAlgos);
+      saml2Configuration.setBlackListedSignatureSigningAlgorithms(blackListedSignAlgos);
+    }
     // if the SP id is set use it else we configure the SP Id as the callback id.
     // this behavior IDP dependent. E.g. in case of Okta we can explicitly set a
     // different SP id.

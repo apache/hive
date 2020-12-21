@@ -108,6 +108,7 @@ public class Utils {
     // connection parameter used to specify a port number to listen on in case of
     // browser mode.
     public static final String AUTH_BROWSER_RESPONSE_PORT = "browserResponsePort";
+    // connection parameter used to specify the timeout in seconds for the browser mode
     public static final String AUTH_BROWSER_RESPONSE_TIMEOUT_SECS = "browserResponseTimeout";
     public static final String ANONYMOUS_USER = "anonymous";
     public static final String ANONYMOUS_PASSWD = "anonymous";

@@ -127,6 +127,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
 import org.apache.http.NoHttpResponseException;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.ServiceUnavailableRetryStrategy;
@@ -532,11 +533,16 @@ public class HiveConnection implements java.sql.Connection {
   private TTransport createHttpTransport() throws SQLException, TTransportException {
     CloseableHttpClient httpClient;
     boolean useSsl = isSslConnection();
-    //TODO(Vihang) throw exception is ssl is disabled and SAML is being used.
-    // Create an http client from the configs
+    validateSslForBrowserMode();
     httpClient = getHttpClient(useSsl);
     transport = new THttpClient(getServerHttpUrl(useSsl), httpClient);
     return transport;
+  }
+
+  protected void validateSslForBrowserMode() throws SQLException {
+    if (isBrowserAuthMode() && !isSslConnection()) {
+      throw new SQLException("Browser mode is only supported with SSL is enabled");
+    }
   }
 
   private CloseableHttpClient getHttpClient(Boolean useSsl) throws SQLException {
@@ -1147,8 +1153,8 @@ public class HiveConnection implements java.sql.Connection {
       String code = e.getMessage().substring("HTTP Response code: ".length());
       try {
         int statusCode = Integer.parseInt(code.trim());
-        // TODO(Vihang) May be more type of return code here?
-        if (statusCode == 302) {
+        if (statusCode == HttpStatus.SC_SEE_OTHER
+            || statusCode == HttpStatus.SC_MOVED_TEMPORARILY) {
           return true;
         }
       } catch (NumberFormatException ex) {
