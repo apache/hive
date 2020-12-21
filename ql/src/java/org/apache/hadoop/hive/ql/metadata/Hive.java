@@ -312,14 +312,10 @@ public class Hive {
     try {
       reloadFunctions();
       didRegisterAllFuncs.compareAndSet(REG_FUNCS_PENDING, REG_FUNCS_DONE);
-    } catch (Exception | Error e) {
-      LOG.warn("Failed to register all functions.", e);
+    } catch (HiveException e) {
+      LOG.warn("Failed to register all functions", e);
       didRegisterAllFuncs.compareAndSet(REG_FUNCS_PENDING, REG_FUNCS_NO);
-      if (e instanceof Exception) {
-        throw new HiveException(e);
-      } else {
-        throw e;
-      }
+      throw e;
     } finally {
       synchronized (didRegisterAllFuncs) {
         didRegisterAllFuncs.notifyAll();
@@ -844,10 +840,8 @@ public class Hive {
       getMSC().alter_table(
           catName, dbName, tblName, newTbl.getTTable(), environmentContext,
           tableSnapshot == null ? null : tableSnapshot.getValidWriteIdList());
-    } catch (MetaException e) {
-      throw new HiveException("Unable to alter table. " + e.getMessage(), e);
     } catch (TException e) {
-      throw new HiveException("Unable to alter table. " + e.getMessage(), e);
+      throw new HiveException("Failed to alter table", e);
     }
   }
 
@@ -960,7 +954,7 @@ public class Hive {
     try {
       getMSC().updateCreationMetadata(dbName, tableName, cm);
     } catch (TException e) {
-      throw new HiveException("Unable to update creation metadata " + e.getMessage(), e);
+      throw new HiveException("Failed to update creation metadata", e);
     }
   }
 
@@ -1029,10 +1023,8 @@ public class Hive {
           dbName, tblName, newPart.getTPartition(), environmentContext,
           tableSnapshot == null ? null : tableSnapshot.getValidWriteIdList());
 
-    } catch (MetaException e) {
-      throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     } catch (TException e) {
-      throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
+      throw new HiveException("Failed to alter partition", e);
     }
   }
 
@@ -1083,10 +1075,8 @@ public class Hive {
       getMSC().alter_partitions(names[0], names[1], newTParts, environmentContext,
           tableSnapshot != null ? tableSnapshot.getValidWriteIdList() : null,
           tableSnapshot != null ? tableSnapshot.getWriteId() : -1);
-    } catch (MetaException e) {
-      throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
     } catch (TException e) {
-      throw new HiveException("Unable to alter partition. " + e.getMessage(), e);
+      throw new HiveException("Failed to alter partition", e);
     }
   }
   /**
@@ -1107,10 +1097,10 @@ public class Hive {
       Map<String, String> newPartSpec = newPart.getSpec();
       if (oldPartSpec.keySet().size() != tbl.getPartCols().size()
           || newPartSpec.keySet().size() != tbl.getPartCols().size()) {
-        throw new HiveException("Unable to rename partition to the same name: number of partition cols don't match. ");
+        throw new HiveException("Unable to rename partition to the same name: number of partition cols do not match");
       }
       if (!oldPartSpec.keySet().equals(newPartSpec.keySet())){
-        throw new HiveException("Unable to rename partition to the same name: old and new partition cols don't match. ");
+        throw new HiveException("Unable to rename partition to the same name: old and new partition cols do not match");
       }
       List<String> pvals = new ArrayList<String>();
 
@@ -1150,12 +1140,8 @@ public class Hive {
       getMSC().renamePartition(catName, tbl.getDbName(), tbl.getTableName(), pvals,
           newPart.getTPartition(), validWriteIds);
 
-    } catch (InvalidOperationException e){
-      throw new HiveException("Unable to rename partition. " + e.getMessage(), e);
-    } catch (MetaException e) {
-      throw new HiveException("Unable to rename partition. " + e.getMessage(), e);
     } catch (TException e) {
-      throw new HiveException("Unable to rename partition. " + e.getMessage(), e);
+      throw new HiveException("Failed to rename partition", e);
     }
   }
 
@@ -1164,12 +1150,10 @@ public class Hive {
       throws HiveException {
     try {
       getMSC().alterDatabase(dbName, db);
-    } catch (MetaException e) {
-      throw new HiveException("Unable to alter database " + dbName + ". " + e.getMessage(), e);
     } catch (NoSuchObjectException e) {
-      throw new HiveException("Database " + dbName + " does not exists.", e);
+      throw new HiveException("Database " + dbName + " does not exist", e);
     } catch (TException e) {
-      throw new HiveException("Unable to alter database " + dbName + ". " + e.getMessage(), e);
+      throw new HiveException("Unable to alter database " + dbName, e);
     }
   }
   /**
@@ -1553,7 +1537,7 @@ public class Hive {
       }
       return null;
     } catch (Exception e) {
-      throw new HiveException("Unable to fetch table " + tableName + ". " + e.getMessage(), e);
+      throw new HiveException("Unable to fetch table: " + tableName, e);
     }
 
     // For non-views, we need to do some extra fixes
@@ -1804,8 +1788,8 @@ public class Hive {
         if (outdated) {
           // The MV is outdated, see whether we should consider it for rewriting or not
           if (!tryIncrementalRewriting) {
-            LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                " ignored for rewriting as its contents are outdated");
+            LOG.debug("Materialized view {} ignored for rewriting as its contents are outdated",
+                materializedViewTable.getFullyQualifiedName());
             continue;
           }
           // We will rewrite it to include the filters on transaction list
@@ -2031,8 +2015,8 @@ public class Hive {
             ignore = invalidationInfo == null || invalidationInfo.isSourceTablesCompacted();
           }
           if (ignore) {
-            LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                " ignored for rewriting as its contents are outdated");
+            LOG.debug("Materialized view {} ignored for rewriting as its contents are outdated",
+                materializedViewTable.getFullyQualifiedName());
             continue;
           }
         }
@@ -2140,14 +2124,15 @@ public class Hive {
         Table materializedViewTable = extractTable(materialization);
         final Boolean outdated = isOutdatedMaterializedView(materializedViewTable, tablesUsed, false, txnMgr);
         if (outdated == null) {
-          LOG.debug("Unable to determine if Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                  " contents are outdated. It may uses external tables?");
+          LOG.debug(
+              "Unable to determine if Materialized view {} contents are outdated. It may uses external tables?",
+              materializedViewTable.getFullyQualifiedName());
           continue;
         }
 
         if (outdated) {
-          LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
-                  " ignored for rewriting as its contents are outdated");
+          LOG.debug("Materialized view {} ignored for rewriting as its contents are outdated",
+              materializedViewTable.getFullyQualifiedName());
           continue;
         }
 
@@ -2376,8 +2361,7 @@ public class Hive {
       try {
         setStatsPropAndAlterPartition(resetStatistics, tbl, newTPart, tableSnapshot);
       } catch (TException e) {
-        LOG.error("Error loading partitions", e);
-        throw new HiveException(e);
+        throw new HiveException("Error loading partitions", e);
       }
     }
 
@@ -2572,8 +2556,8 @@ public class Hive {
       // If there is no column stats gather stage present in the plan. So we don't know the accuracy of the stats or
       // auto gather stats is turn off explicitly. We need to reset the stats in both cases.
       if (resetStatistics || !this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-        LOG.debug(
-            "Clear partition column statistics by setting basic stats to false for " + newTPart.getCompleteName());
+        LOG.debug("Clear partition column statistics by setting basic stats to false for {}",
+            newTPart.getCompleteName());
         StatsSetupConst.setBasicStatsState(newTPart.getParameters(), StatsSetupConst.FALSE);
       }
 
@@ -2603,15 +2587,14 @@ public class Hive {
       }
       return newTPart;
     } catch (IOException | MetaException | InvalidOperationException e) {
-      LOG.error("Error in loadPartitionInternal", e);
-      throw new HiveException(e);
+      throw new HiveException("Error in loadPartitionInternal", e);
     }
   }
 
   private void addPartitionToMetastore(Partition newTPart, boolean resetStatistics,
                                        Table tbl, TableSnapshot tableSnapshot) throws HiveException{
     try {
-      LOG.debug("Adding new partition " + newTPart.getSpec());
+      LOG.debug("Adding new partition {}", newTPart.getSpec());
       getSynchronizedMSC().add_partition(newTPart.getTPartition());
     } catch (AlreadyExistsException aee) {
       // With multiple users concurrently issuing insert statements on the same partition has
@@ -2629,7 +2612,10 @@ public class Hive {
       try {
         setStatsPropAndAlterPartition(resetStatistics, tbl, newTPart, tableSnapshot);
       } catch (TException e) {
+<<<<<<< HEAD
         LOG.error("Error setStatsPropAndAlterPartition", e);
+=======
+>>>>>>> HIVE-24555: Improve Hive Class Logging/Error Handling
         throw new HiveException(e);
       }
     } catch (Exception e) {
@@ -2639,10 +2625,9 @@ public class Hive {
         final FileStatus status = newPathFileSystem.getFileStatus(newTPart.getPartitionPath());
         Hive.trashFiles(newPathFileSystem, new FileStatus[]{status}, this.getConf(), isSkipTrash);
       } catch (IOException io) {
-        LOG.error("Could not delete partition directory contents after failed partition creation: ", io);
+        LOG.error("Could not delete partition directory contents after failed partition creation", io);
       }
-      LOG.error("Error addPartitionToMetastore", e);
-      throw new HiveException(e);
+      throw new HiveException("Error addPartitionToMetastore", e);
     }
   }
 
@@ -2655,8 +2640,8 @@ public class Hive {
         return;
       }
       if (LOG.isDebugEnabled()) {
-        StringBuffer debugMsg = new StringBuffer("Adding new partitions ");
-        partitions.forEach(partition -> debugMsg.append(partition.getSpec() + " "));
+        StringBuilder debugMsg = new StringBuilder("Adding new partitions ");
+        partitions.forEach(partition -> debugMsg.append(partition.getSpec()).append(' '));
         LOG.debug(debugMsg.toString());
       }
       getSynchronizedMSC().add_partitions(partitions.stream().map(Partition::getTPartition)
@@ -2688,10 +2673,9 @@ public class Hive {
           Hive.trashFiles(newPathFileSystem, new FileStatus[]{status}, this.getConf(), isSkipTrash);
         }
       } catch (IOException io) {
-        LOG.error("Could not delete partition directory contents after failed partition creation: ", io);
+        LOG.error("Could not delete partition directory contents after failed partition creation", io);
       }
-      LOG.error("Failed addPartitionsToMetastore", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed addPartitionsToMetastore", e);
     }
   }
 
@@ -2746,10 +2730,10 @@ public class Hive {
     }
 
     if (acidFiles == null) {
-      LOG.debug("No files added by this query in: " + acidDir);
+      LOG.debug("No files added by this query in: {}", acidDir);
       return;
     }
-    LOG.debug("Listing files under " + acidDir);
+    LOG.debug("Listing files under {}", acidDir);
     for (FileStatus acidFile : acidFiles) {
       // need to list out only files, ignore folders.
       if (!acidFile.isDirectory()) {
@@ -2768,8 +2752,7 @@ public class Hive {
     } catch (FileNotFoundException e) {
       LOG.info("directory does not exist: " + loadPath);
     } catch (IOException e) {
-      LOG.error("Error listing files", e);
-      throw new HiveException(e);
+      throw new HiveException("Error listing files", e);
     }
     return Collections.EMPTY_LIST;
   }
@@ -2780,7 +2763,7 @@ public class Hive {
     if (!resetStatistics) {
       ec.putToProperties(StatsSetupConst.DO_NOT_UPDATE_STATS, StatsSetupConst.TRUE);
     }
-    LOG.debug("Altering existing partition " + newTPart.getSpec());
+    LOG.debug("Altering existing partition {}", newTPart.getSpec());
     getSynchronizedMSC().alter_partition(tbl.getCatName(),
         tbl.getDbName(), tbl.getTableName(), newTPart.getTPartition(), new EnvironmentContext(),
         tableSnapshot == null ? null : tableSnapshot.getValidWriteIdList());
@@ -3042,7 +3025,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     Map<Map<String, String>, Partition> result = Maps.newLinkedHashMap();
     try {
       futures = executor.invokeAll(tasks);
-      LOG.debug("Number of partitionsToAdd to be added is " + futures.size());
+      LOG.debug("Number of partitionsToAdd to be added is {}", futures.size());
       for (Future<Partition> future : futures) {
         Partition partition = future.get();
         result.put(partition.getSpec(), partition);
@@ -3083,11 +3066,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
               + " in table " + tbl.getTableName()
               + " with loadPath=" + loadPath, e);
     } catch (TException e) {
-      LOG.error("Failed loadDynamicPartitions", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed loadDynamicPartitions", e);
     } catch (Exception e) {
 
-      StringBuffer logMsg = new StringBuffer();
+      StringBuilder logMsg = new StringBuilder();
       logMsg.append("Exception when loading partitionsToAdd with parameters ");
       logMsg.append("partPaths=");
       partitionDetailsMap.keySet().forEach(path -> logMsg.append(path + ", "));
@@ -3098,10 +3080,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
               append("isAcid=" + isAcid + ", ").
               append("resetStatistics=" + resetStatistics);
 
-      LOG.error(logMsg.toString(), e);
-      throw e;
+      throw new HiveException(logMsg.toString(), e);
     } finally {
-      LOG.debug("Cancelling " + futures.size() + " dynamic loading tasks");
+      LOG.debug("Cancelling {} dynamic loading tasks", futures.size());
       executor.shutdownNow();
     }
     if (HiveConf.getBoolVar(conf, ConfVars.HIVE_IN_TEST) && HiveConf.getBoolVar(conf, ConfVars.HIVETESTMODEFAILLOADDYNAMICPARTITION)) {
@@ -3121,7 +3102,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       return result;
     } catch (TException te) {
+<<<<<<< HEAD
       LOG.error("Failed loadDynamicPartitions", te);
+=======
+>>>>>>> HIVE-24555: Improve Hive Class Logging/Error Handling
       throw new HiveException("Exception updating metastore for acid table "
           + tbd.getTable().getTableName() + " with partitions " + result.values(), te);
     }
@@ -3228,7 +3212,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     // If there is no column stats gather stage present in the plan. So we don't know the accuracy of the stats or
     // auto gather stats is turn off explicitly. We need to reset the stats in both cases.
     if (resetStatistics || !this.getConf().getBoolVar(HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-      LOG.debug("Clear table column statistics and set basic statistics to false for " + tbl.getCompleteName());
+      LOG.debug("Clear table column statistics and set basic statistics to false for {}", tbl.getCompleteName());
       StatsSetupConst.setBasicStatsState(tbl.getParameters(), StatsSetupConst.FALSE);
     }
 
@@ -3242,8 +3226,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
       }
     } catch (IOException e) {
-      LOG.error("Failed loadTable", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed loadTable", e);
     }
 
     EnvironmentContext environmentContext = null;
@@ -3284,8 +3267,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       part.setWriteId(tableSnapshot != null ? tableSnapshot.getWriteId() : 0);
       return new Partition(tbl, getMSC().add_partition(part));
     } catch (Exception e) {
-      LOG.error("Failed createPartition", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed createPartition", e);
     }
   }
 
@@ -3295,8 +3277,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       return getMSC().add_partitions(partitions, ifNotExists, needResults);
     } catch (Exception e) {
-      LOG.error("Failed addPartitions", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed addPartitions", e);
     }
   }
 
@@ -3315,7 +3296,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       GetPartitionResponse res = getMSC().getPartitionRequest(req);
       return res.getPartition();
     } catch (Exception e) {
+<<<<<<< HEAD
       LOG.error("Failed getPartition", e);
+=======
+>>>>>>> HIVE-24555: Improve Hive Class Logging/Error Handling
       throw new HiveException(e);
     }
   }
@@ -3326,8 +3310,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       getMSC().alter_partitions(dbName, tableName, partitions, ec, validWriteIdList, writeId);
     } catch (Exception e) {
-      LOG.error("Failed alterPartitions", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed alterPartitions", e);
     }
   }
 
@@ -3340,8 +3323,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       req.setNames(partitionNames);
       return getPartitionsByNames(req, t);
     } catch (Exception e) {
-      LOG.error("Failed getPartitionsByNames", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed getPartitionsByNames", e);
     }
   }
 
@@ -3405,14 +3387,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // getPartition() throws NoSuchObjectException to indicate null partition
       tpart = null;
     } catch (Exception e) {
-      LOG.error("Failed getPartitionWithAuthInfo", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed getPartitionWithAuthInfo", e);
     }
     try {
       if (forceCreate) {
         if (tpart == null) {
-          LOG.debug("creating partition for table " + tbl.getTableName()
-                    + " with partition spec : " + partSpec);
+          LOG.debug("creating partition for table {} with partition spec: {}", tbl.getTableName(), partSpec);
           try {
             tpart = getSynchronizedMSC().appendPartition(tbl.getDbName(), tbl.getTableName(), pvals);
           } catch (AlreadyExistsException aee) {
@@ -3448,8 +3428,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         return null;
       }
     } catch (Exception e) {
-      LOG.error("Failed getPartition", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed getPartition", e);
     }
     return new Partition(tbl, tpart);
   }
@@ -3470,8 +3449,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       org.apache.hadoop.hive.metastore.api.Partition tpart,
       boolean inheritTableSpecs,
       String partPath) throws HiveException, InvalidOperationException {
-    LOG.debug("altering partition for table " + tbl.getTableName() + " with partition spec : "
-        + partSpec);
+    LOG.debug("altering partition for table {} with partition spec : {}", partSpec);
     if (inheritTableSpecs) {
       tpart.getSd().setOutputFormat(tbl.getTTable().getSd().getOutputFormat());
       tpart.getSd().setInputFormat(tbl.getTTable().getSd().getInputFormat());
@@ -3482,7 +3460,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       tpart.getSd().setNumBuckets(tbl.getNumBuckets());
       tpart.getSd().setSortCols(tbl.getSortCols());
     }
-    if (partPath == null || partPath.trim().equals("")) {
+    if (partPath == null || partPath.trim().isEmpty()) {
       throw new HiveException("new partition path should not be null or empty.");
     }
     tpart.getSd().setLocation(partPath);
@@ -3496,7 +3474,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
 
     if (tbl.isTemporary()) {
-      LOG.debug("write notification log is ignored as " + tbl.getTableName() + " is temporary : " + writeId);
+      LOG.debug("write notification log is ignored as {} is temporary : {}", tbl.getTableName(), writeId);
       return;
     }
 
@@ -3544,7 +3522,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (conf.getBoolVar(ConfVars.FIRE_EVENTS_FOR_DML)) {
       LOG.debug("Firing dml insert event");
       if (tbl.isTemporary()) {
-        LOG.debug("Not firing dml insert event as " + tbl.getTableName() + " is temporary");
+        LOG.debug("Not firing dml insert event as {} is temporary", tbl.getTableName());
         return;
       }
       try {
@@ -3658,9 +3636,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
           partitionExpressions, dropOptions);
       return convertFromMetastore(table, partitions);
     } catch (NoSuchObjectException e) {
-      throw new HiveException("Partition or table doesn't exist.", e);
+      throw new HiveException("Partition or table does not exist", e);
     } catch (Exception e) {
-      throw new HiveException(e.getMessage(), e);
+      throw new HiveException("Unable to drop partition", e);
     }
   }
 
@@ -3675,8 +3653,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // listPartitionNames() throws NoSuchObjectException to indicate null partitions
       return Lists.newArrayList();
     } catch (Exception e) {
-      LOG.error("Failed getPartitionNames", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed getPartitionNames", e);
     }
     return names;
   }
@@ -3707,8 +3684,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // listPartitionNames() throws NoSuchObjectException to indicate null partitions
       return Lists.newArrayList();
     } catch (Exception e) {
-      LOG.error("Failed getPartitionNames", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed getPartitionNames", e);
     }
     return names;
   }
@@ -3743,8 +3719,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (NoSuchObjectException nsoe) {
       return Lists.newArrayList();
     } catch (Exception e) {
-      LOG.error("Failed getPartitionNames", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed getPartitionNames", e);
     }
     return names;
   }
@@ -3779,8 +3754,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           tParts = res.getPartitions();
 
         } catch (Exception e) {
-          LOG.error("Failed getPartitions", e);
-          throw new HiveException(e);
+          throw new HiveException("Failed getPartitions", e);
         }
         List<Partition> parts = new ArrayList<>(tParts.size());
         for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
@@ -3810,8 +3784,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       tParts = getMSC().listPartitions(tbl.getDbName(), tbl.getTableName(), (short)-1);
     } catch (Exception e) {
-      LOG.error("Failed getAllPartitionsOf", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed getAllPartitionsOf", e);
     }
     Set<Partition> parts = new LinkedHashSet<Partition>(tParts.size());
     for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
@@ -4155,8 +4128,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       getMSC().validatePartitionNameCharacters(partVals);
     } catch (Exception e) {
-      LOG.error("Failed validatePartitionNameCharacters", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed validatePartitionNameCharacters", e);
     }
   }
 
@@ -4412,7 +4384,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     boolean isInTest = HiveConf.getBoolVar(srcFs.getConf(), ConfVars.HIVE_IN_TEST);
     // In the automation, the data warehouse is the local file system based.
-    LOG.debug("The source path is " + fullF1 + " and the destination path is " + fullF2);
+    LOG.debug("The source path is {} and the destination path is {}", fullF1, fullF2);
     if (isInTest) {
       return fullF1.startsWith(fullF2);
     }
@@ -4429,12 +4401,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     // If both schema information are provided, they should be the same.
     if (schemaSrcf != null && schemaDestf != null && !schemaSrcf.equals(schemaDestf)) {
-      LOG.debug("The source path's schema is " + schemaSrcf +
-        " and the destination path's schema is " + schemaDestf + ".");
+      LOG.debug("The source path's schema is {} and the destination path's schema is {}", schemaSrcf, schemaDestf);
       return false;
     }
 
-    LOG.debug("The source path is " + fullF1 + " and the destination path is " + fullF2);
+    LOG.debug("The source path is {} and the destination path is {}", fullF1, fullF2);
     return fullF1.startsWith(fullF2);
   }
 
@@ -4601,14 +4572,12 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       destFs = destf.getFileSystem(conf);
     } catch (IOException e) {
-      LOG.error("Failed to get dest fs", e);
-      throw new HiveException(e.getMessage(), e);
+      throw new HiveException("Failed to get dest fs", e);
     }
     try {
       srcFs = srcf.getFileSystem(conf);
     } catch (IOException e) {
-      LOG.error("Failed to get src fs", e);
-      throw new HiveException(e.getMessage(), e);
+      throw new HiveException("Failed to get src fs", e);
     }
 
     String configuredOwner = HiveConf.getVar(conf, ConfVars.HIVE_LOAD_DATA_OWNER);
@@ -4632,7 +4601,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
           // to delete the file first
           if (replace && !srcIsSubDirOfDest) {
             destFs.delete(destf, true);
-            LOG.debug("The path " + destf.toString() + " is deleted");
+            LOG.debug("The path {} is deleted", destf);
           }
         } catch (FileNotFoundException ignore) {
         }
@@ -4645,7 +4614,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       } else {
         if (needToCopy(conf, srcf, destf, srcFs, destFs, configuredOwner, isManaged)) {
           //copy if across file system or encryption zones.
-          LOG.debug("Copying source " + srcf + " to " + destf + " because HDFS encryption zones are different.");
+          LOG.debug("Copying source {} to {} because HDFS encryption zones are different", srcf, destf);
           return FileUtils.copy(srcf.getFileSystem(conf), srcf, destf.getFileSystem(conf), destf,
               true,    // delete source
               replace, // overwrite destination
@@ -4669,9 +4638,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
               final Path destFile = new Path(destf, srcStatus.getPath().getName());
 
-              final String poolMsg =
-                  "Unable to move source " + srcStatus.getPath() + " to destination " + destFile;
-
               if (null == pool) {
                 deleteAndRename(destFs, destFile, srcStatus, destf);
               } else {
@@ -4682,7 +4648,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
                     try {
                       deleteAndRename(destFs, destFile, srcStatus, destf);
                     } catch (Exception e) {
-                      throw getHiveException(e, poolMsg);
+                      throw getHiveException(e,
+                          "Unable to move source " + srcStatus.getPath() + " to destination " + destFile);
                     }
                     return null;
                   }
@@ -4801,11 +4768,11 @@ private void constructOneLBLocationMap(FileStatus fSta,
           }
         }
       } catch (IOException e) {
-        throw new HiveException("Could not fetch FileStatus for source file");
+        throw new HiveException("Could not fetch FileStatus for source file", e);
       } catch (HiveException e) {
         throw new HiveException(e);
       } catch (Exception e) {
-        throw new HiveException(" Failed in looking up Permissions on file + " + srcf);
+        throw new HiveException("Failed in looking up Permissions on file + " + srcf, e);
       }
     }
 
@@ -4851,9 +4818,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         FileUtils.mkdir(fs, destf, conf);
       }
     } catch (IOException e) {
-      throw new HiveException(
-          "copyFiles: error while checking/creating destination directory!!!",
-          e);
+      throw new HiveException("Error while checking/creating destination directory", e);
     }
 
     FileStatus[] srcs;
@@ -4862,8 +4827,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       srcFs = srcf.getFileSystem(conf);
       srcs = srcFs.globStatus(srcf);
     } catch (IOException e) {
-      LOG.error("addFiles: filesystem error in check phase", e);
-      throw new HiveException("addFiles: filesystem error in check phase. " + e.getMessage(), e);
+      throw new HiveException("copyFiles: filesystem error in check phase", e);
     }
     if (srcs == null) {
       LOG.info("No sources specified to move: " + srcf);
@@ -4901,7 +4865,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     for (FileStatus stat : stats) {
       Path srcPath = stat.getPath();
 
-      LOG.debug("Acid move Looking for original buckets in " + srcPath);
+      LOG.debug("Acid move Looking for original buckets in {}", srcPath);
 
       FileStatus[] origBucketStats = null;
       try {
@@ -4937,11 +4901,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
           origBucketStats = buckets.toArray(new FileStatus[buckets.size()]);
         }
       } catch (IOException e) {
-        String msg = "Unable to look for bucket files in src path " + srcPath.toUri().toString();
-        LOG.error(msg);
-        throw new HiveException(msg, e);
+        throw new HiveException("Unable to look for bucket files in src path: " + srcPath.toUri(), e);
       }
-      LOG.debug("Acid move found " + origBucketStats.length + " original buckets");
+      LOG.debug("Acid move found {} original buckets", origBucketStats.length);
 
       for (FileStatus origBucketStat : origBucketStats) {
         Path origBucketPath = origBucketStat.getPath();
@@ -4958,7 +4920,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private static void moveAcidFiles(String deltaFileType, PathFilter pathFilter, FileSystem fs,
                                     Path dst, Path origBucketPath, Set<Path> createdDeltaDirs,
                                     List<Path> newFiles) throws HiveException {
-    LOG.debug("Acid move looking for " + deltaFileType + " files in bucket " + origBucketPath);
+    LOG.debug("Acid move looking for {} files in bucket {}", deltaFileType, origBucketPath);
 
     FileStatus[] deltaStats = null;
     try {
@@ -4967,7 +4929,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throw new HiveException("Unable to look for " + deltaFileType + " files in original bucket " +
           origBucketPath.toUri().toString(), e);
     }
-    LOG.debug("Acid move found " + deltaStats.length + " " + deltaFileType + " files");
+    LOG.debug("Acid move found {} {} files", deltaStats.length, deltaFileType);
 
     for (FileStatus deltaStat : deltaStats) {
       Path deltaPath = deltaStat.getPath();
@@ -4995,25 +4957,23 @@ private void constructOneLBLocationMap(FileStatus fSta,
           }
         }
         FileStatus[] bucketStats = fs.listStatus(deltaPath, AcidUtils.bucketFileFilter);
-        LOG.debug("Acid move found " + bucketStats.length + " bucket files");
+        LOG.debug("Acid move found {} bucket files", bucketStats.length);
         for (FileStatus bucketStat : bucketStats) {
           Path bucketSrc = bucketStat.getPath();
           Path bucketDest = new Path(deltaDest, bucketSrc.getName());
-          final String msg = "Unable to move source " + bucketSrc + " to destination " +
-              bucketDest;
-          LOG.info("Moving bucket " + bucketSrc.toUri().toString() + " to " +
-              bucketDest.toUri().toString());
+          LOG.info("Moving bucket " + bucketSrc.toUri() + " to " + bucketDest.toUri());
           try {
             fs.rename(bucketSrc, bucketDest);
             if (newFiles != null) {
               newFiles.add(bucketDest);
             }
           } catch (Exception e) {
-            throw getHiveException(e, msg);
+            throw getHiveException(e, "Unable to move source " + bucketSrc + " to destination " +
+                bucketDest);
           }
         }
       } catch (IOException e) {
-        throw new HiveException("Error moving acid files " + e.getMessage(), e);
+        throw new HiveException("Error moving acid files", e);
       }
     }
   }
@@ -5072,9 +5032,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // first call FileUtils.mkdir to make sure that destf directory exists, if not, it creates
       // destf
       boolean destfExist = FileUtils.mkdir(destFs, destf, conf);
-      if(!destfExist) {
-        throw new IOException("Directory " + destf.toString()
-            + " does not exist and could not be created.");
+      if (!destfExist) {
+        throw new IOException("Directory " + destf + " does not exist and could not be created");
       }
 
       // Two cases:
@@ -5143,7 +5102,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         }
       }
     } catch (IOException e) {
-      throw new HiveException(e.getMessage(), e);
+      throw new HiveException("Error replacing files", e);
     }
   }
 
@@ -5166,11 +5125,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
     } catch (IOException e) {
       if (isOldPathUnderDestf) {
         // if oldPath is a subdir of destf but it could not be cleaned
-        throw new HiveException("Directory " + oldPath.toString()
-            + " could not be cleaned up.", e);
+        throw new HiveException("Directory " + oldPath + " could not be cleaned up", e);
       } else {
         //swallow the exception since it won't affect the final result
-        LOG.warn("Directory " + oldPath.toString() + " cannot be cleaned: " + e, e);
+        LOG.warn("Directory " + oldPath + " cannot be cleaned", e);
       }
     }
   }
@@ -5239,7 +5197,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
         try {
           result &= future.get();
         } catch (InterruptedException | ExecutionException e) {
-          LOG.error("Failed to delete: ",e);
           pool.shutdownNow();
           throw new IOException(e);
         }
@@ -5262,8 +5219,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       return convertFromMetastore(getTable(destDb, destinationTableName), partitions);
     } catch (Exception ex) {
-      LOG.error("Failed exchangeTablePartitions", ex);
-      throw new HiveException(ex);
+      throw new HiveException(("Failed exchangeTablePartitions", ex);
     }
   }
 
@@ -5305,9 +5261,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
               HiveUtils.getStorageHandler(conf, tbl.getParameters().get(META_TABLE_STORAGE));
       return storageHandler;
     } catch (HiveException ex) {
-      LOG.error("Failed createStorageHandler", ex);
       throw new MetaException(
-              "Failed to load storage handler:  " + ex.getMessage());
+              "Failed to load storage handler: " + ex.getMessage());
     }
   }
 
@@ -5410,12 +5365,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       Deserializer serde) throws HiveException {
     try {
       return HiveMetaStoreUtils.getFieldsFromDeserializer(name, serde);
-    } catch (SerDeException e) {
-      throw new HiveException("Error in getting fields from serde. "
-          + e.getMessage(), e);
-    } catch (MetaException e) {
-      throw new HiveException("Error in getting fields from serde."
-          + e.getMessage(), e);
+    } catch (SerDeException | MetaException e) {
+      throw new HiveException("Error in getting fields from serde", e);
     }
   }
 
@@ -5436,8 +5387,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       return getMSC().setPartitionColumnStatistics(request);
     } catch (Exception e) {
-      LOG.debug("Failed setPartitionColumnStatistics", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed setPartitionColumnStatistics", e);
     }
   }
 
@@ -5460,8 +5410,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       return retv;
     } catch (Exception e) {
-      LOG.debug("Failed getTableColumnStatistics", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed getTableColumnStatistics", e);
     } finally {
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_TABLE_COLUMN_STATS, "HS2-cache");
     }
@@ -5482,8 +5431,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       return getMSC().getPartitionColumnStatistics(
           dbName, tableName, partNames, colNames, Constants.HIVE_ENGINE, writeIdList);
     } catch (Exception e) {
-      LOG.debug("Failed getPartitionColumnStatistics", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed getPartitionColumnStatistics", e);
     }
   }
 
@@ -5503,8 +5451,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
       return result;
     } catch (Exception e) {
-      LOG.debug("Failed getAggrColStatsFor", e);
-      return new AggrStats(new ArrayList<ColumnStatisticsObj>(),0);
+      LOG.warn("Failed getAggrColStatsFor", e);
+      return new AggrStats(Collections.emptyList(), 0);
     } finally {
       perfLogger.perfLogEnd(CLASS_NAME, PerfLogger.HIVE_GET_AGGR_COL_STATS, "HS2-cache");
     }
@@ -5515,8 +5463,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       return getMSC().deleteTableColumnStatistics(dbName, tableName, colName, Constants.HIVE_ENGINE);
     } catch(Exception e) {
-      LOG.debug("Failed deleteTableColumnStatistics", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed deleteTableColumnStatistics", e);
     }
   }
 
@@ -5525,8 +5472,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
       try {
         return getMSC().deletePartitionColumnStatistics(dbName, tableName, partName, colName, Constants.HIVE_ENGINE);
       } catch(Exception e) {
-        LOG.debug("Failed deletePartitionColumnStatistics", e);
-        throw new HiveException(e);
+        throw new HiveException("Failed deletePartitionColumnStatistics", e);
       }
     }
 
@@ -5540,8 +5486,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       return getMSC().getDelegationToken(owner, renewer);
     } catch(Exception e) {
-      LOG.error("Failed getDelegationToken", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed getDelegationToken", e);
     }
   }
 
@@ -5550,8 +5495,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       getMSC().cancelDelegationToken(tokenStrForm);
     }  catch(Exception e) {
-      LOG.error("Failed cancelDelegationToken", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed cancelDelegationToken", e);
     }
   }
 
@@ -5589,16 +5533,14 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       return getMSC().compact2(dbname, tableName, partName, cr, tblproperties);
     } catch (Exception e) {
-      LOG.error("Failed compact2", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed compact2", e);
     }
   }
   public ShowCompactResponse showCompactions() throws HiveException {
     try {
       return getMSC().showCompactions();
     } catch (Exception e) {
-      LOG.error("Failed showCompactions", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed showCompactions", e);
     }
   }
 
@@ -5606,8 +5548,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       return getMSC().showTxns();
     } catch (Exception e) {
-      LOG.error("Failed showTransactions", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed showCompactions", e);
     }
   }
 
@@ -5615,8 +5556,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       getMSC().abortTxns(txnids);
     } catch (Exception e) {
-      LOG.error("Failed abortTransactions", e);
-      throw new HiveException(e);
+      throw new HiveException("Failed abortTransactions", e);
     }
   }
 
@@ -5695,7 +5635,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       return get().dumpAndClearMetaCallTiming(phase);
     } catch (HiveException he) {
-      LOG.warn("Caught exception attempting to write metadata call information " + he, he);
+      LOG.warn("Caught exception attempting to write metadata call information", he);
     }
     return null;
   }

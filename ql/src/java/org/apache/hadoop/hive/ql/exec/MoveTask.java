@@ -466,6 +466,8 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
 
       return 0;
     } catch (HiveException he) {
+      LOG.error("MoveTask failed", he);
+
       int errorCode = 1;
 
       if (he.getCanonicalErrorMsg() != ErrorMsg.GENERIC_ERROR) {
