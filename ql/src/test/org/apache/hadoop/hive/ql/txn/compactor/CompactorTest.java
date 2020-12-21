@@ -54,7 +54,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
@@ -83,7 +83,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -111,9 +110,9 @@ public abstract class CompactorTest {
   @Before
   public void setup() throws Exception {
     conf = new HiveConf();
-    TxnDbUtil.setConfValues(conf);
-    TxnDbUtil.cleanDb(conf);
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.prepDb(conf);
     ms = new HiveMetaStoreClient(conf);
     txnHandler = TxnUtils.getTxnStore(conf);
     tmpdir = new File(Files.createTempDirectory("compactor_test_table_").toString());
@@ -309,7 +308,7 @@ public abstract class CompactorTest {
 
   // I can't do this with @Before because I want to be able to control when the thread starts
   private void startThread(char type, boolean stopAfterOne) throws Exception {
-    TxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.setConfValues(conf);
     CompactorThread t;
     switch (type) {
       case 'i': t = new Initiator(); break;
