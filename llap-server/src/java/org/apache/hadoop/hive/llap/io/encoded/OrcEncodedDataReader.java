@@ -842,10 +842,13 @@ public class OrcEncodedDataReader extends CallableWithNdc<Void>
       options.withCodec(OrcCodecPool.getCodec(orcReader.getCompressionKind()))
           .withBufferSize(orcReader.getCompressionSize());
     }
+
+    int maxDiskRangeChunkLimit = OrcConf.ORC_MAX_DISK_RANGE_CHUNK_LIMIT.getInt(daemonConf);
     rawDataReader = LlapRecordReaderUtils.createDefaultLlapDataReader(
         DataReaderProperties.builder()
         .withFileSystemSupplier(fsSupplier).withPath(path)
         .withCompression(options)
+        .withMaxDiskRangeChunkLimit(maxDiskRangeChunkLimit)
         .withZeroCopy(useZeroCopy)
         .build());
 
