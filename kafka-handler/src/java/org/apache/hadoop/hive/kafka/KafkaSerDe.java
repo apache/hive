@@ -49,7 +49,6 @@ import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
@@ -93,35 +92,35 @@ import java.util.stream.Collectors;
   private BytesConverter bytesConverter;
   private int metadataStartIndex;
 
-  @Override public void initialize(@Nullable Configuration conf, Properties tbl) throws SerDeException {
-    //This method is called before {@link org.apache.hadoop.hive.kafka.KafkaStorageHandler.preCreateTable}
-    //Thus we need to default to org.apache.hadoop.hive.kafka.KafkaUtils.DEFAULT_PROPERTIES if any property is needed
-    final String
-        className =
-        tbl.getProperty(KafkaTableProperties.SERDE_CLASS_NAME.getName(),
-            KafkaTableProperties.SERDE_CLASS_NAME.getDefaultValue());
+  @Override
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    // This method is called before {@link
+    // org.apache.hadoop.hive.kafka.KafkaStorageHandler.preCreateTable}
+    // Thus we need to default to
+    // org.apache.hadoop.hive.kafka.KafkaUtils.DEFAULT_PROPERTIES if any
+    // property is needed
+    super.initialize(configuration, tableProperties, partitionProperties);
+
+    final String className = properties.getProperty(KafkaTableProperties.SERDE_CLASS_NAME.getName(),
+        KafkaTableProperties.SERDE_CLASS_NAME.getDefaultValue());
     delegateSerDe = KafkaUtils.createDelegate(className);
-    //noinspection deprecation
-    delegateSerDe.initialize(conf, tbl);
+    // noinspection deprecation
+    delegateSerDe.initialize(configuration, tableProperties, partitionProperties);
 
     if (!(delegateSerDe.getObjectInspector() instanceof StructObjectInspector)) {
-      throw new SerDeException("Was expecting Struct Object Inspector but have " + delegateSerDe.getObjectInspector()
-          .getClass()
-          .getName());
+      throw new SerDeException(
+          "Was expecting Struct Object Inspector but have " + delegateSerDe.getObjectInspector().getClass().getName());
     }
     delegateDeserializerOI = (StructObjectInspector) delegateSerDe.getObjectInspector();
 
     // Build column names Order matters here
-    columnNames.addAll(delegateDeserializerOI.getAllStructFieldRefs()
-        .stream()
-        .map(StructField::getFieldName)
+    columnNames.addAll(delegateDeserializerOI.getAllStructFieldRefs().stream().map(StructField::getFieldName)
         .collect(Collectors.toList()));
     columnNames.addAll(MetadataColumn.KAFKA_METADATA_COLUMN_NAMES);
 
     final List<ObjectInspector> inspectors = new ArrayList<>(columnNames.size());
-    inspectors.addAll(delegateDeserializerOI.getAllStructFieldRefs()
-        .stream()
-        .map(StructField::getFieldObjectInspector)
+    inspectors.addAll(delegateDeserializerOI.getAllStructFieldRefs().stream().map(StructField::getFieldObjectInspector)
         .collect(Collectors.toList()));
     inspectors.addAll(MetadataColumn.KAFKA_METADATA_INSPECTORS);
     objectInspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
@@ -130,15 +129,16 @@ import java.util.stream.Collectors;
     if (delegateSerDe.getSerializedClass() == Text.class) {
       bytesConverter = new TextBytesConverter();
     } else if (delegateSerDe.getSerializedClass() == AvroGenericRecordWritable.class) {
-      String schemaFromProperty = tbl.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), "");
+      String schemaFromProperty = properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), "");
       Preconditions.checkArgument(!schemaFromProperty.isEmpty(), "Avro Schema is empty Can not go further");
       Schema schema = AvroSerdeUtils.getSchemaFor(schemaFromProperty);
       LOG.debug("Building Avro Reader with schema {}", schemaFromProperty);
-      bytesConverter = getByteConverterForAvroDelegate(schema, tbl);
+      bytesConverter = getByteConverterForAvroDelegate(schema, properties);
     } else {
       bytesConverter = new BytesWritableConverter();
     }
   }
+
 
   enum BytesConverterType {
     SKIP,

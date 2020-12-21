@@ -139,12 +139,6 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
 
   private Deserializer getDeserializer(Table table) throws SQLException {
     Deserializer deserializer = table.getDeserializer(true);
-    if (deserializer instanceof AbstractSerDe) {
-      String errorMsgs = ((AbstractSerDe) deserializer).getConfigurationErrors();
-      if (StringUtils.isNotEmpty(errorMsgs)) {
-        throw new SQLException(errorMsgs);
-      }
-    }
     return deserializer;
   }
 

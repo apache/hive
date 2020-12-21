@@ -94,20 +94,19 @@ public class RegexSerDe extends AbstractSerDe {
   boolean alreadyLoggedPartialMatch = false;
 
   @Override
-  public void initialize(Configuration conf, Properties tbl)
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
-
-    // We can get the table definition from tbl.
+    super.initialize(configuration, tableProperties, partitionProperties);
 
     // Read the configuration parameters
-    inputRegex = tbl.getProperty(INPUT_REGEX);
-    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    boolean inputRegexIgnoreCase = "true".equalsIgnoreCase(tbl
+    inputRegex = properties.getProperty(INPUT_REGEX);
+    String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    boolean inputRegexIgnoreCase = "true".equalsIgnoreCase(properties
         .getProperty(INPUT_REGEX_CASE_SENSITIVE));
 
     // output format string is not supported anymore, warn user of deprecation
-    if (null != tbl.getProperty("output.format.string")) {
+    if (null != properties.getProperty("output.format.string")) {
       LOG.warn("output.format.string has been deprecated");
     }
 
@@ -121,7 +120,7 @@ public class RegexSerDe extends AbstractSerDe {
           "This table does not have serde property \"input.regex\"!");
     }
 
-    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
+    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? properties
         .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
     List<String> columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
     columnTypes = TypeInfoUtils
@@ -150,7 +149,7 @@ public class RegexSerDe extends AbstractSerDe {
 
     // StandardStruct uses ArrayList to store the row.
     rowOI = ObjectInspectorFactory.getStandardStructObjectInspector(
-        columnNames,columnOIs,Lists.newArrayList(Splitter.on('\0').split(tbl.getProperty("columns.comments"))));
+        columnNames,columnOIs,Lists.newArrayList(Splitter.on('\0').split(properties.getProperty("columns.comments"))));
 
     row = new ArrayList<Object>(numColumns);
     // Constructing the row object, etc, which will be reused for all rows.

@@ -93,62 +93,62 @@ public class RegexSerDe extends AbstractSerDe {
   ArrayList<String> row;
 
   @Override
-  public void initialize(Configuration conf, Properties tbl)
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
+   super.initialize(configuration, tableProperties, partitionProperties);
 
-    // We can get the table definition from tbl.
+   // We can get the table definition from tbl.
 
-    // Read the configuration parameters
-    inputRegex = tbl.getProperty(INPUT_REGEX);
-    outputFormatString = tbl.getProperty(OUTPUT_FORMAT_STRING);
-    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    boolean inputRegexIgnoreCase = "true".equalsIgnoreCase(tbl
-        .getProperty(INPUT_REGEX_CASE_SENSITIVE));
+   // Read the configuration parameters
+   inputRegex = properties.getProperty(INPUT_REGEX);
+   outputFormatString = properties.getProperty(OUTPUT_FORMAT_STRING);
+   String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+   String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+   boolean inputRegexIgnoreCase = "true".equalsIgnoreCase(properties
+       .getProperty(INPUT_REGEX_CASE_SENSITIVE));
 
-    // Parse the configuration parameters
-    if (inputRegex != null) {
-      inputPattern = Pattern.compile(inputRegex, Pattern.DOTALL
-          + (inputRegexIgnoreCase ? Pattern.CASE_INSENSITIVE : 0));
-    } else {
-      inputPattern = null;
-    }
-    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+   // Parse the configuration parameters
+   if (inputRegex != null) {
+     inputPattern = Pattern.compile(inputRegex, Pattern.DOTALL
+         + (inputRegexIgnoreCase ? Pattern.CASE_INSENSITIVE : 0));
+   } else {
+     inputPattern = null;
+   }
+    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
+        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
+        : String.valueOf(SerDeUtils.COMMA);
     List<String> columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-    List<TypeInfo> columnTypes = TypeInfoUtils
-        .getTypeInfosFromTypeString(columnTypeProperty);
+    List<TypeInfo> columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     assert columnNames.size() == columnTypes.size();
     numColumns = columnNames.size();
 
     // All columns have to be of type STRING.
     for (int c = 0; c < numColumns; c++) {
       if (!columnTypes.get(c).equals(TypeInfoFactory.stringTypeInfo)) {
-        throw new SerDeException(getClass().getName()
-            + " only accepts string columns, but column[" + c + "] named "
+        throw new SerDeException(getClass().getName() + " only accepts string columns, but column[" + c + "] named "
             + columnNames.get(c) + " has type " + columnTypes.get(c));
       }
     }
 
-    // Constructing the row ObjectInspector:
-    // The row consists of some string columns, each column will be a java
-    // String object.
-    List<ObjectInspector> columnOIs = new ArrayList<ObjectInspector>(
-        columnNames.size());
-    for (int c = 0; c < numColumns; c++) {
-      columnOIs.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
-    }
-    // StandardStruct uses ArrayList to store the row.
-    rowOI = ObjectInspectorFactory.getStandardStructObjectInspector(
-        columnNames, columnOIs);
+   // Constructing the row ObjectInspector:
+   // The row consists of some string columns, each column will be a java
+   // String object.
+   List<ObjectInspector> columnOIs = new ArrayList<ObjectInspector>(
+       columnNames.size());
+   for (int c = 0; c < numColumns; c++) {
+     columnOIs.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
+   }
+   // StandardStruct uses ArrayList to store the row.
+   rowOI = ObjectInspectorFactory.getStandardStructObjectInspector(
+       columnNames, columnOIs);
 
-    // Constructing the row object, etc, which will be reused for all rows.
-    row = new ArrayList<String>(numColumns);
-    for (int c = 0; c < numColumns; c++) {
-      row.add(null);
-    }
-    outputFields = new Object[numColumns];
-    outputRowText = new Text();
+   // Constructing the row object, etc, which will be reused for all rows.
+   row = new ArrayList<String>(numColumns);
+   for (int c = 0; c < numColumns; c++) {
+     row.add(null);
+   }
+   outputFields = new Object[numColumns];
+   outputRowText = new Text();
   }
 
   @Override

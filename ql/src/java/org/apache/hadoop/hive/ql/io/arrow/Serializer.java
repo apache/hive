@@ -138,9 +138,10 @@ public class Serializer {
   }
 
   Serializer(ArrowColumnarBatchSerDe serDe) throws SerDeException {
-    MAX_BUFFERED_ROWS = HiveConf.getIntVar(serDe.conf, HIVE_ARROW_BATCH_SIZE);
-    long childAllocatorLimit = HiveConf.getLongVar(serDe.conf, HIVE_ARROW_BATCH_ALLOCATOR_LIMIT);
-    this.useHybridCalendar = HiveConf.getBoolVar(serDe.conf, LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR);
+    Configuration serdeConf = serDe.getConfiguration().get();
+    MAX_BUFFERED_ROWS = HiveConf.getIntVar(serdeConf, HIVE_ARROW_BATCH_SIZE);
+    long childAllocatorLimit = HiveConf.getLongVar(serdeConf, HIVE_ARROW_BATCH_ALLOCATOR_LIMIT);
+    this.useHybridCalendar = HiveConf.getBoolVar(serdeConf, LLAP_EXTERNAL_CLIENT_USE_HYBRID_CALENDAR);
     ArrowColumnarBatchSerDe.LOG.info("ArrowColumnarBatchSerDe max number of buffered columns: " + MAX_BUFFERED_ROWS);
     String childAllocatorName = Thread.currentThread().getName();
     //Use per-task allocator for accounting only, no need to reserve per-task memory

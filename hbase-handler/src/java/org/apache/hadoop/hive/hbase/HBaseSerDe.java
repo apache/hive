@@ -110,30 +110,22 @@ public class HBaseSerDe extends AbstractSerDe {
     return getClass() + "[" + serdeParams + "]";
   }
 
-  public HBaseSerDe() throws SerDeException {
-  }
-
-  /**
-   * Initialize the SerDe given parameters.
-   * @see AbstractSerDe#initialize(Configuration, Properties)
-   */
   @Override
-  public void initialize(Configuration conf, Properties tbl)
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
-    serdeParams = new HBaseSerDeParameters(conf, tbl, getClass().getName());
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-    cachedObjectInspector =
-        HBaseLazyObjectFactory.createLazyHBaseStructInspector(serdeParams, tbl);
+    serdeParams = new HBaseSerDeParameters(configuration, tableProperties, getClass().getName());
 
-    cachedHBaseRow = new LazyHBaseRow(
-        (LazySimpleStructObjectInspector) cachedObjectInspector, serdeParams);
+    cachedObjectInspector = HBaseLazyObjectFactory.createLazyHBaseStructInspector(serdeParams, tableProperties);
+
+    cachedHBaseRow = new LazyHBaseRow((LazySimpleStructObjectInspector) cachedObjectInspector, serdeParams);
 
     serializer = new HBaseRowSerializer(serdeParams);
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("HBaseSerDe initialized with : " + serdeParams);
-    }
+    LOG.debug("HBaseSerDe initialized with : {}", serdeParams);
   }
+
 
   public static ColumnMappings parseColumnsMapping(String columnsMappingSpec)
       throws SerDeException {

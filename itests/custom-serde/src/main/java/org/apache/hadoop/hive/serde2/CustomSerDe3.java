@@ -33,27 +33,26 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
 public class CustomSerDe3 extends CustomSerDe1 {
-  @Override
-  public void initialize(Configuration conf, Properties tbl)
-      throws SerDeException {
 
+  @Override
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
     // Read the configuration parameters
-    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+    String columnNameProperty = tableProperties.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnTypeProperty = tableProperties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnNameDelimiter = tableProperties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
+        ? tableProperties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
+        : String.valueOf(SerDeUtils.COMMA);
     // The input column can either be a string or a list of integer values.
     List<String> columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-    List<TypeInfo> columnTypes = TypeInfoUtils
-        .getTypeInfosFromTypeString(columnTypeProperty);
+    List<TypeInfo> columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     assert columnNames.size() == columnTypes.size();
     numColumns = columnNames.size();
 
     // No exception for type checking for simplicity
     // Constructing the row ObjectInspector:
     // The row consists of some string columns, some Array<Array<int> > columns.
-    List<ObjectInspector> columnOIs = new ArrayList<ObjectInspector>(
-        columnNames.size());
+    List<ObjectInspector> columnOIs = new ArrayList<ObjectInspector>(columnNames.size());
     for (int c = 0; c < numColumns; c++) {
       if (columnTypes.get(c).equals(TypeInfoFactory.stringTypeInfo)) {
         columnOIs.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
@@ -66,8 +65,7 @@ public class CustomSerDe3 extends CustomSerDe1 {
       }
     }
     // Use non-settable struct object inspector.
-    rowOI = new CustomNonSettableStructObjectInspector1(
-        columnNames, columnOIs);
+    rowOI = new CustomNonSettableStructObjectInspector1(columnNames, columnOIs);
 
     // Constructing the row object, etc, which will be reused for all rows.
     row = new ArrayList<String>(numColumns);

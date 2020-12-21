@@ -70,17 +70,18 @@ public class HCatRecordSerDe extends AbstractSerDe {
   private HCatRecordObjectInspector cachedObjectInspector;
 
   @Override
-  public void initialize(Configuration conf, Properties tbl)
-    throws SerDeException {
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
     LOG.debug("Initializing HCatRecordSerDe");
-    LOG.debug("props to serde: {}", tbl.entrySet());
 
     // Get column names and types
-    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+    String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
+        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
+        : String.valueOf(SerDeUtils.COMMA);
     // all table column names
     if (columnNameProperty.length() == 0) {
       columnNames = new ArrayList<String>();
@@ -94,7 +95,6 @@ public class HCatRecordSerDe extends AbstractSerDe {
     } else {
       columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     }
-
 
     LOG.debug("columns: {} {}", columnNameProperty, columnNames);
     LOG.debug("types: {} {}", columnTypeProperty, columnTypes);
@@ -110,7 +110,6 @@ public class HCatRecordSerDe extends AbstractSerDe {
 
     rowTypeInfo = (StructTypeInfo) TypeInfoUtils.getTypeInfoFromTypeString(hsch.getSchemaAsTypeString());
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);
-
   }
 
 

@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBucketNumber;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -207,15 +208,18 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       }
 
       TableDesc keyTableDesc = conf.getKeySerializeInfo();
-      keySerializer = (Serializer) keyTableDesc.getDeserializerClass()
-          .newInstance();
-      keySerializer.initialize(null, keyTableDesc.getProperties());
+      AbstractSerDe keySerDe = keyTableDesc.getSerDeClass().newInstance();
+      keySerDe.initialize(null, keyTableDesc.getProperties(), null);
+
+      keySerializer = keySerDe;
       keyIsText = keySerializer.getSerializedClass().equals(Text.class);
 
       TableDesc valueTableDesc = conf.getValueSerializeInfo();
-      valueSerializer = (Serializer) valueTableDesc.getDeserializerClass()
+      AbstractSerDe valueSerDe = valueTableDesc.getSerDeClass()
           .newInstance();
-      valueSerializer.initialize(null, valueTableDesc.getProperties());
+      valueSerDe.initialize(null, valueTableDesc.getProperties(), null);
+
+      valueSerializer = valueSerDe;
 
       int limit = conf.getTopN();
       float memUsage = conf.getTopNMemoryUsage();

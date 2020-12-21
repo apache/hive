@@ -817,7 +817,7 @@ public class PTFTranslator {
     p.setProperty(
         org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
         serdePropsMap.get(org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES));
-    SerDeUtils.initializeSerDe(serDe, cfg, p, null);
+    serDe.initialize(cfg, p, null);
     return serDe;
   }
 
