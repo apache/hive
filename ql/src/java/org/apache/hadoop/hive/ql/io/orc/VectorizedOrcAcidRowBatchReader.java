@@ -437,8 +437,8 @@ public class VectorizedOrcAcidRowBatchReader
       return new OrcRawRecordMerger.KeyInterval(null, null);
     }
 
-    VectorizedOrcAcidRowBatchReader.ReaderData orcTailReader =
-        getOrcTail(orcSplit.getPath(), conf, cacheTag, orcSplit.getFileKey());
+    VectorizedOrcAcidRowBatchReader.ReaderData orcReaderData =
+        getOrcReaderData(orcSplit.getPath(), conf, cacheTag, orcSplit.getFileKey());
 
     if(orcSplit.isOriginal()) {
       /**
@@ -452,10 +452,10 @@ public class VectorizedOrcAcidRowBatchReader
        * Reader.Options, Configuration, OrcRawRecordMerger.Options)}*/
       LOG.debug("findMinMaxKeys(original split)");
 
-      return findOriginalMinMaxKeys(orcSplit, orcTailReader.orcTail, deleteEventReaderOptions);
+      return findOriginalMinMaxKeys(orcSplit, orcReaderData.orcTail, deleteEventReaderOptions);
     }
 
-    List<StripeInformation> stripes = orcTailReader.orcTail.getStripes();
+    List<StripeInformation> stripes = orcReaderData.orcTail.getStripes();
     final long splitStart = orcSplit.getStart();
     final long splitEnd = splitStart + orcSplit.getLength();
     int firstStripeIndex = -1;
@@ -511,7 +511,7 @@ public class VectorizedOrcAcidRowBatchReader
           lastStripeIndex + ")");
       return new OrcRawRecordMerger.KeyInterval(null, null);
     }
-    RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(orcTailReader.orcTail);
+    RecordIdentifier[] keyIndex = OrcRecordUpdater.parseKeyIndex(orcReaderData.orcTail);
 
     if(keyIndex == null) {
       LOG.warn("Could not find keyIndex (" + firstStripeIndex + "," +
@@ -531,14 +531,12 @@ public class VectorizedOrcAcidRowBatchReader
      * are actually computed.  Streaming ingest used to set it 0 and Minor
      * compaction so there are lots of legacy files with no (rather, bad)
      * column stats*/
-    boolean columnStatsPresent = orcTailReader.orcTail.getFooter().getRowIndexStride() > 0;
+    boolean columnStatsPresent = orcReaderData.orcTail.getFooter().getRowIndexStride() > 0;
     if(!columnStatsPresent) {
       LOG.debug("findMinMaxKeys() No ORC column stats");
     }
 
-    List<StripeStatistics> stats = orcTailReader.reader.getStripeStatistics();
-
-//    List<OrcProto.StripeStatistics> stats = orcTail.getStripeStatisticsProto();
+    List<StripeStatistics> stats = orcReaderData.reader.getVariantStripeStatistics(null);
     assert stripes.size() == stats.size() : "str.s=" + stripes.size() +
         " sta.s=" + stats.size();
 
@@ -683,7 +681,7 @@ public class VectorizedOrcAcidRowBatchReader
 
   /**
    * Gets the OrcTail from cache if LLAP IO is enabled, otherwise creates the reader to get the tail.
-   * If reader is created return that as well so we do not have recreate it if needed.
+   * Always store the Reader along with the Tail as part of ReaderData so we can reuse it.
    * @param path The Orc file path we want to get the OrcTail for
    * @param conf The Configuration to access LLAP
    * @param cacheTag The cacheTag needed to get OrcTail from LLAP IO cache
@@ -693,11 +691,12 @@ public class VectorizedOrcAcidRowBatchReader
    * @return ReaderData object where the orcTail is not null. Reader can be null, but if we had to create
    * one we return that as well for further reuse.
    */
-  private static ReaderData getOrcTail(Path path, Configuration conf, CacheTag cacheTag, Object fileKey) throws IOException {
+  private static ReaderData getOrcReaderData(Path path, Configuration conf, CacheTag cacheTag, Object fileKey) throws IOException {
     ReaderData readerData = new ReaderData();
     if (!skipLlapCache && LlapHiveUtils.isLlapMode(conf) && LlapProxy.isDaemon()) {
       try {
         readerData.orcTail = LlapProxy.getIo().getOrcTailFromCache(path, conf, cacheTag, fileKey);
+        readerData.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf).orcTail(readerData.orcTail));
       } catch (IllegalCacheConfigurationException icce) {
         LOG.warn("Cache is not usable. Please fix the configuration", icce);
         skipLlapCache = true;
@@ -1602,7 +1601,7 @@ public class VectorizedOrcAcidRowBatchReader
               Path deleteDeltaPath = deleteDeltaDir.getLeft();
               for (AcidInputFormat.DeltaFileMetaData fileMetaData : deltaMetaData.getDeltaFilesForStmtId(stmtId)) {
                 Path deleteDeltaFile = fileMetaData.getPath(deleteDeltaPath, bucket);
-                ReaderData readerData = getOrcTail(deleteDeltaFile, conf, cacheTag,
+                ReaderData readerData = getOrcReaderData(deleteDeltaFile, conf, cacheTag,
                     fileMetaData.getFileId(deleteDeltaPath, bucket, conf));
                 OrcTail orcTail = readerData.orcTail;
                 if (orcTail.getFooter().getNumberOfRows() <= 0) {
