@@ -1,0 +1,197 @@
+PREHOOK: query: create table tu  ( a integer )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tu
+POSTHOOK: query: create table tu  ( a integer )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tu
+PREHOOK: query: create table tv  ( b integer )
+PREHOOK: type: CREATETABLE
+PREHOOK: Output: database:default
+PREHOOK: Output: default@tv
+POSTHOOK: query: create table tv  ( b integer )
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: database:default
+POSTHOOK: Output: default@tv
+PREHOOK: query: insert into tu values (1),(2),(3),(4),(5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tu
+POSTHOOK: query: insert into tu values (1),(2),(3),(4),(5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tu
+POSTHOOK: Lineage: tu.a SCRIPT []
+PREHOOK: query: insert into tv values (1),(2),(3),(4),(5)
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+PREHOOK: Output: default@tv
+POSTHOOK: query: insert into tv values (1),(2),(3),(4),(5)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+POSTHOOK: Output: default@tv
+POSTHOOK: Lineage: tv.b SCRIPT []
+Warning: Shuffle Join MERGEJOIN[27][tables = [$hdt$_0, $hdt$_1]] in Stage 'Reducer 2' is a cross product
+Warning: Shuffle Join MERGEJOIN[28][tables = [$hdt$_0, $hdt$_1, $hdt$_2]] in Stage 'Reducer 3' is a cross product
+Warning: Shuffle Join MERGEJOIN[29][tables = [$hdt$_0, $hdt$_1, $hdt$_2, $hdt$_3]] in Stage 'Reducer 4' is a cross product
+PREHOOK: query: with t as (
+	select a+b as s from tu,tv where a>1 and b>2
+)
+select t1.s=t2.s+1 from t as t1, t as t2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tu
+PREHOOK: Input: default@tv
+#### A masked pattern was here ####
+POSTHOOK: query: with t as (
+	select a+b as s from tu,tv where a>1 and b>2
+)
+select t1.s=t2.s+1 from t as t1, t as t2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@tu
+POSTHOOK: Input: default@tv
+#### A masked pattern was here ####
+false
+false
+true
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+true
+false
+false
+false
+true
+true
+false
+false
+false
+false
+false
+false
+true
+false
+true
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+true
+false
+true
+false
+false
+false
+false
+true
+false
+true
+false
+true
+false
+false
+false
+false
+false
+false
+false
+false
+true
+false
+false
+false
+true
+false
+true
+false
+false
+false
+false
+true
+false
+true
+false
+true
+false
+false
+false
+false
+false
+false
+false
+false
+false
+true
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+true
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+false
+true
+false
+false
+false
+false
+false
+false
+false
+true
+false
+true
+false
+true
+false
+false
+false
+false
+false
+false
+false
+true
+false
+true
+false
+false
+false
+false

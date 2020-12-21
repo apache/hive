@@ -2,10 +2,11 @@
 create table tu  ( a integer );
 create table tv  ( b integer );
 
-insert into tu value (1),(2),(3),(4),(5);
-insert into tv value (1),(2),(3),(4),(5);
+insert into tu values (1),(2),(3),(4),(5);
+insert into tv values (1),(2),(3),(4),(5);
 
 
+explain
 with t as (
 	select a+b as s from tu,tv where a>1 and b>2
 )
