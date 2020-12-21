@@ -379,7 +379,7 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
   }
 
   @Test
-  public void testAddConstraintAdvancingWriteIds() throws Exception {
+  public void testAddAndDropConstraintAdvancingWriteIds() throws Exception {
 
     String tableName = "constraints_table";
     hiveConf.setBoolean("hive.stats.autogather", true);
@@ -410,8 +410,25 @@ public class TestTxnCommands extends TxnCommandsBaseForTests {
     runStatementOnDriver(String.format("alter table %s ADD CONSTRAINT unique1 UNIQUE (a, b) DISABLE", tableName));
     validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
     LOG.info("ValidWriteIds after add constraint unique::"+ validWriteIds);
-    Assert.assertEquals("default.constraints_table:5:9223372036854775807::", validWriteIds); 
-  
+    Assert.assertEquals("default.constraints_table:5:9223372036854775807::", validWriteIds);
+
+    LOG.info("ValidWriteIds before drop constraint::"+ validWriteIds);
+    runStatementOnDriver(String.format("alter table %s  DROP CONSTRAINT a_PK", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.constraints_table:6:9223372036854775807::", validWriteIds);
+    LOG.info("ValidWriteIds after drop constraint primary key::"+ validWriteIds);
+    runStatementOnDriver(String.format("alter table %s  DROP CONSTRAINT check1", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.constraints_table:7:9223372036854775807::", validWriteIds);
+    LOG.info("ValidWriteIds after drop constraint check::"+ validWriteIds);
+    runStatementOnDriver(String.format("alter table %s  DROP CONSTRAINT unique1", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.constraints_table:8:9223372036854775807::", validWriteIds);
+    LOG.info("ValidWriteIds after drop constraint unique::"+ validWriteIds);
+    runStatementOnDriver(String.format("alter table %s CHANGE COLUMN b b STRING", tableName));
+    validWriteIds  = msClient.getValidWriteIds("default." + tableName).toString();
+    Assert.assertEquals("default.constraints_table:9:9223372036854775807::", validWriteIds);
+
   }
 
   @Test
