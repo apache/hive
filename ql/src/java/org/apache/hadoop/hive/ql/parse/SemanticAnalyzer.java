@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static java.util.Objects.nonNull;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEDEFAULTSTORAGEHANDLER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
@@ -13386,6 +13387,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     LOG.info("Creating table " + dbDotTab + " position=" + ast.getCharPositionInLine());
     int numCh = ast.getChildCount();
+
+    // set storage handler if default handler is provided in config
+    String defaultStorageHandler = HiveConf.getVar(conf, HIVEDEFAULTSTORAGEHANDLER);
+    if (defaultStorageHandler != null && !defaultStorageHandler.isEmpty()) {
+      storageFormat.setStorageHandler(defaultStorageHandler);
+      isUserStorageFormat = true;
+    }
 
     /*
      * Check the 1st-level children and do simple semantic checks: 1) CTLT and

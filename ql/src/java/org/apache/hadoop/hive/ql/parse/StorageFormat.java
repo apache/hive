@@ -157,4 +157,8 @@ public class StorageFormat {
   public Map<String, String> getSerdeProps() {
     return serdeProps;
   }
+
+  public void setStorageHandler(String storageHandlerClass) throws SemanticException {
+    storageHandler = ensureClassExists(storageHandlerClass);
+  }
 }
