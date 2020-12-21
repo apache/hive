@@ -2687,7 +2687,7 @@ public class HiveConf extends Configuration {
     HIVE_STATS_NDV_ESTIMATE_PERC("hive.stats.ndv.estimate.percent", (float)20,
         "This many percentage of rows will be estimated as count distinct in absence of statistics."),
     HIVE_STATS_JOIN_NDV_READJUSTMENT("hive.stats.join.ndv.readjustment", false,
-        "Setting this to true will make Hive use Calcite to adjust estimatation for ndv after join."),
+        "Set this to true to use approximation based logic to adjust ndv after join."),
     HIVE_STATS_NUM_NULLS_ESTIMATE_PERC("hive.stats.num.nulls.estimate.percent", (float)5,
         "This many percentage of rows will be estimated as number of nulls in absence of statistics."),
     HIVESTATSAUTOGATHER("hive.stats.autogather", true,

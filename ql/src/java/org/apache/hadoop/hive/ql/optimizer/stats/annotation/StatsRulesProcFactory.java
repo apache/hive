@@ -2553,7 +2553,10 @@ public class StatsRulesProcFactory {
             = HiveConf.getBoolVar(conf, ConfVars.HIVE_STATS_JOIN_NDV_READJUSTMENT);
         long newDV = oldDV;
         if (useCalciteForNdvReadjustment) {
-          newDV = RelMdUtil.numDistinctVals(oldDV * 1.0, newNumRows * 1.0).longValue();
+          Double approxNdv = RelMdUtil.numDistinctVals(oldDV * 1.0, newNumRows * 1.0);
+          if (approxNdv != null) {
+            newDV = approxNdv.longValue();
+          }
         } else {
           long oldRowCount = rowCountParents.get(pos);
           double ratio = (double) newNumRows / (double) oldRowCount;
