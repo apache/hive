@@ -6,6 +6,8 @@ Release Notes - Hive - Version 2.3.8
     * [HIVE-23980] - Shade guava from existing Hive versions
     * [HIVE-24512] - Exclude calcite in packaging Hive
     * [HIVE-22708] - Fix for HttpTransport to replace String.equals
+    * [HIVE-24553] - Exclude calcite from test-jar dependency of hive-exec
+    * [HIVE-24551] - Hive should include transitive dependencies from calcite after shading it
 
 ** Improvement
     * [HIVE-24324] - Remove deprecated API usage from Avro
