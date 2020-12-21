@@ -31,7 +31,7 @@ public final class AuthenticationProviderFactory {
     PAM("PAM"),
     CUSTOM("CUSTOM"),
     NONE("NONE"),
-    SAML2_0("SAML2_0");
+    SAML("SAML");
 
     private final String authMethod;
 
@@ -77,7 +77,7 @@ public final class AuthenticationProviderFactory {
       return new CustomAuthenticationProviderImpl((conf == null) ? AuthMethods.CUSTOM.getConf() : conf);
     } else if (authMethod == AuthMethods.NONE) {
       return new AnonymousAuthenticationProviderImpl();
-    } else if (authMethod == AuthMethods.SAML2_0) {
+    } else if (authMethod == AuthMethods.SAML) {
       //TODO right thing to do?
       return new AnonymousAuthenticationProviderImpl();
     } else {

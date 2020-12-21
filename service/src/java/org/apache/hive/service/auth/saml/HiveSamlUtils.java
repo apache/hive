@@ -19,7 +19,6 @@
 package org.apache.hive.service.auth.saml;
 
 import com.google.common.base.Preconditions;
-import java.net.InetAddress;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -36,7 +35,7 @@ public class HiveSamlUtils {
   public static final String MESSAGE_KEY = "message";
 
   public static boolean isSamlAuthMode(String authType) {
-    return authType.equalsIgnoreCase(HiveAuthConstants.AuthTypes.SAML2_0.toString());
+    return authType.equalsIgnoreCase(HiveAuthConstants.AuthTypes.SAML.toString());
   }
 
   /**

@@ -434,7 +434,7 @@ public class MiniHS2 extends AbstractHiveService {
   }
 
   private boolean isSAMLAuth() {
-    return "SAML2_0"
+    return "SAML"
         .equals(HiveConf.getVar(getHiveConf(), ConfVars.HIVE_SERVER2_SAML_CALLBACK_URL));
   }
 

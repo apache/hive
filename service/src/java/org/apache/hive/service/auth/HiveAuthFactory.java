@@ -154,7 +154,7 @@ public class HiveAuthFactory {
           authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.LDAP.getAuthName()) ||
           authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.PAM.getAuthName()) ||
           authTypeStr.equalsIgnoreCase(HiveAuthConstants.AuthTypes.CUSTOM.getAuthName()) ||
-        authTypeStr.equalsIgnoreCase(AuthTypes.SAML2_0.getAuthName())) {
+        authTypeStr.equalsIgnoreCase(AuthTypes.SAML.getAuthName())) {
       // TODO is this the right thing to do?
       transportFactory = PlainSaslHelper.getPlainTransportFactory(authTypeStr);
     } else if (authTypeStr

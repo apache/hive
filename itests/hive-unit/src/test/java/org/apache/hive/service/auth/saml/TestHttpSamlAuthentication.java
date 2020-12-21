@@ -102,7 +102,7 @@ public class TestHttpSamlAuthentication {
     conf.setBoolVar(ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
     conf.setBoolVar(ConfVars.HIVE_SERVER2_LOGGING_OPERATION_ENABLED, false);
     conf.setBoolVar(ConfVars.HIVESTATSCOLAUTOGATHER, false);
-    conf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, "SAML2_0");
+    conf.setVar(ConfVars.HIVE_SERVER2_AUTHENTICATION, "SAML");
     conf.setVar(ConfVars.HIVE_SERVER2_SAML_IDP_METADATA,
         idpMetadataFile.getAbsolutePath());
     conf.setVar(ConfVars.HIVE_SERVER2_SAML_SP_ID, "test-hive-SAML-sp");
