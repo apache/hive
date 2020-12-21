@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.ql.lockmgr;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClientWithLocalCache;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.Context;
@@ -47,11 +47,11 @@ public abstract class DbTxnManagerEndToEndTestBase {
             "org.apache.hadoop.hive.ql.security.authorization.plugin.sqlstd.SQLStdHiveAuthorizerFactory");
     conf.setBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
     conf.setBoolVar(HiveConf.ConfVars.TXN_MERGE_INSERT_X_LOCK, true);
-    TxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.setConfValues(conf);
   }
   @BeforeClass
   public static void setUpDB() throws Exception{
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.prepDb(conf);
   }
 
   @Before
@@ -65,7 +65,7 @@ public abstract class DbTxnManagerEndToEndTestBase {
     driver = new Driver(new QueryState.Builder().withHiveConf(conf).nonIsolated().build());
     driver2 = new Driver(new QueryState.Builder().withHiveConf(conf).build());
     conf.setBoolVar(HiveConf.ConfVars.TXN_WRITE_X_LOCK, false);
-    TxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
     SessionState ss = SessionState.get();
     ss.initTxnMgr(conf);
     txnMgr = ss.getTxnMgr();

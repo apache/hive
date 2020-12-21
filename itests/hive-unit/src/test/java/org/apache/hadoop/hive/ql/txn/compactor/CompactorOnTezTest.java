@@ -22,7 +22,7 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.IDriver;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -73,9 +73,9 @@ public class CompactorOnTezTest {
     hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
     hiveConf.setVar(HiveConf.ConfVars.HIVEINPUTFORMAT, HiveInputFormat.class.getName());
     hiveConf.setVar(HiveConf.ConfVars.HIVEFETCHTASKCONVERSION, "none");
-    TxnDbUtil.setConfValues(hiveConf);
-    TxnDbUtil.cleanDb(hiveConf);
-    TxnDbUtil.prepDb(hiveConf);
+    TestTxnDbUtil.setConfValues(hiveConf);
+    TestTxnDbUtil.cleanDb(hiveConf);
+    TestTxnDbUtil.prepDb(hiveConf);
     conf = hiveConf;
     // Use tez as execution engine for this test class
     setupTez(conf);
