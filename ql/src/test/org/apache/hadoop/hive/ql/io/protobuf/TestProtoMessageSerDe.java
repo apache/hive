@@ -70,7 +70,7 @@ public class TestProtoMessageSerDe {
     Properties tbl = new Properties();
     tbl.setProperty(ProtobufSerDe.PROTO_CLASS, clazz.getName());
     tbl.setProperty(ProtobufSerDe.MAP_TYPES, mapTypes);
-    serde.initialize(conf, tbl);
+    serde.initialize(conf, tbl, null);
 
     @SuppressWarnings("rawtypes")
     Constructor<ProtoMessageWritable> cons = ProtoMessageWritable.class.getDeclaredConstructor(
@@ -210,7 +210,7 @@ public class TestProtoMessageSerDe {
     Properties tbl = new Properties();
     tbl.setProperty(ProtobufSerDe.PROTO_CLASS, MapFieldEntry.class.getName());
     tbl.setProperty(ProtobufSerDe.MAP_TYPES, "MapFieldEntry");
-    serde.initialize(conf, tbl);
+    serde.initialize(conf, tbl, null);
     assertEquals(mfoi, serde.getObjectInspector());
 
     BytesWritable writable = new BytesWritable(MapFieldEntry.getDefaultInstance().toByteArray());

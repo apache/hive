@@ -93,16 +93,18 @@ import java.util.stream.Collectors;
   private long rowCount = 0L;
   private long rawDataSize = 0L;
 
-  @Override public void initialize(@Nullable Configuration conf, Properties tbl) {
+  @Override
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
+
     final List<ObjectInspector> inspectors;
     // Get column names and types
-    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String
-        columnNameDelimiter =
-        tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ?
-            tbl.getProperty(serdeConstants.COLUMN_NAME_DELIMITER) :
-            String.valueOf(SerDeUtils.COMMA);
+    String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
+        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
+        : String.valueOf(SerDeUtils.COMMA);
     // all table column names
     if (!columnNameProperty.isEmpty()) {
       columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));

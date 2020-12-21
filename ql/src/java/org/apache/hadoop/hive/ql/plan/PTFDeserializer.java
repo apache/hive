@@ -265,7 +265,7 @@ public class PTFDeserializer {
     try {
       AbstractSerDe serDe =  ReflectionUtils.newInstance(hConf.getClassByName(serdeClassName).
           asSubclass(AbstractSerDe.class), hConf);
-      SerDeUtils.initializeSerDe(serDe, hConf, serDeProps, null);
+      serDe.initialize(hConf, serDeProps, null);
       shp.setSerde(serDe);
       StructObjectInspector outOI = PTFPartition.setupPartitionOutputOI(serDe, OI);
       shp.setOI(outOI);

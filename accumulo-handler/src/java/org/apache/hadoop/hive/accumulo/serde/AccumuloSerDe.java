@@ -54,8 +54,11 @@ public class AccumuloSerDe extends AbstractSerDe {
   private static final Logger log = LoggerFactory.getLogger(AccumuloSerDe.class);
 
   @Override
-  public void initialize(Configuration conf, Properties properties) throws SerDeException {
-    accumuloSerDeParameters = new AccumuloSerDeParameters(conf, properties, getClass().getName());
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
+
+    accumuloSerDeParameters = new AccumuloSerDeParameters(configuration, properties, getClass().getName());
 
     final LazySerDeParameters serDeParams = accumuloSerDeParameters.getSerDeParameters();
     final List<ColumnMapping> mappings = accumuloSerDeParameters.getColumnMappings();

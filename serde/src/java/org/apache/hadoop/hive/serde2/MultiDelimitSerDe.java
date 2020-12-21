@@ -95,21 +95,22 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
   private final Text serializeCache = new Text();
 
   @Override
-  public void initialize(Configuration conf, Properties tbl) throws SerDeException {
-    // get the SerDe parameters
-    super.initialize(conf, tbl);
-    serdeParams = new LazySerDeParameters(conf, tbl, getClass().getName());
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-    fieldDelimited = tbl.getProperty(serdeConstants.FIELD_DELIM);
+    serdeParams = new LazySerDeParameters(configuration, tableProperties, getClass().getName());
+
+    fieldDelimited = properties.getProperty(serdeConstants.FIELD_DELIM);
     if (fieldDelimited == null || fieldDelimited.isEmpty()) {
       throw new SerDeException("This table does not have serde property \"field.delim\"!");
     }
 
     // get the collection separator and map key separator
     // TODO: use serdeConstants.COLLECTION_DELIM when the typo is fixed
-    collSep = LazyUtils.getByte(tbl.getProperty(COLLECTION_DELIM),
+    collSep = LazyUtils.getByte(properties.getProperty(COLLECTION_DELIM),
         DEFAULT_SEPARATORS[1]);
-    keySep = LazyUtils.getByte(tbl.getProperty(serdeConstants.MAPKEY_DELIM),
+    keySep = LazyUtils.getByte(properties.getProperty(serdeConstants.MAPKEY_DELIM),
         DEFAULT_SEPARATORS[2]);
     serdeParams.setSeparator(1, collSep);
     serdeParams.setSeparator(2, keySep);
@@ -126,7 +127,6 @@ public class MultiDelimitSerDe extends AbstractEncodingAwareSerDe {
     assert serdeParams.getColumnNames().size() == serdeParams.getColumnTypes().size();
     numColumns = serdeParams.getColumnNames().size();
   }
-
 
   @Override
   public ObjectInspector getObjectInspector() throws SerDeException {

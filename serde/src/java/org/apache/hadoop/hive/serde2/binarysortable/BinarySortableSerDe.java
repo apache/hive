@@ -147,16 +147,17 @@ public class BinarySortableSerDe extends AbstractSerDe {
   byte[] columnNotNullMarker;
 
   public static Charset decimalCharSet = Charset.forName("US-ASCII");
-
+  
   @Override
-  public void initialize(Configuration conf, Properties tbl)
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-    // Get column names and sort order
-    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+    String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
+        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
+        : String.valueOf(SerDeUtils.COMMA);
     if (columnNameProperty.length() == 0) {
       columnNames = new ArrayList<String>();
     } else {
@@ -165,15 +166,14 @@ public class BinarySortableSerDe extends AbstractSerDe {
     if (columnTypeProperty.length() == 0) {
       columnTypes = new ArrayList<TypeInfo>();
     } else {
-      columnTypes = TypeInfoUtils
-          .getTypeInfosFromTypeString(columnTypeProperty);
+      columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     }
     assert (columnNames.size() == columnTypes.size());
 
     // Create row related objects
     rowTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
-    rowObjectInspector = (StructObjectInspector) TypeInfoUtils
-        .getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
+    rowObjectInspector =
+        (StructObjectInspector) TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
     row = new ArrayList<Object>(columnNames.size());
     for (int i = 0; i < columnNames.size(); i++) {
       row.add(null);
@@ -182,7 +182,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
     columnSortOrderIsDesc = new boolean[columnNames.size()];
     columnNullMarker = new byte[columnNames.size()];
     columnNotNullMarker = new byte[columnNames.size()];
-    BinarySortableUtils.fillOrderArrays(tbl, columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker);
+    BinarySortableUtils.fillOrderArrays(properties, columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker);
   }
 
   @Override

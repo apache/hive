@@ -839,8 +839,8 @@ public class TestFileSinkOperator {
   public static class TFSOSerDe extends AbstractSerDe {
 
     @Override
-    public void initialize(Configuration conf, Properties tbl) throws SerDeException {
-
+    public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+        throws SerDeException {
     }
 
     @Override

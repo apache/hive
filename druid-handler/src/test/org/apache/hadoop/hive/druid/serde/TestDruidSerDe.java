@@ -52,7 +52,6 @@ import org.apache.hadoop.hive.druid.io.HiveDruidSplit;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
@@ -582,7 +581,7 @@ public class TestDruidSerDe {
             TIMESERIES_QUERY,
             TIMESERIES_COLUMN_NAMES,
             TIMESERIES_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     deserializeQueryResults(serDe,
         Query.TIMESERIES,
         TIMESERIES_QUERY,
@@ -591,7 +590,7 @@ public class TestDruidSerDe {
 
     // TopN query
     tbl = createPropertiesQuery("sample_data", Query.TOPN, TOPN_QUERY, TOPN_COLUMN_NAMES, TOPN_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     deserializeQueryResults(serDe, Query.TOPN, TOPN_QUERY, topNQueryResults, TOPN_QUERY_RESULTS_RECORDS);
 
     // GroupBy query
@@ -601,7 +600,7 @@ public class TestDruidSerDe {
             GROUP_BY_QUERY,
             GROUP_BY_COLUMN_NAMES,
             GROUP_BY_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     deserializeQueryResults(serDe, Query.GROUP_BY, GROUP_BY_QUERY, groupByQueryResults, GROUP_BY_QUERY_RESULTS_RECORDS);
 
     tbl =
@@ -610,7 +609,7 @@ public class TestDruidSerDe {
             GB_TIME_EXTRACTIONS,
             GB_TIME_EXTRACTIONS_COLUMN_NAMES,
             GB_TIME_EXTRACTIONS_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     deserializeQueryResults(serDe,
         Query.GROUP_BY,
         GB_TIME_EXTRACTIONS,
@@ -623,7 +622,7 @@ public class TestDruidSerDe {
             GB_MONTH_EXTRACTIONS,
             GB_MONTH_EXTRACTIONS_COLUMN_NAMES,
             GB_MONTH_EXTRACTIONS_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     deserializeQueryResults(serDe,
         Query.GROUP_BY,
         GB_MONTH_EXTRACTIONS,
@@ -632,7 +631,7 @@ public class TestDruidSerDe {
 
     // Scan query -- results should be same as select query
     tbl = createPropertiesQuery("wikipedia", Query.SCAN, SCAN_QUERY, SCAN_COLUMN_NAMES, SCAN_COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     deserializeQueryResults(serDe, Query.SCAN, SCAN_QUERY, scanQueryResults, SCAN_QUERY_RESULTS_RECORDS);
   }
 
@@ -757,7 +756,7 @@ public class TestDruidSerDe {
     Properties tbl;
     // Mixed source (all types)
     tbl = createPropertiesSource(COLUMN_NAMES, COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     serializeObject(tbl, serDe, ROW_OBJECT, DRUID_WRITABLE);
   }
 
@@ -772,7 +771,7 @@ public class TestDruidSerDe {
     Properties tbl;
     // Mixed source (all types)
     tbl = createPropertiesSource(COLUMN_NAMES, COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     Object[] row = new Object[]{
         null,
         new Text("dim1_val"),
@@ -865,7 +864,7 @@ public class TestDruidSerDe {
     Properties tbl;
     // Mixed source (all types)
     tbl = createPropertiesSource(COLUMN_NAMES, COLUMN_TYPES);
-    SerDeUtils.initializeSerDe(serDe, conf, tbl, null);
+    serDe.initialize(conf, tbl, null);
     deserializeObject(serDe, ROW_OBJECT_2, DRUID_WRITABLE_2);
   }
 

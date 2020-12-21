@@ -73,13 +73,17 @@ public class OrcSerde extends AbstractSerDe {
   }
 
   @Override
-  public void initialize(Configuration conf, Properties table) {
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
+
     // Read the configuration parameters
-    String columnNameProperty = table.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
     // NOTE: if "columns.types" is missing, all columns will be of String type
-    String columnTypeProperty = table.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = table.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? table
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
+    String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
+        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
+        : String.valueOf(SerDeUtils.COMMA);
 
     // Parse the configuration parameters
     ArrayList<String> columnNames = new ArrayList<>();

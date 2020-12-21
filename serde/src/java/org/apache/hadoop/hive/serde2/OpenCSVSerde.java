@@ -69,9 +69,11 @@ public final class OpenCSVSerde extends AbstractSerDe {
   public static final String ESCAPECHAR = "escapeChar";
 
   @Override
-  public void initialize(final Configuration conf, final Properties tbl) throws SerDeException {
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-    final List<String> columnNames = Arrays.asList(tbl.getProperty(serdeConstants.LIST_COLUMNS)
+    final List<String> columnNames = Arrays.asList(properties.getProperty(serdeConstants.LIST_COLUMNS)
         .split(","));
 
     numCols = columnNames.size();
@@ -90,9 +92,9 @@ public final class OpenCSVSerde extends AbstractSerDe {
       row.add(null);
     }
 
-    separatorChar = getProperty(tbl, SEPARATORCHAR, CSVWriter.DEFAULT_SEPARATOR);
-    quoteChar = getProperty(tbl, QUOTECHAR, CSVWriter.DEFAULT_QUOTE_CHARACTER);
-    escapeChar = getProperty(tbl, ESCAPECHAR, CSVWriter.DEFAULT_ESCAPE_CHARACTER);
+    separatorChar = getProperty(properties, SEPARATORCHAR, CSVWriter.DEFAULT_SEPARATOR);
+    quoteChar = getProperty(properties, QUOTECHAR, CSVWriter.DEFAULT_QUOTE_CHARACTER);
+    escapeChar = getProperty(properties, ESCAPECHAR, CSVWriter.DEFAULT_ESCAPE_CHARACTER);
   }
 
   private char getProperty(final Properties tbl, final String property, final char def) {
