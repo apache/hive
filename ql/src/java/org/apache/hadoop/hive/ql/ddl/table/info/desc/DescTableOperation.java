@@ -283,7 +283,10 @@ public class DescTableOperation extends DDLOperation<DescTableDesc> {
   private void handleMaterializedView(Table table) throws LockException {
     if (table.isMaterializedView()) {
       table.setOutdatedForRewriting(context.getDb().isOutdatedMaterializedView(
-              table, new ArrayList<>(table.getCreationMetadata().getTablesUsed()), false));
+              table,
+              new ArrayList<>(table.getCreationMetadata().getTablesUsed()),
+              false,
+              SessionState.get().getTxnMgr()));
     }
   }
 }

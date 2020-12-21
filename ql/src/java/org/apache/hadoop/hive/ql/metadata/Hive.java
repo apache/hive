@@ -1684,7 +1684,7 @@ public class Hive {
       for (HiveRelOptMaterialization materialization : materializedViews) {
         final Table materializedViewTable = extractTable(materialization);
         final Boolean outdated = isOutdatedMaterializedView(
-            materializedViewTable, tablesUsed, false);
+            materializedViewTable, tablesUsed, false, txnMgr);
         if (outdated == null) {
           continue;
         }
@@ -1722,7 +1722,8 @@ public class Hive {
    * This method checks invalidation time window defined in materialization.
    */
   public Boolean isOutdatedMaterializedView(
-          Table materializedViewTable, List<String> tablesUsed, boolean forceMVContentsUpToDate) throws LockException {
+          Table materializedViewTable, List<String> tablesUsed,
+          boolean forceMVContentsUpToDate, HiveTxnManager txnMgr) throws LockException {
 
     String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     if (validTxnsList == null) {
@@ -1745,8 +1746,10 @@ public class Hive {
       outdated = forceMVContentsUpToDate;
     } else {
       // Check whether the materialized view is invalidated
-      if (forceMVContentsUpToDate || timeWindow == 0L || creationMetadata.getMaterializationTime() < System.currentTimeMillis() - timeWindow) {
-        return HiveMaterializedViewUtils.isOutdatedMaterializedView(validTxnsList, tablesUsed, materializedViewTable);
+      if (forceMVContentsUpToDate || timeWindow == 0L ||
+              creationMetadata.getMaterializationTime() < System.currentTimeMillis() - timeWindow) {
+        return HiveMaterializedViewUtils.isOutdatedMaterializedView(
+                validTxnsList, txnMgr, tablesUsed, materializedViewTable);
       }
     }
     return outdated;
@@ -1757,7 +1760,7 @@ public class Hive {
    * (false), or it cannot be determined (null). The latest case may happen e.g. when the
    * materialized view definition uses external tables.
    */
-  public Boolean isOutdatedMaterializedView(TableName tableName) throws HiveException {
+  public Boolean isOutdatedMaterializedView(HiveTxnManager txnManager, TableName tableName) throws HiveException {
 
     Table table = getTable(tableName.getDb(), tableName.getTable());
 
@@ -1767,7 +1770,7 @@ public class Hive {
     }
 
     return HiveMaterializedViewUtils.isOutdatedMaterializedView(
-            validTxnsList, new ArrayList<>(table.getCreationMetadata().getTablesUsed()), table);
+            validTxnsList, txnManager, new ArrayList<>(table.getCreationMetadata().getTablesUsed()), table);
   }
 
   /**
@@ -1793,7 +1796,7 @@ public class Hive {
           HiveMaterializedViewsRegistry.get().dropMaterializedView(cachedMaterializedViewTable);
           result = false;
         } else {
-          final Boolean outdated = isOutdatedMaterializedView(cachedMaterializedViewTable, tablesUsed, false);
+          final Boolean outdated = isOutdatedMaterializedView(cachedMaterializedViewTable, tablesUsed, false, txnMgr);
           if (outdated == null) {
             result = false;
             continue;
@@ -1891,7 +1894,8 @@ public class Hive {
       // Final result
       List<HiveRelOptMaterialization> result = new ArrayList<>();
       for (Table materializedViewTable : materializedViewTables) {
-        final Boolean outdated = isOutdatedMaterializedView(materializedViewTable, tablesUsed, forceMVContentsUpToDate);
+        final Boolean outdated = isOutdatedMaterializedView(
+                materializedViewTable, tablesUsed, forceMVContentsUpToDate, txnMgr);
         if (outdated == null) {
           continue;
         }
@@ -2011,7 +2015,7 @@ public class Hive {
       List<HiveRelOptMaterialization> result = new ArrayList<>();
       for (HiveRelOptMaterialization materialization : materializedViews) {
         Table materializedViewTable = extractTable(materialization);
-        final Boolean outdated = isOutdatedMaterializedView(materializedViewTable, tablesUsed, false);
+        final Boolean outdated = isOutdatedMaterializedView(materializedViewTable, tablesUsed, false, txnMgr);
         if (outdated == null) {
           LOG.debug("Unable to determine if Materialized view " + materializedViewTable.getFullyQualifiedName() +
                   " contents are outdated. It may uses external tables?");

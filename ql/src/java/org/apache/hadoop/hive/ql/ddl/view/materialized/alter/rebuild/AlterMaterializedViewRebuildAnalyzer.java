@@ -68,7 +68,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
     }
 
     try {
-      Boolean outdated = db.isOutdatedMaterializedView(tableName);
+      Boolean outdated = db.isOutdatedMaterializedView(getTxnMgr(), tableName);
       if (outdated != null && !outdated) {
         String msg = String.format("Materialized view %s.%s is up to date. Cancelling rebuild.",
                 tableName.getDb(), tableName.getTable());
