@@ -253,9 +253,9 @@ public class LlapRecordReaderUtils {
       this.path = properties.getPath();
       this.file = properties.getFile();
       this.useZeroCopy = properties.getZeroCopy();
-      this.codec = properties.getCompression().getCodec();
-      this.compressionKind = codec.getKind();
-      this.bufferSize = properties.getCompression().getBufferSize();
+      this.codec = properties.getCompression() == null ? null : properties.getCompression().getCodec();
+      this.compressionKind = codec == null ? CompressionKind.NONE : codec.getKind();
+      this.bufferSize = codec == null ? 0 : properties.getCompression().getBufferSize();
       this.maxDiskRangeChunkLimit = properties.getMaxDiskRangeChunkLimit();
     }
 
@@ -316,10 +316,10 @@ public class LlapRecordReaderUtils {
         if (range == null) {
           break;
         }
-        InStream.StreamOptions compression = new InStream.StreamOptions();
+        InStream.StreamOptions compression = null;
         try (CompressionCodec codec = OrcCodecPool.getCodec(compressionKind)) {
           if (codec != null) {
-            compression.withCodec(codec).withBufferSize(bufferSize);
+            compression = InStream.options().withCodec(codec).withBufferSize(bufferSize);
           }
         }
 
@@ -368,10 +368,10 @@ public class LlapRecordReaderUtils {
       long offset = stripe.getOffset() + stripe.getIndexLength() + stripe.getDataLength();
       int tailLength = (int) stripe.getFooterLength();
 
-      InStream.StreamOptions compression = new InStream.StreamOptions();
+      InStream.StreamOptions compression = null;
       try (CompressionCodec codec = OrcCodecPool.getCodec(compressionKind)) {
         if (codec != null) {
-          compression.withCodec(codec).withBufferSize(bufferSize);
+          compression = InStream.options().withCodec(codec).withBufferSize(bufferSize);
         }
       }
 
