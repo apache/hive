@@ -56,10 +56,11 @@ public class JsonSerDe extends AbstractSerDe {
   private org.apache.hadoop.hive.serde2.JsonSerDe jsonSerde = new org.apache.hadoop.hive.serde2.JsonSerDe();
 
   @Override
-  public void initialize(Configuration conf, Properties tbl)
-    throws SerDeException {
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
-    jsonSerde.initialize(conf, tbl, false);
+    jsonSerde.initialize(configuration, this.properties, false);
 
     StructTypeInfo rowTypeInfo = jsonSerde.getTypeInfo();
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);

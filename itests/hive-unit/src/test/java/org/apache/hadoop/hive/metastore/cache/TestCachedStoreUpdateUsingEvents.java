@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.metastore.api.*;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf.ConfVars;
 import org.apache.hadoop.hive.metastore.txn.TxnCommonUtils;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hive.hcatalog.listener.DbNotificationListener;
@@ -63,7 +63,7 @@ public class TestCachedStoreUpdateUsingEvents {
     MetastoreConf.setVar(conf, ConfVars.REPLCMDIR, "cmroot");
     MetaStoreTestUtils.setConfForStandloneMode(conf);
 
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.prepDb(conf);
 
     hmsHandler = new HiveMetaStore.HMSHandler("testCachedStore", conf, true);
 

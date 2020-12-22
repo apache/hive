@@ -17,18 +17,15 @@
  */
 package org.apache.hadoop.hive.common.log;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import jline.TerminalFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.fusesource.jansi.Ansi;
 
-import javax.annotation.Nullable;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.fusesource.jansi.Ansi.ansi;
 import static org.fusesource.jansi.internal.CLibrary.*;
@@ -158,12 +155,8 @@ public class InPlaceUpdate {
 
 
     // Map 1 .......... container  SUCCEEDED      7          7        0        0       0       0
-    List<String> printReady = Lists.transform(monitor.rows(), new Function<List<String>, String>() {
-      @Override
-      public String apply(List<String> row) {
-        return String.format(VERTEX_FORMAT, row.toArray());
-      }
-    });
+    List<String> printReady =
+        monitor.rows().stream().map(row -> String.format(VERTEX_FORMAT, row.toArray())).collect(Collectors.toList());
     reprintMultiLine(StringUtils.join(printReady, "\n"));
 
     // -------------------------------------------------------------------------------

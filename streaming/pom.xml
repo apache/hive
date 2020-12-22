@@ -116,6 +116,7 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
       <version>4.0.0-SNAPSHOT</version>
+      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
   </dependencies>

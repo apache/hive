@@ -97,7 +97,10 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
   private ObjectInspector inspector;
   private TimestampLocalTZTypeInfo tsTZTypeInfo;
 
-  @Override public void initialize(Configuration configuration, Properties properties) throws SerDeException {
+  @Override
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
+      throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
 
     tsTZTypeInfo = new TimestampLocalTZTypeInfo(configuration.get(HiveConf.ConfVars.HIVE_LOCAL_TIME_ZONE.varname));
     // Druid query

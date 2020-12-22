@@ -99,7 +99,6 @@ import org.apache.hadoop.hive.ql.plan.VectorPartitionDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -1876,7 +1875,7 @@ public class TestInputOutputFormat {
     writer.write(serde.serialize(new MyRow(3,2), inspector));
     writer.close(true);
     serde = new OrcSerde();
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     assertEquals(OrcSerde.OrcSerdeRow.class, serde.getSerializedClass());
     inspector = (StructObjectInspector) serde.getObjectInspector();
     assertEquals("struct<x:int,y:int>", inspector.getTypeName());
@@ -2015,7 +2014,7 @@ public class TestInputOutputFormat {
     serde = new OrcSerde();
     properties.setProperty("columns", "z,r");
     properties.setProperty("columns.types", "int:struct<x:int,y:int>");
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
@@ -2060,7 +2059,7 @@ public class TestInputOutputFormat {
             properties, Reporter.NULL);
     writer.close(true);
     AbstractSerDe serde = new OrcSerde();
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
     InputSplit[] splits = in.getSplits(conf, 1);
@@ -2138,7 +2137,7 @@ public class TestInputOutputFormat {
     writer.write(serde.serialize(new StringRow("miles"), inspector));
     writer.close(true);
     serde = new OrcSerde();
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     assertEquals("struct<str:string,str2:string>", inspector.getTypeName());
     InputFormat<?,?> in = new OrcInputFormat();
@@ -2725,7 +2724,7 @@ public class TestInputOutputFormat {
             .build();
     conf.set("sarg.pushdown", toKryo(sarg));
     conf.set("hive.io.file.readcolumn.names", "z,r");
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
@@ -2761,7 +2760,7 @@ public class TestInputOutputFormat {
     conf.set("hive.io.file.readcolumn.names", "z");
     properties.setProperty("columns", "z");
     properties.setProperty("columns.types", "string");
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     inspector = (StructObjectInspector) serde.getObjectInspector();
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
@@ -3845,7 +3844,7 @@ public class TestInputOutputFormat {
     }
     writer.close(true);
     serde = new OrcSerde();
-    SerDeUtils.initializeSerDe(serde, conf, properties, null);
+    serde.initialize(conf, properties, null);
     assertEquals(OrcSerde.OrcSerdeRow.class, serde.getSerializedClass());
     inspector = (StructObjectInspector) serde.getObjectInspector();
     assertEquals("struct<x:int,y:int>", inspector.getTypeName());

@@ -39,11 +39,12 @@ public abstract class AbstractEncodingAwareSerDe extends AbstractSerDe {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractEncodingAwareSerDe.class);
   protected Charset charset;
 
+  
   @Override
-  @Deprecated
-  public void initialize(Configuration conf, Properties tbl)
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
-    charset = Charset.forName(tbl.getProperty(serdeConstants.SERIALIZATION_ENCODING, "UTF-8"));
+    super.initialize(configuration, tableProperties, partitionProperties);
+    charset = Charset.forName(properties.getProperty(serdeConstants.SERIALIZATION_ENCODING, "UTF-8"));
     if (this.charset.equals(Charsets.ISO_8859_1) || this.charset.equals(Charsets.US_ASCII)) {
       LOG.warn("The data may not be properly converted to target charset " + charset);
     }

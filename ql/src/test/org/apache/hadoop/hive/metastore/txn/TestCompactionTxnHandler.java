@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,8 +68,8 @@ public class TestCompactionTxnHandler {
   private TxnStore txnHandler;
 
   public TestCompactionTxnHandler() throws Exception {
-    TxnDbUtil.setConfValues(conf);
-    TxnDbUtil.prepDb(conf);
+    TestTxnDbUtil.setConfValues(conf);
+    TestTxnDbUtil.prepDb(conf);
     // Set config so that TxnUtils.buildQueryWithINClauseStrings() will
     // produce multiple queries
     conf.setIntVar(HiveConf.ConfVars.METASTORE_DIRECT_SQL_MAX_QUERY_LENGTH, 1);
@@ -657,7 +658,7 @@ public class TestCompactionTxnHandler {
 
   @After
   public void tearDown() throws Exception {
-    TxnDbUtil.cleanDb(conf);
+    TestTxnDbUtil.cleanDb(conf);
   }
 
   private long openTxn() throws MetaException {

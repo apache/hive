@@ -86,9 +86,6 @@ import org.apache.hadoop.io.Writable;
 public class LazyBinarySerDe extends AbstractSerDe {
   public static final Logger LOG = LoggerFactory.getLogger(LazyBinarySerDe.class.getName());
 
-  public LazyBinarySerDe() throws SerDeException {
-  }
-
   List<String> columnNames;
   List<TypeInfo> columnTypes;
 
@@ -107,13 +104,16 @@ public class LazyBinarySerDe extends AbstractSerDe {
    * Initialize the SerDe with configuration and table information.
    */
   @Override
-  public void initialize(Configuration conf, Properties tbl)
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
+    super.initialize(configuration, tableProperties, partitionProperties);
+
     // Get column names and types
-    String columnNameProperty = tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnNameDelimiter = tbl.containsKey(serdeConstants.COLUMN_NAME_DELIMITER) ? tbl
-        .getProperty(serdeConstants.COLUMN_NAME_DELIMITER) : String.valueOf(SerDeUtils.COMMA);
-    String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
+    String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
+    String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
+        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
+        : String.valueOf(SerDeUtils.COMMA);
+    String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     if (columnNameProperty.length() == 0) {
       columnNames = new ArrayList<String>();
     } else {
@@ -141,7 +141,6 @@ public class LazyBinarySerDe extends AbstractSerDe {
     stats = new SerDeStats();
     lastOperationSerialize = false;
     lastOperationDeserialize = false;
-
   }
 
   /**

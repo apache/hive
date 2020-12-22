@@ -219,9 +219,9 @@ import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -2338,10 +2338,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         TableDesc valueTableDesc = reduceWork.getTagToValueDesc().get(reduceWork.getTag());
 
         Properties keyTableProperties = keyTableDesc.getProperties();
-        Deserializer keyDeserializer =
+        AbstractSerDe keyDeserializer =
             ReflectionUtils.newInstance(
-                keyTableDesc.getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(keyDeserializer, null, keyTableProperties, null);
+                keyTableDesc.getSerDeClass(), null);
+        keyDeserializer.initialize(null, keyTableProperties, null);
         ObjectInspector keyObjectInspector = keyDeserializer.getObjectInspector();
         if (keyObjectInspector == null) {
           setNodeIssue("Key object inspector null");
@@ -2363,10 +2363,10 @@ public class Vectorizer implements PhysicalPlanResolver {
         columnSortOrder = keyTableProperties.getProperty(serdeConstants.SERIALIZATION_SORT_ORDER);
         columnNullOrder = keyTableProperties.getProperty(serdeConstants.SERIALIZATION_NULL_SORT_ORDER);
 
-        Deserializer valueDeserializer =
+        AbstractSerDe valueDeserializer =
             ReflectionUtils.newInstance(
-                valueTableDesc.getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(valueDeserializer, null, valueTableDesc.getProperties(), null);
+                valueTableDesc.getSerDeClass(), null);
+        valueDeserializer.initialize(null, valueTableDesc.getProperties(), null);
         ObjectInspector valueObjectInspector = valueDeserializer.getObjectInspector();
         if (valueObjectInspector != null) {
           if (!(valueObjectInspector instanceof StructObjectInspector)) {
@@ -4088,11 +4088,11 @@ public class Vectorizer implements PhysicalPlanResolver {
     boolean hasDistinctColumns = (desc.getDistinctColumnIndices().size() > 0);
 
     TableDesc keyTableDesc = desc.getKeySerializeInfo();
-    Class<? extends Deserializer> keySerializerClass = keyTableDesc.getDeserializerClass();
+    Class<? extends Deserializer> keySerializerClass = keyTableDesc.getSerDeClass();
     boolean isKeyBinarySortable = (keySerializerClass == org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe.class);
 
     TableDesc valueTableDesc = desc.getValueSerializeInfo();
-    Class<? extends Deserializer> valueDeserializerClass = valueTableDesc.getDeserializerClass();
+    Class<? extends Deserializer> valueDeserializerClass = valueTableDesc.getSerDeClass();
     boolean isValueLazyBinary =
             (valueDeserializerClass == org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe.class) ||
             (valueDeserializerClass == org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe2.class);
