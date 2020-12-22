@@ -279,7 +279,7 @@ public class TestAcidUtils {
     delta_120_130 is from streaming ingest in which case 121 can be open
     (and thus 122-130 are open too)
     99 here would be Aborted since 121 is minOpenTxn, base_100 is still good
-    For multi-statment txns, see HIVE-13369*/
+    For multi-statement txns, see HIVE-13369*/
     dir = AcidUtils.getAcidState(part, conf, new ValidReadTxnList("150:121:99:121"));
     assertEquals("mock:/tbl/part1/base_100", dir.getBaseDirectory().toString());
     assertEquals(1, dir.getCurrentDirectories().size());

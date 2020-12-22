@@ -284,7 +284,7 @@ public class UpdateDeleteSemanticAnalyzer extends SemanticAnalyzer {
     }
   }
   /**
-   * Parse the newly generated SQL statment to get a new AST
+   * Parse the newly generated SQL statement to get a new AST
    */
   private ReparseResult parseRewrittenQuery(StringBuilder rewrittenQueryStr, String originalQuery) throws SemanticException {
     // Parse the rewritten query string
