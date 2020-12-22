@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import com.codahale.metrics.Counter;
-import com.codahale.metrics.Timer;
 import com.facebook.fb303.FacebookBase;
 import com.facebook.fb303.fb_status;
 import com.google.common.annotations.VisibleForTesting;
@@ -109,7 +108,6 @@ import org.apache.hadoop.hive.metastore.events.PreReadTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreReadhSchemaVersionEvent;
 import org.apache.hadoop.hive.metastore.events.UpdatePartitionColumnStatEvent;
 import org.apache.hadoop.hive.metastore.events.UpdateTableColumnStatEvent;
-import org.apache.hadoop.hive.metastore.messaging.EventMessage;
 import org.apache.hadoop.hive.metastore.messaging.EventMessage.EventType;
 import org.apache.hadoop.hive.metastore.metrics.Metrics;
 import org.apache.hadoop.hive.metastore.metrics.MetricsConstants;
@@ -186,7 +184,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
 
   // Flag to control that always threads are initialized only once
   // instead of multiple times
-  private final static AtomicBoolean alwaysThreadsInitialized =
+  private static final AtomicBoolean ALWAYS_THREADS_INITIALIZED =
       new AtomicBoolean(false);
 
   private static String currentUrl;
@@ -581,7 +579,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
   }
 
   static void startAlwaysTaskThreads(Configuration conf) throws MetaException {
-    if (alwaysThreadsInitialized.compareAndSet(false, true)) {
+    if (ALWAYS_THREADS_INITIALIZED.compareAndSet(false, true)) {
       ThreadPool.initialize(conf);
       Collection<String> taskNames =
               MetastoreConf.getStringCollection(conf, ConfVars.TASK_THREADS_ALWAYS);
@@ -1295,7 +1293,7 @@ public class HMSHandler extends FacebookBase implements IHMSHandler {
             // This means there are tables of something in the database
             throw new InvalidOperationException("There are still objects in the default " +
                 "database for catalog " + catName);
-          } catch (InvalidObjectException|IOException|InvalidInputException e) {
+          } catch (InvalidObjectException|IOException| InvalidInputException e) {
             MetaException me = new MetaException("Error attempt to drop default database for " +
                 "catalog " + catName);
             me.initCause(e);

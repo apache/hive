@@ -27,7 +27,6 @@ import java.util.List;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.metastore.HMSHandler;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreServerUtils;
