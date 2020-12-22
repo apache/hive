@@ -33,8 +33,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
 
+import com.google.common.base.Preconditions;
 import org.apache.calcite.rel.metadata.RelMdUtil;
 import org.apache.hadoop.hive.common.type.Timestamp;
+import org.apache.hadoop.hive.conf.Constants;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
@@ -2554,9 +2556,8 @@ public class StatsRulesProcFactory {
         long newDV = oldDV;
         if (useCalciteForNdvReadjustment) {
           Double approxNdv = RelMdUtil.numDistinctVals(oldDV * 1.0, newNumRows * 1.0);
-          if (approxNdv != null) {
-            newDV = approxNdv.longValue();
-          }
+          Preconditions.checkNotNull(approxNdv, "approximate NDV is null");
+          newDV = approxNdv.longValue();
         } else {
           long oldRowCount = rowCountParents.get(pos);
           double ratio = (double) newNumRows / (double) oldRowCount;
