@@ -156,7 +156,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
       replica.run("drop database if exists " + replicatedDbName + " cascade");
     }
 
-    WarehouseInstance.Tuple tuple = primary.dump(replPolicy, oldReplPolicy, dumpWithClause);
+    WarehouseInstance.Tuple tuple = primary.dump(replPolicy, dumpWithClause);
 
     DumpMetaData dumpMetaData = new DumpMetaData(new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR), conf);
     Assert.assertEquals(oldReplPolicy != null && !replPolicy.equals(oldReplPolicy),
@@ -221,7 +221,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
       replica.run("drop database if exists " + replicatedDbName + " cascade");
     }
 
-    WarehouseInstance.Tuple tuple = primary.dump(replPolicy, oldReplPolicy, dumpWithClause);
+    WarehouseInstance.Tuple tuple = primary.dump(replPolicy, dumpWithClause);
 
     if (bootstrappedTables != null) {
       verifyBootstrapDirInIncrementalDump(tuple.dumpLocation, bootstrappedTables);
@@ -708,7 +708,7 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
     dumpWithClause = Arrays.asList("'" + HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES.varname + "'='true'",
             "'" + HiveConf.ConfVars.REPL_BOOTSTRAP_EXTERNAL_TABLES.varname + "'='true'");
     WarehouseInstance.Tuple tuple = primary.run("use " + primaryDbName)
-            .dump(replPolicy, oldReplPolicy, dumpWithClause);
+            .dump(replPolicy, dumpWithClause);
     loadWithClause = ReplicationTestUtils.includeExternalTableClause(true);
 
     String hiveDumpDir = tuple.dumpLocation + File.separator + ReplUtils.REPL_HIVE_BASE_DIR;

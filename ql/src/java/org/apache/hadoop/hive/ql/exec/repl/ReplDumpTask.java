@@ -163,6 +163,9 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
         Path previousValidHiveDumpPath = getPreviousValidDumpMetadataPath(dumpRoot);
         boolean isBootstrap = (previousValidHiveDumpPath == null);
         work.setBootstrap(isBootstrap);
+        if (previousValidHiveDumpPath != null) {
+          work.setOldReplScope(new DumpMetaData(previousValidHiveDumpPath, conf).getReplScope());
+        }
         //If no previous dump is present or previous dump is already loaded, proceed with the dump operation.
         if (shouldDump(previousValidHiveDumpPath)) {
           Path currentDumpPath = getCurrentDumpPath(dumpRoot, isBootstrap);
@@ -410,10 +413,14 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
    * @return true if need to examine tables for dump and false if not.
    */
   private boolean shouldExamineTablesToDump() {
-    return (work.oldReplScope != null)
+    return (previousReplScopeModified())
             || !tablesForBootstrap.isEmpty()
             || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES)
             || conf.getBoolVar(HiveConf.ConfVars.REPL_INCLUDE_EXTERNAL_TABLES);
+  }
+
+  private boolean previousReplScopeModified() {
+    return work.oldReplScope != null && !work.oldReplScope.equals(work.replScope);
   }
 
   /**
@@ -762,7 +769,7 @@ public class ReplDumpTask extends Task<ReplDumpWork> implements Serializable {
     // may not satisfying the old policy but satisfying the new policy. For filter, it may happen that the table
     // is renamed and started satisfying the policy.
     return ((!work.replScope.includeAllTables())
-            || (work.oldReplScope != null)
+            || (previousReplScopeModified())
             || conf.getBoolVar(HiveConf.ConfVars.REPL_BOOTSTRAP_ACID_TABLES));
   }
 

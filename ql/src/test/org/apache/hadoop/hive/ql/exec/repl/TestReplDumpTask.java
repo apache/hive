@@ -147,8 +147,7 @@ public class TestReplDumpTask {
     };
 
     task.initialize(queryState, null, null, null);
-    ReplDumpWork replDumpWork = new ReplDumpWork(replScope,
-        null, "", "");
+    ReplDumpWork replDumpWork = new ReplDumpWork(replScope, "", "");
     replDumpWork.setMetricCollector(metricCollector);
     task.setWork(replDumpWork);
 
