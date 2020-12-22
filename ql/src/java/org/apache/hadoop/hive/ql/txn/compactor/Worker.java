@@ -290,10 +290,11 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
     }
     @Override
     public void run() {
+      IMetaStoreClient msc = null;
       try {
         // We need to create our own metastore client since the thrifts clients
         // are not thread safe.
-        IMetaStoreClient msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
+        msc = HiveMetaStoreUtils.getHiveMetastoreClient(conf);
         LOG.debug("Heartbeating compaction transaction id {} for table: {}", compactorTxnId, tableName);
         while(!stop.get()) {
           msc.heartbeat(compactorTxnId, 0);
@@ -301,6 +302,10 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         }
       } catch (Exception e) {
         LOG.error("Error while heartbeating txn {} in {}, error: ", compactorTxnId, Thread.currentThread().getName(), e.getMessage());
+      } finally {
+        if (msc != null) {
+          msc.close();
+        }
       }
     }
 
