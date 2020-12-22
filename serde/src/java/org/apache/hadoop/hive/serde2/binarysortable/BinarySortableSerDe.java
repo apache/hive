@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.ByteStream.RandomAccessOutput;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeSpec;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritableV2;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -94,8 +93,6 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * BinarySortableSerDe can be used to write data in a way that the data can be
@@ -131,13 +128,8 @@ import org.slf4j.LoggerFactory;
     serdeConstants.SERIALIZATION_SORT_ORDER, serdeConstants.SERIALIZATION_NULL_SORT_ORDER})
 public class BinarySortableSerDe extends AbstractSerDe {
 
-  public static final Logger LOG = LoggerFactory.getLogger(BinarySortableSerDe.class.getName());
-
   public static final byte ZERO = (byte) 0;
   public static final byte ONE = (byte) 1;
-
-  List<String> columnNames;
-  List<TypeInfo> columnTypes;
 
   TypeInfo rowTypeInfo;
   StructObjectInspector rowObjectInspector;
@@ -153,35 +145,17 @@ public class BinarySortableSerDe extends AbstractSerDe {
       throws SerDeException {
     super.initialize(configuration, tableProperties, partitionProperties);
 
-    String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
-        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
-        : String.valueOf(SerDeUtils.COMMA);
-    if (columnNameProperty.length() == 0) {
-      columnNames = new ArrayList<String>();
-    } else {
-      columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-    }
-    if (columnTypeProperty.length() == 0) {
-      columnTypes = new ArrayList<TypeInfo>();
-    } else {
-      columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
-    }
-    assert (columnNames.size() == columnTypes.size());
+    final int columnCount = getColumnNames().size();
 
     // Create row related objects
-    rowTypeInfo = TypeInfoFactory.getStructTypeInfo(columnNames, columnTypes);
+    rowTypeInfo = TypeInfoFactory.getStructTypeInfo(getColumnNames(), getColumnTypes());
     rowObjectInspector =
         (StructObjectInspector) TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(rowTypeInfo);
-    row = new ArrayList<Object>(columnNames.size());
-    for (int i = 0; i < columnNames.size(); i++) {
-      row.add(null);
-    }
+    row = new ArrayList<>(Arrays.asList(new Object[columnCount]));
 
-    columnSortOrderIsDesc = new boolean[columnNames.size()];
-    columnNullMarker = new byte[columnNames.size()];
-    columnNotNullMarker = new byte[columnNames.size()];
+    columnSortOrderIsDesc = new boolean[columnCount];
+    columnNullMarker = new byte[columnCount];
+    columnNotNullMarker = new byte[columnCount];
     BinarySortableUtils.fillOrderArrays(properties, columnSortOrderIsDesc, columnNullMarker, columnNotNullMarker);
   }
 
@@ -204,8 +178,8 @@ public class BinarySortableSerDe extends AbstractSerDe {
     inputByteBuffer.reset(data.getBytes(), 0, data.getLength());
 
     try {
-      for (int i = 0; i < columnNames.size(); i++) {
-        row.set(i, deserialize(inputByteBuffer, columnTypes.get(i),
+      for (int i = 0; i < getColumnNames().size(); i++) {
+        row.set(i, deserialize(inputByteBuffer, getColumnTypes().get(i),
             columnSortOrderIsDesc[i], columnNullMarker[i], columnNotNullMarker[i], row.get(i)));
       }
     } catch (IOException e) {
@@ -647,7 +621,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
     StructObjectInspector soi = (StructObjectInspector) objInspector;
     List<? extends StructField> fields = soi.getAllStructFieldRefs();
 
-    for (int i = 0; i < columnNames.size(); i++) {
+    for (int i = 0; i < getColumnNames().size(); i++) {
       serialize(output, soi.getStructFieldData(obj, fields.get(i)),
           fields.get(i).getFieldObjectInspector(), columnSortOrderIsDesc[i],
           columnNullMarker[i], columnNotNullMarker[i]);

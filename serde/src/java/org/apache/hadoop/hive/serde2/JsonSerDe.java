@@ -20,9 +20,7 @@
 package org.apache.hadoop.hive.serde2;
 
 import java.io.ByteArrayInputStream;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
@@ -33,15 +31,12 @@ import org.apache.hadoop.hive.serde2.json.HiveJsonWriter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.common.util.TimestampParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Hive SerDe for processing JSON formatted data. This is typically paired with
@@ -58,13 +53,9 @@ import org.slf4j.LoggerFactory;
     JsonSerDe.BINARY_FORMAT, JsonSerDe.IGNORE_EXTRA })
 public class JsonSerDe extends AbstractSerDe {
 
-  private static final Logger LOG = LoggerFactory.getLogger(JsonSerDe.class);
-
   public static final String BINARY_FORMAT = "json.binary.format";
   public static final String IGNORE_EXTRA = "text.ignore.extra.fields";
   public static final String NULL_EMPTY_LINES = "text.null.empty.line";
-
-  private List<String> columnNames;
 
   private BinaryEncoding binaryEncoding;
   private boolean nullEmptyLines;
@@ -96,35 +87,13 @@ public class JsonSerDe extends AbstractSerDe {
   public void initialize(final Configuration conf, final Properties tbl,
       final boolean writeablePrimitivesDeserialize) {
 
-    LOG.debug("Initializing JsonSerDe: {}", tbl.entrySet());
-
-    // Get column names
-    final String columnNameProperty =
-        tbl.getProperty(serdeConstants.LIST_COLUMNS);
-    final String columnNameDelimiter = tbl.getProperty(
-        serdeConstants.COLUMN_NAME_DELIMITER, String.valueOf(SerDeUtils.COMMA));
-
-    this.columnNames = columnNameProperty.isEmpty() ? Collections.emptyList()
-        : Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-
-    // all column types
-    final String columnTypeProperty =
-        tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-
-    final List<TypeInfo> columnTypes =
-        columnTypeProperty.isEmpty() ? Collections.emptyList()
-            : TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
-
-    LOG.debug("columns: {}, {}", columnNameProperty, columnNames);
-    LOG.debug("types: {}, {} ", columnTypeProperty, columnTypes);
-
-    assert (columnNames.size() == columnTypes.size());
+    log.debug("Initializing JsonSerDe: {}", tbl.entrySet());
 
     final String nullEmpty = tbl.getProperty(NULL_EMPTY_LINES, "false");
     this.nullEmptyLines = Boolean.parseBoolean(nullEmpty);
 
     this.rowTypeInfo = (StructTypeInfo) TypeInfoFactory
-        .getStructTypeInfo(columnNames, columnTypes);
+        .getStructTypeInfo(getColumnNames(), getColumnTypes());
 
     this.soi = (StructObjectInspector) TypeInfoUtils
         .getStandardWritableObjectInspectorFromTypeInfo(this.rowTypeInfo);
@@ -144,7 +113,7 @@ public class JsonSerDe extends AbstractSerDe {
         BinaryEncoding.valueOf(binaryEncodingStr.toUpperCase());
 
     this.jsonReader = new HiveJsonReader(this.soi, tsParser);
-    this.jsonWriter = new HiveJsonWriter(this.binaryEncoding, columnNames);
+    this.jsonWriter = new HiveJsonWriter(this.binaryEncoding, getColumnNames());
 
     this.jsonReader.setBinaryEncoding(binaryEncoding);
     this.jsonReader.enable(HiveJsonReader.Feature.COL_INDEX_PARSING);
@@ -158,8 +127,9 @@ public class JsonSerDe extends AbstractSerDe {
       this.jsonReader.enable(HiveJsonReader.Feature.IGNORE_UKNOWN_FIELDS);
     }
 
-    LOG.debug("JSON Struct Reader: {}", jsonReader);
-    LOG.debug("JSON Struct Writer: {}", jsonWriter);
+    log.debug("Initialized SerDe {}", this);
+    log.debug("JSON Struct Reader: {}", jsonReader);
+    log.debug("JSON Struct Writer: {}", jsonWriter);
   }
 
   /**
@@ -188,7 +158,7 @@ public class JsonSerDe extends AbstractSerDe {
       return jsonReader.parseStruct(
           new ByteArrayInputStream((t.getBytes()), 0, t.getLength()));
     } catch (Exception e) {
-      LOG.debug("Problem parsing JSON text [{}].", t, e);
+      log.debug("Problem parsing JSON text [{}]", t, e);
       throw new SerDeException(e);
     }
   }

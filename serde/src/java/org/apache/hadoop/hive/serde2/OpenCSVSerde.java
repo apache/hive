@@ -27,8 +27,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.CharArrayReader;
 import java.io.IOException;
@@ -36,7 +34,6 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -54,7 +51,6 @@ import au.com.bytecode.opencsv.CSVWriter;
     OpenCSVSerde.SEPARATORCHAR, OpenCSVSerde.QUOTECHAR, OpenCSVSerde.ESCAPECHAR})
 public final class OpenCSVSerde extends AbstractSerDe {
 
-  public static final Logger LOG = LoggerFactory.getLogger(OpenCSVSerde.class.getName());
   private ObjectInspector inspector;
   private String[] outputFields;
   private int numCols;
@@ -73,10 +69,7 @@ public final class OpenCSVSerde extends AbstractSerDe {
       throws SerDeException {
     super.initialize(configuration, tableProperties, partitionProperties);
 
-    final List<String> columnNames = Arrays.asList(properties.getProperty(serdeConstants.LIST_COLUMNS)
-        .split(","));
-
-    numCols = columnNames.size();
+    numCols = getColumnNames().size();
 
     final List<ObjectInspector> columnOIs = new ArrayList<ObjectInspector>(numCols);
 
@@ -84,7 +77,7 @@ public final class OpenCSVSerde extends AbstractSerDe {
       columnOIs.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
     }
 
-    inspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, columnOIs);
+    inspector = ObjectInspectorFactory.getStandardStructObjectInspector(getColumnNames(), columnOIs);
     outputFields = new String[numCols];
     row = new ArrayList<String>(numCols);
 
@@ -169,7 +162,7 @@ public final class OpenCSVSerde extends AbstractSerDe {
         try {
           csv.close();
         } catch (final Exception e) {
-          LOG.error("fail to close csv writer ", e);
+          log.error("fail to close csv writer", e);
         }
       }
     }
