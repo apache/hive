@@ -18,7 +18,6 @@
 
 package org.apache.hive.service.auth.saml;
 
-import static org.apache.hive.service.auth.saml.HiveSamlUtils.SSO_TOKEN_RESPONSE_PORT;
 import static org.opensaml.saml.common.xml.SAMLConstants.SAML2_POST_BINDING_URI;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -39,7 +38,6 @@ import org.pac4j.core.exception.http.WithLocationAction;
 import org.pac4j.saml.client.SAML2Client;
 import org.pac4j.saml.config.SAML2Configuration;
 import org.pac4j.saml.credentials.SAML2Credentials;
-import org.pac4j.saml.credentials.SAML2Credentials.SAMLAttribute;
 import org.pac4j.saml.credentials.extractor.SAML2CredentialsExtractor;
 import org.pac4j.saml.replay.ReplayCacheProvider;
 import org.slf4j.Logger;
@@ -112,12 +110,14 @@ public class HiveSaml2Client extends SAML2Client {
       saml2Configuration.setAssertionConsumerServiceIndex(
           conf.getIntVar(ConfVars.HIVE_SERVER2_SAML_ACS_INDEX));
     }
-    List<String> blackListedSignAlgos = Splitter.on(',').splitToList(
-        conf.get(ConfVars.HIVE_SERVER2_SAML_BLACKLISTED_SIGNATURE_ALGORITHMS.varname,
-            ""));
-    if (!blackListedSignAlgos.isEmpty()) {
+    String disallowedSignatureAlgos = conf
+        .get(ConfVars.HIVE_SERVER2_SAML_BLACKLISTED_SIGNATURE_ALGORITHMS.varname,
+            "");
+    if (!disallowedSignatureAlgos.isEmpty()) {
       LOG.info(
-          "List of disallowed signature algorithms: " + blackListedSignAlgos);
+          "List of disallowed signature algorithms: " + disallowedSignatureAlgos);
+      List<String> blackListedSignAlgos = Splitter.on(',').splitToList(
+          disallowedSignatureAlgos);
       saml2Configuration.setBlackListedSignatureSigningAlgorithms(blackListedSignAlgos);
     }
     // if the SP id is set use it else we configure the SP Id as the callback id.
@@ -143,10 +143,7 @@ public class HiveSaml2Client extends SAML2Client {
    */
   public void setRedirect(HttpServletRequest request, HttpServletResponse response)
       throws HttpSamlAuthenticationException {
-    String responsePort = request.getHeader(SSO_TOKEN_RESPONSE_PORT);
-    if (responsePort == null || responsePort.isEmpty()) {
-      throw new HttpSamlAuthenticationException("No response port specified");
-    }
+    int responsePort = HiveSamlUtils.validateSamlResponsePort(request);
     LOG.debug("Request has response port set as {}", responsePort);
     Optional<RedirectionAction> redirect = getRedirectionAction(
         new JEEContext(request, response));

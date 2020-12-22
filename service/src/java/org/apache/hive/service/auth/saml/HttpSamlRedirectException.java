@@ -18,17 +18,13 @@
 
 package org.apache.hive.service.auth.saml;
 
+/**
+ * Exception used in SAML auth workflow to determine if a given request needs
+ * to be redirected to the external identity provider.
+ */
 public class HttpSamlRedirectException extends HttpSamlAuthenticationException {
-
-  public HttpSamlRedirectException(Throwable cause) {
-    super(cause);
-  }
 
   public HttpSamlRedirectException(String msg) {
     super(msg);
-  }
-
-  public HttpSamlRedirectException(String msg, Throwable cause) {
-    super(msg, cause);
   }
 }

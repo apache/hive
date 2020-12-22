@@ -198,7 +198,7 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         LOG.warn("XSRF filter disabled");
       }
 
-      final String httpPath = ServiceUtils.getHttpPath(hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH));
+      final String httpPath = getHttpPath(hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH));
 
       if (HiveConf.getBoolVar(hiveConf, ConfVars.HIVE_SERVER2_THRIFT_HTTP_COMPRESSION_ENABLED)) {
         final GzipHandler gzipHandler = new GzipHandler();
@@ -266,6 +266,30 @@ public class ThriftHttpCLIService extends ThriftCLIService {
         System.exit(-1);
       }
     }
+  }
+
+  /**
+   * The config parameter can be like "path", "/path", "/path/", "path/*", "/path1/path2/*" and so on.
+   * httpPath should end up as "/*", "/path/*" or "/path1/../pathN/*"
+   * @param httpPath
+   * @return
+   */
+  private String getHttpPath(String httpPath) {
+    if(httpPath == null || httpPath.equals("")) {
+      httpPath = "/*";
+    }
+    else {
+      if(!httpPath.startsWith("/")) {
+        httpPath = "/" + httpPath;
+      }
+      if(httpPath.endsWith("/")) {
+        httpPath = httpPath + "*";
+      }
+      if(!httpPath.endsWith("/*")) {
+        httpPath = httpPath + "/*";
+      }
+    }
+    return httpPath;
   }
 
   public  void constrainHttpMethods(ServletContextHandler ctxHandler, boolean allowOptionsMethod) {

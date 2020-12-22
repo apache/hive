@@ -18,6 +18,10 @@
 
 package org.apache.hive.service.auth.saml;
 
+/**
+ * Exception which is thrown when the groups of a user do not match with the
+ * allowed list of groups.
+ */
 public class HttpSamlNoGroupsMatchedException extends HttpSamlAuthenticationException {
 
   public HttpSamlNoGroupsMatchedException(String s) {

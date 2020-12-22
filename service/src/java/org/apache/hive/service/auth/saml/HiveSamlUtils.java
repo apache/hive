@@ -21,6 +21,7 @@ package org.apache.hive.service.auth.saml;
 import com.google.common.base.Preconditions;
 import java.net.URI;
 import java.net.URISyntaxException;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.ServiceUtils;
@@ -28,8 +29,8 @@ import org.apache.hive.service.auth.HiveAuthConstants;
 
 public class HiveSamlUtils {
 
-  public static final String SSO_TOKEN_RESPONSE_PORT = "X-Token-Response-Port";
-  public static final String SSO_CLIENT_IDENTIFIER = "X-Client-Identifier";
+  public static final String SSO_TOKEN_RESPONSE_PORT = "X-Hive-Token-Response-Port";
+  public static final String SSO_CLIENT_IDENTIFIER = "X-Hive-Client-Identifier";
   public static final String TOKEN_KEY = "token";
   public static final String STATUS_KEY = "status";
   public static final String MESSAGE_KEY = "message";
@@ -47,7 +48,7 @@ public class HiveSamlUtils {
    */
   public static String getCallBackPath(HiveConf conf) throws Exception {
     URI callbackURI = getCallBackUri(conf);
-    return ServiceUtils.getHttpPath(callbackURI.getPath());
+    return callbackURI.getPath();
   }
 
   public static URI getCallBackUri(HiveConf conf) throws Exception {
@@ -71,5 +72,21 @@ public class HiveSamlUtils {
   public static final String LOOP_BACK_INTERFACE = "127.0.0.1";
   public static String getLoopBackAddress(int port) {
     return String.format("http://%s:%s",LOOP_BACK_INTERFACE, port);
+  }
+
+  /**
+   * Validates and returns the SAML response port number from the request.
+   */
+  public static int validateSamlResponsePort(HttpServletRequest request)
+      throws HttpSamlAuthenticationException {
+    String responsePort = request.getHeader(SSO_TOKEN_RESPONSE_PORT);
+    if (responsePort == null || responsePort.isEmpty()) {
+      throw new HttpSamlAuthenticationException("No response port specified");
+    }
+    try {
+      return Integer.parseInt(responsePort);
+    } catch (NumberFormatException e) {
+      throw new HttpSamlAuthenticationException("Invalid response port received", e);
+    }
   }
 }

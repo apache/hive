@@ -20,6 +20,9 @@ package org.apache.hive.service.auth.saml;
 
 import org.apache.hive.service.auth.HttpAuthenticationException;
 
+/**
+ * Exception classes to be used to throw errors in the SAML authentication flow.
+ */
 public class HttpSamlAuthenticationException extends HttpAuthenticationException {
 
   public HttpSamlAuthenticationException(Throwable cause) {
