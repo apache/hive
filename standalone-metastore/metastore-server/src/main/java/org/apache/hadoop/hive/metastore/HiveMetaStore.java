@@ -139,8 +139,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * @param tokenStrForm
    *          the token in string form
    */
-  public static void cancelDelegationToken(String tokenStrForm
-      ) throws IOException {
+  public static void cancelDelegationToken(String tokenStrForm) throws IOException {
     delegationTokenManager.cancelDelegationToken(tokenStrForm);
   }
 
@@ -168,8 +167,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * @param tokenStrForm
    *          the token in string form
    */
-  public static long renewDelegationToken(String tokenStrForm
-      ) throws IOException {
+  public static long renewDelegationToken(String tokenStrForm) throws IOException {
     return delegationTokenManager.renewDelegationToken(tokenStrForm);
   }
 
@@ -177,7 +175,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * HiveMetaStore specific CLI
    *
    */
-  static public class HiveMetastoreCli extends CommonCliOptions {
+  public static class HiveMetastoreCli extends CommonCliOptions {
     private int port;
 
     @SuppressWarnings("static-access")
@@ -232,7 +230,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   /**
    * @param args
    */
-   public static void main(String[] args) throws Throwable {
+  public static void main(String[] args) throws Throwable {
     final Configuration conf = MetastoreConf.newMetastoreConf();
     shutdownHookMgr = ShutdownHookManager.get();
 
@@ -309,7 +307,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } catch (Exception e) {
           // log exception, but ignore inability to start
           LOG.error("error in Metrics init: " + e.getClass().getName() + " "
-            + e.getMessage(), e);
+              + e.getMessage(), e);
         }
       }
 
@@ -322,7 +320,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   /**
-   * Start Metastore based on a passed {@link HadoopThriftAuthBridge}
+   * Start Metastore based on a passed {@link HadoopThriftAuthBridge}.
    *
    * @param port
    * @param bridge
@@ -594,13 +592,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         rs.shutdown();
       }
     } finally {
-      HMSHandler handler = HMSHandler.threadLocalHMSHandler.get();
+      HMSHandler handler = HMSHandler.THREAD_LOCAL_HMS_HANDLER.get();
       if (handler != null) {
         handler.notifyMetaListenersOnShutDown();
       }
-      HMSHandler.threadLocalHMSHandler.remove();
-      HMSHandler.threadLocalConf.remove();
-      HMSHandler.threadLocalModifiedConfig.remove();
+      HMSHandler.THREAD_LOCAL_HMS_HANDLER.remove();
+      HMSHandler.THREAD_LOCAL_CONF.remove();
+      HMSHandler.THREAD_LOCAL_MODIFIED_CONFIG.remove();
       HMSHandler.removeRawStore();
       HMSHandler.logAndAudit("Done cleaning up thread local RawStore");
     }
@@ -661,7 +659,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           pauseMonitor.start();
         } catch (Throwable t) {
           LOG.warn("Could not initiate the JvmPauseMonitor thread." + " GCs and Pauses may not be " +
-            "warned upon.", t);
+              "warned upon.", t);
         }
 
         try {
@@ -708,7 +706,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   protected static void startStatsUpdater(Configuration conf) throws Exception {
     StatsUpdateMode mode = StatsUpdateMode.valueOf(
         MetastoreConf.getVar(conf, ConfVars.STATS_AUTO_UPDATE).toUpperCase());
-    if (mode == StatsUpdateMode.NONE) return;
+    if (mode == StatsUpdateMode.NONE) {
+      return;
+    }
     MetaStoreThread t = instantiateThread("org.apache.hadoop.hive.ql.stats.StatsUpdaterThread");
     initializeAndStartThread(t, conf);
   }
@@ -783,7 +783,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
   }
 
   /**
-   * Print a log message for starting up and shutting down
+   * Print a log message for starting up and shutting down.
    * @param clazz the class of the server
    * @param args arguments
    * @param LOG the target log object
@@ -818,7 +818,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * @param msg content of the message
    * @return a message for logging
    */
-  private static String toStartupShutdownString(String prefix, String [] msg) {
+  private static String toStartupShutdownString(String prefix, String[] msg) {
     StringBuilder b = new StringBuilder(prefix);
     b.append("\n/************************************************************");
     for(String s : msg) {
@@ -835,7 +835,10 @@ public class HiveMetaStore extends ThriftHiveMetastore {
    * @return hostname
    */
   private static String getHostname() {
-    try {return "" + InetAddress.getLocalHost();}
-    catch(UnknownHostException uhe) {return "" + uhe;}
+    try {
+      return "" + InetAddress.getLocalHost();
+    } catch(UnknownHostException uhe) {
+      return "" + uhe;
+    }
   }
 }
