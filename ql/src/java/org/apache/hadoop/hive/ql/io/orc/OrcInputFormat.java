@@ -1290,18 +1290,17 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         // get confused. This bypass was not necessary when MM tables didn't support originals. Now
         // that they do, we use this path for anything MM table related, although everything except
         // the originals could still be handled by AcidUtils like a regular non-txn table.
-        boolean isRecursive = context.conf.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE,
-            context.conf.getBoolean("mapred.input.dir.recursive", false));
-
-        List<HdfsFileStatusWithId> originals = AcidUtils.findOriginals(fs.get(), dir, useFileIds, true, isRecursive);
         AcidDirectory directory = new AcidDirectory(dir, fs.get(), useFileIds);
-        directory.getOriginalFiles().addAll(originals);
+        if (context.conf.getBoolean(ConfVars.HIVE_MM_ALLOW_ORIGINALS.varname, false)) {
+          boolean isRecursive = context.conf.getBoolean(FileInputFormat.INPUT_DIR_RECURSIVE,
+              context.conf.getBoolean("mapred.input.dir.recursive", false));
+          List<HdfsFileStatusWithId> originals = AcidUtils.findOriginals(fs.get(), dir, useFileIds, true, isRecursive);
+          directory.getOriginalFiles().addAll(originals);
+        }
         return directory;
       }
       //todo: shouldn't ignoreEmptyFiles be set based on ExecutionEngine?
-      AcidDirectory dirInfo  = getAcidState();
-
-      return dirInfo;
+      return getAcidState();
     }
   }
 

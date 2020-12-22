@@ -836,8 +836,8 @@ public class AcidUtils {
    * (v(isibility) is a literal to help parsing).
    */
   public static class ParsedBaseLight {
-    private final long writeId;
-    private final long visibilityTxnId;
+    protected final long writeId;
+    protected final long visibilityTxnId;
     protected final Path baseDirPath;
 
     ParsedBaseLight(long writeId, Path baseDirPath) {
@@ -875,8 +875,7 @@ public class AcidUtils {
 
     @Override
     public String toString() {
-      return "Path: " + baseDirPath + "; writeId: "
-          + writeId + "; visibilityTxnId: " + visibilityTxnId;
+      return "Path: " + baseDirPath + "; writeId: " + writeId + "; visibilityTxnId: " + visibilityTxnId;
     }
   }
   /**
@@ -926,6 +925,10 @@ public class AcidUtils {
 
     public void setFiles(List<HdfsFileStatusWithId> files) {
       this.files = files;
+    }
+    @Override
+    public String toString() {
+      return super.toString() + "; rawFormat: " + rawFormat;
     }
   }
 
@@ -1451,7 +1454,6 @@ public class AcidUtils {
        *
        * For now, assert that ValidTxnList.VALID_TXNS_KEY is set only if this is really a read
        * of a transactional table.
-       * see {@link #getChildState(FileStatus, HdfsFileStatusWithId, ValidWriteIdList, List, List, List, List, TxnBase, boolean, List, Map, FileSystem, ValidTxnList)}
        */
       validTxnList = new ValidReadTxnList();
       validTxnList.readFromString(s);

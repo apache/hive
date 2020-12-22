@@ -223,8 +223,9 @@ public final class AcidDirectory {
 
   @Override
   public String toString() {
-    return "Aborted Directories: " + abortedDirectories + "; original: " + originalFiles + "; obsolete: " + obsolete
-        + "; currentDirectories: " + currentDirectories + "; base: " + base;
+    return "Aborted Directories: " + abortedDirectories + "; aborted writeIds: " + abortedWriteIds +
+        "; original: " + originalFiles + "; obsolete: " + obsolete +
+        "; currentDirectories: " + currentDirectories + "; base: " + base;
   }
 
 }
