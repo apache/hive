@@ -13,3 +13,84 @@ Example:
   'facebook'
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTrim
 Function type:BUILTIN
+PREHOOK: query: SELECT '"' || trim('   tech   ') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || trim('   tech   ') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"tech"
+PREHOOK: query: SELECT '"' || TRIM(' '  FROM  '   tech   ') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || TRIM(' '  FROM  '   tech   ') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"tech"
+PREHOOK: query: SELECT '"' || TRIM(LEADING '0' FROM '000123') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || TRIM(LEADING '0' FROM '000123') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"123"
+PREHOOK: query: SELECT '"' || TRIM(TRAILING '1' FROM 'Tech1') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || TRIM(TRAILING '1' FROM 'Tech1') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"Tech"
+PREHOOK: query: SELECT '"' || TRIM(BOTH '1' FROM '123Tech111') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || TRIM(BOTH '1' FROM '123Tech111') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"23Tech"
+PREHOOK: query: SELECT '"' || ltrim('   tech   ') || '"', '"' || rtrim('   tech   ') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || ltrim('   tech   ') || '"', '"' || rtrim('   tech   ') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"tech   "	"   tech"
+PREHOOK: query: SELECT '"' || lTRIM('0'  FROM  '000123') || '"', '"' || rTRIM('0'  FROM  '000123') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || lTRIM('0'  FROM  '000123') || '"', '"' || rTRIM('0'  FROM  '000123') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"123"	"123"
+PREHOOK: query: SELECT trim('000123', '0')
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT trim('000123', '0')
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+123
+PREHOOK: query: SELECT '"' || trim('000123.1200', '0') || '"', '"' || ltrim('000123.1200', '0') || '"', '"' || rtrim('000123.1200', '0') || '"'
+PREHOOK: type: QUERY
+PREHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT '"' || trim('000123.1200', '0') || '"', '"' || ltrim('000123.1200', '0') || '"', '"' || rtrim('000123.1200', '0') || '"'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: _dummy_database@_dummy_table
+#### A masked pattern was here ####
+"123.12"	"123.1200"	"000123.12"

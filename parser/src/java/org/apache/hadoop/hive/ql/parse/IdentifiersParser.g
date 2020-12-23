@@ -268,7 +268,7 @@ castExpression
 // TRIM([LEADING|TRAILING|BOTH] trim_characters FROM str)
 trimFunction
     :
-    KW_TRIM LPAREN (leading=KW_LEADING | trailing=KW_TRAILING | KW_BOTH)? (trim_characters=selectExpression)? KW_FROM (str=selectExpression) RPAREN
+    functionName LPAREN (leading=KW_LEADING | trailing=KW_TRAILING | KW_BOTH)? (trim_characters=selectExpression)? KW_FROM (str=selectExpression) RPAREN
     -> {$leading != null}? ^(TOK_FUNCTION {adaptor.create(Identifier, "ltrim")} $str $trim_characters?)
     -> {$trailing != null}? ^(TOK_FUNCTION {adaptor.create(Identifier, "rtrim")} $str $trim_characters?)
     -> ^(TOK_FUNCTION {adaptor.create(Identifier, "trim")} $str $trim_characters?)
@@ -473,8 +473,8 @@ atomExpression
     | whenExpression
     | (subQueryExpression)=> (subQueryExpression)
         -> ^(TOK_SUBQUERY_EXPR TOK_SUBQUERY_OP subQueryExpression)
+    | (functionName LPAREN (leading=KW_LEADING | trailing=KW_TRAILING | KW_BOTH)? (trim_characters=selectExpression)? KW_FROM (str=selectExpression) RPAREN) => trimFunction
     | (functionName LPAREN) => function
-    | trimFunction
     | tableOrColumn
     | expressionsInParenthesis[true, false]
     ;

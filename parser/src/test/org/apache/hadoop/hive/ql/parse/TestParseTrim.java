@@ -87,4 +87,13 @@ public class TestParseTrim {
     assertEquals(HiveParser.StringLiteral, trimCharacters.getType());
     assertEquals(expectedTrimChars, trimCharacters.getText());
   }
+
+  @Test
+  public void testParseTrimWithOneParameter() throws Exception {
+    ASTNode tree = parseDriver.parseSelect(
+            "select trim('foo  bar')", null).getTree();
+
+    assertTrimFunction(tree, "trim", "'foo  bar'", "'rfo'");
+  }
+
 }
