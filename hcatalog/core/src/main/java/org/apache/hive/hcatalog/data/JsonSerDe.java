@@ -57,7 +57,7 @@ public class JsonSerDe extends AbstractSerDe {
       throws SerDeException {
     super.initialize(configuration, tableProperties, partitionProperties);
 
-    jsonSerde.initialize(configuration, this.properties, false);
+    jsonSerde.initialize(configuration, tableProperties, partitionProperties, false);
 
     StructTypeInfo rowTypeInfo = jsonSerde.getTypeInfo();
     cachedObjectInspector = HCatRecordObjectInspectorFactory.getHCatRecordObjectInspector(rowTypeInfo);

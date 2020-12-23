@@ -69,12 +69,35 @@ public class JsonSerDe extends AbstractSerDe {
    * Initialize the SerDe. By default, items being deserialized are expected to
    * be wrapped in Hadoop Writable objects and objects being serialized are
    * expected to be Java primitive objects.
+   *
+   * @param configuration Hadoop configuration
+   * @param tableProperties Table properties
+   * @param partitionProperties Partition properties (may be {@code null} if
+   *          table has no partitions)
+   * @throws NullPointerException if tableProperties is {@code null}
+   * @throws SerDeException if SerDe fails to initialize
    */
   @Override
   public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties)
       throws SerDeException {
+    initialize(configuration, tableProperties, partitionProperties, true);
+  }
+
+  /**
+   * Initialize the SerDe.
+   *
+   * @param configuration Hadoop configuration
+   * @param tableProperties Table properties
+   * @param partitionProperties Partition properties (may be {@code null} if
+   *          table has no partitions)
+   * @param writeablePrimitivesDeserialize true if outputs are Hadoop Writable
+   * @throws NullPointerException if tableProperties is {@code null}
+   * @throws SerDeException if SerDe fails to initialize
+   */
+  public void initialize(Configuration configuration, Properties tableProperties, Properties partitionProperties,
+      boolean writeablePrimitivesDeserialize) throws SerDeException {
     super.initialize(configuration, tableProperties, partitionProperties);
-    initialize(configuration, this.properties, true);
+    initialize(configuration, this.properties, writeablePrimitivesDeserialize);
   }
 
   /**
@@ -84,7 +107,7 @@ public class JsonSerDe extends AbstractSerDe {
    * @param tbl table properties
    * @param writeablePrimitivesDeserialize true if outputs are Hadoop Writable
    */
-  public void initialize(final Configuration conf, final Properties tbl,
+  private void initialize(final Configuration conf, final Properties tbl,
       final boolean writeablePrimitivesDeserialize) {
 
     log.debug("Initializing JsonSerDe: {}", tbl.entrySet());
