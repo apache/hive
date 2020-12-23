@@ -216,6 +216,14 @@ sortByClause
     )
     ;
 
+// TRIM([LEADING|TRAILING|BOTH] str_par0 FROM str_par1)
+trimFunction
+    :
+//    KW_TRIM LPAREN (KW_LEADING | KW_TRAILING | KW_BOTH)? (trim_characters=selectExpression)? KW_FROM (str=selectExpression) RPAREN
+    KW_TRIM LPAREN (trim_characters=selectExpression)? KW_FROM (str=selectExpression) RPAREN
+    -> ^(TOK_FUNCTION {adaptor.create(Identifier, "trim")} $str $trim_characters?)
+    ;
+
 // fun(par1, par2, par3)
 function
 @init { gParent.pushMsg("function specification", state); }
@@ -465,6 +473,7 @@ atomExpression
     | (subQueryExpression)=> (subQueryExpression)
         -> ^(TOK_SUBQUERY_EXPR TOK_SUBQUERY_OP subQueryExpression)
     | (functionName LPAREN) => function
+    | trimFunction
     | tableOrColumn
     | expressionsInParenthesis[true, false]
     ;
