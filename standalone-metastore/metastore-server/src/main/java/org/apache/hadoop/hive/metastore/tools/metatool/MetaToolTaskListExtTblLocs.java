@@ -19,11 +19,14 @@ package org.apache.hadoop.hive.metastore.tools.metatool;
 
 import com.google.common.annotations.VisibleForTesting;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.ContentSummary;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
 import org.apache.thrift.TException;
 import org.codehaus.jettison.json.JSONException;
@@ -32,16 +35,27 @@ import org.codehaus.jettison.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class MetaToolTaskListExtTblLocs extends MetaToolTask {
 
   private static final Logger LOG = LoggerFactory.getLogger(MetaToolTaskListExtTblLocs.class);
-  private final HashMap<String, HashSet<String>> coverageList = new HashMap<>();
-  private final HashMap<String, DataLocation> inputLocations = new HashMap<>();
+  private static Configuration conf;
+  private final Map<String, HashSet<String>> coverageList = new HashMap<>(); //maps each output-location to the set of input-locations covered by it
+  private final Map<String, DataLocation> inputLocations = new HashMap<>(); //maps each input-location to a DataLocation object which specifies it's properties
 
   @Override
   void execute() {
@@ -56,23 +70,38 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
   private void generateExternalTableInfo(String dbPattern, String outputDir) throws TException, IOException,
           JSONException {
     ObjectStore objectStore = getObjectStore();
-    Configuration conf = msConf != null ? msConf : objectStore.getConf();
+    conf = msConf != null ? msConf : objectStore.getConf();
+    Warehouse wh = new Warehouse(conf);
     String defaultCatalog = MetaStoreUtils.getDefaultCatalog(conf);
     List<String> databases = objectStore.getDatabases(defaultCatalog, dbPattern);
     System.out.println("Number of databases found for given pattern: " + databases.size());
-    TreeSet<String> locations = new TreeSet<>();
+    //maintain the set of leaves of the tree as a sorted set
+    Set<String> leafLocations = new TreeSet<>();
     for (String db : databases) {
       List<String> tables = objectStore.getAllTables(defaultCatalog, db);
+      Path defaultDbExtPath = wh.getDefaultExternalDatabasePath(db);
+      String defaultDbExtLocation = defaultDbExtPath.toString();
+      boolean isDefaultPathEmpty = true;
       for(String tblName : tables) {
         Table t = objectStore.getTable(defaultCatalog, db, tblName);
         if(TableType.EXTERNAL_TABLE.name().equalsIgnoreCase(t.getTableType())) {
           String tblLocation = t.getSd().getLocation();
+          if(isPathWithinSubtree(new Path(tblLocation), defaultDbExtPath)) {
+            if(isDefaultPathEmpty) {
+              isDefaultPathEmpty = false;
+              //default paths should always be included, so we add them as special leaves to the tree
+              addDefaultPath(defaultDbExtLocation, db);
+              leafLocations.add(defaultDbExtLocation);
+            }
+            HashSet<String> coveredByDefault = coverageList.get(defaultDbExtLocation);
+            coveredByDefault.add(tblLocation);
+          } else if (!isCovered(leafLocations, new Path(tblLocation))) {
+            leafLocations.add(tblLocation);
+          }
           DataLocation dataLocation = new DataLocation(db, tblName, 0, 0,
                   null);
+          dataLocation.setSubPartitionDataSize(0);
           inputLocations.put(tblLocation, dataLocation);
-          if (!isCovered(locations, new Path(tblLocation))) {
-            locations.add(tblLocation);
-          }
           //retrieving partition locations outside table-location
           Map<String, String> partitionLocations = objectStore.getPartitionLocations(defaultCatalog, db, tblName,
                   tblLocation, -1);
@@ -82,27 +111,87 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
             //null value means partition is in table location, we do not add it to input in this case.
             if(partLocation == null) {
               dataLocation.incrementNumPartsInTblLoc();
+              partLocation = tblLocation + Path.SEPARATOR +
+                      Warehouse.makePartName(Warehouse.makeSpecFromName(partitionName), false);
+              dataLocation.setSubPartitionDataSize(dataLocation.getSubPartitionDataSize() + getDataSize(new Path(partLocation), conf));
             }
             else {
-              partLocation = partLocation + Path.SEPARATOR + 
+              partLocation = partLocation + Path.SEPARATOR +
                       Warehouse.makePartName(Warehouse.makeSpecFromName(partitionName), false);
-              inputLocations.put(partLocation, new DataLocation(db, tblName, 0,
-                      0, partitionName));
-              if(!isCovered(locations, new Path(partLocation))) {
-                locations.add(partLocation);
+              Path partPath = new Path(partLocation);
+              long partDataSize = getDataSize(partPath, conf);
+              if (isPathWithinSubtree(partPath, defaultDbExtPath)) {
+                if (isDefaultPathEmpty) {
+                  isDefaultPathEmpty = false;
+                  addDefaultPath(defaultDbExtLocation, db);
+                  leafLocations.add(defaultDbExtLocation);
+                }
+                if (isPathWithinSubtree(partPath, new Path(tblLocation))) {
+                  //even in non-null case, handle the corner case where location is set to table-location
+                  //In this case, partition would be covered by table location itself, so we need not add to input
+                  dataLocation.incrementNumPartsInTblLoc();
+                  dataLocation.setSubPartitionDataSize(dataLocation.getSubPartitionDataSize() + partDataSize);
+                } else {
+                  DataLocation partObj = new DataLocation(db, tblName, 0, 0, partitionName);
+                  partObj.setSubPartitionDataSize(0);
+                  inputLocations.put(partLocation, partObj);
+                  coverageList.get(defaultDbExtLocation).add(partLocation);
+                }
+              } else {
+                if (isPathWithinSubtree(partPath, new Path(tblLocation))) {
+                  dataLocation.incrementNumPartsInTblLoc();
+                  dataLocation.setSubPartitionDataSize(dataLocation.getSubPartitionDataSize() + partDataSize);
+                } else {
+                  //only in this case, partition location is neither inside table nor in default location.
+                  //So we add it to the graph  as a separate leaf.
+                  DataLocation partObj = new DataLocation(db, tblName, 0, 0, partitionName);
+                  partObj.setSubPartitionDataSize(0);
+                  inputLocations.put(partLocation, partObj);
+                  if(!isCovered(leafLocations, partPath)) {
+                    leafLocations.add(partLocation);
+                  }
+                }
               }
             }
           }
         }
       }
     }
-    if(!locations.isEmpty()) {
-      removeNestedStructure(locations);
-      createOutputList(locations, outputDir, dbPattern);
+    if(!leafLocations.isEmpty()) {
+      removeNestedStructure(leafLocations);
+      createOutputList(leafLocations, outputDir, dbPattern);
     }
     else {
       System.out.println("No external tables found to process.");
     }
+  }
+
+  private void addDefaultPath(String defaultDbExtLocation, String dbName) {
+    coverageList.put(defaultDbExtLocation, new HashSet<>());
+    DataLocation defaultDatalocation = new DataLocation(dbName, null, 0, 0, null);
+    //mark default leaves to always be included in output-list
+    defaultDatalocation.setIncludeByDefault(true);
+    inputLocations.put(defaultDbExtLocation, defaultDatalocation);
+  }
+
+  private long getDataSize(Path location, Configuration conf) throws IOException {
+    if(location == null) {
+      return 0;
+    }
+    if(MetastoreConf.getBoolVar(conf, MetastoreConf.ConfVars.HIVE_IN_TEST)) {
+      return testDatasizes == null ? 0 : testDatasizes.containsKey(location.toString()) ?
+              testDatasizes.get(location.toString()) : 0;
+    }
+    FileSystem fs = location.getFileSystem(conf);
+    if (fs != null && fs.getUri().getScheme().equals("hdfs")) {
+      try {
+        ContentSummary cs = fs.getContentSummary(location);
+        return cs.getLength();
+      } catch (FileNotFoundException e) {
+        //no data yet in data location but we proceed since data may be added later.
+      }
+    }
+    return 0;
   }
 
   private boolean isPathWithinSubtree(Path path, Path subtree) {
@@ -123,7 +212,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
   /*
    * Method to determine if an existing location covers the given location and record the coverage in output.
    */
-  private boolean isCovered(TreeSet<String> locations, Path path) {
+  private boolean isCovered(Set<String> locations, Path path) {
     Path originalPath = new Path(path.toString());
     while(path != null){
       if(locations.contains(path.toString())){
@@ -142,6 +231,11 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
   private void addCoverage(Path parentPath, Path childPath, boolean addChild) {
     String childLoc = childPath.toString();
     String parentLoc = parentPath.toString();
+    //If the path to be covered should be included by default, then we do not cover it.
+    //This is because default paths should be individually listed, not covered under some parent.
+    if(inputLocations.containsKey(childLoc) && inputLocations.get(childLoc).shouldIncludeByDefault()) {
+      return;
+    }
     HashSet<String> pathsUnderChild = coverageList.get(childLoc);
     coverageList.remove(childLoc);
     if(coverageList.get(parentLoc) == null) {
@@ -153,14 +247,13 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
     }
     if(pathsUnderChild != null) {
       pathsUnderParent.addAll(pathsUnderChild);
-      pathsUnderChild = null;
     }
   }
 
   /*
    * Transforms a collection so that no element is an ancestor of another.
    */
-  private void removeNestedStructure(TreeSet<String> locations) {
+  private void removeNestedStructure(Set<String> locations) {
     List<String> locationList = new ArrayList<>();
     locationList.addAll(locations);
     for(int i = 0; i < locationList.size(); i++) {
@@ -186,7 +279,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
    * Method to write the output to the given location.
    * We construct a tree out of external table - locations and use it to determine suitable directories covering all locations.
    */
-  private void createOutputList(TreeSet<String> locations, String outputDir, String dbPattern) throws IOException, JSONException {
+  private void createOutputList(Set<String> locations, String outputDir, String dbPattern) throws IOException, JSONException {
     ExternalTableGraphNode rootNode = constructTree(locations);
     //Traverse through the tree in breadth-first manner and decide which nodes to include.
     //For every node, either cover all leaves in its subtree using itself
@@ -202,16 +295,40 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       }
       int nonTrivialCoverage = 0;
       List<ExternalTableGraphNode> childNodes = current.getChildNodes();
+      boolean processChildrenByDefault = false;
+      long childDataSize = 0;
       for(ExternalTableGraphNode child : childNodes) {
         if (child.getNumLeavesCovered() > 1) {
           nonTrivialCoverage += child.getNumLeavesCovered();
         }
+        if (child.shouldIncludeByDefault()) {
+          processChildrenByDefault = true;
+          break;
+        }
+        childDataSize += getDataSize(new Path(child.getLocation()), conf);
       }
-      int numLeavesCovered = current.getNumLeavesCovered();
-      if((nonTrivialCoverage >= (numLeavesCovered + 1) / 2) || numLeavesCovered == 1) {
+      boolean addCurrToSolution = false;
+      if(!processChildrenByDefault) {
+        addCurrToSolution = true;
+        if (!current.shouldIncludeByDefault()) {
+          //ensure that we do not have extra data in the current node for it to be included.
+          long currDataSize = getDataSize(new Path(current.getLocation()), conf);
+          if (inputLocations.containsKey(current.getLocation())) {
+            //reduce the size of partitions included in table-location
+            currDataSize -= inputLocations.get(current.getLocation()).getSubPartitionDataSize();
+          }
+          int numLeavesCovered = current.getNumLeavesCovered();
+          //only add current node if it doesn't have extra data and non-trivial coverage is less than half
+          addCurrToSolution &= currDataSize == childDataSize &&
+                  ((nonTrivialCoverage < (numLeavesCovered + 1) / 2) && numLeavesCovered != 1);
+        }
+      }
+      if(processChildrenByDefault) {
         queue.addAll(childNodes);
-      } else {
+      } else if (addCurrToSolution) {
         addToSolution(current);
+      } else {
+        queue.addAll(childNodes);
       }
     }
     String outFileName = "externalTableLocations_" + dbPattern + "_" + System.currentTimeMillis() + ".txt";
@@ -224,7 +341,8 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       JSONArray outputEntities = listOutputEntities(coveredLocations);
       jsonObject.put(outputLocation, outputEntities);
     }
-    pw.println(jsonObject.toString(4).replace("\\",""));
+    String result = jsonObject.toString(4).replace("\\","");
+    pw.println(result);
     pw.close();
   }
 
@@ -237,7 +355,11 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
     List<String> listEntities = new ArrayList<>();
     for(String loc : locations) {
       DataLocation data = inputLocations.get(loc);
-      String out = data.getDbName() + "." + data.getTblName();
+      String tblName = data.getTblName();
+      if(tblName == null) {
+        continue;
+      }
+      String out = data.getDbName() + "." + tblName;
       String partName = data .getPartName();
       if (partName == null) {
         int numPartInTblLoc = data.getNumPartitionsInTblLoc();
@@ -258,13 +380,16 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
     return new JSONArray(listEntities);
   }
 
-  private ExternalTableGraphNode constructTree(TreeSet<String> locations) {
+  private ExternalTableGraphNode constructTree(Set<String> locations) {
     ExternalTableGraphNode rootNode = null;
-    HashMap<String, ExternalTableGraphNode> locationGraph = new HashMap<>();
+    Map<String, ExternalTableGraphNode> locationGraph = new HashMap<>();
     // Every location is represented by a leaf in the tree.
     // We traverse through the input locations and construct the tree.
     for (String leaf : locations) {
       ExternalTableGraphNode currNode = new ExternalTableGraphNode(leaf, new ArrayList<>(), true);
+      if(inputLocations.containsKey(leaf) && inputLocations.get(leaf).shouldIncludeByDefault()) {
+        currNode.setIncludeByDefault(true);
+      }
       locationGraph.put(leaf, currNode);
       if (coverageList.get(leaf) == null) {
         coverageList.put(leaf, new HashSet<>());
@@ -285,6 +410,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
         }
         else {
           parNode = locationGraph.get(parentLoc);
+          parNode.setIsLeaf(false);
         }
         if(currNode.getParent() == null) {
           parNode.addChild(currNode);
@@ -302,6 +428,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       }
     }
     rootNode.updateNumLeavesCovered();
+    rootNode.updateIncludeByDefault();
     return rootNode;
   }
 
@@ -323,9 +450,26 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       }
     }
   }
-  
+
   @VisibleForTesting
   static Configuration msConf = null;
+
+  @VisibleForTesting
+  Map<String, Long> testDatasizes = null;
+
+  @VisibleForTesting
+  public Map<String, HashSet<String>> runTest(Set<String> inputList, Map<String, Long> sizes)  {
+    try {
+      conf = msConf;
+      testDatasizes = sizes;
+      coverageList.clear();
+      removeNestedStructure(inputList);
+      createOutputList(inputList, "test", "test");
+    } catch (Exception e) {
+      LOG.error("MetaToolTask failed on ListExtTblLocs test: ", e);
+    }
+    return coverageList;
+  }
 
   /*
    * Class denoting every external table data location.
@@ -340,6 +484,8 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
     private int numPartitionsInTblLoc;
     private String partName;
     private int totalPartitions;
+    long subPartitionDataSize;
+    boolean includeByDefault;
 
     private DataLocation (String dbName, String tblName, int totalPartitions, int numPartitionsInTblLoc,
                           String partName) {
@@ -374,8 +520,24 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       return this.totalPartitions;
     }
     
+    private long getSubPartitionDataSize() {
+      return this.subPartitionDataSize;
+    }
+
+    private boolean shouldIncludeByDefault() {
+      return this.includeByDefault;
+    }
+
     private void setTotalPartitions(int totalPartitions) {
       this.totalPartitions = totalPartitions;
+    }
+
+    private void setSubPartitionDataSize(long subPartitionDataSize) {
+      this.subPartitionDataSize = subPartitionDataSize;
+    }
+
+    private void setIncludeByDefault(boolean includeByDefault) {
+      this.includeByDefault = includeByDefault;
     }
   }
 
@@ -384,6 +546,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
     private List<ExternalTableGraphNode> childNodes;
     private ExternalTableGraphNode parent;
     private boolean isLeaf;
+    private boolean includeByDefault;
     private int numLeavesCovered;
 
     private ExternalTableGraphNode(String location, List<ExternalTableGraphNode> childNodes, boolean isLeaf) {
@@ -391,6 +554,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       this.childNodes = childNodes;
       this.isLeaf = isLeaf;
       this.parent = null;
+      this.includeByDefault = false;
     }
 
     private void addChild(ExternalTableGraphNode child) {
@@ -403,6 +567,10 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
 
     private boolean isLeaf() {
       return this.isLeaf;
+    }
+
+    public void setIsLeaf(boolean isLeaf) {
+      this.isLeaf = isLeaf;
     }
 
     private void setNumLeavesCovered(int numLeavesCovered) {
@@ -425,6 +593,14 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       return this.parent;
     }
 
+    private boolean shouldIncludeByDefault() {
+      return this.includeByDefault;
+    }
+
+    private void setIncludeByDefault(boolean includeByDefault) {
+      this.includeByDefault = includeByDefault;
+    }
+
     private void updateNumLeavesCovered() {
       if(this.isLeaf) {
         return;
@@ -433,6 +609,25 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       for(ExternalTableGraphNode currChild : childNodes) {
         currChild.updateNumLeavesCovered();
         this.numLeavesCovered += currChild.getNumLeavesCovered();
+      }
+    }
+
+    /*
+     * Method to mark all the paths in the subtree rooted at current node which need to be included by default.
+     * If some leaf has this property, then we mark the path from root to that leaf.
+     */
+    private void updateIncludeByDefault() {
+      if(this.isLeaf) {
+        return;
+      }
+      for(ExternalTableGraphNode currChild : childNodes) {
+        currChild.updateIncludeByDefault();
+      }
+      for(ExternalTableGraphNode currChild : childNodes) {
+        if(currChild.shouldIncludeByDefault()) {
+          this.includeByDefault = true;
+          break;
+        }
       }
     }
   }

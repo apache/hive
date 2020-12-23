@@ -35,6 +35,8 @@ import java.util.Set;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -215,201 +217,126 @@ public class TestHiveMetaTool {
   public void testListExtTblLocs() throws Exception {
     String extTblLocation = getTestDataDir() + "/ext";
     String outLocation = getTestDataDir() + "/extTblOutput/";
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL, getWarehouseDir());
+    MetaToolTaskListExtTblLocs.msConf = conf;
 
-    //Case 1: Multiple unpartitioned external tables, expected o/p: 1 location
-    runStatementOnDriver("create external table ext1(a int) location '" + extTblLocation + "/t1'");
-    runStatementOnDriver("create external table ext2(a int) location '" + extTblLocation + "/t2'" );
-    runStatementOnDriver("create external table ext3(a int) location '" + extTblLocation + "/t3'" );
-    JSONObject outJS = getListExtTblLocs("default", outLocation);
+    // Case 1 : Check default locations
+    // Inputs : db1, db2 in default locations, db3 in custom location
+    // Expected outputs: default locations for db1, db2 and custom location for db3 after aggregation
+    runStatementOnDriver("create database db1");
+    runStatementOnDriver("create database db2");
+    runStatementOnDriver("create database db3");
+    runStatementOnDriver("create external table db1.ext(a int) partitioned by (p int)");
+    runStatementOnDriver("create external table db2.ext(a int) partitioned by (p int)");
+    runStatementOnDriver("create external table db3.ext(a int) partitioned by (p int) " +
+            "location '" + getTestDataDir() + "/ext/tblLoc'");
+    runStatementOnDriver("alter table db3.ext add partition(p = 0) location '" + getTestDataDir() + "/part'" );
+    runStatementOnDriver("alter table db3.ext add partition(p = 1) location '" + getTestDataDir() + "/part'" );
+    JSONObject outJS = getListExtTblLocs("db*", outLocation);
+    //confirm default locations
     Set<String> outLocationSet = outJS.keySet();
-    Assert.assertTrue(outLocationSet.contains(getAbsolutePath(extTblLocation)));
-    Assert.assertEquals(outLocationSet.size(), 1);
-    runStatementOnDriver("drop table ext1");
-    runStatementOnDriver("drop table ext2");
-    runStatementOnDriver("drop table ext3");
-
-    //Case 2: 1 table containing all partitions in table location, expected o/p : 1 location with "*"
-    runStatementOnDriver("create external table ext(a int) partitioned by (b int) location '" + extTblLocation +"'");
-    runStatementOnDriver("alter table ext add partition(b = 1)");
-    runStatementOnDriver("alter table ext add partition(b = 2)");
-    runStatementOnDriver("alter table ext add partition(b = 3)");
-    outJS = getListExtTblLocs("default", outLocation);
-    String expectedOutLoc = getAbsolutePath(extTblLocation);
-    outLocationSet = outJS.keySet();
-    Assert.assertTrue(outLocationSet.contains(expectedOutLoc));
-    Assert.assertEquals(outLocationSet.size(), 1);
-    JSONArray outArr = outJS.getJSONArray(expectedOutLoc);
-    Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equalsIgnoreCase("default.ext.*"));
-
-    //Case 3 : Table contains no partitions, 3 partitions outside table.
-    // inputs    ../ext/t1- table location, partitions locations:
-    //           ../ext/b1
-    //           ../ext/b2
-    //           ../ext/b3
-    // expected output : ../ext containing 4 elements
-    runStatementOnDriver("drop table ext");
-    runStatementOnDriver("create external table ext(a int) partitioned by (b int) " +
-            "location '" + getTestDataDir() + "/ext/t1'");
-    runStatementOnDriver("alter table ext add partition(b = 1) location '" + getTestDataDir() + "/ext/b1'" );
-    runStatementOnDriver("alter table ext add partition(b = 2) location '" + getTestDataDir() + "/ext/b2'" );
-    runStatementOnDriver("alter table ext add partition(b = 3) location '" + getTestDataDir() + "/ext/b3'" );
-    outJS = getListExtTblLocs("default", outLocation);
-    expectedOutLoc = getAbsolutePath(extTblLocation);
-    outLocationSet = outJS.keySet();
-    Assert.assertTrue(outLocationSet.contains(expectedOutLoc));
-    Assert.assertEquals(outLocationSet.size(), 1);
-    outArr = outJS.getJSONArray(expectedOutLoc);
-    Assert.assertEquals(outArr.length(), 4);
-    Assert.assertTrue(outArr.getString(0).equalsIgnoreCase("default.ext p(0/3)"));
-    Assert.assertTrue(outArr.getString(1).equalsIgnoreCase("default.ext.b=1"));
-    Assert.assertTrue(outArr.getString(2).equalsIgnoreCase("default.ext.b=2"));
-    Assert.assertTrue(outArr.getString(3).equalsIgnoreCase("default.ext.b=3"));
-
-
-    //Case 4 : Partitions at multiple depths
-    // inputs   ../ext/b0 - contains tbl-loc(t1)
-    //          ../ext/p=0 - contains 1 partition
-    //          ../ext/b1/b2/b3 - contains 3 partitions of table (p1, p2, p3)
-    // expected output : [../ext/b1/b2/b3 containing 3 elements, t1, p0]
-    runStatementOnDriver("drop table ext");
-    runStatementOnDriver("create external table ext(a int) partitioned by (p int) " +
-            "location '" + getTestDataDir() + "/ext/b0'");
-    runStatementOnDriver("alter table ext add partition(p = 0) location '" + getTestDataDir() + "/ext'" );
-    runStatementOnDriver("alter table ext add partition(p = 1) location '" + getTestDataDir() + "/ext/b1/b2/b3'" );
-    runStatementOnDriver("alter table ext add partition(p = 2) location '" + getTestDataDir() + "/ext/b1/b2/b3'" );
-    runStatementOnDriver("alter table ext add partition(p = 3) location '" + getTestDataDir() + "/ext/b1/b2/b3'" );
-    outJS = getListExtTblLocs("default", outLocation);
-    String expectedOutLoc1 = getAbsolutePath(extTblLocation + "/b0");
-    String expectedOutLoc2 = getAbsolutePath(extTblLocation + "/p=0");
-    String expectedOutLoc3 = getAbsolutePath(extTblLocation + "/b1/b2/b3");
-    outLocationSet = outJS.keySet();
+    String expectedOutLoc1 = getAbsolutePath(getWarehouseDir() + "/db1.db");
     Assert.assertTrue(outLocationSet.contains(expectedOutLoc1));
+    Assert.assertEquals(outLocationSet.size(), 4);
+    JSONArray outArr = outJS.getJSONArray(expectedOutLoc1);
+    Assert.assertEquals(outArr.length(), 1);
+    Assert.assertTrue(outArr.getString(0).equals("db1.ext"));
+    String expectedOutLoc2 = getAbsolutePath(getWarehouseDir() + "/db2.db");
     Assert.assertTrue(outLocationSet.contains(expectedOutLoc2));
-    Assert.assertTrue(outLocationSet.contains(expectedOutLoc3));
-    Assert.assertEquals(outLocationSet.size(), 3);
-    outArr = outJS.getJSONArray(expectedOutLoc1);
-    Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equalsIgnoreCase("default.ext p(0/4)"));
     outArr = outJS.getJSONArray(expectedOutLoc2);
-    Assert.assertTrue(outArr.getString(0).equalsIgnoreCase("default.ext.p=0"));
+    Assert.assertEquals(outArr.length(), 1);
+    Assert.assertTrue(outArr.getString(0).equals("db2.ext"));
+    String expectedOutLoc3 = getAbsolutePath(getTestDataDir() + "/part");
+    Assert.assertTrue(outLocationSet.contains(expectedOutLoc3));
     outArr = outJS.getJSONArray(expectedOutLoc3);
-    Assert.assertTrue(outArr.getString(0).equalsIgnoreCase("default.ext.p=1"));
-    Assert.assertTrue(outArr.getString(1).equalsIgnoreCase("default.ext.p=2"));
-    Assert.assertTrue(outArr.getString(2).equalsIgnoreCase("default.ext.p=3"));
+    Assert.assertEquals(outArr.length(), 2);
+    Assert.assertTrue(outArr.getString(0).equals("db3.ext.p=0"));
+    Assert.assertTrue(outArr.getString(1).equals("db3.ext.p=1"));
+    String expectedOutLoc4 = getAbsolutePath(getTestDataDir() + "/ext/tblLoc");
+    Assert.assertTrue(outLocationSet.contains(expectedOutLoc4));
+    outArr = outJS.getJSONArray(expectedOutLoc4);
+    Assert.assertEquals(outArr.length(), 1);
+    Assert.assertTrue(outArr.getString(0).equals("db3.ext p(0/2)"));
 
 
-    // Case 5 : Root location contains a lot of leaves
-    // inputs   ../ext/b0 - contains tbllocation and 2 partitions (p0,p1) (3 elements total)
-    //          ../ext/b1 - contains 2 partitions of table (p2, p3)
-    //          ../ext    - contains 6 partitions (p4,..p9)
-    // expected output : in this case, we take the root (ext) itself because it covers more than half the locations
-    //                   exp o/p: [/ext containing 11 elements]
+    // Case 2 : Check with special chars in partition-names : including quotes, timestamp formats, spaces, backslash etc.
+    // Also checks count of partitions in tbl-location.
+    // inputs   (default database)
+    //          ../ext/t1 - table1 location containing 3/5 partitions
+    //          ../ext/t2 - table2 location containining 2/4 partitions
+    //          ../ext/dir1/dir2/dir3 - 2 partitions of table1, 1 partition of table2, table loc of table3 with 0 partitions.
+    //          ../ext    - partitions of table3
+    // expected output : [../ext/t1, ../ext/t2, ../ext/dir1/dir2/dir3/t1_parts (2 partitions), ../ext/dir1/dir2/dir3/t2_parts(2 partitions),
+    //                     .../ext/dir1/dir2/dir3/t3 (0 parittions), ../ext/t3_parts (1 partition) ]
+    //                   Doesn't contain default database location as there are no entities in default location in this case,
+    //                   all data is under some custom location (../ext)
     runStatementOnDriver("drop table ext");
-    runStatementOnDriver("create external table ext(a int) partitioned by (p int) " +
-            "location '" + getTestDataDir() + "/ext/b0'");
-    runStatementOnDriver("alter table ext add partition(p = 0) location '" + getTestDataDir() + "/ext/b0'" );
-    runStatementOnDriver("alter table ext add partition(p = 1) location '" + getTestDataDir() + "/ext/b0'" );
-    runStatementOnDriver("alter table ext add partition(p = 2) location '" + getTestDataDir() + "/ext/b1'" );
-    runStatementOnDriver("alter table ext add partition(p = 3) location '" + getTestDataDir() + "/ext/b1'" );
-    runStatementOnDriver("alter table ext add partition(p = 4) location '" + getTestDataDir() + "/ext'" );
-    runStatementOnDriver("alter table ext add partition(p = 5) location '" + getTestDataDir() + "/ext'" );
-    runStatementOnDriver("alter table ext add partition(p = 6) location '" + getTestDataDir() + "/ext'" );
-    runStatementOnDriver("alter table ext add partition(p = 7) location '" + getTestDataDir() + "/ext'" );
-    runStatementOnDriver("alter table ext add partition(p = 8) location '" + getTestDataDir() + "/ext'" );
-    runStatementOnDriver("alter table ext add partition(p = 9) location '" + getTestDataDir() + "/ext'" );
-    outJS = getListExtTblLocs("default", outLocation);
-    expectedOutLoc1 = getAbsolutePath(extTblLocation);
-    outLocationSet = outJS.keySet();
-    Assert.assertTrue(outLocationSet.contains(expectedOutLoc1));
-    Assert.assertEquals(outLocationSet.size(), 1);
-    outArr = outJS.getJSONArray(expectedOutLoc1);
-    Assert.assertEquals(outArr.length(), 11);
-    Assert.assertTrue(outArr.getString(0).equalsIgnoreCase("default.ext p(0/10)"));
-    Assert.assertTrue(outArr.getString(1).equalsIgnoreCase("default.ext.p=0"));
-    Assert.assertTrue(outArr.getString(2).equalsIgnoreCase("default.ext.p=1"));
-    Assert.assertTrue(outArr.getString(3).equalsIgnoreCase("default.ext.p=2"));
-    Assert.assertTrue(outArr.getString(4).equalsIgnoreCase("default.ext.p=3"));
-    Assert.assertTrue(outArr.getString(5).equalsIgnoreCase("default.ext.p=4"));
-    Assert.assertTrue(outArr.getString(6).equalsIgnoreCase("default.ext.p=5"));
-    Assert.assertTrue(outArr.getString(7).equalsIgnoreCase("default.ext.p=6"));
-    Assert.assertTrue(outArr.getString(8).equalsIgnoreCase("default.ext.p=7"));
-    Assert.assertTrue(outArr.getString(9).equalsIgnoreCase("default.ext.p=8"));
-    Assert.assertTrue(outArr.getString(10).equalsIgnoreCase("default.ext.p=9"));
-
-
-    // Case 6 : Check count of partitions contained in tbl-loc
-    // inputs   ../ext/b0 - table1 location containing 3/5 partitions
-    //          ../ext/b1 - table2 location containining 2/4 partitions
-    //          ../ext/b2/b3/b4 - 2 partitions of table1, 1 partition of table2, table loc of table3
-    //          ../ext    - partitions of table3 which is less in number than all above combined
-    // expected output : [../ext/b0, ../ext/b1, ../ext/b2,b3,b4, table3 partitions individually]
-    runStatementOnDriver("drop table ext");
-    runStatementOnDriver("create external table ext(a int) partitioned by (p int) " +
-            "location '" + getTestDataDir() + "/ext/b0'");
-    runStatementOnDriver("create external table ext2(a int) partitioned by (p int, p1 int) " +
-            "location '" + getTestDataDir() + "/ext/b1'");
-    runStatementOnDriver("create external table ext3(a int) partitioned by (p int) "
-            + "location '" + getTestDataDir() + "/ext/b2/b3/b4'");
-    runStatementOnDriver("alter table ext add partition(p = 0)" );
-    runStatementOnDriver("alter table ext add partition(p = 1)" );
-    runStatementOnDriver("alter table ext add partition(p = 2)" );
-    runStatementOnDriver("alter table ext2 add partition(p = 0, p1 = 0)");
-    runStatementOnDriver("alter table ext2 add partition(p = 0, p1 = 1)");
-    runStatementOnDriver("alter table ext3 add partition(p = 0) location '"
-            + getTestDataDir() + "/ext'" );
-    runStatementOnDriver("alter table ext3 add partition(p = 1) location '"
-            + getTestDataDir() + "/ext'" );
-    runStatementOnDriver("alter table ext3 add partition(p = 2) location '"
-            + getTestDataDir() + "/ext'" );
-    runStatementOnDriver("alter table ext add partition(p = 3) location '"
-            + getTestDataDir() + "/ext/b2/b3/b4'" );
-    runStatementOnDriver("alter table ext add partition(p = 4) location '"
-            + getTestDataDir() + "/ext/b2/b3/b4'" );
-    runStatementOnDriver("alter table ext2 add partition(p = 0, p1 = 2) location '"
-            + getTestDataDir() + "/ext/b2/b3/b4'");
-    runStatementOnDriver("alter table ext2 add partition(p = 0, p1 = 3) location '"
-            + getTestDataDir() + "/ext/b2/b3/b4'");
+    runStatementOnDriver("create external table ext(a int) partitioned by (p varchar(3)) " +
+            "location '" + getTestDataDir() + "/ext/t1'");
+    runStatementOnDriver("create external table ext2(a int) partitioned by (flt string, dbl string) " +
+            "location '" + getTestDataDir() + "/ext/t2'");
+    runStatementOnDriver("create external table ext3(a int) partitioned by (dt string, timeSt string) "
+            + "location '" + getTestDataDir() + "/ext/dir1/dir2/dir3/t3'");
+    runStatementOnDriver("alter table ext add partition(p = 'A')");
+    runStatementOnDriver("alter table ext add partition(p = 'B')");
+    runStatementOnDriver("alter table ext add partition(p = 'UK')" );
+    runStatementOnDriver("alter table ext2 add partition(flt = '0.0', dbl = '0')");
+    runStatementOnDriver("alter table ext2 add partition(flt = '0.1', dbl = '1.1')");
+    runStatementOnDriver("alter table ext3 add partition(dt = '2020-12-01', timeSt = '23:23:23') location '"
+            + getTestDataDir() + "/ext/t3_parts'" );
+    runStatementOnDriver("alter table ext3 add partition(dt = '2020-12-02', timeSt = '22:22:22') location '"
+            + getTestDataDir() + "/ext/t3_parts'" );
+    runStatementOnDriver("alter table ext3 add partition(dt = '2020-12-03', timeSt = '21:21:21.1234') location '"
+            + getTestDataDir() + "/ext/t3_parts'" );
+    runStatementOnDriver("alter table ext add partition(p = \'A\\\\\') location '"
+            + getTestDataDir() + "/ext/dir1/dir2/dir3/t1_parts'" );
+    runStatementOnDriver("alter table ext add partition(p = \' A\"\') location '"
+            + getTestDataDir() + "/ext/dir1/dir2/dir3/t1_parts'" );
+    runStatementOnDriver("alter table ext2 add partition(flt = '0.1', dbl='3.22') location '"
+            + getTestDataDir() + "/ext/dir1/dir2/dir3/t2_parts'");
+    runStatementOnDriver("alter table ext2 add partition(flt = '0.22', dbl = '2.22') location '"
+            + getTestDataDir() + "/ext/dir1/dir2/dir3/t2_parts'");
 
 
     outJS = getListExtTblLocs("default", outLocation);
-    expectedOutLoc1 = getAbsolutePath(extTblLocation + "/b0");
-    expectedOutLoc2 = getAbsolutePath(extTblLocation + "/b1");
-    expectedOutLoc3 = getAbsolutePath(extTblLocation + "/b2/b3/b4");
-    String expectedOutLoc4 = getAbsolutePath(extTblLocation + "/p=0");
-    String expectedOutLoc5 = getAbsolutePath(extTblLocation + "/p=1");
-    String expectedOutLoc6 = getAbsolutePath(extTblLocation + "/p=2");
+    expectedOutLoc1 = getAbsolutePath(extTblLocation + "/t1");
+    expectedOutLoc2 = getAbsolutePath(extTblLocation + "/t2");
+    expectedOutLoc3 = getAbsolutePath(extTblLocation + "/dir1/dir2/dir3/t1_parts");
+    expectedOutLoc4 = getAbsolutePath(extTblLocation + "/dir1/dir2/dir3/t2_parts");
+    String expectedOutLoc5 = getAbsolutePath(extTblLocation + "/dir1/dir2/dir3/t3");
+    String expectedOutLoc6 = getAbsolutePath(extTblLocation + "/t3_parts");
 
     outLocationSet = outJS.keySet();
     Assert.assertEquals(outLocationSet.size(), 6);
     Assert.assertTrue(outLocationSet.contains(expectedOutLoc1));
-    outArr = outJS.getJSONArray(expectedOutLoc1);
+    outArr = outJS.getJSONArray(expectedOutLoc1); //t1
     Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equalsIgnoreCase("default.ext p(3/5)"));
+    Assert.assertTrue(outArr.getString(0).equals("default.ext p(3/5)"));
     Assert.assertTrue(outLocationSet.contains(expectedOutLoc2));
-    outArr = outJS.getJSONArray(expectedOutLoc2);
+    outArr = outJS.getJSONArray(expectedOutLoc2); //t2
     Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equalsIgnoreCase("default.ext2 p(2/4)"));
-    Assert.assertTrue(outLocationSet.contains(expectedOutLoc3));
+    Assert.assertTrue(outArr.getString(0).equals("default.ext2 p(2/4)"));
+    Assert.assertTrue(outLocationSet.contains(expectedOutLoc3)); //t1_parts
     outArr = outJS.getJSONArray(expectedOutLoc3);
-    Assert.assertEquals(outArr.length(), 5);
-    Assert.assertTrue(outArr.getString(0).equalsIgnoreCase("default.ext.p=3"));
-    Assert.assertTrue(outArr.getString(1).equalsIgnoreCase("default.ext.p=4"));
-    Assert.assertTrue(outArr.getString(2).equalsIgnoreCase("default.ext2.p=0/p1=2"));
-    Assert.assertTrue(outArr.getString(3).equalsIgnoreCase("default.ext2.p=0/p1=3"));
-    Assert.assertTrue(outArr.getString(4).equalsIgnoreCase("default.ext3 p(0/3)"));
-    Assert.assertTrue(outLocationSet.contains(expectedOutLoc4));
+    Assert.assertEquals(outArr.length(), 2);
+    Assert.assertTrue(outArr.getString(0).equals("default.ext.p= A%22"));  //spaces, quotes
+    Assert.assertTrue(outArr.getString(1).equals("default.ext.p=A%5C")); //backslash
+    Assert.assertTrue(outLocationSet.contains(expectedOutLoc4)); //t2_parts
     outArr = outJS.getJSONArray(expectedOutLoc4);
-    Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equalsIgnoreCase("default.ext3.p=0"));
-    Assert.assertTrue(outLocationSet.contains(expectedOutLoc5));
+    Assert.assertEquals(outArr.length(), 2);
+    Assert.assertTrue(outArr.getString(0).equals("default.ext2.flt=0.1/dbl=3.22")); //periods, slash
+    Assert.assertTrue(outArr.getString(1).equals("default.ext2.flt=0.22/dbl=2.22"));
+    Assert.assertTrue(outLocationSet.contains(expectedOutLoc5)); //t3
     outArr = outJS.getJSONArray(expectedOutLoc5);
     Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equalsIgnoreCase("default.ext3.p=1"));
-    Assert.assertTrue(outLocationSet.contains(expectedOutLoc6));
+    Assert.assertTrue(outArr.getString(0).equals("default.ext3 p(0/3)"));
+    Assert.assertTrue(outLocationSet.contains(expectedOutLoc6)); //t3_parts
     outArr = outJS.getJSONArray(expectedOutLoc6);
-    Assert.assertEquals(outArr.length(), 1);
-    Assert.assertTrue(outArr.getString(0).equalsIgnoreCase("default.ext3.p=2"));
+    Assert.assertEquals(outArr.length(), 3);
+    Assert.assertTrue(outArr.getString(0).equals("default.ext3.dt=2020-12-01/timest=23%3A23%3A23")); //date, timestamp formats
+    Assert.assertTrue(outArr.getString(1).equals("default.ext3.dt=2020-12-02/timest=22%3A22%3A22"));
+    Assert.assertTrue(outArr.getString(2).equals("default.ext3.dt=2020-12-03/timest=21%3A21%3A21.1234"));
   }
 
   private String getAbsolutePath(String extTblLocation) {
