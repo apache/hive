@@ -158,6 +158,10 @@ public class TestTableLevelReplicationScenarios extends BaseReplicationScenarios
 
     WarehouseInstance.Tuple tuple = primary.dump(replPolicy, oldReplPolicy, dumpWithClause);
 
+    DumpMetaData dumpMetaData = new DumpMetaData(new Path(tuple.dumpLocation, ReplUtils.REPL_HIVE_BASE_DIR), conf);
+    Assert.assertEquals(oldReplPolicy != null && !replPolicy.equals(oldReplPolicy),
+      dumpMetaData.isReplScopeModified());
+
     if (bootstrappedTables != null) {
       verifyBootstrapDirInIncrementalDump(tuple.dumpLocation, bootstrappedTables);
     }

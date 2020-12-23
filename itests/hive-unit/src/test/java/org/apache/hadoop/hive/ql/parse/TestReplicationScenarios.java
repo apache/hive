@@ -487,7 +487,7 @@ public class TestReplicationScenarios {
     }
     ReplLoadWork replLoadWork = new ReplLoadWork(confTemp, loadPath.toString(), sourceDb, replicadb,
             null, null, isIncrementalDump, Long.valueOf(tuple.lastReplId),
-        0L, metricCollector);
+        0L, metricCollector, false);
     Task replLoadTask = TaskFactory.get(replLoadWork, confTemp);
     replLoadTask.initialize(null, null, new TaskQueue(driver.getContext()), driver.getContext());
     replLoadTask.executeTask(null);
