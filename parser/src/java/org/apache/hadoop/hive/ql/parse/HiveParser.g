@@ -663,6 +663,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
     xlateMap.put("KW_AST", "AST");
     xlateMap.put("KW_TRANSACTIONAL", "TRANSACTIONAL");
     xlateMap.put("KW_MANAGED", "MANAGED");
+    xlateMap.put("KW_LEADING", "LEADING");
+    xlateMap.put("KW_TRAILING", "TRAILING");
+    xlateMap.put("KW_BOTH", "BOTH");
+
 
     // Operators
     xlateMap.put("DOT", ".");

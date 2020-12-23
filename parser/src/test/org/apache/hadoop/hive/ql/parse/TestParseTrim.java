@@ -28,22 +28,63 @@ import static org.junit.Assert.assertEquals;
 public class TestParseTrim {
   ParseDriver parseDriver = new ParseDriver();
 
+//  TOK_SELECT
+//    TOK_SELEXPR
+//      TOK_FUNCTION
+//        trim
+//        'foo  bar'
+//        'f'
   @Test
   public void testParseTrim() throws Exception {
     ASTNode tree = parseDriver.parseSelect(
-        "select trim('f' from '  foo  bar    ')", null).getTree();
+        "select trim('f' from 'foo  bar')", null).getTree();
 
-    assertEquals(1, tree.getChildCount());
+    assertTrimFunction(tree, "trim", "'foo  bar'", "'f'");
   }
 
   @Test
-  public void testParseMultipleColumnRefs() throws Exception {
+  public void testParseLTrim() throws Exception {
     ASTNode tree = parseDriver.parseSelect(
-            "SELECT rank(3, 4) WITHIN GROUP (ORDER BY val, val2) FROM src", null).getTree();
+        "select trim(leading 'fo' from 'foo  bar')", null).getTree();
+
+    assertTrimFunction(tree, "ltrim", "'foo  bar'", "'fo'");
+  }
+
+  @Test
+  public void testParseRTrim() throws Exception {
+    ASTNode tree = parseDriver.parseSelect(
+        "select trim(trailing 'fo' from 'foo  bar')", null).getTree();
+
+    assertTrimFunction(tree, "rtrim", "'foo  bar'", "'fo'");
+  }
+
+  @Test
+  public void testParseTrimBoth() throws Exception {
+    ASTNode tree = parseDriver.parseSelect(
+        "select trim(both 'rfo' from 'foo  bar')", null).getTree();
+
+    assertTrimFunction(tree, "trim", "'foo  bar'", "'rfo'");
+  }
+
+  private void assertTrimFunction(
+          ASTNode tree, String expectedFunctionName, String expactedStringToTrim, String expectedTrimChars) {
+    assertEquals(1, tree.getChildCount());
     ASTNode selExprNode = (ASTNode) tree.getChild(0);
+    assertEquals(1, selExprNode.getChildCount());
     ASTNode functionNode = (ASTNode) selExprNode.getChild(0);
-    ASTNode withinGroupNode = (ASTNode) functionNode.getChild(3);
-    ASTNode orderByNode = (ASTNode) withinGroupNode.getChild(0);
-    assertEquals(2, orderByNode.getChildCount());
+    assertEquals(HiveParser.TOK_FUNCTION, functionNode.getType());
+    assertEquals(3, functionNode.getChildCount());
+
+    ASTNode functionNameNode = (ASTNode) functionNode.getChild(0);
+    assertEquals(HiveParser.Identifier, functionNameNode.getType());
+    assertEquals(expectedFunctionName, functionNameNode.getText());
+
+    ASTNode strToTrimNode = (ASTNode) functionNode.getChild(1);
+    assertEquals(HiveParser.StringLiteral, strToTrimNode.getType());
+    assertEquals(expactedStringToTrim, strToTrimNode.getText());
+
+    ASTNode trimCharacters = (ASTNode) functionNode.getChild(2);
+    assertEquals(HiveParser.StringLiteral, trimCharacters.getType());
+    assertEquals(expectedTrimChars, trimCharacters.getText());
   }
 }
