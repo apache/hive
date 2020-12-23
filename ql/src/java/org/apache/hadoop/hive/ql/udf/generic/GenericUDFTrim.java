@@ -38,8 +38,8 @@ public class GenericUDFTrim extends GenericUDFBaseTrim {
   }
 
   @Override
-  protected String performOp(String val) {
-    return StringUtils.strip(val, " ");
+  protected String performOp(String val, String trimChars) {
+    return StringUtils.strip(val, trimChars);
   }
 
 }
