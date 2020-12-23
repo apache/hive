@@ -25,7 +25,7 @@ import org.apache.hadoop.hive.common.io.DiskRangeList;
  */
 public class DiskRangeInfo {
 
-  private DiskRangeList diskRanges = null;
+  private DiskRangeList head, tail = null;
   private long totalLength;
 
   public DiskRangeInfo(int indexBaseOffset) {
@@ -41,16 +41,16 @@ public class DiskRangeInfo {
   }
 
   public void addDiskRange(DiskRangeList diskRange) {
-    if (diskRanges == null) {
-      diskRanges = diskRange;
+    if (tail == null) {
+      head = tail = diskRange;
     } else {
-      diskRanges.insertAfter(diskRange);
+      tail = tail.insertAfter(diskRange);
     }
     totalLength += diskRange.getLength();
   }
 
   public DiskRangeList getDiskRanges() {
-    return diskRanges;
+    return head;
   }
 
   public long getTotalLength() {

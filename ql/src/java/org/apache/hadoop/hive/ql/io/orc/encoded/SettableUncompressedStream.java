@@ -29,12 +29,11 @@ public class SettableUncompressedStream extends InStream.UncompressedStream {
   }
 
   public void setBuffers(DiskRangeInfo diskRangeList) {
-    setCurrent(diskRangeList.getDiskRanges(), true);
     reset(diskRangeList.getDiskRanges());
     setOffset(diskRangeList.getDiskRanges());
   }
 
   private void setOffset(DiskRangeList list) {
-    currentOffset = list == null || list.listSize() < 2 ? 0 :  list.next.getOffset();
+    currentOffset = list == null ? 0 :  list.getOffset();
   }
 }
