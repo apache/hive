@@ -363,6 +363,12 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-yarn-common</artifactId>
         <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.inject</groupId>
+            <artifactId>guice</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -469,6 +475,11 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-yarn-registry</artifactId>
         <version>${hadoop.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.google.inject</groupId>
+        <artifactId>guice</artifactId>
+        <version>4.1.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
