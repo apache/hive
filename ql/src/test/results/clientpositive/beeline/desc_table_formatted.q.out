@@ -1,36 +1,36 @@
 PREHOOK: query: CREATE TABLE datatype_stats_n0(
-        t TINYINT,
-        s SMALLINT,
-        i INT,
-        b BIGINT,
-        f FLOAT,
-        d DOUBLE,
-        dem DECIMAL, 
-        ts TIMESTAMP,
-        dt DATE,
-        str STRING,
-        v VARCHAR(12),
-        c CHAR(5),
-        bl BOOLEAN,
-        bin BINARY)
+t TINYINT,
+s SMALLINT,
+i INT,
+b BIGINT,
+f FLOAT,
+d DOUBLE,
+dem DECIMAL,
+ts TIMESTAMP,
+dt DATE,
+str STRING,
+v VARCHAR(12),
+c CHAR(5),
+bl BOOLEAN,
+bin BINARY)
 PREHOOK: type: CREATETABLE
 PREHOOK: Output: database:default
 PREHOOK: Output: default@datatype_stats_n0
 POSTHOOK: query: CREATE TABLE datatype_stats_n0(
-        t TINYINT,
-        s SMALLINT,
-        i INT,
-        b BIGINT,
-        f FLOAT,
-        d DOUBLE,
-        dem DECIMAL, 
-        ts TIMESTAMP,
-        dt DATE,
-        str STRING,
-        v VARCHAR(12),
-        c CHAR(5),
-        bl BOOLEAN,
-        bin BINARY)
+t TINYINT,
+s SMALLINT,
+i INT,
+b BIGINT,
+f FLOAT,
+d DOUBLE,
+dem DECIMAL,
+ts TIMESTAMP,
+dt DATE,
+str STRING,
+v VARCHAR(12),
+c CHAR(5),
+bl BOOLEAN,
+bin BINARY)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@datatype_stats_n0

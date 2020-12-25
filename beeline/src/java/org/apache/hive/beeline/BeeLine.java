@@ -96,6 +96,7 @@ import org.apache.hive.beeline.hs2connection.HS2ConnectionFileUtils;
 import org.apache.hive.beeline.hs2connection.HiveSiteHS2ConnectionFileParser;
 import org.apache.hive.beeline.hs2connection.UserHS2ConnectionFileParser;
 import org.apache.hive.common.util.ShutdownHookManager;
+import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.jdbc.HiveConnection;
 import org.apache.hive.jdbc.JdbcUriParseException;
 import org.apache.hive.jdbc.Utils;
@@ -1488,11 +1489,9 @@ public class BeeLine implements Closeable {
       return true;
     }
 
-    if (line.trim().length() == 0) {
-      return true;
-    }
+    line = HiveStringUtils.removeComments(line);
 
-    if (isComment(line)) {
+    if (line.trim().length() == 0) {
       return true;
     }
 

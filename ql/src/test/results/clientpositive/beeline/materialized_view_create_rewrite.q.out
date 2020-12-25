@@ -7,20 +7,20 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: database:default
 POSTHOOK: Output: default@cmv_basetable_n10
 PREHOOK: query: insert into cmv_basetable_n10 values
- (1, 'alfred', 10.30, 2),
- (2, 'bob', 3.14, 3),
- (2, 'bonnie', 172342.2, 3),
- (3, 'calvin', 978.76, 3),
- (3, 'charlie', 9.8, 1)
+(1, 'alfred', 10.30, 2),
+(2, 'bob', 3.14, 3),
+(2, 'bonnie', 172342.2, 3),
+(3, 'calvin', 978.76, 3),
+(3, 'charlie', 9.8, 1)
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 PREHOOK: Output: default@cmv_basetable_n10
 POSTHOOK: query: insert into cmv_basetable_n10 values
- (1, 'alfred', 10.30, 2),
- (2, 'bob', 3.14, 3),
- (2, 'bonnie', 172342.2, 3),
- (3, 'calvin', 978.76, 3),
- (3, 'charlie', 9.8, 1)
+(1, 'alfred', 10.30, 2),
+(2, 'bob', 3.14, 3),
+(2, 'bonnie', 172342.2, 3),
+(3, 'calvin', 978.76, 3),
+(3, 'charlie', 9.8, 1)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@cmv_basetable_n10
@@ -148,19 +148,19 @@ POSTHOOK: Output: default@cmv_mat_view2_n4
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
 select * from (
-  (select a, c from cmv_basetable_n10 where a = 3) table1
-  join
-  (select a, c from cmv_basetable_n10 where d = 3) table2
-  on table1.a = table2.a)
+(select a, c from cmv_basetable_n10 where a = 3) table1
+join
+(select a, c from cmv_basetable_n10 where d = 3) table2
+on table1.a = table2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_n10
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from (
-  (select a, c from cmv_basetable_n10 where a = 3) table1
-  join
-  (select a, c from cmv_basetable_n10 where d = 3) table2
-  on table1.a = table2.a)
+(select a, c from cmv_basetable_n10 where a = 3) table1
+join
+(select a, c from cmv_basetable_n10 where d = 3) table2
+on table1.a = table2.a)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_n10
 #### A masked pattern was here ####
@@ -233,18 +233,18 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from (
-  (select a, c from cmv_basetable_n10 where a = 3) table1
-  join
-  (select a, c from cmv_basetable_n10 where d = 3) table2
-  on table1.a = table2.a)
+(select a, c from cmv_basetable_n10 where a = 3) table1
+join
+(select a, c from cmv_basetable_n10 where d = 3) table2
+on table1.a = table2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_n10
 #### A masked pattern was here ####
 POSTHOOK: query: select * from (
-  (select a, c from cmv_basetable_n10 where a = 3) table1
-  join
-  (select a, c from cmv_basetable_n10 where d = 3) table2
-  on table1.a = table2.a)
+(select a, c from cmv_basetable_n10 where a = 3) table1
+join
+(select a, c from cmv_basetable_n10 where d = 3) table2
+on table1.a = table2.a)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_n10
 #### A masked pattern was here ####
@@ -286,20 +286,20 @@ POSTHOOK: Output: default@cmv_mat_view2_n4
 Warning: Shuffle Join JOIN[6][tables = [test_db_materialized_view_create_rewrite.cmv_mat_view2_n4, $hdt$_0]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
 select * from (
-  (select a, c from cmv_basetable_n10 where a = 3) table1
-  join
-  (select a, c from cmv_basetable_n10 where d = 3) table2
-  on table1.a = table2.a)
+(select a, c from cmv_basetable_n10 where a = 3) table1
+join
+(select a, c from cmv_basetable_n10 where d = 3) table2
+on table1.a = table2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_n10
 PREHOOK: Input: default@cmv_mat_view2_n4
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from (
-  (select a, c from cmv_basetable_n10 where a = 3) table1
-  join
-  (select a, c from cmv_basetable_n10 where d = 3) table2
-  on table1.a = table2.a)
+(select a, c from cmv_basetable_n10 where a = 3) table1
+join
+(select a, c from cmv_basetable_n10 where d = 3) table2
+on table1.a = table2.a)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_n10
 POSTHOOK: Input: default@cmv_mat_view2_n4
@@ -365,19 +365,19 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[6][tables = [test_db_materialized_view_create_rewrite.cmv_mat_view2_n4, $hdt$_0]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from (
-  (select a, c from cmv_basetable_n10 where a = 3) table1
-  join
-  (select a, c from cmv_basetable_n10 where d = 3) table2
-  on table1.a = table2.a)
+(select a, c from cmv_basetable_n10 where a = 3) table1
+join
+(select a, c from cmv_basetable_n10 where d = 3) table2
+on table1.a = table2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_n10
 PREHOOK: Input: default@cmv_mat_view2_n4
 #### A masked pattern was here ####
 POSTHOOK: query: select * from (
-  (select a, c from cmv_basetable_n10 where a = 3) table1
-  join
-  (select a, c from cmv_basetable_n10 where d = 3) table2
-  on table1.a = table2.a)
+(select a, c from cmv_basetable_n10 where a = 3) table1
+join
+(select a, c from cmv_basetable_n10 where d = 3) table2
+on table1.a = table2.a)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_n10
 POSTHOOK: Input: default@cmv_mat_view2_n4
@@ -395,19 +395,19 @@ POSTHOOK: Output: default@cmv_mat_view2_n4
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: explain
 select * from (
-  (select a, c from cmv_basetable_n10 where a = 3) table1
-  join
-  (select a, c from cmv_basetable_n10 where d = 3) table2
-  on table1.a = table2.a)
+(select a, c from cmv_basetable_n10 where a = 3) table1
+join
+(select a, c from cmv_basetable_n10 where d = 3) table2
+on table1.a = table2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_n10
 #### A masked pattern was here ####
 POSTHOOK: query: explain
 select * from (
-  (select a, c from cmv_basetable_n10 where a = 3) table1
-  join
-  (select a, c from cmv_basetable_n10 where d = 3) table2
-  on table1.a = table2.a)
+(select a, c from cmv_basetable_n10 where a = 3) table1
+join
+(select a, c from cmv_basetable_n10 where d = 3) table2
+on table1.a = table2.a)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_n10
 #### A masked pattern was here ####
@@ -480,18 +480,18 @@ STAGE PLANS:
 
 Warning: Shuffle Join JOIN[8][tables = [$hdt$_0, $hdt$_1]] in Stage 'Stage-1:MAPRED' is a cross product
 PREHOOK: query: select * from (
-  (select a, c from cmv_basetable_n10 where a = 3) table1
-  join
-  (select a, c from cmv_basetable_n10 where d = 3) table2
-  on table1.a = table2.a)
+(select a, c from cmv_basetable_n10 where a = 3) table1
+join
+(select a, c from cmv_basetable_n10 where d = 3) table2
+on table1.a = table2.a)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@cmv_basetable_n10
 #### A masked pattern was here ####
 POSTHOOK: query: select * from (
-  (select a, c from cmv_basetable_n10 where a = 3) table1
-  join
-  (select a, c from cmv_basetable_n10 where d = 3) table2
-  on table1.a = table2.a)
+(select a, c from cmv_basetable_n10 where a = 3) table1
+join
+(select a, c from cmv_basetable_n10 where d = 3) table2
+on table1.a = table2.a)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@cmv_basetable_n10
 #### A masked pattern was here ####

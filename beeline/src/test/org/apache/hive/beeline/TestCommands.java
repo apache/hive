@@ -30,21 +30,35 @@ public class TestCommands {
 
   @Test
   public void testLinesEndingWithComments() {
-    int[] escape = {-1};
-    assertEquals("show tables;", removeComments("show tables;",escape));
-    assertEquals("show tables;", removeComments("show tables; --comments",escape));
-    assertEquals("show tables;", removeComments("show tables; -------comments",escape));
-    assertEquals("show tables;", removeComments("show tables; -------comments;one;two;three;;;;",escape));
-    assertEquals("show", removeComments("show-- tables; -------comments",escape));
-    assertEquals("show", removeComments("show --tables; -------comments",escape));
-    assertEquals("s", removeComments("s--how --tables; -------comments",escape));
-    assertEquals("", removeComments("-- show tables; -------comments",escape));
+    assertEquals("show tables;", removeComments("show tables;"));
+    assertEquals("show tables;", removeComments("show tables; --comments"));
+    assertEquals("show tables;", removeComments("show tables; -------comments"));
+    assertEquals("show tables;", removeComments("show tables; -------comments;one;two;three;;;;"));
+    assertEquals("show", removeComments("show-- tables; -------comments"));
+    assertEquals("show", removeComments("show --tables; -------comments"));
+    assertEquals("s", removeComments("s--how --tables; -------comments"));
+    assertEquals("", removeComments("-- show tables; -------comments"));
 
-    assertEquals("\"show tables\"", removeComments("\"show tables\" --comments",escape));
-    assertEquals("\"show --comments tables\"", removeComments("\"show --comments tables\" --comments",escape));
-    assertEquals("\"'show --comments' tables\"", removeComments("\"'show --comments' tables\" --comments",escape));
-    assertEquals("'show --comments tables'", removeComments("'show --comments tables' --comments",escape));
-    assertEquals("'\"show --comments tables\"'", removeComments("'\"show --comments tables\"' --comments",escape));
+    assertEquals("\"show tables\"", removeComments("\"show tables\" --comments"));
+    assertEquals("\"show --comments tables\"", removeComments("\"show --comments tables\" --comments"));
+    assertEquals("\"'show --comments' tables\"", removeComments("\"'show --comments' tables\" --comments"));
+    assertEquals("'show --comments tables'", removeComments("'show --comments tables' --comments"));
+    assertEquals("'\"show --comments tables\"'", removeComments("'\"show --comments tables\"' --comments"));
+
+    assertEquals("show tables;", removeComments("--comments\nshow tables;"));
+    assertEquals("show tables;", removeComments("--comments\nshow tables; --comments"));
+    assertEquals("show tables;", removeComments("--comments\nshow tables; -------comments"));
+    assertEquals("show tables;", removeComments("--comments\nshow tables; -------comments;one;two;three;;;;"));
+    assertEquals("show", removeComments("--comments\nshow-- tables; -------comments"));
+    assertEquals("show", removeComments("--comments\nshow --tables; -------comments"));
+    assertEquals("s", removeComments("--comments\ns--how --tables; -------comments"));
+    assertEquals("", removeComments("--comments\n-- show tables; -------comments"));
+
+    assertEquals("\"show tables\"", removeComments("--comments\n\"show tables\" --comments"));
+    assertEquals("\"show --comments tables\"", removeComments("--comments\n\"show --comments tables\" --comments"));
+    assertEquals("\"'show --comments' tables\"", removeComments("--comments\n\"'show --comments' tables\" --comments"));
+    assertEquals("'show --comments tables'", removeComments("--comments\n'show --comments tables' --comments"));
+    assertEquals("'\"show --comments tables\"'", removeComments("--comments\n'\"show --comments tables\"' --comments"));
   }
 
   /**
