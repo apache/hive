@@ -1088,8 +1088,7 @@ public class Commands {
    * Check if the input line is a multi-line command which needs to read further
    */
   public String handleMultiLineCmd(String line) throws IOException {
-    int[] startQuote = {-1};
-    line = HiveStringUtils.removeComments(line, startQuote);
+    line = HiveStringUtils.removeComments(line);
     Character mask = (System.getProperty("jline.terminal", "").equals("jline.UnsupportedTerminal")) ? null
                        : jline.console.ConsoleReader.NULL_MASK;
 
@@ -1117,7 +1116,7 @@ public class Commands {
       if (extra == null) { //it happens when using -f and the line of cmds does not end with ;
         break;
       }
-      extra = HiveStringUtils.removeComments(extra, startQuote);
+      extra = HiveStringUtils.removeComments(extra);
       if (extra != null && !extra.isEmpty()) {
         line += "\n" + extra;
       }
