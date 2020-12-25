@@ -33,7 +33,13 @@ public class SettableUncompressedStream extends InStream.UncompressedStream {
     setOffset(diskRangeList.getDiskRanges());
   }
 
-  private void setOffset(DiskRangeList list) {
-    currentOffset = list == null ? 0 :  list.getOffset();
+  private void setOffset(DiskRangeList diskRangeList) {
+    if (diskRangeList == null) {
+      // Empty stream, make sure available() call returns 0
+      currentOffset = 0;
+      position = length;
+    } else {
+      currentOffset = diskRangeList.getOffset();
+    }
   }
 }

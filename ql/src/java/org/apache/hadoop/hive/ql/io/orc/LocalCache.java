@@ -82,8 +82,7 @@ class LocalCache implements OrcInputFormat.FooterCache {
     if (bb.capacity() != bb.remaining()) {
       throw new RuntimeException("Bytebuffer allocated for path: " + path + " has remaining: " + bb.remaining() + " != capacity: " + bb.capacity());
     }
-    cache.put(path, new TailAndFileData(tail.getFileTail().getFileLength(),
-        tail.getFileModificationTime(), bb.duplicate()));
+    cache.put(path, new TailAndFileData(bb.limit(), tail.getFileModificationTime(), bb.duplicate()));
   }
 
   @Override
@@ -104,7 +103,7 @@ class LocalCache implements OrcInputFormat.FooterCache {
       }
       if (tfd == null) continue;
       if (file.getLen() == tfd.fileLength && file.getModificationTime() == tfd.fileModTime) {
-        result[i] = ReaderImpl.extractFileTail(tfd.bb.duplicate(), -1, tfd.fileModTime); // TODO [PANOS]
+        result[i] = ReaderImpl.extractFileTail(tfd.bb.duplicate(), tfd.fileLength, tfd.fileModTime);
         continue;
       }
       // Invalidate
