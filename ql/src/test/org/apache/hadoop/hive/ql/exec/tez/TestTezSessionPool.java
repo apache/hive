@@ -231,6 +231,39 @@ public class TestTezSessionPool {
   }
 
   @Test
+  public void testSessionReopenWithPreservingQueueName() {
+    try {
+      conf.setBoolVar(ConfVars.HIVE_SERVER2_ENABLE_DOAS, false);
+      conf.setVar(ConfVars.HIVE_SERVER2_TEZ_DEFAULT_QUEUES, "q1,q2");
+      conf.setIntVar(ConfVars.HIVE_SERVER2_TEZ_SESSIONS_PER_DEFAULT_QUEUE, 1);
+      conf.setBoolVar(ConfVars.HIVE_SERVER2_TEZ_UNSET_TEZ_QUEUE_NAME, false);
+
+      poolManager = new TestTezSessionPoolManager();
+      TezSessionState session = Mockito.mock(TezSessionState.class);
+      Mockito.when(session.getQueueName()).thenReturn("q1");
+      Mockito.when(session.isDefault()).thenReturn(false);
+      Mockito.when(session.getConf()).thenReturn(conf);
+
+      poolManager.reopen(session);
+
+      Mockito.verify(session).close(true);
+      Mockito.verify(session).open(Mockito.<TezSessionState.HiveResources>any());
+
+      // mocked session starts with q1 queue
+      assertEquals("q1", session.getQueueName());
+
+      // user explicitly specified queue name
+      conf.set("tez.queue.name", "q2");
+      poolManager.reopen(session);
+      assertEquals("q2", poolManager.getSession(null, conf, false, false).getQueueName());
+    } catch (Exception e) {
+      e.printStackTrace();
+      fail();
+    }
+  }
+
+
+  @Test
   public void testLlapSessionQueuing() {
     try {
       random = new Random(1000);
