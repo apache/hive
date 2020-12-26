@@ -20,8 +20,8 @@ package org.apache.hadoop.hive.ql.io.sarg;
 
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
-import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -33,7 +33,7 @@ public interface PredicateLeaf {
    * The possible operators for predicates. To get the opposites, construct
    * an expression with a not operator.
    */
-  public static enum Operator {
+  enum Operator {
     EQUALS,
     NULL_SAFE_EQUALS,
     LESS_THAN,
@@ -46,11 +46,11 @@ public interface PredicateLeaf {
   /**
    * The possible types for sargs.
    */
-  public static enum Type {
+  enum Type {
     LONG(Long.class),      // all of the integer types
     FLOAT(Double.class),   // float and double
     STRING(String.class),  // string, char, varchar
-    DATE(Date.class),
+    DATE(LocalDate.class),
     DECIMAL(HiveDecimalWritable.class),
     TIMESTAMP(Timestamp.class),
     BOOLEAN(Boolean.class);
@@ -72,25 +72,25 @@ public interface PredicateLeaf {
   /**
    * Get the operator for the leaf.
    */
-  public Operator getOperator();
+  Operator getOperator();
 
   /**
    * Get the type of the column and literal by the file format.
    */
-  public Type getType();
+  Type getType();
 
   /**
    * Get the simple column name.
    * @return the column name
    */
-  public String getColumnName();
+  String getColumnName();
 
   /**
    * Get the literal half of the predicate leaf. Adapt the original type for what orc needs
    *
    * @return an Integer, Long, Double, or String
    */
-  public Object getLiteral();
+  Object getLiteral();
 
   /**
    * For operators with multiple literals (IN and BETWEEN), get the literals.
@@ -98,5 +98,5 @@ public interface PredicateLeaf {
    * @return the list of literals (Integer, Longs, Doubles, or Strings)
    *
    */
-  public List<Object> getLiteralList();
+  List<Object> getLiteralList();
 }
