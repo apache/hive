@@ -217,9 +217,10 @@ public class ConvertAstToSearchArg {
         }
         return ts;
       case DATE:
+        // ORC-661: Use ChronoLocalDate and day of epoch instead of java's Date
         return new Date(
             DateWritable.daysToMillis(
-                org.apache.hadoop.hive.common.type.Date.valueOf(lit.toString()).toEpochDay()));
+                org.apache.hadoop.hive.common.type.Date.valueOf(lit.toString()).toEpochDay())).toLocalDate();
       case DECIMAL:
         return new HiveDecimalWritable(lit.toString());
       case BOOLEAN:

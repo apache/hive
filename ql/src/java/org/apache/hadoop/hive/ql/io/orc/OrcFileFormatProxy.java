@@ -47,12 +47,10 @@ public class OrcFileFormatProxy implements FileFormatProxy {
     OrcTail orcTail = ReaderImpl.extractFileTail(fileMetadata);
     OrcProto.Footer footer = orcTail.getFooter();
     int stripeCount = footer.getStripesCount();
-//    boolean writerUsedProlepticGregorian = footer.hasCalendar()
-//        ? footer.getCalendar() == OrcProto.CalendarKind.PROLEPTIC_GREGORIAN
-//        : OrcConf.PROLEPTIC_GREGORIAN_DEFAULT.getBoolean(conf);
+    // Always convert To PROLEPTIC_GREGORIAN
     org.apache.orc.Reader dummyReader = new org.apache.orc.impl.ReaderImpl(null,
         org.apache.orc.OrcFile.readerOptions(org.apache.orc.OrcFile.readerOptions(conf).getConfiguration())
-            .useUTCTimestamp(true).orcTail(orcTail));
+            .useUTCTimestamp(true).convertToProlepticGregorian(true).orcTail(orcTail));
     List<StripeStatistics> stripeStats = dummyReader.getVariantStripeStatistics(null);
     boolean[] result = OrcInputFormat.pickStripesViaTranslatedSarg(
         sarg, orcTail.getWriterVersion(),
