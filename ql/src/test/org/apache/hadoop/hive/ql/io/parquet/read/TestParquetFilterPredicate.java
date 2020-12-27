@@ -212,7 +212,7 @@ public class TestParquetFilterPredicate {
         SearchArgumentFactory.newBuilder()
             .startAnd()
             .lessThan("x", PredicateLeaf.Type.DATE,
-                Date.valueOf("1970-1-11"))
+                Date.valueOf("1970-1-11").toLocalDate())
             .lessThanEquals("y", PredicateLeaf.Type.STRING,
                 new HiveChar("hi", 10).toString())
             .equals("z", PredicateLeaf.Type.DECIMAL, new HiveDecimalWritable("1.0"))
@@ -260,7 +260,7 @@ public class TestParquetFilterPredicate {
     SearchArgument sarg =
         SearchArgumentFactory.newBuilder()
             .startAnd()
-            .lessThan("x", PredicateLeaf.Type.DATE, Date.valueOf("2005-3-12"))
+            .lessThan("x", PredicateLeaf.Type.DATE, Date.valueOf("2005-3-12").toLocalDate())
             .lessThanEquals("y", PredicateLeaf.Type.STRING,
                 new HiveChar("hi", 10).toString())
             .equals("z", PredicateLeaf.Type.DECIMAL,
