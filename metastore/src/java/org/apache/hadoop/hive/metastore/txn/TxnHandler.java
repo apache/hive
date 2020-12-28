@@ -626,7 +626,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * as a logical time counter.  If S.commitTime < T.startTime, T and S do NOT overlap.
    *
    * Motivating example:
-   * Suppose we have multi-statment transactions T and S both of which are attempting x = x + 1
+   * Suppose we have multi-statement transactions T and S both of which are attempting x = x + 1
    * In order to prevent lost update problem, the the non-overlapping txns must lock in the snapshot
    * that they read appropriately.  In particular, if txns do not overlap, then one follows the other
    * (assumig they write the same entity), and thus the 2nd must see changes of the 1st.  We ensure
@@ -855,7 +855,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
   /**
    * As much as possible (i.e. in absence of retries) we want both operations to be done on the same
    * connection (but separate transactions).  This avoid some flakiness in BONECP where if you
-   * perform an operation on 1 connection and immediately get another fron the pool, the 2nd one
+   * perform an operation on 1 connection and immediately get another from the pool, the 2nd one
    * doesn't see results of the first.
    * 
    * Retry-by-caller note: If the call to lock is from a transaction, then in the worst case
@@ -2430,7 +2430,7 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
    * Lock acquisition is meant to be fair, so every lock can only block on some lock with smaller
    * hl_lock_ext_id by only checking earlier locks.
    *
-   * For any given SQL statment all locks required by it are grouped under single extLockId and are
+   * For any given SQL statement all locks required by it are grouped under single extLockId and are
    * granted all at once or all locks wait.
    *
    * This is expected to run at READ_COMMITTED.
