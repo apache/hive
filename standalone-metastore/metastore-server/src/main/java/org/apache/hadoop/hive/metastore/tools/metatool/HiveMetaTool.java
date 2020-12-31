@@ -52,6 +52,8 @@ public final class HiveMetaTool {
         task = new MetaToolTaskUpdateLocation();
       } else if (cl.isListExtTblLocs()) {
         task = new MetaToolTaskListExtTblLocs();
+      } else if (cl.isDiffExtTblLocs()) {
+        task = new MetaToolTaskDiffExtTblLocs();
       } else {
         throw new IllegalArgumentException("No task was specified!");
       }

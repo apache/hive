@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.metastore.txn.TxnDbUtil;
+import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.commons.io.FileUtils;
@@ -120,9 +120,9 @@ public class TestHiveMetaTool {
       HiveConf.setBoolVar(hiveConf, HiveConf.ConfVars.MERGE_SPLIT_UPDATE, true);
       hiveConf.setBoolVar(HiveConf.ConfVars.HIVESTATSCOLAUTOGATHER, false);
       hiveConf.setBoolean("mapred.input.dir.recursive", true);
-      TxnDbUtil.setConfValues(hiveConf);
+      TestTxnDbUtil.setConfValues(hiveConf);
       txnHandler = TxnUtils.getTxnStore(hiveConf);
-      TxnDbUtil.prepDb(hiveConf);
+      TestTxnDbUtil.prepDb(hiveConf);
       File f = new File(getWarehouseDir());
       if (f.exists()) {
         FileUtil.fullyDelete(f);
@@ -339,6 +339,52 @@ public class TestHiveMetaTool {
     Assert.assertTrue(outArr.getString(2).equals("default.ext3.dt=2020-12-03/timest=21%3A21%3A21.1234"));
   }
 
+  /*
+   * Tests -diffExtTblLocs option on various input combinations.
+   */
+  @Test
+  public void testDiffExtTblLocs() throws Exception {
+    String extTblLocation = getTestDataDir() + "/ext";
+    String outLocation = getTestDataDir() + "/extTblOutput";
+    Configuration conf = MetastoreConf.newMetastoreConf();
+    MetastoreConf.setVar(conf, MetastoreConf.ConfVars.WAREHOUSE_EXTERNAL, getWarehouseDir());
+    MetaToolTaskListExtTblLocs.msConf = conf;
+
+    //create first file using -listExtTblLocs
+    runStatementOnDriver("create database diffDb");
+    runStatementOnDriver("create external table diffDb.ext1(a int) partitioned by (p int)");
+    runStatementOnDriver("create external table diffDb.ext2(a int) partitioned by (p int)");
+    runStatementOnDriver("create external table diffDb.ext3(a int) partitioned by (p int) " +
+            "location '" + getTestDataDir() + "/ext/tblLoc'");
+    runStatementOnDriver("alter table diffDb.ext1 add partition(p = 0) location '" + getTestDataDir() + "/part'" );
+    runStatementOnDriver("alter table diffDb.ext1 add partition(p = 1) location '" + getTestDataDir() + "/part'" );
+    String outLocation1 = outLocation + "1";
+    getListExtTblLocs("diffDb", outLocation1);
+
+    //create second file using -listExtTblLocs after dropping a table, dropping a partition and adding a different partition
+    runStatementOnDriver("drop table diffDb.ext2");
+    runStatementOnDriver("alter table diffDb.ext1 drop partition(p = 0)" );
+    runStatementOnDriver("alter table diffDb.ext1 add partition(p = 3) location '" + getTestDataDir() + "/part'" );
+    String outLocation2 = outLocation + "2";
+    getListExtTblLocs("diffDb", outLocation2);
+
+    //run diff on the above two files
+    JSONObject outJS = getDiffExtTblLocs(outLocation1, outLocation2, outLocation);
+    Set<String> outLocationSet = outJS.keySet();
+    String defaultDbLoc = getAbsolutePath(getWarehouseDir() + "/diffdb.db");
+    Assert.assertEquals(outLocationSet.size(), 2);
+    Assert.assertTrue(outLocationSet.contains(defaultDbLoc));
+    JSONArray outArr = outJS.getJSONArray(defaultDbLoc);
+    Assert.assertEquals(outArr.length(), 1);
+    Assert.assertTrue(outArr.getString(0).equals("- diffdb.ext2")); // dropped ext2 from default location
+    String partLoc = getAbsolutePath(getTestDataDir() + "/part");
+    Assert.assertTrue(outLocationSet.contains(partLoc));
+    outArr = outJS.getJSONArray(partLoc);
+    Assert.assertEquals(outArr.length(), 2); //two entries - 1 for added partition and 1 for dropped partition
+    Assert.assertTrue(outArr.getString(0).equals("+ diffdb.ext1.p=3"));
+    Assert.assertTrue(outArr.getString(1).equals("- diffdb.ext1.p=0"));
+  }
+
   private String getAbsolutePath(String extTblLocation) {
     return "file:" + extTblLocation;
   }
@@ -355,6 +401,28 @@ public class TestHiveMetaTool {
     for (File outFile : f.listFiles()) {
       String contents = new String(Files.readAllBytes(Paths.get(outFile.getAbsolutePath())));
       return new JSONObject(contents);
+    }
+    return null;
+  }
+
+  private JSONObject getDiffExtTblLocs(String fileLoc1, String fileLoc2, String outLocation) throws IOException {
+    File f = new File(outLocation);
+    if (f.exists()) {
+      FileUtil.fullyDelete(f);
+    }
+    if (!(new File(outLocation).mkdirs())) {
+      throw new RuntimeException("Could not create " + outLocation);
+    }
+    File f1 = new File(fileLoc1);
+    File f2 = new File(fileLoc2);
+    for (File outFile1 : f1.listFiles()) {
+      for (File outFile2 : f2.listFiles()) {
+        HiveMetaTool.main(new String[] {"-diffExtTblLocs", outFile1.getAbsolutePath(), outFile2.getAbsolutePath(), outLocation});
+        for(File outFile : f.listFiles()) {
+          String contents = new String(Files.readAllBytes(Paths.get(outFile.getAbsolutePath())));
+          return new JSONObject(contents);
+        }
+      }
     }
     return null;
   }
@@ -388,7 +456,7 @@ public class TestHiveMetaTool {
           d = null;
         }
       } finally {
-        TxnDbUtil.cleanDb(hiveConf);
+        TestTxnDbUtil.cleanDb(hiveConf);
         FileUtils.deleteDirectory(new File(getTestDataDir()));
       }
 

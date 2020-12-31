@@ -51,7 +51,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class MetaToolTaskListExtTblLocs extends MetaToolTask {
-
   private static final Logger LOG = LoggerFactory.getLogger(MetaToolTaskListExtTblLocs.class);
   private static Configuration conf;
   private final Map<String, HashSet<String>> coverageList = new HashMap<>(); //maps each output-location to the set of input-locations covered by it
@@ -86,7 +85,8 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
         Table t = objectStore.getTable(defaultCatalog, db, tblName);
         if(TableType.EXTERNAL_TABLE.name().equalsIgnoreCase(t.getTableType())) {
           String tblLocation = t.getSd().getLocation();
-          if(isPathWithinSubtree(new Path(tblLocation), defaultDbExtPath)) {
+          Path tblPath = new Path(tblLocation);
+          if(isPathWithinSubtree(tblPath, defaultDbExtPath)) {
             if(isDefaultPathEmpty) {
               isDefaultPathEmpty = false;
               //default paths should always be included, so we add them as special leaves to the tree
@@ -95,13 +95,13 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
             }
             HashSet<String> coveredByDefault = coverageList.get(defaultDbExtLocation);
             coveredByDefault.add(tblLocation);
-          } else if (!isCovered(leafLocations, new Path(tblLocation))) {
+          } else if (!isCovered(leafLocations, tblPath)) {
             leafLocations.add(tblLocation);
           }
           DataLocation dataLocation = new DataLocation(db, tblName, 0, 0,
                   null);
-          dataLocation.setSubPartitionDataSize(0);
           inputLocations.put(tblLocation, dataLocation);
+          dataLocation.setSizeExtTblData(getDataSize(tblPath, conf));
           //retrieving partition locations outside table-location
           Map<String, String> partitionLocations = objectStore.getPartitionLocations(defaultCatalog, db, tblName,
                   tblLocation, -1);
@@ -111,9 +111,6 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
             //null value means partition is in table location, we do not add it to input in this case.
             if(partLocation == null) {
               dataLocation.incrementNumPartsInTblLoc();
-              partLocation = tblLocation + Path.SEPARATOR +
-                      Warehouse.makePartName(Warehouse.makeSpecFromName(partitionName), false);
-              dataLocation.setSubPartitionDataSize(dataLocation.getSubPartitionDataSize() + getDataSize(new Path(partLocation), conf));
             }
             else {
               partLocation = partLocation + Path.SEPARATOR +
@@ -126,26 +123,24 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
                   addDefaultPath(defaultDbExtLocation, db);
                   leafLocations.add(defaultDbExtLocation);
                 }
-                if (isPathWithinSubtree(partPath, new Path(tblLocation))) {
+                if (isPathWithinSubtree(partPath, tblPath)) {
                   //even in non-null case, handle the corner case where location is set to table-location
                   //In this case, partition would be covered by table location itself, so we need not add to input
                   dataLocation.incrementNumPartsInTblLoc();
-                  dataLocation.setSubPartitionDataSize(dataLocation.getSubPartitionDataSize() + partDataSize);
                 } else {
                   DataLocation partObj = new DataLocation(db, tblName, 0, 0, partitionName);
-                  partObj.setSubPartitionDataSize(0);
+                  partObj.setSizeExtTblData(partDataSize);
                   inputLocations.put(partLocation, partObj);
                   coverageList.get(defaultDbExtLocation).add(partLocation);
                 }
               } else {
-                if (isPathWithinSubtree(partPath, new Path(tblLocation))) {
+                if (isPathWithinSubtree(partPath, tblPath)) {
                   dataLocation.incrementNumPartsInTblLoc();
-                  dataLocation.setSubPartitionDataSize(dataLocation.getSubPartitionDataSize() + partDataSize);
                 } else {
                   //only in this case, partition location is neither inside table nor in default location.
                   //So we add it to the graph  as a separate leaf.
                   DataLocation partObj = new DataLocation(db, tblName, 0, 0, partitionName);
-                  partObj.setSubPartitionDataSize(0);
+                  partObj.setSizeExtTblData(partDataSize);
                   inputLocations.put(partLocation, partObj);
                   if(!isCovered(leafLocations, partPath)) {
                     leafLocations.add(partLocation);
@@ -296,7 +291,6 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       int nonTrivialCoverage = 0;
       List<ExternalTableGraphNode> childNodes = current.getChildNodes();
       boolean processChildrenByDefault = false;
-      long childDataSize = 0;
       for(ExternalTableGraphNode child : childNodes) {
         if (child.getNumLeavesCovered() > 1) {
           nonTrivialCoverage += child.getNumLeavesCovered();
@@ -305,7 +299,6 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
           processChildrenByDefault = true;
           break;
         }
-        childDataSize += getDataSize(new Path(child.getLocation()), conf);
       }
       boolean addCurrToSolution = false;
       if(!processChildrenByDefault) {
@@ -313,13 +306,10 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
         if (!current.shouldIncludeByDefault()) {
           //ensure that we do not have extra data in the current node for it to be included.
           long currDataSize = getDataSize(new Path(current.getLocation()), conf);
-          if (inputLocations.containsKey(current.getLocation())) {
-            //reduce the size of partitions included in table-location
-            currDataSize -= inputLocations.get(current.getLocation()).getSubPartitionDataSize();
-          }
           int numLeavesCovered = current.getNumLeavesCovered();
-          //only add current node if it doesn't have extra data and non-trivial coverage is less than half
-          addCurrToSolution &= currDataSize == childDataSize &&
+          //only add current node if it doesn't have extra data and non-trivial coverage is less than half.
+          //Also we do not add current node if there is just a single path(numLeavesCovered = 1); in this case we proceed to the leaf.
+          addCurrToSolution &= currDataSize == current.getChildDataSizes() &&
                   ((nonTrivialCoverage < (numLeavesCovered + 1) / 2) && numLeavesCovered != 1);
         }
       }
@@ -386,17 +376,23 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
     // Every location is represented by a leaf in the tree.
     // We traverse through the input locations and construct the tree.
     for (String leaf : locations) {
-      ExternalTableGraphNode currNode = new ExternalTableGraphNode(leaf, new ArrayList<>(), true);
-      if(inputLocations.containsKey(leaf) && inputLocations.get(leaf).shouldIncludeByDefault()) {
-        currNode.setIncludeByDefault(true);
+      ExternalTableGraphNode currNode = new ExternalTableGraphNode(leaf, new ArrayList<>(), true, 0);
+      if(inputLocations.containsKey(leaf)) {
+        if(inputLocations.get(leaf).shouldIncludeByDefault()) {
+          currNode.setIncludeByDefault(true);
+        }
+        currNode.setDataSize(inputLocations.get(leaf).getSizeExtTblData());
       }
       locationGraph.put(leaf, currNode);
+      //initialize coverage-lists of leaves
       if (coverageList.get(leaf) == null) {
         coverageList.put(leaf, new HashSet<>());
       }
-      //mark the leaf as being covered as itself
+      //mark the leaf as being covered by itself
       HashSet currCoverage = coverageList.get(leaf);
       currCoverage.add(leaf);
+      //set the number of leaves covered. Nested locations could have been covered earlier during preprocessing,
+      //so we set it to the size of it's coverage set.
       currNode.setNumLeavesCovered(currCoverage.size());
       Path parent = new Path(leaf).getParent();
       ExternalTableGraphNode parNode;
@@ -405,7 +401,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
         String parentLoc = parent.toString();
         if (!locationGraph.containsKey(parentLoc)) {
           //if parent doesn't exist in graph then create it
-          parNode = new ExternalTableGraphNode(parentLoc, new ArrayList<>(), false);
+          parNode = new ExternalTableGraphNode(parentLoc, new ArrayList<>(), false, 0);
           locationGraph.put(parentLoc, parNode);
         }
         else {
@@ -429,6 +425,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
     }
     rootNode.updateNumLeavesCovered();
     rootNode.updateIncludeByDefault();
+    rootNode.updateDataSize();
     return rootNode;
   }
 
@@ -484,7 +481,9 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
     private int numPartitionsInTblLoc;
     private String partName;
     private int totalPartitions;
-    long subPartitionDataSize;
+    // 'sizeExtTblData' stores the size of useful data in a directory.
+    // This can be compared with total directory-size to ascertain amount of extra data in it.
+    long sizeExtTblData;
     boolean includeByDefault;
 
     private DataLocation (String dbName, String tblName, int totalPartitions, int numPartitionsInTblLoc,
@@ -494,6 +493,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       this.totalPartitions = totalPartitions;
       this.numPartitionsInTblLoc = numPartitionsInTblLoc;
       this.partName = partName;
+      this.sizeExtTblData = 0;
     }
 
     private void incrementNumPartsInTblLoc() {
@@ -520,8 +520,8 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       return this.totalPartitions;
     }
     
-    private long getSubPartitionDataSize() {
-      return this.subPartitionDataSize;
+    private long getSizeExtTblData() {
+      return this.sizeExtTblData;
     }
 
     private boolean shouldIncludeByDefault() {
@@ -532,8 +532,8 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       this.totalPartitions = totalPartitions;
     }
 
-    private void setSubPartitionDataSize(long subPartitionDataSize) {
-      this.subPartitionDataSize = subPartitionDataSize;
+    private void setSizeExtTblData(long sizeExtTblData) {
+      this.sizeExtTblData = sizeExtTblData;
     }
 
     private void setIncludeByDefault(boolean includeByDefault) {
@@ -548,13 +548,15 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
     private boolean isLeaf;
     private boolean includeByDefault;
     private int numLeavesCovered;
+    private long dataSize;
 
-    private ExternalTableGraphNode(String location, List<ExternalTableGraphNode> childNodes, boolean isLeaf) {
+    private ExternalTableGraphNode(String location, List<ExternalTableGraphNode> childNodes, boolean isLeaf, long dataSize) {
       this.location = location;
       this.childNodes = childNodes;
       this.isLeaf = isLeaf;
       this.parent = null;
       this.includeByDefault = false;
+      this.dataSize = dataSize;
     }
 
     private void addChild(ExternalTableGraphNode child) {
@@ -601,6 +603,14 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
       this.includeByDefault = includeByDefault;
     }
 
+    private void setDataSize(long dataSize) {
+      this.dataSize = dataSize;
+    }
+
+    private long getDataSize() {
+      return this.dataSize;
+    }
+
     private void updateNumLeavesCovered() {
       if(this.isLeaf) {
         return;
@@ -629,6 +639,30 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
           break;
         }
       }
+    }
+
+    /*
+     * Method to update the datasize of subtree rooted at a particular node recursively.
+     */
+    private void updateDataSize() {
+      if(this.isLeaf) {
+        return;
+      }
+      for(ExternalTableGraphNode currChild : childNodes) {
+        currChild.updateDataSize();
+      }
+      this.dataSize += this.getChildDataSizes();
+    }
+
+    /*
+     * Method to return sum of data-sizes of child nodes of a particular node
+     */
+    private long getChildDataSizes() {
+      long sumChildDataSizes = 0;
+      for(ExternalTableGraphNode currChild : childNodes) {
+        sumChildDataSizes += currChild.getDataSize();
+      }
+      return sumChildDataSizes;
     }
   }
 }

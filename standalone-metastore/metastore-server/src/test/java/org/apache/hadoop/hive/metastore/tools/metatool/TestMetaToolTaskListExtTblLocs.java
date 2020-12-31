@@ -131,7 +131,7 @@ public class TestMetaToolTaskListExtTblLocs {
     Assert.assertEquals(7, coveredLocs.size());
     Assert.assertTrue(coveredLocs.containsAll(inputLocations));
 
-    //Case 6 : several grouped locations and 1 outlier at root
+    //Case 5 : several grouped locations and 1 outlier at root
     // inputs   ../ext/b0 - contains 4 locations
     //          ../ext/b1 - contains 3 locations
     // expected output : [../ext/b0, ../ext/b1, p=7 ]
@@ -166,7 +166,7 @@ public class TestMetaToolTaskListExtTblLocs {
     Assert.assertEquals(1, coveredLocs.size());
     Assert.assertTrue(coveredLocs.contains("/warehouse/customLocation/ext/p=7"));
 
-    //Case 7 : inputs with nested structure
+    //Case 6 : inputs with nested structure
     // inputs   ../ext/b0 - contains 4 locations
     //          ../ext/b1 
     //          ../ext/b1/b2 - contains 4 locations
@@ -263,6 +263,29 @@ public class TestMetaToolTaskListExtTblLocs {
     coveredLocs = output.get(expectedOutput5);
     Assert.assertEquals(1, coveredLocs.size());
     Assert.assertTrue(coveredLocs.contains("/warehouse/customLocation/ext/b1/b2/b3/p=3"));
+
+    //Case 3 : intermediate directory has extra data
+    // inputs   ../ext/ - contains 4 locations
+    //          ../ext/b1 - contains 3 locations
+    // expected output without extra data : [../ext covering all locations] (tested in testGroupLocations#3)
+    // We simulate extra data at ../ext/b1. So, expected output is the list of all locations.
+    inputLocations.clear();
+    dataSizes.clear();
+    inputLocations.add("/warehouse/customLocation/ext/p=0");
+    inputLocations.add("/warehouse/customLocation/ext/p=1");
+    inputLocations.add("/warehouse/customLocation/ext/p=2");
+    inputLocations.add("/warehouse/customLocation/ext/p=3");
+    inputLocations.add("/warehouse/customLocation/ext/b1/p=4");
+    inputLocations.add("/warehouse/customLocation/ext/b1/p=5");
+    inputLocations.add("/warehouse/customLocation/ext/b1/p=6");
+    dataSizes.put("/warehouse/customLocation/ext/b1", Long.valueOf(100));  // simulate 100 bytes of extra data at ..ext/b1
+    dataSizes.put("/warehouse/customLocation/ext", Long.valueOf(100));// since ext/b1 contains 100 bytes, ../ext also has 100 bytes
+    output = task.runTest(inputLocations, dataSizes);
+    Assert.assertEquals(7, output.size());
+    Assert.assertTrue(output.keySet().containsAll(inputLocations));
+    for(String outLoc : output.keySet()) {
+      Assert.assertTrue(output.get(outLoc).contains(outLoc));
+    }
   }
 }
 
