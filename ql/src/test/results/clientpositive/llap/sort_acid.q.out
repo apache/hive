@@ -274,13 +274,12 @@ POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@acidtlb
 POSTHOOK: Output: default@merge_tmp_table
 CBO PLAN:
-HiveProject(col0=[$3], col1=[$0], col2=[$1], col3=[$2])
-  HiveJoin(condition=[=($2, $0)], joinType=[left], algorithm=[none], cost=[not available])
-    HiveProject(c=[$0], d=[$1])
-      HiveTableScan(table=[[default, othertlb]], table:alias=[s])
-    HiveProject(a=[$0], ROW__ID=[$4])
-      HiveFilter(condition=[IS NOT NULL($0)])
-        HiveTableScan(table=[[default, acidtlb]], table:alias=[t])
+HiveJoin(condition=[=($0, $2)], joinType=[right], algorithm=[none], cost=[not available])
+  HiveProject(a=[$0], ROW__ID=[$4])
+    HiveFilter(condition=[IS NOT NULL($0)])
+      HiveTableScan(table=[[default, acidtlb]], table:alias=[t])
+  HiveProject(c=[$0], d=[$1])
+    HiveTableScan(table=[[default, othertlb]], table:alias=[s])
 
 PREHOOK: query: merge into acidtlb as t using othertlb as s on t.a = s.c
 when matched and s.c < 30 then delete
