@@ -91,7 +91,7 @@
     <libthrift.version>0.13.0</libthrift.version>
     <log4j2.version>2.12.1</log4j2.version>
     <mockito-core.version>3.3.3</mockito-core.version>
-    <orc.version>1.6.6</orc.version>
+    <orc.version>1.6.7-SNAPSHOT</orc.version>
     <!-- com.google repo will be used except on Aarch64 platform. -->
     <protobuf.group>com.google.protobuf</protobuf.group>
     <protobuf.version>2.6.1</protobuf.version>

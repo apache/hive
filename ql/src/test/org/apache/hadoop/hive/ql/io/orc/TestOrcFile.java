@@ -237,7 +237,8 @@ public class TestOrcFile {
 
   @Parameters
   public static Collection<Boolean[]> data() {
-    return Arrays.asList(new Boolean[][] { {false}, {true}});
+    // Test Disabled with ZeroCopy=True until ORC-701
+    return Arrays.asList(new Boolean[][] { {false}, /* {true} */});
   }
 
   public TestOrcFile(Boolean zcr) {
