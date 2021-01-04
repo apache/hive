@@ -1199,19 +1199,24 @@ public class ObjectStore implements RawStore, Configurable {
       throws MetaException, NoSuchObjectException, InvalidObjectException, InvalidInputException {
     boolean materializedView = false;
     boolean success = false;
+    boolean isLocklessReadsEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.LOCKLESS_READS_ENABLED);
     try {
       openTransaction();
       MTable tbl = getMTable(catName, dbName, tableName);
       pm.retrieve(tbl);
       if (tbl != null) {
+        // set table as pendingDrop
+        if (isLocklessReadsEnabled) {
+          markTableAsPendingDrop(catName, dbName, tableName);
+        }
+
         materializedView = TableType.MATERIALIZED_VIEW.toString().equals(tbl.getTableType());
         // first remove all the grants
         List<MTablePrivilege> tabGrants = listAllTableGrants(catName, dbName, tableName);
         if (CollectionUtils.isNotEmpty(tabGrants)) {
           pm.deletePersistentAll(tabGrants);
         }
-        List<MTableColumnPrivilege> tblColGrants = listTableAllColumnGrants(catName, dbName,
-            tableName);
+        List<MTableColumnPrivilege> tblColGrants = listTableAllColumnGrants(catName, dbName, tableName);
         if (CollectionUtils.isNotEmpty(tblColGrants)) {
           pm.deletePersistentAll(tblColGrants);
         }
@@ -1221,8 +1226,7 @@ public class ObjectStore implements RawStore, Configurable {
           pm.deletePersistentAll(partGrants);
         }
 
-        List<MPartitionColumnPrivilege> partColGrants = listTableAllPartitionColumnGrants(catName, dbName,
-            tableName);
+        List<MPartitionColumnPrivilege> partColGrants = listTableAllPartitionColumnGrants(catName, dbName, tableName);
         if (CollectionUtils.isNotEmpty(partColGrants)) {
           pm.deletePersistentAll(partColGrants);
         }
@@ -1234,8 +1238,7 @@ public class ObjectStore implements RawStore, Configurable {
               TableName.getQualified(catName, dbName, tableName));
         }
 
-        List<MConstraint> tabConstraints = listAllTableConstraintsWithOptionalConstraintName(
-                                           catName, dbName, tableName, null);
+        List<MConstraint> tabConstraints = listAllTableConstraintsWithOptionalConstraintName(catName, dbName, tableName, null);
         if (CollectionUtils.isNotEmpty(tabConstraints)) {
           pm.deletePersistentAll(tabConstraints);
         }
@@ -1243,8 +1246,7 @@ public class ObjectStore implements RawStore, Configurable {
         preDropStorageDescriptor(tbl.getSd());
 
         if (materializedView) {
-          dropCreationMetadata(tbl.getDatabase().getCatalogName(),
-              tbl.getDatabase().getName(), tbl.getTableName());
+          dropCreationMetadata(tbl.getDatabase().getCatalogName(), tbl.getDatabase().getName(), tbl.getTableName());
         }
 
         // then remove the table
@@ -1257,6 +1259,43 @@ public class ObjectStore implements RawStore, Configurable {
       }
     }
     return success;
+  }
+
+  private void markTableAsPendingDrop(String catName, String dbName, String tableName) {
+    boolean isLocklessReadsEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.LOCKLESS_READS_ENABLED);
+
+    if (isLocklessReadsEnabled) {
+      boolean success = false;
+      tableName = normalizeIdentifier(tableName);
+      dbName = normalizeIdentifier(dbName);
+      catName = normalizeIdentifier(catName);
+      Query query = null;
+
+      try {
+        LOG.debug("Executing markTableAsPendingDrop");
+
+        openTransaction();
+        String queryStr = "UPDATE org.apache.hadoop.hive.metastore.model.MTable t SET pendingDrop = :pendingDrop "
+            + "WHERE t.tableName = :tableName AND t.database.name = :dbName AND t.database.catalogName = :catName";
+        query = pm.newQuery(queryStr);
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("tableName", tableName);
+        parameters.put("dbName", dbName);
+        parameters.put("catName", catName);
+        parameters.put("pendingDrop", true);
+
+        query.setNamedParameters(parameters);
+        query.executeWithArray(parameters);
+
+        success = commitTransaction();
+
+        LOG.debug("Done marking table as pending drop.");
+      } finally {
+        rollbackAndCleanup(success, query);
+      }
+    } else {
+      LOG.warn("Trying to mark pending drop while lockless reads being disabled");
+    }
   }
 
   private boolean dropCreationMetadata(String catName, String dbName, String tableName) {
@@ -1323,33 +1362,59 @@ public class ObjectStore implements RawStore, Configurable {
     List<MConstraint> mConstraints = null;
     List<String> constraintNames = new ArrayList<>();
     Query query = null;
+    boolean isLocklessReadsEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.LOCKLESS_READS_ENABLED);
+    String queryString;
+    Map<String, Object> parameterMap = new HashMap<>();
+
+    queryString = "select constraintName from org.apache.hadoop.hive.metastore.model.MConstraint where "
+        + "((parentTable.tableName == :ptblname && parentTable.database.name == :pdbname && "
+        + "parentTable.database.catalogName == :pcatname) || "
+        + "(childTable != null && childTable.tableName == :ctblname &&"
+        + "childTable.database.name == :cdbname && childTable.database.catalogName == :ccatname))";
+    parameterMap.put("ptblname", tableName);
+    parameterMap.put("pdbname", dbName);
+    parameterMap.put("pcatname", catName);
+    parameterMap.put("ctblname", tableName);
+    parameterMap.put("cdbname", dbName);
+    parameterMap.put("ccatname", catName);
+
+    if (isLocklessReadsEnabled) {
+      // easier to overwrite the whole thing as the param has to go in to both sides of the ||
+      queryString = "select constraintName from org.apache.hadoop.hive.metastore.model.MConstraint where "
+          + "((parentTable.tableName == :ptblname && parentTable.database.name == :pdbname && "
+          + "parentTable.database.catalogName == :pcatname && parentTable.pendingDrop == :ppendingDrop) || "
+          + "(childTable != null && childTable.tableName == :ctblname &&"
+          + "childTable.database.name == :cdbname && childTable.database.catalogName == :ccatname "
+          + "&& childTable.pendingDrop == :cpendingDrop)) ";
+      parameterMap.put("ppendingDrop", true);
+      parameterMap.put("cpendingDrop", true);
+    }
+
+    if (constraintname != null) {
+      queryString += " && constraintName == :constraintname ";
+      parameterMap.put("constraintname", constraintname);
+    }
+
+
 
     try {
-      query = pm.newQuery("select constraintName from org.apache.hadoop.hive.metastore.model.MConstraint  where "
-        + "((parentTable.tableName == ptblname && parentTable.database.name == pdbname && " +
-              "parentTable.database.catalogName == pcatname) || "
-        + "(childTable != null && childTable.tableName == ctblname &&" +
-              "childTable.database.name == cdbname && childTable.database.catalogName == ccatname)) " +
-          (constraintname != null ? " && constraintName == constraintname" : ""));
-      query.declareParameters("java.lang.String ptblname, java.lang.String pdbname,"
-          + "java.lang.String pcatname, java.lang.String ctblname, java.lang.String cdbname," +
-          "java.lang.String ccatname" +
-        (constraintname != null ? ", java.lang.String constraintname" : ""));
-      Collection<?> constraintNamesColl =
-        constraintname != null ?
-          ((Collection<?>) query.
-            executeWithArray(tableName, dbName, catName, tableName, dbName, catName, constraintname)):
-          ((Collection<?>) query.
-            executeWithArray(tableName, dbName, catName, tableName, dbName, catName));
+      query = pm.newQuery(queryString);
+      query.setNamedParameters(parameterMap);
+      Collection<?> constraintNamesColl;
+
+      constraintNamesColl = (Collection<?>) query.executeWithMap(parameterMap);
+
       for (Iterator<?> i = constraintNamesColl.iterator(); i.hasNext();) {
         String currName = (String) i.next();
         constraintNames.add(currName);
       }
+
       query = pm.newQuery(MConstraint.class);
       query.setFilter("param.contains(constraintName)");
       query.declareParameters("java.util.Collection param");
-      Collection<?> constraints = (Collection<?>)query.execute(constraintNames);
+      Collection<?> constraints = (Collection<?>) query.execute(constraintNames);
       mConstraints = new ArrayList<>();
+
       for (Iterator<?> i = constraints.iterator(); i.hasNext();) {
         MConstraint currConstraint = (MConstraint) i.next();
         mConstraints.add(currConstraint);
@@ -1783,21 +1848,36 @@ public class ObjectStore implements RawStore, Configurable {
     MTable mtbl = null;
     boolean commited = false;
     Query query = null;
+    boolean isLocklessReadsEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.LOCKLESS_READS_ENABLED);
     try {
       openTransaction();
       catName = normalizeIdentifier(catName);
       db = normalizeIdentifier(db);
       table = normalizeIdentifier(table);
-      query = pm.newQuery(MTable.class,
-          "tableName == table && database.name == db && database.catalogName == catname");
-      query.declareParameters(
-          "java.lang.String table, java.lang.String db, java.lang.String catname");
-      query.setUnique(true);
-      if (LOG.isDebugEnabled()) {
-        LOG.debug("Executing getMTable for {}",
-            TableName.getQualified(catName, db, table));
+      if (isLocklessReadsEnabled) {
+        query = pm.newQuery(MTable.class,
+            "tableName == table && pendingDrop == pendingDrop && database.name == db && database.catalogName == catname");
+        query.declareParameters(
+            "java.lang.String table, java.lang.Boolean pendingDrop, java.lang.String db, java.lang.String catname");
+        query.setUnique(true);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Executing getMTable for {}",
+              TableName.getQualified(catName, db, table));
+        }
+        mtbl = (MTable) query.executeWithArray(table, false, db, catName);
+      } else {
+        query = pm.newQuery(MTable.class,
+            "tableName == table && database.name == db && database.catalogName == catname");
+        query.declareParameters(
+            "java.lang.String table, java.lang.String db, java.lang.String catname");
+        query.setUnique(true);
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Executing getMTable for {}",
+              TableName.getQualified(catName, db, table));
+        }
+        mtbl = (MTable) query.execute(table, db, catName);
       }
-      mtbl = (MTable) query.execute(table, db, catName);
+
       pm.retrieve(mtbl);
       // Retrieving CD can be expensive and unnecessary, so do it only when required.
       if (mtbl != null && retrieveCD) {
@@ -7311,16 +7391,26 @@ public class ObjectStore implements RawStore, Configurable {
     tableName = normalizeIdentifier(tableName);
     dbName = normalizeIdentifier(dbName);
     catName = normalizeIdentifier(catName);
+    boolean isLocklessReadsEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.LOCKLESS_READS_ENABLED);
+    List<MTablePrivilege> mPrivs;
     try {
       LOG.debug("Executing listAllTableGrants");
 
       openTransaction();
-      String queryStr = "table.tableName == t1 && table.database.name == t2" +
-          "&& table.database.catalogName == t3";
-      query = pm.newQuery(MTablePrivilege.class, queryStr);
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
-      List<MTablePrivilege> mPrivs  =
-          (List<MTablePrivilege>) query.executeWithArray(tableName, dbName, catName);
+      if (isLocklessReadsEnabled) {
+        String queryStr = "table.tableName == t1 && table.database.name == t2" +
+            "&& table.database.catalogName == t3 && table.pendingDrop == t4";
+        query = pm.newQuery(MTablePrivilege.class, queryStr);
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.Boolean t4");
+        mPrivs  = (List<MTablePrivilege>) query.executeWithArray(tableName, dbName, catName, true);
+      } else {
+        String queryStr = "table.tableName == t1 && table.database.name == t2" +
+            "&& table.database.catalogName == t3";
+        query = pm.newQuery(MTablePrivilege.class, queryStr);
+        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
+        mPrivs  = (List<MTablePrivilege>) query.executeWithArray(tableName, dbName, catName);
+      }
+
       LOG.debug("Done executing query for listAllTableGrants");
       pm.retrieveAll(mPrivs);
       success = commitTransaction();
@@ -7341,16 +7431,32 @@ public class ObjectStore implements RawStore, Configurable {
     boolean success = false;
     Query query = null;
     List<MPartitionPrivilege> mSecurityTabPartList = new ArrayList<>();
+    List<MPartitionPrivilege> mPrivs;
+    boolean isLocklessReadsEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.LOCKLESS_READS_ENABLED);
     try {
       LOG.debug("Executing listTableAllPartitionGrants");
 
       openTransaction();
-      String queryStr = "partition.table.tableName == t1 && partition.table.database.name == t2 " +
-          "&& partition.table.database.catalogName == t3";
-      query = pm.newQuery(MPartitionPrivilege.class, queryStr);
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
-      List<MPartitionPrivilege> mPrivs =
-          (List<MPartitionPrivilege>) query.executeWithArray(tableName, dbName, catName);
+
+      String filter;
+      Map<String, Object> parameterMap = new HashMap<>();
+
+      filter = "partition.table.tableName == :tableNameParam && partition.table.database.name == :dbNameParam"
+          + " && partition.table.database.catalogName == :catalogNameParam";
+      parameterMap.put("tableNameParam", tableName);
+      parameterMap.put("dbNameParam", dbName);
+      parameterMap.put("catalogNameParam", catName);
+
+      if (isLocklessReadsEnabled) {
+        filter += " && partition.table.pendingDrop == :pendingDropParam";
+        parameterMap.put("pendingDropParam", true);
+      }
+
+      query = pm.newQuery(MPartitionPrivilege.class);
+      query.setFilter(filter);
+      query.setNamedParameters(parameterMap);
+      mPrivs = (List<MPartitionPrivilege>) query.executeWithMap(parameterMap);
+
       pm.retrieveAll(mPrivs);
       success = commitTransaction();
 
@@ -7376,25 +7482,38 @@ public class ObjectStore implements RawStore, Configurable {
     tableName = normalizeIdentifier(tableName);
     dbName = normalizeIdentifier(dbName);
     catName = normalizeIdentifier(catName);
+    boolean isLocklessReadsEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.LOCKLESS_READS_ENABLED);
     try {
       LOG.debug("Executing listTableAllColumnGrants");
 
       openTransaction();
       List<MTableColumnPrivilege> mPrivs = null;
+      String filter;
+      Map<String, Object> parameterMap = new HashMap<>();
+
+      filter = "table.tableName == :tableNameParam && table.database.name == :dbNameParam"
+          + " && table.database.catalogName == :catalogNameParam";
+      parameterMap.put("tableNameParam", tableName);
+      parameterMap.put("dbNameParam", dbName);
+      parameterMap.put("catalogNameParam", catName);
+
+
       if (authorizer != null) {
-        String queryStr = "table.tableName == t1 && table.database.name == t2 &&" +
-            "table.database.catalogName == t3 && authorizer == t4";
-        query = pm.newQuery(MTableColumnPrivilege.class, queryStr);
-        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3, " +
-            "java.lang.String t4");
-        mPrivs = (List<MTableColumnPrivilege>) query.executeWithArray(tableName, dbName, catName, authorizer);
-      } else {
-        String queryStr = "table.tableName == t1 && table.database.name == t2 &&" +
-            "table.database.catalogName == t3";
-        query = pm.newQuery(MTableColumnPrivilege.class, queryStr);
-        query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
-        mPrivs = (List<MTableColumnPrivilege>) query.executeWithArray(tableName, dbName, catName);
+        filter += " && authorizer == :authorizerParam";
+        parameterMap.put("authorizerParam", authorizer);
       }
+
+      if (isLocklessReadsEnabled) {
+        filter += " && table.pendingDrop == :pendingDropParam";
+        parameterMap.put("pendingDropParam", true);
+      }
+
+      query = pm.newQuery(MTableColumnPrivilege.class);
+      query.setFilter(filter);
+      query.setNamedParameters(parameterMap);
+
+      mPrivs = (List<MTableColumnPrivilege>) query.executeWithMap(parameterMap);
+
       LOG.debug("Query to obtain objects for listTableAllColumnGrants finished");
       pm.retrieveAll(mPrivs);
       LOG.debug("RetrieveAll on all the objects for listTableAllColumnGrants finished");
@@ -7419,16 +7538,31 @@ public class ObjectStore implements RawStore, Configurable {
     dbName = normalizeIdentifier(dbName);
     catName = normalizeIdentifier(catName);
     List<MPartitionColumnPrivilege> mSecurityColList = new ArrayList<>();
+    List<MPartitionColumnPrivilege> mPrivs;
+    boolean isLocklessReadsEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.LOCKLESS_READS_ENABLED);
+
     try {
       LOG.debug("Executing listTableAllPartitionColumnGrants");
 
       openTransaction();
-      String queryStr = "partition.table.tableName == t1 && partition.table.database.name == t2 " +
-          "&& partition.table.database.catalogName == t3";
-      query = pm.newQuery(MPartitionColumnPrivilege.class, queryStr);
-      query.declareParameters("java.lang.String t1, java.lang.String t2, java.lang.String t3");
-      List<MPartitionColumnPrivilege> mPrivs =
-          (List<MPartitionColumnPrivilege>) query.executeWithArray(tableName, dbName, catName);
+      String filter;
+      Map<String, Object> parameterMap = new HashMap<>();
+
+      filter = "partition.table.tableName == :tableNameParam && partition.table.database.name == :dbNameParam " +
+      "&& partition.table.database.catalogName == :catalogNameParam";
+      parameterMap.put("tableNameParam", normalizeIdentifier(tableName));
+      parameterMap.put("dbNameParam", normalizeIdentifier(dbName));
+      parameterMap.put("catalogNameParam", normalizeIdentifier(catName));
+
+      if (isLocklessReadsEnabled) {
+        filter += " && partition.table.pendingDrop == :pendingDropParam";
+        parameterMap.put("pendingDropParam", true);
+      }
+
+      query = pm.newQuery(MPartitionColumnPrivilege.class);
+      query.setFilter(filter);
+      mPrivs = (List<MPartitionColumnPrivilege>) query.executeWithMap(parameterMap);
+
       pm.retrieveAll(mPrivs);
       success = commitTransaction();
 
@@ -9792,6 +9926,8 @@ public class ObjectStore implements RawStore, Configurable {
     Query query = null;
     dbName = org.apache.commons.lang3.StringUtils.defaultString(dbName,
       Warehouse.DEFAULT_DATABASE_NAME);
+    boolean isLocklessReadsEnabled = MetastoreConf.getBoolVar(getConf(), ConfVars.LOCKLESS_READS_ENABLED);
+
     if (tableName == null) {
       throw new InvalidInputException("Table name is null.");
     }
@@ -9799,7 +9935,7 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       MTable mTable = getMTable(catName, dbName, tableName);
       MTableColumnStatistics mStatsObj;
-      List<MTableColumnStatistics> mStatsObjColl;
+      List<MTableColumnStatistics> mStatsObjCol;
       if (mTable == null) {
         throw new NoSuchObjectException("Table " +
             TableName.getQualified(catName, dbName, tableName)
@@ -9809,33 +9945,35 @@ public class ObjectStore implements RawStore, Configurable {
       //       Also called via an unused metastore API that checks for ACID tables.
       query = pm.newQuery(MTableColumnStatistics.class);
       String filter;
-      String parameters;
+      Map<String, Object> parameterMap = new HashMap<>();
+
+      filter = "table.tableName == :tableNameParam && dbName == :dbNameParam && catName == :catNameParam";
+      parameterMap.put("tableNameParam", normalizeIdentifier(tableName));
+      parameterMap.put("dbNameParam", normalizeIdentifier(dbName));
+      parameterMap.put("catNameParam", normalizeIdentifier(catName));
+
+
       if (colName != null) {
-        filter = "table.tableName == t1 && dbName == t2 && catName == t3 && colName == t4" + (engine != null ? " && engine == t5" : "");
-        parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3, java.lang.String t4" + (engine != null ? ", java.lang.String t5" : "");
-      } else {
-        filter = "table.tableName == t1 && dbName == t2 && catName == t3" + (engine != null ? " && engine == t4" : "");
-        parameters = "java.lang.String t1, java.lang.String t2, java.lang.String t3" + (engine != null ? ", java.lang.String t4" : "");
+        filter += " && colName == :colNameParam";
+        parameterMap.put("colNameParam", colName);
+      }
+
+      if (engine != null) {
+        filter += " && engine == :engineParam";
+        parameterMap.put("engineParam", engine);
+      }
+
+      if (isLocklessReadsEnabled) {
+        filter += " && table.pendingDrop == :pendingDropParam";
+        parameterMap.put("pendingDropParam", true);
       }
 
       query.setFilter(filter);
-      query.declareParameters(parameters);
+      query.setNamedParameters(parameterMap);
+
       if (colName != null) {
         query.setUnique(true);
-        if (engine != null) {
-          mStatsObj =
-              (MTableColumnStatistics) query.executeWithArray(normalizeIdentifier(tableName),
-                  normalizeIdentifier(dbName),
-                  normalizeIdentifier(catName),
-                  normalizeIdentifier(colName),
-                  engine);
-        } else {
-          mStatsObj =
-              (MTableColumnStatistics) query.executeWithArray(normalizeIdentifier(tableName),
-                  normalizeIdentifier(dbName),
-                  normalizeIdentifier(catName),
-                  normalizeIdentifier(colName));
-        }
+        mStatsObj = (MTableColumnStatistics) query.executeWithMap(parameterMap);
         pm.retrieve(mStatsObj);
 
         if (mStatsObj != null) {
@@ -9845,23 +9983,10 @@ public class ObjectStore implements RawStore, Configurable {
               + tableName + " col=" + colName);
         }
       } else {
-        if (engine != null) {
-          mStatsObjColl =
-              (List<MTableColumnStatistics>) query.executeWithArray(
-                  normalizeIdentifier(tableName),
-                  normalizeIdentifier(dbName),
-                  normalizeIdentifier(catName),
-                  engine);
-        } else {
-          mStatsObjColl =
-              (List<MTableColumnStatistics>) query.executeWithArray(
-                  normalizeIdentifier(tableName),
-                  normalizeIdentifier(dbName),
-                  normalizeIdentifier(catName));
-        }
-        pm.retrieveAll(mStatsObjColl);
-        if (mStatsObjColl != null) {
-          pm.deletePersistentAll(mStatsObjColl);
+        mStatsObjCol = (List<MTableColumnStatistics>) query.executeWithMap(parameterMap);
+        pm.retrieveAll(mStatsObjCol);
+        if (mStatsObjCol != null) {
+          pm.deletePersistentAll(mStatsObjCol);
         } else {
           throw new NoSuchObjectException("Column stats doesn't exist for db=" + dbName + " table="
               + tableName);

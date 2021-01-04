@@ -104,6 +104,7 @@ public class DropTableOperation extends DDLOperation<DropTableDesc> {
 
     // TODO: API w/catalog name
     context.getDb().dropTable(desc.getTableName(), desc.isPurge());
+//    context.getDb().dropTable(desc.getTableName(), desc.isPurge(), desc.getWriteId());
     DDLUtils.addIfAbsentByName(new WriteEntity(table, WriteEntity.WriteType.DDL_NO_LOCK), context);
 
     if (LlapHiveUtils.isLlapMode(context.getConf())) {

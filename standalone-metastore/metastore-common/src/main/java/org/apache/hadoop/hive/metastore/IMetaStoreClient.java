@@ -544,6 +544,20 @@ public interface IMetaStoreClient {
   }
 
   /**
+   * Drop a table. Pass the valid write id list as well.
+   * @param dbName database the table is in.
+   * @param tableName table name.
+   * @throws MetaException something went wrong, usually in the RDBMS or storage.
+   * @throws NoSuchObjectException No table of this name exists, only thrown if
+   * ignoreUnknownTable is false.
+   * @throws TException general thrift error.
+   *
+   */
+  void dropTable(String dbName, String tableName, boolean deleteData,
+      boolean ignoreUnknownTable, boolean ifPurge, String validWriteIdList, Long writeId)
+    throws TException;
+
+  /**
    * Truncate the table/partitions in the DEFAULT database.
    * @param dbName
    *          The db to which the table to be truncate belongs to
@@ -4092,7 +4106,7 @@ public interface IMetaStoreClient {
 
   /**
    * Returns details about a scheduled query by name.
-   * 
+   *
    * @throws NoSuchObjectException if an object by the given name dosen't exists.
    */
   ScheduledQuery getScheduledQuery(ScheduledQueryKey scheduleKey) throws TException;

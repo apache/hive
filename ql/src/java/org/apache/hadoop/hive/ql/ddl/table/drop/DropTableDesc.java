@@ -20,7 +20,10 @@ package org.apache.hadoop.hive.ql.ddl.table.drop;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.ql.ddl.DDLDesc;
+import org.apache.hadoop.hive.common.TableName;
+import org.apache.hadoop.hive.ql.ddl.DDLDesc.DDLDescWithWriteId;
+import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ReplicationSpec;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.Explain.Level;
@@ -29,31 +32,40 @@ import org.apache.hadoop.hive.ql.plan.Explain.Level;
  * DDL task description for DROP TABLE commands.
  */
 @Explain(displayName = "Drop Table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
-public class DropTableDesc implements DDLDesc, Serializable {
+public class DropTableDesc implements DDLDescWithWriteId, Serializable {
   private static final long serialVersionUID = 1L;
 
-  private final String tableName;
+  private final TableName tableName;
   private final boolean ifExists;
   private final boolean purge;
   private final ReplicationSpec replicationSpec;
   private final boolean validationRequired;
+  private final boolean isTransactional;
 
-  public DropTableDesc(String tableName, boolean ifExists, boolean ifPurge, ReplicationSpec replicationSpec) {
-    this(tableName, ifExists, ifPurge, replicationSpec, true);
+  private long writeId = 0;
+
+  public DropTableDesc(TableName tableName, boolean ifExists, boolean ifPurge, ReplicationSpec replicationSpec) {
+    this(tableName, ifExists, ifPurge, replicationSpec, true, null);
   }
 
-  public DropTableDesc(String tableName, boolean ifExists, boolean purge, ReplicationSpec replicationSpec,
+  public DropTableDesc(TableName tableName, boolean ifExists, boolean ifPurge, ReplicationSpec replicationSpec,
       boolean validationRequired) {
+    this(tableName, ifExists, ifPurge, replicationSpec, validationRequired, null);
+  }
+
+  public DropTableDesc(TableName tableName, boolean ifExists, boolean purge, ReplicationSpec replicationSpec,
+      boolean validationRequired, Table table) {
     this.tableName = tableName;
     this.ifExists = ifExists;
     this.purge = purge;
     this.replicationSpec = replicationSpec == null ? new ReplicationSpec() : replicationSpec;
     this.validationRequired = validationRequired;
+    this.isTransactional = AcidUtils.isTransactionalTable(table);
   }
 
   @Explain(displayName = "table", explainLevels = { Level.USER, Level.DEFAULT, Level.EXTENDED })
   public String getTableName() {
-    return tableName;
+    return tableName.getNotEmptyDbTable();
   }
 
   public boolean isIfExists() {
@@ -74,5 +86,21 @@ public class DropTableDesc implements DDLDesc, Serializable {
 
   public boolean getValidationRequired() {
     return validationRequired;
+  }
+
+  @Override public void setWriteId(long writeId) {
+    this.writeId = writeId;
+  }
+
+  @Override public boolean mayNeedWriteId() {
+    return isTransactional;
+  }
+
+  public long getWriteId() {
+    return writeId;
+  }
+
+  @Override public String getFullTableName() {
+    return this.tableName.getNotEmptyDbTable();
   }
 }

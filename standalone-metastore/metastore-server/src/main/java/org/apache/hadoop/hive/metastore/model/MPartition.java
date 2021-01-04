@@ -24,16 +24,17 @@ import java.util.Map;
 public class MPartition {
 
   private String partitionName; // partitionname ==>  (key=value/)*(key=value)
-  private MTable table; 
+  private MTable table;
   private List<String> values;
   private int createTime;
   private int lastAccessTime;
   private MStorageDescriptor sd;
   private Map<String, String> parameters;
   private long writeId;
-  
+  private boolean pendingDrop;
+
   public MPartition() {}
-  
+
   /**
    * @param partitionName
    * @param table
@@ -158,5 +159,20 @@ public class MPartition {
 
   public void setWriteId(long writeId) {
     this.writeId = writeId;
+  }
+
+
+  /**
+   * @return if the tables was marked for drop/delete
+   */
+  public boolean isPendingDrop() {
+    return pendingDrop;
+  }
+
+  /**
+   * @param pendingDrop mark the table for deletion
+   */
+  public void setPendingDrop(boolean pendingDrop) {
+    this.pendingDrop = pendingDrop;
   }
 }

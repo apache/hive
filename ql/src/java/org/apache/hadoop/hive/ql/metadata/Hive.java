@@ -1186,6 +1186,11 @@ public class Hive {
     dropTable(names[0], names[1], true, true, ifPurge);
   }
 
+  public void dropTable(String tableName, boolean ifPurge, long writeId) throws HiveException {
+    String[] names = Utilities.getDbTableName(tableName);
+    dropTable(names[0], names[1], true, true, ifPurge, writeId);
+  }
+
   /**
    * Drops table along with the data in it. If the table doesn't exist then it
    * is a no-op
@@ -1230,6 +1235,11 @@ public class Hive {
     dropTable(dbName, tableName, deleteData, ignoreUnknownTab, false);
   }
 
+  public void dropTable(String dbName, String tableName, boolean deleteData,
+      boolean ignoreUnknownTab, boolean ifPurge) throws HiveException {
+    dropTable(dbName, tableName, deleteData, ignoreUnknownTab, false, 0L);
+  }
+
   /**
    * Drops the table.
    *
@@ -1244,9 +1254,20 @@ public class Hive {
    * @throws HiveException
    */
   public void dropTable(String dbName, String tableName, boolean deleteData,
-      boolean ignoreUnknownTab, boolean ifPurge) throws HiveException {
+      boolean ignoreUnknownTab, boolean ifPurge, Long writeId) throws HiveException {
     try {
-      getMSC().dropTable(dbName, tableName, deleteData, ignoreUnknownTab, ifPurge);
+      Table table = getTable(dbName, tableName);
+      AcidUtils.TableSnapshot snapshot = null;
+      if (AcidUtils.isTransactionalTable(table)) {
+        if (writeId <= 0) {
+          snapshot = AcidUtils.getTableSnapshot(conf, table, true);
+        } else {
+          String fullTableName = getFullTableName(table.getDbName(), table.getTableName());
+          ValidWriteIdList validWriteIdList = getMSC().getValidWriteIds(fullTableName, writeId);
+          snapshot = new TableSnapshot(writeId, validWriteIdList.writeToString());
+        }
+      }
+      getMSC().dropTable(dbName, tableName, deleteData, ignoreUnknownTab, ifPurge, snapshot.getValidWriteIdList(), writeId);
     } catch (NoSuchObjectException e) {
       if (!ignoreUnknownTab) {
         throw new HiveException(e);

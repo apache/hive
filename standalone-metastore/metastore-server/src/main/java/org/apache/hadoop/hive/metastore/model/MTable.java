@@ -43,6 +43,7 @@ public class MTable {
   private boolean rewriteEnabled;
   private String tableType;
   private long writeId;
+  private boolean pendingDrop;
 
   @SuppressWarnings("serial")
   public static class PK implements Serializable {
@@ -311,6 +312,20 @@ public class MTable {
 
   public void setWriteId(long writeId) {
     this.writeId = writeId;
+  }
+
+  /**
+   * @return if the tables was marked for drop/delete
+   */
+  public boolean isPendingDrop() {
+    return pendingDrop;
+  }
+
+    /**
+     * @param pendingDrop mark the table for deletion
+     */
+  public void setPendingDrop(boolean pendingDrop) {
+    this.pendingDrop = pendingDrop;
   }
 
   /**

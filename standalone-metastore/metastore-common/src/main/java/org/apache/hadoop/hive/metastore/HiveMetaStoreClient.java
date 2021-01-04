@@ -1672,6 +1672,22 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
 
   }
 
+  @Override
+  public void dropTable(String dbName, String tableName, boolean deleteData,
+      boolean ignoreUnknownTable, boolean ifPurge, String validWriteIdList, Long writeId)
+      throws TException {
+    //build new environmentContext with write ids;
+    EnvironmentContext envContext = null;
+
+    Map<String, String> warehouseOptions;
+    warehouseOptions = new HashMap<>();
+    warehouseOptions.put("validWriteIds", validWriteIdList);
+    warehouseOptions.put("writeId", writeId.toString());
+    envContext = new EnvironmentContext(warehouseOptions);
+
+    dropTable(getDefaultCatalog(conf), dbName, tableName, true, true, envContext);
+  };
+
   /**
    * Drop the table and choose whether to: delete the underlying table data;
    * throw if the table doesn't exist; save the data in the trash.

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.ddl.table.drop;
 
+import org.apache.hadoop.hive.common.TableName;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.QueryState;
@@ -54,9 +55,11 @@ public class DropTableAnalyzer extends BaseSemanticAnalyzer {
       outputs.add(new WriteEntity(table, WriteEntity.WriteType.DDL_EXCLUSIVE));
     }
 
+    TableName tName = TableName.fromString(tableName, null, null);
+
     boolean purge = (root.getFirstChildWithType(HiveParser.KW_PURGE) != null);
     ReplicationSpec replicationSpec = new ReplicationSpec(root);
-    DropTableDesc desc = new DropTableDesc(tableName, ifExists, purge, replicationSpec);
+    DropTableDesc desc = new DropTableDesc(tName, ifExists, purge, replicationSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), desc)));
   }
 }

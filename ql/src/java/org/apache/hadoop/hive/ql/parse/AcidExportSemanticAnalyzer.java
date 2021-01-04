@@ -121,7 +121,7 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     assert tableTree != null && tableTree.getType() == HiveParser.TOK_TAB;
     ASTNode tokRefOrNameExportTable = (ASTNode) tableTree.getChild(0);
     Table exportTable = getTargetTable(tokRefOrNameExportTable);
-    
+
     if (exportTable != null && (exportTable.isView() || exportTable.isMaterializedView())) {
       throw new SemanticException("Views and Materialized Views can not be exported.");
     }
@@ -205,7 +205,12 @@ public class AcidExportSemanticAnalyzer extends RewriteSemanticAnalyzer {
     // Now make a task to drop temp table
     // {@link DropTableAnalyzer#analyzeInternal(ASTNode ast)
     ReplicationSpec replicationSpec = new ReplicationSpec();
-    DropTableDesc dropTblDesc = new DropTableDesc(newTableName, false, true, replicationSpec);
+
+    String tableName = newTable.getTableName();
+    String dbName = newTable.getDbName();
+    String catName = newTable.getCatName();
+    TableName tName = TableName.fromString(tableName, dbName, catName);
+    DropTableDesc dropTblDesc = new DropTableDesc(tName, false, true, replicationSpec);
     Task<DDLWork> dropTask = TaskFactory.get(new DDLWork(new HashSet<>(), new HashSet<>(), dropTblDesc), conf);
     exportTask.addDependentTask(dropTask);
     markReadEntityForUpdate();

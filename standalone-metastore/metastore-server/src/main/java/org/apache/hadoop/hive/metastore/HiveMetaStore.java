@@ -2874,6 +2874,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             tableDataShouldBeDeleted);
 
         // Drop any constraints on the table
+        // @TODO check if this is necessary as ObjectStore dropTable also contains a part where we delete constraints
         ms.dropConstraint(catName, dbname, name, null, true);
 
         if (!ms.dropTable(catName, dbname, name)) {
@@ -2899,6 +2900,9 @@ public class HiveMetaStore extends ThriftHiveMetastore {
           // Delete the data in the partitions which have other locations
           deletePartitionData(partPaths, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
           // Delete the data in the table
+
+
+
           deleteTableData(tblPath, ifPurge, ReplChangeManager.shouldEnableCm(db, tbl));
         }
 

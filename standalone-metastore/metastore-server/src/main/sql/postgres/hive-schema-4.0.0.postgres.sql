@@ -175,7 +175,8 @@ CREATE TABLE "PARTITIONS" (
     "PART_NAME" character varying(767) DEFAULT NULL::character varying,
     "SD_ID" bigint,
     "TBL_ID" bigint,
-    "WRITE_ID" bigint DEFAULT 0
+    "WRITE_ID" bigint DEFAULT 0,
+    "PENDING_DROP" boolean NOT NULL DEFAULT false
 );
 
 
@@ -400,7 +401,8 @@ CREATE TABLE "TBLS" (
     "VIEW_EXPANDED_TEXT" text,
     "VIEW_ORIGINAL_TEXT" text,
     "IS_REWRITE_ENABLED" boolean NOT NULL DEFAULT false,
-    "WRITE_ID" bigint DEFAULT 0
+    "WRITE_ID" bigint DEFAULT 0,
+    "PENDING_DROP" boolean NOT NULL DEFAULT false
 );
 
 --
