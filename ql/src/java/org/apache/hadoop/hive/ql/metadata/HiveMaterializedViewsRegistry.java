@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.metadata;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,6 +62,7 @@ import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveRelNode;
 import org.apache.hadoop.hive.ql.optimizer.calcite.reloperators.HiveTableScan;
 import org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils;
 import org.apache.hadoop.hive.ql.optimizer.calcite.translator.TypeConverter;
+import org.apache.hadoop.hive.ql.parse.CBOPlan;
 import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
@@ -76,6 +78,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import com.google.common.collect.ImmutableList;
+
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ALL;
+import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.TEXT;
 
 /**
  * Registry for materialized views. The goal of this cache is to avoid parsing and creating
@@ -166,7 +173,8 @@ public final class HiveMaterializedViewsRegistry {
       try {
         if (initialized.get()) {
           for (Table mvTable : db.getAllMaterializedViewObjectsForRewriting()) {
-            RelOptMaterialization existingMV = getRewritingMaterializedView(mvTable.getDbName(), mvTable.getTableName());
+            RelOptMaterialization existingMV = getRewritingMaterializedView(
+                    mvTable.getDbName(), mvTable.getTableName(), ALL);
             if (existingMV != null) {
               // We replace if the existing MV is not newer
               Table existingMVTable = HiveMaterializedViewUtils.extractTable(existingMV);
@@ -206,7 +214,7 @@ public final class HiveMaterializedViewsRegistry {
   /**
    * Parses and creates a materialization.
    */
-  public RelOptMaterialization createMaterialization(HiveConf conf, Table materializedViewTable) {
+  public HiveRelOptMaterialization createMaterialization(HiveConf conf, Table materializedViewTable) {
     // First we parse the view query and create the materialization object
     final String viewQuery = materializedViewTable.getViewExpandedText();
     final RelNode viewScan = createMaterializedViewScan(conf, materializedViewTable);
@@ -215,17 +223,19 @@ public final class HiveMaterializedViewsRegistry {
           " ignored; error creating view replacement");
       return null;
     }
-    final RelNode queryRel;
+    final CBOPlan plan;
     try {
-      queryRel = ParseUtils.parseQuery(conf, viewQuery);
+      plan = ParseUtils.parseQuery(conf, viewQuery);
     } catch (Exception e) {
       LOG.warn("Materialized view " + materializedViewTable.getCompleteName() +
           " ignored; error parsing original query; " + e);
       return null;
     }
 
-    return new RelOptMaterialization(viewScan, queryRel,
-        null, viewScan.getTable().getQualifiedName());
+    return new HiveRelOptMaterialization(viewScan, plan.getPlan(),
+            null, viewScan.getTable().getQualifiedName(),
+        isBlank(plan.getInvalidAutomaticRewritingMaterializationReason()) ?
+            EnumSet.allOf(HiveRelOptMaterialization.RewriteAlgorithm.class) : EnumSet.of(TEXT));
   }
 
   /**
@@ -246,7 +256,7 @@ public final class HiveMaterializedViewsRegistry {
       return;
     }
 
-    RelOptMaterialization materialization = createMaterialization(conf, materializedViewTable);
+    HiveRelOptMaterialization materialization = createMaterialization(conf, materializedViewTable);
     if (materialization == null) {
       return;
     }
@@ -277,7 +287,7 @@ public final class HiveMaterializedViewsRegistry {
       return;
     }
 
-    final RelOptMaterialization newMaterialization = createMaterialization(conf, materializedViewTable);
+    final HiveRelOptMaterialization newMaterialization = createMaterialization(conf, materializedViewTable);
     if (newMaterialization == null) {
       return;
     }
@@ -303,12 +313,14 @@ public final class HiveMaterializedViewsRegistry {
   }
 
   /**
-   * Returns all the materialized views in the cache.
+   * Returns all the materialized views enabled for Calcite based rewriting in the cache.
    *
    * @return the collection of materialized views, or the empty collection if none
    */
-  List<RelOptMaterialization> getRewritingMaterializedViews() {
-    return materializedViewsCache.values();
+  List<HiveRelOptMaterialization> getRewritingMaterializedViews() {
+    return materializedViewsCache.values().stream()
+            .filter(materialization -> materialization.getScope().contains(HiveRelOptMaterialization.RewriteAlgorithm.CALCITE))
+            .collect(toList());
   }
 
   /**
@@ -316,11 +328,19 @@ public final class HiveMaterializedViewsRegistry {
    *
    * @return the collection of materialized views, or the empty collection if none
    */
-  RelOptMaterialization getRewritingMaterializedView(String dbName, String viewName) {
-    return materializedViewsCache.get(dbName, viewName);
+  HiveRelOptMaterialization getRewritingMaterializedView(String dbName, String viewName,
+                                                         EnumSet<HiveRelOptMaterialization.RewriteAlgorithm> scope) {
+    HiveRelOptMaterialization materialization = materializedViewsCache.get(dbName, viewName);
+    if (materialization == null) {
+      return null;
+    }
+    if (!materialization.isSupported(scope)) {
+      return null;
+    }
+    return materialization;
   }
 
-  public List<RelOptMaterialization> getRewritingMaterializedViews(String querySql) {
+  public List<HiveRelOptMaterialization> getRewritingMaterializedViews(String querySql) {
     return materializedViewsCache.get(querySql);
   }
 
