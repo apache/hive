@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.parse.CalcitePlanner;
 import org.apache.hadoop.hive.ql.parse.HiveParser;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +89,7 @@ public class AlterMaterializedViewRebuildAnalyzer extends CalcitePlanner {
 
     LOG.debug("Rebuilding materialized view " + tableName.getNotEmptyDbTable());
     super.analyzeInternal(rewrittenAST);
+    queryState.setCommandType(HiveOperation.ALTER_MATERIALIZED_VIEW_REBUILD);
   }
 
   private static final String REWRITTEN_INSERT_STATEMENT = "INSERT OVERWRITE TABLE %s %s";
