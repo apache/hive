@@ -151,6 +151,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.metadata.NotNullConstraint;
 import org.apache.hadoop.hive.ql.metadata.PrimaryKeyInfo;
@@ -2199,7 +2200,7 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // We only retrieve the materialization corresponding to the rebuild. In turn,
           // we pass 'true' for the forceMVContentsUpToDate parameter, as we cannot allow the
           // materialization contents to be stale for a rebuild if we want to use it.
-          RelOptMaterialization materialization = db.getMaterializedViewForRebuild(
+          HiveRelOptMaterialization materialization = db.getMaterializedViewForRebuild(
               mvRebuildDbName, mvRebuildName, tablesUsedQuery, getTxnMgr());
           if (materialization != null) {
             materializations.add(materialization);
@@ -2210,9 +2211,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
           // as this is not a rebuild, and we apply the user parameters
           // (HIVE_MATERIALIZED_VIEW_REWRITING_TIME_WINDOW) instead.
           if (useMaterializedViewsRegistry) {
-            materializations = db.getPreprocessedMaterializedViewsFromRegistry(tablesUsedQuery, getTxnMgr());
+            materializations.addAll(db.getPreprocessedMaterializedViewsFromRegistry(tablesUsedQuery, getTxnMgr()));
           } else {
-            materializations = db.getPreprocessedMaterializedViews(tablesUsedQuery, getTxnMgr());
+            materializations.addAll(db.getPreprocessedMaterializedViews(tablesUsedQuery, getTxnMgr()));
           }
         }
         // We need to use the current cluster for the scan operator on views,
@@ -2376,9 +2377,9 @@ public class CalcitePlanner extends SemanticAnalyzer {
       String expandedQueryText = ctx.getTokenRewriteStream()
               .toString(EXPANDED_QUERY_TOKEN_REWRITE_PROGRAM, ast.getTokenStartIndex(), ast.getTokenStopIndex());
       try {
-        List<RelOptMaterialization> relOptMaterializationList = db.getMaterializedViewsBySql(
+        List<HiveRelOptMaterialization> relOptMaterializationList = db.getMaterializedViewsBySql(
                 expandedQueryText, getTablesUsed(calciteGenPlan), getTxnMgr());
-        for (RelOptMaterialization relOptMaterialization : relOptMaterializationList) {
+        for (HiveRelOptMaterialization relOptMaterialization : relOptMaterializationList) {
           try {
             Table hiveTableMD = extractTable(relOptMaterialization);
             if (HiveMaterializedViewUtils.checkPrivilegeForMaterializedViews(singletonList(hiveTableMD))) {

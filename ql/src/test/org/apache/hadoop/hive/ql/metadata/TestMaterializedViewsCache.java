@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.metadata;
 import org.apache.calcite.plan.Convention;
 import org.apache.calcite.plan.RelOptCluster;
 import org.apache.calcite.plan.RelOptCost;
-import org.apache.calcite.plan.RelOptMaterialization;
 import org.apache.calcite.plan.RelOptPlanner;
 import org.apache.calcite.plan.RelOptQuery;
 import org.apache.calcite.plan.RelOptTable;
@@ -69,13 +68,13 @@ import static org.hamcrest.core.Is.is;
 class TestMaterializedViewsCache {
   private MaterializedViewsCache materializedViewsCache;
   private Table defaultMV1;
-  private Materialization defaultMaterialization1;
+  private HiveRelOptMaterialization defaultMaterialization1;
   private Table defaultMV1Same;
-  private Materialization defaultMaterialization1Same;
+  private HiveRelOptMaterialization defaultMaterialization1Same;
   private Table defaultMVUpCase;
-  private Materialization defaultMaterializationUpCase;
+  private HiveRelOptMaterialization defaultMaterializationUpCase;
   private Table db1MV1;
-  private Materialization db1Materialization1;
+  private HiveRelOptMaterialization db1Materialization1;
 
   @BeforeEach
   void setUp() {
@@ -133,10 +132,10 @@ class TestMaterializedViewsCache {
     return table;
   }
 
-  private static Materialization createMaterialization(Table table) {
-    return new Materialization(new RelOptMaterialization(
-            new DummyRel(table), new DummyRel(table), null, asList(table.getDbName(), table.getTableName())),
-            EnumSet.allOf(Materialization.RewriteAlgorithm.class));
+  private static HiveRelOptMaterialization createMaterialization(Table table) {
+    return new HiveRelOptMaterialization(
+            new DummyRel(table), new DummyRel(table), null, asList(table.getDbName(), table.getTableName()),
+            EnumSet.allOf(HiveRelOptMaterialization.RewriteAlgorithm.class));
   }
 
   @Test
@@ -189,7 +188,7 @@ class TestMaterializedViewsCache {
   @Test
   void testRefreshWhenMVIsCachedButWasUpdated() {
     materializedViewsCache.putIfAbsent(defaultMV1, defaultMaterialization1);
-    Materialization newMaterialization = createMaterialization(defaultMV1);
+    HiveRelOptMaterialization newMaterialization = createMaterialization(defaultMV1);
     materializedViewsCache.refresh(defaultMV1, defaultMV1, newMaterialization);
 
     assertThat(newMaterialization, is(not(defaultMaterialization1)));
@@ -239,13 +238,13 @@ class TestMaterializedViewsCache {
   void testParallelism() {
     int ITERATIONS = 1000000;
 
-    List<Pair<Table, Materialization>> testData = new ArrayList<>();
+    List<Pair<Table, HiveRelOptMaterialization>> testData = new ArrayList<>();
     for (int i = 0; i < 10; ++i) {
       Table table = new Table(new org.apache.hadoop.hive.metastore.api.Table());
       table.setDbName("default");
       table.setTableName("mat" + i);
       table.setViewOriginalText("select col0 from t" + i);
-      Materialization materialization = createMaterialization(table);
+      HiveRelOptMaterialization materialization = createMaterialization(table);
       testData.add(new Pair<>(table, materialization));
     }
     for (int i = 0; i < 10; ++i) {
@@ -253,27 +252,27 @@ class TestMaterializedViewsCache {
       table.setDbName("db1");
       table.setTableName("mat" + i);
       table.setViewOriginalText("select col0 from t" + i);
-      Materialization materialization = createMaterialization(table);
+      HiveRelOptMaterialization materialization = createMaterialization(table);
       testData.add(new Pair<>(table, materialization));
     }
 
     List<Callable<Void>> callableList = new ArrayList<>();
     callableList.add(() -> {
-      for (Pair<Table, Materialization> entry : testData) {
+      for (Pair<Table, HiveRelOptMaterialization> entry : testData) {
         materializedViewsCache.refresh(entry.left, entry.left, entry.right);
       }
       return null;
     });
     callableList.add(() -> {
       for (int j = 0; j < ITERATIONS; ++j) {
-        for (Pair<Table, Materialization> entry : testData) {
+        for (Pair<Table, HiveRelOptMaterialization> entry : testData) {
           materializedViewsCache.remove(entry.left);
           materializedViewsCache.putIfAbsent(entry.left, entry.right);
         }
       }
       return null;
     });
-    for (Pair<Table, Materialization> entry : testData) {
+    for (Pair<Table, HiveRelOptMaterialization> entry : testData) {
       callableList.add(() -> {
         for (int j = 0; j < ITERATIONS; ++j) {
           materializedViewsCache.get(entry.left.getViewExpandedText());
@@ -283,7 +282,7 @@ class TestMaterializedViewsCache {
     }
     callableList.add(() -> {
       for (int j = 0; j < ITERATIONS; ++j) {
-        List<Materialization> materializations = materializedViewsCache.values();
+        List<HiveRelOptMaterialization> materializations = materializedViewsCache.values();
       }
       return null;
     });

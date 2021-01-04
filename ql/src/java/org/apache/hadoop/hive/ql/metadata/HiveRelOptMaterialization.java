@@ -19,15 +19,18 @@
 package org.apache.hadoop.hive.ql.metadata;
 
 import org.apache.calcite.plan.RelOptMaterialization;
+import org.apache.calcite.plan.RelOptTable;
+import org.apache.calcite.rel.RelNode;
 
 import java.util.EnumSet;
+import java.util.List;
 
 import static org.apache.commons.collections.CollectionUtils.intersection;
 
 /**
- * Wrapper class of {@link RelOptMaterialization} and corresponding flags.
+ * Hive extension of {@link RelOptMaterialization}.
  */
-public class Materialization {
+public class HiveRelOptMaterialization extends RelOptMaterialization {
 
   /**
    * Enumeration of Materialized view query rewrite algorithms.
@@ -43,18 +46,15 @@ public class Materialization {
     CALCITE;
 
     public static final EnumSet<RewriteAlgorithm> ALL = EnumSet.allOf(RewriteAlgorithm.class);
-  }
 
-  private final RelOptMaterialization relOptMaterialization;
+  }
   private final EnumSet<RewriteAlgorithm> scope;
 
-  public Materialization(RelOptMaterialization relOptMaterialization, EnumSet<RewriteAlgorithm> scope) {
-    this.relOptMaterialization = relOptMaterialization;
+  public HiveRelOptMaterialization(RelNode tableRel, RelNode queryRel,
+                                   RelOptTable starRelOptTable, List<String> qualifiedTableName,
+                                   EnumSet<RewriteAlgorithm> scope) {
+    super(tableRel, queryRel, starRelOptTable, qualifiedTableName);
     this.scope = scope;
-  }
-
-  public RelOptMaterialization getRelOptMaterialization() {
-    return relOptMaterialization;
   }
 
   public EnumSet<RewriteAlgorithm> getScope() {

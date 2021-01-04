@@ -31,8 +31,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.metastore.utils.MetaStoreUtils.getDefaultCatalog;
 import static org.apache.hadoop.hive.ql.io.AcidUtils.getFullTableName;
-import static org.apache.hadoop.hive.ql.metadata.Materialization.RewriteAlgorithm.CALCITE;
-import static org.apache.hadoop.hive.ql.metadata.Materialization.RewriteAlgorithm.ALL;
+import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.CALCITE;
+import static org.apache.hadoop.hive.ql.metadata.HiveRelOptMaterialization.RewriteAlgorithm.ALL;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.rules.views.HiveMaterializedViewUtils.extractTable;
 import static org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
@@ -1658,10 +1658,10 @@ public class Hive {
    * @return the list of materialized views available for rewriting from the registry
    * @throws HiveException
    */
-  public List<RelOptMaterialization> getPreprocessedMaterializedViewsFromRegistry(
+  public List<HiveRelOptMaterialization> getPreprocessedMaterializedViewsFromRegistry(
       List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
     // From cache
-    List<RelOptMaterialization> materializedViews =
+    List<HiveRelOptMaterialization> materializedViews =
         HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews();
     if (materializedViews.isEmpty()) {
       return Collections.emptyList();
@@ -1670,7 +1670,7 @@ public class Hive {
     return filterAugmentMaterializedViews(materializedViews, tablesUsed, txnMgr);
   }
 
-  private List<RelOptMaterialization> filterAugmentMaterializedViews(List<RelOptMaterialization> materializedViews,
+  private List<HiveRelOptMaterialization> filterAugmentMaterializedViews(List<HiveRelOptMaterialization> materializedViews,
         List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
     final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     final ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsed, validTxnsList);
@@ -1681,9 +1681,8 @@ public class Hive {
             TimeUnit.MILLISECONDS);
     try {
       // Final result
-      List<RelOptMaterialization> result = new ArrayList<>();
-      for (RelOptMaterialization materialization : materializedViews) {
-        final RelNode viewScan = materialization.tableRel;
+      List<HiveRelOptMaterialization> result = new ArrayList<>();
+      for (HiveRelOptMaterialization materialization : materializedViews) {
         final Table materializedViewTable = extractTable(materialization);
         final Boolean outdated = HiveMaterializedViewUtils.isOutdatedMaterializedView(
             materializedViewTable, currentTxnWriteIds, defaultTimeWindow, tablesUsed, false);
@@ -1797,7 +1796,7 @@ public class Hive {
    * @return the list of materialized views available for rewriting
    * @throws HiveException
    */
-  public List<RelOptMaterialization> getPreprocessedMaterializedViews(
+  public List<HiveRelOptMaterialization> getPreprocessedMaterializedViews(
       List<String> tablesUsed, HiveTxnManager txnMgr)
       throws HiveException {
     // From metastore
@@ -1818,9 +1817,9 @@ public class Hive {
    * @return the materialized view for rebuild
    * @throws HiveException
    */
-  public RelOptMaterialization getMaterializedViewForRebuild(String dbName, String materializedViewName,
+  public HiveRelOptMaterialization getMaterializedViewForRebuild(String dbName, String materializedViewName,
       List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
-    List<RelOptMaterialization> validMaterializedViews = getValidMaterializedViews(
+    List<HiveRelOptMaterialization> validMaterializedViews = getValidMaterializedViews(
             ImmutableList.of(getTable(dbName, materializedViewName)), tablesUsed, true, false, txnMgr, ALL);
     if (validMaterializedViews.isEmpty()) {
       return null;
@@ -1830,9 +1829,9 @@ public class Hive {
     return validMaterializedViews.get(0);
   }
 
-  private List<RelOptMaterialization> getValidMaterializedViews(List<Table> materializedViewTables,
+  private List<HiveRelOptMaterialization> getValidMaterializedViews(List<Table> materializedViewTables,
       List<String> tablesUsed, boolean forceMVContentsUpToDate, boolean expandGroupingSets,
-      HiveTxnManager txnMgr, EnumSet<org.apache.hadoop.hive.ql.metadata.Materialization.RewriteAlgorithm> scope)
+      HiveTxnManager txnMgr, EnumSet<HiveRelOptMaterialization.RewriteAlgorithm> scope)
       throws HiveException {
     final String validTxnsList = conf.get(ValidTxnList.VALID_TXNS_KEY);
     final ValidTxnWriteIdList currentTxnWriteIds = txnMgr.getValidWriteIds(tablesUsed, validTxnsList);
@@ -1845,7 +1844,7 @@ public class Hive {
             TimeUnit.MILLISECONDS);
     try {
       // Final result
-      List<RelOptMaterialization> result = new ArrayList<>();
+      List<HiveRelOptMaterialization> result = new ArrayList<>();
       for (Table materializedViewTable : materializedViewTables) {
         final Boolean outdated = HiveMaterializedViewUtils.isOutdatedMaterializedView(
             materializedViewTable, currentTxnWriteIds, defaultTimeWindow, tablesUsed, forceMVContentsUpToDate);
@@ -1878,7 +1877,7 @@ public class Hive {
         }
 
         // It passed the test, load
-        RelOptMaterialization relOptMaterialization =
+        HiveRelOptMaterialization relOptMaterialization =
             HiveMaterializedViewsRegistry.get().getRewritingMaterializedView(
                 materializedViewTable.getDbName(), materializedViewTable.getTableName(), scope);
         if (relOptMaterialization != null) {
@@ -1907,16 +1906,16 @@ public class Hive {
           LOG.debug("Materialized view " + materializedViewTable.getFullyQualifiedName() +
               " was not in the cache or it is not supported by specified rewrite algorithm {}", scope);
         }
-        org.apache.hadoop.hive.ql.metadata.Materialization materializationEntry =
+        HiveRelOptMaterialization hiveRelOptMaterialization =
                 HiveMaterializedViewsRegistry.get().createMaterialization(conf, materializedViewTable);
-        if (materializationEntry != null && materializationEntry.isSupported(scope)) {
-          relOptMaterialization = materializationEntry.getRelOptMaterialization();
+        if (hiveRelOptMaterialization != null && hiveRelOptMaterialization.isSupported(scope)) {
+          relOptMaterialization = hiveRelOptMaterialization;
           HiveMaterializedViewsRegistry.get().refreshMaterializedView(conf, null, materializedViewTable);
           if (outdated) {
             // We will rewrite it to include the filters on transaction list
             // so we can produce partial rewritings
             relOptMaterialization = HiveMaterializedViewUtils.augmentMaterializationWithTimeInformation(
-                    materializationEntry.getRelOptMaterialization(), validTxnsList, new ValidTxnWriteIdList(
+                    hiveRelOptMaterialization, validTxnsList, new ValidTxnWriteIdList(
                     creationMetadata.getValidTxnList()));
           }
           if (expandGroupingSets) {
@@ -1954,10 +1953,10 @@ public class Hive {
    * @return List of materialized views has matching query definition with querySql
    * @throws HiveException - an exception is thrown during validation or unable to pull transaction ids
    */
-  public List<RelOptMaterialization> getMaterializedViewsBySql(
+  public List<HiveRelOptMaterialization> getMaterializedViewsBySql(
           String querySql, List<String> tablesUsed, HiveTxnManager txnMgr) throws HiveException {
 
-    List<RelOptMaterialization> materializedViews =
+    List<HiveRelOptMaterialization> materializedViews =
             HiveMaterializedViewsRegistry.get().getRewritingMaterializedViews(querySql);
     if (materializedViews.isEmpty()) {
       return Collections.emptyList();
@@ -1970,8 +1969,8 @@ public class Hive {
                     TimeUnit.MILLISECONDS);
     try {
       // Final result
-      List<RelOptMaterialization> result = new ArrayList<>();
-      for (RelOptMaterialization materialization : materializedViews) {
+      List<HiveRelOptMaterialization> result = new ArrayList<>();
+      for (HiveRelOptMaterialization materialization : materializedViews) {
         Table materializedViewTable = extractTable(materialization);
         final Boolean outdated = HiveMaterializedViewUtils.isOutdatedMaterializedView(
                 materializedViewTable, currentTxnWriteIds, defaultTimeWindow, tablesUsed, false);
