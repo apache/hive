@@ -43,8 +43,8 @@ public class CBOPlan {
   /**
    * Returns an error message if this plan can not be a definition of a Materialized view which is an input of
    * Calcite based materialized view query rewrite.
-   * null or empty string otherwise.
-   * @return
+   * Null or empty string otherwise.
+   * @return String contains error message or null.
    */
   public String getInvalidAutomaticRewritingMaterializationReason() {
     return invalidAutomaticRewritingMaterializationReason;
