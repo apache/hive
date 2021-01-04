@@ -25,9 +25,8 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.txn.CompactionInfo;
-import org.apache.hadoop.hive.ql.io.AcidUtils;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hive.common.util.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +42,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
 
   @Override void runCompaction(HiveConf hiveConf, Table table, Partition partition,
       StorageDescriptor storageDescriptor, ValidWriteIdList writeIds, CompactionInfo compactionInfo,
-      AcidUtils.Directory dir) throws IOException {
+      AcidDirectory dir) throws IOException {
     LOG.debug(
         "Going to delete directories for aborted transactions for MM table " + table.getDbName()
             + "." + table.getTableName());
@@ -92,7 +91,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
    * @return List of 3 query strings: 2 create table, 1 alter table
    */
   private List<String> getCreateQueries(String tmpTableBase, Table t, StorageDescriptor sd,
-      AcidUtils.Directory dir, ValidWriteIdList writeIds, Path resultDeltaDir) {
+      AcidDirectory dir, ValidWriteIdList writeIds, Path resultDeltaDir) {
     List<String> queries = Lists.newArrayList(
         getCreateQuery(tmpTableBase, t, sd, null, true),
         getCreateQuery(tmpTableBase + "_result", t, sd, resultDeltaDir.toString(), false)
@@ -125,7 +124,7 @@ final class MmMinorQueryCompactor extends QueryCompactor {
    * @param validWriteIdList valid write ids for the table/partition to compact
    * @return alter table statement.
    */
-  private String buildAlterTableQuery(String tableName, AcidUtils.Directory dir,
+  private String buildAlterTableQuery(String tableName, AcidDirectory dir,
       ValidWriteIdList validWriteIdList) {
     return new CompactionQueryBuilder(CompactionQueryBuilder.CompactionType.MINOR_INSERT_ONLY,
         CompactionQueryBuilder.Operation.ALTER, tableName)
