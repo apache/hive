@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.conf.MetastoreConf;
 import org.apache.hadoop.hive.metastore.txn.TxnStatus;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.common.util.Ref;
@@ -315,7 +316,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
    * @param sd resolved storage descriptor
    * @return true, if compaction can run.
    */
-  static boolean isEnoughToCompact(boolean isMajorCompaction, AcidUtils.Directory dir,
+  static boolean isEnoughToCompact(boolean isMajorCompaction, AcidDirectory dir,
       StorageDescriptor sd) {
     int deltaCount = dir.getCurrentDirectories().size();
     int origCount = dir.getOriginalFiles().size();
@@ -356,7 +357,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
    *
    * @return true if cleaning is needed
    */
-  public static boolean needsCleaning(AcidUtils.Directory dir, StorageDescriptor sd) {
+  public static boolean needsCleaning(AcidDirectory dir, StorageDescriptor sd) {
     int numObsoleteDirs = dir.getObsolete().size() + dir.getAbortedDirectories().size();
     boolean needsJustCleaning = numObsoleteDirs > 0;
     if (needsJustCleaning) {
@@ -503,7 +504,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
         compactionTxn.wasSuccessful();
         return false;
       }
-      AcidUtils.Directory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
+      AcidDirectory dir = AcidUtils.getAcidState(null, new Path(sd.getLocation()), conf,
           tblValidWriteIds, Ref.from(false), true);
       if (!isEnoughToCompact(ci.isMajorCompaction(), dir, sd)) {
         if (needsCleaning(dir, sd)) {
@@ -580,7 +581,7 @@ public class Worker extends RemoteCompactorThread implements MetaStoreThread {
   }
 
   private void runCompactionViaMrJob(CompactionInfo ci, Table t, Partition p, StorageDescriptor sd,
-      ValidCompactorWriteIdList tblValidWriteIds, StringBuilder jobName, AcidUtils.Directory dir, StatsUpdater su)
+      ValidCompactorWriteIdList tblValidWriteIds, StringBuilder jobName, AcidDirectory dir, StatsUpdater su)
       throws IOException, HiveException, InterruptedException {
     final CompactorMR mr = new CompactorMR();
     if (runJobAsSelf(ci.runAs)) {
