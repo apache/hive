@@ -70,8 +70,9 @@ public class StorageFormat {
       break;
     case HiveParser.TOK_FILEFORMAT_GENERIC:
       if (storageHandler != null) {
-        // We can get here if a default storage handler is set in the config, but the DDL contains a STORED AS clause.
-        // In this case, we opt to ignore the STORED AS.
+        // Under normal circumstances, we should not get here (since STORED BY and STORED AS are incompatible within the
+        // same command). Only scenario we can end up here is if a default storage handler class is set in the config.
+        // In this case, we opt to ignore the STORED AS clause.
         break;
       }
       ASTNode grandChild = (ASTNode)child.getChild(0);

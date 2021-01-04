@@ -1992,8 +1992,9 @@ public class HiveConf extends Configuration {
         "created with format specified by hive.default.fileformat. Leaving this null will result in using hive.default.fileformat \n" +
         "for all tables."),
     HIVEDEFAULTSTORAGEHANDLER("hive.default.storage.handler.class", "",
-        "Default storage handler class for CREATE TABLE statements. If this is set to a valid class, a 'CREATE TABLE ... LOCATION ...' command will " +
-        "be equivalent to 'CREATE TABLE ... STORED BY [DEFAULT_HANDLER] LOCATION ...'. Users can explicitly override it by CREATE TABLE ... STORED BY [HANDLER]"),
+        "Default storage handler class for CREATE TABLE statements. If this is set to a valid class, a 'CREATE TABLE ... STORED AS ... LOCATION ...' command will " +
+        "be equivalent to 'CREATE TABLE ... STORED BY [default.storage.handler.class] LOCATION ...'. Any STORED AS clauses will be ignored, given that STORED BY and STORED AS are " +
+        "incompatible within the same command. Users can explicitly override the default class by issuing 'CREATE TABLE ... STORED BY [overriding.storage.handler.class] ...'"),
     HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", ResultFileFormat.SEQUENCEFILE.toString(),
         new StringSet(ResultFileFormat.getValidSet()),
         "Default file format for storing result of the query."),
