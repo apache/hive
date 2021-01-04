@@ -65,6 +65,10 @@ import com.google.common.cache.CacheBuilder;
 
 public class ConvertAstToSearchArg {
   private static final Logger LOG = LoggerFactory.getLogger(ConvertAstToSearchArg.class);
+
+  private static final int KRYO_OUTPUT_BUFFER_SIZE = 4 * 1024;
+  private static final int KRYO_OUTPUT_BUFFER_MAX_SIZE = 10 * 1024 * 1024;
+
   private final SearchArgument.Builder builder;
   private final Configuration conf;
 
@@ -574,7 +578,7 @@ public class ConvertAstToSearchArg {
   }
 
   public static String sargToKryo(SearchArgument sarg) {
-    Output out = new Output(4 * 1024, 10 * 1024 * 1024);
+    Output out = new Output(KRYO_OUTPUT_BUFFER_SIZE, KRYO_OUTPUT_BUFFER_MAX_SIZE);
     kryo.get().writeObject(out, sarg);
     out.close();
     return Base64.encodeBase64String(out.toBytes());

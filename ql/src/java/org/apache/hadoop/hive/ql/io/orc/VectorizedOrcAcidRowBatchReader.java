@@ -698,7 +698,7 @@ public class VectorizedOrcAcidRowBatchReader
    */
   private static ReaderData getOrcTail(Path path, Configuration conf, CacheTag cacheTag, Object fileKey) throws IOException {
     ReaderData readerData = new ReaderData();
-    if (shouldReadDeleteDeltasWithLlap(conf)) {
+    if (shouldReadDeleteDeltasWithLlap(conf, true)) {
       try {
         if (LlapProxy.getIo() == null) {
           throw new IllegalCacheConfigurationException("LLAP IO is not enabled.");
@@ -714,8 +714,18 @@ public class VectorizedOrcAcidRowBatchReader
     return readerData;
   }
 
-  private static boolean shouldReadDeleteDeltasWithLlap(Configuration conf) {
-    return HiveConf.getBoolVar(conf,ConfVars.LLAP_IO_CACHE_DELETEDELTAS)
+  /**
+   * Checks whether delete delta files should be read through LLAP IO by verifying that:
+   * - this execution is inside an LLAP daemon
+   * - delete delta caching feature is turned on in configuration
+   * @param conf job conf / session conf
+   * @param metaDataLevelSufficient if true: 'metadata' level delete delta caching is sufficient to return true
+   *                                if false: full delete delta caching ('all') is required for this to return true
+   * @return
+   */
+  private static boolean shouldReadDeleteDeltasWithLlap(Configuration conf, boolean metaDataLevelSufficient) {
+    String ddCacheLevel = HiveConf.getVar(conf, ConfVars.LLAP_IO_CACHE_DELETEDELTAS);
+    return ("all".equals(ddCacheLevel) || (metaDataLevelSufficient && ddCacheLevel.equals("metadata")))
         && LlapHiveUtils.isLlapMode(conf) && LlapProxy.isDaemon();
   }
 
@@ -1405,7 +1415,7 @@ public class VectorizedOrcAcidRowBatchReader
 
         // If configured try with LLAP reader. This may still return null if LLAP record reader can't be created
         // e.g. due to unsupported schema evolution
-        if (shouldReadDeleteDeltasWithLlap(conf)) {
+        if (shouldReadDeleteDeltasWithLlap(conf, false)) {
           this.recordReader = getLlapRecordReader(deleteDeltaFile, readerOptions, conf, cacheTag, fileId);
         }
         if (this.recordReader == null) {
@@ -1728,7 +1738,7 @@ public class VectorizedOrcAcidRowBatchReader
                 // with LLAP. In this case we continue with this reader. In other cases we rely on LLAP to read and
                 // cache delete delta files for us, so we won't create a reader instance ourselves here.
                 if (readerData.reader == null) {
-                  assert HiveConf.getBoolVar(conf, ConfVars.LLAP_IO_CACHE_DELETEDELTAS);
+                  assert shouldReadDeleteDeltasWithLlap(conf, true);
                 }
                 deleteReaderValue = new DeleteReaderValue(readerData.reader, deleteDeltaFile, readerOptions, bucket,
                     validWriteIdList, isBucketedTable, conf, keyInterval, orcSplit, numRows, cacheTag, fileId);
