@@ -10993,7 +10993,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode rewrittenTree;
       // Parse the rewritten query string
       // check if we need to ctx.setCmd(rewrittenQuery);
-      ParseDriver pd = new ParseDriver();
       try {
         rewrittenTree = ParseUtils.parse(rewrittenQuery);
       } catch (ParseException e) {
