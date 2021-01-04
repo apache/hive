@@ -19,3 +19,5 @@ explain
 alter materialized view mat1 rebuild;
 
 alter materialized view mat1 rebuild;
+
+drop materialized view mat1;
