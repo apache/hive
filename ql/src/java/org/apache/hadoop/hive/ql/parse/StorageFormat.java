@@ -69,6 +69,11 @@ public class StorageFormat {
       }
       break;
     case HiveParser.TOK_FILEFORMAT_GENERIC:
+      if (storageHandler != null) {
+        // We can get here if a default storage handler is set in the config, but the DDL contains a STORED AS clause.
+        // In this case, we opt to ignore the STORED AS.
+        break;
+      }
       ASTNode grandChild = (ASTNode)child.getChild(0);
       String name = (grandChild == null ? "" : grandChild.getText()).trim().toUpperCase();
       processStorageFormat(name);

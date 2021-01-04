@@ -13391,6 +13391,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // set storage handler if default handler is provided in config
     String defaultStorageHandler = HiveConf.getVar(conf, HIVEDEFAULTSTORAGEHANDLER);
     if (defaultStorageHandler != null && !defaultStorageHandler.isEmpty()) {
+      LOG.info("Default storage handler class detected in config. Using storage handler class if exists: '{}'",
+          defaultStorageHandler);
       storageFormat.setStorageHandler(defaultStorageHandler);
       isUserStorageFormat = true;
     }
