@@ -216,11 +216,22 @@ sortByClause
     )
     ;
 
+// TRIM([LEADING|TRAILING|BOTH] trim_characters FROM str)
+trimFunction
+    :
+    KW_TRIM LPAREN (leading=KW_LEADING | trailing=KW_TRAILING | KW_BOTH)? (trim_characters=selectExpression)? KW_FROM (str=selectExpression) RPAREN
+    -> {$leading != null}? ^(TOK_FUNCTION {adaptor.create(Identifier, "ltrim")} $str $trim_characters?)
+    -> {$trailing != null}? ^(TOK_FUNCTION {adaptor.create(Identifier, "rtrim")} $str $trim_characters?)
+    -> ^(TOK_FUNCTION {adaptor.create(Identifier, "trim")} $str $trim_characters?)
+    ;
+
 // fun(par1, par2, par3)
 function
 @init { gParent.pushMsg("function specification", state); }
 @after { gParent.popMsg(state); }
     :
+    (trimFunction) => (trimFunction)
+    |
     functionName
     LPAREN
       (
@@ -263,15 +274,6 @@ castExpression
 
     // cast ... format to type with 4th parameter which is length of CHAR or VARCHAR
     -> ^(TOK_FUNCTION {adaptor.create(Identifier, "cast_format")} NumberLiteral[Integer.toString(((CommonTree)toType.getTree()).token.getType())] expression StringLiteral NumberLiteral[((CommonTree)toType.getTree()).getChild(0).getText()])
-    ;
-
-// TRIM([LEADING|TRAILING|BOTH] trim_characters FROM str)
-trimFunction
-    :
-    functionName LPAREN (leading=KW_LEADING | trailing=KW_TRAILING | KW_BOTH)? (trim_characters=selectExpression)? KW_FROM (str=selectExpression) RPAREN
-    -> {$leading != null}? ^(TOK_FUNCTION {adaptor.create(Identifier, "ltrim")} $str $trim_characters?)
-    -> {$trailing != null}? ^(TOK_FUNCTION {adaptor.create(Identifier, "rtrim")} $str $trim_characters?)
-    -> ^(TOK_FUNCTION {adaptor.create(Identifier, "trim")} $str $trim_characters?)
     ;
 
 caseExpression
@@ -473,7 +475,6 @@ atomExpression
     | whenExpression
     | (subQueryExpression)=> (subQueryExpression)
         -> ^(TOK_SUBQUERY_EXPR TOK_SUBQUERY_OP subQueryExpression)
-    | (functionName LPAREN (leading=KW_LEADING | trailing=KW_TRAILING | KW_BOTH)? (trim_characters=selectExpression)? KW_FROM (str=selectExpression) RPAREN) => trimFunction
     | (functionName LPAREN) => function
     | tableOrColumn
     | expressionsInParenthesis[true, false]
@@ -906,6 +907,7 @@ nonReserved
     | KW_POOL | KW_ALLOC_FRACTION | KW_SCHEDULING_POLICY | KW_PATH | KW_MAPPING | KW_WORKLOAD | KW_MANAGEMENT | KW_ACTIVE | KW_UNMANAGED
     | KW_UNKNOWN
     | KW_WITHIN
+    | KW_TRIM
 ;
 
 //The following SQL2011 reserved keywords are used as function name only, but not as identifiers.

@@ -67,15 +67,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 "tech   "	"   tech"
-PREHOOK: query: SELECT '"' || lTRIM('0'  FROM  '000123') || '"', '"' || rTRIM('0'  FROM  '000123') || '"'
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT '"' || lTRIM('0'  FROM  '000123') || '"', '"' || rTRIM('0'  FROM  '000123') || '"'
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-"123"	"123"
 PREHOOK: query: SELECT trim('000123', '0')
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
