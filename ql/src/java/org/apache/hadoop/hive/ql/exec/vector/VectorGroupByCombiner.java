@@ -29,9 +29,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinaryDeserializeRead;
 import org.apache.hadoop.hive.serde2.lazybinary.fast.LazyBinarySerializeWrite;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -44,7 +42,6 @@ import org.apache.tez.common.TezUtils;
 import org.apache.tez.common.counters.TezCounter;
 import org.apache.tez.mapreduce.combine.MRCombiner;
 import org.apache.tez.runtime.api.TaskContext;
-import org.apache.tez.runtime.api.impl.TezInputContextImpl;
 import org.apache.tez.runtime.api.impl.TezOutputContextImpl;
 import org.apache.tez.runtime.library.common.sort.impl.IFile;
 import org.apache.tez.runtime.library.common.sort.impl.TezRawKeyValueIterator;
@@ -55,7 +52,6 @@ import java.io.IOException;
 import static org.apache.hadoop.hive.ql.exec.Utilities.HAS_REDUCE_WORK;
 import static org.apache.hadoop.hive.ql.exec.Utilities.MAPRED_REDUCER_CLASS;
 import static org.apache.hadoop.hive.ql.exec.Utilities.REDUCE_PLAN_NAME;
-import static org.apache.hadoop.hive.serde2.lazy.fast.LazySimpleDeserializeRead.byteArrayCompareRanges;
 
 // Combiner for vectorized group by operator. In case of map side aggregate, the partially
 // aggregated records are sorted based on group by key. If because of some reasons, like hash
@@ -91,7 +87,7 @@ public class VectorGroupByCombiner extends MRCombiner {
   protected ReduceWork rw;
   VectorizedRowBatch outputBatch = null;
   VectorizedRowBatch inputBatch = null;
-  protected Deserializer inputKeyDeserializer = null;
+  protected AbstractSerDe inputKeyDeserializer = null;
   protected ObjectInspector keyObjectInspector = null;
   protected ObjectInspector valueObjectInspector = null;
   protected StructObjectInspector valueStructInspectors = null;
@@ -182,18 +178,16 @@ public class VectorGroupByCombiner extends MRCombiner {
   private void initObjectInspectors(TableDesc valueTableDesc,TableDesc keyTableDesc)
           throws SerDeException {
     inputKeyDeserializer =
-            ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(), null);
-    SerDeUtils.initializeSerDe(inputKeyDeserializer, null,
-            keyTableDesc.getProperties(), null);
+            ReflectionUtils.newInstance(keyTableDesc.getSerDeClass(), null);
+    inputKeyDeserializer.initialize(null, keyTableDesc.getProperties(), null);
     keyObjectInspector = inputKeyDeserializer.getObjectInspector();
 
     keyStructInspector = (StructObjectInspector) keyObjectInspector;
     firstValueColumnOffset = keyStructInspector.getAllStructFieldRefs().size();
 
-    Deserializer inputValueDeserializer = (AbstractSerDe) ReflectionUtils.newInstance(
-            valueTableDesc.getDeserializerClass(), null);
-    SerDeUtils.initializeSerDe(inputValueDeserializer, null,
-            valueTableDesc.getProperties(), null);
+    AbstractSerDe inputValueDeserializer = (AbstractSerDe) ReflectionUtils.newInstance(
+            valueTableDesc.getSerDeClass(), null);
+    inputValueDeserializer.initialize(null, valueTableDesc.getProperties(), null);
     valueObjectInspector = inputValueDeserializer.getObjectInspector();
     valueStructInspectors = (StructObjectInspector) valueObjectInspector;
     numValueCol = valueStructInspectors.getAllStructFieldRefs().size();
@@ -331,14 +325,14 @@ public class VectorGroupByCombiner extends MRCombiner {
     }
   }
 
-  public static boolean compare(DataInputBuffer buf1, DataInputBuffer buf2) {
+  public static boolean equals(DataInputBuffer buf1, DataInputBuffer buf2) {
     byte[] b1 = buf1.getData();
     int s1 = buf1.getPosition();
     int l1 = buf1.getLength() - buf1.getPosition();
     byte[] b2 = buf2.getData();
     int s2 = buf2.getPosition();
     int l2 = buf2.getLength() - buf2.getPosition();
-    return org.apache.hadoop.hive.ql.exec.util.FastByteComparisons.equal(b1, s1, l1, b2, s2, l2);
+    return org.apache.hadoop.hive.ql.exec.util.FastByteComparisons.equals(b1, s1, l1, b2, s2, l2);
   }
 
   @Override
@@ -368,7 +362,7 @@ public class VectorGroupByCombiner extends MRCombiner {
 
       while (rawIter.next()) {
         key = rawIter.getKey();
-        if (!compare(prevKey, key)) {
+        if (!equals(prevKey, key)) {
           if (numValues == 1) {
             // if key has single record, no need for aggregation.
             appendToWriter(val, prevKey, writer);
