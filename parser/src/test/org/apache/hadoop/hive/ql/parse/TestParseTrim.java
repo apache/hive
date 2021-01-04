@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.parse;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -106,5 +107,17 @@ public class TestParseTrim {
     assertEquals(expectedStringToTrim, strToTrimNode.getText());
 
     return functionNode;
+  }
+
+  @Test
+  public void testParseWhenFunctionHasTrimLikeStructure() {
+    try {
+      parseDriver.parse("select upper(both 'rfo' from 'foo  bar')", null);
+      Assert.fail("Expected ParseException");
+    } catch (ParseException ex) {
+      Assert.assertEquals("Failure didn't match.",
+              "line 1:13 cannot recognize input near 'both' ''rfo'' 'from' in function specification",
+              ex.getMessage());
+    }
   }
 }
