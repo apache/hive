@@ -46,8 +46,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -67,7 +65,6 @@ import java.util.stream.Collectors;
  */
 @SerDeSpec(schemaProps = { serdeConstants.LIST_COLUMNS, serdeConstants.LIST_COLUMN_TYPES }) public class KafkaSerDe
     extends AbstractSerDe {
-  private static final Logger LOG = LoggerFactory.getLogger(KafkaSerDe.class);
 
   /**
    * Delegate SerDe used to Serialize and DeSerialize data form/to Kafka.
@@ -132,7 +129,7 @@ import java.util.stream.Collectors;
       String schemaFromProperty = properties.getProperty(AvroSerdeUtils.AvroTableProperties.SCHEMA_LITERAL.getPropName(), "");
       Preconditions.checkArgument(!schemaFromProperty.isEmpty(), "Avro Schema is empty Can not go further");
       Schema schema = AvroSerdeUtils.getSchemaFor(schemaFromProperty);
-      LOG.debug("Building Avro Reader with schema {}", schemaFromProperty);
+      log.debug("Building Avro Reader with schema {}", schemaFromProperty);
       bytesConverter = getByteConverterForAvroDelegate(schema, properties);
     } else {
       bytesConverter = new BytesWritableConverter();
@@ -202,7 +199,6 @@ import java.util.stream.Collectors;
     Object timestamp = data.get(firstMetadataColumnIndex + 3);
 
     if (PrimitiveObjectInspectorUtils.getLong(offset, MetadataColumn.OFFSET.getObjectInspector()) != -1) {
-      LOG.error("Can not insert values into `__offset` column, has to be [-1]");
       throw new SerDeException("Can not insert values into `__offset` column, has to be [-1]");
     }
 

@@ -3120,9 +3120,8 @@ public class Vectorizer implements PhysicalPlanResolver {
       }
       StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
 
-      ArrayList<TypeInfo> fieldTypeInfos = structTypeInfo
-          .getAllStructFieldTypeInfos();
-      ArrayList<String> fieldNames = structTypeInfo.getAllStructFieldNames();
+      List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+      List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
       final int fieldCount = fieldTypeInfos.size();
       for (int f = 0; f < fieldCount; f++) {
         TypeInfo fieldTypeInfo = fieldTypeInfos.get(f);

@@ -21,7 +21,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.avro.Schema;
@@ -468,8 +467,8 @@ public class TestAvroObjectInspectorGenerator {
     StructTypeInfo structTypeInfo = (StructTypeInfo)typeInfo;
 
     // Check individual elements of subrecord
-    ArrayList<String> allStructFieldNames = structTypeInfo.getAllStructFieldNames();
-    ArrayList<TypeInfo> allStructFieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+    List<String> allStructFieldNames = structTypeInfo.getAllStructFieldNames();
+    List<TypeInfo> allStructFieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
     assertEquals(allStructFieldNames.size(), 3);
     String[] names = new String[]{"int1", "boolean1", "long1"};
     String [] typeInfoStrings = new String [] {"int", "boolean", "bigint"};

@@ -2680,7 +2680,7 @@ import com.google.common.annotations.VisibleForTesting;
 
     StructTypeInfo structTypeInfo = (StructTypeInfo) colTypeInfo;
 
-    ArrayList<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+    List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
     final int fieldCount = fieldTypeInfos.size();
     ColumnVector.Type[] fieldVectorColumnTypes = new ColumnVector.Type[fieldCount];
     InConstantType[] fieldInConstantTypes = new InConstantType[fieldCount];

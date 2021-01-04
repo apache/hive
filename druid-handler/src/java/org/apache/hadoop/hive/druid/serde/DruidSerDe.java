@@ -66,8 +66,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.util.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,9 +86,8 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
 /**
  * DruidSerDe that is used to  deserialize objects from a Druid data source.
  */
-@SerDeSpec(schemaProps = { Constants.DRUID_DATA_SOURCE }) public class DruidSerDe extends AbstractSerDe {
-
-  private static final Logger LOG = LoggerFactory.getLogger(DruidSerDe.class);
+@SerDeSpec(schemaProps = { Constants.DRUID_DATA_SOURCE })
+public class DruidSerDe extends AbstractSerDe {
 
   private String[] columns;
   private PrimitiveTypeInfo[] types;
@@ -119,8 +116,8 @@ import static org.joda.time.format.ISODateTimeFormat.dateOptionalTimeParser;
         initFromMetaDataQuery(configuration, properties);
       }
     }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("DruidSerDe initialized with\n"
+    if (log.isDebugEnabled()) {
+      log.debug("DruidSerDe initialized with\n"
           + "\t columns: "
           + Arrays.toString(columns)
           + "\n\t types: "

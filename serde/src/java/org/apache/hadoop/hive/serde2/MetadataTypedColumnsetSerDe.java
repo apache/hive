@@ -66,7 +66,7 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
 
   @Override
   public String toString() {
-    return "MetaDataTypedColumnsetSerDe[" + separator + "," + columnNames + "]";
+    return "MetaDataTypedColumnsetSerDe[" + separator + "," + columnNames + "," + super.toString() + "]";
   }
 
   public MetadataTypedColumnsetSerDe() throws SerDeException {

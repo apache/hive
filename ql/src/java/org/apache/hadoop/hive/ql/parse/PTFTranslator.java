@@ -821,17 +821,6 @@ public class PTFTranslator {
     return serDe;
   }
 
-  @SuppressWarnings({"unchecked"})
-
-  private static ArrayList<? extends Object>[] getTypeMap(
-      StructObjectInspector oi) {
-    StructTypeInfo t = (StructTypeInfo) TypeInfoUtils
-        .getTypeInfoFromObjectInspector(oi);
-    ArrayList<String> fnames = t.getAllStructFieldNames();
-    ArrayList<TypeInfo> fields = t.getAllStructFieldTypeInfos();
-    return new ArrayList<?>[] {fnames, fields};
-  }
-
   /**
    * For each column on the input RR, construct a StructField for it
    * OI is constructed using the list of input column names and

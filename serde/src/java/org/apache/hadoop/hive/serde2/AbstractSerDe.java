@@ -18,16 +18,24 @@
 
 package org.apache.hadoop.hive.serde2;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Preconditions;
 
 /**
  * This abstract class is the superclass of all classes that can serialize and
@@ -41,6 +49,9 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
   protected Properties properties;
   protected Properties tableProperties;
   protected Optional<Properties> partitionProperties;
+
+  private List<String> columnNames;
+  private List<TypeInfo> columnTypes;
 
   /**
    * Initialize the SerDe. By default, this will use one set of properties,
@@ -63,7 +74,29 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
     this.tableProperties = Objects.requireNonNull(tableProperties);
     this.partitionProperties = Optional.ofNullable(partitionProperties);
     this.properties = SerDeUtils.createOverlayedProperties(tableProperties, partitionProperties);
+    this.columnNames = parseColumnNames();
+    this.columnTypes = parseColumnTypes();
+
+    Preconditions.checkArgument(this.columnNames.size() == this.columnTypes.size(),
+        "Column names must match count of column types");
+
     log.debug("SerDe initialized: [{}][{}]", this.configuration, this.properties);
+  }
+
+  protected List<String> parseColumnNames() {
+    final String columnNameProperty = this.properties.getProperty(serdeConstants.LIST_COLUMNS, "");
+    final String columnNameDelimiter =
+        this.properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER, String.valueOf(SerDeUtils.COMMA));
+
+    return columnNameProperty.isEmpty() ? Collections.emptyList()
+        : Collections.unmodifiableList(Arrays.asList(columnNameProperty.split(columnNameDelimiter)));
+  }
+
+  protected List<TypeInfo> parseColumnTypes() {
+    final String columnTypeProperty = this.properties.getProperty(serdeConstants.LIST_COLUMN_TYPES, "");
+
+    return columnTypeProperty.isEmpty() ? Collections.emptyList()
+        : Collections.unmodifiableList(TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty));
   }
 
   /**
@@ -98,18 +131,26 @@ public abstract class AbstractSerDe implements Deserializer, Serializer {
    *         parameters.
    */
   public boolean shouldStoreFieldsInMetastore(Map<String, String> tableParams) {
-    return false; // The default, unless SerDe overrides it.
+    return false;
+  }
+
+  public List<String> getColumnNames() {
+    return columnNames;
+  }
+
+  public List<TypeInfo> getColumnTypes() {
+    return columnTypes;
+  }
+
+  public Optional<Configuration> getConfiguration() {
+    return configuration;
   }
 
   @Override
   public String toString() {
     return "AbstractSerDe [log=" + log + ", configuration=" + configuration + ", properties=" + properties
-        + ", tableProperties=" + tableProperties + ", partitionProperties=" + partitionProperties + ", getClass()="
-        + getClass() + "]";
-  }
-
-  public Optional<Configuration> getConfiguration() {
-    return configuration;
+        + ", tableProperties=" + tableProperties + ", partitionProperties=" + partitionProperties + ", columnNames="
+        + columnNames + ", columnTypes=" + columnTypes + ", getClass()=" + getClass() + "]";
   }
 
 }
