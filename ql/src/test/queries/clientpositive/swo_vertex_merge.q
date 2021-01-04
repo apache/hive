@@ -1,4 +1,6 @@
 
+set hive.auto.convert.join=true;
+
 create table tu  ( a integer );
 create table tv  ( b integer );
 
