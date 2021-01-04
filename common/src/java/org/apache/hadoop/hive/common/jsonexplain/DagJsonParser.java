@@ -33,6 +33,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class DagJsonParser implements JsonParser {
+  public static final String STAGE_DEPENDENCIES = "STAGE DEPENDENCIES";
+  public static final String STAGE_PLANS = "STAGE PLANS";
+
   public final Map<String, Stage> stages = new LinkedHashMap<>();
   protected final Logger LOG;
   // the objects that have been printed.
@@ -49,7 +52,7 @@ public abstract class DagJsonParser implements JsonParser {
 
   public void extractStagesAndPlans(JSONObject inputObject) throws Exception {
     // extract stages
-    JSONObject dependency = inputObject.getJSONObject("STAGE DEPENDENCIES");
+    JSONObject dependency = inputObject.has(STAGE_DEPENDENCIES) ? inputObject.getJSONObject(STAGE_DEPENDENCIES) : null;
     if (dependency != null && dependency.length() > 0) {
       // iterate for the first time to get all the names of stages.
       for (String stageName : JSONObject.getNames(dependency)) {
@@ -62,7 +65,7 @@ public abstract class DagJsonParser implements JsonParser {
       }
     }
     // extract stage plans
-    JSONObject stagePlans = inputObject.getJSONObject("STAGE PLANS");
+    JSONObject stagePlans = inputObject.has(STAGE_PLANS) ? inputObject.getJSONObject(STAGE_PLANS) : null;
     if (stagePlans != null && stagePlans.length() > 0) {
       for (String stageName : JSONObject.getNames(stagePlans)) {
         JSONObject stagePlan = stagePlans.getJSONObject(stageName);

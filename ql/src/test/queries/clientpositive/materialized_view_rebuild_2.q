@@ -11,6 +11,9 @@ select col0 from t1 where col0 = 1;
 explain
 alter materialized view mat1 rebuild;
 
+explain formatted
+alter materialized view mat1 rebuild;
+
 alter materialized view mat1 rebuild;
 
 insert into t1(col0) values(1);
