@@ -2943,6 +2943,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
                   + " isAcid=" + isAcid + ", "
                   + " resetStatistics=" + resetStatistics, e);
           throw e;
+        } finally {
+          // get(conf).getMSC can be called in this task, Close the HMS connection right after use, do not wait for finalizer to close it.
+          closeCurrent();
         }
       });
     }
