@@ -27,9 +27,14 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.IOConstants;
 import org.apache.hadoop.hive.ql.io.StorageFormatDescriptor;
 import org.apache.hadoop.hive.ql.io.StorageFormatFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StorageFormat {
+
+  private static final Logger LOG = LoggerFactory.getLogger(StorageFormat.class);
   private static final StorageFormatFactory storageFormatFactory = new StorageFormatFactory();
+
   private final Configuration conf;
   private String inputFormat;
   private String outputFormat;
@@ -73,6 +78,8 @@ public class StorageFormat {
         // Under normal circumstances, we should not get here (since STORED BY and STORED AS are incompatible within the
         // same command). Only scenario we can end up here is if a default storage handler class is set in the config.
         // In this case, we opt to ignore the STORED AS clause.
+        LOG.info("'STORED AS' clause will be ignored, since a default storage handler class is already set: '{}'",
+            storageHandler);
         break;
       }
       ASTNode grandChild = (ASTNode)child.getChild(0);

@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import static java.util.Objects.nonNull;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.DYNAMICPARTITIONCONVERT;
-import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVEDEFAULTSTORAGEHANDLER;
+import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVE_DEFAULT_STORAGE_HANDLER;
 import static org.apache.hadoop.hive.conf.HiveConf.ConfVars.HIVESTATSDBCLASS;
 import static org.apache.hadoop.hive.ql.optimizer.calcite.translator.ASTConverter.NON_FK_FILTERED;
 
@@ -13389,7 +13389,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     int numCh = ast.getChildCount();
 
     // set storage handler if default handler is provided in config
-    String defaultStorageHandler = HiveConf.getVar(conf, HIVEDEFAULTSTORAGEHANDLER);
+    String defaultStorageHandler = HiveConf.getVar(conf, HIVE_DEFAULT_STORAGE_HANDLER);
     if (defaultStorageHandler != null && !defaultStorageHandler.isEmpty()) {
       LOG.info("Default storage handler class detected in config. Using storage handler class if exists: '{}'",
           defaultStorageHandler);
