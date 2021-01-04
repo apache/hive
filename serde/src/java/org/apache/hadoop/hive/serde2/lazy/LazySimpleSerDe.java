@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.lazy;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -45,6 +46,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.Text;
@@ -130,6 +133,16 @@ public class LazySimpleSerDe extends AbstractEncodingAwareSerDe {
     stats = new SerDeStats();
     lastOperationSerialize = false;
     lastOperationDeserialize = false;
+  }
+
+  /**
+   *  NOTE: if "columns.types" is missing, all columns will be of String type.
+   */
+  @Override
+  protected List<TypeInfo> parseColumnTypes() {
+    List<TypeInfo> columnTypes = super.parseColumnTypes();
+    return (!columnTypes.isEmpty()) ? columnTypes
+        : Collections.nCopies(getColumnNames().size(), TypeInfoFactory.stringTypeInfo);
   }
 
   // The object for storing row data

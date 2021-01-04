@@ -31,6 +31,7 @@ import java.util.Properties;
 import java.util.TimeZone;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.Timestamp;
 import org.apache.hadoop.hive.common.type.TimestampTZ;
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -57,7 +58,7 @@ public class TestJsonSerDe {
     props.setProperty(serdeConstants.TIMESTAMP_FORMATS, "millis");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     final String jsonText = loadJson("simple.json");
 
@@ -81,7 +82,7 @@ public class TestJsonSerDe {
     props.setProperty(serdeConstants.TIMESTAMP_FORMATS, "millis");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     final String jsonText = loadJson("array.json");
 
@@ -109,7 +110,7 @@ public class TestJsonSerDe {
     props.setProperty(serdeConstants.TIMESTAMP_FORMATS, "millis");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     final String jsonText = loadJson("map_int_key.json");
 
@@ -139,7 +140,7 @@ public class TestJsonSerDe {
     props.setProperty(JsonSerDe.NULL_EMPTY_LINES, "true");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     final Text text = new Text("");
     final List<?> results = (List<?>) serde.deserialize(text);
@@ -157,7 +158,7 @@ public class TestJsonSerDe {
     props.setProperty(JsonSerDe.NULL_EMPTY_LINES, "false");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     serde.deserialize(new Text(""));
   }
@@ -170,7 +171,7 @@ public class TestJsonSerDe {
     props.setProperty(serdeConstants.TIMESTAMP_FORMATS, "millis");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, true);
+    serde.initialize(new Configuration(), props, null, false);
 
     List<?> results = (List<?>) serde.deserialize(new Text("{\"a\":\"xxx\"}"));
     Assert.assertNotNull(results);
@@ -193,7 +194,7 @@ public class TestJsonSerDe {
     props.setProperty(serdeConstants.TIMESTAMP_FORMATS, "millis");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     List<?> results =
         (List<?>) serde.deserialize(new Text("{\"a\":5,\"b\":{\"a\":true}}"));
@@ -214,7 +215,7 @@ public class TestJsonSerDe {
     final String jsonText = loadJson("complex_write.json");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     ObjectInspector oi = serde.getObjectInspector();
 
@@ -247,7 +248,7 @@ public class TestJsonSerDe {
     final String jsonText = loadJson("single_pixel.json");
 
     JsonSerDe serde = new JsonSerDe();
-    serde.initialize(null, props, false);
+    serde.initialize(new Configuration(), props, null, false);
 
     ObjectInspector oi = serde.getObjectInspector();
 
@@ -281,7 +282,7 @@ public class TestJsonSerDe {
 
     try {
       JsonSerDe serde = new JsonSerDe();
-      serde.initialize(null, props, false);
+      serde.initialize(new Configuration(), props, null, false);
 
       List<?> results = (List<?>) serde
           .deserialize(new Text("{\"__time\":\"2013-08-31T01:02:33Z\"}"));

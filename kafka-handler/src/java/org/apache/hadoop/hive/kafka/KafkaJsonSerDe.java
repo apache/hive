@@ -79,15 +79,12 @@ import java.util.stream.Collectors;
  * For production please use Hive native JsonSerde.
  */
 @SuppressWarnings("unused") class KafkaJsonSerDe extends AbstractSerDe {
-  private static final Logger LOG = LoggerFactory.getLogger(KafkaJsonSerDe.class);
   private static final ThreadLocal<DateTimeFormatter>
       TS_PARSER =
       ThreadLocal.withInitial(KafkaJsonSerDe::createAutoParser);
   private static final Function<TypeInfo, ObjectInspector> TYPEINFO_TO_OI =
       typeInfo -> PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
           TypeInfoFactory.getPrimitiveTypeInfo(typeInfo.getTypeName()));
-  private List<String> columnNames;
-  private List<TypeInfo> columnTypes;
   private ObjectInspector inspector;
   private final ObjectMapper mapper = new ObjectMapper();
   private long rowCount = 0L;
@@ -99,28 +96,9 @@ import java.util.stream.Collectors;
     super.initialize(configuration, tableProperties, partitionProperties);
 
     final List<ObjectInspector> inspectors;
-    // Get column names and types
-    String columnNameProperty = properties.getProperty(serdeConstants.LIST_COLUMNS);
-    String columnTypeProperty = properties.getProperty(serdeConstants.LIST_COLUMN_TYPES);
-    final String columnNameDelimiter = properties.containsKey(serdeConstants.COLUMN_NAME_DELIMITER)
-        ? properties.getProperty(serdeConstants.COLUMN_NAME_DELIMITER)
-        : String.valueOf(SerDeUtils.COMMA);
-    // all table column names
-    if (!columnNameProperty.isEmpty()) {
-      columnNames = Arrays.asList(columnNameProperty.split(columnNameDelimiter));
-    }
-    // all column types
-    if (!columnTypeProperty.isEmpty()) {
-      columnTypes = TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
-    }
 
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("columns: {}, {}", columnNameProperty, columnNames);
-      LOG.debug("types: {}, {} ", columnTypeProperty, columnTypes);
-    }
-
-    inspectors = columnTypes.stream().map(TYPEINFO_TO_OI).collect(Collectors.toList());
-    inspector = ObjectInspectorFactory.getStandardStructObjectInspector(columnNames, inspectors);
+    inspectors = getColumnTypes().stream().map(TYPEINFO_TO_OI).collect(Collectors.toList());
+    inspector = ObjectInspectorFactory.getStandardStructObjectInspector(getColumnNames(), inspectors);
   }
 
   @Override public Class<? extends Writable> getSerializedClass() {
@@ -149,16 +127,16 @@ import java.util.stream.Collectors;
       throw new SerDeException(e);
     }
 
-    final List<Object> output = new ArrayList<>(columnNames.size());
+    final List<Object> output = new ArrayList<>(getColumnNames().size());
 
-    for (int i = 0; i < columnNames.size(); i++) {
-      final String name = columnNames.get(i);
-      final TypeInfo typeInfo = columnTypes.get(i);
+    for (int i = 0; i < getColumnNames().size(); i++) {
+      final String name = getColumnNames().get(i);
+      final TypeInfo typeInfo = getColumnTypes().get(i);
       final JsonNode value = payload.get(name);
       if (value == null) {
         output.add(null);
       } else {
-        switch (columnTypes.get(i).getCategory()) {
+        switch (getColumnTypes().get(i).getCategory()) {
         case PRIMITIVE:
           output.add(parseAsPrimitive(value, typeInfo));
           break;
