@@ -509,15 +509,15 @@ POSTHOOK: Input: default@src
 200val_200
 97val_97
 PREHOOK: query: insert overwrite local directory '../../data/files/local_src_table_2'
-row format delimited
-FIELDS TERMINATED BY ':'
+row format delimited 
+FIELDS TERMINATED BY ':' 
 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: insert overwrite local directory '../../data/files/local_src_table_2'
-row format delimited
-FIELDS TERMINATED BY ':'
+row format delimited 
+FIELDS TERMINATED BY ':' 
 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
