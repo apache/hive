@@ -1252,7 +1252,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       boolean appendTaskType, List<Task> tasks)
       throws Exception {
 
-    if (out != null) {
+    if (out != null && !tasks.isEmpty()) {
       out.println(STAGE_DEPENDENCIES + ":");
     }
 
@@ -1271,7 +1271,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       boolean jsonOutput, boolean isExtended)
       throws Exception {
 
-    if (out != null) {
+    if (out != null && !tasks.isEmpty()) {
       out.println("STAGE PLANS:");
     }
 
