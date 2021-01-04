@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidInputFormat;
 import org.apache.hadoop.hive.ql.io.AcidOutputFormat;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
@@ -1089,9 +1090,9 @@ public class TestVectorizedOrcAcidRowBatchReader {
     OrcInputFormat.Context context = new OrcInputFormat.Context(conf);
     OrcInputFormat.FileGenerator gen = new OrcInputFormat.FileGenerator(
         context, () -> fs, root, false, null);
-    OrcInputFormat.AcidDirInfo adi = gen.call();
+    AcidDirectory adi = gen.call();
     return OrcInputFormat.determineSplitStrategies(
-        null, context, adi.fs, adi.splitPath, adi.baseFiles, adi.deleteEvents,
+        null, context, adi.getFs(), adi.getPath(), adi.getBaseAndDeltaFiles(), adi.getDeleteDeltas(),
         null, null, true);
 
   }

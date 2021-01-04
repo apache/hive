@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.metastore.txn.TxnUtils;
 import org.apache.hadoop.hive.ql.DriverFactory;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.apache.hadoop.hive.ql.io.AcidUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hive.streaming.HiveStreamingConnection;
@@ -1823,7 +1824,7 @@ public class TestCrudCompactorOnTez extends CompactorOnTezTest {
     QueryCompactor qc = new QueryCompactor() {
       @Override
       void runCompaction(HiveConf hiveConf, Table table, Partition partition, StorageDescriptor storageDescriptor,
-                         ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidUtils.Directory dir) throws IOException {
+                         ValidWriteIdList writeIds, CompactionInfo compactionInfo, AcidDirectory dir) throws IOException {
       }
 
       @Override

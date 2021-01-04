@@ -1125,7 +1125,7 @@ public class TestCompactor {
   /**
    * There is a special case handled in Compaction Worker that will skip compaction
    * if there is only one valid delta. But this compaction will be still cleaned up, if there are aborted directories.
-   * @see Worker.isEnoughToCompact
+   * @see Worker#isEnoughToCompact
    * However if no compaction was done, deltas containing mixed aborted / committed writes from streaming can not be cleaned
    * and the metadata belonging to those aborted transactions can not be removed.
    * @throws Exception ex

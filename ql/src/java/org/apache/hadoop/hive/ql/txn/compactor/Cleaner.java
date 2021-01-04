@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.NoSuchTxnException;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.txn.TxnUtils;
+import org.apache.hadoop.hive.ql.io.AcidDirectory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.hadoop.fs.FileSystem;
@@ -277,7 +278,7 @@ public class Cleaner extends MetaStoreCompactorThread {
   private boolean removeFiles(String location, ValidWriteIdList writeIdList, CompactionInfo ci)
       throws IOException, NoSuchObjectException, MetaException {
     Path locPath = new Path(location);
-    AcidUtils.Directory dir = AcidUtils.getAcidState(locPath.getFileSystem(conf), locPath, conf, writeIdList, Ref.from(
+    AcidDirectory dir = AcidUtils.getAcidState(locPath.getFileSystem(conf), locPath, conf, writeIdList, Ref.from(
         false), false);
     List<Path> obsoleteDirs = dir.getObsolete();
     /**
@@ -313,7 +314,7 @@ public class Cleaner extends MetaStoreCompactorThread {
       return false;
     }
 
-    FileSystem fs = filesToDelete.get(0).getFileSystem(conf);
+    FileSystem fs = dir.getFs();
     Database db = getMSForConf(conf).getDatabase(getDefaultCatalog(conf), ci.dbname);
 
     for (Path dead : filesToDelete) {
