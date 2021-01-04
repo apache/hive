@@ -38,8 +38,8 @@ abstract public class FastByteComparisons {
     return FastByteComparisons.LexicographicalComparerHolder.BEST_COMPARER.compareTo(b1, s1, l1, b2, s2, l2);
   }
 
-  public static boolean equal(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
-    return FastByteComparisons.LexicographicalComparerHolder.BEST_COMPARER.equal(b1, s1, l1, b2, s2, l2);
+  public static boolean equals(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
+    return FastByteComparisons.LexicographicalComparerHolder.BEST_COMPARER.equals(b1, s1, l1, b2, s2, l2);
   }
 
   private static FastByteComparisons.Comparer<byte[]> lexicographicalComparerJavaImpl() {
@@ -157,7 +157,7 @@ abstract public class FastByteComparisons {
         }
       }
 
-      public boolean equal(byte[] buffer1, int offset1, int length1, byte[] buffer2, int offset2, int length2) {
+      public boolean equals(byte[] buffer1, int offset1, int length1, byte[] buffer2, int offset2, int length2) {
         if (length1 != length2) {
           return false;
         } else if  (buffer1 == buffer2 && offset1 == offset2) {
@@ -224,7 +224,7 @@ abstract public class FastByteComparisons {
         }
       }
 
-      public boolean equal(byte[] buffer1, int offset1, int length1, byte[] buffer2, int offset2, int length2) {
+      public boolean equals(byte[] buffer1, int offset1, int length1, byte[] buffer2, int offset2, int length2) {
         if (length1 != length2) {
           return false;
         } else if (buffer1 == buffer2 && offset1 == offset2) {
@@ -251,6 +251,6 @@ abstract public class FastByteComparisons {
 
   private interface Comparer<T> {
     int compareTo(T var1, int var2, int var3, T var4, int var5, int var6);
-    boolean equal(T var1, int var2, int var3, T var4, int var5, int var6);
+    boolean equals(T var1, int var2, int var3, T var4, int var5, int var6);
   }
 }

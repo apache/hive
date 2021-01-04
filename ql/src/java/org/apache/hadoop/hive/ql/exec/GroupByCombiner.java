@@ -29,10 +29,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
-import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.BytesWritable;
@@ -62,13 +59,15 @@ public class GroupByCombiner extends VectorGroupByCombiner {
           org.apache.hadoop.hive.ql.exec.GroupByCombiner.class.getName());
 
   private transient GenericUDAFEvaluator[] aggregationEvaluators;
-  Deserializer valueDeserializer;
+  AbstractSerDe valueSerializer;
   GenericUDAFEvaluator.AggregationBuffer[] aggregationBuffers;
   GroupByOperator groupByOperator;
-  Serializer valueSerializer;
   ObjectInspector aggrObjectInspector;
   DataInputBuffer valueBuffer;
   Object[] cachedValues;
+  DataInputBuffer prevKey;
+  BytesWritable valWritable;
+  DataInputBuffer prevVal;
 
   public GroupByCombiner(TaskContext taskContext) throws HiveException, IOException {
     super(taskContext);
@@ -98,18 +97,17 @@ public class GroupByCombiner extends VectorGroupByCombiner {
           rw = null;
           return;
         }
-        valueSerializer = (Serializer) valueTableDesc.getDeserializerClass()
-                .newInstance();
-        valueSerializer.initialize(null, valueTableDesc.getProperties());
-
-        valueDeserializer = (AbstractSerDe) ReflectionUtils.newInstance(
-                valueTableDesc.getDeserializerClass(), null);
-        SerDeUtils.initializeSerDe(valueDeserializer, null,
+        valueSerializer = (AbstractSerDe) ReflectionUtils.newInstance(
+                valueTableDesc.getSerDeClass(), null);
+        valueSerializer.initialize(null,
                 valueTableDesc.getProperties(), null);
 
         aggrObjectInspector = groupByOperator.getAggrObjInspector();
         valueBuffer = new DataInputBuffer();
         cachedValues = new Object[aggregationEvaluators.length];
+        prevKey = new DataInputBuffer();
+        valWritable = new BytesWritable();
+        prevVal = new DataInputBuffer();
       } catch (Exception e) {
         LOG.error(" GroupByCombiner failed", e);
         throw new RuntimeException(e.getMessage());
@@ -132,11 +130,11 @@ public class GroupByCombiner extends VectorGroupByCombiner {
     }
   }
 
-  private void updateAggregation(BytesWritable valWritable, DataInputBuffer value)
+  private void updateAggregation()
           throws HiveException, SerDeException {
-    valWritable.set(value.getData(), value.getPosition(),
-            value.getLength() - value.getPosition());
-    Object row = valueDeserializer.deserialize(valWritable);
+    valWritable.set(prevVal.getData(), prevVal.getPosition(),
+            prevVal.getLength() - prevVal.getPosition());
+    Object row = valueSerializer.deserialize(valWritable);
     groupByOperator.updateAggregation(row);
   }
 
@@ -144,16 +142,13 @@ public class GroupByCombiner extends VectorGroupByCombiner {
     long numRows = 0;
     try {
       DataInputBuffer key = rawIter.getKey();
-      DataInputBuffer prevKey = new DataInputBuffer();
       prevKey.reset(key.getData(), key.getPosition(), key.getLength() - key.getPosition());
-      BytesWritable valWritable = new BytesWritable();
-      DataInputBuffer prevVal = new DataInputBuffer();
       prevVal.reset(rawIter.getValue().getData(), rawIter.getValue().getPosition(),
               rawIter.getValue().getLength() - rawIter.getValue().getPosition());
       int numSameKey = 0;
       while (rawIter.next()) {
         key = rawIter.getKey();
-        if (!VectorGroupByCombiner.compare(key, prevKey)) {
+        if (!VectorGroupByCombiner.equals(key, prevKey)) {
           // if current key is not equal to the previous key then we have to emit the
           // record. In case only one record was present for this key, then no need to
           // do aggregation, We can directly append the key and value. For key with more
@@ -161,7 +156,7 @@ public class GroupByCombiner extends VectorGroupByCombiner {
           // as for previous values (records) aggregation is already done in previous
           // iteration of loop.
           if (numSameKey != 0) {
-            updateAggregation(valWritable, prevVal);
+            updateAggregation();
             processAggregation(writer, prevKey);
           } else {
             writer.append(prevKey, prevVal);
@@ -171,7 +166,7 @@ public class GroupByCombiner extends VectorGroupByCombiner {
           numSameKey = 0;
         } else {
           // If there are more than one record with same key then update the aggregation.
-          updateAggregation(valWritable, prevVal);
+          updateAggregation();
           numSameKey++;
         }
         prevVal.reset(rawIter.getValue().getData(), rawIter.getValue().getPosition(),
@@ -179,7 +174,7 @@ public class GroupByCombiner extends VectorGroupByCombiner {
         numRows++;
       }
       if (numSameKey != 0) {
-        updateAggregation(valWritable, prevVal);
+        updateAggregation();
         processAggregation(writer, prevKey);
       } else {
         writer.append(prevKey, prevVal);
@@ -210,9 +205,7 @@ public class GroupByCombiner extends VectorGroupByCombiner {
   }
 
   public static JobConf setCombinerInConf(BaseWork dest, JobConf conf, JobConf destConf) {
-    //TODO need to change it to a proper config
-    if (conf == null || !conf.get(HiveConf.ConfVars.HIVE_ENABLE_COMBINER_FOR_GROUP_BY.varname).
-            equalsIgnoreCase("true")) {
+    if (conf == null || !HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_ENABLE_COMBINER_FOR_GROUP_BY)) {
       return conf;
     }
 
