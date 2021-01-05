@@ -827,10 +827,10 @@ public class CreateTableDesc implements DDLDesc, Serializable {
 
     // only persist input/output format to metadata when it is explicitly specified.
     // Otherwise, load lazily via StorageHandler at query time.
-    if (getInputFormat() != null && !getInputFormat().isEmpty()) {
+    if (tbl.getInputFormatClass() != null) {
       tbl.getTTable().getSd().setInputFormat(tbl.getInputFormatClass().getName());
     }
-    if (getOutputFormat() != null && !getOutputFormat().isEmpty()) {
+    if (tbl.getOutputFormatClass() != null) {
       tbl.getTTable().getSd().setOutputFormat(tbl.getOutputFormatClass().getName());
     }
 
