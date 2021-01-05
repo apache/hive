@@ -18,8 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import static org.apache.hadoop.hive.common.jsonexplain.DagJsonParser.STAGE_DEPENDENCIES;
-import static org.apache.hadoop.hive.common.jsonexplain.DagJsonParser.STAGE_PLANS;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
 import java.io.ByteArrayOutputStream;
@@ -94,6 +92,7 @@ import com.google.common.annotations.VisibleForTesting;
 public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(ExplainTask.class.getName());
 
+  public static final String STAGE_DEPENDENCIES = "STAGE DEPENDENCIES";
   private static final long serialVersionUID = 1L;
   public static final String EXPL_COLUMN_NAME = "Explain";
   private final Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
@@ -330,17 +329,15 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         if (cboInfo != null) {
           outJSONObject.put("cboInfo", cboInfo);
         }
-        if (jsonDependencies != null && jsonDependencies.length() > 0) {
-          outJSONObject.put(STAGE_DEPENDENCIES, jsonDependencies);
-        }
+        outJSONObject.put(STAGE_DEPENDENCIES, jsonDependencies);
       }
 
       // Go over all the tasks and dump out the plans
       JSONObject jsonPlan = outputStagePlans(out, ordered,
            jsonOutput, isExtended);
 
-      if (jsonOutput && jsonPlan != null && jsonPlan.length() > 0) {
-        outJSONObject.put(STAGE_PLANS, jsonPlan);
+      if (jsonOutput) {
+        outJSONObject.put("STAGE PLANS", jsonPlan);
       }
 
       if (fetchTask != null) {
@@ -1275,7 +1272,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       throws Exception {
 
     if (out != null && !tasks.isEmpty()) {
-      out.println(STAGE_PLANS + ":");
+      out.println("STAGE PLANS:");
     }
 
     JSONObject json = jsonOutput ? new JSONObject(new LinkedHashMap<>()) : null;
@@ -1343,8 +1340,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         JSONObject jsonPlan = task.getJSONPlan(
             null, rootTasks, sem.getFetchTask(), true, true, true, sem.getCboInfo(),
             plan.getOptimizedCBOPlan(), plan.getOptimizedQueryString());
-        if (jsonPlan.getJSONObject(STAGE_DEPENDENCIES) != null &&
-            jsonPlan.getJSONObject(STAGE_DEPENDENCIES).length() <=
+        if (jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES) != null &&
+            jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES).length() <=
                 conf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE)) {
           ret = jsonPlan.toString();
         } else {

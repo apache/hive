@@ -34,15 +34,9 @@ PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: query: explain
 alter materialized view mat1 rebuild
 POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
+STAGE DEPENDENCIES:
 
-Materialized view default.mat1 is up to date. Skipping rebuild.
-PREHOOK: query: explain formatted
-alter materialized view mat1 rebuild
-PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
-POSTHOOK: query: explain formatted
-alter materialized view mat1 rebuild
-POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
-{}
+STAGE PLANS:
 Materialized view default.mat1 is up to date. Skipping rebuild.
 PREHOOK: query: alter materialized view mat1 rebuild
 PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
