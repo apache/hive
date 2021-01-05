@@ -102,8 +102,13 @@ public class HdfsUtils {
     List<FileStatus> result = new ArrayList<>();
     while (itr.hasNext()) {
       FileStatus stat = itr.next();
-      if (filter == null || filter.accept(stat.getPath())) {
-        result.add(stat);
+      // Recursive listing might list files inside hidden directories, we need to filter those out
+      Path relativePath = new Path(stat.getPath().toString().replace(path.toString(), ""));
+      if (org.apache.hadoop.hive.metastore.utils.FileUtils.RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER.accept(relativePath)) {
+        // Apply the user provided filter
+        if (filter == null || filter.accept(stat.getPath())) {
+          result.add(stat);
+        }
       }
     }
     return result;
@@ -179,9 +184,7 @@ public class HdfsUtils {
    */
   public static List<HadoopShims.HdfsFileStatusWithId> listFileStatusWithId(FileSystem fs, Path dir, Ref<Boolean> useFileIds,
       boolean recursive, PathFilter filter) throws IOException {
-    if (filter == null) {
-      filter = org.apache.hadoop.hive.metastore.utils.FileUtils.RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER;
-    }
+
     List<HadoopShims.HdfsFileStatusWithId> originals = new ArrayList<>();
     List<HadoopShims.HdfsFileStatusWithId> childrenWithId = tryListLocatedHdfsStatus(useFileIds, fs, dir, filter);
     if (childrenWithId != null) {
@@ -208,6 +211,9 @@ public class HdfsUtils {
       Path directory, PathFilter filter) {
     if (useFileIds == null) {
       return null;
+    }
+    if (filter == null) {
+      filter = AcidUtils.hiddenFileFilter;
     }
 
     List<HadoopShims.HdfsFileStatusWithId> childrenWithId = null;
