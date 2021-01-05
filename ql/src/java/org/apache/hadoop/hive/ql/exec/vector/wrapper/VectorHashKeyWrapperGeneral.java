@@ -348,8 +348,7 @@ public class VectorHashKeyWrapperGeneral extends VectorHashKeyWrapperBase {
         }
       } else {
         System.arraycopy(byteLengths, 0, clone.byteLengths, 0, byteValues.length);
-        Arrays.fill(byteStarts, 0);
-        System.arraycopy(byteStarts, 0, clone.byteStarts, 0, byteValues.length);
+        Arrays.fill(clone.byteStarts, 0);
         for (int i = 0; i < byteValues.length; ++i) {
           // avoid allocation/copy of nulls, because it potentially expensive.
           // branch instead.
