@@ -2554,7 +2554,6 @@ public class AcidUtils {
 
   public static List<FileStatus> getAcidFilesForStats(
       Table table, Path dir, Configuration jc, FileSystem fs) throws IOException {
-    List<FileStatus> fileList = new ArrayList<>();
     ValidWriteIdList idList = AcidUtils.getTableValidWriteIdList(jc,
         AcidUtils.getFullTableName(table.getDbName(), table.getTableName()));
     if (idList == null) {
@@ -2573,16 +2572,11 @@ public class AcidUtils {
       Utilities.FILE_OP_LOGGER.warn(
           "Computing stats for an ACID table; stats may be inaccurate");
     }
-    for (HdfsFileStatusWithId hfs : acidInfo.getOriginalFiles()) {
-      fileList.add(hfs.getFileStatus());
-    }
-    for (ParsedDelta delta : acidInfo.getCurrentDirectories()) {
-      fileList.addAll(hdfsDirSnapshots.get(delta.getPath()).getFiles());
-    }
-    if (acidInfo.getBaseDirectory() != null) {
-      fileList.addAll(hdfsDirSnapshots.get(acidInfo.getBaseDirectory()).getFiles());
-    }
-    return fileList;
+    return acidInfo.getFiles()
+        .stream()
+        .map(FileInfo::getHdfsFileStatusWithId)
+        .map(HdfsFileStatusWithId::getFileStatus)
+        .collect(Collectors.toList());
   }
 
   public static List<Path> getValidDataPaths(Path dataPath, Configuration conf, String validWriteIdStr)

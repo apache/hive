@@ -50,10 +50,6 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 public class HdfsUtils {
   private static final HadoopShims SHIMS = ShimLoader.getHadoopShims();
   private static final Logger LOG = LoggerFactory.getLogger(HdfsUtils.class);
-  public static final PathFilter hiddenFileFilter = p -> {
-    String name = p.getName();
-    return !name.startsWith("_") && !name.startsWith(".");
-  };
 
   public static Object getFileId(FileSystem fileSystem, Path path,
       boolean allowSynthetic, boolean checkDefaultFs, boolean forceSyntheticIds) throws IOException {
@@ -90,12 +86,17 @@ public class HdfsUtils {
     return id;
   }
 
-  public static List<FileStatus> listLocatedStatus(final FileSystem fs, final Path path, final PathFilter filter)
-      throws IOException {
-    return listLocatedStatus(fs, path, filter, false);
-  }
-
-  public static List<FileStatus> listLocatedStatus(final FileSystem fs, final Path path, final PathFilter filter,
+  /**
+   * List filestatuses in the given directory.
+   * In recursive mode all files are returned, otherwise directories are skipped.
+   * @param fs FileSystem
+   * @param path directory to list
+   * @param filter optional filter
+   * @param recursive do recursive listing
+   * @return
+   * @throws IOException
+   */
+  public static List<FileStatus> listLocatedFileStatus(final FileSystem fs, final Path path, final PathFilter filter,
       final boolean recursive) throws IOException {
     RemoteIterator<LocatedFileStatus> itr = fs.listFiles(path, recursive);
     List<FileStatus> result = new ArrayList<>();
@@ -179,7 +180,7 @@ public class HdfsUtils {
   public static List<HadoopShims.HdfsFileStatusWithId> listFileStatusWithId(FileSystem fs, Path dir, Ref<Boolean> useFileIds,
       boolean recursive, PathFilter filter) throws IOException {
     if (filter == null) {
-      filter = hiddenFileFilter;
+      filter = org.apache.hadoop.hive.metastore.utils.FileUtils.RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER;
     }
     List<HadoopShims.HdfsFileStatusWithId> originals = new ArrayList<>();
     List<HadoopShims.HdfsFileStatusWithId> childrenWithId = tryListLocatedHdfsStatus(useFileIds, fs, dir, filter);
@@ -197,7 +198,7 @@ public class HdfsUtils {
         }
       }
     } else {
-      List<FileStatus> children = listLocatedStatus(fs, dir, filter, recursive);
+      List<FileStatus> children = listLocatedFileStatus(fs, dir, filter, recursive);
       originals = children.stream().map(HdfsFileStatusWithoutId::new).collect(Collectors.toList());
     }
     return originals;
