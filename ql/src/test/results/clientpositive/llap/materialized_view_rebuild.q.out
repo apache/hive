@@ -75,12 +75,12 @@ POSTHOOK: Input: default@mv_rebuild
 3	calvin	3
 3	charlie	3
 PREHOOK: query: alter materialized view mv_rebuild rebuild
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@basetable_rebuild
 PREHOOK: Input: default@mv_rebuild
 PREHOOK: Output: default@mv_rebuild
 POSTHOOK: query: alter materialized view mv_rebuild rebuild
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@basetable_rebuild
 POSTHOOK: Input: default@mv_rebuild
 POSTHOOK: Output: default@mv_rebuild

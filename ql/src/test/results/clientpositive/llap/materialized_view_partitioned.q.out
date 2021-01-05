@@ -615,12 +615,12 @@ POSTHOOK: Lineage: src_txn.key SCRIPT []
 POSTHOOK: Lineage: src_txn.value SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW partition_mv_1 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@src_txn
 PREHOOK: Output: default@partition_mv_1
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW partition_mv_1 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: default@partition_mv_1
 STAGE DEPENDENCIES:
@@ -744,11 +744,11 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW partition_mv_1 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@src_txn
 PREHOOK: Output: default@partition_mv_1
 POSTHOOK: query: ALTER MATERIALIZED VIEW partition_mv_1 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Output: default@partition_mv_1
 POSTHOOK: Output: default@partition_mv_1@key=238
@@ -950,13 +950,13 @@ POSTHOOK: Lineage: src_txn.key SCRIPT []
 POSTHOOK: Lineage: src_txn.value SCRIPT []
 PREHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW partition_mv_3 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@src_txn
 PREHOOK: Input: default@src_txn_2
 PREHOOK: Output: default@partition_mv_3
 POSTHOOK: query: EXPLAIN
 ALTER MATERIALIZED VIEW partition_mv_3 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: default@partition_mv_3
@@ -1125,12 +1125,12 @@ STAGE PLANS:
       update creation metadata: true
 
 PREHOOK: query: ALTER MATERIALIZED VIEW partition_mv_3 REBUILD
-PREHOOK: type: QUERY
+PREHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 PREHOOK: Input: default@src_txn
 PREHOOK: Input: default@src_txn_2
 PREHOOK: Output: default@partition_mv_3
 POSTHOOK: query: ALTER MATERIALIZED VIEW partition_mv_3 REBUILD
-POSTHOOK: type: QUERY
+POSTHOOK: type: ALTER_MATERIALIZED_VIEW_REBUILD
 POSTHOOK: Input: default@src_txn
 POSTHOOK: Input: default@src_txn_2
 POSTHOOK: Output: default@partition_mv_3
