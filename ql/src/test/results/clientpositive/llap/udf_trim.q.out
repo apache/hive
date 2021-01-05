@@ -2,14 +2,22 @@ PREHOOK: query: DESCRIBE FUNCTION trim
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION trim
 POSTHOOK: type: DESCFUNCTION
-trim(str) - Removes the leading and trailing space characters from str 
+trim([LEADING | TRAILING | BOTH] [chars] FROM str) | trim(str[, chars]) - Removes the leading/trailing or both pad characters from str
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED trim
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED trim
 POSTHOOK: type: DESCFUNCTION
-trim(str) - Removes the leading and trailing space characters from str 
+trim([LEADING | TRAILING | BOTH] [chars] FROM str) | trim(str[, chars]) - Removes the leading/trailing or both pad characters from str
 Example:
   > SELECT trim('   facebook  ') FROM src LIMIT 1;
+  'facebook'
+  > SELECT trim(BOTH 'xy' FROM 'xyyxFacebookxy');
+  'Facebook'
+  > SELECT trim(' ' FROM ' Facebook  ');
+  'Facebook'
+  > SELECT trim(LEADING ' ' FROM ' Facebook  ');
+  'Facebook  '
+  > SELECT trim('xyfacebookyyx', 'xy');
   'facebook'
 Function class:org.apache.hadoop.hive.ql.udf.generic.GenericUDFTrim
 Function type:BUILTIN
@@ -58,30 +66,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
 "23Tech"
-PREHOOK: query: SELECT '"' || ltrim('   tech   ') || '"', '"' || rtrim('   tech   ') || '"'
+PREHOOK: query: SELECT '"' || trim('xyfacebookyyx', 'xy') || '"'
 PREHOOK: type: QUERY
 PREHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT '"' || ltrim('   tech   ') || '"', '"' || rtrim('   tech   ') || '"'
+POSTHOOK: query: SELECT '"' || trim('xyfacebookyyx', 'xy') || '"'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 #### A masked pattern was here ####
-"tech   "	"   tech"
-PREHOOK: query: SELECT trim('000123', '0')
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT trim('000123', '0')
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-123
-PREHOOK: query: SELECT '"' || trim('000123.1200', '0') || '"', '"' || ltrim('000123.1200', '0') || '"', '"' || rtrim('000123.1200', '0') || '"'
-PREHOOK: type: QUERY
-PREHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-POSTHOOK: query: SELECT '"' || trim('000123.1200', '0') || '"', '"' || ltrim('000123.1200', '0') || '"', '"' || rtrim('000123.1200', '0') || '"'
-POSTHOOK: type: QUERY
-POSTHOOK: Input: _dummy_database@_dummy_table
-#### A masked pattern was here ####
-"123.12"	"123.1200"	"000123.12"
+"facebook"

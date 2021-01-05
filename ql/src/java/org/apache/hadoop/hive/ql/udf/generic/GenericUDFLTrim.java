@@ -28,9 +28,10 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrim;
  *
  */
 @Description(name = "ltrim",
-    value = "_FUNC_(str) - Removes the " +
-    "leading space characters from str ", extended = "Example:\n"
-    + "  > SELECT _FUNC_('   facebook') FROM src LIMIT 1;\n" + "  'facebook'")
+    value = "_FUNC_(str[, chars]) - Removes the " +
+    "leading pad characters from str ", extended = "Example:\n"
+    + "  > SELECT _FUNC_('   facebook') FROM src LIMIT 1;\n" + "  'facebook'\n"
+    + "  > SELECT _FUNC_('xyzzxyfacebook', 'zyx') FROM src LIMIT 1;\n" + "  'facebook'")
 @VectorizedExpressions({ StringLTrim.class })
 public class GenericUDFLTrim extends GenericUDFBaseTrim {
 

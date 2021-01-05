@@ -28,9 +28,10 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringRTrim;
  *
  */
 @Description(name = "rtrim",
-    value = "_FUNC_(str) - Removes the trailing space characters from str ",
+    value = "_FUNC_(str[, chars]) - Removes the trailing pad characters from str ",
     extended = "Example:\n"
-    + "  > SELECT _FUNC_('facebook   ') FROM src LIMIT 1;\n" + "  'facebook'")
+    + "  > SELECT _FUNC_('facebook   ') FROM src LIMIT 1;\n" + "  'facebook'\n"
+    + "  > SELECT _FUNC_('facebookxyzzyx', 'xzy') FROM src LIMIT 1;\n" + "  'facebook'")
 @VectorizedExpressions({ StringRTrim.class })
 public class GenericUDFRTrim extends GenericUDFBaseTrim {
   public GenericUDFRTrim() {
