@@ -1000,7 +1000,7 @@ public class TestTxnCommands2 {
     //insert overwrite not supported for ACID tables
   }
   private static void checkCompactionState(CompactionsByState expected, CompactionsByState actual) {
-    Assert.assertEquals(TxnStore.ATTEMPTED_RESPONSE, expected.attempted, actual.attempted);
+    Assert.assertEquals(TxnStore.DID_NOT_INITIATE_RESPONSE, expected.didNotInitiate, actual.didNotInitiate);
     Assert.assertEquals(TxnStore.FAILED_RESPONSE, expected.failed, actual.failed);
     Assert.assertEquals(TxnStore.INITIATED_RESPONSE, expected.initiated, actual.initiated);
     Assert.assertEquals(TxnStore.CLEANING_RESPONSE, expected.readyToClean, actual.readyToClean);
@@ -1039,61 +1039,61 @@ public class TestTxnCommands2 {
       txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
       runWorker(hiveConf);
     }
-    //this should not schedule a new compaction due to prior failures, but will create Attempted entry
+    //this should not schedule a new compaction due to prior failures, but will create 'did not initiate' entry
     Initiator init = new Initiator();
     init.setThreadId((int)init.getId());
     init.setConf(hiveConf);
     init.init(stop);
     init.run();
-    int numAttemptedCompactions = 1;
-    checkCompactionState(new CompactionsByState(numAttemptedCompactions,numFailedCompactions,0,0,0,0,numFailedCompactions + numAttemptedCompactions), countCompacts(txnHandler));
+    int numDidNotInitiateCompactions = 1;
+    checkCompactionState(new CompactionsByState(numDidNotInitiateCompactions,numFailedCompactions,0,0,0,0,numFailedCompactions + numDidNotInitiateCompactions), countCompacts(txnHandler));
 
     hiveConf.setTimeVar(HiveConf.ConfVars.COMPACTOR_HISTORY_REAPER_INTERVAL, 10, TimeUnit.MILLISECONDS);
     MetastoreTaskThread houseKeeper = new AcidHouseKeeperService();
     houseKeeper.setConf(hiveConf);
     houseKeeper.run();
-    checkCompactionState(new CompactionsByState(numAttemptedCompactions,numFailedCompactions,0,0,0,0,numFailedCompactions + numAttemptedCompactions), countCompacts(txnHandler));
+    checkCompactionState(new CompactionsByState(numDidNotInitiateCompactions,numFailedCompactions,0,0,0,0,numFailedCompactions + numDidNotInitiateCompactions), countCompacts(txnHandler));
 
     txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MAJOR));
     runWorker(hiveConf);//will fail
     txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
     runWorker(hiveConf);//will fail
     init.run();
-    numAttemptedCompactions++;
+    numDidNotInitiateCompactions++;
     init.run();
-    numAttemptedCompactions++;
-    checkCompactionState(new CompactionsByState(numAttemptedCompactions,numFailedCompactions + 2,0,0,0,0,numFailedCompactions + 2 + numAttemptedCompactions), countCompacts(txnHandler));
+    numDidNotInitiateCompactions++;
+    checkCompactionState(new CompactionsByState(numDidNotInitiateCompactions,numFailedCompactions + 2,0,0,0,0,numFailedCompactions + 2 + numDidNotInitiateCompactions), countCompacts(txnHandler));
 
     houseKeeper.run();
     //COMPACTOR_HISTORY_RETENTION_FAILED failed compacts left (and no other since we only have failed ones here)
     checkCompactionState(new CompactionsByState(
-      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE),
       hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED),0,0,0,0,
-      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) + hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED)), countCompacts(txnHandler));
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) + hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE)), countCompacts(txnHandler));
 
     hiveConf.setBoolVar(HiveConf.ConfVars.HIVETESTMODEFAILCOMPACTION, false);
     txnHandler.compact(new CompactionRequest("default", tblName, CompactionType.MINOR));
     //at this point "show compactions" should have (COMPACTOR_HISTORY_RETENTION_FAILED) failed + 1 initiated (explicitly by user)
     checkCompactionState(new CompactionsByState(
-      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE),
       hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED),1,0,0,0,
       hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) +
-        hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED)+ 1), countCompacts(txnHandler));
+        hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE)+ 1), countCompacts(txnHandler));
 
     runWorker(hiveConf);//will succeed and transition to Initiated->Working->Ready for Cleaning
     checkCompactionState(new CompactionsByState(
-      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE),
       hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED),0,1,0,0,
       hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) +
-        hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED)+ 1), countCompacts(txnHandler));
+        hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE)+ 1), countCompacts(txnHandler));
 
     runCleaner(hiveConf); // transition to Success state
     houseKeeper.run();
     checkCompactionState(new CompactionsByState(
-      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
+      hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE),
       hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED),0,0,1,0,
       hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_FAILED) +
-        hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED)+ 1), countCompacts(txnHandler));
+        hiveConf.getIntVar(HiveConf.ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE)+ 1), countCompacts(txnHandler));
   }
 
   /**
@@ -1140,7 +1140,7 @@ public class TestTxnCommands2 {
   }
 
   private static class CompactionsByState {
-    private int attempted;
+    private int didNotInitiate;
     private int failed;
     private int initiated;
     private int readyToClean;
@@ -1150,8 +1150,8 @@ public class TestTxnCommands2 {
     CompactionsByState() {
       this(0,0,0,0,0,0,0);
     }
-    CompactionsByState(int attempted, int failed, int initiated, int readyToClean, int succeeded, int working, int total) {
-      this.attempted = attempted;
+    CompactionsByState(int didNotInitiate, int failed, int initiated, int readyToClean, int succeeded, int working, int total) {
+      this.didNotInitiate = didNotInitiate;
       this.failed = failed;
       this.initiated = initiated;
       this.readyToClean = readyToClean;
@@ -1180,8 +1180,8 @@ public class TestTxnCommands2 {
       else if(TxnStore.WORKING_RESPONSE.equals(compact.getState())) {
         compactionsByState.working++;
       }
-      else if(TxnStore.ATTEMPTED_RESPONSE.equals(compact.getState())) {
-        compactionsByState.attempted++;
+      else if(TxnStore.DID_NOT_INITIATE_RESPONSE.equals(compact.getState())) {
+        compactionsByState.didNotInitiate++;
       }
       else {
         throw new IllegalStateException("Unexpected state: " + compact.getState());

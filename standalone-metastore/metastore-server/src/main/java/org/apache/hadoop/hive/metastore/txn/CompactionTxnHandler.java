@@ -99,7 +99,7 @@ class CompactionTxnHandler extends TxnHandler {
           "    GROUP BY \"CC_DATABASE\", \"CC_TABLE\", \"CC_PARTITION\"" +
           "  ) \"C2\" " +
           "  ON \"C1\".\"CC_ID\" = \"C2\".\"CC_ID\" " +
-          "  WHERE \"C1\".\"CC_STATE\" IN (" + quoteChar(ATTEMPTED_STATE) + "," + quoteChar(FAILED_STATE) + ")" +
+          "  WHERE \"C1\".\"CC_STATE\" IN (" + quoteChar(DID_NOT_INITIATE) + "," + quoteChar(FAILED_STATE) + ")" +
           ") \"C\" " +
           "ON \"TC\".\"CTC_DATABASE\" = \"C\".\"CC_DATABASE\" AND \"TC\".\"CTC_TABLE\" = \"C\".\"CC_TABLE\" " +
           "  AND (\"TC\".\"CTC_PARTITION\" = \"C\".\"CC_PARTITION\" OR (\"TC\".\"CTC_PARTITION\" IS NULL AND \"C\".\"CC_PARTITION\" IS NULL)) " +
@@ -837,12 +837,12 @@ class CompactionTxnHandler extends TxnHandler {
   }
 
   private static class RetentionCounters {
-    int attemptedRetention = 0;
+    int didNotInitiateRetention = 0;
     int failedRetention = 0;
     int succeededRetention = 0;
 
-    RetentionCounters(int attemptedRetention, int failedRetention, int succeededRetention) {
-      this.attemptedRetention = attemptedRetention;
+    RetentionCounters(int didNotInitiateRetention, int failedRetention, int succeededRetention) {
+      this.didNotInitiateRetention = didNotInitiateRetention;
       this.failedRetention = failedRetention;
       this.succeededRetention = succeededRetention;
     }
@@ -850,8 +850,8 @@ class CompactionTxnHandler extends TxnHandler {
 
   private void checkForDeletion(List<Long> deleteSet, CompactionInfo ci, RetentionCounters rc) {
     switch (ci.state) {
-      case ATTEMPTED_STATE:
-        if(--rc.attemptedRetention < 0) {
+      case DID_NOT_INITIATE:
+        if(--rc.didNotInitiateRetention < 0) {
           deleteSet.add(ci.id);
         }
         break;
@@ -905,7 +905,7 @@ class CompactionTxnHandler extends TxnHandler {
               rs.getString(4), rs.getString(5).charAt(0));
           if(!ci.getFullPartitionName().equals(lastCompactedEntity)) {
             lastCompactedEntity = ci.getFullPartitionName();
-            rc = new RetentionCounters(MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_ATTEMPTED),
+            rc = new RetentionCounters(MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE),
               getFailedCompactionRetention(),
               MetastoreConf.getIntVar(conf, ConfVars.COMPACTOR_HISTORY_RETENTION_SUCCEEDED));
           }
@@ -997,7 +997,7 @@ class CompactionTxnHandler extends TxnHandler {
           "\"CC_DATABASE\" = ? AND " +
           "\"CC_TABLE\" = ? " +
           (ci.partName != null ? "AND \"CC_PARTITION\" = ?" : "") +
-          " AND \"CC_STATE\" != " + quoteChar(ATTEMPTED_STATE) + " ORDER BY \"CC_ID\" DESC");
+          " AND \"CC_STATE\" != " + quoteChar(DID_NOT_INITIATE) + " ORDER BY \"CC_ID\" DESC");
         pStmt.setString(1, ci.dbname);
         pStmt.setString(2, ci.tableName);
         if (ci.partName != null) {
@@ -1036,7 +1036,7 @@ class CompactionTxnHandler extends TxnHandler {
    * If there is an entry in compaction_queue with ci.id, remove it
    * Make entry in completed_compactions with status 'f'.
    * If there is no entry in compaction_queue, it means Initiator failed to even schedule a compaction,
-   * which we record as ATTEMPTED_STATE entry in history.
+   * which we record as DID_NOT_INITIATE entry in history.
    */
   @Override
   @RetrySemantics.CannotRetry
@@ -1082,7 +1082,7 @@ class CompactionTxnHandler extends TxnHandler {
           ci.id = generateCompactionQueueId(stmt);
           //mostly this indicates that the Initiator is paying attention to some table even though
           //compactions are not happening.
-          ci.state = ATTEMPTED_STATE;
+          ci.state = DID_NOT_INITIATE;
           //this is not strictly accurate, but 'type' cannot be null.
           if(ci.type == null) {
             ci.type = CompactionType.MINOR;

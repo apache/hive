@@ -398,10 +398,10 @@ public class MetastoreConf {
             "has an infinite lifetime."),
     CLIENT_SOCKET_TIMEOUT("metastore.client.socket.timeout", "hive.metastore.client.socket.timeout", 600,
             TimeUnit.SECONDS, "MetaStore Client socket timeout in seconds"),
-    COMPACTOR_HISTORY_RETENTION_ATTEMPTED("metastore.compactor.history.retention.attempted",
+    COMPACTOR_HISTORY_RETENTION_DID_NOT_INITIATE("metastore.compactor.history.retention.attempted",
         "hive.compactor.history.retention.attempted", 2,
-        new RangeValidator(0, 100), "Determines how many attempted compaction records will be " +
-        "retained in compaction history for a given table/partition."),
+        new RangeValidator(0, 100), "Determines how many compaction records in state 'did not initiate'" + 
+        " will be retained in compaction history for a given table/partition."),
     COMPACTOR_HISTORY_RETENTION_FAILED("metastore.compactor.history.retention.failed",
         "hive.compactor.history.retention.failed", 3,
         new RangeValidator(0, 100), "Determines how many failed compaction records will be " +

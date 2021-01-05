@@ -209,7 +209,8 @@ public class Initiator extends MetaStoreCompactorThread {
     }
   }
 
-  private ValidWriteIdList resolveValidWriteIds(Table t) throws NoSuchTxnException, MetaException {
+  @VisibleForTesting
+  ValidWriteIdList resolveValidWriteIds(Table t) throws NoSuchTxnException, MetaException {
     ValidTxnList validTxnList = new ValidReadTxnList(conf.get(ValidTxnList.VALID_TXNS_KEY));
     // The response will have one entry per table and hence we get only one ValidWriteIdList
     String fullTableName = TxnUtils.getFullTableName(t.getDbName(), t.getTableName());

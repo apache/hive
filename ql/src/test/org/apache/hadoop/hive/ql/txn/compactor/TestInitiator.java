@@ -48,7 +48,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import org.mockito.Mockito;
 
 /**
  * Tests for the compactor Initiator thread.
@@ -957,7 +961,7 @@ public class TestInitiator extends CompactorTest {
     // Check for overwrite
     elements.add(generateElement(2,"db", "tb", null, CompactionType.MAJOR, TxnStore.INITIATED_RESPONSE));
     elements.add(generateElement(3,"db", "tb2", null, CompactionType.MINOR, TxnStore.INITIATED_RESPONSE));
-    elements.add(generateElement(5,"db", "tb3", "p1", CompactionType.MINOR, TxnStore.ATTEMPTED_RESPONSE));
+    elements.add(generateElement(5,"db", "tb3", "p1", CompactionType.MINOR, TxnStore.DID_NOT_INITIATE_RESPONSE));
     // Check for overwrite where the order is different
     elements.add(generateElement(4,"db", "tb3", "p1", CompactionType.MINOR, TxnStore.FAILED_RESPONSE));
 
@@ -980,7 +984,7 @@ public class TestInitiator extends CompactorTest {
     Initiator.updateCompactionMetrics(scr);
 
     Assert.assertEquals(1,
-        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.ATTEMPTED_RESPONSE).intValue());
+        Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.DID_NOT_INITIATE_RESPONSE).intValue());
     Assert.assertEquals(2,
         Metrics.getOrCreateGauge(MetricsConstants.COMPACTION_STATUS_PREFIX + TxnStore.INITIATED_RESPONSE).intValue());
     Assert.assertEquals(3,
@@ -999,7 +1003,7 @@ public class TestInitiator extends CompactorTest {
     ShowCompactResponse scr = new ShowCompactResponse();
     List<ShowCompactResponseElement> elements = new ArrayList<>();
     elements.add(generateElement(1, "db", "tb", null, CompactionType.MAJOR, TxnStore.FAILED_RESPONSE, 1L));
-    elements.add(generateElement(5, "db", "tb3", "p1", CompactionType.MINOR, TxnStore.ATTEMPTED_RESPONSE, 2L));
+    elements.add(generateElement(5, "db", "tb3", "p1", CompactionType.MINOR, TxnStore.DID_NOT_INITIATE_RESPONSE, 2L));
     elements.add(generateElement(9, "db2", "tb", null, CompactionType.MINOR, TxnStore.SUCCEEDED_RESPONSE, 3L));
     elements.add(generateElement(13, "db3", "tb3", null, CompactionType.MINOR, TxnStore.WORKING_RESPONSE, 4L));
     elements.add(generateElement(14, "db3", "tb4", null, CompactionType.MINOR, TxnStore.CLEANING_RESPONSE, 5L));
@@ -1157,6 +1161,39 @@ public class TestInitiator extends CompactorTest {
     Assert.assertNotEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
     // table dir owner again, retrieved from cache
     Assert.assertNotEquals(userFromConf, initiator.resolveUserToRunAs(tblNameOwners, t, null));
+  }
+
+  @Test public void testInitiatorFailure() throws Exception {
+    String tableName = "my_table";
+    Table t = newTable("default", tableName, false);
+
+    for (int i = 0; i < 11; i++) {
+      long txnid = openTxn();
+      LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.TABLE, "default");
+      comp.setTablename(tableName);
+      comp.setOperationType(DataOperationType.UPDATE);
+      List<LockComponent> components = new ArrayList<LockComponent>(1);
+      components.add(comp);
+      LockRequest req = new LockRequest(components, "me", "localhost");
+      req.setTxnid(txnid);
+      LockResponse res = txnHandler.lock(req);
+      txnHandler.abortTxn(new AbortTxnRequest(txnid));
+    }
+
+    // run and fail initiator
+    Initiator initiator = Mockito.spy(new Initiator());
+    initiator.setThreadId((int) t.getId());
+    initiator.setConf(conf);
+    initiator.init(new AtomicBoolean(true));
+    doThrow(new RuntimeException()).when(initiator).resolveValidWriteIds(any());
+    initiator.run();
+
+    // verify status of table compaction
+    ShowCompactResponse rsp = txnHandler.showCompact(new ShowCompactRequest());
+    List<ShowCompactResponseElement> compacts = rsp.getCompacts();
+    Assert.assertEquals(1, compacts.size());
+    Assert.assertEquals("did not initiate", compacts.get(0).getState());
+    Assert.assertEquals(tableName, compacts.get(0).getTablename());
   }
 
   @Override
