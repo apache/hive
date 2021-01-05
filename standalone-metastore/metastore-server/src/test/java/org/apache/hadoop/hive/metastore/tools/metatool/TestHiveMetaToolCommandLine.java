@@ -117,6 +117,18 @@ public class TestHiveMetaToolCommandLine {
   }
 
   @Test
+  public void testDiffExtTblLocsArgCount() throws ParseException {
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("HiveMetaTool:diffExtTblLocs takes in 3 arguments but was passed 1 arguments");
+    new HiveMetaToolCommandLine(new String[] {"-diffExtTblLocs", "file1"});
+
+    exception.expect(IllegalArgumentException.class);
+    exception.expectMessage("HiveMetaTool:diffExtTblLocs takes in 3 arguments but was passed 2 arguments");
+    new HiveMetaToolCommandLine(new String[] {"-diffExtTblLocs", "file1", "file2"});
+
+  }
+
+  @Test
   public void testDryRunNotAllowed() throws ParseException {
     exception.expect(IllegalArgumentException.class);
     exception.expectMessage("-dryRun, -serdePropKey, -tablePropKey may be used only for the -updateLocation command");

@@ -62,7 +62,7 @@ public class MetaToolTaskListExtTblLocs extends MetaToolTask {
     try{
       generateExternalTableInfo(loc[0], loc[1]);
     } catch (IOException | TException | JSONException e) {
-      LOG.error("Listing external table locations failed: ", e);
+      System.out.println("Generating external table locations failed: \n" + e.getMessage());
     }
   }
 

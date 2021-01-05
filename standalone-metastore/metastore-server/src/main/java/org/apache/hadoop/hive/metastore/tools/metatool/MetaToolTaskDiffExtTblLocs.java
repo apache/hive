@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.metastore.tools.metatool;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -38,7 +36,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class MetaToolTaskDiffExtTblLocs extends MetaToolTask {
-  private static final Logger LOG = LoggerFactory.getLogger(MetaToolTaskDiffExtTblLocs.class);
   @Override
   void execute() {
     String[] args = getCl().getDiffExtTblLocsParams();
@@ -56,44 +53,24 @@ public class MetaToolTaskDiffExtTblLocs extends MetaToolTask {
         System.out.println("Input " + args[1] + " does not exist.");
         return;
       }
-      JSONObject jsonObject = getDiffJson(args);
+      JSONObject jsonObject = getDiffJson(file1, file2);
       FileWriter fw = new FileWriter(ouputDir + "/" + outFileName);
       PrintWriter pw = new PrintWriter(fw);
       pw.println(jsonObject.toString(4).replace("\\", ""));
       pw.close();
     } catch (Exception e) {
-      LOG.error("Generating diff of external table locations failed: ", e);
+      System.out.println("Generating diff failed: \n" + e.getMessage());
     }
   }
 
-  private JSONObject getDiffJson(String fileNames[]) throws IOException, JSONException {
-    File file1 = new File(fileNames[0]);
-    File file2 = new File(fileNames[1]);
+  private JSONObject getDiffJson(File file1, File file2) throws IOException, JSONException {
     JSONObject inJson1 = new JSONObject(new String(Files.readAllBytes(Paths.get(file1.getAbsolutePath()))));
     JSONObject inJson2 = new JSONObject(new String(Files.readAllBytes(Paths.get(file2.getAbsolutePath()))));
-    Iterator keyIter1 = inJson1.keys();
-    Iterator keyIter2 = inJson2.keys();
-    Set<String> keySet1 = new HashSet<>();
-    Set<String> keySet2 = new HashSet<>();
-    while (keyIter1.hasNext()) {
-      keySet1.add(String.valueOf(keyIter1.next()));
-    }
-    while (keyIter2.hasNext()) {
-      keySet2.add(String.valueOf(keyIter2.next()));
-    }
-    Set<String> uniqueLocationsFile1 = new HashSet<>();
-    Set<String> uniqueLocationsFile2 = new HashSet<>();
     Map<String, HashSet<String>> modifiedLocations = new HashMap<>();
-    for (String loc1 : keySet1) {
-      if (!keySet2.contains(loc1)) {
-        uniqueLocationsFile1.add(loc1);
-      }
-    }
-    for (String loc2 : keySet2) {
-      if (!keySet1.contains(loc2)) {
-        uniqueLocationsFile2.add(loc2);
-      }
-    }
+    Set<String> keySet1 = getKeySet(inJson1);
+    Set<String> keySet2 = getKeySet(inJson2);
+    Set<String> uniqueLocationsFile1 = getSetDifference(keySet1, keySet2);
+    Set<String> uniqueLocationsFile2 = getSetDifference(keySet2, keySet1);
     for (String loc : keySet1) {
       if (!uniqueLocationsFile1.contains(loc)) {
         //common key, we need to compare the values
@@ -141,8 +118,8 @@ public class MetaToolTaskDiffExtTblLocs extends MetaToolTask {
     }
     JSONObject jsonObject = new JSONObject();
     if(!uniqueLocationsFile1.isEmpty() || !uniqueLocationsFile2.isEmpty()) {
-      jsonObject.put("Locations only in " + fileNames[0], uniqueLocationsFile1);
-      jsonObject.put("Locations only in " + fileNames[1], uniqueLocationsFile2);
+      jsonObject.put("Locations only in " + file1.getName(), uniqueLocationsFile1);
+      jsonObject.put("Locations only in " + file2.getName(), uniqueLocationsFile2);
     }
     for(String commonLoc : modifiedLocations.keySet()) {
       List<String> modifiedEntries = new ArrayList<>();
@@ -153,6 +130,25 @@ public class MetaToolTaskDiffExtTblLocs extends MetaToolTask {
       jsonObject.put(commonLoc, modifiedEntries);
     }
     return jsonObject;
+  }
+
+  private Set<String> getKeySet(JSONObject jsonObject) {
+    Iterator<String> keyIter = jsonObject.keys();
+    Set<String> keySet = new HashSet();
+    while (keyIter.hasNext()) {
+      keySet.add(keyIter.next());
+    }
+    return keySet;
+  }
+
+  private Set<String> getSetDifference(Set<String> keySet1, Set<String> keySet2) {
+    Set<String> diffSet = new HashSet();
+    for(String elem : keySet1) {
+      if(!keySet2.contains(elem)) {
+        diffSet.add(elem);
+      }
+    }
+    return diffSet;
   }
 
   private String asDeleted(String str) {
