@@ -5491,7 +5491,7 @@ public class TestVectorStringExpressions {
   @Test
   public void testVectorTrim() throws HiveException {
     VectorizedRowBatch b = makeTrimBatch();
-    VectorExpression expr = new StringTrim(0, 1);
+    VectorExpression expr = new StringTrimCol(0, 1);
     expr.evaluate(b);
     BytesColumnVector outV = (BytesColumnVector) b.cols[1];
     Assert.assertEquals(0,

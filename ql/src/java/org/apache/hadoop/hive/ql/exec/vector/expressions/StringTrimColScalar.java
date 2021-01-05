@@ -20,16 +20,18 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 
-public class StringTrim extends StringUnaryUDFDirect {
+public class StringTrimColScalar extends StringBinaryColScalarUDFDirect {
   private static final long serialVersionUID = 1L;
 
   private static final byte[] EMPTY_BYTES = new byte[0];
+  private byte[] trimChars;
 
-  public StringTrim(int inputColumn, int outputColumnNum) {
+  public StringTrimColScalar(int inputColumn, byte[] trimChars, int outputColumnNum) {
     super(inputColumn, outputColumnNum);
+    this.trimChars = trimChars;
   }
 
-  public StringTrim() {
+  public StringTrimColScalar() {
     super();
   }
 
@@ -46,7 +48,7 @@ public class StringTrim extends StringUnaryUDFDirect {
     final int startIndex = start[batchIndex];
     final int end = startIndex + length[batchIndex];
     int leftIndex = startIndex;
-    while(leftIndex < end && bytes[leftIndex] == 0x20) {
+    while(leftIndex < end && contains(trimChars, bytes[leftIndex])) {
       leftIndex++;
     }
     if (leftIndex == end) {
@@ -57,7 +59,7 @@ public class StringTrim extends StringUnaryUDFDirect {
     // Have at least 1 non-blank; Skip trailing blank characters.
     int rightIndex = end - 1;
     final int rightLimit = leftIndex + 1;
-    while(rightIndex >= rightLimit && bytes[rightIndex] == 0x20) {
+    while(rightIndex >= rightLimit && contains(trimChars, bytes[rightIndex])) {
       rightIndex--;
     }
     final int resultLength = rightIndex - leftIndex + 1;
@@ -65,5 +67,14 @@ public class StringTrim extends StringUnaryUDFDirect {
       throw new RuntimeException("Not expected");
     }
     outV.setVal(batchIndex, bytes, leftIndex, resultLength);
+  }
+
+  private boolean contains(byte[] array, int character) {
+    for (int i = 0; i < array.length; ++i) {
+      if (array[i] == character) {
+        return true;
+      }
+    }
+    return false;
   }
 }

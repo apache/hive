@@ -21,7 +21,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringTrim;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringTrimCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringTrimColScalar;
 
 /**
  * UDFTrim.
@@ -36,7 +37,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringTrim;
     + "  > SELECT _FUNC_(' ' FROM ' Facebook  ');\n" + "  'Facebook'\n"
     + "  > SELECT _FUNC_(LEADING ' ' FROM ' Facebook  ');\n" + "  'Facebook  '\n"
     + "  > SELECT _FUNC_('xyfacebookyyx', 'xy');\n" + "  'facebook'")
-@VectorizedExpressions({ StringTrim.class })
+@VectorizedExpressions({ StringTrimCol.class, StringTrimColScalar.class})
 public class GenericUDFTrim extends GenericUDFBaseTrim {
   public GenericUDFTrim() {
     super("trim");

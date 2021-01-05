@@ -27,6 +27,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.Text;
 
 public abstract class GenericUDFBaseTrim extends GenericUDF {
+
+  public static final String DEFAULT_TRIM_CHARS = " ";
+
   private transient TextConverter stringToTrimConverter;
   private transient TextConverter trimCharsConverter;
   private Text result = new Text();
@@ -87,7 +90,7 @@ public abstract class GenericUDFBaseTrim extends GenericUDF {
       return null;
     }
 
-    String trimChars = " ";
+    String trimChars = DEFAULT_TRIM_CHARS;
     if (trimCharsConverter != null && arguments.length == 2) {
       Object trimCharsObject = arguments[1].get();
       if (trimCharsObject == null) {
