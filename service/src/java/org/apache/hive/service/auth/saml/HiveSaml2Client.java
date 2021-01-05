@@ -92,10 +92,14 @@ public class HiveSaml2Client extends SAML2Client {
    * Extracts the SAML specific configuration needed to initialize the SAML2.0 client.
    */
   private static SAML2Configuration getSamlConfig(HiveConf conf) throws Exception {
+    // by default the SAML2Client will create the keystore if the keystore path provided
+    // doesn't exist. The directory where the keystore path is set must be accessible.
     SAML2Configuration saml2Configuration = new SAML2Configuration(
         conf.get(ConfVars.HIVE_SERVER2_SAML_KEYSTORE_PATH.varname),
-        conf.get(ConfVars.HIVE_SERVER2_SAML_KEYSTORE_PASSWORD.varname),
-        conf.get(ConfVars.HIVE_SERVER2_SAML_PRIVATE_KEY_PASSWORD.varname),
+        String.valueOf(
+            conf.getPassword(ConfVars.HIVE_SERVER2_SAML_KEYSTORE_PASSWORD.varname)),
+        String.valueOf(
+            conf.getPassword(ConfVars.HIVE_SERVER2_SAML_PRIVATE_KEY_PASSWORD.varname)),
         conf.get(ConfVars.HIVE_SERVER2_SAML_IDP_METADATA.varname));
     saml2Configuration
         .setAuthnRequestBindingType(SAMLConstants.SAML2_REDIRECT_BINDING_URI);

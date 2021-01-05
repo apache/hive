@@ -4025,15 +4025,26 @@ public class HiveConf extends Configuration {
 
     // HS2 SAML2.0 configuration
     HIVE_SERVER2_SAML_KEYSTORE_PATH("hive.server2.saml2.keystore.path", "",
-        "Keystore path to the saml2 client."),
+        "Keystore path to the saml2 client. This keystore is used to store the\n"
+            + " key pair used to sign the authentication requests when hive.server2.saml2.sign.requests\n"
+            + " is set to true. If the path doesn't exist, HiveServer2 will attempt to\n"
+            + " create a keystore using the default configurations otherwise it will use\n"
+            + " the one provided."),
     HIVE_SERVER2_SAML_KEYSTORE_PASSWORD("hive.server2.saml2.keystore.password", "",
-        "Keystore path to the saml2 client."),
+        "Password to the keystore used to sign the authentication requests. By default,\n"
+            + " this must be set to a non-blank value if the authentication mode is SAML."),
     HIVE_SERVER2_SAML_PRIVATE_KEY_PASSWORD("hive.server2.saml2.private.key.password", "",
-        "Keystore path to the saml2 client."),
+        "Password for the private key which is stored in the keystore pointed \n"
+            + " by hive.server2.saml2.keystore.path. This key is used to sign the authentication request\n"
+            + " if hive.server2.saml2.sign.requests is set to true."),
     HIVE_SERVER2_SAML_IDP_METADATA("hive.server2.saml2.idp.metadata", "",
-        "IDP metadata file for the SAML configuration"),
+        "IDP metadata file for the SAML configuration. This metadata file must be\n"
+            + " exported from the external identity provider. This is used to validate the SAML assertions\n"
+            + " received by HiveServer2."),
     HIVE_SERVER2_SAML_SP_ID("hive.server2.saml2.sp.entity.id", "",
-        "Service provider entity id"),
+        "Service provider entity id for this HiveServer2. This must match with the\n"
+            + " SP id on the external identity provider. If this is not set, HiveServer2 will use the\n"
+            + " callback url as the SP id."),
     HIVE_SERVER2_SAML_FORCE_AUTH("hive.server2.saml2.sp.force.auth", "false",
         "This is a boolean configuration which toggles the force authentication\n"
             + " flag in the SAML authentication request. When set to true, the request generated\n"
@@ -4050,7 +4061,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_SAML_BLACKLISTED_SIGNATURE_ALGORITHMS(
         "hive.server2.saml2.blacklisted.signature.algorithms", "",
         "Comma separated list of signature algorithm names which are not\n"
-            + " by hive server during validation of the assertions received from IDP"),
+            + " allowed by HiveServer2 during validation of the assertions received from IDP"),
     HIVE_SERVER2_SAML_ACS_INDEX("hive.server2.saml2.acs.index", "",
         "This configuration specifies the assertion consumer service (ACS)\n"
             + " index to be sent to the IDP in case it support multiple ACS URLs. This\n"
