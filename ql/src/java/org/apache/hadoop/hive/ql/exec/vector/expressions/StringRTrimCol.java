@@ -20,20 +20,18 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
-/**
- * This is a superclass for binary string functions that operate directly on the
- * input and set the output. First parametes is a column second is a scalar.
- * It is suitable for direct, in-place operations on
- * strings, such as for fast implementations of two parameter version of  TRIM(), LTRIM(), and RTRIM().
- */
-abstract public class StringBinaryColScalarUDFDirect extends StringUnaryUDFDirect {
+import java.nio.charset.StandardCharsets;
+
+import static org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseTrim.DEFAULT_TRIM_CHARS;
+
+public class StringRTrimCol extends StringRTrimColScalar {
   private static final long serialVersionUID = 1L;
 
-  public StringBinaryColScalarUDFDirect(int inputColumn, int outputColumnNum) {
-    super(inputColumn, outputColumnNum);
+  public StringRTrimCol(int inputColumn, int outputColumnNum) {
+    super(inputColumn, DEFAULT_TRIM_CHARS.getBytes(StandardCharsets.UTF_8), outputColumnNum);
   }
 
-  public StringBinaryColScalarUDFDirect() {
+  public StringRTrimCol() {
     super();
   }
 
@@ -41,13 +39,11 @@ abstract public class StringBinaryColScalarUDFDirect extends StringUnaryUDFDirec
   public VectorExpressionDescriptor.Descriptor getDescriptor() {
     VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
     b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
-            .setNumArguments(2)
+            .setNumArguments(1)
             .setArgumentTypes(
-                    VectorExpressionDescriptor.ArgumentType.STRING_FAMILY,
                     VectorExpressionDescriptor.ArgumentType.STRING_FAMILY)
             .setInputExpressionTypes(
-                    VectorExpressionDescriptor.InputExpressionType.COLUMN,
-                    VectorExpressionDescriptor.InputExpressionType.SCALAR);
+                    VectorExpressionDescriptor.InputExpressionType.COLUMN);
     return b.build();
   }
 }

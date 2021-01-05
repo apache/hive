@@ -21,7 +21,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrim;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrimCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrimColScalar;
 
 /**
  * UDFLTrim.
@@ -32,7 +33,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrim;
     "leading pad characters from str ", extended = "Example:\n"
     + "  > SELECT _FUNC_('   facebook') FROM src LIMIT 1;\n" + "  'facebook'\n"
     + "  > SELECT _FUNC_('xyzzxyfacebook', 'zyx') FROM src LIMIT 1;\n" + "  'facebook'")
-@VectorizedExpressions({ StringLTrim.class })
+@VectorizedExpressions({ StringLTrimCol.class, StringLTrimColScalar.class })
 public class GenericUDFLTrim extends GenericUDFBaseTrim {
 
   public GenericUDFLTrim() {

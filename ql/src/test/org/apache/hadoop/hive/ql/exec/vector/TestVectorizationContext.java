@@ -31,15 +31,12 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.BRoundWithNumDigitsDoub
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColAndCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColOrCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.DoubleColumnInList;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.DynamicValueVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseLongToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncPowerDoubleToDouble;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprColumnCondExpr;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprCondExprColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprCondExprCondExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprCharScalarStringGroupColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprDoubleColumnDoubleColumn;
@@ -68,7 +65,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsTrue;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringColumnInList;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrim;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrimColScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLower;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUpper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -87,7 +84,6 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarLon
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleColumnDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarDoubleColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarDoubleScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColLessDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnBetween;
@@ -966,8 +962,8 @@ public class TestVectorizationContext {
     assertEquals(StringLower.class, childVe.getClass());
     assertEquals(2, ((StringLower) childVe).getOutputColumnNum());
 
-    assertEquals(StringLTrim.class, ve.getClass());
-    assertEquals(3, ((StringLTrim) ve).getOutputColumnNum());
+    assertEquals(StringLTrimColScalar.class, ve.getClass());
+    assertEquals(3, ((StringLTrimColScalar) ve).getOutputColumnNum());
   }
 
   @Test

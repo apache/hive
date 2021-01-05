@@ -16,12 +16,12 @@ POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.col0 SCRIPT []
 PREHOOK: query: explain vectorization
-select trim(col0) from t1 group by col0
+select ltrim(col0) from t1 group by col0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization
-select trim(col0) from t1 group by col0
+select ltrim(col0) from t1 group by col0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -88,7 +88,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: trim(_col0) (type: string)
+                  expressions: ltrim(_col0) (type: string)
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -105,23 +105,23 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select trim(col0) from t1 group by col0
+PREHOOK: query: select ltrim(col0) from t1 group by col0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: select trim(col0) from t1 group by col0
+POSTHOOK: query: select ltrim(col0) from t1 group by col0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
-tech
+tech   
 xyfacebookyyx
 PREHOOK: query: explain vectorization
-select trim(col0, 'xy') from t1 group by col0
+select ltrim(col0, 'xy') from t1 group by col0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
 POSTHOOK: query: explain vectorization
-select trim(col0, 'xy') from t1 group by col0
+select ltrim(col0, 'xy') from t1 group by col0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
@@ -188,7 +188,7 @@ STAGE PLANS:
                 outputColumnNames: _col0
                 Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
                 Select Operator
-                  expressions: trim(_col0, 'xy') (type: string)
+                  expressions: ltrim(_col0, 'xy') (type: string)
                   outputColumnNames: _col0
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
@@ -205,16 +205,16 @@ STAGE PLANS:
       Processor Tree:
         ListSink
 
-PREHOOK: query: select trim(col0, 'xy') from t1 group by col0
+PREHOOK: query: select ltrim(col0, 'xy') from t1 group by col0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: select trim(col0, 'xy') from t1 group by col0
+POSTHOOK: query: select ltrim(col0, 'xy') from t1 group by col0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
    tech   
-facebook
+facebookyyx
 PREHOOK: query: drop table t1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@t1

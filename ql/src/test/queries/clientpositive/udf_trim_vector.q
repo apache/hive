@@ -13,10 +13,4 @@ select trim(col0, 'xy') from t1 group by col0;
 
 select trim(col0, 'xy') from t1 group by col0;
 
-
-explain vectorization
-select trim(LEADING 'xy' FROM col0) from t1 group by col0;
-
-select trim(LEADING 'xy' FROM col0) from t1 group by col0;
-
 drop table t1;

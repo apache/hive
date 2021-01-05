@@ -20,16 +20,14 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 
-public class StringRTrim extends StringUnaryUDFDirect {
+public class StringRTrimColScalar extends StringTrimColScalarBase {
   private static final long serialVersionUID = 1L;
 
-  private static final byte[] EMPTY_BYTES = new byte[0];
-
-  public StringRTrim(int inputColumn, int outputColumnNum) {
-    super(inputColumn, outputColumnNum);
+  public StringRTrimColScalar(int inputColumn, byte[] trimChars, int outputColumnNum) {
+    super(inputColumn, trimChars, outputColumnNum);
   }
 
-  public StringRTrim() {
+  public StringRTrimColScalar() {
     super();
   }
 
@@ -46,7 +44,7 @@ public class StringRTrim extends StringUnaryUDFDirect {
 
     // Skip trailing blank characters.
     int index = startIndex + length[batchIndex] - 1;
-    while(index >= startIndex && bytes[index] == 0x20) {
+    while(index >= startIndex && shouldTrim(bytes[index])) {
       index--;
     }
 

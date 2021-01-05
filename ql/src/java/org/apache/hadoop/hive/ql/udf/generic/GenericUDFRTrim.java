@@ -21,7 +21,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringRTrim;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringRTrimCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringRTrimColScalar;
 
 /**
  * UDFRTrim.
@@ -32,7 +33,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringRTrim;
     extended = "Example:\n"
     + "  > SELECT _FUNC_('facebook   ') FROM src LIMIT 1;\n" + "  'facebook'\n"
     + "  > SELECT _FUNC_('facebookxyzzyx', 'xzy') FROM src LIMIT 1;\n" + "  'facebook'")
-@VectorizedExpressions({ StringRTrim.class })
+@VectorizedExpressions({ StringRTrimCol.class, StringRTrimColScalar.class })
 public class GenericUDFRTrim extends GenericUDFBaseTrim {
   public GenericUDFRTrim() {
     super("rtrim");
