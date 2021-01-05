@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import static org.apache.hadoop.hive.common.jsonexplain.DagJsonParser.STAGE_DEPENDENCIES;
+import static org.apache.hadoop.hive.common.jsonexplain.DagJsonParser.STAGE_PLANS;
 import static org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME;
 
 import java.io.ByteArrayOutputStream;
@@ -92,7 +94,6 @@ import com.google.common.annotations.VisibleForTesting;
 public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final Logger LOG = LoggerFactory.getLogger(ExplainTask.class.getName());
 
-  public static final String STAGE_DEPENDENCIES = "STAGE DEPENDENCIES";
   private static final long serialVersionUID = 1L;
   public static final String EXPL_COLUMN_NAME = "Explain";
   private final Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
@@ -337,7 +338,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
            jsonOutput, isExtended);
 
       if (jsonOutput) {
-        outJSONObject.put("STAGE PLANS", jsonPlan);
+        outJSONObject.put(STAGE_PLANS, jsonPlan);
       }
 
       if (fetchTask != null) {
@@ -1272,7 +1273,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
       throws Exception {
 
     if (out != null && !tasks.isEmpty()) {
-      out.println("STAGE PLANS:");
+      out.println(STAGE_PLANS + ":");
     }
 
     JSONObject json = jsonOutput ? new JSONObject(new LinkedHashMap<>()) : null;
@@ -1340,8 +1341,8 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         JSONObject jsonPlan = task.getJSONPlan(
             null, rootTasks, sem.getFetchTask(), true, true, true, sem.getCboInfo(),
             plan.getOptimizedCBOPlan(), plan.getOptimizedQueryString());
-        if (jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES) != null &&
-            jsonPlan.getJSONObject(ExplainTask.STAGE_DEPENDENCIES).length() <=
+        if (jsonPlan.getJSONObject(STAGE_DEPENDENCIES) != null &&
+            jsonPlan.getJSONObject(STAGE_DEPENDENCIES).length() <=
                 conf.getIntVar(ConfVars.HIVE_SERVER2_WEBUI_MAX_GRAPH_SIZE)) {
           ret = jsonPlan.toString();
         } else {
