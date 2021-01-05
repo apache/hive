@@ -103,13 +103,17 @@ public class HdfsUtils {
     while (itr.hasNext()) {
       FileStatus stat = itr.next();
       // Recursive listing might list files inside hidden directories, we need to filter those out
-      Path relativePath = new Path(stat.getPath().toString().replace(path.toString(), ""));
-      if (org.apache.hadoop.hive.metastore.utils.FileUtils.RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER.accept(relativePath)) {
-        // Apply the user provided filter
-        if (filter == null || filter.accept(stat.getPath())) {
-          result.add(stat);
+      if (!stat.getPath().toString().equals(path.toString())) {
+        Path relativePath = new Path(stat.getPath().toString().replace(path.toString(), ""));
+        if (!org.apache.hadoop.hive.metastore.utils.FileUtils.RemoteIteratorWithFilter.HIDDEN_FILES_FULL_PATH_FILTER.accept(relativePath)) {
+          continue;
         }
       }
+      // Apply the user provided filter
+      if (filter == null || filter.accept(stat.getPath())) {
+        result.add(stat);
+      }
+
     }
     return result;
   }
