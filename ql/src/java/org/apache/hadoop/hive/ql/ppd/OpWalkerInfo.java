@@ -20,11 +20,15 @@ package org.apache.hadoop.hive.ql.ppd;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 
 /**
@@ -39,11 +43,15 @@ public class OpWalkerInfo implements NodeProcessorCtx {
     opToPushdownPredMap;
   private final ParseContext pGraphContext;
   private final List<FilterOperator> candidateFilterOps;
+  private final Map<Operator<?>, Set<ExprNodeColumnDesc>> columnsInPredicates;
+  private final Map<Operator<?>, Map<ExprNodeDesc, ExprNodeDesc>> equalities;
 
   public OpWalkerInfo(ParseContext pGraphContext) {
     this.pGraphContext = pGraphContext;
     opToPushdownPredMap = new HashMap<Operator<? extends OperatorDesc>, ExprWalkerInfo>();
     candidateFilterOps = new ArrayList<FilterOperator>();
+    columnsInPredicates = new HashMap<>();
+    equalities = new HashMap<>();
   }
 
   public ExprWalkerInfo getPrunedPreds(Operator<? extends OperatorDesc> op) {
@@ -67,4 +75,11 @@ public class OpWalkerInfo implements NodeProcessorCtx {
     candidateFilterOps.add(fop);
   }
 
+  public Map<Operator<?>, Set<ExprNodeColumnDesc>> getColumnsInPredicates() {
+    return columnsInPredicates;
+  }
+
+  public Map<Operator<?>, Map<ExprNodeDesc, ExprNodeDesc>> getEqualities() {
+    return equalities;
+  }
 }

@@ -714,6 +714,13 @@ public final class OpProcFactory {
           if (!sourceAliases.contains(entry.getKey())) {
             continue;
           }
+
+          Set<ExprNodeColumnDesc> columnsInPredicates = owi.getColumnsInPredicates().get(source);
+          if (columnsInPredicates == null) {
+            columnsInPredicates = collectColumnsInPredicates(entry.getValue());
+            owi.getColumnsInPredicates().put(source, columnsInPredicates);
+          }
+
           for (ExprNodeDesc predicate : entry.getValue()) {
             ExprNodeDesc backtrack = ExprNodeDescUtils.backtrack(predicate, join, source);
             if (backtrack == null) {
@@ -721,30 +728,13 @@ public final class OpProcFactory {
             }
             ExprNodeDesc replaced = ExprNodeDescUtils.replace(backtrack, sourceKeys, targetKeys);
             if (replaced == null) {
-              List<ExprNodeColumnDesc> startNodes = new ArrayList<>();
-              extractColumnExprNodes(predicate, startNodes);
-              Map<ExprNodeDesc, String> equalities = searchForEqualities(source, startNodes);
-              if (equalities.isEmpty()) {
-                continue;
+              Map<ExprNodeDesc, ExprNodeDesc> equalities = owi.getEqualities().get(source);
+              if (equalities == null) {
+                equalities = searchForEqualities(join, sourcePos, source, columnsInPredicates);
+                owi.getEqualities().put(source, equalities);
               }
 
-              Map<ExprNodeDesc, ExprNodeDesc> replaceMap = new HashMap<>(equalities.size());
-              for (Entry<ExprNodeDesc, String> eqEntry : equalities.entrySet()) {
-                for (Entry<String, ExprNodeDesc> joinColMapEntry : join.getColumnExprMap().entrySet()) {
-                  if (join.getConf().getReversedExprs().get(joinColMapEntry.getKey()) != sourcePos) {
-                    continue;
-                  }
-                  if (!(joinColMapEntry.getValue() instanceof ExprNodeColumnDesc)) {
-                    continue;
-                  }
-                  if (((ExprNodeColumnDesc) joinColMapEntry.getValue()).getColumn().equals(eqEntry.getValue())) {
-                    replaceMap.put(eqEntry.getKey(), joinColMapEntry.getValue());
-                    break;
-                  }
-                }
-              }
-
-              ExprNodeDesc newPredicate = replaceColumnExprNodes(predicate, replaceMap);
+              ExprNodeDesc newPredicate = replaceColumnExprNodes(predicate, equalities);
               backtrack = ExprNodeDescUtils.backtrack(newPredicate, join, source);
               if (backtrack == null) {
                 continue;
@@ -762,7 +752,16 @@ public final class OpProcFactory {
       }
     }
 
-    private void extractColumnExprNodes(ExprNodeDesc exprNodeDesc, List<ExprNodeColumnDesc> result) {
+    private Set<ExprNodeColumnDesc> collectColumnsInPredicates(List<ExprNodeDesc> predicates) {
+      Set<ExprNodeColumnDesc> columnsInPredicates;
+      columnsInPredicates = new HashSet<>();
+      for (ExprNodeDesc predicate : predicates) {
+        extractColumnExprNodes(predicate, columnsInPredicates);
+      }
+      return columnsInPredicates;
+    }
+
+    private void extractColumnExprNodes(ExprNodeDesc exprNodeDesc, Set<ExprNodeColumnDesc> result) {
       if (exprNodeDesc instanceof ExprNodeColumnDesc) {
         result.add((ExprNodeColumnDesc) exprNodeDesc);
         return;
@@ -774,40 +773,48 @@ public final class OpProcFactory {
       }
     }
 
-    private ExprNodeDesc replaceColumnExprNodes(ExprNodeDesc exprNodeDesc, Map<ExprNodeDesc, ExprNodeDesc> replaceMap) {
-      if (exprNodeDesc instanceof ExprNodeColumnDesc) {
-        return replaceMap.getOrDefault(exprNodeDesc, exprNodeDesc);
-      }
-      if (exprNodeDesc instanceof ExprNodeGenericFuncDesc) {
-        ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) exprNodeDesc.clone();
-        List<ExprNodeDesc> replacedChildren = new ArrayList<>(exprNodeDesc.getChildren().size());
-        for (ExprNodeDesc child : exprNodeDesc.getChildren()) {
-          replacedChildren.add(replaceColumnExprNodes(child, replaceMap));
-        }
-        exprNodeGenericFuncDesc.setChildren(replacedChildren);
-        return exprNodeGenericFuncDesc;
+    private Map<ExprNodeDesc, ExprNodeDesc> searchForEqualities(
+            JoinOperator join, int sourcePos, ReduceSinkOperator source, Set<ExprNodeColumnDesc> startNodes) {
+      Map<ExprNodeDesc, String> equalities = searchForEqualities(source, startNodes);
+      if (equalities.isEmpty()) {
+        return Collections.emptyMap();
       }
 
-      return exprNodeDesc;
+      Map<ExprNodeDesc, ExprNodeDesc> replaceMap = new HashMap<>(equalities.size());
+      for (Entry<ExprNodeDesc, String> eqEntry : equalities.entrySet()) {
+        for (Entry<String, ExprNodeDesc> joinColMapEntry : join.getColumnExprMap().entrySet()) {
+          if (join.getConf().getReversedExprs().get(joinColMapEntry.getKey()) != sourcePos) {
+            continue;
+          }
+          if (!(joinColMapEntry.getValue() instanceof ExprNodeColumnDesc)) {
+            continue;
+          }
+          if (((ExprNodeColumnDesc) joinColMapEntry.getValue()).getColumn().equals(eqEntry.getValue())) {
+            replaceMap.put(eqEntry.getKey(), joinColMapEntry.getValue());
+            break;
+          }
+        }
+      }
+
+      return replaceMap;
     }
 
-    private Map<ExprNodeDesc, String> searchForEqualities(Operator<?> operator, List<ExprNodeColumnDesc> exprNodeDescList) {
-      Map<ExprNodeDesc, String> equalities;
-      if (operator instanceof CommonJoinOperator) {
-        equalities = searchForEqualitiesInJoin((CommonJoinOperator<?>)operator, exprNodeDescList);
-      } else {
-        equalities = searchForEqualitiesDefault(operator, exprNodeDescList);
+    private Map<ExprNodeDesc, String> searchForEqualities(Operator<?> operator, Set<ExprNodeColumnDesc> exprNodeDescSet) {
+      if (exprNodeDescSet.isEmpty()) {
+        return Collections.emptyMap();
       }
-      return equalities;
+
+      if (operator instanceof CommonJoinOperator) {
+        return searchForEqualitiesInJoin((CommonJoinOperator<?>)operator, exprNodeDescSet);
+      } else {
+        return searchForEqualitiesDefault(operator, exprNodeDescSet);
+      }
     }
 
     private Map<ExprNodeDesc, String> searchForEqualitiesInJoin(
-            CommonJoinOperator<?> join, List<ExprNodeColumnDesc> exprNodeDescList) {
-      if (exprNodeDescList.isEmpty()) {
-        return Collections.emptyMap();
-      }
+            CommonJoinOperator<?> join, Set<ExprNodeColumnDesc> exprNodeDescSet) {
       Map<ExprNodeDesc, String> equalities = new HashMap<>();
-      for (ExprNodeColumnDesc exprNodeDesc : exprNodeDescList) {
+      for (ExprNodeColumnDesc exprNodeDesc : exprNodeDescSet) {
         ExprNodeDesc mappedColExpr = join.getColumnExprMap().get(exprNodeDesc.getColumn());
         if (!(mappedColExpr instanceof ExprNodeColumnDesc)) {
           continue;
@@ -840,31 +847,27 @@ public final class OpProcFactory {
       }
 
       for (Operator<?> parent : join.getParentOperators()) {
-        equalities.putAll(searchForEqualities(parent, exprNodeDescList));
+        equalities.putAll(searchForEqualities(parent, exprNodeDescSet));
       }
 
       return equalities;
     }
 
     private Map<ExprNodeDesc, String> searchForEqualitiesDefault(
-            Operator<?> operator, List<ExprNodeColumnDesc> exprNodeDescList) {
-      if (exprNodeDescList.isEmpty()) {
-        return Collections.emptyMap();
-      }
-
+            Operator<?> operator, Set<ExprNodeColumnDesc> exprNodeDescSet) {
       Map<String, ExprNodeDesc> columnExprMap = operator.getColumnExprMap();
       // Some operators do not have columnExprMap. Example: FilterOperator.
       if (columnExprMap == null) {
         if (operator.getParentOperators().size() == 1) {
-          return searchForEqualities(operator.getParentOperators().get(0), exprNodeDescList);
+          return searchForEqualities(operator.getParentOperators().get(0), exprNodeDescSet);
         } else {
           return Collections.emptyMap();
         }
       }
 
-      List<ExprNodeColumnDesc> mapped = new ArrayList<>(exprNodeDescList.size());
-      Map<ExprNodeDesc, ExprNodeDesc> newOldMap = new HashMap<>(exprNodeDescList.size());
-      for (ExprNodeColumnDesc exprNodeDesc : exprNodeDescList) {
+      Set<ExprNodeColumnDesc> mapped = new HashSet<>(exprNodeDescSet.size());
+      Map<ExprNodeDesc, ExprNodeDesc> newOldMap = new HashMap<>(exprNodeDescSet.size());
+      for (ExprNodeColumnDesc exprNodeDesc : exprNodeDescSet) {
         ExprNodeDesc valueDesc = operator.getColumnExprMap().get(exprNodeDesc.getColumn());
         if (valueDesc instanceof ExprNodeColumnDesc) {
           mapped.add((ExprNodeColumnDesc) valueDesc);
@@ -889,6 +892,23 @@ public final class OpProcFactory {
       } else {
         return Collections.emptyMap();
       }
+    }
+
+    private ExprNodeDesc replaceColumnExprNodes(ExprNodeDesc exprNodeDesc, Map<ExprNodeDesc, ExprNodeDesc> replaceMap) {
+      if (exprNodeDesc instanceof ExprNodeColumnDesc) {
+        return replaceMap.getOrDefault(exprNodeDesc, exprNodeDesc);
+      }
+      if (exprNodeDesc instanceof ExprNodeGenericFuncDesc) {
+        ExprNodeGenericFuncDesc exprNodeGenericFuncDesc = (ExprNodeGenericFuncDesc) exprNodeDesc.clone();
+        List<ExprNodeDesc> replacedChildren = new ArrayList<>(exprNodeDesc.getChildren().size());
+        for (ExprNodeDesc child : exprNodeDesc.getChildren()) {
+          replacedChildren.add(replaceColumnExprNodes(child, replaceMap));
+        }
+        exprNodeGenericFuncDesc.setChildren(replacedChildren);
+        return exprNodeGenericFuncDesc;
+      }
+
+      return exprNodeDesc;
     }
   }
 
