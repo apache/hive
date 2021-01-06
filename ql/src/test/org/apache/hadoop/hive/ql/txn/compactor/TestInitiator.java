@@ -1188,7 +1188,8 @@ public class TestInitiator extends CompactorTest {
     initiator.setThreadId((int) t.getId());
     initiator.setConf(conf);
     initiator.init(new AtomicBoolean(true));
-    doThrow(new RuntimeException()).when(initiator).resolveValidWriteIds(any());
+    doThrow(new RuntimeException("This was thrown on purpose by testInitiatorFailure"))
+        .when(initiator).resolveTable(any());
     initiator.run();
 
     // verify status of table compaction
