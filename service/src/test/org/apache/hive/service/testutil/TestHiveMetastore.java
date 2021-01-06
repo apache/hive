@@ -25,24 +25,20 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IHMSHandler;
 import org.apache.hadoop.hive.metastore.RetryingHMSHandler;
 import org.apache.hadoop.hive.metastore.TSetIpAddressProcessor;
-import org.apache.hadoop.hive.metastore.ThreadPool;
+import org.apache.hadoop.hive.metastore.tools.schematool.MetastoreSchemaTool;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportFactory;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -60,7 +56,7 @@ public class TestHiveMetastore {
   private ExecutorService executorService;
   private TServer server;
   private HiveMetaStore.HMSHandler baseHandler;
-  private HiveClientPool clientPool;
+  private HiveMetaStoreClient client;
 
   /**
    * Starts a TestHiveMetastore with the default connection pool size (5).
@@ -78,11 +74,12 @@ public class TestHiveMetastore {
       this.hiveLocalDir = createTempDirectory("hive", asFileAttribute(fromString("rwxrwxrwx"))).toFile();
       File derbyLogFile = new File(hiveLocalDir, "derby.log");
       System.setProperty("derby.stream.error.file", derbyLogFile.getAbsolutePath());
-      setupMetastoreDB("jdbc:derby:" + getDerbyPath() + ";create=true");
 
       TServerSocket socket = new TServerSocket(0);
       int port = socket.getServerSocket().getLocalPort();
       this.hiveConf = newHiveConf(port);
+
+      setupMetastoreDB("jdbc:derby:" + getDerbyPath() + ";create=true");
       this.server = newThriftServer(socket, poolSize, hiveConf);
       this.executorService = Executors.newSingleThreadExecutor();
       this.executorService.submit(() -> server.serve());
@@ -90,15 +87,15 @@ public class TestHiveMetastore {
       // setting this as a system prop ensures that it will be picked up whenever a new HiveConf is created
       System.setProperty(HiveConf.ConfVars.METASTOREURIS.varname, hiveConf.getVar(HiveConf.ConfVars.METASTOREURIS));
 
-      this.clientPool = new HiveClientPool(1, hiveConf);
+      this.client = new HiveMetaStoreClient(hiveConf);
     } catch (Exception e) {
       throw new RuntimeException("Cannot start TestHiveMetastore", e);
     }
   }
 
   public void stop() {
-    if (clientPool != null) {
-      clientPool.close();
+    if (client != null) {
+      client.close();
     }
     if (server != null) {
       server.stop();
@@ -112,37 +109,20 @@ public class TestHiveMetastore {
     if (baseHandler != null) {
       baseHandler.shutdown();
     }
-    ThreadPool.shutdown();
   }
 
   public HiveConf hiveConf() {
     return hiveConf;
   }
 
-  public HiveClientPool clientPool() {
-    return clientPool;
-  }
-
-  public String getDatabasePath(String dbName) {
-    File dbDir = new File(hiveLocalDir, dbName + ".db");
-    return dbDir.getPath();
-  }
-
   public void reset() throws Exception {
-    for (String dbName : clientPool.run(client -> client.getAllDatabases())) {
-      for (String tblName : clientPool.run(client -> client.getAllTables(dbName))) {
-        clientPool.run(client -> {
-          client.dropTable(dbName, tblName, true, true, true);
-          return null;
-        });
+    for (String dbName : client.getAllDatabases()) {
+      for (String tblName : client.getAllTables(dbName)) {
+        client.dropTable(dbName, tblName, true, true, true);
       }
-
       if (!DEFAULT_DATABASE_NAME.equals(dbName)) {
         // Drop cascade, functions dropped by cascade
-        clientPool.run(client -> {
-          client.dropDatabase(dbName, true, true, true);
-          return null;
-        });
+        client.dropDatabase(dbName, true, true, true);
       }
     }
 
@@ -178,19 +158,23 @@ public class TestHiveMetastore {
     newHiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, "file:" + hiveLocalDir.getAbsolutePath());
     newHiveConf.set(HiveConf.ConfVars.METASTORE_TRY_DIRECT_SQL.varname, "false");
     newHiveConf.set(HiveConf.ConfVars.METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES.varname, "false");
-    newHiveConf.set("iceberg.hive.client-pool-size", "2");
     return newHiveConf;
   }
 
-  private void setupMetastoreDB(String dbURL) throws SQLException, IOException {
-    Connection connection = DriverManager.getConnection(dbURL);
-    ScriptRunner scriptRunner = new ScriptRunner(connection, true, true);
+  private void setupMetastoreDB(String dbURL) throws Exception {
+    MetastoreSchemaTool schemaTool = new MetastoreSchemaTool();
+    schemaTool.setUserName("hive");
+    schemaTool.setPassWord("hive");
 
-    BufferedReader inputStream = new BufferedReader(new FileReader(
-        "../standalone-metastore/metastore-server/src/main/sql/derby/hive-schema-4.0.0.derby.sql"));
-    try (Reader reader = new BufferedReader(inputStream)) {
-      scriptRunner.runScript(reader);
-    }
+    // below usage of SchemaTool is a bit hacky, but it works for our purposes to apply the metastore DB script
+    hiveConf.set("javax.jdo.option.ConnectionURL", dbURL);
+    Field conf = schemaTool.getClass().getDeclaredField("conf");
+    conf.setAccessible(true);
+    conf.set(schemaTool, hiveConf);
+
+    Method execSql = schemaTool.getClass().getDeclaredMethod("execSql", String.class);
+    execSql.setAccessible(true);
+    execSql.invoke(schemaTool, "../standalone-metastore/metastore-server/src/main/sql/derby/hive-schema-4.0.0.derby.sql");
   }
 
   private String getDerbyPath() {

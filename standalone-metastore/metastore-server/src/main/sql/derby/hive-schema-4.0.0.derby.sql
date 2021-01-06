@@ -7,6 +7,7 @@
 -- ----------------------------------------------
 -- DDL Statements for functions
 -- ----------------------------------------------
+SET SCHEMA "APP";
 
 CREATE FUNCTION "APP"."NUCLEUS_ASCII" (C CHAR(1)) RETURNS INTEGER LANGUAGE JAVA PARAMETER STYLE JAVA READS SQL DATA CALLED ON NULL INPUT EXTERNAL NAME 'org.datanucleus.store.rdbms.adapter.DerbySQLFunction.ascii' ;
 
