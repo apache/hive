@@ -15,12 +15,12 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: _dummy_database@_dummy_table
 POSTHOOK: Output: default@t1
 POSTHOOK: Lineage: t1.col0 SCRIPT []
-PREHOOK: query: explain vectorization
+PREHOOK: query: explain vectorization expression
 select ltrim(col0) from t1 group by col0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: explain vectorization
+POSTHOOK: query: explain vectorization expression
 select ltrim(col0) from t1 group by col0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
@@ -46,11 +46,24 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
                     expressions: col0 (type: string)
                     outputColumnNames: col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0]
                     Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
+                      Group By Vectorization:
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 0:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: []
                       keys: col0 (type: string)
                       minReductionHashAggr: 0.5
                       mode: hash
@@ -61,6 +74,10 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkStringOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -83,6 +100,13 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:string
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: []
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -90,9 +114,17 @@ STAGE PLANS:
                 Select Operator
                   expressions: ltrim(_col0) (type: string)
                   outputColumnNames: _col0
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [1]
+                      selectExpressions: StringLTrimCol(col 0:string) -> 1:string
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
@@ -115,12 +147,12 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
 tech   
 xyfacebookyyx
-PREHOOK: query: explain vectorization
+PREHOOK: query: explain vectorization expression
 select ltrim(col0, 'xy') from t1 group by col0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: explain vectorization
+POSTHOOK: query: explain vectorization expression
 select ltrim(col0, 'xy') from t1 group by col0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
@@ -146,11 +178,24 @@ STAGE PLANS:
                 TableScan
                   alias: t1
                   Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
+                  TableScan Vectorization:
+                      native: true
                   Select Operator
                     expressions: col0 (type: string)
                     outputColumnNames: col0
+                    Select Vectorization:
+                        className: VectorSelectOperator
+                        native: true
+                        projectedOutputColumnNums: [0]
                     Statistics: Num rows: 2 Data size: 192 Basic stats: COMPLETE Column stats: COMPLETE
                     Group By Operator
+                      Group By Vectorization:
+                          className: VectorGroupByOperator
+                          groupByMode: HASH
+                          keyExpressions: col 0:string
+                          native: false
+                          vectorProcessingMode: HASH
+                          projectedOutputColumnNums: []
                       keys: col0 (type: string)
                       minReductionHashAggr: 0.5
                       mode: hash
@@ -161,6 +206,10 @@ STAGE PLANS:
                         null sort order: z
                         sort order: +
                         Map-reduce partition columns: _col0 (type: string)
+                        Reduce Sink Vectorization:
+                            className: VectorReduceSinkStringOperator
+                            native: true
+                            nativeConditionsMet: hive.vectorized.execution.reducesink.new.enabled IS true, hive.execution.engine tez IN [tez, spark] IS true, No PTF TopN IS true, No DISTINCT columns IS true, BinarySortableSerDe for keys IS true, LazyBinarySerDe for values IS true
                         Statistics: Num rows: 1 Data size: 96 Basic stats: COMPLETE Column stats: COMPLETE
             Execution mode: vectorized, llap
             LLAP IO: all inputs
@@ -183,6 +232,13 @@ STAGE PLANS:
                 vectorized: true
             Reduce Operator Tree:
               Group By Operator
+                Group By Vectorization:
+                    className: VectorGroupByOperator
+                    groupByMode: MERGEPARTIAL
+                    keyExpressions: col 0:string
+                    native: false
+                    vectorProcessingMode: MERGE_PARTIAL
+                    projectedOutputColumnNums: []
                 keys: KEY._col0 (type: string)
                 mode: mergepartial
                 outputColumnNames: _col0
@@ -190,9 +246,17 @@ STAGE PLANS:
                 Select Operator
                   expressions: ltrim(_col0, 'xy') (type: string)
                   outputColumnNames: _col0
+                  Select Vectorization:
+                      className: VectorSelectOperator
+                      native: true
+                      projectedOutputColumnNums: [1]
+                      selectExpressions: StringLTrimColScalar(col 0:string) -> 1:string
                   Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                   File Output Operator
                     compressed: false
+                    File Sink Vectorization:
+                        className: VectorFileSinkOperator
+                        native: false
                     Statistics: Num rows: 1 Data size: 184 Basic stats: COMPLETE Column stats: COMPLETE
                     table:
                         input format: org.apache.hadoop.mapred.SequenceFileInputFormat
