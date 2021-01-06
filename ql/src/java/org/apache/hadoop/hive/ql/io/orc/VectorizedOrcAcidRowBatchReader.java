@@ -687,15 +687,18 @@ public class VectorizedOrcAcidRowBatchReader
     ReaderData readerData = new ReaderData();
     if (!skipLlapCache && LlapHiveUtils.isLlapMode(conf) && LlapProxy.isDaemon()) {
       try {
+        if (LlapProxy.getIo() == null) {
+          throw new IllegalCacheConfigurationException("LLAP IO is not enabled.");
+        }
         readerData.orcTail = LlapProxy.getIo().getOrcTailFromCache(path, conf, cacheTag, fileKey);
+        return readerData;
       } catch (IllegalCacheConfigurationException icce) {
         LOG.warn("Cache is not usable. Please fix the configuration", icce);
         skipLlapCache = true;
       }
-    } else {
-      readerData.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
-      readerData.orcTail = new OrcTail(readerData.reader.getFileTail(), readerData.reader.getSerializedFileFooter());
     }
+    readerData.reader = OrcFile.createReader(path, OrcFile.readerOptions(conf));
+    readerData.orcTail = new OrcTail(readerData.reader.getFileTail(), readerData.reader.getSerializedFileFooter());
     return readerData;
   }
 
