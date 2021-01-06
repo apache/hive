@@ -44,15 +44,9 @@ import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
-import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
-import org.apache.hadoop.hive.ql.lib.RuleRegExp;
-import org.apache.hadoop.hive.ql.lib.SemanticDispatcher;
-import org.apache.hadoop.hive.ql.lib.SemanticGraphWalker;
 import org.apache.hadoop.hive.ql.lib.SemanticNodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.lib.SemanticRule;
 import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -89,8 +83,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
-
-import static java.util.Collections.singleton;
 
 
 /**
@@ -731,7 +723,7 @@ public final class OpProcFactory {
             if (replaced == null) {
               List<ExprNodeColumnDesc> startNodes = new ArrayList<>();
               extractColumnExprNodes(predicate, startNodes);
-              Map<ExprNodeDesc, String> equalities = walk(source, startNodes);
+              Map<ExprNodeDesc, String> equalities = searchForEqualities(source, startNodes);
               if (equalities.isEmpty()) {
                 continue;
               }
@@ -799,17 +791,17 @@ public final class OpProcFactory {
       return exprNodeDesc;
     }
 
-    private Map<ExprNodeDesc, String> walk(Operator<?> operator, List<ExprNodeColumnDesc> exprNodeDescList) {
+    private Map<ExprNodeDesc, String> searchForEqualities(Operator<?> operator, List<ExprNodeColumnDesc> exprNodeDescList) {
       Map<ExprNodeDesc, String> equalities;
       if (operator instanceof CommonJoinOperator) {
-        equalities = processJoinEq((CommonJoinOperator<?>)operator, exprNodeDescList);
+        equalities = searchForEqualitiesInJoin((CommonJoinOperator<?>)operator, exprNodeDescList);
       } else {
-        equalities = processDefaultEq(operator, exprNodeDescList);
+        equalities = searchForEqualitiesDefault(operator, exprNodeDescList);
       }
       return equalities;
     }
 
-    private Map<ExprNodeDesc, String> processJoinEq(
+    private Map<ExprNodeDesc, String> searchForEqualitiesInJoin(
             CommonJoinOperator<?> join, List<ExprNodeColumnDesc> exprNodeDescList) {
       if (exprNodeDescList.isEmpty()) {
         return Collections.emptyMap();
@@ -848,13 +840,13 @@ public final class OpProcFactory {
       }
 
       for (Operator<?> parent : join.getParentOperators()) {
-        equalities.putAll(walk(parent, exprNodeDescList));
+        equalities.putAll(searchForEqualities(parent, exprNodeDescList));
       }
 
       return equalities;
     }
 
-    private Map<ExprNodeDesc, String> processDefaultEq(
+    private Map<ExprNodeDesc, String> searchForEqualitiesDefault(
             Operator<?> operator, List<ExprNodeColumnDesc> exprNodeDescList) {
       if (exprNodeDescList.isEmpty()) {
         return Collections.emptyMap();
@@ -863,7 +855,7 @@ public final class OpProcFactory {
       Map<String, ExprNodeDesc> columnExprMap = operator.getColumnExprMap();
       if (columnExprMap == null) {
         if (operator.getParentOperators().size() == 1) {
-          return walk(operator.getParentOperators().get(0), exprNodeDescList);
+          return searchForEqualities(operator.getParentOperators().get(0), exprNodeDescList);
         } else {
           return Collections.emptyMap();
         }
@@ -879,7 +871,7 @@ public final class OpProcFactory {
         }
       }
       if (operator.getParentOperators().size() == 1) {
-        Map<ExprNodeDesc, String> equalities = walk(operator.getParentOperators().get(0), mapped);
+        Map<ExprNodeDesc, String> equalities = searchForEqualities(operator.getParentOperators().get(0), mapped);
         Map<ExprNodeDesc, String> mappedEqualities = new HashMap<>(equalities.size());
         for (Entry<ExprNodeDesc, String> eqEntry : equalities.entrySet()) {
           for (Entry<String, ExprNodeDesc> colMapEntry : operator.getColumnExprMap().entrySet()) {
