@@ -835,6 +835,11 @@ class ThriftHiveMetastoreHandler : virtual public ThriftHiveMetastoreIf {
     printf("get_open_txns_info\n");
   }
 
+  void find_stat_status_by_write_id(FindStatStatusByWriteIdResponse& _return, const FindStatStatusByWriteIdRequest& rqst) {
+    // Your implementation goes here
+    printf("find_stat_status_by_write_id\n");
+  }
+
   void open_txns(OpenTxnsResponse& _return, const OpenTxnRequest& rqst) {
     // Your implementation goes here
     printf("open_txns\n");

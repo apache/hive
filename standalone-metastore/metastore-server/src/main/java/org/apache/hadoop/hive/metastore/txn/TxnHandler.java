@@ -83,6 +83,8 @@ import org.apache.hadoop.hive.metastore.api.AbortTxnsRequest;
 import org.apache.hadoop.hive.metastore.api.AddDynamicPartitions;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsRequest;
 import org.apache.hadoop.hive.metastore.api.AllocateTableWriteIdsResponse;
+import org.apache.hadoop.hive.metastore.api.FindStatStatusByWriteIdRequest;
+import org.apache.hadoop.hive.metastore.api.FindStatStatusByWriteIdResponse;
 import org.apache.hadoop.hive.metastore.api.CheckLockRequest;
 import org.apache.hadoop.hive.metastore.api.CommitTxnRequest;
 import org.apache.hadoop.hive.metastore.api.CompactionRequest;
@@ -128,6 +130,7 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.TableValidWriteIds;
 import org.apache.hadoop.hive.metastore.api.TxnAbortedException;
 import org.apache.hadoop.hive.metastore.api.TxnOpenException;
+import org.apache.hadoop.hive.metastore.api.TxnState;
 import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.api.TxnType;
 import org.apache.hadoop.hive.metastore.api.UnlockRequest;
@@ -4794,6 +4797,86 @@ abstract class TxnHandler implements TxnStore, TxnStore.MutexAPI {
       }
       LOG.debug("Successfully heartbeated for txnId={}", txnid);
       dbConn.commit();
+    }
+  }
+
+  private boolean foundCommittedTransaction(Connection dbConn, long txnId, FindStatStatusByWriteIdRequest rqst,
+                                           String condition) throws SQLException, MetaException {
+    String s = sqlGenerator.addLimitClause(1,
+            "1 FROM \"COMPLETED_TXN_COMPONENTS\" WHERE \"CTC_TXNID\" " + condition + " " + txnId +
+                    " AND \"CTC_DATABASE\" = ? AND \"CTC_TABLE\" = ?");
+    if (rqst.getPartName() != null) {
+      s += " AND \"CTC_PARTITION\" = ?";
+    }
+
+    try (PreparedStatement pStmt = dbConn.prepareStatement(s)) {
+      int paramCount = 1;
+      pStmt.setString(paramCount++, rqst.getDbName());
+      pStmt.setString(paramCount++, rqst.getTblName());
+      if (rqst.getPartName() != null) {
+        pStmt.setString(paramCount++, rqst.getPartName());
+      }
+      LOG.debug("Going to execute query <" + s + ">");
+      try (ResultSet rs2 = pStmt.executeQuery(s)) {
+        if (rs2.next()) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  @Override
+  @RetrySemantics.Idempotent
+  public FindStatStatusByWriteIdResponse findStatStatusByWriteId(FindStatStatusByWriteIdRequest rqst)
+          throws SQLException, MetaException {
+    try {
+      Connection dbConn = null;
+      Statement stmt = null;
+      try {
+        lockInternal();
+        dbConn = getDbConn(Connection.TRANSACTION_READ_COMMITTED);
+        stmt = dbConn.createStatement();
+        TxnState state;
+        long txnId = getTxnIdForWriteId(rqst.getDbName(), rqst.getTblName(), rqst.getWriteId());
+        TxnStatus txnStatus = findTxnState(txnId, stmt);
+        if (txnStatus == TxnStatus.ABORTED) {
+          state = TxnState.ABORTED;
+        } else if (txnStatus == TxnStatus.OPEN) {
+          state = TxnState.OPEN;
+        } else if (foundCommittedTransaction(dbConn, txnId, rqst, ">")) {
+          // If some transaction is committed after txnId, that means it would have changed the data and the
+          // data seen by "txnId" is not latest. So the stats has to be generated again. This is possible when
+          // some transaction does a write with stats auto gather set to false. If the commit has happened
+          // after txnId got the snapshot and the stats is updated by the committed transaction, then the stats
+          // update by stats updater will be a no-op.
+          state = TxnState.UNKNOWN;
+        } else if (foundCommittedTransaction(dbConn, txnId, rqst, "<=")) {
+            // Less than is for read only transactions. For read only transactions, we dont store the transaction info
+            // in COMPLETED_TXN_COMPONENTS. So if there is a committed transaction with id less than "txnId", and the
+            // state is not open or aborted, then "txnId" is a read only transaction. If no transaction with id less
+            // than "txnId" is present, then we can not judge if its a read only transaction or an aborted transaction.
+            // As compaction would have cleaned the info. So we return the status as unknown.
+            // is a read only transaction.
+            state = TxnState.COMMITTED;
+        } else {
+          // This case is when the txn info is cleaned up by compaction. We dont have any info so let the stat
+          // get generated again.
+          state = TxnState.UNKNOWN;
+        }
+        return new FindStatStatusByWriteIdResponse(state);
+      } catch (SQLException e) {
+        LOG.debug("Going to rollback");
+        rollbackDBConn(dbConn);
+        checkRetryable(dbConn, e, "findTxnState(" + rqst + ")");
+        throw new MetaException("Unable to get transaction state "
+                + StringUtils.stringifyException(e));
+      } finally {
+        close(null, stmt, dbConn);
+        unlockInternal();
+      }
+    } catch (RetryException e) {
+      return findStatStatusByWriteId(rqst);
     }
   }
 

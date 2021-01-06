@@ -3585,6 +3585,16 @@ public class HiveMetaStoreClient implements IMetaStoreClient, AutoCloseable {
   }
 
   @Override
+  public TxnState findStatStatusByWriteId(String dbName, String tblName, String partName, long writeId)
+          throws TException {
+    FindStatStatusByWriteIdRequest rqst = new FindStatStatusByWriteIdRequest(writeId, dbName, tblName);
+    if (partName != null) {
+      rqst.setPartName(partName);
+    }
+    return client.find_stat_status_by_write_id(rqst).getState();
+  }
+
+  @Override
   public long openTxn(String user) throws TException {
     OpenTxnsResponse txns = openTxnsIntr(user, 1, null, null, null);
     return txns.getTxn_ids().get(0);

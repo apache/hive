@@ -68,7 +68,8 @@ struct TxnState {
   enum type {
     COMMITTED = 1,
     ABORTED = 2,
-    OPEN = 3
+    OPEN = 3,
+    UNKNOWN = 4
   };
 };
 
@@ -621,6 +622,10 @@ class Function;
 class TxnInfo;
 
 class GetOpenTxnsInfoResponse;
+
+class FindStatStatusByWriteIdResponse;
+
+class FindStatStatusByWriteIdRequest;
 
 class GetOpenTxnsResponse;
 
@@ -7568,6 +7573,101 @@ class GetOpenTxnsInfoResponse : public virtual ::apache::thrift::TBase {
 void swap(GetOpenTxnsInfoResponse &a, GetOpenTxnsInfoResponse &b);
 
 std::ostream& operator<<(std::ostream& out, const GetOpenTxnsInfoResponse& obj);
+
+
+class FindStatStatusByWriteIdResponse : public virtual ::apache::thrift::TBase {
+ public:
+
+  FindStatStatusByWriteIdResponse(const FindStatStatusByWriteIdResponse&);
+  FindStatStatusByWriteIdResponse& operator=(const FindStatStatusByWriteIdResponse&);
+  FindStatStatusByWriteIdResponse() : state((TxnState::type)0) {
+  }
+
+  virtual ~FindStatStatusByWriteIdResponse() noexcept;
+  TxnState::type state;
+
+  void __set_state(const TxnState::type val);
+
+  bool operator == (const FindStatStatusByWriteIdResponse & rhs) const
+  {
+    if (!(state == rhs.state))
+      return false;
+    return true;
+  }
+  bool operator != (const FindStatStatusByWriteIdResponse &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FindStatStatusByWriteIdResponse & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FindStatStatusByWriteIdResponse &a, FindStatStatusByWriteIdResponse &b);
+
+std::ostream& operator<<(std::ostream& out, const FindStatStatusByWriteIdResponse& obj);
+
+typedef struct _FindStatStatusByWriteIdRequest__isset {
+  _FindStatStatusByWriteIdRequest__isset() : partName(false) {}
+  bool partName :1;
+} _FindStatStatusByWriteIdRequest__isset;
+
+class FindStatStatusByWriteIdRequest : public virtual ::apache::thrift::TBase {
+ public:
+
+  FindStatStatusByWriteIdRequest(const FindStatStatusByWriteIdRequest&);
+  FindStatStatusByWriteIdRequest& operator=(const FindStatStatusByWriteIdRequest&);
+  FindStatStatusByWriteIdRequest() : writeId(0), dbName(), tblName(), partName() {
+  }
+
+  virtual ~FindStatStatusByWriteIdRequest() noexcept;
+  int64_t writeId;
+  std::string dbName;
+  std::string tblName;
+  std::string partName;
+
+  _FindStatStatusByWriteIdRequest__isset __isset;
+
+  void __set_writeId(const int64_t val);
+
+  void __set_dbName(const std::string& val);
+
+  void __set_tblName(const std::string& val);
+
+  void __set_partName(const std::string& val);
+
+  bool operator == (const FindStatStatusByWriteIdRequest & rhs) const
+  {
+    if (!(writeId == rhs.writeId))
+      return false;
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (__isset.partName != rhs.__isset.partName)
+      return false;
+    else if (__isset.partName && !(partName == rhs.partName))
+      return false;
+    return true;
+  }
+  bool operator != (const FindStatStatusByWriteIdRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const FindStatStatusByWriteIdRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+  virtual void printTo(std::ostream& out) const;
+};
+
+void swap(FindStatStatusByWriteIdRequest &a, FindStatStatusByWriteIdRequest &b);
+
+std::ostream& operator<<(std::ostream& out, const FindStatStatusByWriteIdRequest& obj);
 
 typedef struct _GetOpenTxnsResponse__isset {
   _GetOpenTxnsResponse__isset() : min_open_txn(false) {}

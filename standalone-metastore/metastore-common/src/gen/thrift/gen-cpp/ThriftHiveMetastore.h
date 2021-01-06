@@ -186,6 +186,7 @@ class ThriftHiveMetastoreIf : virtual public  ::facebook::fb303::FacebookService
   virtual void get_master_keys(std::vector<std::string> & _return) = 0;
   virtual void get_open_txns(GetOpenTxnsResponse& _return) = 0;
   virtual void get_open_txns_info(GetOpenTxnsInfoResponse& _return) = 0;
+  virtual void find_stat_status_by_write_id(FindStatStatusByWriteIdResponse& _return, const FindStatStatusByWriteIdRequest& rqst) = 0;
   virtual void open_txns(OpenTxnsResponse& _return, const OpenTxnRequest& rqst) = 0;
   virtual void abort_txn(const AbortTxnRequest& rqst) = 0;
   virtual void abort_txns(const AbortTxnsRequest& rqst) = 0;
@@ -817,6 +818,9 @@ class ThriftHiveMetastoreNull : virtual public ThriftHiveMetastoreIf , virtual p
     return;
   }
   void get_open_txns_info(GetOpenTxnsInfoResponse& /* _return */) {
+    return;
+  }
+  void find_stat_status_by_write_id(FindStatStatusByWriteIdResponse& /* _return */, const FindStatStatusByWriteIdRequest& /* rqst */) {
     return;
   }
   void open_txns(OpenTxnsResponse& /* _return */, const OpenTxnRequest& /* rqst */) {
@@ -21510,6 +21514,110 @@ class ThriftHiveMetastore_get_open_txns_info_presult {
 
 };
 
+typedef struct _ThriftHiveMetastore_find_stat_status_by_write_id_args__isset {
+  _ThriftHiveMetastore_find_stat_status_by_write_id_args__isset() : rqst(false) {}
+  bool rqst :1;
+} _ThriftHiveMetastore_find_stat_status_by_write_id_args__isset;
+
+class ThriftHiveMetastore_find_stat_status_by_write_id_args {
+ public:
+
+  ThriftHiveMetastore_find_stat_status_by_write_id_args(const ThriftHiveMetastore_find_stat_status_by_write_id_args&);
+  ThriftHiveMetastore_find_stat_status_by_write_id_args& operator=(const ThriftHiveMetastore_find_stat_status_by_write_id_args&);
+  ThriftHiveMetastore_find_stat_status_by_write_id_args() {
+  }
+
+  virtual ~ThriftHiveMetastore_find_stat_status_by_write_id_args() noexcept;
+  FindStatStatusByWriteIdRequest rqst;
+
+  _ThriftHiveMetastore_find_stat_status_by_write_id_args__isset __isset;
+
+  void __set_rqst(const FindStatStatusByWriteIdRequest& val);
+
+  bool operator == (const ThriftHiveMetastore_find_stat_status_by_write_id_args & rhs) const
+  {
+    if (!(rqst == rhs.rqst))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_find_stat_status_by_write_id_args &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_find_stat_status_by_write_id_args & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+
+class ThriftHiveMetastore_find_stat_status_by_write_id_pargs {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_find_stat_status_by_write_id_pargs() noexcept;
+  const FindStatStatusByWriteIdRequest* rqst;
+
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_find_stat_status_by_write_id_result__isset {
+  _ThriftHiveMetastore_find_stat_status_by_write_id_result__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_find_stat_status_by_write_id_result__isset;
+
+class ThriftHiveMetastore_find_stat_status_by_write_id_result {
+ public:
+
+  ThriftHiveMetastore_find_stat_status_by_write_id_result(const ThriftHiveMetastore_find_stat_status_by_write_id_result&);
+  ThriftHiveMetastore_find_stat_status_by_write_id_result& operator=(const ThriftHiveMetastore_find_stat_status_by_write_id_result&);
+  ThriftHiveMetastore_find_stat_status_by_write_id_result() {
+  }
+
+  virtual ~ThriftHiveMetastore_find_stat_status_by_write_id_result() noexcept;
+  FindStatStatusByWriteIdResponse success;
+
+  _ThriftHiveMetastore_find_stat_status_by_write_id_result__isset __isset;
+
+  void __set_success(const FindStatStatusByWriteIdResponse& val);
+
+  bool operator == (const ThriftHiveMetastore_find_stat_status_by_write_id_result & rhs) const
+  {
+    if (!(success == rhs.success))
+      return false;
+    return true;
+  }
+  bool operator != (const ThriftHiveMetastore_find_stat_status_by_write_id_result &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const ThriftHiveMetastore_find_stat_status_by_write_id_result & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+typedef struct _ThriftHiveMetastore_find_stat_status_by_write_id_presult__isset {
+  _ThriftHiveMetastore_find_stat_status_by_write_id_presult__isset() : success(false) {}
+  bool success :1;
+} _ThriftHiveMetastore_find_stat_status_by_write_id_presult__isset;
+
+class ThriftHiveMetastore_find_stat_status_by_write_id_presult {
+ public:
+
+
+  virtual ~ThriftHiveMetastore_find_stat_status_by_write_id_presult() noexcept;
+  FindStatStatusByWriteIdResponse* success;
+
+  _ThriftHiveMetastore_find_stat_status_by_write_id_presult__isset __isset;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+
+};
+
 typedef struct _ThriftHiveMetastore_open_txns_args__isset {
   _ThriftHiveMetastore_open_txns_args__isset() : rqst(false) {}
   bool rqst :1;
@@ -31934,6 +32042,9 @@ class ThriftHiveMetastoreClient : virtual public ThriftHiveMetastoreIf, public  
   void get_open_txns_info(GetOpenTxnsInfoResponse& _return);
   void send_get_open_txns_info();
   void recv_get_open_txns_info(GetOpenTxnsInfoResponse& _return);
+  void find_stat_status_by_write_id(FindStatStatusByWriteIdResponse& _return, const FindStatStatusByWriteIdRequest& rqst);
+  void send_find_stat_status_by_write_id(const FindStatStatusByWriteIdRequest& rqst);
+  void recv_find_stat_status_by_write_id(FindStatStatusByWriteIdResponse& _return);
   void open_txns(OpenTxnsResponse& _return, const OpenTxnRequest& rqst);
   void send_open_txns(const OpenTxnRequest& rqst);
   void recv_open_txns(OpenTxnsResponse& _return);
@@ -32371,6 +32482,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
   void process_get_master_keys(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_open_txns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_get_open_txns_info(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
+  void process_find_stat_status_by_write_id(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_open_txns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_abort_txn(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
   void process_abort_txns(int32_t seqid, ::apache::thrift::protocol::TProtocol* iprot, ::apache::thrift::protocol::TProtocol* oprot, void* callContext);
@@ -32626,6 +32738,7 @@ class ThriftHiveMetastoreProcessor : public  ::facebook::fb303::FacebookServiceP
     processMap_["get_master_keys"] = &ThriftHiveMetastoreProcessor::process_get_master_keys;
     processMap_["get_open_txns"] = &ThriftHiveMetastoreProcessor::process_get_open_txns;
     processMap_["get_open_txns_info"] = &ThriftHiveMetastoreProcessor::process_get_open_txns_info;
+    processMap_["find_stat_status_by_write_id"] = &ThriftHiveMetastoreProcessor::process_find_stat_status_by_write_id;
     processMap_["open_txns"] = &ThriftHiveMetastoreProcessor::process_open_txns;
     processMap_["abort_txn"] = &ThriftHiveMetastoreProcessor::process_abort_txn;
     processMap_["abort_txns"] = &ThriftHiveMetastoreProcessor::process_abort_txns;
@@ -34314,6 +34427,16 @@ class ThriftHiveMetastoreMultiface : virtual public ThriftHiveMetastoreIf, publi
     return;
   }
 
+  void find_stat_status_by_write_id(FindStatStatusByWriteIdResponse& _return, const FindStatStatusByWriteIdRequest& rqst) {
+    size_t sz = ifaces_.size();
+    size_t i = 0;
+    for (; i < (sz - 1); ++i) {
+      ifaces_[i]->find_stat_status_by_write_id(_return, rqst);
+    }
+    ifaces_[i]->find_stat_status_by_write_id(_return, rqst);
+    return;
+  }
+
   void open_txns(OpenTxnsResponse& _return, const OpenTxnRequest& rqst) {
     size_t sz = ifaces_.size();
     size_t i = 0;
@@ -35667,6 +35790,9 @@ class ThriftHiveMetastoreConcurrentClient : virtual public ThriftHiveMetastoreIf
   void get_open_txns_info(GetOpenTxnsInfoResponse& _return);
   int32_t send_get_open_txns_info();
   void recv_get_open_txns_info(GetOpenTxnsInfoResponse& _return, const int32_t seqid);
+  void find_stat_status_by_write_id(FindStatStatusByWriteIdResponse& _return, const FindStatStatusByWriteIdRequest& rqst);
+  int32_t send_find_stat_status_by_write_id(const FindStatStatusByWriteIdRequest& rqst);
+  void recv_find_stat_status_by_write_id(FindStatStatusByWriteIdResponse& _return, const int32_t seqid);
   void open_txns(OpenTxnsResponse& _return, const OpenTxnRequest& rqst);
   int32_t send_open_txns(const OpenTxnRequest& rqst);
   void recv_open_txns(OpenTxnsResponse& _return, const int32_t seqid);

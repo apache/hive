@@ -1297,6 +1297,11 @@ interface ThriftHiveMetastoreIf extends \FacebookServiceIf
      */
     public function get_open_txns_info();
     /**
+     * @param \metastore\FindStatStatusByWriteIdRequest $rqst
+     * @return \metastore\FindStatStatusByWriteIdResponse
+     */
+    public function find_stat_status_by_write_id(\metastore\FindStatStatusByWriteIdRequest $rqst);
+    /**
      * @param \metastore\OpenTxnRequest $rqst
      * @return \metastore\OpenTxnsResponse
      */

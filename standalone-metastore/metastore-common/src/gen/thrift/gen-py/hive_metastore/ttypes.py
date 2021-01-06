@@ -75,17 +75,20 @@ class TxnState(object):
     COMMITTED = 1
     ABORTED = 2
     OPEN = 3
+    UNKNOWN = 4
 
     _VALUES_TO_NAMES = {
         1: "COMMITTED",
         2: "ABORTED",
         3: "OPEN",
+        4: "UNKNOWN",
     }
 
     _NAMES_TO_VALUES = {
         "COMMITTED": 1,
         "ABORTED": 2,
         "OPEN": 3,
+        "UNKNOWN": 4,
     }
 
 
@@ -11385,6 +11388,161 @@ class GetOpenTxnsInfoResponse(object):
             raise TProtocolException(message='Required field txn_high_water_mark is unset!')
         if self.open_txns is None:
             raise TProtocolException(message='Required field open_txns is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class FindStatStatusByWriteIdResponse(object):
+    """
+    Attributes:
+     - state
+
+    """
+
+
+    def __init__(self, state=None,):
+        self.state = state
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I32:
+                    self.state = iprot.readI32()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('FindStatStatusByWriteIdResponse')
+        if self.state is not None:
+            oprot.writeFieldBegin('state', TType.I32, 1)
+            oprot.writeI32(self.state)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.state is None:
+            raise TProtocolException(message='Required field state is unset!')
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+
+
+class FindStatStatusByWriteIdRequest(object):
+    """
+    Attributes:
+     - writeId
+     - dbName
+     - tblName
+     - partName
+
+    """
+
+
+    def __init__(self, writeId=None, dbName=None, tblName=None, partName=None,):
+        self.writeId = writeId
+        self.dbName = dbName
+        self.tblName = tblName
+        self.partName = partName
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.I64:
+                    self.writeId = iprot.readI64()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 2:
+                if ftype == TType.STRING:
+                    self.dbName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 3:
+                if ftype == TType.STRING:
+                    self.tblName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            elif fid == 4:
+                if ftype == TType.STRING:
+                    self.partName = iprot.readString().decode('utf-8') if sys.version_info[0] == 2 else iprot.readString()
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('FindStatStatusByWriteIdRequest')
+        if self.writeId is not None:
+            oprot.writeFieldBegin('writeId', TType.I64, 1)
+            oprot.writeI64(self.writeId)
+            oprot.writeFieldEnd()
+        if self.dbName is not None:
+            oprot.writeFieldBegin('dbName', TType.STRING, 2)
+            oprot.writeString(self.dbName.encode('utf-8') if sys.version_info[0] == 2 else self.dbName)
+            oprot.writeFieldEnd()
+        if self.tblName is not None:
+            oprot.writeFieldBegin('tblName', TType.STRING, 3)
+            oprot.writeString(self.tblName.encode('utf-8') if sys.version_info[0] == 2 else self.tblName)
+            oprot.writeFieldEnd()
+        if self.partName is not None:
+            oprot.writeFieldBegin('partName', TType.STRING, 4)
+            oprot.writeString(self.partName.encode('utf-8') if sys.version_info[0] == 2 else self.partName)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        if self.writeId is None:
+            raise TProtocolException(message='Required field writeId is unset!')
+        if self.dbName is None:
+            raise TProtocolException(message='Required field dbName is unset!')
+        if self.tblName is None:
+            raise TProtocolException(message='Required field tblName is unset!')
         return
 
     def __repr__(self):
@@ -27722,6 +27880,19 @@ GetOpenTxnsInfoResponse.thrift_spec = (
     None,  # 0
     (1, TType.I64, 'txn_high_water_mark', None, None, ),  # 1
     (2, TType.LIST, 'open_txns', (TType.STRUCT, [TxnInfo, None], False), None, ),  # 2
+)
+all_structs.append(FindStatStatusByWriteIdResponse)
+FindStatStatusByWriteIdResponse.thrift_spec = (
+    None,  # 0
+    (1, TType.I32, 'state', None, None, ),  # 1
+)
+all_structs.append(FindStatStatusByWriteIdRequest)
+FindStatStatusByWriteIdRequest.thrift_spec = (
+    None,  # 0
+    (1, TType.I64, 'writeId', None, None, ),  # 1
+    (2, TType.STRING, 'dbName', 'UTF8', None, ),  # 2
+    (3, TType.STRING, 'tblName', 'UTF8', None, ),  # 3
+    (4, TType.STRING, 'partName', 'UTF8', None, ),  # 4
 )
 all_structs.append(GetOpenTxnsResponse)
 GetOpenTxnsResponse.thrift_spec = (

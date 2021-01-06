@@ -1456,6 +1456,14 @@ class Iface(fb303.FacebookService.Iface):
     def get_open_txns_info(self):
         pass
 
+    def find_stat_status_by_write_id(self, rqst):
+        """
+        Parameters:
+         - rqst
+
+        """
+        pass
+
     def open_txns(self, rqst):
         """
         Parameters:
@@ -8260,6 +8268,38 @@ class Client(fb303.FacebookService.Client, Iface):
             return result.success
         raise TApplicationException(TApplicationException.MISSING_RESULT, "get_open_txns_info failed: unknown result")
 
+    def find_stat_status_by_write_id(self, rqst):
+        """
+        Parameters:
+         - rqst
+
+        """
+        self.send_find_stat_status_by_write_id(rqst)
+        return self.recv_find_stat_status_by_write_id()
+
+    def send_find_stat_status_by_write_id(self, rqst):
+        self._oprot.writeMessageBegin('find_stat_status_by_write_id', TMessageType.CALL, self._seqid)
+        args = find_stat_status_by_write_id_args()
+        args.rqst = rqst
+        args.write(self._oprot)
+        self._oprot.writeMessageEnd()
+        self._oprot.trans.flush()
+
+    def recv_find_stat_status_by_write_id(self):
+        iprot = self._iprot
+        (fname, mtype, rseqid) = iprot.readMessageBegin()
+        if mtype == TMessageType.EXCEPTION:
+            x = TApplicationException()
+            x.read(iprot)
+            iprot.readMessageEnd()
+            raise x
+        result = find_stat_status_by_write_id_result()
+        result.read(iprot)
+        iprot.readMessageEnd()
+        if result.success is not None:
+            return result.success
+        raise TApplicationException(TApplicationException.MISSING_RESULT, "find_stat_status_by_write_id failed: unknown result")
+
     def open_txns(self, rqst):
         """
         Parameters:
@@ -11441,6 +11481,7 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
         self._processMap["get_master_keys"] = Processor.process_get_master_keys
         self._processMap["get_open_txns"] = Processor.process_get_open_txns
         self._processMap["get_open_txns_info"] = Processor.process_get_open_txns_info
+        self._processMap["find_stat_status_by_write_id"] = Processor.process_find_stat_status_by_write_id
         self._processMap["open_txns"] = Processor.process_open_txns
         self._processMap["abort_txn"] = Processor.process_abort_txn
         self._processMap["abort_txns"] = Processor.process_abort_txns
@@ -16292,6 +16333,29 @@ class Processor(fb303.FacebookService.Processor, Iface, TProcessor):
             msg_type = TMessageType.EXCEPTION
             result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
         oprot.writeMessageBegin("get_open_txns_info", msg_type, seqid)
+        result.write(oprot)
+        oprot.writeMessageEnd()
+        oprot.trans.flush()
+
+    def process_find_stat_status_by_write_id(self, seqid, iprot, oprot):
+        args = find_stat_status_by_write_id_args()
+        args.read(iprot)
+        iprot.readMessageEnd()
+        result = find_stat_status_by_write_id_result()
+        try:
+            result.success = self._handler.find_stat_status_by_write_id(args.rqst)
+            msg_type = TMessageType.REPLY
+        except TTransport.TTransportException:
+            raise
+        except TApplicationException as ex:
+            logging.exception('TApplication exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = ex
+        except Exception:
+            logging.exception('Unexpected exception in handler')
+            msg_type = TMessageType.EXCEPTION
+            result = TApplicationException(TApplicationException.INTERNAL_ERROR, 'Internal error')
+        oprot.writeMessageBegin("find_stat_status_by_write_id", msg_type, seqid)
         result.write(oprot)
         oprot.writeMessageEnd()
         oprot.trans.flush()
@@ -45348,6 +45412,131 @@ class get_open_txns_info_result(object):
 all_structs.append(get_open_txns_info_result)
 get_open_txns_info_result.thrift_spec = (
     (0, TType.STRUCT, 'success', [GetOpenTxnsInfoResponse, None], None, ),  # 0
+)
+
+
+class find_stat_status_by_write_id_args(object):
+    """
+    Attributes:
+     - rqst
+
+    """
+
+
+    def __init__(self, rqst=None,):
+        self.rqst = rqst
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 1:
+                if ftype == TType.STRUCT:
+                    self.rqst = FindStatStatusByWriteIdRequest()
+                    self.rqst.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('find_stat_status_by_write_id_args')
+        if self.rqst is not None:
+            oprot.writeFieldBegin('rqst', TType.STRUCT, 1)
+            self.rqst.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(find_stat_status_by_write_id_args)
+find_stat_status_by_write_id_args.thrift_spec = (
+    None,  # 0
+    (1, TType.STRUCT, 'rqst', [FindStatStatusByWriteIdRequest, None], None, ),  # 1
+)
+
+
+class find_stat_status_by_write_id_result(object):
+    """
+    Attributes:
+     - success
+
+    """
+
+
+    def __init__(self, success=None,):
+        self.success = success
+
+    def read(self, iprot):
+        if iprot._fast_decode is not None and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None:
+            iprot._fast_decode(self, iprot, [self.__class__, self.thrift_spec])
+            return
+        iprot.readStructBegin()
+        while True:
+            (fname, ftype, fid) = iprot.readFieldBegin()
+            if ftype == TType.STOP:
+                break
+            if fid == 0:
+                if ftype == TType.STRUCT:
+                    self.success = FindStatStatusByWriteIdResponse()
+                    self.success.read(iprot)
+                else:
+                    iprot.skip(ftype)
+            else:
+                iprot.skip(ftype)
+            iprot.readFieldEnd()
+        iprot.readStructEnd()
+
+    def write(self, oprot):
+        if oprot._fast_encode is not None and self.thrift_spec is not None:
+            oprot.trans.write(oprot._fast_encode(self, [self.__class__, self.thrift_spec]))
+            return
+        oprot.writeStructBegin('find_stat_status_by_write_id_result')
+        if self.success is not None:
+            oprot.writeFieldBegin('success', TType.STRUCT, 0)
+            self.success.write(oprot)
+            oprot.writeFieldEnd()
+        oprot.writeFieldStop()
+        oprot.writeStructEnd()
+
+    def validate(self):
+        return
+
+    def __repr__(self):
+        L = ['%s=%r' % (key, value)
+             for key, value in self.__dict__.items()]
+        return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        return not (self == other)
+all_structs.append(find_stat_status_by_write_id_result)
+find_stat_status_by_write_id_result.thrift_spec = (
+    (0, TType.STRUCT, 'success', [FindStatStatusByWriteIdResponse, None], None, ),  # 0
 )
 
 

@@ -2753,6 +2753,21 @@ module ThriftHiveMetastore
       raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'get_open_txns_info failed: unknown result')
     end
 
+    def find_stat_status_by_write_id(rqst)
+      send_find_stat_status_by_write_id(rqst)
+      return recv_find_stat_status_by_write_id()
+    end
+
+    def send_find_stat_status_by_write_id(rqst)
+      send_message('find_stat_status_by_write_id', Find_stat_status_by_write_id_args, :rqst => rqst)
+    end
+
+    def recv_find_stat_status_by_write_id()
+      result = receive_message(Find_stat_status_by_write_id_result)
+      return result.success unless result.success.nil?
+      raise ::Thrift::ApplicationException.new(::Thrift::ApplicationException::MISSING_RESULT, 'find_stat_status_by_write_id failed: unknown result')
+    end
+
     def open_txns(rqst)
       send_open_txns(rqst)
       return recv_open_txns()
@@ -6291,6 +6306,13 @@ module ThriftHiveMetastore
       result = Get_open_txns_info_result.new()
       result.success = @handler.get_open_txns_info()
       write_result(result, oprot, 'get_open_txns_info', seqid)
+    end
+
+    def process_find_stat_status_by_write_id(seqid, iprot, oprot)
+      args = read_args(iprot, Find_stat_status_by_write_id_args)
+      result = Find_stat_status_by_write_id_result.new()
+      result.success = @handler.find_stat_status_by_write_id(args.rqst)
+      write_result(result, oprot, 'find_stat_status_by_write_id', seqid)
     end
 
     def process_open_txns(seqid, iprot, oprot)
@@ -13461,6 +13483,38 @@ module ThriftHiveMetastore
 
     FIELDS = {
       SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::GetOpenTxnsInfoResponse}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Find_stat_status_by_write_id_args
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    RQST = 1
+
+    FIELDS = {
+      RQST => {:type => ::Thrift::Types::STRUCT, :name => 'rqst', :class => ::FindStatStatusByWriteIdRequest}
+    }
+
+    def struct_fields; FIELDS; end
+
+    def validate
+    end
+
+    ::Thrift::Struct.generate_accessors self
+  end
+
+  class Find_stat_status_by_write_id_result
+    include ::Thrift::Struct, ::Thrift::Struct_Union
+    SUCCESS = 0
+
+    FIELDS = {
+      SUCCESS => {:type => ::Thrift::Types::STRUCT, :name => 'success', :class => ::FindStatStatusByWriteIdResponse}
     }
 
     def struct_fields; FIELDS; end

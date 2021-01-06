@@ -3011,6 +3011,9 @@ public interface IMetaStoreClient {
   List<TableValidWriteIds> getValidWriteIds(List<String> tablesList, String validTxnList)
           throws TException;
 
+  TxnState findStatStatusByWriteId(String dbName, String tblName, String partName, long writeId)
+          throws TException;
+
   /**
    * Initiate a transaction.
    * @param user User who is opening this transaction.  This is the Hive user,

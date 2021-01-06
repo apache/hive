@@ -36,8 +36,9 @@ module TxnState
   COMMITTED = 1
   ABORTED = 2
   OPEN = 3
-  VALUE_MAP = {1 => "COMMITTED", 2 => "ABORTED", 3 => "OPEN"}
-  VALID_VALUES = Set.new([COMMITTED, ABORTED, OPEN]).freeze
+  UNKNOWN = 4
+  VALUE_MAP = {1 => "COMMITTED", 2 => "ABORTED", 3 => "OPEN", 4 => "UNKNOWN"}
+  VALID_VALUES = Set.new([COMMITTED, ABORTED, OPEN, UNKNOWN]).freeze
 end
 
 module LockLevel
@@ -445,6 +446,10 @@ class Function; end
 class TxnInfo; end
 
 class GetOpenTxnsInfoResponse; end
+
+class FindStatStatusByWriteIdResponse; end
+
+class FindStatStatusByWriteIdRequest; end
 
 class GetOpenTxnsResponse; end
 
@@ -3434,6 +3439,51 @@ class GetOpenTxnsInfoResponse
   def validate
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field txn_high_water_mark is unset!') unless @txn_high_water_mark
     raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field open_txns is unset!') unless @open_txns
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class FindStatStatusByWriteIdResponse
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  STATE = 1
+
+  FIELDS = {
+    STATE => {:type => ::Thrift::Types::I32, :name => 'state', :enum_class => ::TxnState}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field state is unset!') unless @state
+    unless @state.nil? || ::TxnState::VALID_VALUES.include?(@state)
+      raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Invalid value of field state!')
+    end
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class FindStatStatusByWriteIdRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  WRITEID = 1
+  DBNAME = 2
+  TBLNAME = 3
+  PARTNAME = 4
+
+  FIELDS = {
+    WRITEID => {:type => ::Thrift::Types::I64, :name => 'writeId'},
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
+    PARTNAME => {:type => ::Thrift::Types::STRING, :name => 'partName', :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field writeId is unset!') unless @writeId
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
   end
 
   ::Thrift::Struct.generate_accessors self

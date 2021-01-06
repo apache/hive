@@ -11,7 +11,8 @@ package org.apache.hadoop.hive.metastore.api;
 public enum TxnState implements org.apache.thrift.TEnum {
   COMMITTED(1),
   ABORTED(2),
-  OPEN(3);
+  OPEN(3),
+  UNKNOWN(4);
 
   private final int value;
 
@@ -39,6 +40,8 @@ public enum TxnState implements org.apache.thrift.TEnum {
         return ABORTED;
       case 3:
         return OPEN;
+      case 4:
+        return UNKNOWN;
       default:
         return null;
     }

@@ -187,6 +187,7 @@ if len(sys.argv) <= 1 or sys.argv[1] == '--help':
     print('   get_master_keys()')
     print('  GetOpenTxnsResponse get_open_txns()')
     print('  GetOpenTxnsInfoResponse get_open_txns_info()')
+    print('  FindStatStatusByWriteIdResponse find_stat_status_by_write_id(FindStatStatusByWriteIdRequest rqst)')
     print('  OpenTxnsResponse open_txns(OpenTxnRequest rqst)')
     print('  void abort_txn(AbortTxnRequest rqst)')
     print('  void abort_txns(AbortTxnsRequest rqst)')
@@ -1344,6 +1345,12 @@ elif cmd == 'get_open_txns_info':
         print('get_open_txns_info requires 0 args')
         sys.exit(1)
     pp.pprint(client.get_open_txns_info())
+
+elif cmd == 'find_stat_status_by_write_id':
+    if len(args) != 1:
+        print('find_stat_status_by_write_id requires 1 args')
+        sys.exit(1)
+    pp.pprint(client.find_stat_status_by_write_id(eval(args[0]),))
 
 elif cmd == 'open_txns':
     if len(args) != 1:

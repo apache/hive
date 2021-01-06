@@ -8297,6 +8297,16 @@ public class HiveMetaStore extends ThriftHiveMetastore {
     }
 
     @Override
+    public FindStatStatusByWriteIdResponse find_stat_status_by_write_id(FindStatStatusByWriteIdRequest rqst) throws TException {
+      try {
+        return getTxnHandler().findStatStatusByWriteId(rqst);
+      } catch (Exception e) {
+        LOG.error("Failed to get transaction status", e);
+        throw new RuntimeException(e);
+      }
+    }
+
+    @Override
     public OpenTxnsResponse open_txns(OpenTxnRequest rqst) throws TException {
       OpenTxnsResponse response = getTxnHandler().openTxns(rqst);
       List<Long> txnIds = response.getTxn_ids();

@@ -36,9 +36,12 @@ import org.apache.hadoop.hive.metastore.api.LockType;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.OpenTxnRequest;
 import org.apache.hadoop.hive.metastore.api.OpenTxnsResponse;
+import org.apache.hadoop.hive.metastore.api.FindStatStatusByWriteIdRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactRequest;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponse;
 import org.apache.hadoop.hive.metastore.api.ShowCompactResponseElement;
+import org.apache.hadoop.hive.metastore.api.TxnState;
+import org.apache.hadoop.hive.metastore.api.TxnToWriteId;
 import org.apache.hadoop.hive.metastore.utils.TestTxnDbUtil;
 import org.junit.After;
 import org.junit.Before;
@@ -46,6 +49,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -644,6 +648,48 @@ public class TestCompactionTxnHandler {
     checkEnqueueTime(enqueueTime);
   }
 
+  @Test
+  public void testFindTransactionStatus() throws Exception {
+    String dbName = "mydb";
+    String tblName = "mytable";
+    long txnid = prepareTxn(dbName, tblName);
+    long writeIdAbort = allocateWriteId(dbName, tblName, txnid);
+    TxnState state = findTxnStatus(dbName, tblName, writeIdAbort);
+    assertTrue(state == TxnState.OPEN);
+    txnHandler.abortTxn(new AbortTxnRequest(txnid));
+    state = findTxnStatus(dbName, tblName, writeIdAbort);
+    assertTrue(state == TxnState.ABORTED);
+
+    txnid = prepareTxn(dbName, tblName);
+    long writeIdCommit = allocateWriteId(dbName, tblName, txnid);
+    state = findTxnStatus(dbName, tblName, writeIdCommit);
+    assertTrue(state == TxnState.OPEN);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+    state = findTxnStatus(dbName, tblName, writeIdCommit);
+    assertTrue(state == TxnState.COMMITTED);
+
+    // dummy txn, as the last txn is not cleaned.
+    txnid = prepareTxn(dbName, tblName);
+    txnHandler.commitTxn(new CommitTxnRequest(txnid));
+
+    CompactionRequest rqst = new CompactionRequest(dbName, tblName, CompactionType.MAJOR);
+    txnHandler.compact(rqst);
+    assertEquals(0, txnHandler.findReadyToClean(0, 0).size());
+    CompactionInfo ci = txnHandler.findNextToCompact("fred");
+    assertNotNull(ci);
+    txnHandler.markCompacted(ci);
+
+    List<CompactionInfo> toClean = txnHandler.findReadyToClean(0, 0);
+    assertEquals(1, toClean.size());
+    txnHandler.markCleaned(ci);
+
+    txnHandler.cleanEmptyAbortedAndCommittedTxns();
+    state = findTxnStatus(dbName, tblName, writeIdAbort);
+    assertTrue(state == TxnState.UNKNOWN);
+    state = findTxnStatus(dbName, tblName, writeIdCommit);
+    assertTrue(state == TxnState.UNKNOWN);
+  }
+
   private void checkEnqueueTime(long enqueueTime) throws MetaException {
     ShowCompactResponse showCompactResponse = txnHandler.showCompact(new ShowCompactRequest());
     ShowCompactResponseElement element = showCompactResponse.getCompacts().get(0);
@@ -666,4 +712,28 @@ public class TestCompactionTxnHandler {
     return txns.get(0);
   }
 
+  private long allocateWriteId(String dbName, String tblName, long txnId) throws Exception {
+    AllocateTableWriteIdsRequest rqst = new AllocateTableWriteIdsRequest(dbName, tblName);
+    rqst.setTxnIds(Collections.singletonList(txnId));
+    TxnToWriteId txnToWriteId = txnHandler.allocateTableWriteIds(rqst).getTxnToWriteIds().get(0);
+    return txnToWriteId.getTxnId();
+  }
+
+  private TxnState findTxnStatus(String dbName, String tblName, long writeId) throws Exception {
+    return txnHandler.findStatStatusByWriteId(new FindStatStatusByWriteIdRequest(writeId, dbName, tblName)).getState();
+  }
+
+  private long prepareTxn(String dbName, String tblName) throws Exception {
+    long txnId = openTxn();
+    LockComponent comp = new LockComponent(LockType.SHARED_WRITE, LockLevel.DB, dbName);
+    comp.setTablename(tblName);
+    comp.setOperationType(DataOperationType.INSERT);
+    List<LockComponent> components = new ArrayList<LockComponent>(1);
+    components.add(comp);
+    LockRequest req = new LockRequest(components, "me", "localhost");
+    req.setTxnid(txnId);
+    LockResponse res = txnHandler.lock(req);
+    assertTrue(res.getState() == LockState.ACQUIRED);
+    return txnId;
+  }
 }

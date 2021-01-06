@@ -10693,6 +10693,65 @@ class ThriftHiveMetastoreClient extends \FacebookServiceClient implements \metas
         throw new \Exception("get_open_txns_info failed: unknown result");
     }
 
+    public function find_stat_status_by_write_id(\metastore\FindStatStatusByWriteIdRequest $rqst)
+    {
+        $this->send_find_stat_status_by_write_id($rqst);
+        return $this->recv_find_stat_status_by_write_id();
+    }
+
+    public function send_find_stat_status_by_write_id(\metastore\FindStatStatusByWriteIdRequest $rqst)
+    {
+        $args = new \metastore\ThriftHiveMetastore_find_stat_status_by_write_id_args();
+        $args->rqst = $rqst;
+        $bin_accel = ($this->output_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_write_binary');
+        if ($bin_accel) {
+            thrift_protocol_write_binary(
+                $this->output_,
+                'find_stat_status_by_write_id',
+                TMessageType::CALL,
+                $args,
+                $this->seqid_,
+                $this->output_->isStrictWrite()
+            );
+        } else {
+            $this->output_->writeMessageBegin('find_stat_status_by_write_id', TMessageType::CALL, $this->seqid_);
+            $args->write($this->output_);
+            $this->output_->writeMessageEnd();
+            $this->output_->getTransport()->flush();
+        }
+    }
+
+    public function recv_find_stat_status_by_write_id()
+    {
+        $bin_accel = ($this->input_ instanceof TBinaryProtocolAccelerated) && function_exists('thrift_protocol_read_binary');
+        if ($bin_accel) {
+            $result = thrift_protocol_read_binary(
+                $this->input_,
+                '\metastore\ThriftHiveMetastore_find_stat_status_by_write_id_result',
+                $this->input_->isStrictRead()
+            );
+        } else {
+            $rseqid = 0;
+            $fname = null;
+            $mtype = 0;
+
+            $this->input_->readMessageBegin($fname, $mtype, $rseqid);
+            if ($mtype == TMessageType::EXCEPTION) {
+                $x = new TApplicationException();
+                $x->read($this->input_);
+                $this->input_->readMessageEnd();
+                throw $x;
+            }
+            $result = new \metastore\ThriftHiveMetastore_find_stat_status_by_write_id_result();
+            $result->read($this->input_);
+            $this->input_->readMessageEnd();
+        }
+        if ($result->success !== null) {
+            return $result->success;
+        }
+        throw new \Exception("find_stat_status_by_write_id failed: unknown result");
+    }
+
     public function open_txns(\metastore\OpenTxnRequest $rqst)
     {
         $this->send_open_txns($rqst);

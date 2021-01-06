@@ -165,6 +165,7 @@ enum TxnState {
     COMMITTED = 1,
     ABORTED = 2,
     OPEN = 3,
+    UNKNOWN = 4,
 }
 
 enum LockLevel {
@@ -967,6 +968,17 @@ struct TxnInfo {
 struct GetOpenTxnsInfoResponse {
     1: required i64 txn_high_water_mark,
     2: required list<TxnInfo> open_txns,
+}
+
+struct FindStatStatusByWriteIdResponse {
+    1: required TxnState state,
+}
+
+struct FindStatStatusByWriteIdRequest {
+    1: required i64 writeId,
+    2: required string dbName,
+    3: required string tblName,
+    4: optional string partName,
 }
 
 struct GetOpenTxnsResponse {
@@ -2700,6 +2712,7 @@ PartitionsResponse get_partitions_req(1:PartitionsRequest req)
   GetOpenTxnsResponse get_open_txns()
   // Get list of open transactions with state (open, aborted)
   GetOpenTxnsInfoResponse get_open_txns_info()
+  FindStatStatusByWriteIdResponse find_stat_status_by_write_id(1:FindStatStatusByWriteIdRequest rqst)
   OpenTxnsResponse open_txns(1:OpenTxnRequest rqst)
   void abort_txn(1:AbortTxnRequest rqst) throws (1:NoSuchTxnException o1)
   void abort_txns(1:AbortTxnsRequest rqst) throws (1:NoSuchTxnException o1)

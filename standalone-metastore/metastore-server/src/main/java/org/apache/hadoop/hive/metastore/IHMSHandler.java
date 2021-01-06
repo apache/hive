@@ -29,6 +29,9 @@ import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.ThriftHiveMetastore;
 import org.apache.hadoop.hive.metastore.txn.TxnStore;
 import org.apache.hadoop.hive.metastore.utils.MetaStoreUtils;
+import org.apache.thrift.TException;
+import org.apache.hadoop.hive.metastore.api.FindStatStatusByWriteIdRequest;
+import org.apache.hadoop.hive.metastore.api.FindStatStatusByWriteIdResponse;
 
 /**
  * An interface wrapper for HMSHandler.  This interface contains methods that need to be
@@ -106,4 +109,6 @@ public interface IHMSHandler extends ThriftHiveMetastore.Iface, Configurable {
    * @return list of non-transactional listeners.
    */
   List<MetaStoreEventListener> getListeners();
+
+  FindStatStatusByWriteIdResponse find_stat_status_by_write_id(FindStatStatusByWriteIdRequest rqst) throws TException;
 }

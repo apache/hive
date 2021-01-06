@@ -24,10 +24,13 @@ final class TxnState
 
     const OPEN = 3;
 
+    const UNKNOWN = 4;
+
     static public $__names = array(
         1 => 'COMMITTED',
         2 => 'ABORTED',
         3 => 'OPEN',
+        4 => 'UNKNOWN',
     );
 }
 

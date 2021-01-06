@@ -333,6 +333,10 @@ public interface TxnStore extends Configurable {
       String newCatName, String newDbName, String newTabName, String newPartName)
       throws MetaException;
 
+  @RetrySemantics.Idempotent
+  FindStatStatusByWriteIdResponse findStatStatusByWriteId(FindStatStatusByWriteIdRequest rqst)
+          throws SQLException, MetaException;
+
   /**
    * Timeout transactions and/or locks.  This should only be called by the compactor.
    */
