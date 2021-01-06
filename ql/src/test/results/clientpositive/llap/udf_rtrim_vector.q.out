@@ -147,12 +147,12 @@ POSTHOOK: Input: default@t1
 #### A masked pattern was here ####
    tech
 xyfacebookyyx
-PREHOOK: query: explain vectorization expression    
+PREHOOK: query: explain vectorization expression
 select rtrim(col0, 'xy') from t1 group by col0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
 #### A masked pattern was here ####
-POSTHOOK: query: explain vectorization expression    
+POSTHOOK: query: explain vectorization expression
 select rtrim(col0, 'xy') from t1 group by col0
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@t1
