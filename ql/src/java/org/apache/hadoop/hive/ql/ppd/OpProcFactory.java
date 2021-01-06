@@ -733,6 +733,9 @@ public final class OpProcFactory {
                 equalities = searchForEqualities(join, sourcePos, source, columnsInPredicates);
                 owi.getEqualities().put(source, equalities);
               }
+              if (equalities.isEmpty()) {
+                continue;
+              }
 
               ExprNodeDesc newPredicate = replaceColumnExprNodes(predicate, equalities);
               backtrack = ExprNodeDescUtils.backtrack(newPredicate, join, source);
