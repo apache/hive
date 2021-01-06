@@ -64,9 +64,9 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
 /**
- * End to end tests for the SAML based SSO authentication. The test instantiated a SAML
+ * End to end tests for the SAML based SSO authentication. The test instantiates a SAML
  * 2.0 compliant IDP provider (SimpleSAMLPHP) in a docker container. The container is
- * configured such that is it IDP service is run on a random port which is available. See
+ * configured such that it's IDP service is run on a random port which is available. See
  * {@link #setupIDP(boolean, String)} for details.
  * <p>
  * The HS2 is configured with the IDP's metadata file which is derived from a template.
@@ -74,7 +74,7 @@ import org.testcontainers.utility.DockerImageName;
  * post-processed to replace the port number where the service is running.
  * <p>
  * The test uses TestContainers library for managing the life-cycle of the IDP container.
- * It using HTMLUnit to simulate the browser interaction (provide user/password) of the
+ * It uses HTMLUnit to simulate the browser interaction (provide user/password) of the
  * end user.
  */
 public class TestHttpSamlAuthentication {

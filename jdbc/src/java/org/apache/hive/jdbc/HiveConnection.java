@@ -356,7 +356,10 @@ public class HiveConnection implements java.sql.Connection {
       client = EmbeddedCLIServicePortal.get(connParams.getHiveConfs());
       connParams.getHiveConfs().clear();
       // open client session
-      // TODO(Vihang) need to throw here if saml auth?
+      if (isBrowserAuthMode()) {
+        throw new SQLException(new IllegalArgumentException(
+            "Browser mode is not supported in embedded mode"));
+      }
       openSession();
       executeInitSql();
     } else {
@@ -541,7 +544,8 @@ public class HiveConnection implements java.sql.Connection {
 
   protected void validateSslForBrowserMode() throws SQLException {
     if (isBrowserAuthMode() && !isSslConnection()) {
-      throw new SQLException("Browser mode is only supported with SSL is enabled");
+      throw new SQLException(new IllegalArgumentException(
+          "Browser mode is only supported with SSL is enabled"));
     }
   }
 
@@ -1065,7 +1069,7 @@ public class HiveConnection implements java.sql.Connection {
       openReq.setPassword(sessConfMap.get(JdbcConnectionParams.AUTH_PASSWD));
     }
 
-    //TODO(Vihang): This is a bit hacky. We piggy back on a dummy OpenSession call
+    //TODO This is a bit hacky. We piggy back on a dummy OpenSession call
     // to get the redirect response from the server. Instead its probably cleaner to
     // explicitly do a HTTP post request and get the response.
     int numRetry = isBrowserAuthMode() ? 2 : 1;
@@ -1147,6 +1151,15 @@ public class HiveConnection implements java.sql.Connection {
     }
   }
 
+  /**
+   * This is a util method to parse the message from the TException and extract
+   * the HTTP response code. In case of SAML 2.0 specification with redirect binding,
+   * we expect the response code to be either 302 or 303. This method returns true, if
+   * the response code was 302 and 303 else false based on the exception message.
+   *
+   * This is not very clean. Ideally we should get the underlying HttpResponse, but
+   * THttpClient doesn't expose that information.
+   */
   private boolean isSamlRedirect(TException e) {
     //Unfortunately, thrift over http doesn't return the response code
     if (e.getMessage().startsWith("HTTP Response code: ")) {
