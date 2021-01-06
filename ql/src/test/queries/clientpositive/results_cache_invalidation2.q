@@ -1,3 +1,4 @@
+--! qt:disabled:HIVE-24594
 --! qt:dataset:src
 set hive.metastore.event.listeners=org.apache.hive.hcatalog.listener.DbNotificationListener;
 
