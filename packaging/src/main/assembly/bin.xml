@@ -428,11 +428,6 @@
       <destName>hive-exec-log4j2.properties.template</destName>
     </file>
     <file>
-      <source>${project.parent.basedir}/beeline/src/main/resources/beeline-log4j2.properties</source>
-      <outputDirectory>conf</outputDirectory>
-      <destName>beeline-log4j2.properties.template</destName>
-    </file>
-    <file>
       <source>${project.parent.basedir}/llap-server/src/main/resources/llap-daemon-log4j2.properties</source>
       <outputDirectory>conf</outputDirectory>
       <destName>llap-daemon-log4j2.properties.template</destName>

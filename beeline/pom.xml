@@ -39,6 +39,12 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-common</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+      	<exclusion>
+      		<groupId>org.apache.logging.log4j</groupId>
+      		<artifactId>log4j-slf4j-impl</artifactId>
+      	</exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -59,6 +65,12 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-standalone-metastore-server</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+      	<exclusion>
+      		<groupId>org.apache.logging.log4j</groupId>
+      		<artifactId>log4j-slf4j-impl</artifactId>
+      	</exclusion>
+      </exclusions>
     </dependency>
     <!-- inter-project -->
     <dependency>
@@ -105,6 +117,15 @@
       <artifactId>super-csv</artifactId>
       <version>${super-csv.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
     <!-- test intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -112,12 +133,24 @@
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-slf4j-impl</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-service</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
+      <exclusions>
+      	<exclusion>
+      		<groupId>org.apache.logging.log4j</groupId>
+      		<artifactId>log4j-slf4j-impl</artifactId>
+      	</exclusion>
+      </exclusions>
     </dependency>
     <!-- test inter-project -->
     <dependency>
